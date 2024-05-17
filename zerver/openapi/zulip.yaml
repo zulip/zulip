@@ -643,7 +643,7 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to a user's clients when that user's stream subscriptions
+                                Event sent to a user's clients when that user's channel subscriptions
                                 have changed (either the set of subscriptions or their properties).
                               properties:
                                 id:
@@ -661,7 +661,7 @@ paths:
                                   type: array
                                   description: |
                                     A list of dictionaries where each dictionary contains
-                                    information about one of the subscribed streams.
+                                    information about one of the subscribed channels.
 
                                     **Changes**: Removed `email_address` field from the dictionary
                                     in Zulip 8.0 (feature level 226).
@@ -678,7 +678,7 @@ paths:
                                   "subscriptions":
                                     [
                                       {
-                                        "name": "test_stream",
+                                        "name": "test",
                                         "stream_id": 9,
                                         "creator_id": null,
                                         "description": "",
@@ -709,7 +709,7 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when that user has been unsubscribed
-                                from one or more streams.
+                                from one or more channels.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -726,37 +726,37 @@ paths:
                                   type: array
                                   description: |
                                     A list of dictionaries, where each dictionary contains
-                                    information about one of the newly unsubscribed streams.
+                                    information about one of the newly unsubscribed channels.
                                   items:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Dictionary containing details about the unsubscribed stream.
+                                      Dictionary containing details about the unsubscribed channel.
                                     properties:
                                       stream_id:
                                         type: integer
                                         description: |
-                                          The ID of the stream.
+                                          The ID of the channel.
                                       name:
                                         type: string
                                         description: |
-                                          The name of the stream.
+                                          The name of the channel.
                               additionalProperties: false
                               example:
                                 {
                                   "type": "subscription",
                                   "op": "remove",
                                   "subscriptions":
-                                    [{"name": "test_stream", "stream_id": 9}],
+                                    [{"name": "test", "stream_id": 9}],
                                   "id": 0,
                                 }
                             - type: object
                               description: |
                                 Event sent to a user's clients when a property of the user's
-                                subscription to a stream has been updated. This event is used
+                                subscription to a channel has been updated. This event is used
                                 only for personal properties like `is_muted` or `pin_to_top`.
-                                See the [stream update event](/api/get-events#stream-update)
-                                for updates to global properties of a stream.
+                                See the [`stream op: update` event](/api/get-events#stream-update)
+                                for updates to global properties of a channel.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -772,7 +772,7 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    The ID of the stream whose subscription details have changed.
+                                    The ID of the channel whose subscription details have changed.
                                 property:
                                   type: string
                                   description: |
@@ -808,32 +808,32 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent when another user subscribes to a stream, or their
+                                Event sent when another user subscribes to a channel, or their
                                 subscription is newly visible to the current user.
 
-                                When a user subscribes to a stream, the current user will receive this
-                                event only if they [have permission to see the stream's subscriber
+                                When a user subscribes to a channel, the current user will receive this
+                                event only if they [have permission to see the channel's subscriber
                                 list](/help/channel-permissions). When the current user gains permission
-                                to see a given stream's subscriber list, they will receive this event
-                                for the existing subscriptions to the stream.
+                                to see a given channel's subscriber list, they will receive this event
+                                for the existing subscriptions to the channel.
 
                                 **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
                                 incorrectly not sent to guest users when subscribers to web-public
-                                streams and subscribed public streams changed.
+                                channels and subscribed public channels changed.
 
                                 Prior to Zulip 8.0 (feature level 205), this event was not sent when
-                                a user gained access to a stream due to their [role
+                                a user gained access to a channel due to their [role
                                 changing](/help/roles-and-permissions).
 
                                 Prior to Zulip 6.0 (feature level 134), this event was not sent when a
-                                private stream was made public.
+                                private channel was made public.
 
                                 In Zulip 4.0 (feature level 35), the singular `user_id` and `stream_id`
                                 integers included in this event were replaced with plural `user_ids` and
                                 `stream_ids` integer arrays.
 
                                 In Zulip 3.0 (feature level 19), the `stream_id` field was added to
-                                identify the stream the user subscribed to, replacing the `name` field.
+                                identify the channel the user subscribed to, replacing the `name` field.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -849,7 +849,7 @@ paths:
                                 stream_ids:
                                   type: array
                                   description: |
-                                    The IDs of streams that have new or updated subscriber data.
+                                    The IDs of channels that have new or updated subscriber data.
 
                                     **Changes**: New in Zulip 4.0 (feature level 35), replacing
                                     the `stream_id` integer.
@@ -859,7 +859,7 @@ paths:
                                   type: array
                                   description: |
                                     The IDs of the users who are newly visible as subscribed to
-                                    the specified streams.
+                                    the specified channels.
 
                                     **Changes**: New in Zulip 4.0 (feature level 35), replacing
                                     the `user_id` integer.
@@ -877,19 +877,19 @@ paths:
                             - type: object
                               description: |
                                 Event sent to other users when users have been unsubscribed
-                                from streams. Sent to all users if the stream is public or to only
-                                the existing subscribers if the stream is private.
+                                from channels. Sent to all users if the channel is public or to only
+                                the existing subscribers if the channel is private.
 
                                 **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
                                 incorrectly not sent to guest users when subscribers to web-public
-                                streams and subscribed public streams changed.
+                                channels and subscribed public channels changed.
 
                                 In Zulip 4.0 (feature level 35), the singular `user_id` and
                                 `stream_id` integers included in this event were replaced
                                 with plural `user_ids` and `stream_ids` integer arrays.
 
                                 In Zulip 3.0 (feature level 19), the `stream_id` field was
-                                added to identify the stream the user unsubscribed from,
+                                added to identify the channel the user unsubscribed from,
                                 replacing the `name` field.
                               properties:
                                 id:
@@ -906,7 +906,7 @@ paths:
                                 stream_ids:
                                   type: array
                                   description: |
-                                    The IDs of the streams from which the users have been
+                                    The IDs of the channels from which the users have been
                                     unsubscribed from.
 
                                     **Changes**: New in Zulip 4.0 (feature level 35), replacing
@@ -1269,31 +1269,31 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent when a new stream is created to users who can see
-                                the new stream exists (for private streams, only subscribers and
+                                Event sent when a new channel is created to users who can see
+                                the new channel exists (for private channels, only subscribers and
                                 organization administrators will receive this event).
 
-                                This event is also sent when a user gains access to a stream they
+                                This event is also sent when a user gains access to a channel they
                                 previously [could not access](/help/channel-permissions), such as
                                 when their [role](/help/roles-and-permissions) changes, a
-                                private stream is made public, or a guest user is subscribed
-                                to a public (or private) stream.
+                                private channel is made public, or a guest user is subscribed
+                                to a public (or private) channel.
 
                                 Note that organization administrators who are not subscribed will
-                                not be able to see content on the stream; just that it exists.
+                                not be able to see content on the channel; just that it exists.
 
                                 **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
-                                incorrectly not sent to guest users a web-public stream was created.
+                                incorrectly not sent to guest users a web-public channel was created.
 
                                 Prior to Zulip 8.0 (feature level 205), this event was not sent
-                                when a user gained access to a stream due to their role changing.
+                                when a user gained access to a channel due to their role changing.
 
                                 Prior to Zulip 8.0 (feature level 192), this event was not sent
-                                when guest users gained access to a public stream by being
+                                when guest users gained access to a public channel by being
                                 subscribed.
 
                                 Prior to Zulip 6.0 (feature level 134), this event was not sent
-                                when a private stream was made public.
+                                when a private channel was made public.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1309,8 +1309,8 @@ paths:
                                 streams:
                                   type: array
                                   description: |
-                                    Array of stream objects, each containing
-                                    details about the newly added stream(s).
+                                    Array of objects, each containing
+                                    details about the newly added channel(s).
                                   items:
                                     $ref: "#/components/schemas/BasicStream"
                               additionalProperties: false
@@ -1342,15 +1342,15 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to all users who can see a stream when it is deactivated.
+                                Event sent to all users who can see a channel when it is deactivated.
 
-                                This event is also sent when a user loses access to a stream they
+                                This event is also sent when a user loses access to a channel they
                                 previously [could access](/help/channel-permissions) because they
-                                are unsubscribed from a private stream or their [role](/help/roles-and-permissions)
+                                are unsubscribed from a private channel or their [role](/help/roles-and-permissions)
                                 has changed.
 
                                 **Changes**: Prior to Zulip 8.0 (feature level 205), this event was
-                                not sent when a user lost access to a stream due to their role
+                                not sent when a user lost access to a channel due to their role
                                 changing.
                               properties:
                                 id:
@@ -1367,8 +1367,8 @@ paths:
                                 streams:
                                   type: array
                                   description: |
-                                    Array of stream objects, each containing
-                                    details about a stream that was deleted.
+                                    Array of objects, each containing
+                                    details about a channel that was deleted.
                                   items:
                                     $ref: "#/components/schemas/BasicStream"
                               additionalProperties: false
@@ -1400,8 +1400,8 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to all users who can see that a stream exists
-                                when a property of that stream changes.
+                                Event sent to all users who can see that a channel exists
+                                when a property of that channel changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1417,17 +1417,17 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    The ID of the stream whose details have changed.
+                                    The ID of the channel whose details have changed.
                                 name:
                                   type: string
                                   description: |
-                                    The name of the stream whose details have changed.
+                                    The name of the channel whose details have changed.
                                 property:
                                   type: string
                                   description: |
-                                    The property of the stream which has changed. See
-                                    [/stream GET](/api/get-streams) for details on the various
-                                    properties of a stream.
+                                    The property of the channel which has changed. See
+                                    [GET /stream](/api/get-streams) for details on the various
+                                    properties of a channel.
 
                                     Clients should handle an "unknown" property received here without
                                     crashing, since that can happen when connecting to a server running a
@@ -1444,8 +1444,8 @@ paths:
                                   description: |
                                     Note: Only present if the changed property was `description`.
 
-                                    The short description of the stream rendered as HTML, intended to
-                                    be used when displaying the stream description in a UI.
+                                    The short description of the channel rendered as HTML, intended to
+                                    be used when displaying the channel description in a UI.
 
                                     One should use the standard Zulip rendered_markdown CSS when
                                     displaying this content so that emoji, LaTeX, and other syntax
@@ -1457,9 +1457,9 @@ paths:
                                   description: |
                                     Note: Only present if the changed property was `invite_only`.
 
-                                    Whether the history of the stream is public to its subscribers.
+                                    Whether the history of the channel is public to its subscribers.
 
-                                    Currently always true for public streams (i.e. `"invite_only": false` implies
+                                    Currently always true for public channels (i.e. `"invite_only": false` implies
                                     `"history_public_to_subscribers": true`), but clients should not make that
                                     assumption, as we may change that behavior in the future.
                                 is_web_public:
@@ -1467,7 +1467,7 @@ paths:
                                   description: |
                                     Note: Only present if the changed property was `invite_only`.
 
-                                    Whether the stream's history is now readable by web-public spectators.
+                                    Whether the channel's history is now readable by web-public spectators.
 
                                     **Changes**: New in Zulip 5.0 (feature level 71).
                               additionalProperties: false
@@ -1480,7 +1480,7 @@ paths:
                                   "history_public_to_subscribers": true,
                                   "is_web_public": false,
                                   "stream_id": 11,
-                                  "name": "test_stream",
+                                  "name": "test",
                                   "id": 0,
                                 }
                             - type: object
@@ -1925,9 +1925,9 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when an organization
-                                administrator changes the organization's configured default stream groups.
+                                administrator changes the organization's configured default channel groups.
 
-                                Default stream groups are an **experimental** feature that is not yet
+                                Default channel groups are an **experimental** feature that is not yet
                                 stabilized.
                               properties:
                                 id:
@@ -1941,7 +1941,7 @@ paths:
                                   type: array
                                   description: |
                                     An array of dictionaries where each dictionary
-                                    contains details about a single default stream group.
+                                    contains details about a single default channel group.
                                   items:
                                     $ref: "#/components/schemas/DefaultStreamGroup"
                               example:
@@ -2012,7 +2012,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
-                                default streams in the organization are changed by an
+                                default channels in the organization are changed by an
                                 organization administrator.
                               properties:
                                 id:
@@ -2026,7 +2026,7 @@ paths:
                                   type: array
                                   description: |
                                     An array of dictionaries where each dictionary
-                                    contains details about a single default stream.
+                                    contains details about a single default channel.
                                   items:
                                     $ref: "#/components/schemas/DefaultStream"
                               example:
@@ -2060,15 +2060,15 @@ paths:
                                 Sent to all users who received the message.
 
                                 This event is also sent when the user loses access to a message,
-                                such as when it is [moved to a stream][message-move-stream] that
-                                the user does not [have permission to access][stream-access].
+                                such as when it is [moved to a channel][message-move-channel] that
+                                the user does not [have permission to access][channel-access].
 
                                 **Changes**: Before Zulip 5.0 (feature level 77), events
                                 for direct messages contained additional `sender_id` and
                                 `recipient_id` fields.
 
-                                [message-move-stream]: /help/move-content-to-another-channel
-                                [stream-access]: /help/channel-permissions
+                                [message-move-channel]: /help/move-content-to-another-channel
+                                [channel-access]: /help/channel-permissions
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2109,7 +2109,7 @@ paths:
                                   description: |
                                     Only present if `message_type` is `"stream"`.
 
-                                    The ID of the stream to which the message was sent.
+                                    The ID of the channel to which the message was sent.
                                 topic:
                                   type: string
                                   description: |
@@ -2140,7 +2140,7 @@ paths:
                                   deprecated: true
                                   description: |
                                     Array of tuples, where each tuple describes a muted topic.
-                                    The first element of the tuple is the stream name in which the topic
+                                    The first element of the tuple is the channel name in which the topic
                                     has to be muted, the second element is the topic name to be muted
                                     and the third element is an integer UNIX timestamp representing
                                     when the topic was muted.
@@ -2188,7 +2188,7 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    The ID of the stream to which the topic belongs.
+                                    The ID of the channel to which the topic belongs.
                                 topic_name:
                                   type: string
                                   description: |
@@ -2336,7 +2336,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent when a message's content, topic and/or
-                                stream has been edited or when a message's content
+                                channel has been edited or when a message's content
                                 has a rendering update, such as for an
                                 [inline URL preview][inline-url-previews].
                                 Sent to all users who had received the original
@@ -2386,7 +2386,7 @@ paths:
                                     This field should be used to apply content edits to the client's
                                     cached message history, or to apply rendered content updates.
 
-                                    If the stream or topic was changed, the set of moved messages is
+                                    If the channel or topic was changed, the set of moved messages is
                                     encoded in the separate `message_ids` field, which is guaranteed
                                     to include `message_id`.
                                 message_ids:
@@ -2394,18 +2394,18 @@ paths:
                                   items:
                                     type: integer
                                   description: |
-                                    The list of IDs of messages to which any stream or topic changes
+                                    The list of IDs of messages to which any channel or topic changes
                                     encoded in this event should be applied.
 
                                     These messages are guaranteed to have all been previously sent
-                                    to stream `stream_id` with topic `orig_subject`, and have been
+                                    to channel `stream_id` with topic `orig_subject`, and have been
                                     moved to `new_stream_id` with topic `subject` (if those fields
                                     are present in the event).
 
                                     Clients processing these events should update all cached message
                                     history associated with the moved messages (including adjusting
                                     `unread_msgs` data structures, where the client may not have the
-                                    message itself in its history) to reflect the new stream and
+                                    message itself in its history) to reflect the new channel and
                                     topic.
 
                                     Content changes should be applied only to the single message
@@ -2445,37 +2445,37 @@ paths:
                                 stream_name:
                                   type: string
                                   description: |
-                                    Only present if the message was edited and originally sent to a stream.
+                                    Only present if the message was edited and originally sent to a channel.
 
-                                    The name of the stream that the message was sent to. Clients
+                                    The name of the channel that the message was sent to. Clients
                                     are recommended to use the `stream_id` field instead.
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present if the message was edited and originally sent to a stream.
+                                    Only present if the message was edited and originally sent to a channel.
 
-                                    The pre-edit stream for all of the messages with IDs in
+                                    The pre-edit channel for all of the messages with IDs in
                                     `message_ids`.
 
                                     **Changes**: As of Zulip 5.0 (feature level 112), this field
-                                    is present for all edits to a stream message. Previously, it
-                                    was not present when only the content of the stream message was
+                                    is present for all edits to a channel message. Previously, it
+                                    was not present when only the content of the channel message was
                                     edited.
                                 new_stream_id:
                                   type: integer
                                   description: |
-                                    Only present if message(s) were moved to a different stream.
+                                    Only present if message(s) were moved to a different channel.
 
-                                    The post-edit stream for all of the messages with IDs in
+                                    The post-edit channel for all of the messages with IDs in
                                     `message_ids`.
                                 propagate_mode:
                                   type: string
                                   description: |
                                     Only present if this event moved messages to a different
-                                    topic and/or stream.
+                                    topic and/or channel.
 
                                     The choice the editing user made about which messages should be
-                                    affected by a stream/topic edit:
+                                    affected by a channel/topic edit:
 
                                     - `"change_one"`: Just change the one indicated in `message_id`.
                                     - `"change_later"`: Change messages in the same topic that had
@@ -2501,7 +2501,7 @@ paths:
                                   type: string
                                   description: |
                                     Only present if this event moved messages to a different
-                                    topic and/or stream.
+                                    topic and/or channel.
 
                                     The pre-edit topic for all of the messages with IDs in
                                     `message_ids`.
@@ -2632,14 +2632,14 @@ paths:
 
                                 Sent to all clients for users who would receive the
                                 message being typed, with the additional rule that typing
-                                notifications for stream messages are only sent to clients
+                                notifications for channel messages are only sent to clients
                                 that included `stream_typing_notifications` in their
                                 [client capabilities][client-capabilities] when registering
                                 the event queue.
 
                                 See [POST /typing](/api/set-typing-status) endpoint for more details.
 
-                                **Changes**: Typing notifications for stream messages are new in
+                                **Changes**: Typing notifications for channel messages are new in
                                 Zulip 4.0 (feature level 58).
 
                                 [client-capabilities]: /api/register-queue#parameter-client_capabilities
@@ -2710,7 +2710,7 @@ paths:
                                   description: |
                                     Only present if `message_type` is `"stream"`.
 
-                                    The unique ID of the stream to which message is being typed.
+                                    The unique ID of the channel to which message is being typed.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
                                     typing notifications were only for direct messages.
@@ -2719,7 +2719,7 @@ paths:
                                   description: |
                                     Only present if `message_type` is `"stream"`.
 
-                                    Topic within the stream where the message is being typed.
+                                    Topic within the channel where the message is being typed.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
                                     typing notifications were only for direct messages.
@@ -2753,14 +2753,14 @@ paths:
 
                                 Sent to all clients for users who would receive the message
                                 that was previously being typed, with the additional rule
-                                that typing notifications for stream messages are only sent to
+                                that typing notifications for channel messages are only sent to
                                 clients that included `stream_typing_notifications` in their
                                 [client capabilities][client-capabilities] when registering
                                 the event queue.
 
                                 See [POST /typing](/api/set-typing-status) endpoint for more details.
 
-                                **Changes**: Typing notifications for stream messages are new in
+                                **Changes**: Typing notifications for channel messages are new in
                                 Zulip 4.0 (feature level 58).
 
                                 [client-capabilities]: /api/register-queue#parameter-client_capabilities
@@ -2831,7 +2831,7 @@ paths:
                                   description: |
                                     Only present if `message_type` is `"stream"`.
 
-                                    The unique ID of the stream to which message is being typed.
+                                    The unique ID of the channel to which message is being typed.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
                                     typing notifications were only for direct messages.
@@ -2840,7 +2840,7 @@ paths:
                                   description: |
                                     Only present if `message_type` is `"stream"`.
 
-                                    Topic within the stream where the message is being typed.
+                                    Topic within the channel where the message is being typed.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
                                     typing notifications were only for direct messages.
@@ -2892,8 +2892,8 @@ paths:
                                   on a conversation.
                                 - The `"read"` flag is added when the user [mutes](/help/mute-a-user) a
                                   message's sender.
-                                - The `"read"` flag is added after the user unsubscribes from a stream,
-                                  or messages are moved to a not-subscribed stream, provided the user
+                                - The `"read"` flag is added after the user unsubscribes from a channel,
+                                  or messages are moved to a not-subscribed channel, provided the user
                                   can still access the messages at all. Note a
                                   [`delete_message`][message-delete] event is sent in the case where the
                                   user can no longer access the messages.
@@ -2901,7 +2901,7 @@ paths:
                                 In some cases, a change in message flags that's caused by another change
                                 may happen a short while after the original change, rather than
                                 simultaneously. For example, when messages that were unread are moved to
-                                a stream where the user is not subscribed, the resulting change in
+                                a channel where the user is not subscribed, the resulting change in
                                 message flags (and the corresponding `update_message_flags` event with
                                 flag `"read"`) may happen later than the message move itself. The delay
                                 in that example is typically at most a few hundred milliseconds and can
@@ -3039,7 +3039,7 @@ paths:
                                       type:
                                         type: string
                                         description: |
-                                          The type of this message.
+                                          The type of this message. Either `"stream"` or `"private"`.
                                         enum:
                                           - private
                                           - stream
@@ -3062,13 +3062,13 @@ paths:
                                       stream_id:
                                         type: integer
                                         description: |
-                                          Present only if `type` is `stream`.
+                                          Present only if `type` is `"stream"`.
 
-                                          The ID of the stream where the message was sent.
+                                          The ID of the channel where the message was sent.
                                       topic:
                                         type: string
                                         description: |
-                                          Present only if `type` is `stream`.
+                                          Present only if `type` is `"stream"`.
 
                                           Name of the topic where the message was sent.
                                       unmuted_stream_msg:
@@ -4223,23 +4223,23 @@ paths:
                                       type: integer
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create public streams in this organization.
+                                        for which users can create public channels in this organization.
 
                                         **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                                        create streams was controlled by the `create_stream_policy` setting.
+                                        create channels was controlled by the `create_stream_policy` setting.
                                     create_private_stream_policy:
                                       type: integer
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create private streams in this organization.
+                                        for which users can create private channels in this organization.
 
                                         **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                                        create streams was controlled by the `create_stream_policy` setting.
+                                        create channels was controlled by the `create_stream_policy` setting.
                                     create_web_public_stream_policy:
                                       type: integer
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create web public streams in this organization.
+                                        for which users can create web public channels in this organization.
 
                                         **Changes**: New in Zulip 5.0 (feature level 103).
                                     default_code_block_language:
@@ -4311,7 +4311,7 @@ paths:
                                     enable_spectator_access:
                                       type: boolean
                                       description: |
-                                        Whether web-public streams are enabled in this organization.
+                                        Whether web-public channels are enabled in this organization.
 
                                         Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
                                         [server setting][server-settings] is enabled on the Zulip
@@ -4366,7 +4366,7 @@ paths:
                                       type: integer
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can add other users to streams in this organization.
+                                        for which users can add other users to channels in this organization.
                                     logo_source:
                                       type: string
                                       description: |
@@ -4420,7 +4420,7 @@ paths:
                                       nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved within a
-                                        stream to another topic by users who have permission to do so based on this
+                                        channel to another topic by users who have permission to do so based on this
                                         organization's [topic edit policy](/help/restrict-moving-messages). This
                                         setting does not affect moderators and administrators.
 
@@ -4435,7 +4435,7 @@ paths:
                                       nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved between
-                                        streams by users who have permission to do so based on this organization's
+                                        channels by users who have permission to do so based on this organization's
                                         [message move policy](/help/restrict-moving-messages). This setting does
                                         not affect moderators and administrators.
 
@@ -4443,13 +4443,13 @@ paths:
                                         regardless of how long ago they were sent.
 
                                         **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
-                                        no time limit for moving messages between streams for users with permission
+                                        no time limit for moving messages between channels for users with permission
                                         to do so.
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
                                         The [policy][permission-level] for which users can move messages from
-                                        one stream to another.
+                                        one channel to another.
 
                                         - 1 = Members only
                                         - 2 = Administrators only
@@ -4493,17 +4493,17 @@ paths:
                                     new_stream_announcements_stream_id:
                                       type: integer
                                       description: |
-                                        The ID of the stream to which automated messages announcing the
-                                        [creation of new streams][new-stream-announce] are sent.
+                                        The ID of the channel to which automated messages announcing the
+                                        [creation of new channels][new-channel-announce] are sent.
 
                                         Will be `-1` if such automated messages are disabled.
 
                                         Since these automated messages are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
 
-                                        [new-stream-announce]: /help/configure-automated-notices#new-channel-announcements
+                                        [new-channel-announce]: /help/configure-automated-notices#new-channel-announcements
 
-                                        **Changes**: In Zulip 9.0 (feature level 241), renamed 'notifications_stream_id'
+                                        **Changes**: In Zulip 9.0 (feature level 241), renamed `notifications_stream_id`
                                         to `new_stream_announcements_stream_id`.
                                     org_type:
                                       type: integer
@@ -4570,7 +4570,7 @@ paths:
                                     signup_announcements_stream_id:
                                       type: integer
                                       description: |
-                                        The ID of the stream to which automated messages announcing
+                                        The ID of the channel to which automated messages announcing
                                         that [new users have joined the organization][new-user-announce] are sent.
 
                                         Will be `-1` if such automated messages are disabled.
@@ -4581,11 +4581,11 @@ paths:
                                         [new-user-announce]: /help/configure-automated-notices#new-user-announcements
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed
-                                        'signup_notifications_stream_id' to `signup_announcements_stream_id`.
+                                        `signup_notifications_stream_id` to `signup_announcements_stream_id`.
                                     zulip_update_announcements_stream_id:
                                       type: integer
                                       description: |
-                                        The ID of the stream to which automated messages announcing
+                                        The ID of the channel to which automated messages announcing
                                         new features or other end-user updates about the Zulip software are sent.
 
                                         Will be `-1` if such automated messages are disabled.
@@ -4653,20 +4653,20 @@ paths:
                                       type: integer
                                       description: |
                                         The [policy][permission-level] for who can use wildcard mentions in
-                                        large streams.
+                                        large channels.
 
-                                        - 1 = Any user can use wildcard mentions in large streams.
-                                        - 2 = Only members can use wildcard mentions in large streams.
-                                        - 3 = Only [full members][calc-full-member] can use wildcard mentions in large streams.
-                                        - 5 = Only organization administrators can use wildcard mentions in large streams.
-                                        - 6 = Nobody can use wildcard mentions in large streams.
-                                        - 7 = Only organization administrators and moderators can use wildcard mentions in large streams.
+                                        - 1 = Any user can use wildcard mentions in large channels.
+                                        - 2 = Only members can use wildcard mentions in large channels.
+                                        - 3 = Only [full members][calc-full-member] can use wildcard mentions in large channels.
+                                        - 5 = Only organization administrators can use wildcard mentions in large channels.
+                                        - 6 = Nobody can use wildcard mentions in large channels.
+                                        - 7 = Only organization administrators and moderators can use wildcard mentions in large channels.
 
                                         All users will receive a warning/reminder when using
-                                        mentions in large streams, even when permitted to do so.
+                                        mentions in large channels, even when permitted to do so.
 
                                         **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
-                                        Zulip 4.0 (feature level 62). Stream administrators option removed in
+                                        Zulip 4.0 (feature level 62). Channel administrators option removed in
                                         Zulip 6.0 (feature level 133).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
