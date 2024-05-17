@@ -768,7 +768,8 @@ li.top_left_scheduled_messages {
 .left-sidebar-navigation-label-container,
 .dm-box,
 .subscription_block,
-.topic-box {
+.topic-box,
+.searching-for-more-topics {
     display: grid;
     align-items: center;
     /* This general pattern of elements applies to every single row in the left
@@ -918,7 +919,8 @@ li.top_left_scheduled_messages {
     }
 }
 
-.topic-box {
+.topic-box,
+.searching-for-more-topics {
     /* Padding from original .topic-box definition. */
     padding-top: 1px;
     grid-template-columns:
@@ -951,6 +953,11 @@ li.top_left_scheduled_messages {
     overflow-x: hidden;
     overflow-x: clip;
     text-overflow: ellipsis;
+}
+
+.searching-for-more-topics img {
+    height: 16px;
+    grid-area: row-content;
 }
 
 .sidebar-topic-check {
@@ -1394,11 +1401,6 @@ li.topic-list-item {
 
 .zero-topic-unreads.show-more-topics .topic-box {
     margin-right: 30px;
-}
-
-.searching-for-more-topics img {
-    height: 16px;
-    margin-left: 6px;
 }
 
 .zoom-in {
