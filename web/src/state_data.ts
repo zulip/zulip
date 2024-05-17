@@ -59,6 +59,7 @@ export const realm_schema = z.object({
         USER: z.object({id: z.number(), name: z.string()}),
         PRONOUNS: z.object({id: z.number(), name: z.string()}),
     }),
+    demo_organization_scheduled_deletion_date: z.optional(z.number()),
     max_avatar_file_size_mib: z.number(),
     max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
@@ -87,6 +88,7 @@ export const realm_schema = z.object({
     realm_create_private_stream_policy: z.number(),
     realm_create_public_stream_policy: z.number(),
     realm_create_web_public_stream_policy: z.number(),
+    realm_date_created: z.number(),
     realm_default_code_block_language: z.string(),
     realm_default_external_accounts: z.record(
         z.string(),
