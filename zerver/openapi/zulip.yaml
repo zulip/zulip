@@ -1312,7 +1312,7 @@ paths:
                                     Array of objects, each containing
                                     details about the newly added channel(s).
                                   items:
-                                    $ref: "#/components/schemas/BasicStream"
+                                    $ref: "#/components/schemas/BasicChannel"
                               additionalProperties: false
                               example:
                                 {
@@ -1370,7 +1370,7 @@ paths:
                                     Array of objects, each containing
                                     details about a channel that was deleted.
                                   items:
-                                    $ref: "#/components/schemas/BasicStream"
+                                    $ref: "#/components/schemas/BasicChannel"
                               additionalProperties: false
                               example:
                                 {
@@ -1943,7 +1943,7 @@ paths:
                                     An array of dictionaries where each dictionary
                                     contains details about a single default channel group.
                                   items:
-                                    $ref: "#/components/schemas/DefaultStreamGroup"
+                                    $ref: "#/components/schemas/DefaultChannelGroup"
                               example:
                                 {
                                   "type": "default_stream_groups",
@@ -2028,7 +2028,7 @@ paths:
                                     An array of dictionaries where each dictionary
                                     contains details about a single default channel.
                                   items:
-                                    $ref: "#/components/schemas/DefaultStream"
+                                    $ref: "#/components/schemas/DefaultChannel"
                               example:
                                 {
                                   "type": "default_streams",
@@ -5790,7 +5790,7 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/NonExistingStreamIdError"
+                      - $ref: "#/components/schemas/NonExistingChannelIdError"
                       - description: |
                           A typical failed JSON response for when a stream message is scheduled
                           to be sent to a stream that does not exist:
@@ -5921,7 +5921,7 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/NonExistingStreamIdError"
+                      - $ref: "#/components/schemas/NonExistingChannelIdError"
                       - description: |
                           A typical failed JSON response for when a stream message is scheduled
                           to be sent to a stream that does not exist:
@@ -6030,7 +6030,7 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/InvalidStreamError"
+                      - $ref: "#/components/schemas/InvalidChannelError"
                       - description: |
                           A typical failed JSON response for when an invalid stream ID is passed:
                   - allOf:
@@ -6080,7 +6080,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
                       A typical failed JSON response for when an invalid stream ID is passed:
   /messages:
@@ -6630,7 +6630,7 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/NonExistingStreamNameError"
+                      - $ref: "#/components/schemas/NonExistingChannelNameError"
                       - description: |
                           A typical failed JSON response for when a stream message is sent to a stream
                           that does not exist:
@@ -9087,7 +9087,7 @@ paths:
         will only have access to messages sent after the bot was subscribed to
         the stream, instead of when the user subscribed.
       parameters:
-        - $ref: "#/components/parameters/StreamIdInPath"
+        - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
         "200":
           description: Success.
@@ -9134,7 +9134,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
                       An example JSON response for when the user is attempting to fetch the topics
                       of a non-existing stream (or also a private stream they don't have access to):
@@ -9375,7 +9375,7 @@ paths:
                 history_public_to_subscribers:
                   $ref: "#/components/schemas/HistoryPublicToSubscribers"
                 stream_post_policy:
-                  $ref: "#/components/schemas/StreamPostPolicy"
+                  $ref: "#/components/schemas/ChannelPostPolicy"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
@@ -9713,7 +9713,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/NonExistingStreamNameError"
+                  - $ref: "#/components/schemas/NonExistingChannelNameError"
                   - description: |
                       A typical failed JSON response for when the target stream does not exist:
   /users/me/subscriptions/muted_topics:
@@ -10244,7 +10244,7 @@ paths:
         **Changes**: New in Zulip 3.0 (feature level 12).
       parameters:
         - $ref: "#/components/parameters/UserId"
-        - $ref: "#/components/parameters/StreamIdInPath"
+        - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
         "200":
           description: Success
@@ -12661,7 +12661,7 @@ paths:
                 event_types:
                   $ref: "#/components/schemas/Event_types"
                 all_public_streams:
-                  $ref: "#/components/schemas/AllPublicStreams"
+                  $ref: "#/components/schemas/AllPublicChannels"
                 client_capabilities:
                   description: |
                     Dictionary containing details on features the client supports that are
@@ -13397,7 +13397,7 @@ paths:
                         type: array
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/BasicStreamBase"
+                            - $ref: "#/components/schemas/BasicChannelBase"
                             - additionalProperties: false
                               properties:
                                 stream_id: {}
@@ -13596,7 +13596,7 @@ paths:
                       streams:
                         type: array
                         items:
-                          $ref: "#/components/schemas/BasicStream"
+                          $ref: "#/components/schemas/BasicChannel"
                         description: |
                           Present if `stream` is present in `fetch_event_types`.
 
@@ -13611,7 +13611,7 @@ paths:
                       realm_default_streams:
                         type: array
                         items:
-                          $ref: "#/components/schemas/DefaultStream"
+                          $ref: "#/components/schemas/DefaultChannel"
                         description: |
                           Present if `default_streams` is present in `fetch_event_types`.
 
@@ -13621,7 +13621,7 @@ paths:
                       realm_default_stream_groups:
                         type: array
                         items:
-                          $ref: "#/components/schemas/DefaultStreamGroup"
+                          $ref: "#/components/schemas/DefaultChannelGroup"
                         description: |
                           Present if `default_stream_groups` is present in `fetch_event_types`.
 
@@ -17862,7 +17862,7 @@ paths:
       description: |
         Get all users subscribed to a stream.
       parameters:
-        - $ref: "#/components/parameters/StreamIdInPath"
+        - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
         "200":
           description: Success.
@@ -17891,7 +17891,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
                       An example JSON response for when the requested stream does not exist,
                       or where the user does not have permission to access the target stream:
@@ -17985,7 +17985,7 @@ paths:
                         type: array
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/BasicStreamBase"
+                            - $ref: "#/components/schemas/BasicChannelBase"
                             - additionalProperties: false
                               properties:
                                 stream_id: {}
@@ -18117,7 +18117,7 @@ paths:
 
         **Changes**: New in Zulip 6.0 (feature level 132).
       parameters:
-        - $ref: "#/components/parameters/StreamIdInPath"
+        - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
         "200":
           description: Success.
@@ -18132,7 +18132,7 @@ paths:
                       msg: {}
                       ignored_parameters_unsupported: {}
                       stream:
-                        $ref: "#/components/schemas/BasicStream"
+                        $ref: "#/components/schemas/BasicChannel"
                     example:
                       {
                         "msg": "",
@@ -18162,7 +18162,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
                       An example JSON response for when the stream ID is not valid:
     delete:
@@ -18173,7 +18173,7 @@ paths:
         [Archive the stream](/help/archive-a-channel) with the ID `stream_id`.
       x-requires-administrator: true
       parameters:
-        - $ref: "#/components/parameters/StreamIdInPath"
+        - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -18183,7 +18183,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
                       An example JSON response for when the supplied stream does not exist:
     patch:
@@ -18212,7 +18212,7 @@ paths:
                 - description
                 - is_private
       parameters:
-        - $ref: "#/components/parameters/StreamIdInPath"
+        - $ref: "#/components/parameters/ChannelIdInPath"
       requestBody:
         required: false
         content:
@@ -18304,7 +18304,7 @@ paths:
                   type: boolean
                   example: false
                 stream_post_policy:
-                  $ref: "#/components/schemas/StreamPostPolicy"
+                  $ref: "#/components/schemas/ChannelPostPolicy"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
@@ -18334,7 +18334,7 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/InvalidStreamError"
+                      - $ref: "#/components/schemas/InvalidChannelError"
                       - description: |
                           An example JSON response for when the supplied stream does not exist:
                   - allOf:
@@ -18358,7 +18358,7 @@ paths:
 
         **Changes**: New in Zulip 8.0 (feature level 226).
       parameters:
-        - $ref: "#/components/parameters/StreamIdInPath"
+        - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
         "200":
           description: Success.
@@ -18388,7 +18388,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/InvalidStreamError"
+                  - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
                       An example JSON response for when the requested stream does not exist,
                       or where the user does not have permission to access the target stream:
@@ -18434,7 +18434,7 @@ paths:
         returns an error.
       x-requires-administrator: true
       parameters:
-        - $ref: "#/components/parameters/StreamIdInPath"
+        - $ref: "#/components/parameters/ChannelIdInPath"
       requestBody:
         required: true
         content:
@@ -19201,7 +19201,7 @@ paths:
                 narrow:
                   $ref: "#/components/schemas/Narrow"
                 all_public_streams:
-                  $ref: "#/components/schemas/AllPublicStreams"
+                  $ref: "#/components/schemas/AllPublicChannels"
             encoding:
               event_types:
                 contentType: application/json
@@ -19500,9 +19500,9 @@ components:
                 description: |
                   The unique message ID. Messages should always be
                   displayed sorted by ID.
-    BasicStream:
+    BasicChannel:
       allOf:
-        - $ref: "#/components/schemas/BasicStreamBase"
+        - $ref: "#/components/schemas/BasicChannelBase"
         - additionalProperties: false
           properties:
             stream_id: {}
@@ -19553,9 +19553,9 @@ components:
             - is_announcement_only
             - can_remove_subscribers_group
             - stream_weekly_traffic
-    DefaultStream:
+    DefaultChannel:
       allOf:
-        - $ref: "#/components/schemas/BasicStreamBase"
+        - $ref: "#/components/schemas/BasicChannelBase"
         - additionalProperties: false
           properties:
             stream_id: {}
@@ -19590,7 +19590,7 @@ components:
             - first_message_id
             - is_announcement_only
             - can_remove_subscribers_group
-    BasicStreamBase:
+    BasicChannelBase:
       type: object
       description: |
         Object containing basic details about the channel.
@@ -20562,7 +20562,7 @@ components:
             was named `can_remove_subscribers_group_id`.
 
             New in Zulip 6.0 (feature level 142).
-    DefaultStreamGroup:
+    DefaultChannelGroup:
       type: object
       description: |
         Dictionary containing details of a default channel
@@ -20587,7 +20587,7 @@ components:
             Array containing details about the channels
             in the default channel group.
           items:
-            $ref: "#/components/schemas/DefaultStream"
+            $ref: "#/components/schemas/DefaultChannel"
     EmailAddressVisibility:
       type: integer
       description: |
@@ -21648,7 +21648,7 @@ components:
               "code": "BAD_REQUEST",
               "result": "error",
             }
-    InvalidStreamError:
+    InvalidChannelError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
@@ -21662,7 +21662,7 @@ components:
               "code": "BAD_REQUEST",
               "result": "error",
             }
-    NonExistingStreamNameError:
+    NonExistingChannelNameError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
@@ -21681,7 +21681,7 @@ components:
               "result": "error",
               "stream": "nonexistent",
             }
-    NonExistingStreamIdError:
+    NonExistingChannelIdError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
@@ -21977,7 +21977,7 @@ components:
           type: string
       default: []
       example: [["channel", "Denmark"]]
-    AllPublicStreams:
+    AllPublicChannels:
       description: |
         Whether you would like to request message events from all public
         channels. Useful for workflow bots that you'd like to see all new messages
@@ -22007,7 +22007,7 @@ components:
         throw an error.
       type: string
       example: Hello
-    StreamPostPolicy:
+    ChannelPostPolicy:
       description: |
         [Policy][permission-level] for which users can post messages to the channel.
 
@@ -22193,7 +22193,7 @@ components:
         type: string
       example: fb67bf8a-c031-47cc-84cf-ed80accacda8
       required: true
-    StreamIdInPath:
+    ChannelIdInPath:
       name: stream_id
       in: path
       description: |
