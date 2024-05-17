@@ -1,0 +1,11 @@
+<div class="icon" style="background-color: {{color}}">
+    <div class="flex">
+        {{#if invite_only}}
+        <i class="zulip-icon zulip-icon-lock" aria-hidden="true"></i>
+        {{else if is_web_public}}
+        <i class="zulip-icon zulip-icon-globe fa-lg" aria-hidden="true"></i>
+        {{else}}
+        <span class="zulip-icon zulip-icon-hashtag"></span>
+        {{/if}}
+    </div>
+</div>

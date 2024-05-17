@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+version=20.12.2
+arch="$(uname -m)"
+
+case $arch in
+    x86_64)
+        tarball="node-v$version-linux-x64.tar.xz"
+        sha256=595272130310cbe12301430756f23d153f7ab95d00174c02adc11a2e3703d183
+        ;;
+
+    aarch64)
+        tarball="node-v$version-linux-arm64.tar.xz"
+        sha256=b5fc7983fb9506b8c3de53dfa85ff63f9f49cedc94984e29e4c89328536ba4b9
+        ;;
+esac
+
+check_version() {
+    out="$(node --version)" && [ "$out" = "v$version" ] \
+        && [ /usr/local/bin/pnpm -ef /srv/zulip-node/lib/node_modules/corepack/dist/pnpm.js ]
+}
+
+if ! check_version 2>/dev/null; then
+    set -x
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl_opts=(-fLO --retry 3)
+    if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
+        curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
+    fi
+    curl "${curl_opts[@]}" "https://nodejs.org/dist/v$version/$tarball"
+    sha256sum -c <<<"$sha256 $tarball"
+    rm -rf /srv/zulip-node
+    mkdir -p /srv/zulip-node
+    tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-node
+    ln -sf /srv/zulip-node/bin/{corepack,node,npm,npx} /usr/local/bin
+    COREPACK_DEFAULT_TO_LATEST=0 /usr/local/bin/corepack enable
+
+    # Clean up after previous versions of this script
+    rm -rf /srv/zulip-yarn /usr/bin/yarn /usr/local/nvm
+
+    check_version
+fi

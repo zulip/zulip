@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Possible bug
+    url: https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html
+    about: Report unexpected behavior that may be a bug.
+  - name: Feature suggestion or feedback
+    url: https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html
+    about: Start a discussion about your idea for improving Zulip.
+  - name: Issue with running or upgrading a Zulip server
+    url: https://zulip.readthedocs.io/en/latest/production/troubleshooting.html
+    about: We provide free, interactive support for the vast majority of questions about running a Zulip server.
+  - name: Other support requests and sales questions
+    url: https://zulip.com/help/contact-support
+    about: Contact us — we're happy to help!

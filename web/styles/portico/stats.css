@@ -1,0 +1,223 @@
+body {
+    font-family: "Source Sans 3 VF", sans-serif !important;
+    background-color: hsl(0deg 0% 98%);
+}
+
+p {
+    margin-bottom: 0;
+}
+
+.app-main {
+    padding: 0;
+    width: auto;
+    max-width: none;
+}
+
+.svg-container {
+    margin: 20px;
+}
+
+.center-charts {
+    margin: 30px;
+}
+
+.stats-page .alert,
+.analytics-page-header {
+    text-align: center;
+}
+
+.summary-stats {
+    vertical-align: top;
+    margin: 0 auto;
+    padding: 20px;
+    border: 2px solid hsl(0deg 0% 93%);
+    background-color: hsl(0deg 0% 100%);
+    width: 395px;
+
+    & h1 {
+        margin-top: 0;
+        font-size: 1.5em;
+    }
+}
+
+.flex-container {
+    display: flex;
+    flex-flow: wrap;
+    justify-content: space-around;
+}
+
+.chart-container {
+    vertical-align: top;
+    margin: 10px 0;
+    padding: 20px;
+    border: 2px solid hsl(0deg 0% 93%);
+    background-color: hsl(0deg 0% 100%);
+
+    & button {
+        position: relative;
+        z-index: 1;
+    }
+
+    & h1 {
+        margin-top: 0;
+        font-size: 1.5em;
+    }
+
+    &:not(.pie-chart) .number-stat {
+        position: relative;
+        top: -30px;
+    }
+
+    .button-container {
+        position: relative;
+        z-index: 1;
+        margin-bottom: 5px;
+
+        > * {
+            display: inline-block;
+            vertical-align: top;
+        }
+    }
+}
+
+.analytics-page-header {
+    margin-left: 10px;
+}
+
+.rangeslider-container {
+    user-select: none;
+}
+
+.rangeselector text {
+    font-weight: 400;
+}
+
+.pie-chart {
+    .number-stat {
+        float: left;
+        font-size: 0.8em;
+        font-weight: 400;
+    }
+}
+
+.buttons button {
+    background-color: hsl(0deg 0% 94%);
+
+    &.selected {
+        background-color: hsl(0deg 0% 85%);
+    }
+}
+
+.button {
+    font-family: "Source Sans 3 VF", sans-serif !important;
+    border: none;
+    border-radius: 4px;
+    outline: none;
+    padding: 2px 6px;
+
+    &:hover {
+        background-color: hsl(0deg 0% 84%) !important;
+    }
+}
+
+.docs_link a {
+    font-weight: 300;
+    color: inherit;
+    text-decoration: none;
+}
+
+.tooltip-inner {
+    padding: 10px;
+    max-width: 350px;
+
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.last-update {
+    margin: 0 0 30px;
+
+    font-size: 0.8em;
+    font-weight: 400;
+    text-align: center;
+    color: hsl(0deg 0% 67%);
+}
+
+#users_hover_humans,
+#read_hover_everyone,
+#hover_human {
+    margin-left: 10px;
+}
+
+#id_messages_sent_by_client {
+    min-height: 100px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_by_message_type {
+    height: 300px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_over_time,
+#id_messages_read_over_time {
+    height: 400px;
+    width: 750px;
+    position: relative;
+
+    &[last_value_is_partial="true"] .points path:last-of-type {
+        opacity: 0.5;
+    }
+}
+
+#id_number_of_users {
+    height: 370px;
+    width: 750px;
+    position: relative;
+}
+
+#id_stats_errors {
+    display: none;
+}
+
+#pie_messages_sent_by_type_total {
+    float: right;
+}
+
+#users_hover_info,
+#read_hover_info,
+#hoverinfo {
+    display: none;
+    font-size: 0.8em;
+    font-weight: 400;
+    position: relative;
+    float: right;
+    height: 0;
+    top: -25px;
+}
+
+.spinner::before {
+    content: "";
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    margin-left: -15px;
+    border-radius: 50%;
+    border: 1px solid hsl(0deg 0% 80%);
+    border-top-color: hsl(155deg 93% 42%);
+    animation: spinner 1s linear infinite;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}

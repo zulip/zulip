@@ -1,0 +1,28 @@
+{{#with realm_export}}
+<tr class="export_row" id="export_{{id}}">
+    <td>
+        <span class="acting_user">{{acting_user}}</span>
+    </td>
+    <td>
+        <span class="export_time">{{event_time}}</span>
+    </td>
+    <td>
+        {{#if url}}
+        <span class="export_url"><a href="{{url}}" download>{{t 'Complete' }}</a></span>
+        {{else if time_failed}}
+        <span class="export_status">{{t 'Failed' }}: {{time_failed}}</span>
+        {{else if pending}}
+        <div class="export_url_spinner"></div>
+        {{else if time_deleted}}
+        <span class="export_status">{{t 'Deleted' }}: {{time_deleted}}</span>
+        {{/if}}
+    </td>
+    <td class="actions">
+        {{#if url}}
+        <button class="button rounded small delete btn-danger" data-export-id="{{id}}">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+        </button>
+        {{/if}}
+    </td>
+</tr>
+{{/with}}

@@ -1,0 +1,1329 @@
+/* Reusable, object-oriented CSS base components for the Zulip web app
+   (not included in the portico CSS) */
+
+.flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hide {
+    display: none;
+}
+
+kbd {
+    display: inline-block;
+    border: 1px solid hsl(0deg 0% 80%);
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    background-color: hsl(0deg 0% 98%);
+    color: hsl(0deg 0% 20%);
+    margin: 0.25em 0.1em;
+    padding: 0.1em 0.4em;
+    text-shadow: 0 1px 0 hsl(0deg 0% 100%);
+    /* Prevent selection */
+    user-select: none;
+}
+
+@media (width < $sm_min) {
+    .hide-sm {
+        display: none !important;
+    }
+
+    #settings_page .save-button-controls {
+        display: block;
+        margin: 10px 0 0;
+    }
+}
+
+.light {
+    font-weight: 300;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.display-block {
+    display: block !important;
+}
+
+.box-shadow {
+    box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
+}
+
+.clear-float {
+    clear: both;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.order-1 {
+    order: 1;
+}
+
+.order-2 {
+    order: 2;
+}
+
+.order-3 {
+    order: 3;
+}
+
+/*
+Consistent placeholder styling, introduced to allow us to style the
+Reply box like a placeholder.  Chrome uses color to set placeholder,
+while Firefox uses opacity, so we need to set both properties to avoid
+mixed styling.
+
+While we usually prefer opacity for text color in Zulip, there's some
+evidence Edge may have bugs in its handling of placeholder opacity
+CSS: https://github.com/necolas/normalize.css/issues/741
+*/
+.placeholder {
+    color: hsl(0deg 0% 45%);
+    opacity: 1;
+}
+
+textarea::placeholder,
+input::placeholder {
+    @extend .placeholder;
+}
+
+.new-style {
+    /* -- base button styling -- */
+    .button {
+        padding: 7px 14px;
+        margin: 0;
+        min-width: 130px;
+
+        font-weight: 400;
+        line-height: normal;
+        text-align: center;
+
+        background-color: hsl(0deg 0% 100%);
+        color: inherit;
+        outline: none;
+        border: 1px solid hsl(0deg 0% 80%);
+        border-radius: 2px;
+
+        box-shadow: none;
+
+        cursor: pointer;
+
+        /* -- button style variations -- */
+        &.no-style {
+            padding: 0;
+            background-color: transparent;
+            border: none;
+            min-width: 0;
+            width: auto;
+            outline: none;
+            box-shadow: none !important;
+        }
+
+        &.rounded {
+            border-radius: 4px;
+        }
+
+        &.green {
+            background-color: hsl(150deg 31% 53%);
+        }
+
+        &.grey {
+            background-color: hsl(0deg 0% 67%);
+        }
+
+        &.small {
+            font-size: 0.8rem;
+            min-width: inherit;
+            padding: 6px 10px;
+        }
+
+        &:hover,
+        &:focus {
+            border-color: hsl(0deg 0% 60%);
+        }
+
+        &:active {
+            border-color: hsl(0deg 0% 60%);
+            color: inherit;
+            background-color: hsl(0deg 0% 95%);
+        }
+
+        &.add-subscription-button {
+            &:focus-visible {
+                border: 1px solid;
+                border-color: var(
+                    --color-border-add-subscription-button-focus
+                ) !important;
+            }
+        }
+
+        &.sea-green {
+            color: hsl(156deg 41% 40%);
+            border-color: hsl(156deg 28% 70%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(156deg 30% 50%);
+            }
+
+            &:active {
+                border-color: hsl(156deg 30% 40%);
+                color: hsl(156deg 44% 43%);
+                background-color: hsl(154deg 33% 96%);
+            }
+        }
+
+        &.btn-warning {
+            color: hsl(35deg 70% 56%);
+            border-color: hsl(35deg 98% 84%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(35deg 55% 70%);
+            }
+
+            &:active {
+                color: hsl(35deg 82% 40%);
+                border-color: hsl(35deg 55% 70%);
+                background-color: hsl(33deg 48% 96%);
+            }
+        }
+
+        &.btn-danger {
+            color: hsl(357deg 64% 72%);
+            border-color: hsl(4deg 56% 82%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(2deg 46% 68%);
+            }
+
+            &:active {
+                color: hsl(357deg 55% 63%);
+                border-color: hsl(2deg 46% 68%);
+                background-color: hsl(7deg 82% 98%);
+            }
+        }
+
+        &.btn-link {
+            color: hsl(208deg 56% 53%);
+            text-decoration: none;
+
+            &:hover,
+            &:focus {
+                color: hsl(208deg 56% 38%);
+            }
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            filter: saturate(0);
+            background-color: hsl(0deg 0% 93%);
+            color: hsl(0deg 3% 52%);
+
+            &:hover {
+                background-color: hsl(0deg 0% 93%);
+                color: hsl(156deg 39% 54%);
+                border-color: hsl(156deg 39% 77%);
+            }
+        }
+    }
+
+    /* -- tab switcher -- */
+
+    .tab-switcher {
+        font-weight: initial;
+        margin: 2px 4px;
+        display: inline-block;
+
+        .ind-tab {
+            display: inline-block;
+            width: 90px;
+            margin: 0 -0.5px;
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
+            padding: 3px 10px;
+            background-color: hsl(0deg 0% 100%);
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+
+            &:focus {
+                outline: none;
+            }
+
+            &:not(.selected) {
+                border: 1px solid hsl(0deg 0% 80%);
+            }
+
+            &.first {
+                border-radius: 5px 0 0 5px;
+                border-right: 1px solid transparent;
+            }
+
+            &.middle {
+                border-right: 1px solid transparent;
+            }
+
+            &.last {
+                border-radius: 0 5px 5px 0;
+            }
+
+            &.selected {
+                position: relative;
+                background-color: hsl(0deg 0% 53%);
+                color: hsl(0deg 0% 100%);
+                border: 1px solid hsl(0deg 0% 47%);
+                z-index: 2;
+            }
+
+            &.disabled {
+                cursor: default;
+                color: hsl(0deg 0% 80%);
+                border-color: hsl(0deg 0% 87%);
+            }
+        }
+
+        &.large .ind-tab {
+            width: 100%;
+        }
+
+        &.allow-overflow {
+            display: flex;
+
+            .ind-tab {
+                display: flex;
+                text-overflow: initial;
+                white-space: initial;
+                vertical-align: middle;
+            }
+        }
+    }
+
+    .stream_sorter_toggle {
+        margin-left: auto;
+    }
+}
+
+/* -- unified overlay design component -- */
+div.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+
+    background-color: hsl(0deg 0% 13% / 80%);
+    z-index: 105;
+
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+
+    transition: all 0.2s ease-in;
+    overflow: hidden;
+
+    .overlay-content {
+        transform: translateY(20px);
+        transition: transform 0.2s ease-in;
+        z-index: 102;
+    }
+
+    &.show {
+        opacity: 1;
+        pointer-events: all;
+        visibility: visible;
+        transition: opacity 0.2s ease-out;
+
+        .overlay-content {
+            transform: translateY(0);
+            transition-timing-function: ease-out;
+        }
+    }
+
+    .overlay-scroll-container {
+        max-height: 60vh;
+        padding: 15px;
+    }
+
+    .overlay-container {
+        background-color: var(--color-background-modal);
+    }
+}
+
+.input-append {
+    font-size: 90%;
+    letter-spacing: -0.3em;
+    display: block;
+}
+
+.input-append input[type="text"],
+.new-style input[type="text"] {
+    border-radius: 5px;
+    box-shadow: none;
+    margin: 0;
+}
+
+.clear_search_button {
+    &:hover {
+        color: hsl(0deg 0% 0%);
+    }
+
+    &:disabled {
+        visibility: hidden;
+    }
+
+    &,
+    &:focus,
+    &:active,
+    &:disabled:hover {
+        position: relative;
+        right: 20px;
+        background: none;
+        border: none;
+        text-align: center;
+        padding-top: 8px;
+        padding-left: 4px;
+        color: hsl(0deg 0% 80%);
+        text-shadow: none;
+        outline: none !important;
+        box-shadow: none;
+        z-index: 5;
+
+        #set-user-status-modal & {
+            margin-left: -26px;
+            right: 0;
+            padding-top: 6px;
+        }
+    }
+}
+
+.grey-box {
+    margin: 0;
+    padding: 5px 10px;
+    background-color: hsl(0deg 0% 98%);
+    border: 1px solid hsl(0deg 0% 87%);
+    border-radius: 4px;
+
+    list-style-type: none;
+}
+
+.white-box {
+    background-color: hsl(0deg 0% 100%);
+    border: 1px solid hsl(0deg 0% 87%);
+}
+
+.guest-avatar {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: " ";
+        background-color: hsl(0deg 0% 47%);
+        position: absolute;
+        bottom: -30%;
+        right: -30%;
+        width: 50%;
+        height: 50%;
+        transform: rotate(45deg);
+    }
+}
+
+.dependent-settings-block {
+    margin: 15px 0 -5px 23px;
+}
+
+@media (width < $md_min) {
+    /* Override Bootstrap's responsive grid to display input at full width */
+    .input-append .stream-list-filter {
+        /* Input width = 100% - 10px margin x2 - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 34px);
+        margin-left: 10px;
+    }
+
+    .input-append .topic-list-filter {
+        /* Input width = 100% - 11px margin x2 - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 36px);
+        margin-left: 11px;
+        margin-bottom: 5px;
+    }
+}
+
+.topic-list-filter {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+
+    & input {
+        padding-right: 20px;
+    }
+}
+
+.stream-selection-header-colorblock {
+    /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
+    box-shadow:
+        inset 0 2px 1px -2px hsl(0deg 0% 20%),
+        inset 2px 0 1px -2px hsl(0deg 0% 20%),
+        inset 0 -2px 1px -2px hsl(0deg 0% 20%);
+    width: 10px;
+    border-radius: 3px 0 0 3px;
+    border-bottom: 0;
+}
+
+.edit-controls .fa-angle-right,
+.topic_stream_edit_header .fa-angle-right {
+    font-size: 0.9em;
+    -webkit-text-stroke: 0.05em;
+    position: relative;
+    margin: 0 5px;
+    top: 9px;
+}
+
+/* Standard loading indicators generated by the loading.ts API */
+.loading_indicator_spinner {
+    /* If you change these, make sure to adjust the constants in
+       loading.make_indicator as well */
+    height: 38px;
+    width: 38px;
+    float: left;
+}
+
+.loading_indicator_text {
+    /* If you change these, make sure to adjust the constants in
+       loading.make_indicator as well */
+    margin-left: 5px;
+    font-size: 1.2em;
+    font-weight: 300;
+    line-height: 38px;
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip {
+    width: fit-content;
+
+    &::before {
+        content: "\f135";
+        margin-right: 6px;
+    }
+}
+
+.upgrade-tip:hover {
+    color: hsl(0deg 0% 20%);
+    border: 1px solid hsl(49deg 20% 60%);
+    box-shadow: 0 0 4px hsl(199deg 79% 56% / 20%);
+
+    text-decoration: none;
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip,
+.tip,
+.invite-stream-notice {
+    position: relative;
+    display: block;
+    background-color: hsl(46deg 63% 95%);
+    border: 1px solid hsl(49deg 20% 84%);
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: hsl(0deg 0% 40%);
+
+    &::before {
+        display: inline;
+
+        font-family: FontAwesome;
+        font-weight: 600;
+    }
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip,
+.tip {
+    margin: 10px 0;
+}
+
+.invite-stream-notice {
+    margin-bottom: 20px;
+}
+
+.tip::before {
+    content: "\f0a2";
+    margin-right: 8px;
+}
+
+.demo-organization-warning {
+    position: relative;
+    display: block;
+    background-color: hsl(4deg 35% 90%);
+    border: 1px solid hsl(3deg 57% 33% / 40%);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: hsl(4deg 58% 33%);
+
+    a {
+        text-decoration: none;
+    }
+
+    .convert-demo-organization-button {
+        &:focus {
+            outline: 1px solid hsl(200deg 100% 25%);
+            outline-offset: 0;
+        }
+    }
+}
+
+/* We are mostly consistent in how we style
+   unread counts, except for starred messages.
+   This is the common section.
+*/
+.unread_count {
+    float: right;
+    padding: 0 4px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 12px;
+    font-weight: normal;
+    border-radius: 4px;
+    background-color: var(--color-background-unread-counter);
+    color: hsl(0deg 0% 100%);
+}
+
+.unread_mention_info:not(:empty) {
+    margin-right: 5px;
+    margin-left: 2px;
+    opacity: 0.7;
+}
+
+.masked_unread_count {
+    float: right;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--color-masked-unread-marker);
+    display: none;
+}
+
+/* Implement the web app's default-hidden convention for alert
+   elements.  Portico pages lack this CSS and thus show them by
+   default. */
+.alert {
+    display: none;
+
+    &.show {
+        display: block;
+    }
+
+    &#organization-status {
+        margin: 20px;
+    }
+
+    &.stream_create_info {
+        margin: 10px 10px 0;
+    }
+
+    .bankruptcy_unread_count {
+        font-weight: 600;
+    }
+}
+
+.only-visible-for-spectators {
+    display: none;
+}
+
+.spectator-view {
+    /* Add this class to elements which a
+     * spectator cannot use. */
+    .hidden-for-spectators {
+        display: none !important;
+    }
+
+    .only-visible-for-spectators {
+        display: revert;
+    }
+}
+
+.animated-purple-button {
+    color: hsl(0deg 0% 100%);
+    transition: all 80ms linear;
+    box-shadow: none;
+    /* This color just passes WCAG AA */
+    background-color: hsl(240deg 96% 68%);
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    text-align: center;
+    white-space: nowrap;
+
+    &:hover {
+        /* This color passes WCAG AAA */
+        background-color: hsl(240deg 41% 50%);
+        box-shadow: 0 1px 4px hsl(0deg 0% 0% / 30%);
+    }
+
+    &:focus {
+        background-color: hsl(240deg 41% 50%);
+        box-shadow: 0 1px 4px 0 hsl(235deg 18% 7%);
+        outline: none;
+    }
+}
+
+.color_animated_button {
+    display: flex;
+    justify-content: center;
+    background-color: hsl(0deg 0% 90%);
+    color: hsl(0deg 0% 0%);
+    border-radius: 4px;
+
+    & span {
+        color: hsl(0deg 0% 0%);
+    }
+
+    &:hover {
+        cursor: pointer;
+        background-color: hsl(240deg 96% 68%);
+        color: hsl(0deg 0% 100%);
+
+        & span {
+            color: hsl(0deg 0% 100%);
+            transition: all 0.2s ease;
+        }
+
+        transition: all 0.2s ease;
+    }
+
+    * {
+        padding: 6px 3px;
+    }
+
+    .fa {
+        position: relative;
+        top: 3px;
+    }
+}
+
+.table-striped {
+    table-layout: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 20px;
+    width: 100%;
+
+    &:not(.table-bordered) {
+        thead th {
+            border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
+            border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
+        }
+
+        tbody tr:first-child td {
+            border-top: 0;
+        }
+    }
+
+    & thead th:not(.actions) {
+        min-width: 100px;
+    }
+
+    & thead th {
+        color: inherit;
+        background-color: hsl(0deg 0% 100%);
+
+        &.active::after,
+        &[data-sort]:hover::after {
+            content: " \f0d8";
+            white-space: pre;
+            display: inline-block;
+            position: absolute;
+            padding-top: 3px;
+            font: normal normal normal 12px/1 FontAwesome;
+            font-size: inherit;
+        }
+
+        &.active {
+            opacity: 1;
+            transition: opacity 100ms ease-out;
+
+            &.descend::after {
+                content: " \f0d7";
+            }
+        }
+
+        &[data-sort]:hover {
+            cursor: pointer;
+            background-color: hsl(0deg 0% 95%) !important;
+            transition: background-color 100ms ease-in-out;
+
+            &:not(.active)::after {
+                opacity: 0.3;
+            }
+        }
+    }
+
+    tbody > tr:nth-child(odd) > td {
+        background-color: hsl(0deg 0% 98%);
+    }
+
+    /* Force the actions column to use the minimum space necessary */
+    .actions {
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    & th,
+    td {
+        padding: 4px 5px;
+    }
+
+    & th {
+        text-align: left;
+    }
+
+    & td {
+        border-top: 1px solid hsl(0deg 0% 87%);
+    }
+}
+
+.table-bordered {
+    border: 1px solid hsl(0deg 0% 87%);
+    border-collapse: separate;
+    border-left: 0;
+    border-radius: 4px;
+    border-spacing: 0;
+    width: 100%;
+    margin-bottom: 20px;
+
+    & th,
+    td {
+        border-left: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid hsl(0deg 0% 87%);
+        padding: 4px 5px;
+        text-align: left;
+    }
+
+    thead tr:first-child th {
+        border-top: 0;
+    }
+
+    thead tr:first-child > th:first-child {
+        border-top-left-radius: 4px;
+    }
+
+    thead tr:first-child > th:last-child {
+        border-top-right-radius: 4px;
+    }
+
+    tbody:last-child tr:last-child > td:first-child {
+        border-bottom-left-radius: 4px;
+    }
+
+    tbody:last-child tr:last-child > td:last-child {
+        border-bottom-right-radius: 4px;
+    }
+}
+
+#stream_settings .save-button-controls,
+#settings_page .save-button-controls,
+#user_group_settings .save-button-controls {
+    display: inline;
+    margin-left: 15px;
+
+    &.hide {
+        display: none;
+    }
+
+    .save-discard-widget-button {
+        border-radius: 5px;
+        border: 1px solid hsl(0deg 0% 80%);
+        padding: 3px 14px 4px 11px;
+        text-decoration: none;
+        color: hsl(0deg 0% 47%);
+        min-width: 80px;
+        /* Limit the height of the button */
+        line-height: 1.2;
+        vertical-align: text-bottom;
+
+        &:hover,
+        &:focus {
+            border: 1px solid hsl(0deg 0% 61%);
+
+            .discard-button.save-discard-widget-button-text {
+                color: hsl(0deg 0% 18%);
+            }
+        }
+
+        &.primary {
+            background-color: hsl(156deg 30% 50%);
+            color: hsl(0deg 0% 100%);
+            border: 1px solid hsl(155deg 30% 50%);
+
+            &:hover,
+            &:focus {
+                background-color: hsl(166deg 35% 57%);
+                border: 1px solid hsl(166deg 35% 57%);
+            }
+
+            .save-discard-widget-button-icon {
+                font-weight: 400;
+                color: hsl(0deg 0% 100%);
+            }
+
+            &.saving {
+                background-color: hsl(156deg 14% 40%);
+                border-color: hsl(156deg 14% 40%);
+            }
+        }
+
+        &.save-button {
+            margin-right: 5px;
+
+            .save-discard-widget-button-loading {
+                display: none;
+            }
+
+            &.saving {
+                .save-discard-widget-button-icon {
+                    display: none;
+                }
+
+                .save-discard-widget-button-loading {
+                    display: inline-block;
+                    margin-right: 2px;
+                }
+            }
+        }
+
+        .save-discard-widget-button-icon {
+            vertical-align: middle;
+            margin-right: 3px;
+            font-size: 15px;
+            font-weight: 400;
+        }
+
+        .save-discard-widget-button-text {
+            vertical-align: middle;
+            line-height: 1;
+        }
+    }
+}
+
+.stream-privacy-type-icon {
+    position: relative;
+    top: 0.06rem;
+    padding-right: 1px;
+    width: 12px;
+
+    &.zulip-icon-globe,
+    &.zulip-icon-hashtag {
+        font-size: 0.75em;
+    }
+
+    &.zulip-icon-lock,
+    &.zulip-icon-users {
+        font-size: 0.8em;
+    }
+}
+
+/* This includes css needed to display messages in an overlay. */
+.overlay-messages-container {
+    position: relative;
+    height: 95%;
+    background-color: var(--color-background-modal);
+    border-radius: 4px;
+    padding: 0;
+    width: 58%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
+    display: flex;
+    flex-direction: column;
+
+    @media (width < $md_min) {
+        height: 95%;
+        max-width: none;
+        width: 90%;
+    }
+
+    .overlay-messages-header {
+        padding-top: 4px;
+        padding-bottom: 8px;
+        text-align: center;
+        border-bottom: 1px solid hsl(0deg 0% 87%);
+
+        & h1 {
+            margin: 0;
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+
+        .exit {
+            font-weight: 400;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0deg 0% 67%);
+            cursor: pointer;
+
+            .exit-sign {
+                position: relative;
+                top: 1px;
+                margin-left: 3px;
+                font-size: 1.5rem;
+                line-height: 1;
+                font-weight: 600;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .overlay-messages-list {
+        padding: 10px 25px;
+        overflow: auto;
+
+        .no-overlay-messages {
+            display: block;
+            margin-top: calc(45vh - 30px - 1.5em);
+            text-align: center;
+            font-size: 1.5em;
+            color: hsl(0deg 0% 67%);
+            pointer-events: none;
+        }
+    }
+}
+
+.overlay-messages-container .overlay-message-row {
+    padding: 5px 0;
+
+    > div {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .overlay-message-info-box {
+        width: 100%;
+        margin-bottom: 10px;
+
+        &.active {
+            outline: 2px solid var(--color-outline-focus);
+            border-radius: 7px;
+        }
+
+        .message_row {
+            border-radius: 0 0 7px 7px;
+            border: 1px solid var(--color-message-list-border);
+            border-top: 0;
+        }
+
+        .messagebox-content {
+            grid-template: auto / auto max-content;
+            grid-template-areas:
+                "message controls"
+                "message .       ";
+            /* to space from restore draft button */
+            column-gap: 5px;
+            padding: 10px;
+
+            .message_content {
+                cursor: pointer;
+                grid-area: message;
+            }
+
+            .message_top_line {
+                grid-area: controls;
+            }
+        }
+
+        .messagebox {
+            cursor: auto;
+            box-shadow: none;
+            border-radius: 0 0 7px 7px;
+        }
+
+        .overlay_message_controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9em;
+
+            [data-tippy-root] {
+                width: max-content;
+                word-wrap: unset;
+            }
+
+            .restore-overlay-message {
+                cursor: pointer;
+                color: hsl(170deg 48% 54%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .delete-overlay-message {
+                cursor: pointer;
+                color: hsl(357deg 52% 57%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .message_header {
+            /* We don't need these effects applied for message list in the drafts overlay. */
+            box-shadow: none !important;
+            border: 0 !important;
+            background: transparent;
+        }
+    }
+}
+
+.dropdown-widget-button {
+    background-color: hsl(0deg 0% 100%);
+    padding: 4px 6px;
+    border: 1px solid hsl(0deg 0% 80%);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    outline: none;
+    color: var(--color-text-default);
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
+}
+
+.dropdown-current-value-not-in-options,
+.setting-disabled-option {
+    color: hsl(38deg 46% 54%);
+
+    & i {
+        /* Values set to match text alignment in stream dropdown. */
+        padding: 0 5px 0 1px;
+    }
+}
+
+.empty-list-message,
+.empty-table-message {
+    background-color: inherit;
+    color: var(--color-text-default);
+    font-size: 1.5em;
+    padding: 3em 1em !important;
+    text-align: center;
+}
+
+.filter_text_input {
+    padding: 4px 6px;
+    color: hsl(0deg 0% 33%);
+    border: 1px solid hsl(0deg 0% 80%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    border-radius: 4px;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+/* Icon-based tab picker used for topics popover. */
+.tabs-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 1px;
+    margin: 0 10px;
+    height: 33px;
+    gap: 2px;
+    background-color: var(--color-background-tab-picker-container);
+    border-radius: 5px;
+
+    & i {
+        z-index: 2;
+        color: var(--color-tab-picker-icon);
+        font-size: 16px;
+    }
+
+    .selected-tab {
+        background-color: var(--color-background-tab-picker-selected-tab);
+        outline: 1px solid var(--color-outline-tab-picker-tab-option);
+        outline-offset: -1px;
+        z-index: 1;
+    }
+
+    .tab-option {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        width: 100%;
+        height: 31px;
+        cursor: pointer;
+        border-radius: 5px;
+
+        &:hover:not(.selected-tab) {
+            background-color: var(
+                --color-background-tab-picker-tab-option-hover
+            );
+        }
+
+        &:active:not(.selected-tab) {
+            outline: 1px solid var(--color-outline-tab-picker-tab-option);
+            outline-offset: -1px;
+        }
+    }
+}
+
+/**
+ * Use the "tab-picker-vertical" class in conjunction
+ * for a vertical tab picker.
+ */
+.tab-picker {
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: var(--grid-gap-tab-picker);
+    box-sizing: border-box;
+    border-radius: 5px;
+    /* Using max-content ensures equal width tabs. */
+    min-width: max-content;
+    padding: 1px;
+    background-color: var(--color-background-tab-picker-container);
+    font-size: 16px;
+
+    input[type="radio"] {
+        display: none;
+    }
+
+    .tab-option-content {
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Avoids layout shift while showing a border when pressed.  */
+        border: 1px solid transparent;
+        border-radius: 4px;
+        box-sizing: border-box;
+        padding: 3px 7px;
+        color: var(--color-text-dropdown-menu);
+
+        & .zulip-icon {
+            /* Clear inherited position. */
+            position: static;
+            color: var(--color-icon-purple);
+        }
+    }
+
+    .tab-option:not(:checked) + .tab-option-content {
+        &:hover,
+        &:focus-visible {
+            background-color: var(
+                --color-background-tab-picker-tab-option-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-background-tab-picker-tab-option-active
+            );
+        }
+    }
+
+    .tab-option {
+        &:nth-of-type(1):checked ~ .slider {
+            --tab-selected-tab-picker: 0;
+        }
+
+        &:nth-of-type(2):checked ~ .slider {
+            --tab-selected-tab-picker: 1;
+        }
+
+        &:nth-of-type(3):checked ~ .slider {
+            --tab-selected-tab-picker: 2;
+        }
+
+        &:nth-of-type(4):checked ~ .slider {
+            --tab-selected-tab-picker: 3;
+        }
+
+        &:nth-of-type(5):checked ~ .slider {
+            --tab-selected-tab-picker: 4;
+        }
+        /* If a tab picker with more than 5 tabs is required,
+           extend this using the same pattern as above. */
+    }
+
+    .slider {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        /* Move along X-axis: own width + gap between two tabs. */
+        transform: translateX(
+            calc(
+                (100% + var(--grid-gap-tab-picker)) *
+                    var(--tab-selected-tab-picker)
+            )
+        );
+        transition: transform 0.25s cubic-bezier(0.64, 0, 0.78, 0);
+        box-sizing: border-box;
+        border: 1px solid var(--color-outline-tab-picker-tab-option);
+        border-radius: 4px;
+        background-color: var(--color-background-tab-picker-selected-tab);
+    }
+
+    /* Detect if a user has enabled a setting on their device
+        to minimize the amount of non-essential motion. */
+    @media (prefers-reduced-motion) {
+        .slider {
+            transition: none;
+        }
+
+        .tab-option:not(:checked) + .tab-option-content:active {
+            border-color: var(--color-outline-tab-picker-tab-option);
+        }
+    }
+
+    /* Related to vertical tab picker. */
+    &.tab-picker-vertical {
+        grid-auto-flow: row;
+        grid-auto-rows: 1fr;
+
+        .slider {
+            /* Move along Y-axis: own height + gap between two tabs. */
+            transform: translateY(
+                calc(
+                    (100% + var(--grid-gap-tab-picker)) *
+                        var(--tab-selected-tab-picker)
+                )
+            );
+        }
+    }
+}

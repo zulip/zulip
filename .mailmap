@@ -1,0 +1,140 @@
+# This file teaches `git log` and friends the canonical names
+# and email addresses to use for our contributors.
+#
+# For details on the format, see:
+#   https://git.github.io/htmldocs/gitmailmap.html
+#
+# Handy commands for examining or adding to this file:
+#
+#     # shows all names/emails after mapping, sorted:
+#   $ git shortlog -es | sort -k2
+#
+#     # shows raw names/emails, filtered by mapped name:
+#   $ git log --format='%an %ae' --author=$NAME | uniq -c
+
+acrefoot <acrefoot@zulip.com> <acrefoot@alum.mit.edu>
+acrefoot <acrefoot@zulip.com> <acrefoot@dropbox.com>
+acrefoot <acrefoot@zulip.com> <acrefoot@humbughq.com>
+Adam Benesh <Adam.Benesh@gmail.com>
+Adam Benesh <Adam.Benesh@gmail.com> <Adam-Daniel.Benesh@t-systems.com>
+Adarsh Tiwari <xoldyckk@gmail.com>
+Alex Vandiver <alexmv@zulip.com> <alex@chmrr.net>
+Alex Vandiver <alexmv@zulip.com> <github@chmrr.net>
+Allen Rabinovich <allenrabinovich@yahoo.com> <allenr@humbughq.com>
+Allen Rabinovich <allenrabinovich@yahoo.com> <allenr@zulip.com>
+Alya Abbott <alya@zulip.com> <2090066+alya@users.noreply.github.com>
+Alya Abbott <alya@zulip.com> <alyaabbott@elance-odesk.com>
+Aman Agrawal <amanagr@zulip.com>
+Aman Agrawal <amanagr@zulip.com> <f2016561@pilani.bits-pilani.ac.in>
+Anders Kaseorg <anders@zulip.com> <anders@zulipchat.com>
+Anders Kaseorg <anders@zulip.com> <andersk@mit.edu>
+aparna-bhatt <aparnabhatt2001@gmail.com> <86338542+aparna-bhatt@users.noreply.github.com>
+Aryan Bhokare <aryan1bhokare@gmail.com>
+Aryan Bhokare <aryan1bhokare@gmail.com> <92683836+aryan-bhokare@users.noreply.github.com>
+Aryan Shridhar <aryanshridhar7@gmail.com>
+Aryan Shridhar <aryanshridhar7@gmail.com> <53977614+aryanshridhar@users.noreply.github.com>
+Ashwat Kumar Singh <ashwat.kumarsingh.met20@itbhu.ac.in>
+Austin Riba <austin@zulip.com> <austin@m51.io>
+BIKI DAS <bikid475@gmail.com>
+Brijmohan Siyag <brijsiyag@gmail.com>
+Brock Whittaker <brock@zulipchat.com> <bjwhitta@asu.edu>
+Brock Whittaker <brock@zulipchat.com> <brock@zulipchat.org>
+Brock Whittaker <brock@zulipchat.com> <brockwhittaker@Brocks-MacBook.local>
+Chris Bobbe <cbobbe@zulip.com> <cbobbe@zulipchat.com>
+Chris Bobbe <cbobbe@zulip.com> <csbobbe@gmail.com>
+Danny Su <contact@dannysu.com> <opensource@emailengine.org>
+Dinesh <chdinesh1089@gmail.com>
+Dinesh <chdinesh1089@gmail.com> <chdinesh1089>
+Eeshan Garg <eeshan@zulip.com> <jerryguitarist@gmail.com>
+Eric Smith <erwsmith@gmail.com> <99841919+erwsmith@users.noreply.github.com>
+Evy Kassirer <evy@zulip.com>
+Evy Kassirer <evy@zulip.com> <evy.kassirer@gmail.com>
+Evy Kassirer <evy@zulip.com> <evykassirer@users.noreply.github.com>
+Ganesh Pawar <pawarg256@gmail.com> <58626718+ganpa3@users.noreply.github.com>
+Greg Price <greg@zulip.com> <gnprice@gmail.com>
+Greg Price <greg@zulip.com> <greg@zulipchat.com>
+Greg Price <greg@zulip.com> <price@mit.edu>
+Hardik Dharmani <Ddharmani99@gmail.com> <ddharmani99@gmail.com>
+Hemant Umre <hemantumre12@gmail.com> <87542880+HemantUmre12@users.noreply.github.com>
+Jai soni <jai_s@me.iitr.ac.in>
+Jai soni <jai_s@me.iitr.ac.in> <76561593+jai2201@users.noreply.github.com>
+Jeff Arnold <jbarnold@gmail.com> <jbarnold@humbughq.com>
+Jeff Arnold <jbarnold@gmail.com> <jbarnold@zulip.com>
+Jessica McKellar <jesstess@mit.edu> <jesstess@humbughq.com>
+Jessica McKellar <jesstess@mit.edu> <jesstess@zulip.com>
+Joseph Ho <josephho678@gmail.com>
+Joseph Ho <josephho678@gmail.com> <62449508+Joelute@users.noreply.github.com>
+Julia Bichler <julia.bichler@tum.de> <74348920+juliaBichler01@users.noreply.github.com>
+Karl Stolley <karl@zulip.com> <karl@stolley.dev>
+Kevin Mehall <km@kevinmehall.net> <kevin@humbughq.com>
+Kevin Mehall <km@kevinmehall.net> <kevin@zulip.com>
+Kevin Scott <kevin.scott.98@gmail.com>
+Lalit Kumar Singh <lalitkumarsingh3716@gmail.com>
+Lalit Kumar Singh <lalitkumarsingh3716@gmail.com> <lalits01@smartek21.com>
+Lauryn Menard <lauryn@zulip.com> <63245456+laurynmm@users.noreply.github.com>
+Lauryn Menard <lauryn@zulip.com> <lauryn.menard@gmail.com>
+m-e-l-u-h-a-n <purushottam.tiwari.cd.cse19@itbhu.ac.in>
+m-e-l-u-h-a-n <purushottam.tiwari.cd.cse19@itbhu.ac.in> <pururshottam.tiwari.cd.cse19@itbhu.ac.in>
+Mateusz Mandera <mateusz.mandera@zulip.com> <mateusz.mandera@protonmail.com>
+Matt Keller <matt@zulip.com>
+Matt Keller <matt@zulip.com> <m@cognusion.com>
+Nehal Sharma <bablinaneh@gmail.com>
+Nehal Sharma <bablinaneh@gmail.com> <68962290+N-Shar-ma@users.noreply.github.com>
+Noble Mittal <noblemittal@outlook.com> <62551163+beingnoble03@users.noreply.github.com>
+nzai <nzaih18@gmail.com> <70953556+nzaih1999@users.noreply.github.com>
+Palash Baderia <palash.baderia@outlook.com>
+Palash Baderia <palash.baderia@outlook.com> <66828942+palashb01@users.noreply.github.com>
+Palash Raghuwanshi <singhpalash0@gmail.com>
+Parth <mittalparth22@gmail.com>
+Priyam Seth <sethpriyam1@gmail.com> <b19188@students.iitmandi.ac.in>
+Ray Kraesig <rkraesig@zulip.com> <rkraesig@zulipchat.com>
+Reid Barton <rwbarton@gmail.com> <rwbarton@humbughq.com>
+Rein Zustand (rht) <rhtbot@protonmail.com>
+Rishabh Maheshwari <b20063@students.iitmandi.ac.in>
+Rishi Gupta <rishig@zulipchat.com> <rishig+git@mit.edu>
+Rishi Gupta <rishig@zulipchat.com> <rishig@kandralabs.com>
+Rishi Gupta <rishig@zulipchat.com> <rishig@users.noreply.github.com>
+Rixant Rokaha <rixantrokaha@gmail.com>
+Rixant Rokaha <rixantrokaha@gmail.com> <rishantrokaha@gmail.com>
+Rixant Rokaha <rixantrokaha@gmail.com> <rrokaha@caldwell.edu>
+Rohan Gudimetla <rohan.gudimetla07@gmail.com>
+Sahil Batra <sahil@zulip.com> <35494118+sahil839@users.noreply.github.com>
+Sahil Batra <sahil@zulip.com> <sahilbatra839@gmail.com>
+Satyam Bansal <sbansal1999@gmail.com>
+Sayam Samal <samal.sayam@gmail.com>
+Scott Feeney <scott@oceanbase.org> <scott@humbughq.com>
+Scott Feeney <scott@oceanbase.org> <scott@zulip.com>
+Shlok Patel <shlokcpatel2001@gmail.com>
+Shu Chen <shu@zulip.com>
+Somesh Ranjan <somesh.ranjan.met20@itbhu.ac.in> <77766761+somesh202@users.noreply.github.com>
+Steve Howell <showell@zulip.com> <showell30@yahoo.com>
+Steve Howell <showell@zulip.com> <showell@yahoo.com>
+Steve Howell <showell@zulip.com> <showell@zulipchat.com>
+Steve Howell <showell@zulip.com> <steve@humbughq.com>
+Steve Howell <showell@zulip.com> <steve@zulip.com>
+strifel <info@strifel.de>
+Tim Abbott <tabbott@zulip.com>
+Tim Abbott <tabbott@zulip.com> <tabbott@dropbox.com>
+Tim Abbott <tabbott@zulip.com> <tabbott@humbughq.com>
+Tim Abbott <tabbott@zulip.com> <tabbott@mit.edu>
+Tim Abbott <tabbott@zulip.com> <tabbott@zulipchat.com>
+Ujjawal Modi <umodi2003@gmail.com> <99073049+Ujjawal3@users.noreply.github.com>
+umkay <ukhan@zulipchat.com> <umaimah.k@gmail.com>
+umkay <ukhan@zulipchat.com> <umkay@users.noreply.github.com>
+Viktor Illmer <1476338+v-ji@users.noreply.github.com>
+Vishnu KS <vishnu@zulip.com> <hackerkid@vishnuks.com>
+Vishnu KS <vishnu@zulip.com> <yo@vishnuks.com>
+Waseem Daher <wdaher@zulip.com> <wdaher@dropbox.com>
+Waseem Daher <wdaher@zulip.com> <wdaher@humbughq.com>
+Yash RE <33805964+YashRE42@users.noreply.github.com>
+Yash RE <33805964+YashRE42@users.noreply.github.com> <YashRE42@github.com>
+Yogesh Sirsat <yogeshsirsat56@gmail.com>
+Yogesh Sirsat <yogeshsirsat56@gmail.com> <41695888+yogesh-sirsat@users.noreply.github.com>
+Zeeshan Equbal <equbalzeeshan@gmail.com>
+Zeeshan Equbal <equbalzeeshan@gmail.com> <54993043+zee-bit@users.noreply.github.com>
+Zev Benjamin <zev@zulip.com> <zev@dropbox.com>
+Zev Benjamin <zev@zulip.com> <zev@humbughq.com>
+Zev Benjamin <zev@zulip.com> <zev@mit.edu>
+Zixuan James Li <p359101898@gmail.com>
+Zixuan James Li <p359101898@gmail.com> <359101898@qq.com>
+Zixuan James Li <p359101898@gmail.com> <39874143+PIG208@users.noreply.github.com>

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# Delete the "guest" default user and replace it with a Zulip user
+# with a real password
+set -eu
+
+# If the RabbitMQ distribution cookie is insecure, reset it and
+# restart RabbitMQ.
+"$(dirname "$0")/generate-rabbitmq-cookie"
+
+RABBITMQ_USERNAME=$("$(dirname "$0")/../get-django-setting" RABBITMQ_USERNAME)
+RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
+
+# Wait for RabbitMQ to start up
+retries=29
+# Could use rabbitmqctl await_startup when we upgrade to 3.7.11.
+while ! rabbitmqctl -q await_online_nodes 1 2>/dev/null; do
+    if ((retries == 29)); then
+        echo "Waiting for RabbitMQ to start up..."
+    fi
+    sleep 1
+    if ! ((retries -= 1)); then
+        rabbitmqctl -q await_online_nodes 1
+        break
+    fi
+done
+
+rabbitmqctl delete_user "$RABBITMQ_USERNAME" || true
+rabbitmqctl delete_user zulip || true
+rabbitmqctl delete_user guest || true
+rabbitmqctl add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
+rabbitmqctl set_user_tags "$RABBITMQ_USERNAME" administrator
+rabbitmqctl set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'

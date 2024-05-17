@@ -1,0 +1,42 @@
+{
+   "object_kind":"build",
+   "ref":"master",
+   "tag":false,
+   "before_sha":"6f88e719ccde3804b1b669cef9dfb236a92fbbff",
+   "sha":"6f88e719ccde3804b1b669cef9dfb236a92fbbff",
+   "build_id":4541112,
+   "build_name":"job_name",
+   "build_stage":"test",
+   "build_status":"running",
+   "build_started_at":"2016-09-28 20:21:04 UTC",
+   "build_finished_at":null,
+   "build_duration":0.159148421,
+   "build_allow_failure":true,
+   "project_id":1740047,
+   "project_name":"Tomasz Kolek / my-awesome-project",
+   "user":{
+      "id":745906,
+      "name":"Tomasz Kolek",
+      "email":"tomasz-kolek@go2.pl"
+   },
+   "commit":{
+      "id":4414206,
+      "sha":"6f88e719ccde3804b1b669cef9dfb236a92fbbff",
+      "message":"a\n",
+      "author_name":"Tomasz Kolek",
+      "author_email":"tomasz-kolek@go2.pl",
+      "status":"running",
+      "duration":0,
+      "started_at":"2016-09-28 20:21:04 UTC",
+      "finished_at":null
+   },
+   "repository":{
+      "name":"my-awesome-project",
+      "url":"git@gitlab.com:TomaszKolek/my-awesome-project.git",
+      "description":"abc",
+      "homepage":"https://gitlab.com/TomaszKolek/my-awesome-project",
+      "git_http_url":"https://gitlab.com/TomaszKolek/my-awesome-project.git",
+      "git_ssh_url":"git@gitlab.com:TomaszKolek/my-awesome-project.git",
+      "visibility_level":20
+   }
+}

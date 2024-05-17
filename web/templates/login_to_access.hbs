@@ -1,0 +1,34 @@
+<div class="micromodal" id="login_to_access_modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="login_to_access_modal_label">
+            <header class="modal__header">
+                <h1 class="modal__title" id="login_to_access_modal_label">
+                    {{t "Join {realm_name}" }}
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                {{#if empty_narrow}}
+                <p>
+                    {{#tr}}
+                        This is not a <z-link>publicly accessible</z-link> conversation.
+                        {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">{{> @partial-block}}</a>{{/inline}}
+                    {{/tr}}
+                </p>
+                {{/if}}
+                <p>
+                    {{t "You can fully access this community and participate in conversations
+                      by creating a Zulip account in this organization." }}
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <a class="modal__btn dialog_submit_button" href="{{signup_link}}">
+                    <span>{{t "Sign up" }}</span>
+                </a>
+                <a class="modal__btn dialog_submit_button" href="{{login_link}}">
+                    <span>{{t "Log in" }}</span>
+                </a>
+            </footer>
+        </div>
+    </div>
+</div>

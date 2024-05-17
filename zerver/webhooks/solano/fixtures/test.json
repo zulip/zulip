@@ -1,0 +1,37 @@
+{
+  "event": "test",
+  "timestamp": "2015-08-25T00:58:27Z",
+  "session": 351279,
+  "guid": "c946783126c9e74291d24465f0a60",
+  "url": "https://ci.solanolabs.com/1/reports/351279",
+  "parent_session": 351278,
+  "profile_name": "default",
+  "commit_id": "38d4d2548e85729e138fdba32e08421bb899ba37",
+  "committers": [],
+  "status": "passed",
+  "counts": {
+    "notstarted": 0,
+    "started": 0,
+    "passed": 234.0,
+    "failed": 0.0,
+    "pending": 3.0,
+    "skipped": 0.0,
+    "error": 0.0
+  },
+  "workers": 24,
+  "stopped_by": "user@mycompany.com",
+  "timing": {
+    "ci_received_at": 1475250402.480408,
+    "queue_first_seen_at": 1475250412.841408,
+    "queue_first_allowed_at": 1475250492.863428,
+    "workers_assigned_at": 1475250493.136248
+  },
+  "branch": "production",
+  "ref": "refs/head/production",
+  "repository": {
+    "name": "repo_name",
+    "url": "ssh://git@github.com/organization_name/repo_name",
+    "org_name": "organization_name"
+  },
+  "xid": "372da4f69"
+}

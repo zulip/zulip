@@ -1,0 +1,22 @@
+<table class="table table-stripped new-style" id="realm_domains_table">
+    <thead>
+        <th>{{t "Domain" }}</th>
+        <th>{{t "Allow subdomains"}}</th>
+        <th>{{t "Action" }}</th>
+    </thead>
+    <tbody>
+    </tbody>
+    <tfoot>
+        <tr id="add-realm-domain-widget">
+            <td><input type="text" class="new-realm-domain modal_text_input" placeholder="acme.com" /></td>
+            <td>
+                <label class="checkbox">
+                    <input type="checkbox" class="new-realm-domain-allow-subdomains" />
+                    <span></span>
+                </label>
+            </td>
+            <td><button type="button" class="button sea-green small rounded" id="submit-add-realm-domain">{{t "Add" }}</button></td>
+        </tr>
+    </tfoot>
+</table>
+<div class="alert realm_domains_info"></div>

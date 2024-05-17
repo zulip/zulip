@@ -1,0 +1,11 @@
+{
+    "keys": [
+        {"alg": "RS256",
+        "e": "AQAB",
+        "kid":"SOMEKID",
+        "kty": "RSA",
+        "n": "yKavMIaUiNqoCwVaZcLMkSmkMHBXAGLBqExdJxfINypjcXSpIItpUctsv8EWs8j9nKphgGjZTGQU1pGNb59OpMZnrgAjqZ6AGFCyJPlNhABzBX6qwsFOrQNRxHALQU20QXzqqt1hPefWoLoh5fUuFeUOK2Mp8DHMs-0EoznSWsU"
+        }
+    ]
+}
+

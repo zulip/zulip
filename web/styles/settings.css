@@ -1,0 +1,2010 @@
+/* The height of the settings header (including tab switcher). */
+$settings_header_height: 45px;
+/* The width of the settings sidebar. */
+$settings_sidebar_width: 250px;
+
+label {
+    margin: 0;
+}
+
+label,
+h4,
+h3,
+/* We need settings-section-title here because some legacy settings
+   widgets use a <div> with this class for their heading. */
+.settings-section-title {
+    .fa-info-circle {
+        top: 1px;
+        position: relative;
+    }
+}
+
+/* TODO: This should ideally be added to help_link_widget.hbs,
+   allowing us to deduplicate at least the opacity CSS with the
+   fa-question-circle-o logic above. */
+.settings-info-icon {
+    padding-left: 3px;
+    opacity: 0.7;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+a.help_link_widget {
+    opacity: 0.7;
+    color: inherit;
+    margin-left: 3px;
+
+    .fa-question-circle-o {
+        position: relative;
+        top: 1px;
+    }
+
+    &:hover {
+        color: inherit;
+        opacity: 1;
+    }
+}
+
+h3,
+.settings-section-title {
+    .help_link_widget {
+        margin-left: 5px;
+    }
+}
+
+.new-style {
+    .block {
+        display: block;
+    }
+
+    .center-block {
+        margin: 0 auto;
+    }
+
+    .center {
+        text-align: center;
+    }
+
+    .w-200 {
+        width: 200px;
+    }
+
+    .grid {
+        & label {
+            min-width: 200px;
+        }
+
+        .warning {
+            display: inline-block;
+            vertical-align: top;
+            width: 150px;
+            padding: 5px 10px;
+            text-align: left;
+        }
+    }
+
+    #account-settings,
+    #profile-field-settings {
+        .grid {
+            & label {
+                min-width: 120px;
+            }
+
+            .warning {
+                display: block;
+                width: calc(100% - 20px - 5px);
+                text-align: right;
+            }
+        }
+    }
+
+    .warning {
+        #pw_strength {
+            width: 140px;
+            height: 8px;
+            margin: 6px 0 0;
+        }
+    }
+
+    .button {
+        & ul {
+            text-align: left;
+        }
+    }
+}
+
+.profile-settings-form {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap-reverse;
+}
+
+.profile-main-panel {
+    margin-right: 20px;
+}
+
+.profile-side-panel {
+    margin-right: 10px;
+}
+
+.admin_profile_fields_table {
+    & th.display,
+    & th.required,
+    td.display_in_profile_summary_cell,
+    td.required-cell {
+        text-align: center;
+    }
+}
+
+.user-details-title {
+    display: inline-block;
+    min-width: 80px;
+    font-weight: 600;
+    padding-right: 5px;
+}
+
+.user-avatar-section {
+    .inline-block {
+        box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
+    }
+}
+
+#change_password_modal,
+#change_email_modal {
+    max-width: 480px;
+}
+
+#change_email_modal {
+    #change_email_form {
+        margin: 0;
+    }
+}
+
+.disabled_setting_tooltip {
+    cursor: not-allowed;
+}
+
+#account-settings .deactivate_realm_button {
+    margin-left: 10px;
+}
+
+#change_email_button,
+#user_deactivate_account_button,
+.deactivate_realm_button,
+#api_key_button,
+#user_email_address_visibility {
+    &:disabled {
+        pointer-events: none;
+    }
+}
+
+.admin-realm-description {
+    height: 16em;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+.setting_notification_sound,
+.play_notification_sound {
+    margin-right: 4px;
+
+    & i {
+        font-size: 22px;
+        /* Visually center with chevron in select */
+        line-height: 26px;
+        cursor: pointer;
+    }
+}
+
+.setting_notification_sound {
+    text-transform: capitalize;
+}
+
+.table {
+    & tbody {
+        border-bottom: 1px solid hsl(0deg 0% 87%);
+    }
+}
+
+.wrapped-table {
+    word-break: break-word;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    white-space: normal;
+}
+
+#settings_content {
+    & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
+        width: 20%;
+    }
+}
+
+#uploaded_files_table > tr > td:nth-of-type(1),
+.upload-file-name {
+    width: 43%;
+    word-break: break-all;
+}
+
+.upload-mentioned-in,
+.upload-date {
+    word-break: normal;
+}
+
+#linkifier-settings {
+    #linkifier_pattern,
+    #linkifier_template {
+        width: calc(100% - 10em - 6em);
+    }
+}
+
+#playground-settings {
+    #playground_pygments_language,
+    #playground_name,
+    #playground_url_template {
+        width: calc(100% - 10em - 6em);
+    }
+}
+
+td .button {
+    margin: 2px 0;
+    box-shadow: none;
+}
+
+#language_selection_modal {
+    & table {
+        width: 90%;
+        margin-top: 20px;
+        border-collapse: separate;
+    }
+
+    & td {
+        padding-top: 1px;
+    }
+}
+
+.settings-section {
+    display: none;
+    width: calc(100% - 40px);
+    margin: 20px;
+
+    &.show {
+        display: block;
+    }
+
+    & form {
+        margin: 0;
+    }
+
+    .no-padding {
+        padding: 0;
+    }
+
+    .settings-section-title {
+        font-size: 1.4em;
+        font-weight: 400;
+        margin: 10px 0;
+
+        &.transparent {
+            background-color: transparent;
+            color: inherit;
+        }
+    }
+
+    .table-sticky-headers th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    #admin_page_users_loading_indicator,
+    #attachments_loading_indicator,
+    #admin_page_deactivated_users_loading_indicator,
+    #admin_page_bots_loading_indicator {
+        margin: 0 auto;
+    }
+
+    .loading_indicator_text {
+        font-size: 12px;
+        font-weight: 400;
+        vertical-align: middle;
+        line-height: 20px;
+        display: inline-block;
+        float: none;
+        margin-top: 9px;
+    }
+
+    .loading_indicator_spinner {
+        width: 30%;
+        height: 20px;
+        margin-top: 7px;
+        vertical-align: middle;
+        display: inline-block;
+    }
+
+    .inline {
+        display: inline !important;
+    }
+
+    /* Messy implementation of buttons with text and a pencil icon in them
+       having spacing before the pencil icon. */
+    & button.btn-link i.fa-pencil,
+    button[data-dismiss="modal"] i.fa-pencil {
+        margin-left: 3px;
+    }
+
+    .hidden-email {
+        font-style: italic;
+    }
+
+    /* Originally the icon inherits the color of label, but when the setting
+    is disabled, the color of the label is changed and thus the icon becomes
+    too light. So, we set the color explicitly to original color of label to
+    keep the color of the icon same even when the setting is disabled. */
+    #id_realm_enable_spectator_access_label a {
+        color: hsl(0deg 0% 20%);
+    }
+
+    .settings_select {
+        height: 30px;
+        min-width: 325px;
+        max-width: 100%;
+    }
+
+    .account-settings-heading {
+        margin-right: 10px;
+    }
+}
+
+/* list_select is similar to settings_select, but without the height styling. */
+.settings_select,
+.list_select {
+    padding: 0 25px 0 6px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    cursor: pointer;
+    background-color: hsl(0deg 0% 100%);
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
+}
+
+/* For consistent custom select dropdowns that match with dropdown-widget */
+select.modal_select,
+select.list_select,
+select.settings_select {
+    appearance: none;
+    background-image: var(--icon-chevron-down);
+    background-repeat: no-repeat;
+    background-position: 98%;
+    background-size: 14px;
+}
+
+#admin-user-list,
+#admin-bot-list {
+    .table tr:first-of-type td {
+        border-top: none;
+    }
+}
+
+.user_role {
+    min-width: 95px;
+}
+
+.button,
+.input-group {
+    margin: 0 0 20px;
+}
+
+.input-group {
+    /* Class to use when the following input-group is related and should
+       appear just after this element. Normally the margin is 20px, but
+       for related settings, we set it to 10px. */
+    &.thinner {
+        margin-bottom: 10px;
+    }
+
+    & label.checkbox + label {
+        cursor: pointer;
+    }
+}
+
+/* Class for displaying an input with an
+   auxiliary control, e.g., the play button
+   next to the notification sound dropdown. */
+.input-element-with-control {
+    display: flex;
+    align-items: center;
+    /* Preserve the effective space allotted
+       inside the input group.
+
+       Select element: 325px
+       Button element: ~29px
+       Right margin:     4px
+       TOTAL           358px */
+    max-width: 358px;
+
+    .settings_select {
+        /* Hold the settings select to its usual 325px;
+           a TODO would be to fix up the min- and max-
+           width values on the parent class, as the
+           min-width always applies, and max-width: 100%
+           has no meaning without an actual width:
+           declaration. */
+        max-width: 325px;
+        /* Disregard the min-width from the main
+           .settings_select selector. */
+        min-width: 0;
+        /* Allow the select to grow within the flex
+           container to keep the play button in the
+           viewport, and not force dodgy looking wrap
+           onto a second line. */
+        flex: 1 0 auto;
+    }
+}
+
+.no-margin {
+    margin: 0;
+}
+
+input[type="checkbox"] {
+    + .inline-block {
+        margin-left: 10px;
+    }
+
+    .inline-block {
+        margin: -2px 0 0;
+    }
+}
+
+.allow-subdomains,
+.new-realm-domain-allow-subdomains {
+    margin: 0 !important;
+}
+
+.realm_domains_info {
+    margin-bottom: 0;
+}
+
+.admin-realm-form {
+    & h3 {
+        margin-bottom: 10px;
+    }
+
+    .subsection-header h3 {
+        display: inline;
+    }
+}
+
+.preferences-settings-form,
+.notification-settings-form {
+    .subsection-header h3 {
+        display: inline-block;
+    }
+
+    .tip {
+        width: fit-content;
+        margin-top: 0;
+    }
+}
+
+.information-density-settings {
+    max-width: 325px;
+
+    .input-group {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+
+        label {
+            flex: 1 0 max-content;
+        }
+
+        .settings_text_input {
+            width: 0;
+            flex: 0 0 8ch;
+            margin-left: auto;
+            text-align: right;
+        }
+    }
+}
+
+#stream-specific-notify-table .unmute_stream {
+    position: relative;
+    left: 3px;
+    top: 2px;
+
+    &:hover {
+        color: hsl(0deg 0% 20%);
+        cursor: pointer;
+    }
+}
+
+.organization-settings-parent > div:first-of-type {
+    margin-top: 10px;
+}
+
+#id_org_profile_preview {
+    margin-bottom: 20px;
+    display: inline-flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.inline-block.organization-permissions-parent div:first-of-type {
+    margin-top: 10px;
+}
+
+.language_selection_widget .language_selection_button {
+    text-decoration: none;
+    color: hsl(0deg 0% 20%);
+
+    .fa.fa-pencil {
+        margin-left: 5px;
+    }
+}
+
+.remove-attachment {
+    margin-right: 5px !important;
+    font-size: 1.1em !important;
+    padding-left: 0 !important;
+}
+
+#download_attachment {
+    padding-left: 0;
+    border-left: 0;
+}
+
+.remove-alert-word {
+    margin-top: 1px;
+}
+
+.alert_word_status_text {
+    word-break: break-word;
+}
+
+.alert-notification {
+    display: inline-block;
+    vertical-align: top;
+    height: auto !important;
+    width: auto !important;
+    white-space: break-spaces !important;
+
+    overflow-wrap: anywhere;
+    background-color: transparent;
+    border-radius: 4px;
+    margin-top: 14px;
+    margin-left: 10px;
+    color: hsl(156deg 30% 50%);
+    padding: 3px 10px;
+
+    &.account-alert-notification {
+        margin: 0 0 10px;
+        vertical-align: middle;
+    }
+
+    &:not(:empty) {
+        border: 1px solid hsl(156deg 30% 50%);
+    }
+
+    &.alert-error {
+        color: hsl(2deg 46% 68%);
+        border-color: hsl(2deg 46% 68%);
+    }
+
+    .loading_indicator_spinner {
+        width: 13px;
+        height: 20px;
+        margin: 0;
+    }
+
+    /* make the spinner green like the text and box. */
+    .loading_indicator_spinner svg path {
+        fill: hsl(178deg 100% 40%);
+    }
+
+    .loading_indicator_text {
+        margin-top: 0;
+        font-size: inherit;
+        vertical-align: top;
+    }
+
+    & img {
+        margin-right: 6px;
+        vertical-align: middle;
+        margin-top: -2px;
+    }
+}
+
+#profile-field-settings #admin-add-profile-field-status {
+    margin-top: 4px;
+}
+
+#add-custom-profile-field-btn {
+    float: right;
+    margin-top: 4px;
+}
+
+#user-notification-settings {
+    .notification-table {
+        & th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+            cursor: default;
+
+            .stream-privacy span.hashtag,
+            .filter-icon i {
+                padding-right: 0;
+            }
+
+            & label {
+                cursor: default;
+            }
+        }
+
+        & td:first-child {
+            text-align: left;
+            font-weight: bold;
+            word-break: break-all;
+        }
+    }
+}
+
+#convert-demo-organization-form {
+    .domain_label {
+        display: inline-block;
+    }
+}
+
+#profile-settings {
+    .custom-profile-fields-form .custom_user_field label,
+    .full-name-change-container label,
+    .timezone-setting-form label {
+        min-width: fit-content;
+    }
+
+    .alert-notification.custom-field-status,
+    .alert-notification.full-name-status,
+    .alert-notification.timezone-setting-status {
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        padding-left: 0;
+        margin-left: 5px;
+        border: none;
+    }
+
+    .person_picker {
+        min-width: 311px;
+    }
+
+    & textarea {
+        width: 311px;
+    }
+}
+
+.required-symbol {
+    color: hsl(0deg 66% 60%);
+}
+
+.settings-profile-user-field {
+    margin-top: 5px;
+    max-width: fit-content;
+}
+
+.control-label-disabled {
+    color: hsl(0deg 0% 82%);
+
+    &.enabled {
+        color: hsl(0deg 0% 20%);
+    }
+}
+
+.admin-realm-message-retention-days {
+    width: 5ch;
+    text-align: right;
+}
+
+#add-default-stream-modal {
+    .dropdown-widget-button {
+        display: inline-flex;
+    }
+
+    .default_stream_choices_table {
+        margin-top: 2px;
+    }
+
+    .choice-row {
+        margin-bottom: 10px;
+
+        &:last-of-type {
+            .delete-choice {
+                display: none;
+            }
+        }
+    }
+}
+
+.add_default_streams_button_container {
+    float: right;
+
+    #show-add-default-streams-modal {
+        padding: 5px 0;
+        min-width: 100px;
+        margin-top: 11px;
+        margin-right: 6px;
+    }
+}
+
+#add-custom-emoji-modal {
+    & form {
+        margin: 0;
+    }
+
+    & input[type="text"] {
+        padding: 6px;
+    }
+
+    .emoji_name_input {
+        margin-top: 10px;
+    }
+
+    #emoji-file-name {
+        font-size: 14px;
+        white-space: nowrap;
+        height: 1rem;
+        font-style: italic;
+        color: hsl(0deg 0% 67%);
+    }
+
+    #emoji_preview_text {
+        margin-top: 6px;
+    }
+}
+
+#emoji_file_input_error {
+    vertical-align: middle;
+}
+
+.add-new-linkifier-box,
+.add-new-playground-box {
+    & button {
+        margin-left: calc(10em + 20px) !important;
+    }
+    margin-bottom: 15px;
+
+    .checkbox {
+        margin-top: 5px;
+    }
+}
+
+.grey-box .wrapper {
+    margin: 10px 0;
+}
+
+.admin_profile_fields_table,
+.edit_profile_field_choices_container,
+.profile_field_choices_table {
+    .movable-row {
+        cursor: move;
+
+        .fa-ellipsis-v {
+            color: hsl(0deg 0% 75%);
+            position: relative;
+            top: 1px;
+
+            + i {
+                margin-right: 5px;
+            }
+        }
+    }
+}
+
+.admin_linkifiers_table {
+    .movable-row {
+        .move-handle {
+            cursor: move;
+            user-select: none;
+        }
+
+        .fa-ellipsis-v {
+            color: hsl(0deg 0% 75%);
+            position: relative;
+            top: 1px;
+
+            + i {
+                margin-right: 5px;
+            }
+        }
+    }
+}
+
+#admin-linkifier-pattern-status,
+#admin-linkifier-template-status {
+    margin: 20px 0 0;
+}
+
+#org-join-settings,
+#org-guest-settings {
+    .dropdown-widget-button {
+        width: 325px;
+        color: hsl(0deg 0% 33%);
+
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0deg 0% 93%);
+            opacity: 0.7;
+        }
+    }
+}
+
+.progressive-table-wrapper {
+    position: relative;
+    max-height: calc(95vh - 220px);
+    overflow: auto;
+    width: 100%;
+}
+
+#admin-default-channels-list .progressive-table-wrapper {
+    max-height: calc(95vh - 280px);
+}
+
+#bot-settings {
+    .add-a-new-bot {
+        margin-bottom: 2px;
+    }
+
+    hr {
+        margin: 10px 0;
+        border-color: hsl(0deg 0% 85%);
+    }
+
+    .config-download-text {
+        margin-left: 5px;
+    }
+}
+
+.bots_list {
+    list-style-type: none;
+    margin-left: 0;
+
+    .bot-card-image {
+        vertical-align: top;
+    }
+
+    .bot-card-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 7px 5px;
+
+        overflow: hidden;
+        line-height: 1.3em;
+        text-overflow: ellipsis;
+        white-space: pre;
+    }
+
+    .bot-card-regenerate-bot-api-key {
+        position: relative;
+        margin-left: 5px;
+        color: hsl(0deg 0% 67%);
+        transition: all 0.3s ease;
+
+        &:hover {
+            color: hsl(0deg 0% 27%);
+        }
+    }
+
+    .edit-bot-buttons {
+        padding-top: 5px;
+
+        & button {
+            background-color: transparent;
+        }
+
+        .btn {
+            padding: 4px;
+        }
+
+        .sea-green {
+            color: hsl(177deg 70% 46%);
+        }
+
+        .blue {
+            color: hsl(203deg 77% 56%);
+        }
+
+        .danger-red {
+            color: hsl(0deg 56% 73%);
+        }
+
+        .copy_zuliprc {
+            padding: 0 4px;
+
+            #clipboard_image {
+                margin: 0 -2px 0 0;
+
+                path {
+                    fill: hsl(51deg 90% 50%);
+                }
+            }
+        }
+
+        .purple {
+            color: hsl(278deg 62% 68%);
+        }
+
+        .steel-blue {
+            color: hsl(207deg 44% 49%);
+        }
+    }
+
+    .bot-information-box {
+        position: relative;
+        display: inline-block;
+        width: calc(50% - 10px);
+        max-height: 220px;
+        margin: 5px;
+
+        border-radius: 4px;
+        box-sizing: border-box;
+
+        overflow: auto;
+
+        .bot-card-details {
+            display: inline-block;
+            width: calc(100% - 75px);
+        }
+    }
+
+    & img.bot-card-avatar {
+        margin: 10px 5px 0 10px;
+        height: 50px;
+        width: 50px;
+        border-radius: 4px;
+        vertical-align: top;
+        box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
+    }
+
+    .bot-card-email,
+    .bot-card-type {
+        margin-bottom: 5px;
+    }
+
+    .bot-card-email .bot-card-value,
+    .bot-card-api-key .bot-card-api-key-value-and-button {
+        display: block;
+        margin-left: 0;
+        word-wrap: break-word;
+        word-break: break-all;
+        white-space: normal;
+    }
+
+    .bot-card-api-key .bot-card-api-key-value-and-button {
+        font-family: "Source Code Pro", monospace;
+        font-size: 0.85em;
+        display: flex;
+    }
+
+    .bot-card-info {
+        padding: 10px;
+    }
+
+    .bot-card-field {
+        text-transform: uppercase;
+        font-weight: 600;
+        color: hsl(0deg 0% 67%);
+    }
+}
+
+#inactive_bots_list .bot_info .reactivate_bot {
+    margin-top: 5px;
+}
+
+.edit_bot_form {
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+
+    .buttons {
+        margin: 10px 0 5px;
+    }
+
+    #current_bot_avatar_image {
+        margin: 5px 0 8px;
+    }
+
+    .edit_bot_avatar_preview_text {
+        display: none;
+    }
+}
+
+#add_bot_preview_text {
+    display: none;
+}
+
+.edit_bot_avatar_preview_image,
+#add_bot_preview_image {
+    height: 100px;
+    width: 100px;
+    margin: 2px 0 8px;
+}
+
+#add-alert-word {
+    & form {
+        margin-bottom: 4px;
+    }
+
+    & input {
+        margin-bottom: 0;
+    }
+}
+
+.admin-linkifier-form,
+.admin-playground-form {
+    & label {
+        float: left;
+        padding-top: 5px;
+        width: 10em;
+        text-align: right;
+        margin-right: 20px;
+    }
+}
+
+.admin-profile-field-form #custom_external_account_url_pattern input,
+#edit-custom-profile-field-form-modal .custom_external_account_detail input {
+    width: 70%;
+}
+
+#alert-words-table {
+    margin: 0;
+
+    & li {
+        list-style-type: none;
+
+        &.alert-word-item:first-child {
+            background: none;
+            margin-top: 8px;
+        }
+    }
+
+    .alert_word_listing .value {
+        word-wrap: break-word;
+        word-break: break-all;
+        white-space: normal;
+    }
+
+    .edit-attachment-buttons {
+        position: absolute;
+        right: 20px;
+        top: 0;
+    }
+}
+
+#change_password_modal {
+    #change_password_container {
+        margin: 0;
+    }
+}
+
+#api_key_status {
+    margin: 0 0 10px;
+}
+
+#download_zuliprc {
+    color: hsl(0deg 0% 100%);
+    text-decoration: none;
+}
+
+#realm_domains_table {
+    margin: 0;
+}
+
+#api_key_form,
+#change_password_modal {
+    .password-div {
+        position: relative;
+
+        & input[type="text"] {
+            margin-bottom: 10px;
+        }
+
+        .password_visibility_toggle {
+            position: absolute;
+            left: 194px;
+            top: 32px;
+            width: 14px;
+            opacity: 0.6;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+.emojiset_choices,
+.user_list_style_values {
+    padding: 0 10px;
+}
+
+label.preferences-radio-choice-label {
+    border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+    padding: 8px 0 10px;
+    display: flex;
+
+    &:last-of-type {
+        border-bottom: none;
+    }
+
+    & input[type="radio"] {
+        position: relative;
+        top: -2px;
+        margin: 0 5px 0 0;
+        width: auto;
+        cursor: pointer;
+
+        &:focus {
+            outline: 1px dotted hsl(0deg 0% 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+
+        &:checked + span {
+            font-weight: 600;
+        }
+    }
+
+    .right {
+        /* Push to far right in flex container. */
+        margin-left: auto;
+    }
+}
+
+.emojiset_choices {
+    width: 350px;
+
+    .emoji {
+        height: 22px;
+        width: 22px;
+    }
+}
+
+$right_sidebar_width: 170px;
+$option_title_width: 180px;
+
+.user_list_style_values {
+    max-width: calc($right_sidebar_width + $option_title_width);
+
+    .preview {
+        background-color: inherit !important;
+        /* Match the 170px width of the right sidebar region for the name/status,
+           doing something reasonable if the window shrinks. */
+        width: calc(100% - $option_title_width);
+        text-align: left;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden visible;
+        position: relative;
+
+        .user-name-and-status-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-text {
+            opacity: 0.75;
+            font-size: 90%;
+
+            &:not(:empty) {
+                margin-top: -3px;
+            }
+        }
+    }
+}
+
+.open-user-form {
+    min-width: initial !important;
+}
+
+#api_key_buttons {
+    display: inline-flex;
+
+    .regenerate_api_key {
+        margin-right: 5px;
+    }
+}
+
+.right.show .emoji_alt_code {
+    font-size: 1.2em;
+}
+
+.invite-user-link .fa-user-plus {
+    text-decoration: none;
+    margin-right: 5px;
+}
+
+/* -- new settings overlay -- */
+#settings_page {
+    height: 95vh;
+    width: 97vw;
+    max-width: 1024px;
+    margin: 2.5vh auto;
+    overflow: hidden;
+    border-radius: 4px;
+
+    .time-limit-custom-input {
+        width: 5ch;
+        text-align: right;
+    }
+
+    .realm-time-limit-label {
+        vertical-align: middle;
+    }
+
+    & h3 {
+        font-size: 1.5em;
+        font-weight: normal;
+        line-height: 1.5;
+    }
+
+    & h5 {
+        font-size: 1.2em;
+        font-weight: normal;
+        line-height: 1.2;
+        margin: 10px 0;
+    }
+
+    .sidebar-wrapper {
+        float: left;
+        position: relative;
+        width: $settings_sidebar_width;
+        height: 100%;
+
+        .tab-container {
+            box-sizing: border-box;
+            height: $settings_header_height;
+            padding: 6px;
+            border-bottom: 1px solid hsl(0deg 0% 87%);
+        }
+    }
+
+    .sidebar {
+        height: calc(100% - $settings_header_height);
+        overflow-y: auto;
+        border-right: 1px solid hsl(0deg 0% 93%);
+
+        .header {
+            height: auto;
+            position: relative;
+            width: calc(100% - 20px);
+            padding: 10px;
+            text-align: center;
+            text-transform: uppercase;
+
+            background-color: hsl(180deg 6% 93%);
+            border-bottom: 1px solid hsl(0deg 0% 87%);
+        }
+
+        & ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        & li {
+            padding: 5px 0;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid hsl(0deg 0% 93%);
+
+            &:last-of-type .text {
+                border-bottom: none;
+            }
+
+            &.active {
+                background-color: hsl(0deg 0% 93%);
+                border-bottom: 1px solid transparent;
+            }
+
+            .text,
+            .icon,
+            .locked {
+                display: inline-block;
+                vertical-align: top;
+            }
+
+            .text {
+                width: calc(100% - 90px);
+                padding: 10px 12px 10px 0;
+            }
+
+            .icon {
+                width: 18px;
+                height: 18px;
+                margin: 10px;
+                text-align: center;
+
+                font-size: 1.4em;
+                color: hsl(0deg 0% 53%);
+
+                background-size: cover;
+                background-repeat: no-repeat;
+            }
+
+            .zulip-icon-smart-toy {
+                font-size: 1.6em;
+                margin: 8px 11px 10px 9px;
+            }
+
+            .locked {
+                width: 18px;
+                height: 18px;
+                margin: 14px 8px 6px;
+
+                font-size: 1em;
+                color: hsl(0deg 0% 62%);
+
+                background-size: cover;
+                background-repeat: no-repeat;
+            }
+        }
+
+        .org-settings-list {
+            display: none;
+        }
+
+        .normal-settings-list,
+        .org-settings-list {
+            position: relative;
+        }
+
+        .settings-sticky-bar {
+            position: sticky;
+            z-index: 1;
+            background-color: hsl(0deg 0% 100%);
+            top: 0;
+        }
+    }
+
+    .settings-header {
+        padding-top: 1px;
+
+        &.mobile {
+            display: none;
+            border-bottom: 1px solid hsl(0deg 0% 87%);
+
+            .fa-chevron-left {
+                float: left;
+                position: relative;
+                top: 14px;
+                left: 10px;
+            }
+        }
+
+        & h1 {
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1;
+            margin: 15px;
+            text-transform: uppercase;
+        }
+
+        .exit {
+            font-weight: 600;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0deg 0% 67%);
+            cursor: pointer;
+        }
+
+        .exit-sign {
+            float: right;
+            position: relative;
+            top: 1px;
+            margin-left: 3px;
+            font-size: 1.5rem;
+            line-height: 1;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    }
+
+    .content-wrapper {
+        position: absolute;
+        left: $settings_sidebar_width;
+        width: calc(100% - $settings_sidebar_width);
+        height: 100%;
+        overflow: hidden;
+
+        .settings-header {
+            width: 100%;
+            height: $settings_header_height;
+            box-sizing: border-box;
+            border-bottom: 1px solid hsl(0deg 0% 87%);
+
+            & h1 .section {
+                font-weight: 400;
+                color: inherit;
+                opacity: 0.6;
+            }
+        }
+
+        #settings_content {
+            position: relative;
+            width: 100%;
+            height: calc(100% - $settings_header_height);
+
+            float: left;
+            overflow: auto;
+
+            background-color: hsl(0deg 0% 0% / 2%);
+        }
+    }
+
+    .preferences-settings-form select {
+        width: 245px;
+    }
+}
+
+.time-limit-custom-input,
+.realm_jitsi_server_url_custom_input {
+    padding: 4px 6px;
+    color: hsl(0deg 0% 33%);
+    border: 1px solid hsl(0deg 0% 80%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#realm_jitsi_server_url_setting {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    .jitsi_server_url_custom_input_label {
+        margin-bottom: var(--margin-bottom-field-description);
+    }
+}
+
+#profile-settings,
+#edit-user-form {
+    .custom_user_field {
+        padding-bottom: 20px;
+
+        & textarea {
+            height: 80px;
+        }
+
+        &:hover .remove_date {
+            display: inline-flex;
+        }
+
+        .remove_date {
+            opacity: 0.5;
+            display: none;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+            left: -20px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .datepicker {
+            cursor: default;
+        }
+    }
+
+    #show_my_user_profile_modal {
+        width: 100%;
+        top: 20px;
+        position: sticky;
+    }
+
+    #show_my_user_profile_modal i {
+        padding-left: 2px;
+        vertical-align: middle;
+    }
+}
+
+#edit-user-form {
+    .person_picker {
+        min-width: 206px;
+    }
+
+    & textarea {
+        width: max(206px, 25vw);
+        max-width: 320px;
+    }
+}
+
+#manage-profile-tab {
+    #edit-user-form,
+    #bot-edit-form {
+        .name-setting {
+            margin-bottom: 10px;
+        }
+    }
+
+    & input,
+    input[type="url"],
+    & textarea,
+    & select {
+        /* Override undesired Bootstrap default. */
+        margin-bottom: 0;
+    }
+}
+
+.subsection-failed-status p {
+    background-color: hsl(0deg 43% 91%);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 0 0 0 5px;
+}
+
+#muted_topics_table {
+    width: 90%;
+    margin: 0 auto;
+
+    & tbody {
+        border-bottom: none;
+    }
+}
+
+#admin-user-list .last_active {
+    width: 100px;
+}
+
+#payload_url_inputbox {
+    & input[type="text"] {
+        width: 340px;
+    }
+}
+
+.settings-field-label {
+    margin-bottom: var(--margin-bottom-field-description);
+}
+
+.settings-profile-user-field-hint {
+    color: var(--color-text-settings-field-hint);
+    /* We effectively eliminate the margin-bottom on
+       .settings-field-label by pulling .field-hint
+       up a corresponding negative value. This cinches
+       things up a little tighter, given the generous
+       line-height (20px) on <label> elements, though
+       note well that that comes care of Bootstrap. */
+    margin-top: calc(var(--margin-bottom-field-description) * -1.5);
+    /* Maintain the same margin-bottom value as appears
+       with .settings-field-label to display text-input
+       combinations uniformly throughout the settings UI. */
+    margin-bottom: var(--margin-bottom-field-description);
+}
+
+.profile-field-choices {
+    display: inline-block;
+
+    & hr {
+        margin-top: 0;
+        margin-bottom: 5px;
+    }
+
+    .choice-row {
+        margin-top: 8px;
+
+        & input {
+            width: 190px;
+        }
+
+        & button {
+            margin-left: 2px;
+        }
+    }
+
+    > .choice-row:first-of-type {
+        margin-top: 0;
+    }
+}
+
+.custom_user_field,
+.bot_owner_user_field {
+    .pill-container {
+        padding: 2px 6px;
+        min-height: 24px;
+        max-width: 206px;
+        background-color: hsl(0deg 0% 100%);
+
+        &:focus-within {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            outline: 1px dotted \9;
+
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206deg 80% 62% / 60%);
+        }
+    }
+}
+
+#get_api_key_button {
+    display: block;
+}
+
+#attachment-stats-holder {
+    position: relative;
+    margin-top: 13px;
+    display: inline-block;
+}
+
+.hide-org-settings {
+    display: none;
+}
+
+.collapse-settings-btn {
+    margin: 10px 0 0 10px;
+    color: hsl(200deg 100% 40%);
+
+    &:hover {
+        cursor: pointer;
+        color: hsl(208deg 56% 38%);
+    }
+}
+
+#toggle_collapse {
+    margin-left: 2px;
+    display: inline-block;
+}
+
+.admin_exports_table {
+    margin-bottom: 20px;
+}
+
+.settings_textarea {
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    vertical-align: middle;
+    border: 1px solid hsl(0deg 0% 80%);
+    padding: 4px 6px;
+
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206.5deg 80% 62% / 80%);
+        outline: 0;
+
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206.5deg 80% 62% / 60%);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
+}
+
+@media (width < $lg_min) {
+    .upload-size {
+        display: none;
+    }
+
+    .user-avatar-section,
+    .realm-icon-section {
+        display: block;
+    }
+
+    #settings_content .warning {
+        display: none;
+    }
+
+    .subsection-failed-status p {
+        margin: 5px 0 0;
+    }
+}
+
+/* This value needs to match with the same in subscriptions.css, as
+   we have some shared styles declared there */
+@media (width < $md_min) {
+    .profile-settings-form {
+        .user-avatar-section {
+            flex: 100%;
+        }
+    }
+
+    #settings_overlay_container {
+        /* this variable allows JavaScript to detect this media query */
+        --single-column: yes;
+    }
+
+    #settings_page {
+        .settings-header.mobile {
+            display: block;
+
+            &:not(.slide-left) .section {
+                /* When viewing the settings list we hide the active section. */
+                display: none;
+            }
+        }
+
+        .content-wrapper {
+            .settings-header {
+                display: none;
+            }
+
+            #settings_content {
+                height: 100%;
+            }
+
+            &.right {
+                top: 47px;
+            }
+        }
+
+        .sidebar-wrapper {
+            width: 100%;
+        }
+
+        .sidebar {
+            position: absolute;
+            width: 100%;
+            border: none;
+            /* 48px is the height of settings header and 45px is the height of tab-container */
+            height: calc(100% - 93px);
+
+            & li.active {
+                /* Don't highlight the active section in the settings list. */
+                background: inherit;
+                border-bottom: 1px solid hsl(0deg 0% 93%);
+            }
+        }
+    }
+}
+
+@media (width < $sm_min) {
+    .user_row,
+    .settings-section {
+        .bot_type,
+        .last_active {
+            display: none;
+        }
+    }
+
+    #pw_strength {
+        margin: auto;
+    }
+
+    #linkifier-settings .new-linkifier-form input,
+    #playground-settings .new-playground-form input,
+    #profile-field-settings .new-profile-field-form input {
+        width: calc(100% - 20px) !important;
+    }
+
+    #linkifier-settings .new-linkifier-form label,
+    #playground-settings .new-playground-form label,
+    #profile-field-settings .new-profile-field-form label {
+        display: block;
+        width: 120px;
+        padding: 0;
+        padding-top: 0;
+        text-align: center;
+        margin: auto;
+        float: none;
+    }
+
+    #change_password_modal,
+    #change_email_modal {
+        width: 400px;
+    }
+}
+
+@media (width < $ml_min) {
+    #api_key_buttons,
+    #download_zuliprc {
+        flex-direction: column;
+        margin-top: 5px;
+    }
+
+    #edit-user-form {
+        .custom_user_field textarea {
+            width: calc(100% - 25px);
+        }
+    }
+
+    .topic_date_updated {
+        display: none;
+    }
+
+    #change_password_modal,
+    #change_email_modal {
+        width: 300px;
+    }
+}
+
+@media (width < $mm_min) {
+    .deactivate_realm_button {
+        margin-top: 20px;
+    }
+}
+
+@media only screen and (width < $lg_min) {
+    /* Show bot-information-box at full width on small
+       screen sizes. Not having this media query breaks the
+       information box */
+    .bots_list .bot-information-box {
+        width: calc(100% - 10px);
+        max-height: unset;
+    }
+}
+
+#edit-linkifier-form {
+    #edit-linkifier-pattern,
+    #edit-linkifier-url-template {
+        width: 400px;
+    }
+
+    & label {
+        margin-bottom: 4px;
+    }
+
+    #edit-linkifier-pattern-status,
+    #edit-linkifier-template-status {
+        margin-top: 10px;
+    }
+
+    & input {
+        margin-bottom: 0;
+    }
+}
+
+.settings_panel_list_header {
+    position: relative;
+
+    & h3 {
+        display: inline-block;
+    }
+
+    .user_filters {
+        display: flex;
+        float: right;
+        flex-wrap: wrap;
+
+        & .dropdown-widget-button {
+            height: 30px;
+            max-width: 160px;
+            margin-right: 12px;
+            margin-top: 12px;
+        }
+    }
+
+    & input.search {
+        /* Without explicitly mentioning the height, it used be just a little
+        bit short of 20px, since we need to maintain the same height with
+        .dropdown-widget-button, we need to explicitly set the height here.
+        We could set the height inside .user_filters but that would make
+        the height a tiny bit inconsistent on pages without .user_filters. */
+        height: 20px;
+        float: right;
+        font-size: 1em;
+        max-width: 160px;
+        margin-top: 12px;
+    }
+}
+
+#add-new-custom-profile-field-form,
+#edit-custom-profile-field-form-modal {
+    .disabled_label {
+        cursor: default;
+        opacity: 0.7;
+    }
+}
+
+#admin_users_table .deactivated_user,
+#admin_deactivated_users_table .reactivated_user {
+    color: hsl(0deg 0% 64%);
+
+    & a {
+        color: inherit;
+    }
+}
+
+.settings_url_input,
+.settings_text_input {
+    padding: 4px 6px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+    margin-bottom: 10px;
+
+    /* 311px + 2 * 6px (padding) + 2 * 1px (border) = 325px (min width of select
+    elements in settings) */
+    width: 311px;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+.empty-required-field {
+    border: 1px solid hsl(3deg 57% 33%);
+    border-radius: 5px;
+
+    .settings_url_input,
+    .settings_text_input,
+    .settings_textarea,
+    .pill-container {
+        border-color: hsl(0deg 0% 100%);
+        margin-bottom: 0;
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+        }
+    }
+}
+
+#generate-integration-url-modal {
+    .inline {
+        display: inline;
+    }
+
+    .integration-url {
+        font-family: "Source Code Pro", monospace;
+        padding: 10px;
+        font-size: 0.85rem;
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        overflow-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .integration-url-name-wrapper .dropdown-widget-button {
+        width: 50%;
+    }
+
+    .integration-url-name-wrapper .dropdown_widget_value,
+    .integration-url-stream-wrapper .dropdown_widget_value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .integration-url-stream-wrapper .dropdown-widget-button {
+        width: 75%;
+    }
+
+    #stream-not-specified-notice {
+        margin-top: -10px;
+    }
+}

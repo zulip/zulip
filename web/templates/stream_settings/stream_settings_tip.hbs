@@ -1,0 +1,7 @@
+{{#unless can_change_stream_permissions}}
+    {{#if can_change_name_description}}
+        <div class="tip">{{t "Only subscribers to this channel can edit channel permissions."}}</div>
+    {{else}}
+        <div class="tip">{{t "Only organization administrators can edit these settings."}}</div>
+    {{/if}}
+{{/unless}}

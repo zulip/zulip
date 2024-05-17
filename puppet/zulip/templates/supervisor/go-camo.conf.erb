@@ -1,0 +1,9 @@
+[program:go-camo]
+command=/usr/local/bin/secret-env-wrapper GOCAMO_HMAC=camo_key <%= @bin %> --listen=<%= @listen_address %>:9292 -H "Strict-Transport-Security: max-age=15768000" -H "X-Frame-Options: DENY" --metrics --verbose --allow-content-video
+environment=HTTP_PROXY="<%= @proxy %>",HTTPS_PROXY="<%= @proxy %>"
+priority=15
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/camo.log

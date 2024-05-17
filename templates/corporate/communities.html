@@ -1,0 +1,94 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "communities" %}
+
+{% set PAGE_TITLE = "Open communities directory | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "Zulip communities that are open to the public, and
+  have opted in to be listed." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block hello_page_container %} hello-main{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+{% include 'zerver/gradients.html' %}
+
+<div class="portico-landing integrations communities">
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+
+                <div class="integration-main-text">
+                    <header>
+                        <h1 class="portico-page-heading">
+                            {% trans %}Open communities directory{% endtrans %}
+                        </h1>
+                        <p class="portico-page-subheading">
+                            These Zulip communities are open to the public, and have
+                            <a href="/help/communities-directory">opted in to be listed</a>.
+                        </p>
+                    </header>
+                </div>
+
+                <div class="integration-categories-dropdown">
+                    <div class="integration-toggle-categories-dropdown">
+                        <h3 class="dropdown-category-label">{% trans %}Filter by category{% endtrans %}</h3>
+                        <i class="fa fa-angle-down" aria-hidden="true"></i>
+                    </div>
+                    <div class="dropdown-list">
+                        <a href="#all">
+                            <h4 class="realm-category selected" data-category="all">All</h4>
+                        </a>
+                        {% for org_type in org_types.keys() %}
+                        <a href="#{{ org_type }}">
+                            <h4 class="realm-category" data-category="{{ org_type }}">
+                                {{ org_types[org_type]["name"] }}
+                            </h4>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="catalog">
+                    <div class="integration-categories-sidebar">
+                        <h3>{% trans %}Categories{% endtrans %}</h3>
+                        <a href="#all">
+                            <h4 data-category="all" class="realm-category selected">{% trans %}All{% endtrans %}</h4>
+                        </a>
+                        {% for org_type in org_types.keys() %}
+                        <a href="#{{ org_type }}">
+                            <h4 data-category="{{ org_type }}" class="realm-category">
+                                {{  org_types[org_type]["name"] }}
+                            </h4>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <div class="eligible_realms">
+                        {% for eligible_realm in eligible_realms %}
+                            <a class="eligible_realm" data-org-type="{{ eligible_realm.org_type_key }}" href="{{ eligible_realm.realm_url }}">
+                                <img class="eligible_realm_logo" src="{{ eligible_realm.logo_url }}" alt="{{ eligible_realm.name }} logo"/>
+                                <div class="eligible_realm_details">
+                                    <h3 class="eligible_realm_name">{{ eligible_realm.name }}</h3>
+                                    <h4 class="eligible_realm_description">
+                                        {{ eligible_realm.description  }}
+                                    </h4>
+                                </div>
+                            </a>
+                        {% endfor %}
+                        <hr />
+                        <div class="eligible_realm_end_notice">
+                            <p>Learn how Zulip can be a <a href="/for/communities/">home for your community</a>.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div> <!-- .inner-content -->
+        </div> <!-- .padded-content -->
+    </div> <!-- .main -->
+</div> <!-- .portico-landing -->
+
+{% endblock %}

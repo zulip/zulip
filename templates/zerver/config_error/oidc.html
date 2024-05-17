@@ -1,0 +1,8 @@
+{% extends "zerver/config_error/container.html" %}
+
+{% block error_content %}
+    {# TODO: Improve the config error page for OIDC #}
+    <p>
+        The OpenID Connect backend is not configured correctly.
+    </p>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Invalid or expired login session") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+            <div class="app-main white-box">
+                <h1>{{ _("Invalid or expired login session.") }}</h1>
+                <a href="{{ login_url }}">{{ _("Log in") }}</a>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

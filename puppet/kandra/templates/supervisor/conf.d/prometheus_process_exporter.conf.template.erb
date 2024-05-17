@@ -1,0 +1,8 @@
+[program:prometheus_process_exporter]
+command=<%= @bin %> -config.path <%= @conf %>
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/process_exporter.log

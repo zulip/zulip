@@ -1,0 +1,9 @@
+[program:prometheus]
+command=<%= @bin %> --storage.tsdb.path="<%= @data_dir %>" --config.file="/etc/prometheus/prometheus.yaml" --web.listen-address="127.0.0.1:9090" --storage.tsdb.retention.time=1y
+directory=<%= @dir %>
+priority=10
+autostart=true
+autorestart=true
+user=prometheus
+redirect_stderr=true
+stdout_logfile=/var/log/prometheus.log

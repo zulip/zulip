@@ -1,0 +1,33 @@
+<div id="convert-demo-organization-form">
+    <div class="tip">
+        {{#unless user_has_email_set}}
+            {{#tr}}
+                You must <z-link>configure your email</z-link> to access this feature.
+                {{#*inline "z-link"}}<a href="/help/demo-organizations#configure-email-for-demo-organization-owner" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+            {{/tr}}
+        {{else}}
+            {{t "All users will need to log in again at your new organization URL." }}
+        {{/unless}}
+    </div>
+
+    <p>{{t "You can convert this demo organization to a permanent Zulip organization. All users and message history will be preserved." }}</p>
+    <form class="subdomain-setting">
+        <div class="input-group">
+            <label for="organization_type" class="modal-field-label">{{t "Organization type" }}
+                {{> ../help_link_widget link="/help/organization-type" }}
+            </label>
+            <select name="organization_type" id="add_organization_type" class="modal_select bootstrap-focus-style">
+                {{#each realm_org_type_values}}
+                    <option value="{{this.code}}">{{this.description}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="string_id" class="inline-block modal-field-label">{{t "Organization URL" }}</label>
+            <div id="subdomain_input_container">
+                <input id="new_subdomain" type="text" class="modal_text_input" autocomplete="off" name="string_id" placeholder="{{t 'acme' }}"/>
+                <label for="string_id" class="domain_label">.{{ realm_domain }}</label>
+            </div>
+        </div>
+    </form>
+</div>

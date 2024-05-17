@@ -1,0 +1,30 @@
+{
+    "member_id":"5bc77d81-sdkf-23fk-sdkf-bfea45f0b806",
+    "version":"v1",
+    "primary_id":11200,
+    "id":"5c488ff2-d76e-4b34-8cdb-4f6098ae79ec",
+    "actions":[
+        {
+            "action":"update",
+            "story_type":"chore",
+            "entity_type":"story",
+            "changes":{
+                "label_ids":{
+                    "adds":[
+                        12135
+                    ]
+                }
+            },
+            "id":11200,
+            "app_url":"https:\/\/app.clubhouse.io\/zulip\/story\/28",
+            "name":"An emotional story!"
+        },
+        {
+            "action":"create",
+            "id":12135,
+            "entity_type":"label",
+            "name":"sad"
+        }
+    ],
+    "changed_at":"2019-01-23T16:01:54.470Z"
+}

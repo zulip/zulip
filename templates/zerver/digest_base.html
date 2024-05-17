@@ -1,0 +1,31 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "digest" %}
+
+{% block title %}
+<title>{{ _("Digest") }} | Zulip</title>
+{% endblock %}
+
+{% block content %}
+<body>
+    <div class="portico-wrap">
+        {% include 'zerver/portico-header.html' %}
+    </div>
+    <div class="digest-container">
+        <div class="digest-email-container">
+            <div class="portico-page digest-page-title">
+                <h1> Zulip digest </h1>
+            </div>
+            <div class="digest-email-html">
+                {% include 'zerver/emails/digest.html' %}
+                <img id="digest-footer" src="{{ static('images/emails/footer.png') }}"/>
+            </div>
+            <br />
+            <br />
+            <h2 class="digest-page-title">Plain text version</h2>
+            <pre>{% include 'zerver/emails/digest.txt' %}</pre>
+            <div class="digest-address-link"> {{physical_address}}</div>
+        </div>
+        {% include 'zerver/footer.html' %}
+    </div>
+</body>
+{% endblock %}

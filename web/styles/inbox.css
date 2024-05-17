@@ -1,0 +1,596 @@
+.inbox-container {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-background-inbox);
+    font-size: 15px;
+    padding: 0;
+    min-height: 100vh;
+
+    #inbox-pane {
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        margin: var(--navbar-fixed-height) 25px 0;
+
+        a {
+            color: var(--color-text-message-header);
+            text-decoration: none;
+        }
+
+        .unread_count {
+            opacity: 0.7;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .search_group {
+            position: sticky;
+            top: var(--navbar-fixed-height);
+            background: var(--color-background-inbox);
+            display: flex;
+            padding: 15px 0 10px;
+            z-index: 1;
+        }
+
+        .btn-inbox-filter {
+            border: none;
+            height: 30px;
+            border-radius: 5px;
+            background: transparent;
+            color: var(--color-text-default);
+            padding: 5px 10px;
+            margin-left: 10px;
+
+            &:focus {
+                background-color: var(--color-background-btn-inbox-focus);
+                outline: 0;
+            }
+        }
+
+        .btn-inbox-selected {
+            background-color: var(--color-background-btn-inbox-selected);
+        }
+
+        #inbox-filters {
+            .zulip-icon-search-inbox {
+                position: relative;
+                /* We need to position the icon relative to the filters dropdown since its width is variable.
+                   To avoid icon from taking width since it is no longer absolute/fixed positioned, we set its width to 0. */
+                width: 0;
+                /* (30px filters height - 15px icon height) / 2)  = 7.5px */
+                top: 7.5px;
+                /* (30px left padding - 15px icon width) / 2)  = 7.5px */
+                left: 7.5px;
+                color: var(--color-icons-inbox);
+                opacity: 0.4;
+            }
+
+            #inbox-clear-search {
+                border: 1px solid transparent;
+                background: transparent;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 2px;
+                cursor: pointer;
+                font-size: 16px;
+                color: var(--color-icons-inbox);
+                opacity: 0.4;
+                transition: all 140ms;
+                padding: 5px;
+                margin: 0;
+                /* = -Width of the button. */
+                margin-right: -28px;
+                position: relative;
+                top: 0;
+                right: 30px;
+
+                &:focus {
+                    outline: none;
+                }
+
+                &:hover,
+                &:focus-visible {
+                    opacity: 1;
+                    background-color: var(--color-background-icon-close-hover);
+                }
+
+                &:active {
+                    opacity: 1;
+                    transform: scale(0.9);
+                }
+            }
+        }
+
+        #inbox-search:placeholder-shown + #inbox-clear-search {
+            display: none;
+        }
+
+        #inbox-search {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            width: var(--width-inbox-search);
+            height: var(--height-inbox-search);
+            padding-right: 28px;
+            padding-left: 30px;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 17px;
+            border-radius: 4px;
+            background-color: var(--color-background-inbox-search);
+            color: var(--color-inbox-search-text);
+            border: 1px solid var(--color-border-inbox-search);
+
+            &:not(:placeholder-shown),
+            &:hover {
+                background-color: var(--color-background-inbox-search-hover);
+                border: 1px solid var(--color-border-inbox-search-hover);
+            }
+
+            &:focus {
+                outline: none;
+                background-color: var(--color-background-inbox-search-focus);
+                border: 1px solid var(--color-border-inbox-search-focus);
+                box-shadow: 0 0 5px var(--color-box-shadow-inbox-search-focus);
+            }
+        }
+
+        .inbox-empty-text {
+            display: none;
+        }
+
+        #inbox-list {
+            overflow: hidden;
+            border-radius: 5px;
+            border: 1px solid hsl(0deg 0% 0% / 20%);
+            margin-bottom: var(--max-unexpanded-compose-height);
+            /* margin(5) + search left padding(30) + search right padding (28) + border(2px) = 65px */
+            max-width: calc(
+                var(--width-inbox-search) + var(--width-inbox-filters-dropdown) +
+                    65px
+            );
+
+            .inbox-focus-border {
+                display: flex;
+                min-height: 30px;
+                border: 2px solid transparent;
+                border-radius: 3px;
+                box-sizing: border-box;
+                justify-content: space-between;
+            }
+
+            .inbox-header {
+                display: block;
+                height: 30px;
+
+                .inbox-focus-border {
+                    height: 30px;
+                }
+
+                .inbox-left-part {
+                    grid-template: auto / auto min-content min-content;
+                    grid-template-areas: "header_name unread_mention_info unread_count";
+                }
+
+                .inbox-header-name {
+                    grid-area: header_name;
+                    display: flex;
+                    align-items: center;
+                    overflow: hidden;
+                    padding: 1px 6px;
+                    outline: 0;
+
+                    & a {
+                        margin: 0 4px;
+                        padding: 1px 0;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                        white-space: nowrap;
+                    }
+
+                    .inbox-header-name-focus-border {
+                        display: flex;
+                        align-items: center;
+                        overflow: hidden;
+                        border: 2px solid transparent;
+                        border-radius: 3px;
+                        padding-left: 4px;
+                    }
+
+                    &:focus .inbox-header-name-focus-border {
+                        border-color: var(--color-outline-focus);
+                    }
+                }
+
+                &:focus {
+                    outline: 0;
+
+                    .inbox-focus-border {
+                        border-color: var(--color-outline-focus);
+                    }
+
+                    .toggle-inbox-header-icon {
+                        opacity: 1;
+                    }
+                }
+            }
+
+            .fa-lock {
+                margin-right: 3px;
+            }
+
+            .fa-envelope,
+            .stream-privacy.filter-icon {
+                font-size: 16px;
+                margin: 0;
+                margin-right: 1px;
+            }
+
+            .fa-envelope {
+                position: relative;
+                top: -1px;
+                margin-right: 4px;
+            }
+
+            .collapsible-button {
+                &:hover {
+                    cursor: pointer;
+                }
+
+                .zulip-icon-arrow-down {
+                    font-size: 16px;
+                    padding: 5px 4px;
+                    margin-right: 9px;
+                    opacity: 0.5;
+                }
+
+                .icon-collapsed-state {
+                    transform: rotate(270deg);
+                }
+            }
+
+            .user_circle {
+                /* size of the user activity circle */
+                min-width: 6px;
+                height: 6px;
+                margin-right: 5px;
+                top: 0;
+            }
+
+            .zulip-icon-bot {
+                opacity: 0.7;
+                font-size: 11px;
+                margin-right: 5px;
+                margin-left: 1px;
+            }
+
+            .inbox-row {
+                display: block;
+                background-color: var(--color-background-inbox-row);
+
+                &:hover {
+                    background: var(--color-background-inbox-row-hover);
+                }
+
+                &:focus {
+                    .inbox-focus-border {
+                        border: 2px solid var(--color-outline-focus);
+                        border-radius: 3px;
+                    }
+
+                    outline: 0;
+                    padding: 0;
+                }
+
+                .inbox-left-part {
+                    grid-template: auto / min-content auto min-content min-content;
+                    grid-template-areas: "match_topic_and_dm_start recipient_info unread_mention_info unread_count";
+                }
+
+                .fake-collapse-button,
+                .inbox-topic-container .user_circle {
+                    grid-area: match_topic_and_dm_start;
+                }
+
+                .recipient_info,
+                .inbox-topic-name {
+                    grid-area: recipient_info;
+                }
+
+                .inbox-right-part-wrapper {
+                    flex-grow: 1;
+
+                    .inbox-right-part {
+                        display: flex;
+                        justify-content: space-between;
+                        flex-grow: 1;
+                    }
+                }
+
+                .visibility-policy-indicator {
+                    display: flex;
+                    align-items: center;
+                    border-radius: 3px;
+                    margin-left: 3px;
+
+                    &:focus {
+                        outline: 2px solid var(--color-outline-focus);
+                    }
+                }
+            }
+
+            .unread-count-focus-outline {
+                grid-area: unread_count;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 3px;
+                padding: 5px;
+
+                &:focus {
+                    outline: 2px solid var(--color-outline-focus);
+                }
+            }
+
+            .unread_mention_info {
+                grid-area: unread_mention_info;
+                margin-right: 0;
+            }
+
+            .stream-privacy {
+                display: flex;
+                align-items: center;
+                margin-right: 4px;
+                margin-left: 17px;
+
+                .zulip-icon {
+                    line-height: 14px;
+                    font-size: 16px;
+                    height: 16px;
+                    width: 16px;
+                }
+            }
+
+            .inbox-topic-name {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                width: 100%;
+
+                & a {
+                    padding: 1px 0;
+                }
+            }
+
+            .inbox-left-part-wrapper {
+                display: flex;
+                width: 80%;
+            }
+
+            #inbox-direct-messages-container {
+                /* Since a direct message row can have span to multiple lines,
+                   having an underline focus will not work very well.
+                */
+                .inbox-row:focus {
+                    box-shadow: inset 0 0 0 2px var(--color-outline-focus);
+                }
+            }
+
+            #inbox-direct-messages-container .inbox-left-part,
+            .inbox-topic-container .inbox-left-part {
+                /* 50px - space occupied by user circle icon */
+                padding-left: 37px;
+            }
+
+            .inbox-left-part {
+                width: 100%;
+                display: grid;
+                align-items: center;
+
+                &:hover {
+                    cursor: pointer;
+                }
+
+                .inbox-group-or-bot-dm {
+                    position: relative;
+                    left: -3px;
+                }
+
+                .recipients_info {
+                    display: flex;
+                    flex-wrap: wrap;
+                    column-gap: 10px;
+                    grid-area: recipient_info;
+                    word-break: break-word;
+
+                    .user_block {
+                        display: flex;
+                        align-items: center;
+
+                        .zulip-icon-triple-users {
+                            margin-right: 5px;
+                            align-self: flex-start;
+                            opacity: 0.7;
+                        }
+                    }
+                }
+            }
+        }
+
+        .inbox-right-part-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .inbox-row,
+        .inbox-header {
+            &:focus,
+            &:focus-within,
+            &:hover {
+                .inbox-row-visibility-policy-inherit,
+                .inbox-action-button {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .inbox-row-visibility-policy-inherit {
+            opacity: 0;
+
+            &.visibility-policy-popover-visible {
+                opacity: 1;
+            }
+        }
+
+        .inbox-action-button {
+            display: flex;
+            border-radius: 3px;
+            outline: none;
+            opacity: 0;
+
+            &.hide {
+                display: none;
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 2px var(--color-outline-focus);
+            }
+
+            & i {
+                padding: 5px;
+                font-size: 16px;
+                opacity: 0.3;
+                color: var(--color-vdots-hover);
+
+                &:hover {
+                    opacity: 1;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+}
+
+#inbox-view {
+    display: none;
+    position: relative;
+
+    #inbox-dm-header {
+        background-color: var(--color-background-private-message-header);
+    }
+
+    .hidden_by_filters,
+    .collapsed_container {
+        display: none !important;
+    }
+}
+
+.inbox-container #inbox-pane #inbox-empty-without-search {
+    margin-top: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.inbox-empty-illustration {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 16px;
+    background-color: var(--color-background-inbox-no-unreads-illustration);
+    mask: url("../images/empty-view-illustrations/inbox-done.svg") no-repeat
+        center;
+}
+
+.inbox-empty-title {
+    /* Matches the font-size used for .empty-list-message */
+    font-size: 1.5em;
+    color: var(--color-background-inbox-no-unreads-illustration);
+}
+
+.inbox-empty-action {
+    font-size: 1.3em;
+    padding-top: 0.5em;
+}
+
+.inbox-container #inbox-pane .inbox-empty-action-link {
+    text-decoration: underline;
+    color: hsl(200deg 100% 40%);
+}
+
+#inbox-filter_widget {
+    margin-right: 5px;
+    height: 30px;
+    max-width: var(--width-inbox-filters-dropdown);
+    border: 1px solid var(--color-border-inbox-search);
+    background-color: var(--color-background-inbox-search);
+    gap: 5px;
+
+    &:hover {
+        background-color: var(--color-background-inbox-search-hover);
+        border: 1px solid var(--color-border-inbox-search-hover);
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
+#recent-view-filter_widget .dropdown_widget_value,
+#inbox-filter_widget .dropdown_widget_value {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+    text-align: left;
+}
+
+#recent-view-filter_widget .zulip-icon-chevron-down,
+#inbox-filter_widget .zulip-icon-chevron-down {
+    color: var(--color-icons-inbox);
+    opacity: 0.4;
+}
+
+.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+    font-weight: 700;
+}
+
+.recent-view-filter-dropdown-list-container .dropdown-list-wrapper,
+.inbox-filter-dropdown-list-container .dropdown-list-wrapper {
+    width: 220px;
+}
+
+.recent-view-filter-dropdown-list-container .dropdown-list-item-common-styles,
+.inbox-filter-dropdown-list-container .dropdown-list-item-common-styles {
+    padding: 5px 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.recent-view-filter-dropdown-list-container .dropdown-list-item-name,
+.inbox-filter-dropdown-list-container .dropdown-list-item-name {
+    white-space: nowrap;
+    font-weight: 500;
+    padding: 0;
+    margin: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.recent-view-filter-dropdown-list-container .dropdown-list-item-description,
+.inbox-filter-dropdown-list-container .dropdown-list-item-description {
+    white-space: nowrap;
+    font-weight: 400;
+    font-size: 13px;
+    opacity: 0.8;
+    padding: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}

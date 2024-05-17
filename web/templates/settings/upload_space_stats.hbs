@@ -1,0 +1,9 @@
+<span>
+    {{t "Organization using {percent_used}% of {upload_quota}." }}
+    {{#if show_upgrade_message}}
+        {{#tr}}
+            <z-link>Upgrade</z-link> for more space.
+            {{#*inline "z-link"}}<a href="/upgrade/" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+        {{/tr}}
+    {{/if}}
+</span>

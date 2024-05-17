@@ -1,0 +1,2413 @@
+html {
+    overflow: hidden scroll;
+    overscroll-behavior-y: none;
+    width: calc(100% - var(--disabled-scrollbar-width));
+}
+
+body,
+html {
+    height: 100%;
+    touch-action: manipulation;
+}
+
+.column-middle,
+#main_div {
+    background-color: var(--color-background);
+}
+
+#app-loading.loaded {
+    display: none !important; /* We are now loaded, by definition. */
+}
+
+body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    line-height: calc(20 / 14);
+    font-family: "Source Sans 3 VF", sans-serif;
+    color: var(--color-text-default);
+    background-color: var(--color-background);
+
+    /* Implementation for fluid layout width setting. */
+    .header-main,
+    .app .app-main,
+    #compose-container {
+        max-width: 1400px;
+    }
+
+    &.fluid_layout_width {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: inherit;
+        }
+    }
+}
+
+input,
+button,
+select,
+textarea {
+    font-family: "Source Sans 3 VF", sans-serif;
+    /* Disable bootstrap size CSS; we want to use our default font size on
+       body for input elements. */
+    line-height: normal;
+    font-size: inherit;
+}
+
+blockquote p {
+    font-weight: normal;
+}
+
+a {
+    cursor: pointer;
+
+    &.message_label_clickable:hover {
+        cursor: pointer;
+        color: hsl(200deg 100% 40%);
+    }
+}
+
+code,
+pre {
+    font-family: "Source Code Pro", monospace;
+}
+
+.no-select {
+    user-select: none;
+}
+
+.text-select {
+    user-select: text;
+}
+
+p.n-margin {
+    margin: 10px 0 0;
+}
+
+.small-line-height {
+    line-height: 1.1;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-clear {
+    clear: both;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.history-limited-box {
+    color: hsl(16deg 60% 45%);
+    border: 1px solid hsl(16deg 60% 45%);
+    box-shadow: 0 0 2px hsl(16deg 60% 45%);
+}
+
+.all-messages-search-caution {
+    border: 1px solid hsl(192deg 19% 75% / 20%);
+    box-shadow: 0 0 2px hsl(192deg 19% 75% / 20%);
+}
+
+.history-limited-box,
+.all-messages-search-caution {
+    border-radius: 4px;
+    display: none;
+    font-size: 16px;
+    margin: 0 auto 12px;
+    padding: 5px;
+    /* Difference should be 16px to accommodate the icon. */
+    /* This emulates hanging indent. */
+    padding-left: 26px;
+    text-indent: -10px;
+
+    & i {
+        margin: 0 3px 0 1px;
+    }
+
+    & p {
+        margin: 0;
+        padding: 4px;
+    }
+}
+
+.bottom-messages-logo {
+    display: none;
+}
+
+.alert-zulip-logo,
+.top-messages-logo,
+.bottom-messages-logo {
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 12px;
+
+    & svg {
+        & circle {
+            fill: var(--color-zulip-logo);
+            stroke: var(--color-zulip-logo);
+        }
+
+        & path {
+            fill: var(--color-zulip-logo-z);
+            stroke: var(--color-zulip-logo-z);
+        }
+    }
+
+    &.loading circle {
+        fill: var(--color-zulip-logo-loading);
+        stroke: var(--color-zulip-logo-loading);
+    }
+}
+
+.top-messages-logo {
+    /* Since padding under message header is not transparent
+       we need to position it below the padding. */
+    padding-top: var(--header-padding-bottom);
+    margin-bottom: 0;
+    /* To fit the logo inside the spinner. */
+    position: relative;
+    top: -2px;
+}
+
+/* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
+@keyframes feedback-slide-in {
+    from {
+        transform: translateY(-120%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(50px);
+        opacity: 1;
+    }
+}
+
+@keyframes feedback-slide-out {
+    from {
+        transform: translateY(50px);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-120%);
+        opacity: 0;
+    }
+}
+
+#feedback_container {
+    display: none;
+    position: fixed;
+    width: 400px;
+    top: 0;
+    left: calc(50vw - 220px);
+    padding: 15px;
+    background-color: hsl(0deg 0% 98%);
+    border-radius: 5px;
+    box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
+    z-index: 110;
+
+    &.show-feedback-container {
+        display: block;
+        animation: feedback-slide-in 0.6s forwards;
+    }
+
+    &.slide-out-feedback-container {
+        animation: feedback-slide-out 0.6s;
+    }
+
+    & h3 {
+        font-size: 16pt;
+        margin-top: 2px;
+    }
+
+    .exit-me {
+        font-size: 20pt;
+        font-weight: 200;
+        margin: 0 0 0 10px;
+        cursor: pointer;
+    }
+}
+
+#navbar-fixed-container {
+    position: fixed;
+    top: 0;
+    z-index: 102;
+}
+
+/* Adjust width of any fixed / absolute positioned elements that might be visible in
+   the background when a overlay / modal is open. */
+#navbar-fixed-container,
+#compose {
+    width: calc(100% - var(--disabled-scrollbar-width));
+}
+
+.header {
+    width: 100%;
+    height: var(--header-height);
+    /* Since the headers are sticky, we need non-transparent background. */
+    background-color: var(--color-background);
+    /* Add 1px box-shadow below header so that if there is a gap between sticky header
+       and header at some zoom level, it is covered by this */
+    box-shadow: 0 1px 0 0 var(--color-background);
+}
+
+#navbar-middle .column-middle-inner,
+.header,
+#message_view_header {
+    background-color: var(--color-background-navbar);
+    box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
+}
+
+#navbar_alerts_wrapper {
+    font-size: 1rem;
+    position: relative;
+
+    .alert {
+        /* Since alerts are only rendered into the DOM when they are first
+           displayed, display: block is the right default for this setting. */
+        display: block;
+        margin: 0;
+        padding-top: 12px;
+        padding-bottom: 12px;
+
+        border: none;
+        border-radius: 0;
+
+        text-align: center;
+        text-shadow: none;
+        color: hsl(0deg 0% 100%);
+
+        &.alert-info {
+            background-color: hsl(170deg 46% 54%);
+
+            &.red {
+                background-color: hsl(0deg 46% 54%);
+            }
+        }
+
+        .close {
+            line-height: 24px;
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .alert-link {
+            color: hsl(169deg 100% 88%);
+            font-weight: 600;
+        }
+
+        &.red .alert-link {
+            color: hsl(0deg 100% 88%);
+        }
+
+        .buttons .alert-link {
+            margin: 0 5px;
+        }
+    }
+}
+
+.recent_view_container #recent_view_table {
+    margin-top: var(--navbar-fixed-height);
+}
+
+.app {
+    min-width: 100%;
+    min-height: 100%;
+    z-index: 99;
+}
+
+.app-main,
+.header-main {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+}
+
+body.has-overlay-scrollbar {
+    /* Move simplebar scrollbar to the left so that
+       browser scrollbar doesn't overlap with it. */
+    .app-main .column-right .simplebar-track.simplebar-vertical {
+        right: var(--browser-overlay-scrollbar-width);
+    }
+}
+
+/* Styles for popovers rendered as an overlay at the
+   center of the screen, primarily used in mobile sizes. */
+#popover-overlay-background {
+    position: fixed;
+    inset: 0;
+
+    /* Needs to be higher than the 105 for div.overlay so that the
+       emoji picker can render on top of the user status picker. */
+    z-index: 106;
+    background-color: hsl(0deg 0% 0% / 70%);
+}
+
+/* Set flex display on login buttons only in the
+   spectator view. We want them to display none
+   otherwise. */
+.spectator-view #top_navbar .column-right .spectator_login_buttons {
+    display: flex;
+}
+
+/* This applies to column-left both in navbar and app. */
+.column-right {
+    width: var(--right-sidebar-width);
+    max-width: var(--right-sidebar-width);
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    .spectator_login_buttons {
+        /* Allow the login buttons flexbox to
+           grow and shrink to fit the available
+           area. */
+        flex: 1 1 0;
+        /* Use a flexbox gap of 7px between the
+           buttons to reflect the outer 7px of space. */
+        gap: 7px;
+        /* Don't allow login buttons flexbox to
+           break out of the allotted right-column
+           space. */
+        overflow: hidden;
+        /* This should be removed once the navbar
+           has been rewritten entirely with modern
+           layout methods. For now, we pull this up
+           so that the buttons and search box are
+           the same height and their boxes sit on the
+           same invisible line. */
+        margin-top: -1px;
+
+        & a {
+            font-size: calc(16em / 14);
+            /* Vertically size the buttons to
+               match the search box. */
+            line-height: 28px;
+            font-weight: 450;
+            letter-spacing: 0.03ch;
+            /* Allow individual buttons to grow
+               and shrink inside their containers,
+               with padding to prevent text from
+               sitting against the edge of the button. */
+            flex: 1 1 0;
+            padding: 0 4px;
+            /* Center the text nodes within the
+               flex items. */
+            text-align: center;
+            /* Internationalization: disallow wrapping,
+               and display an ellipsis when there's not
+               space enough to accommodate the button
+               text. */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* Button curvature and transitions. */
+            border-radius: 4px;
+            transition: all 100ms ease-out;
+
+            &:hover,
+            &:focus {
+                text-decoration: none;
+            }
+
+            &:active {
+                transform: scale(0.98);
+            }
+
+            & i {
+                margin-right: 3px;
+            }
+        }
+
+        & .signup_button {
+            color: var(
+                --color-navbar-spectator-low-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-low-attention-brand-button-background
+            );
+
+            &:hover {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-active
+                );
+            }
+        }
+
+        & .login_button {
+            color: var(
+                --color-navbar-spectator-medium-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-medium-attention-brand-button-background
+            );
+
+            &:hover {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-active
+                );
+            }
+        }
+
+        .divider {
+            color: hsl(0deg 0% 88%);
+            font-size: 20px;
+            line-height: 1;
+        }
+    }
+
+    .spectator_narrow_login_button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: var(--header-height);
+        width: var(--header-height);
+
+        @media (width >= $xl_min) and (height >= 600px) {
+            display: none;
+        }
+
+        .login_button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+
+            &:hover {
+                text-decoration: none;
+            }
+
+            & i {
+                color: var(--color-navbar-icon);
+                font-size: 1.6em;
+            }
+        }
+    }
+}
+
+/* This applies to column-left both in navbar and app. */
+.column-left {
+    width: var(--left-sidebar-width);
+    max-width: var(--left-sidebar-width);
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+#message_feed_container,
+.app-main .column-left .left-sidebar,
+.app-main .column-right .right-sidebar {
+    padding-top: calc(
+        var(--navbar-fixed-height) + var(--header-padding-bottom)
+    );
+}
+
+.app-main {
+    height: 100%;
+    min-height: 100%;
+
+    .column-left .left-sidebar,
+    .column-right .right-sidebar {
+        position: fixed;
+        z-index: 100;
+    }
+
+    .column-left .left-sidebar {
+        width: var(--left-sidebar-width);
+        padding-left: var(--left-sidebar-collapse-widget-gutter);
+    }
+
+    .column-right .right-sidebar {
+        padding-left: 10px;
+        width: 240px;
+    }
+
+    .column-middle {
+        min-height: 100%;
+        /* We need `overflow-y: visible` for sticky headers to work. */
+    }
+}
+
+.column-middle,
+#compose-content {
+    margin-right: var(--right-sidebar-width);
+    margin-left: calc(
+        var(--left-sidebar-width) + var(--left-sidebar-collapse-widget-gutter)
+    );
+    position: relative;
+}
+
+textarea,
+input {
+    font-family: "Source Sans 3 VF", sans-serif;
+}
+
+/* Override Bootstrap's fixed sizes for various elements */
+textarea,
+label {
+    font-size: inherit;
+    line-height: inherit;
+}
+
+/* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
+a:not(:active):focus,
+button:focus,
+.new-style label.checkbox input[type="checkbox"]:focus ~ span,
+i.fa:focus,
+i.zulip-icon:focus-visible,
+[role="button"]:focus {
+    outline: 2px solid var(--color-outline-focus);
+    /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
+}
+
+/* List of text-like input types taken from Bootstrap */
+input {
+    &[type="text"],
+    &[type="password"],
+    &[type="datetime"],
+    &[type="datetime-local"],
+    &[type="date"],
+    &[type="month"],
+    &[type="time"],
+    &[type="week"],
+    &[type="number"],
+    &[type="email"],
+    &[type="url"],
+    &[type="search"],
+    &[type="tel"],
+    &[type="color"] {
+        font-size: inherit;
+        height: 1.4em;
+    }
+}
+
+li,
+.table th,
+.table td {
+    line-height: inherit;
+}
+
+.btn {
+    font-size: inherit;
+    height: auto;
+    line-height: 100%;
+}
+
+/* Classes which style copy buttons */
+.copy_button_base {
+    outline-color: hsl(0deg 0% 73%);
+    height: 18px;
+    width: 10px;
+    padding: 6px;
+    display: block;
+    /* The below two avoids the padded element from displaying
+    its own border and background color */
+    border: none;
+    background-clip: content-box;
+
+    &:hover svg path {
+        fill: var(--color-fill-hover-copy-icon);
+    }
+}
+
+.copy_message {
+    float: right;
+    position: relative;
+    cursor: pointer;
+    top: 30px;
+    /* To make sure the svg doesn't occupy any vertical space. */
+    margin-top: -30px;
+    right: 2px;
+    padding-top: 2px;
+
+    #clipboard_image {
+        margin: 0;
+    }
+}
+
+#copy_generated_link_container {
+    display: flex;
+    width: 100%;
+    margin-right: -32px;
+    gap: 4px;
+    align-items: center;
+}
+
+#copy_generated_invite_link {
+    position: relative;
+    margin-right: -32px;
+    margin-top: -1px;
+    padding: 6px 3px 6px 13px;
+    float: right;
+
+    /* This property nullifies the box-shadow rendered by .btn class */
+    &:active {
+        box-shadow: none;
+    }
+
+    & path {
+        fill: var(--color-fill-user-invite-copy-icon);
+    }
+
+    &:hover svg path {
+        fill: var(--color-fill-hover-copy-icon);
+    }
+}
+
+#clipboard_image {
+    margin-top: -5px;
+    margin-left: -8px;
+}
+
+/* Classes for hiding and showing controls */
+
+.notdisplayed {
+    display: none !important;
+}
+
+.notvisible {
+    visibility: hidden !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+}
+
+/* Lighter strong */
+
+strong {
+    font-weight: 600;
+}
+
+.preserve_spaces {
+    white-space: pre-wrap;
+}
+
+.sp-input {
+    width: calc(100% - 14px);
+    box-sizing: initial !important;
+}
+
+.logout {
+    white-space: nowrap;
+}
+
+.tooltip {
+    &.in {
+        font-size: 12px;
+        line-height: 1.3;
+
+        opacity: 1;
+
+        &.left {
+            margin-left: -12px;
+            margin-top: 3px;
+        }
+    }
+
+    .tooltip-inner {
+        background-color: hsl(0deg 0% 7% / 80%);
+        padding: 3px 5px;
+    }
+
+    /*
+    Since hover and click are activated together on touchscreen
+    devices, the hover state persists until the next click, creating
+    awkward UI where the tooltip sticks around forever :(.
+
+    To resolve this, we just hide the tooltip for touch-events on
+    touch-enabled devices resolving the above problem.  This means
+    that tooltips will never appear on touchscreen devices, but that's
+    probably a reasonable tradeoff here.
+
+    Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
+    */
+
+    @media (hover: none) {
+        visibility: hidden !important;
+    }
+}
+
+.buddy_list_tooltip_content {
+    text-align: left;
+    word-wrap: break-word;
+    max-width: 280px;
+}
+
+#change_visibility_policy_button_tooltip {
+    text-align: center;
+}
+
+.narrow-filter {
+    display: block;
+    position: relative;
+}
+
+/* .dropdown-menu from v2.3.2
+   + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
+   basic idea of this fix is to remove decorations from :hover and apply them only
+   on :focus. */
+.typeahead-menu {
+    & li {
+        word-break: break-word;
+
+        & a {
+            display: block;
+            padding: 3px 20px;
+            clear: both;
+            font-weight: normal;
+            line-height: 20px;
+            color: hsl(0deg 0% 20%);
+            white-space: nowrap;
+
+            /* hidden text just to maintain line height for a blank option */
+            strong:empty {
+                &::after {
+                    content: ".";
+                    visibility: hidden;
+                }
+            }
+
+            &:hover {
+                text-decoration: none;
+            }
+
+            &:focus {
+                color: hsl(0deg 0% 100%);
+                text-decoration: none;
+                background-color: hsl(200deg 100% 38%);
+                background-image: linear-gradient(
+                    to bottom,
+                    hsl(200deg 100% 40%),
+                    hsl(200deg 100% 35%)
+                );
+            }
+
+            /* styles defined for user_circle here only deal with positioning of user_presence_circle
+            in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
+            Most of the style rules related to color, gradient etc. which are generally common throughout
+            the app are defined in user_circles.css and are not overridden here. */
+            .user_circle {
+                width: 8px;
+                height: 8px;
+                margin: 0 5px 0 -6px;
+                position: relative;
+                top: 6px;
+                right: 8px;
+                display: inline-block;
+            }
+        }
+    }
+
+    .active > a {
+        color: hsl(0deg 0% 100%);
+        text-decoration: none;
+        background-color: hsl(200deg 100% 38%);
+        background-image: linear-gradient(
+            to bottom,
+            hsl(200deg 100% 40%),
+            hsl(200deg 100% 35%)
+        );
+        outline: 0;
+
+        .user_circle_empty {
+            border-color: hsl(0deg 0% 25%);
+        }
+    }
+
+    .active > a:hover {
+        text-decoration: none;
+    }
+}
+
+/* Copied from bootstrap 2.1.1 CSS for dropdown-menu li > a:focus */
+li.actual-dropdown-menu > a:focus {
+    color: hsl(0deg 0% 100%);
+    text-decoration: none;
+    background-color: transparent;
+    background-image: none;
+    filter: none;
+    outline: 0;
+}
+
+li.actual-dropdown-menu i {
+    /* In gear menu, make icons the same width so labels line up. */
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+td.pointer {
+    vertical-align: top;
+    padding-top: 10px;
+    background-color: hsl(0deg 0% 100%);
+}
+
+.new_messages {
+    background-color: hsl(194deg 53% 79%);
+}
+
+.new_messages,
+.new_messages_fadeout {
+    transition: all 3s ease-in-out;
+}
+
+.messagebox-content .slow-send-spinner {
+    display: block;
+    font-size: 12px;
+    text-align: right;
+    opacity: 0.8;
+    color: var(--color-text-default);
+    animation: rotate 1s infinite linear;
+}
+
+.message_controls {
+    display: flex;
+    align-items: baseline;
+    font-size: 16px;
+    /* This is a bit tricky; we need to reserve space for the message
+       controls even when the message isn't hovered, so that hover
+       doesn't disturb the layout.  Usually that would be just
+       visibility: hidden, but that cannot be animated, so we set
+       opacity as well, which can be animated. */
+    .message_control_button {
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        width: var(--message-box-icon-width);
+        height: var(--message-box-icon-height);
+        text-align: center;
+        color: var(--color-message-action-visible);
+
+        & i {
+            vertical-align: middle;
+            /* TODO: Math for these values, possibly with variables.
+               In short, the icon body is 16px square; the current
+               area for the icon is 26px wide by 25px tall, so these
+               values ensure a 26px x 25px clickable area for the icon. */
+            padding: 2.5px 3px;
+
+            &:active {
+                transform: scale(0.92);
+                transform-origin: center;
+                outline: 0;
+                transition: unset;
+            }
+
+            &:focus {
+                /* Remove the outline but do not color on focus;
+                   focus-visible is more appropriate for the color
+                   changes, as it only applies color when focus
+                   is achieved from a keyboard or other pointerless
+                   device. */
+                outline: 0;
+            }
+
+            &:hover,
+            &:focus-visible {
+                outline: 0;
+                color: var(--color-message-action-interactive);
+            }
+
+            /* Separate hover colors for stars */
+            &.star:hover,
+            &.star:focus-visible {
+                color: var(--color-message-star-action);
+            }
+        }
+
+        .zulip-icon-more-vertical {
+            /* Increase visual prominence of the vdots. */
+            font-size: 21px;
+        }
+    }
+
+    /* Tooltips should not follow the width restrictions of their parent element. */
+    [data-tippy-root] {
+        width: max-content;
+        word-wrap: unset;
+    }
+
+    > .view_read_receipts {
+        font-size: 14px;
+        height: 16px;
+
+        &:hover {
+            color: hsl(200deg 100% 40%);
+        }
+    }
+
+    .edit_content {
+        /* Icons for editing content are determined on message hover;
+           we set an empty `.edit_content` to have 0 height in order to
+           preserve the layout of the other icons prior to any hovering. */
+        &:empty {
+            height: 0;
+        }
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    .message_failed {
+        display: inline-flex;
+        justify-content: space-between;
+        cursor: pointer;
+        position: relative;
+        vertical-align: middle;
+        padding-left: 2px;
+
+        &.hide {
+            display: none;
+        }
+
+        .rotating {
+            display: inline-block;
+            outline: none;
+
+            animation: rotate 1s infinite linear;
+        }
+
+        .failed_message_action {
+            opacity: 1 !important;
+            color: var(--color-failed-message-send-icon);
+            font-weight: bold;
+            padding: 1px;
+        }
+
+        .message_control_button {
+            visibility: inherit;
+        }
+    }
+
+    .star_container {
+        &:not(.empty-star) {
+            /* Color, opacity, and visibility, as though the message is hovered. */
+            color: var(--color-message-star-action);
+            opacity: 1;
+            visibility: visible !important;
+        }
+    }
+}
+
+.star {
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.copy-paste-text {
+    /* Hide the text that we want copy paste to capture */
+    position: absolute;
+    text-indent: -99999px;
+    float: left;
+    width: 0;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+@keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.selected_message {
+    .messagebox-content {
+        /* We add an outline and shift it inside the message so that without
+           any vertical padding changes, we can have the outline surrounding
+           the message without overflowing the boundary of the message in any case. */
+        outline: 1px solid var(--color-selected-message-outline);
+        border-radius: 5px;
+        outline-offset: -1px;
+    }
+}
+
+.selected_msg_for_touchscreen {
+    @media (hover: none) {
+        .message_reactions .reaction_button {
+            visibility: visible;
+            pointer-events: all;
+        }
+    }
+}
+
+/* Make the action icon on the message row
+   always visible while the popover is open */
+.has_actions_popover .actions_hover {
+    visibility: visible !important;
+    pointer-events: all !important;
+    opacity: 1 !important;
+
+    & i:focus {
+        /* Avoid displaying a focus outline outside the popover on the \vdots
+           icon when opened via the mouse. */
+        outline: 0 !important;
+    }
+}
+
+.has_actions_popover .info {
+    opacity: 1;
+    visibility: visible;
+}
+
+.small {
+    font-size: 80%;
+}
+
+.tiny {
+    font-size: 60%;
+}
+
+.settings-forgot-password {
+    display: inline-block;
+    position: relative;
+    color: hsl(0deg 0% 73%);
+    bottom: 4px;
+}
+
+div.message-list {
+    border-collapse: separate;
+    margin-left: auto;
+    display: none;
+    width: 100%;
+}
+
+div.focused-message-list {
+    display: block;
+}
+
+.rtl {
+    direction: rtl;
+}
+
+.topic_edit {
+    display: none;
+    line-height: 22px;
+
+    .alert {
+        display: inline-block;
+        margin: 0;
+        padding: 0 10px;
+        line-height: 17px;
+    }
+}
+
+.inline_topic_edit {
+    margin-bottom: 5px;
+    width: 206px;
+
+    &.header-v {
+        height: 18px;
+        display: inline-block;
+        padding: 0 3px;
+        vertical-align: baseline;
+        line-height: 0px;
+        box-shadow: none;
+        color: hsl(0deg 0% 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        transition:
+            border linear 0.2s,
+            box-shadow linear 0.2s;
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206deg 80% 62% / 60%);
+        }
+    }
+}
+
+.inline_topic_edit:focus {
+    outline: none;
+}
+
+#move_topic_modal select {
+    width: auto;
+    margin-bottom: 10px;
+    max-width: 100%;
+}
+
+.topic_move_breadcrumb_messages {
+    margin: 0 5px 5px 0;
+    align-self: center;
+    width: 100%;
+    white-space: nowrap;
+
+    & label.checkbox {
+        /* Place the checkboxes on their own lines. */
+        display: block;
+
+        & input {
+            margin: 0;
+            vertical-align: baseline;
+        }
+
+        & + label.checkbox {
+            margin-top: 10px;
+        }
+    }
+
+    & label {
+        display: inline-block;
+        margin-right: 10px;
+    }
+}
+
+.message_length_controller {
+    .message_length_toggle {
+        display: none;
+        width: 100%;
+        height: 24px;
+        margin-bottom: 4px;
+        color: var(--color-text-show-more-less-button);
+        background-color: var(--color-show-more-less-button-background);
+        border-radius: 4px;
+        border: none;
+        outline: none;
+        font-variant: all-small-caps;
+
+        &:hover {
+            background-color: var(
+                --color-show-more-less-button-background-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-show-more-less-button-background-active
+            );
+            scale: 0.98;
+        }
+    }
+}
+
+.bookend {
+    margin-top: 10px;
+    background-color: transparent;
+}
+
+.inline_profile_picture {
+    display: inline-block;
+    width: var(--message-box-avatar-width);
+    height: var(--message-box-avatar-height);
+    /* Don't inherit the line-height from message-avatar;
+       this preserves the dimensions and rounded corners
+       on the image itself. */
+    line-height: 1;
+    margin-right: 11px;
+    vertical-align: top;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &.guest-avatar::after {
+        outline: 2px solid hsl(0deg 0% 100%);
+    }
+}
+
+.home-error-bar {
+    margin-top: 5px;
+    display: none;
+
+    .alert {
+        margin-bottom: auto;
+    }
+}
+
+.streamname {
+    font-weight: bold;
+}
+
+.top-navbar-container {
+    /* Calculate right margin so that title and description
+       elements can truncate and not collide with or run underneath
+       with the search section. */
+    margin-right: calc(
+        var(--search-box-width) + var(--navbar-content-righthand-offset)
+    );
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#streamlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-align: center;
+}
+
+.hide-streamlist-toggle-visibility,
+.hide-navbar-buttons-visibility {
+    visibility: hidden;
+}
+
+#streamlist-toggle-button {
+    text-decoration: none;
+    color: var(--color-navbar-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-hover-no-alpha);
+        }
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:active,
+    &:focus-visible {
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-focus-no-alpha);
+        }
+    }
+}
+
+#streamlist-toggle-unreadcount {
+    position: absolute;
+    display: none;
+    height: 6px;
+    width: 6px;
+    background-color: var(--color-navbar-icon);
+    top: 10px;
+    right: 9px;
+    border: 2px solid var(--color-background-navbar);
+    border-radius: 6px;
+    padding: 0;
+    font-size: 0;
+}
+
+.typeahead.dropdown-menu {
+    /* Use default color until some other typeahead overrides it. */
+    color: var(--color-text-default);
+
+    a {
+        color: inherit;
+    }
+
+    .active {
+        color: hsl(0deg 0% 100%);
+
+        .unsubscribed_icon {
+            display: block;
+            float: right;
+            margin-top: 5px;
+            margin-right: -12px;
+            font-size: 0.8em;
+            color: hsl(96deg 7% 73%);
+        }
+    }
+
+    .unsubscribed_icon {
+        display: none;
+    }
+}
+
+.typeahead-image {
+    display: inline-block;
+    height: 21px;
+    width: 21px;
+    position: relative;
+    margin-top: -4px;
+    vertical-align: middle;
+    top: 2px;
+    right: 8px;
+    border-radius: 4px;
+
+    /* For FontAwesome icons and zulip icons used in place of images for some users. */
+    font-size: 19px;
+    text-align: center;
+
+    &.zulip-icon-triple-users {
+        font-size: 19px;
+    }
+
+    &.no-presence-circle {
+        margin-left: 9px;
+        top: 3px;
+    }
+}
+
+nav {
+    .column-left {
+        text-align: left;
+        margin-left: 15px;
+
+        .nav-logo {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 8px;
+            height: 25px;
+            max-width: 200px;
+
+            @media (height < $short_navbar_cutoff_height) {
+                height: 15px;
+            }
+        }
+    }
+
+    & a {
+        &.no-style:hover {
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .no-style {
+            text-decoration: none;
+        }
+    }
+}
+
+#bottom_whitespace {
+    display: block;
+    height: var(--max-unexpanded-compose-height);
+}
+
+.operator_value {
+    font-family: "Source Code Pro", monospace;
+    color: hsl(353deg 70% 65%);
+}
+
+.operator {
+    font-family: "Source Code Pro", monospace;
+}
+
+#loading_older_messages_indicator,
+#loading_newer_messages_indicator {
+    margin: 10px;
+}
+
+#loading_older_messages_indicator_box_container,
+#loading_newer_messages_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#loading_older_messages_indicator_box,
+#loading_newer_messages_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -43px;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#page_loading_indicator {
+    margin: 10px auto;
+}
+
+#page_loading_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#page_loading_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -43px;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#create_stream_subscribers {
+    margin-top: 10px;
+
+    .checkbox {
+        display: block;
+
+        & input[type="checkbox"] {
+            margin: 5px 0;
+            float: none;
+        }
+    }
+}
+
+.sub_button_row {
+    text-align: center;
+}
+
+.small_square_button {
+    padding: 0;
+    border: none;
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+
+    &:focus {
+        outline: none;
+    }
+
+    &.small_square_x {
+        background-color: hsl(0deg 0% 100%);
+        color: hsl(0deg 0% 47%);
+
+        &:hover {
+            color: hsl(0deg 0% 18%);
+        }
+    }
+}
+
+div.topic_edit_spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-top: -1px;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+div.toggle_resolve_topic_spinner {
+    margin-top: -12px;
+    padding-left: 9px;
+}
+
+div.topic_edit_spinner .loading_indicator_spinner,
+div.toggle_resolve_topic_spinner .loading_indicator_spinner {
+    width: 14px;
+    height: 14px;
+
+    & path {
+        fill: var(--color-recipient-bar-controls-spinner);
+    }
+}
+
+textarea.invitee_emails {
+    min-height: 40px;
+    max-height: 300px;
+    width: 96%;
+    max-width: 96%;
+    resize: vertical !important;
+
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    vertical-align: middle;
+    border: 1px solid hsl(0deg 0% 80%);
+    padding: 4px 6px;
+
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206.5deg 80% 62% / 80%);
+        outline: 0;
+
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206.5deg 80% 62% / 60%);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
+}
+
+#custom-expiration-time-input,
+#invite-user-form {
+    margin: 0;
+}
+
+select.invite-expires-in,
+select.custom-expiration-time,
+select.invite-as {
+    width: 220px;
+    height: 30px;
+    padding: 0 6px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    cursor: pointer;
+    background-color: hsl(0deg 0% 100%);
+    vertical-align: middle;
+}
+
+#multiuse_invite_link {
+    width: 370px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+}
+
+.invite-stream-controls button {
+    color: hsl(207.79deg 56.2% 52.55%);
+    background-color: transparent;
+
+    &:focus,
+    &:hover {
+        color: hsl(207.78deg 56.25% 37.65%);
+        text-decoration: underline;
+        background-color: transparent;
+    }
+}
+
+#invite-stream-checkboxes {
+    & i.zulip-icon-globe {
+        font-size: 80%;
+    }
+}
+
+.invite_type_radio_section {
+    margin: 2px 2px 2px 5px;
+
+    & div {
+        width: fit-content;
+    }
+
+    & input[type="radio"] {
+        cursor: pointer;
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+
+    .control-label-disabled label {
+        pointer-events: none;
+        cursor: not-allowed;
+    }
+}
+
+#custom-expiration-time-input {
+    width: 5ch;
+    margin-right: 15px;
+
+    padding: 4px 6px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#custom-expiration-time-unit {
+    width: auto;
+}
+
+.empty_feed_notice {
+    padding: 3em 1em;
+    text-align: center;
+}
+
+.empty-feed-notice-title {
+    font-size: 1.5em;
+    font-weight: 400;
+    word-wrap: break-word;
+}
+
+.empty-feed-notice-description {
+    font-size: 1.1em;
+}
+
+.message-fade,
+.user_sidebar_entry.user-fade {
+    opacity: 0.4;
+}
+
+.emoji {
+    height: 25px;
+    width: 25px;
+    /* Maintain `vertical-align` for inline-block styles in messages: */
+    vertical-align: middle;
+    /* But, for all others, use flexbox and its align-self property.
+      What is excellent about this is that flexbox will ignore the
+      `vertical-align` value, while inline-block contexts will ignore
+      the `align-self` property: */
+    align-self: center;
+}
+
+.status-emoji {
+    height: 16px;
+    width: 16px;
+    /* We are setting minimum width here because when the user's name is very long,
+    emoji's width decreases and causes it to break. */
+    min-width: 16px;
+    /* In most contexts, status emoji appear immediately after a name
+      field with no margin. Position the status emoji with 3px of left
+      margin to space it from the name, and set no right margin so
+      that any components to the right appear equally distant as they
+      would be from a name. */
+    margin-left: 3px;
+    margin-right: 0;
+}
+
+/* FIXME: Combine this rule with the one in portico.css somehow? */
+#pw_strength {
+    width: 100%;
+    height: 10px;
+    margin-bottom: 0;
+}
+
+.sub-unsub-message {
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+.sub-unsub-message span {
+    font-size: 1em;
+    display: block;
+    padding: 4px;
+    overflow: hidden;
+}
+
+.sub-unsub-message .stream-status {
+    opacity: 0.6;
+
+    & i {
+        font-size: 10px;
+        position: relative;
+        top: 1px;
+        margin-left: 2px;
+    }
+
+    .zulip-icon.zulip-icon-lock {
+        font-size: 12px;
+    }
+}
+
+.sub-unsub-message span::before,
+.sub-unsub-message span::after,
+.date_row span::before,
+.date_row span::after {
+    display: inline-block;
+    position: relative;
+    content: " ";
+    vertical-align: middle;
+    height: 0;
+    opacity: 0.15;
+    border-bottom: 1px solid hsl(0deg 0% 0%);
+}
+
+.sub-unsub-message span::before,
+.sub-unsub-message span::after {
+    width: 50%;
+}
+
+.date_row span::before {
+    width: 100%;
+}
+
+.date_row span::after {
+    width: 6px;
+    left: 0.25em;
+    /* Align date with message time and recipient bar date. */
+    margin-right: -1px;
+}
+
+.sub-unsub-message span::before,
+.date_row span::before {
+    right: 0.25em;
+    margin-left: -50%;
+}
+
+.sub-unsub-message span::after {
+    left: 0.25em;
+    margin-right: -50%;
+}
+
+#topic_edit_form {
+    display: inline-block;
+    margin: 0;
+    height: 22px;
+    padding-left: 20px;
+    padding-right: 3px;
+    line-height: 22px;
+    margin-left: -15px;
+}
+
+.screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: hsl(0deg 0% 0%);
+    z-index: 20000;
+}
+
+.deactivated_user .deactivated-user-icon {
+    color: inherit;
+    margin-left: 2px;
+    font-size: 0.9em;
+}
+
+.no-drag {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.user_popover_email {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: all 0.4s ease;
+
+    & i {
+        cursor: pointer;
+
+        &.hide_copy_icon {
+            display: none;
+        }
+    }
+}
+
+.email_copied,
+.user_popover_email i:hover {
+    color: hsl(170deg 48% 54%);
+}
+
+.email_copied i {
+    display: none !important;
+}
+
+.flatpickr-calendar {
+    /* Hide the up and down arrows in the Flatpickr datepicker year */
+    .flatpickr-months .numInputWrapper span {
+        display: none;
+    }
+
+    .flatpickr-time-separator {
+        position: relative;
+        left: 5px;
+    }
+
+    .flatpickr-time input {
+        margin: 0 5px;
+        min-height: 30px;
+    }
+
+    .flatpickr-confirm {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(213deg 90% 65%);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    @media (width < $md_min) {
+        /* Center align flatpickr on mobile
+         * devices so that it doesn't go out of
+         * the viewport. */
+        left: 0 !important;
+        right: 0 !important;
+        margin: auto;
+
+        &::after,
+        &::before {
+            border-top-width: 0 !important;
+        }
+    }
+}
+
+#about-zulip {
+    .exit {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        right: 8px;
+        z-index: 1;
+        color: hsl(0deg 0% 67%);
+    }
+
+    .overlay-content {
+        width: 440px;
+        border-radius: 4px;
+    }
+
+    .about-zulip-logo {
+        text-align: center;
+        margin: 30px;
+    }
+
+    .about-zulip-logo img {
+        height: 40px;
+    }
+
+    & i.fa-copy {
+        cursor: pointer;
+    }
+
+    .fa-copy:hover {
+        color: hsl(170deg 48% 54%);
+    }
+
+    .overlay-body {
+        max-height: 60vh;
+        padding: 15px;
+    }
+}
+
+@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+    .default-sidebar-behaviour {
+        &.spectator-view.default-sidebar-behaviour {
+            #navbar-middle {
+                /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+                margin-right: calc(var(--header-height) * 3 + 10px);
+            }
+
+            #help-menu,
+            #gear-menu {
+                position: relative;
+                right: var(--header-height);
+            }
+        }
+
+        &.spectator-view #top_navbar .column-right .spectator_login_buttons {
+            display: none;
+        }
+
+        .header-main .column-right {
+            /* For a diminutive right column in the navbar,
+               allow the width to be that of the flexing
+               button elements. */
+            width: auto;
+        }
+    }
+}
+
+%hide-right-sidebar {
+    .app-main .column-right {
+        display: none;
+
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            right: 15px;
+            top: 0;
+
+            .simplebar-track.simplebar-vertical {
+                right: 0;
+            }
+
+            .right-sidebar {
+                box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-left: 1px solid var(--color-border-sidebar);
+                padding-right: 15px;
+                padding-left: 15px;
+                height: 100%;
+                right: 0;
+                background-color: var(--color-background);
+            }
+        }
+    }
+}
+
+.hide-right-sidebar {
+    @extend %hide-right-sidebar;
+}
+
+.hide-right-sidebar-by-visibility .app-main .column-right {
+    visibility: hidden;
+}
+
+@media (width < $xl_min) {
+    .default-sidebar-behaviour {
+        @extend %hide-right-sidebar;
+
+        .app-main .column-middle {
+            margin-right: 7px;
+        }
+
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 4 + 10px);
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-right: 7px;
+        }
+    }
+}
+
+@media (width < $md_min) {
+    .default-sidebar-behaviour {
+        .app-main .column-left,
+        .header-main .column-left {
+            display: none;
+        }
+
+        .app-main .column-left.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            left: 0;
+            top: 0;
+
+            .left-sidebar {
+                background-color: var(--color-background);
+                box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-right: 1px solid var(--color-border-sidebar);
+                height: 100%;
+                padding-left: 10px;
+                width: var(--left-sidebar-width);
+            }
+        }
+
+        .app-main .column-middle {
+            margin-left: 7px;
+            margin-right: 7px;
+        }
+
+        #navbar-middle {
+            margin-left: 0;
+        }
+
+        .app-main .column-middle .column-middle-inner {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        #streamlist-toggle {
+            display: block;
+        }
+
+        .top-navbar-container {
+            margin-left: 40px;
+        }
+
+        .typeahead.dropdown-menu .typeahead-menu li {
+            width: 100%;
+
+            & a {
+                white-space: normal;
+            }
+        }
+
+        #feedback_container {
+            width: calc(90% - 30px);
+            left: 5%;
+            top: 5%;
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-left: 7px;
+        }
+    }
+}
+
+@media (height < $short_navbar_cutoff_height) {
+    .app-main .column-right.expanded .right-sidebar,
+    .app-main .column-left.expanded .left-sidebar {
+        margin-top: var(--navbar-fixed-height);
+        /* For very short screen sizes, skip the relatively large top padding. */
+        padding-top: 0;
+    }
+
+    /* TODO: Properly and accurately align the
+       topmost headers on the left and right
+       sidebar. */
+    .app-main .column-right.expanded .right-sidebar-items {
+        margin-top: 10px;
+    }
+
+    .app-main .column-left.expanded .left-sidebar-navigation-area {
+        margin-top: 10px;
+    }
+
+    /* Usually the styling is applied directly to the icon, but here
+    the icon is `position: static`, so we can't. */
+    .search_closed {
+        top: 5px;
+    }
+
+    #streamlist-toggle,
+    #message_view_header,
+    #searchbox,
+    .header {
+        line-height: var(--header-height);
+        height: var(--header-height);
+    }
+
+    .spectator_narrow_login_button {
+        height: var(--header-height) !important;
+    }
+
+    #streamlist-toggle-button {
+        height: var(--header-height);
+    }
+
+    #streamlist-toggle-unreadcount {
+        /* Adjust in response to shorter navbar. */
+        top: 5px;
+    }
+
+    #top_navbar .column-right #personal-menu .header-button-avatar {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (width < $mm_min) {
+    html {
+        overflow-x: hidden;
+    }
+
+    /* We don't want user to experience Zulip below this width since
+       we don't develop features for below this width. */
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 320px;
+    }
+
+    #compose #compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+}
+
+#scroll-to-bottom-button-container {
+    display: block;
+    position: absolute;
+    bottom: 41px;
+    right: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+        visibility 500ms,
+        opacity 500ms ease-in-out;
+
+    &.show {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    #scroll-to-bottom-button-clickable-area {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &:hover #scroll-to-bottom-button {
+            background: hsl(240deg 96% 68%);
+        }
+
+        #scroll-to-bottom-button {
+            text-align: center;
+            width: 40px;
+            height: 40px;
+            background: hsl(240deg 96% 68% / 50%);
+            border-radius: 50%;
+
+            & i {
+                color: hsl(0deg 0% 100%);
+                margin: 0 auto;
+                font-size: 21px;
+                position: relative;
+                top: 8px;
+            }
+        }
+    }
+}
+
+.tooltip_right_arrow {
+    position: relative;
+    top: -1px;
+    font-weight: 600;
+}
+
+.spectator_login_for_image_button {
+    max-width: 250px;
+    height: 50px;
+
+    :hover {
+        text-decoration: none;
+    }
+
+    .login_button {
+        padding: 5px;
+        margin-top: 5px;
+
+        .fa {
+            top: 1px;
+        }
+    }
+}
+
+.simplebar-content-wrapper {
+    /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
+        but we don't want it to have an outline when focused anywhere in the app. */
+    outline: none;
+
+    /* This prevents the popover from closing once the top/bottom is reached */
+    overscroll-behavior: contain;
+}
+
+.dropdown-list-container {
+    .dropdown-list-search {
+        display: flex;
+
+        .dropdown-list-search-input {
+            background: var(--color-background-widget-input);
+            color: var(--color-text-dropdown-input);
+            width: 100%;
+            margin: 4px 4px 2px;
+
+            &:focus {
+                background: hsl(0deg 0% 100%);
+                border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
+                box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
+            }
+        }
+    }
+
+    .dropdown-list-wrapper {
+        /* Sync with `max-height` in dropdown_widget. */
+        max-height: 210px;
+        min-width: 200px;
+
+        .dropdown-list {
+            list-style: none;
+            margin: 0;
+
+            .list-item:focus {
+                background-color: hsl(220deg 12% 4.9% / 5%);
+                outline: none;
+            }
+        }
+
+        .no-dropdown-items {
+            color: hsl(0deg 0% 60%);
+            display: none;
+        }
+    }
+}
+
+.dropdown-list-container .dropdown-list-item-common-styles {
+    display: block;
+    color: hsl(0deg 0% 20%);
+    padding: 3px 10px 3px 8px;
+    font-weight: 400;
+    line-height: 20px;
+    white-space: normal;
+
+    .stream-privacy-type-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        padding-right: 2px;
+    }
+
+    &:hover {
+        text-decoration: none;
+        background-color: hsl(220deg 12% 4.9% / 5%);
+    }
+
+    &:focus {
+        text-decoration: none;
+        outline: none;
+    }
+}
+
+.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+    font-weight: 700;
+}
+
+#scheduled_messages_overlay .error-icon-message-recipient {
+    width: 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-grow: 1;
+    color: var(--color-failed-message-send-icon);
+
+    .zulip-icon {
+        padding: 5px;
+    }
+}
+
+#unstar_all_messages,
+.emoji-popover-tab-item {
+    .zulip-icon-star {
+        position: relative;
+        top: 2px;
+    }
+}
+
+.typeahead-option-label {
+    display: flex !important;
+    justify-content: space-between;
+
+    > strong {
+        margin-right: 14px;
+    }
+}
+
+.header-main .column-right {
+    display: flex;
+    /* Make the top navbar right column its full width,
+       less 7px of space on the left and right. */
+    width: calc(var(--right-sidebar-width) - 7px - 7px);
+    justify-content: flex-end;
+    align-items: center;
+    /* Move the column to the right with absolute
+       positioning, rather than margin. */
+    right: 7px;
+
+    & a:focus {
+        filter: none;
+        outline: 0;
+    }
+}
+
+.header-button {
+    width: var(--header-height);
+    height: var(--header-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    .zulip-icon {
+        color: var(--color-navbar-icon);
+    }
+
+    .zulip-icon-gear {
+        font-size: 18px;
+    }
+
+    .zulip-icon-help-bigger,
+    .zulip-icon-user-list {
+        font-size: 20px;
+    }
+
+    .zulip-icon-help {
+        position: relative;
+        top: 0.5px;
+        right: -0.5px;
+    }
+}
+
+#personal-menu {
+    .header-button-avatar {
+        width: 24px;
+        height: 24px;
+        background-size: cover;
+        border-radius: 4px;
+        background-color: var(--color-background-image-loader);
+        border: 1px solid var(--color-border-personal-menu-avatar);
+    }
+}

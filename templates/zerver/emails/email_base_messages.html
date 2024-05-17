@@ -1,0 +1,28 @@
+{% import 'zerver/emails/email.css' as css_styles %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Zulip</title>
+        <style>{{css_styles}}</style>
+    </head>
+    {% if has_preheader %}
+    <span style="display:none !important;
+      visibility:hidden;
+      color:transparent;
+      mso-hide:all;
+      font-size:1px;
+      color:hsl(0, 0%, 100%);
+      line-height:1px;
+      max-height:0px;
+      height:0px;
+      max-width:0px;
+      width:0px;
+      opacity:0;
+      overflow:hidden;">
+        {% block preheader %}{% endblock %}
+    </span>
+    {% endif %}
+    {% block content %}{% endblock %}
+    {% block manage_preferences %}{% endblock %}
+</html>

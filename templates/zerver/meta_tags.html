@@ -1,0 +1,25 @@
+<!-- Google / search engine tags -->
+{% if allow_search_engine_indexing %}
+    {% if PAGE_DESCRIPTION %}
+    <meta name="description" content="{{ PAGE_DESCRIPTION }}" />
+    {% endif %}
+{% else %}
+    <meta name="robots" content="noindex,nofollow" />
+{% endif %}
+
+<!-- Open Graph / Facebook / Twitter meta tags -->
+<meta property="og:url" content="{{ PAGE_METADATA_URL }}" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Zulip" />
+{% if PAGE_TITLE %}
+<meta property="og:title" content="{{ PAGE_TITLE }}" />
+{% endif %}
+{% if PAGE_DESCRIPTION %}
+<meta property="og:description" content="{{ PAGE_DESCRIPTION }}" />
+{% endif %}
+{% if PAGE_METADATA_IMAGE %}
+<meta property="og:image" content="{{ PAGE_METADATA_IMAGE }}" />
+{% else %}
+<meta property="og:image" content="{{ static('images/logo/zulip-icon-128x128.png') }}" />
+{% endif %}
+<meta name="twitter:card" content="summary" />

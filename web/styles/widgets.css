@@ -1,0 +1,268 @@
+.widget-content {
+    margin-bottom: var(--markdown-interelement-space-px);
+}
+
+.widget-choices {
+    & ul {
+        padding: 3px;
+    }
+
+    & li {
+        padding: 2px;
+        list-style: none;
+    }
+
+    & button {
+        font-weight: 700;
+        color: hsl(240deg 100% 50%);
+    }
+
+    .widget-choices-heading {
+        font-weight: 600;
+    }
+}
+
+.todo-widget {
+    /* For the box-shadow to be visible on the left */
+    .add-task,
+    .add-desc {
+        font-size: 14px;
+        font-weight: 400;
+        margin-right: 4px;
+    }
+
+    & label.checkbox {
+        display: flex; /* Arrange that a multi-line description line wraps properly. */
+        position: relative;
+        vertical-align: top;
+
+        & input[type="checkbox"] {
+            ~ span {
+                height: 12px;
+                width: 12px;
+                border: 2px solid hsl(156deg 28% 70%);
+
+                border-radius: 4px;
+                filter: brightness(1);
+
+                cursor: pointer;
+            }
+
+            &:checked ~ span {
+                background-image: url("../images/checkbox-white.svg");
+                background-size: 75%;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+                background-color: hsl(156deg 41% 40%);
+                border: 2px solid hsl(156deg 41% 40%);
+            }
+
+            &:disabled ~ span {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            &:hover ~ span {
+                border-color: hsl(156deg 30% 50%);
+            }
+
+            &:focus ~ span {
+                outline-color: hsl(0deg 0% 100% / 0%);
+            }
+        }
+    }
+}
+
+.todo-widget,
+.poll-widget {
+    & h4 {
+        font-size: 18px;
+        font-weight: 600;
+
+        /* for example in help `?` widget */
+        &.reduced-font-size {
+            font-size: 16px;
+        }
+    }
+
+    & li {
+        list-style: none;
+        margin: 2px 2px 6px 0;
+    }
+
+    & ul {
+        margin: 5px 0;
+        padding: 0;
+    }
+
+    & input {
+        &.poll-question,
+        &.poll-option,
+        &.add-task,
+        &.add-desc {
+            width: 206px;
+        }
+    }
+
+    & input[type="text"] {
+        border: 1px solid hsl(0deg 0% 80%);
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+        transition:
+            border linear 0.2s,
+            box-shadow linear 0.2s;
+        border-radius: 4px;
+        color: hsl(0deg 0% 33%);
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow: none;
+            background-color: var(--color-background-widget-input);
+        }
+    }
+}
+
+.poll-widget {
+    .poll-option {
+        font-weight: 400;
+        font-size: 14px;
+    }
+
+    /* For the box-shadow to be visible on the left */
+    & input.poll-option {
+        margin-right: 4px;
+    }
+
+    & span.poll-option {
+        font-weight: 600;
+        padding-top: 28px;
+    }
+
+    .poll-vote {
+        /* This is to ensure that even when the list of poll-names overflows,
+        the voting button remains clickable and on top of all other containers. */
+        position: relative;
+        z-index: 1;
+
+        color: hsl(156deg 41% 40%);
+        border-color: hsl(156deg 28% 70%);
+        border-style: solid;
+        font-weight: 600;
+        border-radius: 3px;
+        margin-right: 4px;
+        padding-left: 2px; /* padding for Chromium browsers */
+        padding-right: 2px;
+        min-width: 25px;
+        height: 25px;
+        font-size: 13px;
+        background-color: hsl(0deg 0% 100%);
+
+        &:hover {
+            border-color: hsl(156deg 30% 50%);
+        }
+
+        &:focus {
+            outline: 0;
+            background-color: hsl(156deg 41% 90%);
+        }
+    }
+
+    .poll-names {
+        color: hsl(0deg 0% 45%);
+        padding-left: 4px;
+        padding-top: 28px;
+        font-size: 14px;
+    }
+}
+
+button {
+    &.task {
+        height: 20px;
+        width: 20px;
+        background-color: transparent;
+        border-color: hsl(156deg 28% 70%);
+        margin-right: 4px;
+        border-radius: 3px;
+
+        &:hover {
+            border: 1px solid hsl(194deg 60% 40%);
+        }
+    }
+
+    &.add-task,
+    &.poll-option {
+        color: hsl(156deg 41% 40%);
+        border: 1px solid hsl(156deg 28% 70%);
+        width: 100px;
+        border-radius: 3px;
+        background-color: hsl(0deg 0% 100%);
+        padding: 4px;
+        padding-left: 14px;
+        padding-right: 14px;
+        transition: all 0.2s ease;
+
+        &:hover,
+        &:focus {
+            outline: 0;
+            border-color: hsl(156deg 30% 50%);
+        }
+
+        &:active {
+            border-color: hsl(156deg 30% 40%);
+            color: hsl(156deg 44% 43%);
+            background-color: hsl(154deg 33% 96%);
+        }
+    }
+}
+
+input,
+button {
+    &.add-task,
+    &.add-desc,
+    &.poll-option,
+    &.poll-question,
+    &.todo-task-list-title {
+        padding: 4px 6px;
+        margin: 2px 0;
+    }
+}
+
+.widget-error {
+    color: hsl(1deg 45% 50%);
+    font-size: 12px;
+}
+
+.poll-question-check,
+.poll-question-remove,
+.todo-task-list-title-check,
+.todo-task-list-title-remove {
+    width: 28px !important;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid hsl(0deg 0% 80%);
+    background-color: hsl(0deg 0% 100%);
+
+    &:hover {
+        border-color: hsl(0deg 0% 60%);
+    }
+}
+
+.poll-edit-question,
+.todo-edit-task-list-title {
+    opacity: 0.4;
+    display: inline-block;
+    margin-left: 5px;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.poll-question-header,
+.todo-task-list-title-header {
+    display: inline;
+}
+
+.current-user-vote {
+    background-color: hsl(156deg 10% 90% / 90%);
+}

@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -e
+
+usage() {
+    echo "usage: initialize-database [--quiet]" >&2
+    exit 1
+}
+
+args="$(getopt -o '' --long help,quiet -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help) usage ;;
+        --quiet)
+            QUIET=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
+    esac
+done
+
+if [ "$#" -gt 0 ]; then
+    usage
+fi
+
+set -x
+
+# Change to root directory of the checkout that we're running from
+THIS_DIR="$(dirname "$(readlink -f "$0")")"
+cd "$THIS_DIR/../.."
+
+./manage.py checkconfig
+
+./manage.py migrate --noinput
+./manage.py createcachetable third_party_api_results
+
+# Check if the supervisor socket exists.  If not, it could be:
+#
+# A) A normal installation went bad (supervisor hasn't started)
+# B) We are in a Docker container and don't have supervisor running
+#
+# In either case, it doesn't make sense to restart supervisor jobs
+if [ -e "/var/run/supervisor.sock" ]; then
+    ./scripts/restart-server
+fi
+
+set +x
+if [ -z "$QUIET" ]; then
+    echo "Congratulations!  You have successfully configured your Zulip database."
+    echo "If you haven't already, you should configure email in /etc/zulip/settings.py."
+    echo
+    echo "Next, run as the zulip user (use 'su zulip' if needed):"
+    echo
+    echo "    /home/zulip/deployments/current/manage.py generate_realm_creation_link"
+    echo
+    echo "This generates a secure, single-use link that you you can use to set up "
+    echo "a Zulip organization from the convenience of your web browser."
+fi

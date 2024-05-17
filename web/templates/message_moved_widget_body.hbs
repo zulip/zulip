@@ -1,0 +1,6 @@
+<div>
+    {{#tr}}
+    Message moved to <z-link>{stream_topic}</z-link>.
+    {{#*inline "z-link"}}<a href="{{new_location_url}}">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+</div>

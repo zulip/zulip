@@ -1,0 +1,23 @@
+<div data-step="1">
+    {{t "Welcome back!" }}
+    {{#if old_unreads_missing}}
+        {{#tr}}
+            You have <z-link>at least {unread_msgs_count}</z-link> unread messages.
+            {{#*inline "z-link"}}<a href="/help/marking-messages-as-read" class="alert-link bankruptcy_unread_count" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    {{else}}
+        {{#tr}}
+            You have <z-link>{unread_msgs_count}</z-link> unread messages.
+            {{#*inline "z-link"}}<span class="bankruptcy_unread_count">{{> @partial-block}}</span>{{/inline}}
+        {{/tr}}
+    {{/if}}
+    {{t "Do you want to mark them all as read?" }}
+    <span class="buttons">
+        <a class="alert-link accept-bankruptcy" role="button" tabindex=0>{{t "Yes, please!" }}</a>
+        &bull;
+        <a class="alert-link exit" role="button" tabindex=0>{{t "No, I'll catch up." }}</a>
+    </span>
+</div>
+<div data-step="2" style="display: none;">
+    {{t "Marking all messages as read…" }}
+</div>

@@ -1,0 +1,332 @@
+$alert-red: hsl(16deg 60% 45%);
+$alert-error-red: hsl(0deg 80% 40%);
+
+.alert-display {
+    display: none;
+
+    &.show {
+        display: block;
+    }
+}
+
+.alert-animations {
+    &.show {
+        animation-name: fadeIn;
+        animation-duration: 0.3s;
+        animation-fill-mode: forwards;
+    }
+
+    &.fade-out {
+        animation-name: fadeOut;
+        animation-duration: 0.3s;
+        animation-fill-mode: forwards;
+    }
+
+    .faded {
+        opacity: 0.7;
+    }
+}
+
+/* alert box component changes */
+.alert-box {
+    /* Ensure alert box remains in viewport,
+      regardless of scroll position in message
+      list. */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 900px;
+    margin-left: calc(50% - 450px);
+    z-index: 220;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    .stacktrace {
+        @extend .alert-display, .alert-animations;
+
+        font-size: 1rem;
+        color: hsl(0deg 80% 40%);
+
+        margin-top: 5px;
+        padding: 1rem 0;
+
+        background-color: hsl(0deg 100% 98%);
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 80% 40%);
+        box-shadow: 0 0 2px hsl(0deg 80% 40%);
+
+        .stacktrace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .message {
+                flex: 1 1 auto;
+            }
+
+            .warning-symbol,
+            .exit {
+                flex: 0 0 auto;
+                font-size: 1.3rem;
+                padding: 0 1rem;
+            }
+
+            .exit::after {
+                cursor: pointer;
+                font-size: 2.3rem;
+                content: "\d7";
+                line-height: 0.5;
+            }
+        }
+
+        .stacktrace-more-info {
+            font-size: 0.85rem;
+            white-space: pre;
+            font-family: "Source Code Pro", monospace;
+            margin-left: 3.3rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background-color: hsl(0deg 7% 98%);
+        }
+
+        .stacktrace-content {
+            font-family: "Source Code Pro", monospace;
+            font-size: 0.85rem;
+
+            margin-bottom: 0.5rem;
+
+            .stackframe {
+                padding-left: calc(3.3rem - 14px);
+                padding-right: 1rem;
+            }
+        }
+
+        .expand {
+            cursor: pointer;
+            color: hsl(0deg 32% 83%);
+
+            &:hover {
+                color: hsl(0deg 0% 20%);
+            }
+        }
+
+        .subtle {
+            color: hsl(0deg 7% 45%);
+        }
+
+        .code-context {
+            color: hsl(0deg 7% 15%);
+            background-color: hsl(0deg 7% 98%);
+            box-shadow:
+                inset 0 11px 10px -10px hsl(0deg 7% 70%),
+                inset 0 -11px 10px -10px hsl(0deg 7% 70%);
+
+            margin-top: 1em;
+            margin-bottom: 1em;
+
+            .code-context-content {
+                padding: 1rem 0;
+                white-space: pre;
+                overflow-x: auto;
+            }
+
+            .line-number {
+                width: 3rem;
+                display: inline-block;
+                text-align: right;
+                color: hsl(0deg 7% 35%);
+            }
+
+            .focus-line {
+                background-color: hsl(0deg 7% 90%);
+                width: 100%;
+            }
+        }
+    }
+
+    .alert {
+        @extend .alert-animations;
+
+        font-size: 1rem;
+        border-radius: 4px;
+        background-color: hsl(0deg 0% 100%);
+
+        position: relative;
+
+        /* gives room for the error icon and the exit button. */
+        padding: 10px 50px;
+
+        text-shadow: none;
+
+        color: $alert-red;
+        border: 1px solid $alert-red;
+        box-shadow: 0 0 2px $alert-red;
+
+        &::before {
+            float: left;
+            margin-left: -38px;
+
+            font-family: FontAwesome;
+            font-size: 1.3em;
+            line-height: 1;
+            overflow: hidden;
+            content: "\f071";
+
+            color: hsl(16deg 60% 55%);
+        }
+
+        &::after {
+            clear: both;
+            content: "";
+            display: table;
+        }
+
+        &.alert-error {
+            color: $alert-error-red;
+            border: 1px solid $alert-error-red;
+            box-shadow: 0 0 2px $alert-error-red;
+
+            &::before {
+                color: $alert-error-red;
+            }
+        }
+
+        .exit {
+            float: right;
+            margin: -10px -50px -10px 0;
+            padding: 13px 10px;
+
+            font-size: 2.5em;
+            font-weight: 300;
+            line-height: 1ex;
+            overflow: hidden;
+
+            cursor: pointer;
+
+            &::after {
+                content: "\d7";
+            }
+        }
+    }
+}
+
+/* animation section */
+@keyframes fadeIn {
+    0% {
+        display: block;
+        opacity: 0;
+        transform: translateY(-100px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        display: none;
+        opacity: 0;
+        transform: translateY(-100px);
+    }
+}
+
+/* @media queries */
+@media (width < $lg_min) {
+    .alert-box {
+        width: 80%;
+        left: 10%;
+        margin-left: 0;
+    }
+}
+
+#request-progress-status-banner {
+    display: none;
+    align-items: center;
+    padding: 5px 10px;
+    margin-top: 10px;
+    grid-template-columns: 80px auto 50px;
+
+    &.show {
+        display: grid !important;
+    }
+
+    &.alert-loading {
+        .alert-zulip-logo,
+        .loading-indicator {
+            display: block;
+        }
+
+        /* Hide exit button since clicking it will be useless in
+           this scenario. */
+        .exit {
+            display: none;
+        }
+    }
+
+    &.alert-success .success-indicator {
+        display: block;
+    }
+
+    &.alert-loading,
+    &.alert-success {
+        border-color: hsl(156deg 28% 70%);
+        box-shadow: 0 0 2px hsl(156deg 28% 70%);
+
+        .exit {
+            color: hsl(156deg 30% 50%);
+        }
+    }
+
+    &::before {
+        content: "";
+        margin-left: 0;
+    }
+
+    .alert-zulip-logo {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+    }
+
+    .loading-indicator {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+    }
+
+    .success-indicator {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+        padding: 7px;
+        font-size: 1.5em;
+        line-height: 0;
+        color: hsl(156deg 30% 50%);
+    }
+
+    .alert-content {
+        grid-column: 2 / 3;
+        grid-row-start: 1;
+        color: hsl(0deg 0% 20%);
+    }
+
+    .exit {
+        float: unset;
+        margin: 0;
+        margin-left: auto;
+        grid-column: 3 / 4;
+        grid-row-start: 1;
+        line-height: 0;
+    }
+}

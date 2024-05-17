@@ -1,0 +1,21 @@
+{
+  "name": "@zulip/shared",
+  "version": "0.0.18",
+  "license": "Apache-2.0",
+  "scripts": {
+    "prepare": "rm -rf lib && tsc && cp src/*.flow lib",
+    "version": "tools/npm-version",
+    "postversion": "tools/npm-postversion"
+  },
+  "dependencies": {
+    "katex": "^0.16.2",
+    "lodash": "^4.17.19"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.2"
+  },
+  "files": [
+    "icons",
+    "lib"
+  ]
+}

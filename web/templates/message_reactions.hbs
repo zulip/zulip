@@ -1,0 +1,9 @@
+{{#each this/msg/message_reactions}}
+    {{> message_reaction}}
+{{/each}}
+<div class="reaction_button" role="button" aria-haspopup="true" data-tippy-content="{{t 'Add emoji reaction' }}" aria-label="{{t 'Add emoji reaction' }} (:)">
+    <div class="emoji-message-control-button-container">
+        <i class="zulip-icon zulip-icon-smile" tabindex="0"></i>
+        <div class="message_reaction_count">+</div>
+    </div>
+</div>

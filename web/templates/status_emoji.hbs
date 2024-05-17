@@ -1,0 +1,12 @@
+{{~#if . ~}}
+{{~#if emoji_alt_code ~}}
+<span class="emoji_alt_code">&nbsp;:{{emoji_name}}:</span>
+{{~else if still_url ~}}
+<img src="{{still_url}}" class="emoji status-emoji status-emoji-name" data-animated-url="{{url}}" data-still-url="{{still_url}}" data-tippy-content=":{{emoji_name}}:" />
+{{~else if url ~}}
+{{~!-- note that we have no still_url --~}}
+<img src="{{url}}" class="emoji status-emoji status-emoji-name" data-animated-url="{{url}}" data-tippy-content=":{{emoji_name}}:" />
+{{~else if emoji_name ~}}
+<span class="emoji status-emoji status-emoji-name emoji-{{emoji_code}}" data-tippy-content=":{{emoji_name}}:"></span>
+{{~/if ~}}
+{{~/if ~}}

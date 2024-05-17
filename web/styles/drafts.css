@@ -1,0 +1,73 @@
+.drafts-container {
+    .header-body {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 5px;
+
+        .removed-drafts-message {
+            text-align: left;
+            margin-left: 25px;
+
+            @media (width < $lg_min) {
+                text-align: center;
+                margin-left: 0;
+            }
+        }
+
+        .delete-drafts-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+
+            .delete-selected-drafts-button {
+                &:focus {
+                    background-color: hsl(0deg 0% 93%);
+                }
+            }
+
+            .select-drafts-button {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                margin-right: 25px;
+                padding-left: 15px;
+                padding-right: 15px;
+
+                &:focus {
+                    background-color: hsl(0deg 0% 93%);
+                }
+            }
+
+            .select-state-indicator {
+                width: 15px;
+            }
+
+            @media (width < $lg_min) {
+                margin-top: 5px;
+                width: 100%;
+            }
+        }
+
+        @media (width < $lg_min) {
+            display: block;
+        }
+    }
+
+    .drafts-list {
+        & h2 {
+            font-size: 1.1em;
+            line-height: normal;
+            margin-bottom: 5px;
+        }
+    }
+
+    .draft-selection-checkbox {
+        margin-top: 5px;
+        /* Required to make sure that the checkbox icon stays inside
+           the grid. Any value greater than 13px (original width of
+           the checkbox icon) will work. */
+        width: 15px;
+    }
+}

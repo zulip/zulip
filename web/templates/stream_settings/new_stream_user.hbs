@@ -1,0 +1,13 @@
+<tr>
+    <td class="panel_user_list">
+        {{> ../user_display_only_pill display_value=full_name}}
+    </td>
+    {{#if email}}
+        <td class="subscriber-email">{{email}}</td>
+    {{else}}
+        <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>
+    {{/if}}
+    <td>
+        <button {{#if disabled}} disabled="disabled"{{/if}} data-user-id="{{user_id}}" class="remove_potential_subscriber button small rounded white">{{t 'Remove' }}</button>
+    </td>
+</tr>

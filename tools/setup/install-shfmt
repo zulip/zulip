@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -eu
+
+version=3.8.0
+arch="$(uname -m)"
+
+case $arch in
+    "x86_64")
+        binary="shfmt_v${version}_linux_amd64"
+        sha256=27b3c6f9d9592fc5b4856c341d1ff2c88856709b9e76469313642a1d7b558fe0
+        ;;
+
+    "aarch64")
+        binary="shfmt_v${version}_linux_arm64"
+        sha256=27e1f69b0d57c584bcbf5c882b4c4f78ffcf945d0efef45c1fbfc6692213c7c3
+        ;;
+esac
+
+check_version() {
+    out="$(shfmt --version)" && [ "$out" = "v$version" ]
+}
+
+if ! check_version 2>/dev/null; then
+    set -x
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl -fLO --retry 3 "https://github.com/mvdan/sh/releases/download/v$version/$binary"
+    sha256sum -c <<<"$sha256 $binary"
+    chmod +x "$binary"
+    mv "$binary" /usr/local/bin/shfmt
+    check_version
+fi

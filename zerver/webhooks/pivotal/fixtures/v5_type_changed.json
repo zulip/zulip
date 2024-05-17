@@ -1,0 +1,47 @@
+{
+  "message": "Leo Franchi edited this bug",
+  "primary_resources": [
+    {
+      "url": "http://www.pivotaltracker.com/story/show/63496066",
+      "kind": "story",
+      "story_type": "bug",
+      "id": 63496066,
+      "name": "Pivotal Test"
+    }
+  ],
+  "guid": "807213_82",
+  "kind": "story_update_activity",
+  "project": {
+    "kind": "project",
+    "id": 807213,
+    "name": "Hard Code"
+  },
+  "occurred_at": 1389219010000,
+  "performed_by": {
+    "initials": "LF",
+    "kind": "person",
+    "id": 981905,
+    "name": "Leo Franchi"
+  },
+  "changes": [
+    {
+      "kind": "story",
+      "story_type": "bug",
+      "change_type": "update",
+      "id": 63496066,
+      "original_values": {
+        "estimate": 3,
+        "updated_at": 1389218976000,
+        "story_type": "feature"
+      },
+      "new_values": {
+        "estimate": null,
+        "updated_at": 1389219010000,
+        "story_type": "bug"
+      },
+      "name": "Pivotal Test"
+    }
+  ],
+  "project_version": 82,
+  "highlight": "edited"
+}

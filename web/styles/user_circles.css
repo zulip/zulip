@@ -1,0 +1,45 @@
+$active_color: hsl(106deg 74% 44%);
+$idle_color: hsl(29deg 84% 51%);
+
+.user_circle_green,
+.user_circle_idle,
+.user_circle_empty,
+.user_circle_empty_line {
+    border-radius: 50%;
+    border: 1px solid;
+    float: left;
+    position: relative;
+    top: 5px;
+}
+
+.user_circle_green {
+    background-color: $active_color;
+    border-color: $active_color;
+}
+
+.user_circle_idle {
+    border-color: $idle_color;
+    background: linear-gradient(
+        to bottom,
+        hsl(0deg 0% 100% / 0%) 50%,
+        $idle_color 50%
+    );
+}
+
+.user_circle_empty {
+    background-color: transparent;
+    border-color: hsl(0deg 0% 50%);
+}
+
+.user_circle_empty_line {
+    border-color: hsl(0deg 0% 50%);
+
+    &::after {
+        content: "";
+        background: hsl(0deg 0% 50%);
+        height: 1.5px; /* 1px is too thin, 2px is too thick */
+        width: 6px;
+        display: block;
+        margin: 3.25px auto 0; /* (total height - line height) / 2 = 3.25px */
+    }
+}

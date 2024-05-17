@@ -1,0 +1,28 @@
+diff --git a/source-sans-3VF.css b/source-sans-3VF.css
+index 99213736a3fdb72eb4e3fbdd9dc342883bf2ec13..a6821c48738a673b098d99372e023604b1bad056 100755
+--- a/source-sans-3VF.css
++++ b/source-sans-3VF.css
+@@ -3,9 +3,9 @@
+     font-weight: 200 900;
+     font-style: normal;
+     font-stretch: normal;
+-    src: url('WOFF2/VAR/SourceSans3VF-Roman.ttf.woff2') format('woff2'),
+-         url('WOFF/VAR/SourceSans3VF-Roman.ttf.woff') format('woff'),
+-         url('VAR/SourceSans3VF-Roman.ttf') format('truetype');
++    src: url('WOFF2/VAR/SourceSans3VF-Roman.ttf.woff2') format('woff2-variations'),
++         url('WOFF/VAR/SourceSans3VF-Roman.ttf.woff') format('woff-variations'),
++         url('VAR/SourceSans3VF-Roman.ttf') format('truetype-variations');
+ }
+ 
+ @font-face{
+@@ -13,7 +13,7 @@
+     font-weight: 200 900;
+     font-style: italic;
+     font-stretch: normal;
+-    src: url('WOFF2/VAR/SourceSans3VF-Italic.ttf.woff2') format('woff2'),
+-         url('WOFF/VAR/SourceSans3VF-Italic.ttf.woff') format('woff'),
+-         url('VAR/SourceSans3VF-Italic.ttf') format('truetype');
++    src: url('WOFF2/VAR/SourceSans3VF-Italic.ttf.woff2') format('woff2-variations'),
++         url('WOFF/VAR/SourceSans3VF-Italic.ttf.woff') format('woff-variations'),
++         url('VAR/SourceSans3VF-Italic.ttf') format('truetype-variations');
+ }

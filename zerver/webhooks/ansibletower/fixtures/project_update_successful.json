@@ -1,0 +1,11 @@
+{
+    "status": "successful",
+    "name": "AWX - Project Update",
+    "started": "2018-09-11T19:26:43.861738+00:00",
+    "traceback": "",
+    "friendly_name": "Project Update",
+    "created_by": "admin",
+    "url": "http://awx.example.co.uk/#/jobs/project/2677",
+    "finished": "2018-09-11T19:26:50.966798+00:00",
+    "id": 2677
+}

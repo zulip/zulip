@@ -1,0 +1,40 @@
+{
+    "attachments": [
+        {
+            "id": "3d5774d9-ec8e-4664-9286-c54d0034e401",
+            "appId": "905f9943396442448b5d259d72c6d5fe",
+            "title": "FlockBot undefined in mychannel:  Hey ",
+            "color": "#efb80b",
+            "forward": false,
+            "buttons": [
+                {
+                    "name": "Snooze for me",
+                    "icon": "https://apps-static.flock.co/reminder/snooze.svg",
+                    "action": {
+                        "mobileType": "modal",
+                        "type": "openWidget",
+                        "desktopType": "modal",
+                        "url": "https://apps-static.flock.co/reminder3/production/html/snooze.html",
+                        "width": 570,
+                        "height": 270,
+                        "sendContext": false
+                    },
+                    "id": "22841"
+                }
+            ]
+        }
+    ],
+    "id": "wzXJN",
+    "to": "g:183ff1e90d79465793273a31d7d1e537",
+    "from": "u:Bu4v779hlh4uuug5",
+    "text": "Rishabh rawat wanted me to remind All",
+    "sendAs": {
+        "name": "Reminder Bot",
+        "profileImage": "https://apps-static.flock.co/reminder/reminder-bot.png"
+    },
+    "appId": "905f9943396442448b5d259d72c6d5fe",
+    "timestamp": "2018-03-01T08:00:03.587Z",
+    "timestampInMillis": 1519891203587,
+    "uid": "1519891203587-Nhj-m201",
+    "onBehalfOf": "u:9qehqo3ixo3t93e3"
+}

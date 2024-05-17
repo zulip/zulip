@@ -1,0 +1,20 @@
+{{#with playground}}
+<tr class="playground_row">
+    <td>
+        <span class="playground_pygments_language">{{pygments_language}}</span>
+    </td>
+    <td>
+        <span class="playground_name">{{playground_name}}</span>
+    </td>
+    <td>
+        <span class="playground_url_template">{{url_template}}</span>
+    </td>
+    {{#if ../can_modify}}
+    <td class="no-select actions">
+        <button class="button small delete btn-danger tippy-zulip-tooltip" data-playground-id="{{id}}" data-tippy-content="{{t 'Delete' }} {{ playground_name }}" aria-label="{{t 'Delete' }} {{ playground_name }}">
+            <i class="fa fa-trash-o"></i>
+        </button>
+    </td>
+    {{/if}}
+</tr>
+{{/with}}

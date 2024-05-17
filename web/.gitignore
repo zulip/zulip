@@ -1,0 +1,6 @@
+# From emoji
+/generated/emoji-styles
+# From passing pygments data to the frontend
+/generated/pygments_data.json
+# From passing time zone data to the frontend
+/generated/timezones.json

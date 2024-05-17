@@ -1,0 +1,43 @@
+{
+    "type": "SCANNING_COMPLETED",
+    "occur_at": 1648715576,
+    "operator": "auto",
+    "event_data": {
+      "resources": [
+        {
+          "digest": "sha256:b50334049354ed01330403212605dce2f4676a4e787ed113506861d9cf3c5424",
+          "resource_url": "harbor.xxx.xxxx.com/test/alpine/helm:3.8.1",
+            "scan_overview": {
+                "application/vnd.security.vulnerability.report; version=1.1": {
+                    "report_id": "65e8a295-749c-44e2-93fe-2ebb49b9e51a",
+                    "scan_status": "Success",
+                    "severity": "High",
+                    "duration": 3,
+                    "summary": {
+                        "total": 5,
+                        "fixable": 5,
+                        "summary": {
+                            "High": 4,
+                            "Unknown": 1
+                        }
+                    },
+                    "start_time": "2022-03-31T08:32:53Z",
+                    "end_time": "2022-03-31T08:32:56Z",
+                    "scanner": {
+                        "name": "Trivy",
+                        "vendor": "Aqua Security",
+                        "version": "v0.20.1"
+                    },
+                    "complete_percent": 100
+                }
+            }
+        }
+      ],
+      "repository": {
+        "name": "alpine/helm",
+        "namespace": "test",
+        "repo_full_name": "test/alpine/helm",
+        "repo_type": "private"
+      }
+    }
+}

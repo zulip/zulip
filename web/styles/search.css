@@ -1,0 +1,265 @@
+#searchbox {
+    width: 100%;
+    height: var(--header-height);
+
+    .navbar-search {
+        margin: 5.5px 0;
+        border-radius: 5px;
+        position: absolute;
+    }
+
+    .search_icon {
+        text-decoration: none;
+        padding: 0 7px;
+        font-size: 17px;
+        border: none;
+        background-color: transparent;
+        color: hsl(0deg 0% 0%);
+        opacity: 0.5;
+        cursor: default;
+
+        &:active,
+        &:focus {
+            outline: none;
+        }
+
+        &:disabled {
+            visibility: hidden;
+        }
+    }
+
+    .search_close_button {
+        width: 28px;
+        height: 100%;
+        background: none;
+        border: none;
+        opacity: 0.5;
+        line-height: 0;
+        border-radius: 4px;
+        /* Leave room for the focus outline. */
+        margin-right: 1px;
+
+        &:focus {
+            /* Reduce height to leave 1px on top and bottom for the outline. */
+            height: calc(100% - 2px);
+        }
+
+        &:not(:focus-visible) {
+            outline: none;
+        }
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &:disabled {
+            visibility: hidden;
+        }
+    }
+
+    .zulip-icon-close {
+        font-size: 13px;
+    }
+
+    .navbar-search:not(.expanded) {
+        right: 0;
+
+        .search_close_button {
+            display: none;
+        }
+
+        #searchbox-input-container {
+            width: var(--search-box-width);
+        }
+
+        .search-input {
+            border-radius: 5px;
+            color: var(--color-text-search);
+
+            box-shadow: none;
+            cursor: pointer;
+        }
+
+        &:hover {
+            cursor: pointer;
+
+            @media (width >= $md_min) {
+                box-shadow:
+                    0 4px 20px var(--color-search-box-hover-shadow),
+                    0 1px 5px var(--color-search-box-hover-shadow);
+            }
+
+            .search_icon {
+                cursor: pointer;
+            }
+        }
+
+        @media (width < $md_min) {
+            .search-input {
+                opacity: 0;
+            }
+        }
+
+        @media (height < $short_navbar_cutoff_height) {
+            #searchbox-input-container .search_icon {
+                font-size: 18px;
+            }
+        }
+    }
+
+    .navbar-search.expanded {
+        width: 100%;
+        box-shadow:
+            0 4px 20px var(--color-search-shadow-wide),
+            0 1px 5px var(--color-search-shadow-tight);
+
+        @media (width < $md_min) {
+            /* 3px chosen so that the cursor clicks the search button
+               and close button from the same position. */
+            width: calc(100% - 3px);
+            /* z-index to not see the gear icon underneath */
+            z-index: 1;
+        }
+    }
+
+    .typeahead.dropdown-menu {
+        /* Match the typeahead's width to its parent container. */
+        right: 0;
+        top: 0;
+        margin-top: 0;
+        padding-top: 0;
+        box-shadow: none;
+        position: relative;
+        width: 100%;
+        background: var(--color-background-search);
+        color: var(--color-text-search);
+
+        border-width: 0;
+        border-top-width: 1px;
+        border-top-color: var(--color-search-dropdown-top-border);
+        border-radius: 0 0 4px 4px;
+
+        .active > a {
+            background-color: var(--color-background-search-option-hover);
+            background-image: none;
+            color: var(--color-text-search-hover);
+        }
+    }
+
+    .input-append {
+        position: relative;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .search-input {
+        font-size: 14px;
+        /* override bootstrap padding for input[type="text"] */
+        padding: 0;
+        border: none;
+        outline: none;
+        border-radius: 0;
+        font-family: "Source Sans 3 VF", sans-serif;
+        font-weight: 400;
+        height: var(--search-box-height);
+        /* override bootstrap min-height for input[type="text"] */
+        min-height: var(--search-box-height);
+        background: transparent;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        flex-grow: 1;
+
+        color: var(--color-text-search);
+
+        &::placeholder {
+            color: var(--color-text-search-placeholder);
+        }
+    }
+
+    #searchbox-input-container {
+        display: flex;
+        align-items: center;
+        /* override .input-append style from app_components.js */
+        letter-spacing: normal;
+        height: var(--search-box-height);
+    }
+
+    @media (width >= $md_min) {
+        .navbar-search {
+            background: var(--color-background-search);
+        }
+
+        .navbar-search:not(.expanded) {
+            box-shadow: 0 0 2px var(--color-search-box-hover-shadow);
+        }
+    }
+
+    @media (width < $md_min) {
+        .navbar-search:not(.expanded) .search_icon:hover {
+            opacity: 1;
+        }
+
+        .navbar-search.expanded {
+            background: var(--color-background-search);
+        }
+    }
+
+    @media (height < $short_navbar_cutoff_height) {
+        #searchbox_form:not(.expanded) {
+            margin: 0;
+            /* Now that the header is shorter, the search box will take up the whole
+               height (which looks weird), so add 2px of space above and below it.
+               The extra pixel is to account for the header's bottom border (box shadow). */
+            margin-top: 2px;
+            height: calc(var(--header-height) - 5px);
+
+            #searchbox-input-container {
+                height: calc(var(--search-box-height) - 5px);
+            }
+        }
+
+        /* It looks fine to fill the navbar when the typeahead is open. */
+        #searchbox_form.expanded {
+            margin-top: 0;
+        }
+    }
+
+    @media (width < $sm_min) {
+        #searchbox_form.expanded {
+            position: fixed;
+            left: 0;
+            right: 9px;
+            width: 100%;
+            border-radius: 0;
+            box-shadow: none;
+            /* To be visible over `#streamlist-toggle-unreadcount` */
+            z-index: 20;
+        }
+    }
+
+    .typeahead-menu li a {
+        padding: 3px 30px;
+        /* Override white-space: nowrap from zulip.css */
+        white-space: normal;
+
+        .search_list_item .pill-container {
+            margin-left: 5px;
+        }
+
+        .pill {
+            align-items: baseline;
+        }
+
+        .pill-image {
+            /* Add line-height equal to height to mimic baseline alignment. */
+            line-height: 20px;
+            align-self: center;
+        }
+    }
+
+    /* Break really long words (unlikely to happen). */
+    .search_list_item span {
+        word-break: break-word;
+    }
+}

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -eux
+cd "$(dirname "${BASH_SOURCE[0]}")"
+docker build . --build-arg=BASE_IMAGE=ubuntu:22.04 --pull --tag=zulip/ci:jammy
+docker build . --build-arg=BASE_IMAGE=ubuntu:24.04 --pull --tag=zulip/ci:noble
+docker build . --build-arg=BASE_IMAGE=debian:12 --pull --tag=zulip/ci:bookworm

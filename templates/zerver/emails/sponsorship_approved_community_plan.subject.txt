@@ -1,0 +1,1 @@
+{% trans %}Community plan sponsorship approved for {{ billing_entity }}!{% endtrans %}

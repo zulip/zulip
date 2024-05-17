@@ -1,0 +1,54 @@
+{% extends "zerver/portico-help.html" %}
+{% set entrypoint = "help" %}
+
+{# Zulip user and API documentation. #}
+{% block title %}
+<title>{{ PAGE_TITLE }}</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app help terms-page inline-block{% if page_is_help_center %} help-center{% endif %}{% if page_is_api_center %} api-center{% endif %}">
+    <div class="sidebar">
+        <div class="content">
+            {% if not page_is_policy_center %}
+            <h1><a href="https://zulip.com" class="no-underline">Zulip homepage</a></h1>
+            {% endif %}
+
+            {{ sidebar_html }}
+
+            {% if not page_is_policy_center %}
+            <h1 class="home-link"><a href="/" class="no-underline">Back to Zulip</a></h1>
+            {% endif %}
+        </div>
+    </div>
+
+    <svg height="32px" class="hamburger" style="enable-background:new 0 0 32 32;" version="1.1" viewBox="0 0 32 32" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <path d="M4,10h24c1.104,0,2-0.896,2-2s-0.896-2-2-2H4C2.896,6,2,6.896,2,8S2.896,10,4,10z M28,14H4c-1.104,0-2,0.896-2,2  s0.896,2,2,2h24c1.104,0,2-0.896,2-2S29.104,14,28,14z M28,22H4c-1.104,0-2,0.896-2,2s0.896,2,2,2h24c1.104,0,2-0.896,2-2  S29.104,22,28,22z"></path>
+    </svg>
+
+    <div class="markdown">
+        <div class="content" id="main-content">
+            {% if page_is_policy_center %}
+            {{ render_markdown_path(article) }}
+            {% elif page_is_help_center %}
+            {{ render_markdown_path(article, context=api_url_context, help_center=True) }}
+            {% else %}
+            {{ render_markdown_path(article, context=api_url_context) }}
+            {% endif %}
+
+            <div class="documentation-footer">
+                <hr />
+                {% if corporate_enabled %}
+                    {% if page_is_policy_center %}
+                    <p>Please contact {{ support_email_html_tag }} with any questions about Zulip's policies.</p>
+                    {% else %}
+                    <p>Your feedback helps us make Zulip better for everyone! Please <a href="/help/contact-support">contact us</a> with questions, suggestions, and feature requests.</p>
+                    {% endif %}
+                {% else %}
+                    <p>Don't see an answer to your question? <a href="mailto:{{ support_email }}">Contact this Zulip server's administrators</a> for support.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

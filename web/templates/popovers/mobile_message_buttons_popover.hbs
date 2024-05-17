@@ -1,0 +1,22 @@
+<ul class="nav nav-list">
+    <li>
+        <a class="compose_mobile_stream_button">
+            <i class="fa fa-bullhorn" aria-hidden="true"></i>
+            {{#if is_in_private_narrow }}
+            {{t "New channel message" }}
+            {{else}}
+            {{t "New topic" }}
+            {{/if}}
+        </a>
+    </li>
+    <li>
+        <a class="compose_mobile_direct_message_button">
+            <i class="fa fa-envelope" aria-hidden="true"></i>
+            {{#if is_in_private_narrow }}
+            {{t "New direct message" }}
+            {{else}}
+            {{t "New direct message" }}
+            {{/if}}
+        </a>
+    </li>
+</ul>

@@ -1,0 +1,53 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Deactivated organization") }} | Zulip</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'" />
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                {% if deactivated_redirect %}
+                    <h1>{{ _("Organization moved") }}</h1>
+                {% else %}
+                    <h1>{{ _("Deactivated organization") }}</h1>
+                {% endif %}
+            </div>
+
+            <div class="white-box deactivated-realm-container">
+                <p>
+                    {% if deactivated_redirect %}
+                        {% trans %}
+                        This organization has moved to <a href="{{ deactivated_redirect }}">{{ deactivated_redirect }}</a>.
+                        {% endtrans %}
+                    {% else %}
+                        {% trans %}
+                        This organization has been deactivated.
+                        {% endtrans %}
+                        {% if corporate_enabled %}
+                            {% trans %}
+                            If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact Zulip support</a> to reactivate it.
+                            {% endtrans %}
+                        {% else %}
+                            {% trans %}
+                            If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a> to reactivate it.
+                            {% endtrans %}
+                        {% endif %}
+                    {% endif %}
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{
+    "links": {
+        "author": {
+            "href": "http://api.groovehq.com/v1/agents/agent@example.com"
+        },
+        "recipient": {
+            "href": "http://api.groovehq.com/v1/customers/rambo@example.com"
+        },
+        "ticket": {
+            "href": "http://api.groovehq.com/v1/tickets/776"
+        }
+    },
+    "created_at": "2017-12-14 21:17:29 +0530",
+    "updated_at": "2017-12-14 21:17:29 +0530",
+    "note": false,
+    "id": "5308968422",
+    "body": "Hello , This is a reply from an agent to a ticket",
+    "href": "http://api.groovehq.com/v1/messages/5308968422",
+    "plain_text_body": "Hello , This is a reply from an agent to a ticket",
+    "agent_response": true,
+    "type": "Comment",
+    "attachments": [],
+    "deliver_by": null,
+    "app_ticket_url": "https://ghostfox.groovehq.com/groove_client/tickets/68667295"
+}

@@ -1,0 +1,35 @@
+{{#each errors}}
+    <div class="stacktrace-header">
+        <div class="warning-symbol">
+            <i class="fa fa-exclamation-triangle"></i>
+        </div>
+        <div class="message"><strong>Error:</strong> {{ message }}</div>
+        {{#if @first}}
+            <div class="exit"></div>
+        {{/if}}
+    </div>
+    {{#if more_info}}
+        <div class="stacktrace-more-info">{{more_info}}</div>
+    {{/if}}
+    <div class="stacktrace-content">
+        {{#each stackframes}}
+            <div data-full-path="{{ full_path }}" data-line-no="{{ line_number }}">
+                <div class="stackframe">
+                    <i class="fa fa-caret-right expand"></i>
+                    <span class="subtle">at</span>
+                    {{#if function_name}}
+                    {{ function_name.scope }}<b>{{ function_name.name }}</b>
+                    {{/if}}
+                    <span class="subtle">{{ show_path }}:{{ line_number }}</span>
+                </div>
+                <div class="code-context" style="display: none">
+                    <div class="code-context-content">
+                        {{~#each context~}}
+                            <div {{#if focus}}class="focus-line"{{/if}}><span class="line-number">{{ line_number }}</span> {{ line }}</div>
+                        {{~/each~}}
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+{{/each}}

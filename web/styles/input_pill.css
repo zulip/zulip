@@ -1,0 +1,240 @@
+.pill-container {
+    display: inline-flex;
+    flex-wrap: wrap;
+    min-width: 0;
+
+    padding: 2px;
+    border: 1px solid hsl(0deg 0% 0% / 15%);
+    border-radius: 4px;
+    align-items: center;
+
+    cursor: text;
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+        min-width: 0;
+
+        height: 20px;
+        margin: 1px 2px;
+
+        color: inherit;
+        border: 1px solid hsl(0deg 0% 0% / 15%);
+
+        border-radius: 4px;
+        background-color: hsl(0deg 0% 0% / 7%);
+        cursor: pointer;
+
+        &:focus {
+            color: hsl(0deg 0% 100%);
+            border: 1px solid hsl(176deg 78% 28%);
+            background-color: hsl(176deg 49% 42%);
+            outline: none;
+        }
+
+        .pill-image {
+            height: 20px;
+            width: 20px;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .pill-label {
+            /* Treat as flex container to better position status
+               emoji and control ellipsis on the pill value. */
+            display: flex;
+            /* Allow label to collapse for ellipsis effect. */
+            min-width: 0;
+            align-items: center;
+            margin: 0 5px;
+        }
+
+        .pill-value {
+            flex: 0 1 auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .exit {
+            opacity: 0.5;
+            font-size: 1.3em;
+            margin-right: 3px;
+        }
+
+        .exit:hover {
+            opacity: 1;
+        }
+    }
+
+    &.not-editable {
+        cursor: not-allowed;
+        border: none;
+        background-color: transparent;
+        padding: 0;
+
+        .pill {
+            padding-right: 4px;
+            cursor: not-allowed;
+
+            &:focus {
+                color: inherit;
+                border: 1px solid hsl(0deg 0% 0% / 15%);
+                background-color: hsl(0deg 0% 0% / 7%);
+            }
+
+            .exit {
+                display: none;
+            }
+        }
+    }
+
+    &.pill-container-btn {
+        cursor: pointer;
+        padding: 0;
+
+        .pill {
+            margin: 0;
+            border: none;
+
+            .exit {
+                display: none;
+            }
+        }
+    }
+
+    .input {
+        display: inline-block;
+        padding: 2px 4px;
+
+        min-width: 2px;
+        word-break: break-all;
+
+        outline: none;
+
+        &.shake {
+            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+    }
+}
+
+#compose-direct-recipient .pill-container {
+    padding: 0 2px;
+    border: 1px solid hsl(0deg 0% 0% / 20%);
+    background-color: hsl(0deg 0% 100%);
+
+    .input {
+        height: 20px;
+
+        &:first-child:empty::before {
+            content: attr(data-no-recipients-text);
+            opacity: 0.5;
+        }
+    }
+
+    .pill + .input:empty::before {
+        content: attr(data-some-recipients-text);
+        opacity: 0.5;
+    }
+}
+
+#invitee_emails_container .pill-container {
+    width: 100%;
+}
+
+.deactivated-pill {
+    background-color: hsl(0deg 86% 86%) !important;
+}
+
+.add_subscribers_container .pill-container,
+.add_members_container .pill-container {
+    width: 100%;
+    background-color: hsl(0deg 0% 100%);
+
+    .input:first-child:empty::before {
+        opacity: 0.5;
+        content: attr(data-placeholder);
+    }
+}
+
+/* These pill are similar to .not-editable, but are meant to show
+   profile cards when clicked. */
+.panel_user_list > .pill-container,
+.stream_creator_details > .display_only_pill {
+    background-color: hsl(0deg 0% 0% / 7%);
+
+    &:hover {
+        color: inherit;
+    }
+
+    > .pill {
+        background-color: transparent;
+        border: none;
+        text-decoration: none;
+
+        &:focus {
+            color: inherit;
+        }
+
+        > .pill-label {
+            margin: 0;
+
+            > .pill-value {
+                padding: 5px;
+                max-width: 165px;
+            }
+        }
+    }
+}
+
+.stream_creator_details > .display_only_pill.inline_with_text_pill {
+    padding: 0;
+
+    > .pill {
+        margin: 0;
+        align-items: baseline;
+
+        > .pill-image {
+            /* Add line-height equal to height to mimic baseline alignment. */
+            line-height: 20px;
+            align-self: center;
+        }
+
+        > .pill-label {
+            > .pill-value {
+                padding: 0 5px;
+                max-width: none;
+            }
+
+            > .my_user_status {
+                margin-right: 2px;
+            }
+        }
+    }
+}
+
+@keyframes shake {
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-3px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(3px, 0, 0);
+    }
+}

@@ -1,0 +1,24 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Password reset email sent") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Password reset sent!") }}</h1>
+            </div>
+
+            <div class="white-box">
+                <p>{{ _('Check your email in a few minutes to finish the process.') }}</p>
+                {% include 'zerver/dev_env_email_access_details.html' %}
+                {% include 'zerver/include/back_to_login_component.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

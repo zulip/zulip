@@ -1,0 +1,8 @@
+{{! This controls whether the swatch next to streams in the left sidebar has a lock icon. }}
+{{#if invite_only}}
+<i class="zulip-icon zulip-icon-lock" aria-hidden="true"></i>
+{{else if is_web_public}}
+<i class="zulip-icon zulip-icon-globe" aria-hidden="true"></i>
+{{else}}
+<i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i>
+{{/if}}

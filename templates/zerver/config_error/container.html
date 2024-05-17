@@ -1,0 +1,32 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>{{ _("Configuration error") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div id="config_error_page" class="flex full-page">
+    <div class="new-style">
+        <div class="pitch">
+            <h1>
+                {{ _("Configuration error") }}
+            </h1>
+        </div>
+        <div class="white-box">
+            <div class="errorbox config-error">
+                <div class="errorcontent">
+                    <p>
+                        {% block error_content %}
+                        {% endblock %}
+                    </p>
+
+                    <p>After making your changes, remember to restart
+                    the Zulip server.</p>
+                    <p><a href=""> Refresh</a> to try again or <a href="{{ go_back_to_url }}">go back to {{ go_back_to_url_name }}</a>.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

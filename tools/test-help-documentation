@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+import argparse
+import contextlib
+import os
+import subprocess
+import sys
+from typing import Iterator
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(ZULIP_PATH)
+sys.path.insert(0, ZULIP_PATH)
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+from tools.lib.test_script import add_provision_check_override_param
+from tools.lib.test_server import test_server_running
+
+parser = argparse.ArgumentParser()
+add_provision_check_override_param(parser)
+parser.add_argument(
+    "--skip-external-links",
+    dest="skip_external_link_check",
+    action="store_true",
+    help="Skip checking of external links.",
+)
+options = parser.parse_args()
+
+os.makedirs("var/help-documentation", exist_ok=True)
+
+LOG_FILE = "var/help-documentation/server.log"
+external_host = "localhost:9981"
+
+extra_args = ["-a", "validate_html=set"]
+
+if options.skip_external_link_check:
+    extra_args += ["-a", "skip_external=set"]
+
+
+@contextlib.contextmanager
+def vnu_servlet() -> Iterator[None]:
+    with subprocess.Popen(
+        [
+            "java",
+            "-cp",
+            os.path.join(
+                os.path.dirname(__file__),
+                "../node_modules/vnu-jar/build/dist/vnu.jar",
+            ),
+            "-Dnu.validator.servlet.bind-address=127.0.0.1",
+            "nu.validator.servlet.Main",
+            "9988",
+        ]
+    ) as proc:
+        yield
+        proc.terminate()
+
+
+with vnu_servlet(), test_server_running(
+    options.skip_provision_check, external_host, log_file=LOG_FILE, dots=True
+):
+    ret_help_doc = subprocess.call(
+        ["scrapy", "crawl_with_status", *extra_args, "help_documentation_crawler"],
+        cwd="tools/documentation_crawler",
+    )
+    ret_api_doc = subprocess.call(
+        ["scrapy", "crawl_with_status", *extra_args, "api_documentation_crawler"],
+        cwd="tools/documentation_crawler",
+    )
+    ret_portico_doc = subprocess.call(
+        ["scrapy", "crawl_with_status", *extra_args, "portico_documentation_crawler"],
+        cwd="tools/documentation_crawler",
+    )
+
+if ret_help_doc != 0 or ret_api_doc != 0 or ret_portico_doc != 0:
+    print("\033[0;91m")
+    print("Failed")
+    print("\033[0m")
+else:
+    print("\033[0;92m")
+    print("Passed!")
+    print("\033[0m")
+
+
+sys.exit(ret_help_doc or ret_api_doc or ret_portico_doc)

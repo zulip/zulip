@@ -1,0 +1,21 @@
+{{#unless (eq render_only false)}}
+<div class="input-group {{#if is_disabled}}control-label-disabled{{/if}}">
+    <label class="checkbox">
+        <input type="checkbox" class="{{setting_name}} inline-block setting-widget prop-element" name="{{setting_name}}" data-setting-widget-type="boolean"
+          id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" {{#if is_checked}}checked="checked"{{/if}} {{#if is_disabled}}disabled{{/if}} />
+        <span></span>
+    </label>
+    <label for="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" class="inline {{setting_name}}_label" id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}_label">
+        {{label}}
+        {{#if label_parens_text}}
+        (<i>{{label_parens_text}}</i>)
+        {{/if}}
+        {{#if help_link}}
+        {{> ../help_link_widget link=help_link }}
+        {{/if}}
+        {{#if tooltip_text}}
+        <i class="tippy-zulip-tooltip fa fa-info-circle settings-info-icon" {{#if hide_tooltip}}style="display: none;"{{/if}} data-tippy-content="{{tooltip_text}}"></i>
+        {{/if}}
+    </label>
+</div>
+{{/unless}}

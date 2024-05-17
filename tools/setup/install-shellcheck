@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -eu
+
+version=0.10.0
+arch="$(uname -m)"
+tarball="shellcheck-v$version.linux.$arch.tar.xz"
+declare -A sha256=(
+    [aarch64]=324a7e89de8fa2aed0d0c28f3dab59cf84c6d74264022c00c22af665ed1a09bb
+    [x86_64]=6c881ab0698e4e6ea235245f22832860544f17ba386442fe7e9d629f8cbedf87
+)
+
+check_version() {
+    out="$(shellcheck --version)" && [[ "$out" = *"
+version: $version
+"* ]]
+}
+
+if ! check_version 2>/dev/null; then
+    set -x
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl -fLO --retry 3 "https://github.com/koalaman/shellcheck/releases/download/v$version/$tarball"
+    sha256sum -c <<<"${sha256[$arch]} $tarball"
+    tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /usr/local/bin "shellcheck-v$version/shellcheck"
+    check_version
+fi

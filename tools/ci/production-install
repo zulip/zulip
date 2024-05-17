@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# This test installs a Zulip production environment (from the release
+# tarball from production-build).
+set -e
+set -x
+
+usage() {
+    cat <<'EOF'
+Usage:
+  production-install
+  production-install --test-custom-db
+  production-install --help
+
+Options:
+  --test-custom-db
+      This will instruct the install test to be run with a custom database name and user.
+
+EOF
+}
+
+# Shell option parsing.
+args="$(getopt -o '' --long help,test-custom-db -n "$0" -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+
+        --test-custom-db)
+            TEST_CUSTOM_DB=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+ZULIP_PATH=/root/zulip-latest
+mkdir -p "$ZULIP_PATH"
+tar -xf /tmp/zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1
+
+# Do an apt upgrade to start with an up-to-date machine
+APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold')
+apt-get update
+
+if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then
+    echo "\`apt-get dist-upgrade\`: Failure occurred while trying to perform distribution upgrade, Retrying..."
+    apt-get dist-upgrade -y "${APT_OPTIONS[@]}"
+fi
+
+os_info="$(
+    . /etc/os-release
+    printf '%s\n' "$ID" "$VERSION_ID"
+)"
+{
+    read -r os_id
+    read -r os_version_id
+} <<<"$os_info"
+
+# Pin PostgreSQL on Ubuntu 22.04, so we can test upgrading it
+if [ "$os_id $os_version_id" = 'ubuntu 22.04' ]; then
+    export POSTGRESQL_VERSION=14
+fi
+
+# Install
+if [ -z "$TEST_CUSTOM_DB" ]; then
+    echo "Testing production install with default database name and user."
+    "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email ci@example.com
+else
+    echo "Testing production install with custom database name and user."
+    "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email ci@example.com --postgresql-database-user zulipcustomuser --postgresql-database-name zulipcustomdb
+fi
+
+if [ -n "${POSTGRESQL_VERSION:-}" ]; then
+    if [ "$(crudini --get /etc/zulip/zulip.conf postgresql version)" != "$POSTGRESQL_VERSION" ]; then
+        echo "Installer did not install the PostgreSQL $POSTGRESQL_VERSION that we asked for!"
+        exit 1
+    fi
+    if ! su - zulip -c "psql -tc 'select version()'" | grep -q "^ PostgreSQL $POSTGRESQL_VERSION\."; then
+        echo "Installed PostgreSQL is not actually PostgreSQL $POSTGRESQL_VERSION!"
+        exit 1
+    fi
+fi
+
+echo "Production installation complete!"
+exit 0

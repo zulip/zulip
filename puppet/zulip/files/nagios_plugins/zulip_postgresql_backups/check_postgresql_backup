@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+import subprocess
+import sys
+from datetime import datetime, timedelta, timezone
+
+import dateutil.parser
+
+states = {
+    "OK": 0,
+    "WARNING": 1,
+    "CRITICAL": 2,
+    "UNKNOWN": 3,
+}
+
+
+def report(state: str, msg: str) -> None:
+    print(f"{state}: {msg}")
+    sys.exit(states[state])
+
+
+replicas = subprocess.check_output(
+    [
+        "psql",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "postgres",
+        "-t",
+        "-c",
+        "SELECT COUNT(*) FROM pg_stat_replication",
+    ],
+    stdin=subprocess.DEVNULL,
+    text=True,
+).strip()
+if int(replicas) > 0:
+    # We are the primary and we have replicas; we expect that backups
+    # will be taken on one of them.
+    report("OK", "this is the primary, with backups taken on the replicas")
+
+skip_backups = subprocess.run(
+    ["crudini", "--get", "/etc/zulip/zulip.conf", "postgresql", "skip_backups"],
+    capture_output=True,
+    text=True,
+    check=False,
+)
+if skip_backups.returncode == 0 and skip_backups.stdout.strip().lower() in [
+    1,
+    "y",
+    "t",
+    "yes",
+    "true",
+    "enable",
+    "enabled",
+]:
+    report("OK", "backups are disabled on this host")
+
+try:
+    with open("/var/lib/nagios_state/last_postgresql_backup") as f:
+        last_backup = dateutil.parser.parse(f.read())
+except OSError:
+    report("UNKNOWN", "could not determine completion time of last PostgreSQL backup")
+
+if datetime.now(tz=timezone.utc) - last_backup > timedelta(hours=25):
+    report("CRITICAL", f"last PostgreSQL backup completed more than 25 hours ago: {last_backup}")
+
+report("OK", f"last PostgreSQL backup completed less than 25 hours ago: {last_backup}")

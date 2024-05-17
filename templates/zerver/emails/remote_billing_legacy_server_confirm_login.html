@@ -1,0 +1,26 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_url }}/registration_confirmation.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+<p>
+    {% trans %}Either you, or someone on your behalf, has requested a log in link to manage the Zulip plan for <b>{{ remote_server_hostname }}</b>.{% endtrans %}
+</p>
+<p>
+    {% trans %}
+    Click the button below to log in.
+    {% endtrans %}
+
+    {% trans %}
+    This link will expire in {{ validity_in_hours }} hours.
+    {% endtrans %}
+</p>
+<p>
+    <a class="button" href="{{ confirmation_url }}">{{ _("Log in") }}</a>
+</p>
+<p>
+    {% trans billing_contact_email=macros.email_tag(billing_contact_email) %}Questions? <a href="{{ billing_help_link }}">Learn more</a> or contact {{ billing_contact_email }}.{% endtrans %}
+</p>
+{% endblock %}

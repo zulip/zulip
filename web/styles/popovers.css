@@ -1,0 +1,1479 @@
+/*
+  Our Tippy popovers use the strangely named "light-border" Tippy
+  theme, so this block defines the common styling for all of our Tippy
+  popovers. (Tippy tooltips are defined in tooltips.css).
+*/
+.tippy-box[data-theme="light-border"] {
+    background-color: var(--color-background-popover);
+
+    .sp-input {
+        /* Override incorrect color for text in dark theme. */
+        color: var(--color-text-default) !important;
+    }
+
+    .tippy-content {
+        font-size: 14px;
+    }
+
+    /* TODO: Clean this logic up after drop Bootstrap styling */
+    & hr {
+        /* Override bootstrap defaults */
+        margin: 5px 0;
+    }
+
+    /* TODO: Clean this logic up after drop Bootstrap styling */
+    & ul.nav {
+        /* Override default padding of tippyjs */
+        margin: 0 -9px;
+
+        /* Override bootstrap defaults */
+        .nav-list > li > a {
+            padding: 3px 15px;
+        }
+    }
+
+    &[data-placement^="top"] {
+        > .tippy-arrow {
+            &::before {
+                border-top-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="bottom"] {
+        > .tippy-arrow {
+            &::before {
+                border-bottom-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="left"] {
+        > .tippy-arrow {
+            &::before {
+                border-left-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="right"] {
+        > .tippy-arrow {
+            &::before {
+                border-right-color: var(--color-background-popover);
+            }
+        }
+    }
+}
+
+.tippy-box[data-theme="dropdown-widget"] {
+    border-radius: 6px;
+    background-color: hsl(240deg 20% 98%);
+    border: 1px solid hsl(0deg 0% 0% / 40%);
+    box-shadow:
+        0 7px 13px hsl(0deg 0% 0% / 15%),
+        0 5px 8px hsl(0deg 0% 0% / 12%),
+        0 2px 4px hsl(0deg 0% 0% / 10%);
+
+    .tippy-content {
+        font-size: 14px;
+        color: hsl(0deg 0% 75%);
+        padding: 0;
+    }
+}
+
+.tippy-box[data-theme="popover-menu"] {
+    background-color: var(--color-background-popover-menu);
+    border: 1px solid var(--color-border-popover-menu);
+    border-radius: 6px;
+    box-shadow: var(--box-shadow-popover-menu);
+
+    > .tippy-content {
+        padding: 0;
+        font-size: 14px;
+    }
+
+    > .tippy-arrow {
+        color: var(--color-background-popover-menu);
+    }
+
+    &[data-placement^="top"] > .tippy-arrow::before {
+        bottom: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="bottom"] > .tippy-arrow::before {
+        top: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="left"] > .tippy-arrow::before {
+        right: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="right"] > .tippy-arrow::before {
+        left: var(--popover-tippy-arrow-before-offset);
+    }
+}
+
+.tippy-box[data-theme="popover-menu"]:has(#gear-menu-dropdown) {
+    --box-shadow-popover-menu: var(--box-shadow-gear-menu);
+}
+
+.user_full_name,
+.bot_owner {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.popover_user_name_row {
+    display: flex;
+    align-items: center;
+
+    .zulip-icon.zulip-icon-bot {
+        padding-left: 5px;
+    }
+}
+
+.user-card-popover-action-buttons {
+    margin-left: auto;
+    line-height: 1;
+}
+
+.user-card-popover-manage-menu-btn {
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+}
+
+.user_popover_manage_menu {
+    .zulip-icon {
+        /* Overriding CSS margin */
+        margin-right: 0;
+    }
+}
+
+/* Used extra classes to override styles from .nav */
+.tippy-box .tippy-content .user-card-popover-content {
+    padding: 5px 0;
+
+    .user-card-popover-actions {
+        margin: 0;
+    }
+}
+
+.user-card-popover-actions .custom_user_field {
+    display: flex;
+    align-items: center;
+
+    .value {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    /* Overriding CSS from rendered_markdown.css */
+    .rendered_markdown p {
+        margin: 0;
+    }
+
+    /* Overriding CSS from bootstrap > nav-list. */
+    .custom-profile-fields-link {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        &:hover {
+            background-color: transparent !important;
+        }
+
+        &:focus {
+            background-color: transparent !important;
+        }
+    }
+}
+
+.custom-user-url-field {
+    display: flex;
+    overflow: hidden;
+
+    .custom-profile-fields-link {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .copy-custom-field-url {
+        background-color: transparent;
+        border: 0;
+        padding: 0;
+
+        #clipboard_image {
+            /* Adjust margin to align the copy icon */
+            margin: -2px 0 0 6px;
+
+            &:hover path {
+                fill: hsl(204deg 100% 40%);
+            }
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+}
+
+.user-card-popover-actions .user-card-popover-manage-menu-btn {
+    opacity: 0.8;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.sp-container {
+    z-index: 106;
+}
+
+#stream-actions-menu-popover {
+    .popover-stream-name {
+        font-weight: 600;
+        color: var(--color-text-popover-menu);
+        line-height: 1.1;
+    }
+
+    .popover-stream-name,
+    .stream-privacy.filter-icon {
+        margin-top: 4px;
+    }
+
+    .colorpicker-container {
+        display: none;
+        margin-right: 10px;
+
+        .sp-container {
+            background-color: hsl(0deg 0% 100%);
+            cursor: pointer;
+            border: none;
+
+            .sp-palette-container {
+                border-right: none;
+            }
+
+            & input {
+                box-sizing: inherit; /* IE */
+                box-sizing: initial;
+
+                width: calc(100% - 13px);
+            }
+
+            & button {
+                background-color: hsl(0deg 0% 100%);
+                background-image: none;
+                border: 1px solid hsl(0deg 0% 80%);
+                border-radius: 4px;
+                color: hsl(0deg 0% 25%);
+                font-size: 12px;
+                padding: 6px;
+                text-transform: capitalize;
+                text-align: center;
+                text-shadow: none;
+            }
+
+            .sp-picker-container {
+                border-left: solid 1px hsl(0deg 0% 88%);
+            }
+        }
+    }
+}
+
+#topic-actions-menu-popover {
+    .popover-topic-name {
+        font-weight: 600;
+        color: var(--color-text-popover-menu);
+        line-height: 1.1;
+        margin-top: 4px;
+    }
+}
+
+ul {
+    &.user-card-popover-actions i {
+        display: inline-block;
+        text-align: center;
+
+        &:not(.popover_action_icon, .guest-indicator) {
+            width: 14px;
+        }
+
+        &:not(.popover_action_icon, .custom_user_field i) {
+            margin-right: 3px;
+        }
+
+        &.zulip-icon:not(.tab-option > .zulip-icon) {
+            /* These icons are different from font awesome icons,
+                so they need to be aligned separately. */
+            line-height: 14px;
+            position: relative;
+
+            &:not(.zulip-icon-bot) {
+                top: 2px;
+            }
+
+            &.popover_action_icon {
+                font-size: 17px;
+                line-height: 1;
+                top: 1px;
+            }
+        }
+    }
+
+    &.user-card-popover-actions i.fa-edit {
+        vertical-align: middle;
+    }
+}
+
+/* Important note: The user info popover user-sidebar-popover-root
+   class is applied to user info popovers ONLY when they are opened
+   from the right sidebar; otherwise, it will have the
+   user-card-popover-root class instead. */
+.user-sidebar-popover-root {
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
+
+    margin: -14px;
+    padding: 0;
+
+    .user-card-popover-title {
+        padding: 0;
+        border-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    .popover_info li {
+        word-wrap: break-word;
+    }
+}
+
+.group-info-popover,
+.message-user-card-popover-root,
+.user-card-popover-root {
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
+    padding: 0;
+}
+
+.group-info-popover {
+    .group-info-content {
+        padding: 5px 0;
+    }
+
+    .group-info {
+        padding-left: 11px;
+        padding-right: 11px;
+
+        .group-name {
+            font-weight: bold;
+
+            .zulip-icon-triple-users {
+                position: relative;
+                top: 2px;
+                margin-right: 5px;
+            }
+        }
+    }
+
+    .manage-group {
+        a {
+            display: flex;
+            align-items: center;
+            padding-left: 11px;
+
+            .zulip-icon {
+                position: relative;
+                top: -1px;
+                margin-right: 5px;
+            }
+        }
+    }
+
+    .member-list {
+        position: relative;
+        max-height: 300px;
+        overflow-y: auto;
+        list-style: none;
+        margin-left: 0;
+
+        .bot {
+            color: hsl(180deg 5% 74%);
+            vertical-align: top;
+            width: 20px;
+            padding-top: 3.5px;
+            text-align: center;
+        }
+    }
+}
+
+.user_profile_presence,
+.popover_user_presence {
+    width: 8px;
+    height: 8px;
+    margin: 0 5px;
+    display: inline-block;
+    float: initial;
+    position: relative;
+    top: 0;
+    flex-shrink: 0;
+}
+
+.bot-owner-name {
+    text-decoration: underline;
+
+    &:hover {
+        cursor: pointer;
+        color: hsl(200deg 100% 40%);
+    }
+}
+
+.popover-avatar {
+    height: 240px;
+    width: 240px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+
+    &.guest-avatar::after {
+        outline: 10px solid hsl(0deg 0% 100%);
+    }
+
+    .popover-inner {
+        width: 240px;
+    }
+}
+
+#user-profile-modal {
+    .modal__body {
+        box-sizing: border-box;
+        height: 60vh;
+        padding-left: 16px;
+        padding-right: 16px;
+
+        /*
+            The height of the main body of the profile modal is 60vh. However,
+            the footer is only present in the manage user tab. To make sure the
+            modal doesn't expand while switching between tabs, we can reduce
+            the height of the main body to 52vh - 1px (border radius of the footer)
+            and add a footer of 8vh.
+        */
+        &.modal__body__manage_profile_height {
+            height: calc(52vh - 1px);
+        }
+    }
+
+    .modal__header {
+        justify-content: center;
+    }
+
+    .user_profile_presence {
+        margin: 5px;
+        vertical-align: middle;
+    }
+
+    .modal__close {
+        position: absolute;
+        right: 20px;
+    }
+
+    #tab-toggle {
+        font-weight: initial;
+        padding: 0 16px 6px;
+    }
+
+    .name {
+        color: hsl(0deg 0% 20%);
+        font-weight: 600;
+        margin-right: 10px;
+        overflow-wrap: break-word;
+    }
+
+    .value {
+        vertical-align: top;
+        overflow-wrap: anywhere;
+    }
+
+    #exit-sign {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    #profile-tab {
+        margin: 1px 5px 0;
+
+        & li.custom_user_field {
+            display: block;
+        }
+    }
+
+    .top {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    @media (width < $ml_min) {
+        .top {
+            flex-direction: column-reverse;
+        }
+    }
+
+    #avatar {
+        display: inline-block;
+        height: 180px;
+        width: 180px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 20%);
+
+        &.guest-avatar::after {
+            outline: 9px solid hsl(0deg 0% 100%);
+        }
+    }
+
+    .user-profile-manage-own-edit-button,
+    .user-profile-manage-others-edit-button {
+        text-decoration: none;
+        font-size: 15px;
+    }
+
+    .user-profile-manage-own-copy-link-button {
+        font-size: 19px;
+        text-decoration: none;
+    }
+
+    .zulip-icon-link,
+    .zulip-icon-edit {
+        vertical-align: middle;
+    }
+
+    .deactivated-user-icon {
+        margin: -1px;
+        vertical-align: middle;
+    }
+
+    .zulip-icon.zulip-icon-bot {
+        padding: unset;
+    }
+
+    #default-section {
+        vertical-align: top;
+
+        .default-field {
+            margin-bottom: 10px;
+        }
+    }
+
+    & hr {
+        border: 1px solid hsl(0deg 0% 93%);
+        margin: 5px 0;
+    }
+
+    #content {
+        .field-section {
+            margin-bottom: 10px;
+
+            .name {
+                color: hsl(0deg 0% 20%);
+                font-weight: 600;
+            }
+
+            &[data-type="2"] .value {
+                overflow-wrap: break-word;
+            }
+        }
+
+        .rendered_markdown p {
+            margin: 0;
+        }
+    }
+
+    .col-left {
+        padding: 0 10px 0 0;
+    }
+
+    .col-right {
+        width: fit-content;
+    }
+
+    .tab-data {
+        .active {
+            display: block;
+        }
+
+        margin-bottom: 20px;
+    }
+
+    .stream-tab-element-header {
+        margin: 0;
+        display: inline-block;
+        font-weight: inherit;
+        font-size: 21px;
+    }
+
+    #user-profile-streams-tab {
+        .stream_list_info {
+            margin-bottom: 8px;
+        }
+
+        .stream-privacy {
+            display: inline-block;
+        }
+
+        .filter-icon i {
+            padding-right: 3px;
+        }
+
+        .user_profile_subscribe_widget {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-top: 2px;
+        }
+    }
+
+    .stream-list-top-section {
+        display: flex;
+        margin-top: 12px;
+
+        .stream-search {
+            margin-left: auto;
+            align-self: center;
+            padding-right: 20px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        #clear_stream_search {
+            display: none;
+            padding: 5px 8px 5px 4px;
+            position: relative;
+            right: 0;
+        }
+    }
+
+    .subscription-group-list,
+    .subscription-stream-list {
+        position: relative;
+        border: 1px solid hsl(0deg 0% 83%);
+        border-radius: 4px;
+        overflow: auto;
+        text-align: left;
+        margin-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+
+        .remove-subscription-button {
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+
+        .user-stream-list,
+        .user-group-list {
+            width: 100%;
+            margin: auto;
+            border-radius: 6px;
+            border-collapse: collapse;
+
+            & tr {
+                border-bottom: 1px solid hsl(0deg 0% 87%);
+                /* Ensure equal height for rows with a remove-subscription-button and
+                   those without one. */
+                height: 34px;
+
+                &:last-of-type {
+                    border-bottom: none;
+                }
+
+                & td {
+                    padding: 4px 0;
+
+                    &:first-of-type {
+                        padding-left: 10px;
+                    }
+
+                    &:last-of-type {
+                        padding-right: 10px;
+                    }
+
+                    &.remove_subscription {
+                        text-align: right;
+                    }
+                }
+            }
+        }
+    }
+
+    .manage-profile-tab-footer {
+        height: 0;
+
+        &.modal__footer_wrapper {
+            border-top: 1px solid hsl(0deg 0% 87%);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            height: 8vh;
+
+            /* The default padding of the footer is 20px. However, since we have set */
+            /* the height of the footer wrapper to be 8vh on different screen sizes, */
+            /* the buttons might look odd. Instead of using padding top and bottom, we */
+            /* just use the flex and properties to align them. */
+            .modal__footer {
+                padding-top: unset;
+                padding-bottom: unset;
+            }
+        }
+    }
+
+    .empty-list {
+        border: none;
+
+        .empty-table-message {
+            padding: 3em 1em;
+        }
+    }
+}
+
+@media (width < $md_min) {
+    .colorpicker-popover {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        /* these are to override JS embedded inline styles. */
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        width: 100%;
+        height: 100%;
+
+        background-color: hsl(0deg 0% 0% / 70%);
+        border-radius: 0;
+        border: none;
+
+        pointer-events: none;
+
+        .popover-inner {
+            background-color: hsl(0deg 0% 100%);
+            pointer-events: all;
+        }
+
+        @media (width < $sm_min) {
+            .popover-inner {
+                width: 70%;
+            }
+
+            .sp-picker-container {
+                border-left: none !important;
+            }
+        }
+    }
+
+    .popover-flex {
+        position: absolute;
+        top: 0 !important;
+        left: 0 !important;
+
+        width: 100vw;
+        height: 100vh;
+
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        background-color: hsl(0deg 0% 0% / 70%);
+
+        /* Needs to be higher than the 105 for div.overlay so that the
+           emoji picker can render on top of the user status picker. */
+        z-index: 106;
+
+        opacity: 0;
+        pointer-events: none;
+
+        transition: all 0.3s ease;
+
+        &.fade.in {
+            opacity: 1;
+            pointer-events: all;
+        }
+    }
+
+    .emoji-picker-popover {
+        position: static;
+        margin-right: 0;
+    }
+
+    #user-profile-modal {
+        .stream-list-top-section {
+            display: block;
+
+            .header-section {
+                width: 100%;
+            }
+
+            .stream-search {
+                margin-bottom: 8px;
+            }
+
+            #clear_stream_search {
+                padding-top: 1px;
+            }
+        }
+    }
+}
+
+.popover.top .arrow::after {
+    left: -1px;
+}
+
+.giphy-popover,
+.emoji-popover-root,
+.user-group-popover-root,
+.user-sidebar-popover-root,
+.message-user-card-popover-root,
+.user-card-popover-root {
+    .tippy-content {
+        /* We remove the default padding from this container
+           as it is not necessary for the Giphy popover. */
+        padding: 0;
+
+        /* By resetting to the default color from the `body`,
+           we can ignore the colors applied from `tippy-box`. */
+        color: var(--color-text-default);
+    }
+
+    & ul.nav {
+        /* TODO: Clean this logic up after drop Bootstrap styling */
+        margin: 0;
+    }
+}
+
+.user-group-popover-root {
+    .group-info-popover ul.nav {
+        /* TODO: Clean this logic up after drop Bootstrap styling */
+        margin: 0;
+
+        &.member-list {
+            padding-left: 6px;
+        }
+    }
+
+    & .tippy-box {
+        box-shadow: 0 5px 10px hsl(0deg 0% 0% / 20%);
+        /* User group popover has a bigger border-radius than our usual popovers. */
+        border-radius: 6px;
+    }
+}
+
+.emoji-popover-root {
+    /* The emoji popover has a different background color for the
+       header and footer, so we customize the arrow to match this color. */
+    .tippy-box[data-placement="top"] .tippy-arrow::before {
+        border-top-color: hsl(0deg 0% 93%);
+    }
+
+    .tippy-box[data-placement="bottom"] .tippy-arrow::before {
+        border-bottom-color: hsl(0deg 0% 93%);
+    }
+}
+
+#giphy_grid_in_popover {
+    /* 300px of GIPHY grid + 5px is the extra gutter space
+     * between gif columns. */
+    width: 305px;
+    border: 0;
+    padding: 0;
+
+    .giphy-gif {
+        cursor: pointer;
+    }
+
+    .giphy-gif-img:focus {
+        /* Red outline for clear visibility
+         * of which image is in focus.
+         */
+        outline-color: hsl(0deg 100% 50%);
+    }
+
+    .search-box {
+        display: flex;
+        position: sticky;
+        padding: 2px;
+
+        & input {
+            flex-grow: 1;
+            margin: 5px;
+            border-radius: 3px;
+        }
+
+        .clear_search_button {
+            position: absolute;
+            top: 5px;
+            right: 3px;
+            font-size: 16px;
+
+            &:focus {
+                .fa-remove {
+                    outline: 2px solid var(--color-outline-focus);
+                }
+            }
+        }
+    }
+
+    .giphy-scrolling-container {
+        overflow: auto;
+        height: 200px;
+        margin: 2px;
+        padding: 5px 0;
+    }
+
+    .popover-footer {
+        text-align: center;
+        background-color: hsl(0deg 0% 0%);
+        /* The border radius corresponds to the default radius value from `tippy-box`. */
+        border-radius: 0 0 4px 4px;
+
+        /* This prevents the footer from experiencing height
+           fluctuations at the moment when the image is uploaded. */
+        min-height: 25px;
+
+        & img {
+            width: 120px;
+        }
+    }
+}
+
+.user-card-status-area {
+    opacity: 0.8;
+
+    .status-emoji {
+        height: 18px;
+        width: 18px;
+        /* Override the default 3px left margin for status emoji, which is
+           intended for their presentation elsewhere to the left of a
+           user's name. */
+        margin-left: 0;
+        margin-right: 2px;
+    }
+
+    #status_message {
+        padding: 1px 0;
+        display: flex;
+        align-items: baseline;
+        hyphens: auto;
+    }
+
+    .status_text {
+        overflow-wrap: anywhere;
+    }
+}
+
+#move_topic_modal {
+    & form {
+        margin: 0;
+    }
+
+    #move_topic_to_stream_widget_wrapper {
+        display: flex;
+        margin-bottom: 10px;
+
+        .dropdown-widget-button {
+            outline: none;
+            line-height: 24px;
+            width: auto;
+            max-width: 206px;
+        }
+
+        .dropdown_widget_value {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--color-text-default);
+
+            .stream-privacy-type-icon {
+                font-size: 13px;
+                width: 13px;
+                height: 13px;
+                position: relative;
+                top: 2px;
+            }
+        }
+
+        .zulip-icon-chevron-down {
+            padding-left: 5px;
+            color: hsl(0deg 0% 58%);
+            font-weight: lighter;
+        }
+    }
+
+    .move_messages_edit_topic {
+        margin-bottom: 10px;
+    }
+
+    .topic_stream_edit_header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+
+        #select_stream_id {
+            border-left: 0;
+            padding-left: 0;
+            border-radius: 3px;
+            margin: 0 5px 5px -10px;
+            text-indent: 10px;
+        }
+
+        .dropdown-menu {
+            position: fixed;
+            top: 125px;
+            left: 40px;
+        }
+    }
+}
+
+#language_selection_modal {
+    width: min(750px, 70vw);
+}
+
+.default_language_modal_table {
+    column-count: 3;
+
+    @media (width < $md_min) {
+        column-count: 2;
+    }
+
+    @media (width < $sm_min) {
+        column-count: 1;
+    }
+}
+
+#send_later_popover {
+    & hr {
+        margin: 5px 0;
+    }
+}
+
+#send_later_modal {
+    .modal__content {
+        padding-bottom: 16px;
+    }
+}
+
+.visibility_policy_popover {
+    padding: 0 4px;
+
+    .visibility_policy_popover_container {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding: 1px;
+        background-color: var(--color-background-tab-picker-container);
+        border-radius: 5px;
+    }
+
+    .visibility_policy_option {
+        padding: 2px 13px;
+        border-radius: 4px;
+        cursor: pointer;
+
+        .icon_and_text {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--color-tab-picker-icon);
+            gap: 10px;
+
+            &i {
+                font-size: 16px;
+            }
+        }
+
+        &:hover:not(.selected_visibility_policy) {
+            background-color: var(
+                --color-background-tab-picker-tab-option-hover
+            );
+        }
+
+        &:active:not(.selected_visibility_policy) {
+            outline: 1px solid var(--color-outline-tab-picker-tab-option);
+            outline-offset: -1px;
+        }
+    }
+
+    .selected_visibility_policy {
+        background-color: var(--color-background-tab-picker-selected-tab);
+        outline: 1px solid var(--color-outline-tab-picker-tab-option);
+        outline-offset: -1px;
+        z-index: 1;
+    }
+}
+
+.personal-menu-header {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 7px;
+    text-align: left;
+    padding: 4px;
+
+    .avatar {
+        position: relative;
+        width: 64px;
+        height: 64px;
+    }
+
+    .avatar-image {
+        width: 64px;
+        height: 64px;
+        border-radius: 4px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .status-circle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        top: unset;
+        left: unset;
+        right: -1px;
+        bottom: -1px;
+        border: solid 1px var(--color-background);
+        border-radius: 50%;
+    }
+
+    .user_circle_empty {
+        background-color: var(--color-background-popover-menu);
+        border-color: hsl(0deg 0% 50%);
+    }
+
+    .text-area {
+        flex-grow: 1;
+        padding-top: 4px;
+
+        & p {
+            margin: 0 0 4px;
+        }
+    }
+
+    .full-name {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 20px;
+        color: var(--color-text-full-name) !important;
+        max-width: 150px;
+        word-break: break-word;
+    }
+
+    .user-type {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--color-text-item) !important;
+    }
+}
+
+.popover-menu {
+    margin: 0;
+    max-height: 85vh;
+    overflow-x: hidden;
+    user-select: none;
+    border-radius: 6px;
+
+    .simplebar-content {
+        /* Set the popover menu width equal to the width of the
+        longest menu item, thus letting the menu items control
+        the width of the menu. */
+        width: min-content;
+        /* Set `max-width` to the minimum of `97vw` and the value defined by
+        the `--popover-menu-max-width` custom property, which should be defined
+        as a local custom property in the scope of a particular popover where
+        we want apply a `max-width` limit.
+
+        When we don't define this local custom property, the fallback value of
+        `97vw` is considered and the `max-width` is then set to `min(97vw, 97vw)`
+        which is simply equivalent to `97vw`.
+
+        IMPORTANT: Setting `--popover-menu-max-width` in the `:root` scope
+        instead of the local scope, eliminates the fallback behavior and thus
+        prevents us from setting the max-width on a case-to-case basis. */
+        max-width: min(var(--popover-menu-max-width, 97vw), 97vw);
+    }
+
+    .popover-menu-label {
+        /* Keep menu items on a single line, unless forced to wrap
+        by a max-width on the popover. */
+        width: max-content;
+    }
+
+    .text-item,
+    .link-item .popover-menu-link {
+        box-sizing: border-box;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: flex-start;
+        gap: 5px;
+        padding: 3px 10px;
+        font-size: 15px;
+        line-height: 16px;
+        min-height: 26px;
+
+        .popover-menu-icon {
+            width: 16px;
+            height: 16px;
+            font-size: 16px;
+            text-align: center;
+        }
+    }
+
+    .text-item {
+        color: var(--color-text-item);
+        width: auto;
+        user-select: text;
+    }
+
+    .link-item {
+        outline: none;
+
+        &:focus-within {
+            background: var(--color-background-hover-popover-menu);
+        }
+
+        .popover-menu-label,
+        .popover-menu-icon {
+            margin-top: 2px;
+        }
+
+        .popover-menu-icon {
+            color: var(--color-icon-purple);
+        }
+
+        .popover-menu-link {
+            color: var(--color-text-popover-menu) !important;
+            text-decoration: none;
+            flex-grow: 1;
+
+            &:hover {
+                background: var(--color-background-hover-popover-menu);
+                outline: none;
+            }
+
+            &:focus-visible {
+                border-radius: 4px;
+                /* Override the default focus style */
+                outline: 1px solid var(--color-outline-focus) !important;
+                outline-offset: -1px;
+            }
+
+            &:active {
+                background: var(--color-background-active-popover-menu);
+            }
+        }
+    }
+
+    .status_emoji {
+        width: 16px;
+        height: 16px;
+    }
+
+    .zulip-icon {
+        position: relative;
+        top: -1px;
+    }
+}
+
+#help-menu-dropdown,
+#gear-menu-dropdown,
+#personal-menu-dropdown {
+    .simplebar-content {
+        min-width: var(--navbar-popover-menu-min-width);
+    }
+}
+
+#message-actions-menu-dropdown {
+    --popover-menu-max-width: 350px;
+
+    .simplebar-content {
+        min-width: var(--message-actions-popover-min-width);
+    }
+}
+
+#stream-actions-menu-popover,
+#topic-actions-menu-popover {
+    .simplebar-content {
+        min-width: var(--topic-actions-popover-min-width);
+    }
+}
+
+.personal-menu-clear-status {
+    display: flex;
+    padding: 3px;
+    align-items: center;
+    margin-left: auto;
+    color: hsl(0deg 0% 40%) !important;
+    border-radius: 4px;
+    opacity: 0.5;
+
+    &:hover,
+    &:focus {
+        opacity: 0.9;
+        text-decoration: none;
+    }
+}
+
+.personal-menu-clear-status .personal-menu-clear-status-icon {
+    top: 0;
+}
+
+.personal-menu-status-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.personal-menu-status-text {
+    color: var(--color-text-personal-menu-some-status);
+}
+
+.personal-menu-no-status-text {
+    color: var(--color-text-personal-menu-no-status);
+}
+
+#gear-menu-dropdown {
+    .org-info {
+        padding: 9px 0 5px;
+
+        & li {
+            display: flex;
+            justify-content: flex-start;
+            font-size: 15px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 16px; /* 114.286% */
+            letter-spacing: 0.28px;
+
+            &:focus-within {
+                background: var(--color-background-hover-popover-menu);
+            }
+
+            .popover-menu-link {
+                padding: 2px 10px;
+                flex-grow: 1;
+                text-decoration: none;
+
+                &:hover {
+                    background: var(--color-background-hover-popover-menu);
+                    outline: none;
+                }
+
+                &:focus-visible {
+                    border-radius: 4px;
+                    /* Override the default focus style */
+                    outline: 1px solid var(--color-outline-focus) !important;
+                    outline-offset: -1px;
+                }
+
+                &:active {
+                    background: var(--color-background-active-popover-menu);
+                }
+            }
+        }
+
+        .org-url {
+            margin-bottom: 7px;
+            padding: 0 10px;
+        }
+
+        .org-name,
+        .org-plan .popover-menu-link {
+            color: var(--color-text-popover-menu);
+        }
+
+        .org-name {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 22px;
+            padding: 0 10px;
+        }
+
+        .org-upgrade {
+            font-size: 14px;
+        }
+
+        .org-upgrade,
+        .org-url {
+            color: var(--color-gear-menu-lighter-text);
+        }
+
+        .org-upgrade a,
+        .org-version a {
+            color: var(--color-gear-menu-blue-text);
+        }
+    }
+
+    .gear-menu-select-light-theme,
+    .gear-menu-select-dark-theme {
+        display: none;
+    }
+}
+
+ul.popover-menu-outer-list {
+    list-style: none;
+    margin: 0;
+
+    li.popover-menu-outer-list-item {
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        ul.popover-menu-inner-list {
+            margin: 0;
+            padding: 4px 0;
+            list-style: none;
+            background: none !important;
+        }
+    }
+}
+
+.spectator-view {
+    #gear-menu-dropdown .gear-menu-select-dark-theme {
+        display: block;
+    }
+}
+
+.popover-menu-hotkey-hints {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    padding-left: 5px;
+
+    > .popover-menu-hotkey-hint {
+        box-sizing: border-box;
+        color: var(--color-popover-hotkey-hint);
+        text-align: center;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 14px;
+        min-width: 1.25rem;
+        padding: 2px 4px;
+        border-radius: 3px;
+        border: 1px solid var(--color-border-popover-hotkey-hint);
+    }
+}
+
+#theme-switcher {
+    margin: 0 10px;
+
+    .tab-option-content:focus-visible {
+        border-radius: 4px;
+        /* Override the default focus style */
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: -1px;
+    }
+}

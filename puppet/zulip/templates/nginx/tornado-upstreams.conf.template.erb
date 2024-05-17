@@ -1,0 +1,24 @@
+<% if @tornado_ports.length > 1 -%>
+<% @tornado_ports.each do |port| -%>
+upstream tornado<%= port %> {
+    server 127.0.0.1:<%= port %>;
+    keepalive 10000;
+}
+<% end -%>
+<% @tornado_groups.each do |group| -%>
+<% if group.length > 1 -%>
+upstream tornado<%= group.join('_') %> {
+    random;
+<% group.each do |port| -%>
+    server 127.0.0.1:<%= port %>;
+<% end -%>
+    keepalive 10000;
+}
+<% end -%>
+<% end -%>
+<% else -%>
+upstream tornado {
+    server 127.0.0.1:9800;
+    keepalive 10000;
+}
+<% end -%>

@@ -1,0 +1,52 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Account not found") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app register-page">
+    <div class="app-main confirm-continue-page-container">
+        <div class="center-container">
+            <div class="center-block">
+                <div class="register-form new-style">
+                    <div class="lead">
+                        <h1 class="get-started">{{ _("Zulip account not found.") }}</h1>
+                    </div>
+                    <div class="white-box">
+                        <p>
+                            {% trans %}
+                            No account found for {{ email }}.
+                            {% endtrans %}
+                        </p>
+                        <div style="text-align: center;">
+                            <form class="form-inline" id="send_confirm" name="send_confirm"
+                              action="/login/" method="get">
+                                <input type="hidden"
+                                  id="email"
+                                  name="email"
+                                  value="{{ email }}" />
+                                <button>
+                                    {{ _("Log in with another account") }}
+                                </button>
+                            </form>
+                            <br />
+                            <form class="form-inline" id="send_confirm" name="send_confirm"
+                              action="{{ continue_link }}" method="get">
+                                <button class="outline">
+                                    {{ _("Continue to registration") }}
+                                </button>
+                                {% if full_name %}
+                                <input type="hidden" name="full_name" value="{{ full_name }}" />
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-padder"></div>
+</div>
+
+{% endblock %}

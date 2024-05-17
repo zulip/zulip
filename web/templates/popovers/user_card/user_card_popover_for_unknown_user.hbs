@@ -1,0 +1,14 @@
+<div class="user-card-popover-title no-auto-hide-right-sidebar-overlay"></div>
+<div class="user-card-popover-content no-auto-hide-right-sidebar-overlay">
+    <ul class="nav nav-list user-card-popover-actions" id="user_card_popover" data-user-id="{{user_id}}">
+        <li class="popover_user_name_row">
+            <b class="user_full_name" data-tippy-content="{{t 'Unknown user' }}">{{t "Unknown user" }}</b>
+        </li>
+        <hr/>
+        <li>
+            <a href="{{ sent_by_url }}" class="narrow_to_messages_sent">
+                <i class="fa fa-paper-plane" aria-hidden="true"></i> {{t "View messages sent" }}
+            </a>
+        </li>
+    </ul>
+</div>

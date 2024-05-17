@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+set -e
+
+usage() {
+    echo "usage: $0 [--force] [--exists-ok] EXTERNAL_HOST" >&2
+    exit 1
+}
+
+args="$(getopt -o '' --long help,force,exists-ok -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help) usage ;;
+        --force)
+            FORCE=1
+            shift
+            ;;
+        --exists-ok)
+            EXISTS_OK=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
+    esac
+done
+EXTERNAL_HOST="$1"
+
+if [ -z "$EXTERNAL_HOST" ]; then
+    usage
+fi
+
+if [ "$EUID" -ne 0 ]; then
+    echo "error: this script must be run as root" >&2
+    exit 1
+fi
+
+set -x
+
+is_redhat=false
+if [ -e /etc/redhat-release ]; then
+    is_redhat=true
+    SSLDIR=/etc/pki/tls
+else
+    SSLDIR=/etc/ssl
+fi
+KEYFILE=$SSLDIR/private/zulip.key
+CERTFILE=$SSLDIR/certs/zulip.combined-chain.crt
+
+if [ -n "$EXISTS_OK" ] && [ -e "$KEYFILE" ] && [ -e "$CERTFILE" ]; then
+    exit 0
+fi
+
+if [ -z "$FORCE" ] && { [ -e "$KEYFILE" ] || [ -e "$CERTFILE" ]; }; then
+    echo "$0: certificate and/or key already exists; use --force to overwrite." >&2
+    exit 1
+fi
+rm -f "$KEYFILE" "$CERTFILE"
+
+if [[ "$EXTERNAL_HOST" =~ ^(([0-9]+\.){3}[0-9]+)(:[0-9]+)?$ ]]; then
+    subjectAltName="IP:${BASH_REMATCH[1]}" # IPv4 address
+elif [[ "$EXTERNAL_HOST" =~ ^\[([^][]*)\](:[0-9]+)?$ ]]; then
+    subjectAltName="IP:${BASH_REMATCH[1]}" # IPv6 address
+elif [[ "$EXTERNAL_HOST" =~ ^([^:]+)(:[0-9]+)?$ ]]; then
+    subjectAltName="DNS:${BASH_REMATCH[1]}"
+else
+    echo "$0: invalid host $EXTERNAL_HOST" >&2
+    exit 1
+fi
+
+config="$(mktemp)" || exit 1
+trap 'rm -f "$config"' EXIT
+
+cat >"$config" <<EOF
+# Based on /usr/share/ssl-cert/ssleay.cnf from Debian's \`ssl-cert\`
+# package, which is used for the system's snakeoil cert in /etc/ssl/.
+
+[ req ]
+default_bits        = 2048
+distinguished_name  = req_distinguished_name
+prompt              = no
+policy              = policy_anything
+req_extensions      = v3_req
+x509_extensions     = v3_req
+
+[ req_distinguished_name ]
+commonName          = $EXTERNAL_HOST
+
+[ v3_req ]
+basicConstraints    = CA:FALSE
+subjectAltName      = $subjectAltName
+EOF
+
+if [ "$is_redhat" = true ]; then
+    yum install -y openssl
+else
+    apt-get install -y openssl
+fi
+
+# Based on /usr/sbin/make-ssl-cert from Debian's `ssl-cert` package.
+openssl req -new -x509 \
+    -config "$config" -days 3650 -nodes -sha256 \
+    -out "$CERTFILE" -keyout "$KEYFILE"
+
+chmod 644 "$CERTFILE"
+chmod 640 "$KEYFILE"

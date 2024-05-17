@@ -1,0 +1,11 @@
+#!/usr/bin/tail -n+2
+
+This is the Zulip development environment.  Popular commands:
+* tools/provision - Update the development environment
+* tools/run-dev - Run the development server
+* tools/lint - Run the linter (quick and catches many problems)
+* tools/test-* - Run tests (use --help to learn about options)
+
+Read https://zulip.readthedocs.io/en/latest/testing/testing.html to learn
+how to run individual test suites so that you can get a fast debug cycle.
+

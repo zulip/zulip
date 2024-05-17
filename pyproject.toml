@@ -1,0 +1,201 @@
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+[tool.isort]
+src_paths = [".", "tools"]
+known_third_party = "zulip"
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+# Logistics of what code to check and how to handle the data.
+scripts_are_modules = true
+show_traceback = true
+# See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-stubs-for-third-party-modules
+# for notes on how we manage mypy stubs.
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
+
+# Enable strict mode, with some exceptions.
+strict = true
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+warn_return_any = false
+
+# Enable optional errors.
+enable_error_code = [
+    "redundant-self",
+    "redundant-expr",
+    "truthy-bool",
+    "truthy-iterable",
+    "ignore-without-code",
+    "unused-awaitable",
+    "explicit-override",
+]
+
+# Display the codes needed for # type: ignore[code] annotations.
+show_error_codes = true
+
+# Warn of unreachable or redundant code.
+warn_unreachable = true
+
+# dmypy enables local_partial_types implicitly. We need mypy to align
+# with this behavior.
+local_partial_types = true
+
+plugins = [
+    "mypy_django_plugin.main",
+    "pydantic.mypy",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "ahocorasick.*",
+    "bitfield.*",
+    "bmemcached.*",
+    "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
+    "circuitbreaker.*",
+    "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
+    "digitalocean.*",
+    "django_auth_ldap.*",
+    "django_bmemcached.*",
+    "django_cte.*",
+    "django_otp.*",
+    "django_scim.*",
+    "DNS.*",
+    "fakeldap.*",
+    "gcm.*",
+    "gitlint.*",
+    "jsonref.*",
+    "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
+    "moto.*", # https://github.com/spulec/moto/issues/4944
+    "onelogin.*",
+    "pyinotify.*",
+    "pyoembed.*",
+    "pyuca.*",
+    "re2.*",
+    "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
+    "scim2_filter_parser.attr_paths",
+    "scrapy.*", # https://github.com/scrapy/scrapy/issues/4041
+    "social_core.*",
+    "social_django.*",
+    "talon_core.*",
+    "tlds.*",
+    "twitter.*",
+    "two_factor.*",
+]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "zproject.settings"
+
+[tool.pydantic-mypy]
+# See https://docs.pydantic.dev/latest/integrations/mypy/#mypy-plugin-capabilities for the effects of these options.
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.ruff]
+line-length = 100
+src = [".", "tools"]
+target-version = "py38"
+
+[tool.ruff.lint]
+# See https://github.com/astral-sh/ruff#rules for error code definitions.
+select = [
+    "ANN", # annotations
+    "B", # bugbear
+    "C4", # comprehensions
+    "COM", # trailing comma
+    "DJ", # Django
+    "DTZ", # naive datetime
+    "E", # style errors
+    "EXE", # shebang
+    "F", # flakes
+    "FLY", # string formatting
+    "G", # logging format
+    "I", # import sorting
+    "INT", # gettext
+    "ISC", # string concatenation
+    "LOG", # logging
+    "N", # naming
+    "PERF", # performance
+    "PGH", # pygrep-hooks
+    "PIE", # miscellaneous
+    "PL", # pylint
+    "PYI", # typing stubs
+    "Q", # quotes
+    "RSE", # raise
+    "RUF", # Ruff
+    "S", # security
+    "SLOT", # __slots__
+    "SIM", # simplify
+    "T10", # debugger
+    "TCH", # type-checking
+    "TID", # tidy imports
+    "UP", # upgrade
+    "W", # style warnings
+    "YTT", # sys.version
+]
+ignore = [
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in classmethod
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+    "B007", # Loop control variable not used within the loop body
+    "B008", # Do not perform function calls in argument defaults
+    "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+    "C408", # Unnecessary `dict` call (rewrite as a literal)
+    "COM812", # Trailing comma missing
+    "DJ001", # Avoid using `null=True` on string-based fields
+    "DJ008", # Model does not define `__str__` method
+    "E402", # Module level import not at top of file
+    "E501", # Line too long
+    "E731", # Do not assign a lambda expression, use a def
+    "ISC001", # Implicitly concatenated string literals on one line
+    "N802", # Function name should be lowercase
+    "N806", # Variable in function should be lowercase
+    "PERF203", # `try`-`except` within a loop incurs performance overhead
+    "PLC0414", # Import alias does not rename original package
+    "PLC1901", # `s == ""` can be simplified to `not s` as an empty string is falsey
+    "PLR0911", # Too many return statements
+    "PLR0912", # Too many branches
+    "PLR0913", # Too many arguments to function call
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value used in comparison
+    "PLR5501", # Consider using `elif` instead of `else` then `if` to remove one indentation level
+    "PLW0603", # Using the global statement is discouraged
+    "PLW2901", # Outer for loop variable overwritten by inner for loop target
+    "RUF001", # String contains ambiguous unicode character
+    "RUF002", # Docstring contains ambiguous unicode character
+    "RUF003", # Comment contains ambiguous unicode character
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+    "S101", # Use of `assert` detected
+    "S105", # Possible hardcoded password
+    "S106", # Possible hardcoded password
+    "S107", # Possible hardcoded password
+    "S110", # `try`-`except`-`pass` detected, consider logging the exception
+    "S113", # Probable use of requests call without timeout
+    "S310", # Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
+    "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
+    "S324", # Probable use of insecure hash functions in `hashlib`
+    "S603", # `subprocess` call: check for execution of untrusted input
+    "S606", # Starting a process without a shell
+    "S607", # Starting a process with a partial executable path
+    "SIM103", # Return the condition directly
+    "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
+    "SIM114", # Combine `if` branches using logical `or` operator
+    "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
+    "SIM401", # Use `d.get(key, default)` instead of an `if` block
+    "TCH001", # Move application import into a type-checking block
+    "TCH002", # Move third-party import into a type-checking block
+    "TCH003", # Move standard library import into a type-checking block
+]
+
+[tool.ruff.lint.flake8-gettext]
+extend-function-names = ["gettext_lazy"]
+
+[tool.ruff.lint.isort]
+known-third-party = ["zulip"]
+split-on-trailing-comma = false

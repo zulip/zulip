@@ -1,0 +1,49 @@
+{
+    "id":"5b1fe334-1258-408e-85eb-8ecb6acdcc82",
+    "changed_at":"2018-06-12T15:13:56.523Z",
+    "primary_id":11,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":11,
+            "entity_type":"story",
+            "action":"update",
+            "name":"Add cool feature!",
+            "story_type":"bug",
+            "app_url":"https://app.clubhouse.io/zulip/story/11",
+            "changes":{
+                "started":{
+                    "new":true,
+                    "old":false
+                },
+                "workflow_state_id":{
+                    "new":500000010,
+                    "old":500000008
+                },
+                "started_at":{
+                    "new":"2018-06-12T15:13:56Z"
+                },
+                "owner_ids":{
+                    "adds":[
+                        "5b1fda16-626f-487f-9ecf-f3a4abf42b8b"
+                    ]
+                }
+            }
+        }
+    ],
+    "references":[
+        {
+            "id":500000010,
+            "entity_type":"workflow-state",
+            "name":"Ready for Review",
+            "type":"started"
+        },
+        {
+            "id":500000008,
+            "entity_type":"workflow-state",
+            "name":"Unscheduled",
+            "type":"unstarted"
+        }
+    ]
+}

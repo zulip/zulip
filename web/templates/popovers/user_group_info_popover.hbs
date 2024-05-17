@@ -1,0 +1,35 @@
+<div class="group-info-popover">
+    <div class="group-info-content">
+        <div class="group-info">
+            <div class="group-name">
+                <i class="zulip-icon zulip-icon-triple-users" aria-hidden="true"></i> {{group_name}}
+            </div>
+            <div class="group-description">
+                {{group_description}}
+            </div>
+        </div>
+        <hr />
+        <ul class="nav nav-list member-list" data-simplebar data-simplebar-auto-hide="false">
+            {{#each members}}
+                <li>
+                    {{#if is_bot}}
+                    <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                    {{else}}
+                    <span class="user_circle {{user_circle_class}}  popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+                    {{/if}}
+                    <span>{{full_name}}</span>
+                </li>
+            {{/each}}
+        </ul>
+        {{#unless is_guest}}
+        <hr />
+        <ul class="nav nav-list manage-group">
+            <li>
+                <a href="{{group_edit_url}}">
+                    <i class="zulip-icon zulip-icon-user-cog" aria-hidden="true"></i>{{t 'Group settings' }}
+                </a>
+            </li>
+        </ul>
+        {{/unless}}
+    </div>
+</div>

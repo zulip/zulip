@@ -1,0 +1,27 @@
+name: Update one click apps
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+
+jobs:
+  update-digitalocean-oneclick-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update DigitalOcean one click app
+        env:
+          DIGITALOCEAN_API_KEY: ${{ secrets.ONE_CLICK_ACTION_DIGITALOCEAN_API_KEY }}
+          ZULIP_API_KEY: ${{ secrets.ONE_CLICK_ACTION_ZULIP_BOT_API_KEY }}
+          ZULIP_EMAIL: ${{ secrets.ONE_CLICK_ACTION_ZULIP_BOT_EMAIL }}
+          ZULIP_SITE: https://chat.zulip.org
+          ONE_CLICK_ACTION_STREAM: kandra ops
+          PYTHON_DIGITALOCEAN_REQUEST_TIMEOUT_SEC: 30
+          RELEASE_VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          git clone https://github.com/zulip/marketplace-partners
+          pip3 install python-digitalocean zulip fab-classic PyNaCl
+          echo $PATH
+          python3 tools/oneclickapps/prepare_digital_ocean_one_click_app_release.py

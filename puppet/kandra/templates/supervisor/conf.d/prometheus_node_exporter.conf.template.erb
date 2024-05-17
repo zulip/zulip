@@ -1,0 +1,8 @@
+[program:prometheus_node_exporter]
+command=<%= @bin %> --collector.supervisord --collector.supervisord.url=unix:///var/run/supervisor.sock --no-collector.hwmon
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/node_exporter.log

@@ -1,0 +1,23 @@
+diff --git a/index.d.ts b/index.d.ts
+index 04f7564695dd0bd2ed5ace66d0fd5838f53dbc62..0fdb6d9a06232b7af5dab1029c6fb4d3c4168c1e 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -118,12 +118,12 @@ export interface PlotScene {
+ }
+ 
+ export interface PlotRelayoutEvent extends Partial<Layout> {
+-    "xaxis.range[0]"?: number | undefined;
+-    "xaxis.range[1]"?: number | undefined;
+-    "yaxis.range[0]"?: number | undefined;
+-    "yaxis.range[1]"?: number | undefined;
+-    "xaxis.autorange"?: boolean | undefined;
+-    "yaxis.autorange"?: boolean | undefined;
++    "xaxis.range[0]"?: number;
++    "xaxis.range[1]"?: number;
++    "yaxis.range[0]"?: number;
++    "yaxis.range[1]"?: number;
++    "xaxis.autorange"?: boolean;
++    "yaxis.autorange"?: boolean;
+ }
+ 
+ export interface ClickAnnotationEvent {

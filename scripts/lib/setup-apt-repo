@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+#
+# This script handles adding custom apt repositories into
+# /etc/apt/sources.list.d/ files.  It bundles the GPG keys which are
+# used to verify the repositories (via `apt-key`), to explicitly pin
+# the trusted signing keys, as opposed to blindly trusting HTTPS.
+#
+# Each /etc/apt/sources.list.d/foo.list file is created via `--list
+# foo`, where `foo` defaults to `zulip`.  The default `zulip.list` is
+# installed in `scripts/lib/install` / `tools/lib/provision.py`, and
+# other `.list` files may be installed by Puppet.
+set -x
+set -e
+set -u
+set -o pipefail
+shopt -s extglob
+
+verify=false
+args="$(getopt -o '' --long verify,list: -- "$@")"
+eval "set -- $args"
+LIST=zulip
+while true; do
+    case "$1" in
+        --verify)
+            verify=true
+            shift
+            ;;
+        --list)
+            LIST="$2"
+            shift
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+# Ensure the directory for LAST_DEPENDENCIES_HASH exists
+mkdir -p /var/lib/zulip
+
+SOURCES_FILE=/etc/apt/sources.list.d/$LIST.list
+PREF_FILE=/etc/apt/preferences.d/$LIST.pref
+STAMP_FILE=/etc/apt/sources.list.d/$LIST.list.apt-update-in-progress
+
+# All paths, for purposes of hashing, should be relative to the deploy
+# root.
+cd "$(dirname "$0")/../.."
+
+LIST_PATH="scripts/setup/apt-repos/$LIST"
+if ! [ -d "$LIST_PATH" ]; then
+    echo "Not a valid value for --list: '$LIST'"
+    echo ""
+    echo "Valid values are:"
+    ls -1 "scripts/setup/apt-repos/"
+    exit 1
+fi
+
+release="$(. /etc/os-release && printf '%s' "$VERSION_CODENAME")"
+
+if [ ! -f "$LIST_PATH/$release.list" ]; then
+    cat <<EOF
+Unsupported release $release for sources.list file $LIST.  To add a
+new release, make a $LIST_PATH/$release.list file based on existing
+.list files in that directory.
+
+EOF
+    exit 1
+fi
+
+DEPENDENCIES_HASH="$(sha256sum "$LIST_PATH"/?(*.asc|"$release.list"|"$LIST.pref"|custom.sh) "scripts/lib/setup-apt-repo")"
+DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-$LIST"
+# Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
+touch "$DEPENDENCIES_HASH_FILE"
+LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
+
+# First, we only do anything in setup-apt-repo if any of its inputs
+# (apt keys, code, etc.)  changed.
+if [ "$DEPENDENCIES_HASH" = "$LAST_DEPENDENCIES_HASH" ]; then
+    exit 0
+elif [ "$verify" == true ]; then
+    exit 1
+fi
+
+# Hash to check if the configuration is changed by the script later.
+hashes=$(sha256sum "$SOURCES_FILE" "$PREF_FILE" 2>/dev/null || true)
+
+if [ -e "$LIST_PATH/$LIST.pref" ]; then
+    cp "$LIST_PATH/$LIST.pref" "$PREF_FILE"
+else
+    rm -f "$PREF_FILE"
+fi
+
+pre_setup_deps=(apt-transport-https ca-certificates gnupg curl)
+if ! apt-get -dy install "${pre_setup_deps[@]}"; then
+    apt-get update
+fi
+apt-get -y install "${pre_setup_deps[@]}"
+
+apt-key add "$LIST_PATH/"*.asc
+cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
+
+if [ -e "$LIST_PATH/custom.sh" ]; then
+    export LIST_PATH
+    export STAMP_FILE
+    bash "$LIST_PATH/custom.sh"
+fi
+
+if [ "$hashes" = "$(sha256sum "$SOURCES_FILE" "$PREF_FILE" 2>/dev/null || true)" ] && ! [ -e "$STAMP_FILE" ]; then
+    echo "APT configuration did not change; skipping apt-get update"
+else
+    # We create this stamp file to ensure `apt-get update` will be run
+    # the next time this script is invoked, and each time after, until
+    # `apt-get update` finishes successfully.
+    touch "$STAMP_FILE"
+    apt-get update && rm -f "$STAMP_FILE"
+fi
+
+echo "$DEPENDENCIES_HASH" >"$DEPENDENCIES_HASH_FILE"

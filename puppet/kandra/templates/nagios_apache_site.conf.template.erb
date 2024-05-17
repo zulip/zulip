@@ -1,0 +1,40 @@
+<VirtualHost 127.0.0.1>
+    ServerName nagios.teleport.<%= @default_host_domain %>
+
+    Header add Strict-Transport-Security "max-age=15768000"
+    Header add X-Frame-Options DENY
+
+    ScriptAlias /cgi-bin/nagios4 /usr/lib/cgi-bin/nagios4
+    ScriptAlias /nagios4/cgi-bin /usr/lib/cgi-bin/nagios4
+
+    # Where the stylesheets (config files) reside
+    Alias /nagios4/stylesheets /etc/nagios4/stylesheets
+
+    # Where the HTML pages live
+    Alias /nagios4 /usr/share/nagios4/htdocs
+
+    <Location "/">
+        Require all granted
+    </Location>
+
+    RedirectMatch ^/?$ https://nagios.teleport.<%= @default_host_domain %>/cgi-bin/nagios4/status.cgi?host=all
+
+    <DirectoryMatch (/usr/share/nagios4/htdocs|/usr/lib/cgi-bin/nagios4|/etc/nagios4/stylesheets)>
+        Options FollowSymLinks
+
+        DirectoryIndex index.php index.html
+
+        Order Allow,Deny
+        Allow From All
+    </DirectoryMatch>
+
+    <Directory /usr/share/nagios4/htdocs>
+        Options +ExecCGI
+    </Directory>
+
+    # Enable this ScriptAlias if you want to enable the grouplist patch.
+    # See http://apan.sourceforge.net/download.html for more info
+    # It allows you to see a clickable list of all hostgroups in the
+    # left pane of the Nagios web interface
+    ScriptAlias /nagios4/side.html /usr/lib/cgi-bin/nagios4/grouplist.cgi
+</VirtualHost>

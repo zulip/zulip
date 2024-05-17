@@ -1,0 +1,307 @@
+name: Zulip production suite
+
+on:
+  push:
+    branches: ["*.x", chat.zulip.org, main]
+    tags: ["*"]
+  pull_request:
+    paths:
+      - .github/workflows/production-suite.yml
+      - "**/migrations/**"
+      - manage.py
+      - pnpm-lock.yaml
+      - puppet/**
+      - requirements/**
+      - scripts/**
+      - tools/**
+      - web/babel.config.js
+      - web/postcss.config.js
+      - web/third/**
+      - web/webpack.config.ts
+      - zerver/worker/queue_processors.py
+      - zerver/lib/push_notifications.py
+      - zerver/decorator.py
+      - zproject/**
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  production_build:
+    # This job builds a release tarball from the current commit, which
+    # will be used for all of the following install/upgrade tests.
+    name: Ubuntu 22.04 production build
+    runs-on: ubuntu-latest
+
+    # Docker images are built from 'tools/ci/Dockerfile'; the comments at
+    # the top explain how to build and upload these images.
+    # Ubuntu 22.04 ships with Python 3.10.12.
+    container: zulip/ci:jammy
+
+    steps:
+      - name: Add required permissions
+        run: |
+          # The checkout actions doesn't clone to ~/zulip or allow
+          # us to use the path option to clone outside the current
+          # /__w/zulip/zulip directory. Since this directory is owned
+          # by root we need to change it's ownership to allow the
+          # github user to clone the code here.
+          # Note: /__w/ is a docker volume mounted to $GITHUB_WORKSPACE
+          # which is /home/runner/work/.
+          sudo chown -R github .
+
+          # This is the GitHub Actions specific cache directory the
+          # the current github user must be able to access for the
+          # cache action to work. It is owned by root currently.
+          sudo chmod -R 0777 /__w/_temp/
+
+      - uses: actions/checkout@v4
+
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-{venv,emoji}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
+      - name: Restore pnpm store
+        uses: actions/cache@v4
+        with:
+          path: /__w/.pnpm-store
+          key: v1-pnpm-store-jammy-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Restore python cache
+        uses: actions/cache@v4
+        with:
+          path: /srv/zulip-venv-cache
+          key: v1-venv-jammy-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: v1-venv-jammy
+
+      - name: Restore emoji cache
+        uses: actions/cache@v4
+        with:
+          path: /srv/zulip-emoji-cache
+          key: v1-emoji-jammy-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          restore-keys: v1-emoji-jammy
+
+      - name: Build production tarball
+        run: ./tools/ci/production-build
+
+      - name: Upload production build artifacts for install jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-tarball
+          path: /tmp/production-build
+          retention-days: 1
+
+      - name: Verify pnpm store path
+        run: |
+          set -x
+          path="$(pnpm store path)"
+          [[ "$path" == /__w/.pnpm-store/* ]]
+
+      - name: Generate failure report string
+        id: failure_report_string
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
+
+      - name: Report status to CZO
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "automated testing"
+          topic: ${{ steps.failure_report_string.outputs.topic }}
+          type: "stream"
+          content: ${{ steps.failure_report_string.outputs.content }}
+
+  production_install:
+    # This job installs the server release tarball built above on a
+    # range of platforms, and does some basic health checks on the
+    # resulting installer Zulip server.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Docker images are built from 'tools/ci/Dockerfile'; the comments at
+          # the top explain how to build and upload these images.
+          - docker_image: zulip/ci:jammy
+            name: Ubuntu 22.04 production install and PostgreSQL upgrade with pgroonga
+            os: jammy
+            extra-args: ""
+
+          - docker_image: zulip/ci:noble
+            name: Ubuntu 24.04 production install
+            os: noble
+            extra-args: ""
+
+          - docker_image: zulip/ci:bookworm
+            name: Debian 12 production install with custom db name and user
+            os: bookworm
+            extra-args: --test-custom-db
+
+    name: ${{ matrix.name  }}
+    container:
+      image: ${{ matrix.docker_image }}
+      options: --init
+    runs-on: ubuntu-latest
+    needs: production_build
+
+    steps:
+      - name: Download built production tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: production-tarball
+          path: /tmp
+
+      - name: Add required permissions and setup
+        run: |
+          # This is the GitHub Actions specific cache directory the
+          # the current github user must be able to access for the
+          # cache action to work. It is owned by root currently.
+          sudo chmod -R 0777 /__w/_temp/
+
+          # Since actions/download-artifact@v4 loses all the permissions
+          # of the tarball uploaded by the upload artifact fix those.
+          chmod +x /tmp/production-upgrade-pg
+          chmod +x /tmp/production-pgroonga
+          chmod +x /tmp/production-install
+          chmod +x /tmp/production-verify
+          chmod +x /tmp/generate-failure-message
+
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-{venv,emoji}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
+      - name: Install production
+        run: sudo /tmp/production-install ${{ matrix.extra-args }}
+
+      - name: Verify install
+        run: sudo /tmp/production-verify ${{ matrix.extra-args }}
+
+      - name: Install pgroonga
+        if: ${{ matrix.os == 'jammy' }}
+        run: sudo /tmp/production-pgroonga
+
+      - name: Verify install after installing pgroonga
+        if: ${{ matrix.os == 'jammy' }}
+        run: sudo /tmp/production-verify ${{ matrix.extra-args }}
+
+      - name: Upgrade postgresql
+        if: ${{ matrix.os == 'jammy' }}
+        run: sudo /tmp/production-upgrade-pg
+
+      - name: Verify install after upgrading postgresql
+        if: ${{ matrix.os == 'jammy' }}
+        run: sudo /tmp/production-verify ${{ matrix.extra-args }}
+
+      - name: Generate failure report string
+        id: failure_report_string
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        run: /tmp/generate-failure-message >> $GITHUB_OUTPUT
+
+      - name: Report status to CZO
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "automated testing"
+          topic: ${{ steps.failure_report_string.outputs.topic }}
+          type: "stream"
+          content: ${{ steps.failure_report_string.outputs.content }}
+
+  production_upgrade:
+    # The production upgrade job starts with a container with a
+    # previous Zulip release installed, and attempts to upgrade it to
+    # the release tarball built for the current commit being tested.
+    #
+    # This is intended to catch bugs that result in the upgrade
+    # process failing.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Docker images are built from 'tools/ci/Dockerfile.prod'; the comments at
+          # the top explain how to build and upload these images.
+          - docker_image: zulip/ci:jammy-6.0
+            name: 6.0 Version Upgrade
+            os: jammy
+          - docker_image: zulip/ci:bookworm-7.0
+            name: 7.0 Version Upgrade
+            os: bookworm
+          - docker_image: zulip/ci:bookworm-8.0
+            name: 8.0 Version Upgrade
+            os: bookworm
+
+    name: ${{ matrix.name  }}
+    container:
+      image: ${{ matrix.docker_image }}
+      options: --init
+    runs-on: ubuntu-latest
+    needs: production_build
+
+    steps:
+      - name: Download built production tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: production-tarball
+          path: /tmp
+
+      - name: Add required permissions and setup
+        run: |
+          # This is the GitHub Actions specific cache directory the
+          # the current github user must be able to access for the
+          # cache action to work. It is owned by root currently.
+          sudo chmod -R 0777 /__w/_temp/
+
+          # Since actions/download-artifact@v4 loses all the permissions
+          # of the tarball uploaded by the upload artifact fix those.
+          chmod +x /tmp/production-upgrade
+          chmod +x /tmp/production-verify
+          chmod +x /tmp/generate-failure-message
+
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-{venv,emoji}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
+      - name: Upgrade production
+        run: sudo /tmp/production-upgrade
+
+        # TODO: We should be running production-verify here, but it
+        # doesn't pass yet.
+        #
+        # - name: Verify install
+        #   run: sudo /tmp/production-verify
+
+      - name: Generate failure report string
+        id: failure_report_string
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        run: /tmp/generate-failure-message >> $GITHUB_OUTPUT
+
+      - name: Report status to CZO
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "automated testing"
+          topic: ${{ steps.failure_report_string.outputs.topic }}
+          type: "stream"
+          content: ${{ steps.failure_report_string.outputs.content }}

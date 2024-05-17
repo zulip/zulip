@@ -1,0 +1,44 @@
+<p>
+    {{#tr}}
+        When you deactivate <z-user></z-user>, they will be immediately logged out.
+        {{#*inline "z-user"}}<strong>{{username}}</strong>{{#if email}} &lt;{{email}}&gt;{{/if}}{{/inline}}
+    {{/tr}}
+</p>
+<p>{{t "Their password will be cleared from our systems, and any bots they maintain will be disabled." }}</p>
+<p>
+    {{#tr}}
+        <strong>{username}</strong> has {number_of_invites_by_user} unexpired invitations.
+    {{/tr}}
+    {{#if bots_owned_by_user}}
+        {{t "They administer the following bots:"}}
+        <ul>
+            {{#each bots_owned_by_user}}
+                <li>{{this.full_name}}</li>
+            {{/each}}
+        </ul>
+    {{/if}}
+</p>
+<div class="new-style">
+    <label class="checkbox">
+        <input type="checkbox" class="send_email" />
+        <span></span>
+        {{t "Notify this user by email?" }}
+    </label>
+</div>
+<div class="email_field">
+    <p class="border-top">
+        <strong>{{t "Subject" }}:</strong>
+        {{t "Notification of account deactivation on {realm_name}" }}
+    </p>
+    <div class="email-body">
+        <p>
+            {{#tr}}
+                Your Zulip account on <z-link></z-link> has been deactivated,
+                and you will no longer be able to log in.
+                {{#*inline "z-link"}}<a href="{{realm_url}}">{{realm_url}}</a>{{/inline}}
+            {{/tr}}
+        </p>
+        <p>{{t "The administrators provided the following comment:" }}</p>
+        <textarea class="email_field_textarea settings_textarea" rows="8" maxlength="2000"></textarea>
+    </div>
+</div>

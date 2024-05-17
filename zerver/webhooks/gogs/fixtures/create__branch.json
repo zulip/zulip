@@ -1,0 +1,40 @@
+{
+  "secret": "",
+  "ref": "my_feature",
+  "ref_type": "branch",
+  "repository": {
+    "id": 1,
+    "owner": {
+      "id": 1,
+      "login": "john",
+      "full_name": "",
+      "email": "john@example.com",
+      "avatar_url": "https://secure.gravatar.com/avatar/715cb4680284423d81d2e75e94f812a1",
+      "username": "john"
+    },
+    "name": "try-git",
+    "full_name": "john/try-git",
+    "description": "",
+    "private": false,
+    "fork": false,
+    "html_url": "http://localhost:3000/john/try-git",
+    "ssh_url": "john@localhost:john/try-git.git",
+    "clone_url": "http://localhost:3000/john/try-git.git",
+    "website": "",
+    "stars_count": 0,
+    "forks_count": 0,
+    "watchers_count": 1,
+    "open_issues_count": 0,
+    "default_branch": "master",
+    "created_at": "2017-02-19T13:23:39-05:00",
+    "updated_at": "2017-02-19T13:57:06-05:00"
+  },
+  "sender": {
+    "id": 1,
+    "login": "john",
+    "full_name": "",
+    "email": "john@example.com",
+    "avatar_url": "https://secure.gravatar.com/avatar/715cb4680284423d81d2e75e94f812a1",
+    "username": "john"
+  }
+}

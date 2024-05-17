@@ -1,0 +1,31 @@
+{
+  "trigger": "success",
+  "status": "succeeded",
+  "executionId": 3,
+  "execution": {
+    "id": 3,
+    "href": "http://localhost:4440/project/welcome-project-community/execution/show/3",
+    "permalink": null,
+    "status": "succeeded",
+    "project": "welcome-project-community",
+    "executionType": "user",
+    "user": "admin",
+    "date-started": {
+      "unixtime": 1680847933368,
+      "date": "2023-04-07T06:12:13Z"
+    },
+    "job": {
+      "id": "a0296d93-4b10-48d7-8b7d-86ad3f603b85",
+      "averageDuration": 2354,
+      "name": "Global Log Filter Usage",
+      "group": "Basic Examples/Basic Workflows",
+      "project": "welcome-project-community",
+      "description": "Global Log Filter basic example.\r\n\r\nGlobal Log Filter allows you to capture information from the whole job. This example shows how to capture env command data and use it later in the next step as [key-value](https://docs.rundeck.com/docs/manual/log-filters/key-value-data.html#key-value-data) data.\r\n\r\nMore information [here](https://docs.rundeck.com/docs/manual/log-filters/#log-filters).",
+      "href": "http://localhost:4440/api/42/job/a0296d93-4b10-48d7-8b7d-86ad3f603b85",
+      "permalink": "http://localhost:4440/project/welcome-project-community/job/show/a0296d93-4b10-48d7-8b7d-86ad3f603b85"
+    },
+    "description": "env ('Using env command we can extract a lot of keys/values :-)') [... 2 steps]",
+    "argstring": null,
+    "serverUUID": "a14bc3e6-75e8-4fe4-a90d-a16dcc976bf6"
+  }
+}

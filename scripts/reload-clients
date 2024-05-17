@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+import argparse
+import configparser
+import logging
+import os
+import sys
+import time
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
+from scripts.lib.zulip_tools import get_config, get_config_file, get_tornado_ports
+
+config_file = get_config_file()
+reload_rate = int(
+    get_config(
+        config_file,
+        "application_server",
+        "client_reload_rate",
+        "50",
+    )
+)
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--rate", type=int, help="Number of clients to reload per second", default=reload_rate
+)
+
+args = parser.parse_args()
+reload_rate = args.rate
+
+secret_config_file = configparser.RawConfigParser()
+secret_config_file.read("/etc/zulip/zulip-secrets.conf")
+shared_secret = get_config(secret_config_file, "secrets", "shared_secret")
+assert shared_secret
+
+# Perform relatively slow retries (2s, 4s, 8s) with backoff, including
+# on POST requests.  Failure to send this request successfully means
+# that clients may fail to reload, so we want to be somewhat resilient
+# to failures.  Since we are on localhost, we do not expect network
+# failures, only Tornado restarts, to cause failures here.
+retry = Retry(total=3, backoff_factor=1, allowed_methods=Retry.DEFAULT_ALLOWED_METHODS | {"POST"})
+c = requests.Session()
+c.mount("http://", HTTPAdapter(max_retries=retry))
+
+logging.Formatter.converter = time.gmtime
+logging.basicConfig(format="%(asctime)s reload-clients: %(message)s", level=logging.INFO)
+
+first = True
+server_total = 0
+for port in get_tornado_ports(config_file):
+    logging.info("Starting to send client reload events to Tornado port %d", port)
+    try:
+        shard_total = 0
+        complete = False
+        # Rather than make a sustained one request per second, we batch
+        # into 5-second chunks of 5 times the client_reload_rate
+        SECONDS_PER_BATCH = 5
+        while not complete:
+            if not first:
+                time.sleep(SECONDS_PER_BATCH)
+            first = False
+
+            logging.info("Sending reload events to %d clients", reload_rate * SECONDS_PER_BATCH)
+            resp = c.post(
+                f"http://127.0.0.1:{port}/api/internal/web_reload_clients",
+                data={"client_count": reload_rate * SECONDS_PER_BATCH, "secret": shared_secret},
+                timeout=5,
+            )
+            resp.raise_for_status()
+            shard_total += resp.json()["sent_events"]
+            complete = resp.json()["complete"]
+        logging.info("Sent %d reload events to Tornado port %d", shard_total, port)
+        server_total += shard_total
+    except requests.exceptions.HTTPError:
+        # Failures in one shard likely won't affect other shards --
+        # give up on this shard, and try the next one,
+        logging.exception("Failed to send web_reload_clients request to Tornado port %d", port)
+
+if len(get_tornado_ports(config_file)) > 1:
+    logging.info("Sent total of %d reload events, across all Tornado instances", server_total)

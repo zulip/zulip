@@ -1,0 +1,33 @@
+<div class="micromodal" id="change-email-address-visibility-modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    {{ _('Configure email address privacy') }}
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    {{ _('Zulip lets you control which roles in the organization can view your email address.') }}
+                    {{ _('Do you want to change the privacy setting for your email from the default configuration for this organization?') }}
+                </p>
+                <label for="new_user_email_address_visibility">{{ _('Who can access your email address') }}</label>
+                <select id="new_user_email_address_visibility" class="modal_select">
+                    {% for value, name in email_address_visibility_options_dict.items() %}
+                        <option value="{{ value }}" {% if value == default_email_address_visibility %}selected{% endif %}>{{name}}</option>
+                    {% endfor %}
+                </select>
+                <p>
+                    {% trans %}You can also change this setting <a href="{{ root_domain_url }}/help/configure-email-visibility" target="_blank" rel="noopener noreferrer">after you join</a>.{% endtrans %}
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Confirm') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,7 @@
+<div>
+    <div>{{t "View edit history"}}</div>
+    {{#if realm_allow_edit_history}}
+        <div class="tooltip-inner-content italic">{{edited_notice_str}}</div>
+    {{/if}}
+</div>
+{{tooltip_hotkey_hints "Shift" "H"}}

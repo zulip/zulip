@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+
+import argparse
+import html
+import json
+import sys
+from typing import Dict, NamedTuple
+
+
+class CLIArgs(NamedTuple):
+    unescape_html: bool
+    filename: str
+    indent_level: int
+
+
+def parse_args() -> CLIArgs:
+    parser = argparse.ArgumentParser(
+        prog="unescape-contents",
+        description="Unescape Unicode and, optionally, HTML entities in a JSON file. Input file must be a JSON dictionary. Output will always be unescaped UTF-8.",
+    )
+
+    parser.add_argument("filename", type=str)
+    parser.add_argument(
+        "--unescape-html",
+        action="store_true",
+        dest="unescape_html",
+        help="If the key of a dictionary field does not contain HTML escapes, unescape any HTML escapes found in the value",
+    )
+    parser.add_argument("--indent-level", dest="indent_level", type=int, default=2, required=False)
+    args = parser.parse_args()
+
+    return CLIArgs(args.unescape_html, args.filename, args.indent_level)
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    print(f"unescaping file {args.filename}", file=sys.stderr)
+
+    json_data: Dict[str, str] = {}
+
+    with open(args.filename) as source:
+        json_data = json.load(source)
+
+        if args.unescape_html:
+            for key, value in json_data.items():
+                if key == html.unescape(key):
+                    json_data[key] = html.unescape(value)
+                else:
+                    print(
+                        f'{args.filename}: key "{key}" contains HTML, not escaping HTML in value',
+                        file=sys.stderr,
+                    )
+
+    with open(args.filename, mode="w") as dest:
+        # At least on Linux systems with LANG=en_US.UTF-8, ensure_ascii=False
+        # ensures our output uses real UTF-8 codepoints for human readability,
+        # rather than \u0000 style escape sequences, providing us a
+        # somewhat-implicit JSON unescape. This may behave in unexpected ways
+        # on other OSes or system encodings.
+        json.dump(json_data, dest, ensure_ascii=False, indent=args.indent_level)

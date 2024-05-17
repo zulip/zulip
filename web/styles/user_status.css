@@ -1,0 +1,78 @@
+#set-user-status-modal {
+    /* A narrower width is more attractive for this modal. */
+    width: 384px;
+
+    .user-status-content-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid;
+        border-color: hsl(0deg 0% 0% / 60%);
+        border-radius: 5px;
+
+        & input.user-status {
+            width: 95%;
+            border: none;
+            background-color: transparent;
+            padding-right: 25px;
+
+            @media (width < $ml_min) {
+                width: 92%;
+            }
+        }
+
+        .status-emoji-wrapper {
+            padding: 4px 8px;
+            border-right: 1px solid;
+            border-color: hsl(0deg 0% 0% / 60%);
+            cursor: pointer;
+
+            .selected-emoji {
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+            }
+
+            /* For custom emojis and smiley icon to take full width. */
+            & img.selected-emoji,
+            .smiley-icon {
+                text-align: center;
+                min-width: 20px;
+            }
+
+            .smiley-icon {
+                &:hover {
+                    text-decoration: none;
+                }
+            }
+        }
+    }
+
+    .user-status-options {
+        padding-top: 15px;
+        padding-left: 2px;
+
+        & button.user-status-value:hover,
+        & button.user-status-value:focus {
+            /* Important is required for generic night them styling to not
+               have precedence over this. */
+            color: hsl(200deg 100% 40%) !important;
+        }
+
+        .user-status-value {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 7px;
+            line-height: 1em;
+
+            .status-emoji {
+                /* Size and align status emoji to match
+                   the top line of the modal. */
+                height: 20px;
+                width: 20px;
+                margin: 0 7px;
+            }
+        }
+    }
+}

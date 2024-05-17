@@ -1,0 +1,7 @@
+<div data-step="1">
+    {{#tr}}
+        This is a <z-link-general>demo organization</z-link-general> and will be automatically deleted in {days_remaining} days, unless it's <z-link-convert>converted into a permanent organization</z-link-convert>.
+        {{#*inline "z-link-general"}}<a class="alert-link" href="/help/demo-organizations" target="_blank" rel="noopener noreferrer" role="button" tabindex=0>{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-link-convert"}}<a class="alert-link" href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer" role="button" tabindex=0>{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+</div>

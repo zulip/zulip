@@ -1,0 +1,28 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev.txt.
+# See requirements/README.md for more detail.
+mypy
+
+boto3-stubs[s3,ses,sns,sqs]
+django-stubs
+lxml-stubs
+SQLAlchemy[mypy]
+types-beautifulsoup4
+types-boto
+types-chardet
+types-decorator
+types-jsonschema
+types-Markdown
+types-oauthlib
+types-polib
+types-pika
+types-Pillow
+types-psycopg2
+types-Pygments
+types-pyOpenSSL
+types-python-dateutil
+types-PyYAML
+types-redis
+types-regex
+types-requests
+types-zxcvbn

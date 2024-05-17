@@ -1,0 +1,22 @@
+{{! Stream sidebar rows }}
+
+<li class="narrow-filter{{#if is_muted}} out_of_home_view{{/if}}" data-stream-id="{{id}}">
+    <div class="bottom_left_row">
+        <div class="subscription_block selectable_sidebar_block {{#if hide_unread_count}}hide_unread_counts{{/if}}">
+
+            <span class="stream-privacy-original-color-{{id}} stream-privacy filter-icon" style="color: {{color}}">
+                {{> stream_privacy }}
+            </span>
+
+            <a href="{{url}}" title="{{name}}" class="stream-name">{{name}}</a>
+
+            <div class="stream-markers-and-controls">
+                <span class="unread_mention_info"></span>
+                <span class="unread_count"></span>
+                <span class="masked_unread_count"></span>
+            </div>
+
+            <span class="sidebar-menu-icon stream-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+        </div>
+    </div>
+</li>

@@ -1,0 +1,286 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "app" %}
+{# The app itself. #}
+{# Includes some other templates as tabs. #}
+
+{% block meta_viewport %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+{% endblock %}
+
+{% block customhead %}
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link href="{{ static('images/logo/apple-touch-icon-precomposed.png') }}" rel="apple-touch-icon-precomposed" />
+<style>
+    #app-loading {
+    font-size: 16px;
+    background-color: hsl(0, 0%, 94%);
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    top: 0px;
+    left: 0px;
+    z-index: 9001;
+    }
+    #app-loading-middle-content, #app-loading-bottom-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    }
+    #app-loading-middle-content h3 {
+    text-align: center;
+    }
+    @keyframes showAtEnd {
+    99% {
+    visibility: hidden;
+    }
+    100% {
+    visibility: visible;
+    }
+    }
+    #app-loading-bottom-content {
+    top: unset;
+    bottom: 20px;
+    animation: 7s showAtEnd;
+    animation-fill-mode: forwards;
+    visibility: hidden;
+    }
+    #app-loading-error {
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    }
+    :root.dark-theme #app-loading {
+    background-color: hsl(0, 0%, 11%);
+    color: hsl(236, 33%, 90%);
+    }
+    @media (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic #app-loading {
+    background-color: hsl(0, 0%, 11%);
+    color: hsl(236, 33%, 90%);
+    }
+    }
+
+    .app-loading-spinner-container {
+    position: relative;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    }
+    .app-loading-logo {
+    height: 64px;
+    padding: 10px;
+    }
+    @keyframes zspinner {
+    to {transform: rotate(360deg);}
+    }
+    .app-loading-spinner:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: 4px solid hsl(0,0%,94%);
+    border-top-color: hsl(0,0%,52%);
+    animation: zspinner 1s linear infinite;
+    }
+
+    /* Bootstrap 'a' tag styles for styling reload link */
+    a#reload-lnk:focus {
+    outline: thin dotted #333;
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+    }
+    a#reload-lnk:hover,
+    a#reload-lnk:active {
+    outline: 0;
+    }
+    a#reload-lnk {
+    color: #0088cc;
+    text-decoration: none;
+    cursor: pointer;
+    }
+    a#reload-lnk:hover,
+    a#reload-lnk:focus {
+    color: #005580;
+    text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="feedback_container" class="new-style">
+</div>
+
+<div id="app-loading">
+    <div id="app-loading-middle-content">
+        <div class="app-loading-spinner-container">
+            <div class="app-loading-spinner"></div>
+            <svg class="app-loading-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12"><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#50adff"/><stop offset="1" stop-color="#7877fc"/></linearGradient><circle cx="386.56" cy="386.56" r="386.56" fill="url(#a)"/><path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z" fill="#fff"/></svg>
+        </div>
+    </div>
+    <div id="app-loading-bottom-content">
+        <p>{% trans %}If this message does not go away, try <a class="reload-lnk">reloading</a> the page.{% endtrans %}</p>
+    </div>
+    <div id="app-loading-error">
+        <p>{% trans %}Error loading Zulip. Try <a class="reload-lnk">reloading</a> the page.{% endtrans %}</p>
+    </div>
+    <script nonce="{{ csp_nonce }}">
+        document.addEventListener('DOMContentLoaded', function () {
+            function reload() {
+                location.reload(true);
+            }
+            document.querySelectorAll('.reload-lnk').forEach(lnk => lnk.addEventListener('click', reload));
+        });
+    </script>
+</div>
+
+<div id="tooltip-templates-container"></div>
+<div id="channels_overlay_container"></div>
+<div id="groups_overlay_container"></div>
+<div id="drafts_table"></div>
+<div id="scheduled_messages_overlay_container"></div>
+<div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
+</div>
+<div id="message-edit-history-overlay-container"></div>
+<div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
+    <div class="overlay-content overlay-container">
+        <div class="overlay-tabs">
+            <span class="exit">&times;</span>
+        </div>
+        <div class="overlay-body">
+        </div>
+    </div>
+</div>
+
+<div id="user-profile-modal-holder"></div>
+
+<div id="about-zulip-modal-container"></div>
+
+<div id="read-receipts-modal-container"></div>
+
+<audio id="user-notification-sound-audio">
+    <source class="notification-sound-source-ogg" type="audio/ogg" />
+    <source class="notification-sound-source-mp3" type="audio/mpeg" />
+</audio>
+<audio id="realm-default-notification-sound-audio">
+    <source class="notification-sound-source-ogg" type="audio/ogg" />
+    <source class="notification-sound-source-mp3" type="audio/mpeg" />
+</audio>
+
+<div class="alert-box">
+    <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
+        <div class="exit"></div>
+        <strong class="message">{{ _('Unable to connect to Zulip.') }}</strong>
+        {{ _('Updates may be delayed.') }}
+        {{ _('Retrying soon…') }}
+        <a class="restart_get_events_button">{{ _('Try now.') }}</a>
+    </div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
+        <div class="exit"></div>
+        {# The below isn't tagged for translation
+        intentionally, because the feature is only used at
+        MIT. #}
+        <strong>Your Zephyr mirror is not working.</strong>
+        <span id="normal-zephyr-mirror-error-text">
+            We recommend that
+            you <a class="webathena_login">give Zulip the ability to mirror the messages for you via
+            Webathena</a>.  If you'd prefer, you can instead
+            <a href="/zephyr-mirror/" target="_blank" rel="noopener noreferrer">run the
+            Zephyr mirror script yourself</a> in a screen
+            session.
+        </span>
+        <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">
+            To fix this, you'll need to use the web interface.
+        </span>
+    </div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
+    <div class="alert alert_sidebar" id="request-progress-status-banner">
+        <div class="alert-zulip-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                <circle cx="386.56" cy="386.56" r="386.56"></circle>
+                <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"></path>
+            </svg>
+        </div>
+        <div class="loading-indicator"></div>
+        <div class="success-indicator">
+            <i class="fa fa-check"></i>
+        </div>
+        <div class="alert-content"></div>
+        <div class="exit"></div>
+    </div>
+</div>
+
+<div id="navbar-fixed-container">
+    <div id="navbar_alerts_wrapper"></div>
+    <div id="header-container"></div>
+</div>
+
+<div class="app">
+    <div class="app-main">
+        <div class="column-left" id="left-sidebar-container">
+        </div>
+        <div class="column-middle">
+            <div class="column-middle-inner">
+                <div id="recent_view">
+                    <div class="recent_view_container">
+                        <div id="recent_view_table"></div>
+                        <div id="recent_view_bottom_whitespace">
+                            <div class="bottom-messages-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                                    <circle cx="386.56" cy="386.56" r="386.56"/>
+                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                                </svg>
+                            </div>
+                            <div id="recent_view_loading_messages_indicator"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="inbox-view">
+                    <div class="inbox-container">
+                        <div id="inbox-pane"></div>
+                    </div>
+                </div>
+                <div id="message_feed_container">
+                    <div class="message-feed" id="main_div">
+                        <div class="top-messages-logo">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                                <circle cx="386.56" cy="386.56" r="386.56"/>
+                                <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                            </svg>
+                        </div>
+                        <div id="loading_older_messages_indicator"></div>
+                        <div id="page_loading_indicator"></div>
+                        <div id="message_feed_errors_container"></div>
+                        <div id="message-lists-container"></div>
+                        <div id="scheduled_message_indicator">
+                        </div>
+                        <div id="typing_notifications">
+                        </div>
+                        <div id="mark_read_on_scroll_state_banner">
+                        </div>
+                        <div id="bottom_whitespace">
+                        </div>
+                    </div>
+                </div>
+                <div id="compose" {% if embedded %}data-embedded{% endif %}>
+                    <div id="compose-container"></div>
+                </div>
+            </div>
+        </div>
+        <div class="column-right" id="right-sidebar-container">
+        </div><!--/right sidebar-->
+    </div>
+</div>
+
+<div class="hidden">
+    <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+    </form>
+</div>
+{% endblock %}

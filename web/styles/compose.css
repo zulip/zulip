@@ -1,0 +1,1390 @@
+#compose_buttons {
+    text-align: right;
+    display: flex;
+    column-gap: 4px;
+    flex-direction: row;
+    align-items: center;
+
+    .new_message_button {
+        .button.small {
+            font-size: 1em;
+            padding: 3px 10px;
+            vertical-align: middle;
+        }
+
+        .compose_mobile_button {
+            & span {
+                font-size: 1.2em !important;
+                font-weight: 400;
+                line-height: var(--line-height-compose-buttons);
+            }
+        }
+    }
+
+    .reply_button_container {
+        display: flex;
+        flex-grow: 1;
+
+        /* Adjust flexbox default `min-width` to allow smaller container sizes. */
+        min-width: 0;
+
+        /* Button-like styling */
+        border-radius: 4px;
+        background-color: var(
+            --color-compose-collapsed-reply-button-area-background
+        );
+        border: 1px solid
+            var(--color-compose-collapsed-reply-button-area-border);
+
+        &:hover,
+        &:focus {
+            background-color: var(
+                --color-compose-collapsed-reply-button-area-background-interactive
+            );
+            border-color: var(
+                --color-compose-collapsed-reply-button-area-border-interactive
+            );
+        }
+
+        #left_bar_compose_reply_button_big,
+        #new_conversation_button {
+            /* Remove the border inherited from `.button` styles. */
+            border: none;
+            background: var(--color-compose-embedded-button-background);
+            border-radius: 3px;
+            line-height: var(--line-height-compose-buttons);
+        }
+
+        .compose-reply-button-wrapper {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        #left_bar_compose_reply_button_big {
+            width: 100%;
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        #new_conversation_button {
+            /* Remove the  `padding` to prevent margin from affecting parent height. */
+            padding: 0 10px;
+            /* Removing the `min-width` inherited from the `.button` styles. */
+            min-width: inherit;
+            margin: 1px;
+            flex-shrink: 0;
+
+            color: var(--color-compose-embedded-button-text-color);
+
+            &:hover {
+                background-color: var(
+                    --color-compose-embedded-button-background-hover
+                );
+                color: var(--color-compose-embedded-button-text-color-hover);
+            }
+        }
+    }
+
+    .mobile_button_container {
+        @media (width >= $sm_min) {
+            display: none;
+        }
+    }
+
+    #new_conversation_button,
+    .new_direct_message_button_container {
+        flex-shrink: 0;
+        line-height: var(--line-height-compose-buttons);
+
+        @media (width < $sm_min) {
+            /* Override inline style injected by jQuery hide() */
+            display: none !important;
+        }
+    }
+}
+
+/* Main geometry for this element is in zulip.css */
+#compose-content {
+    background-color: hsl(232deg 30% 92%);
+    padding: 4px 4px 8px;
+    border: 1px solid hsl(0deg 0% 0% / 10%);
+    border-radius: 9px 9px 0 0;
+    box-shadow: 0 0 0 hsl(236deg 11% 28%);
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    box-sizing: border-box;
+}
+
+.message_comp {
+    display: none;
+    padding: 5px 10px 0 5px;
+
+    #compose_banners {
+        max-height: min(25vh, 240px);
+        overflow-y: auto;
+    }
+}
+
+.autocomplete_secondary {
+    opacity: 0.8;
+    font-size: 85%;
+}
+
+.active .autocomplete_secondary {
+    opacity: 1;
+}
+
+.compose_table {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+
+    .stream-selection-header-colorblock {
+        box-shadow: none;
+        border: 1px solid hsl(0deg 0% 80%);
+        border-right: none;
+
+        &.message_header_private_message {
+            border-radius: 3px 0 0 3px;
+            border-bottom: 0;
+            background-color: hsl(0deg 0% 27%);
+        }
+    }
+
+    #compose-recipient {
+        &.compose-recipient-direct-selected {
+            #compose_select_recipient_widget {
+                border-radius: 4px !important;
+            }
+        }
+
+        .topic-marker-container {
+            /* Ensure the marker ( < ) stays centered vertically
+              with the dropdown, even when adjacent stacking pills
+              in, e.g., a group DM. */
+            display: flex;
+            align-items: center;
+            /* Ensure horizontal centering, too. */
+            justify-content: center;
+            /* Disallow shrinking or growth, which can cause
+               little layout shifts with pills. */
+            flex: 0 0 auto;
+            height: var(--compose-recipient-box-min-height);
+
+            .zulip-icon-chevron-right {
+                font-size: 16px;
+                color: var(--color-compose-chevron-arrow);
+            }
+        }
+
+        & a.narrow_to_compose_recipients {
+            background: transparent;
+            font-size: 18px;
+            padding: 0 1px;
+            align-self: center;
+            line-height: 20px;
+            opacity: 0.7;
+            border: 0;
+            margin-left: 3px;
+            text-decoration: none;
+            color: inherit;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    #compose-direct-recipient {
+        flex-grow: 1;
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .message_header {
+        background: none;
+        background-color: hsl(0deg 0% 92%);
+        border: none;
+        border-radius: 0;
+        box-shadow: none !important;
+    }
+
+    .messagebox {
+        box-shadow: none !important;
+    }
+}
+
+#send_message_form {
+    margin: 0;
+    height: 100%;
+
+    .messagebox-wrapper {
+        flex: 1;
+    }
+
+    .messagebox {
+        /* normally 5px 14px; pull in the right and bottom a bit */
+        cursor: default;
+        padding: 0;
+        background: none;
+        box-shadow: none;
+        border: none;
+        height: 100%;
+        display: grid;
+        /* Vlad's design calls for 122px for the send column
+           at its widest; 112px accounts for 6px of gap and
+           4px outside padding.
+
+           TODO: get this value into a CSS variable. */
+        grid-template: minmax(0, 1fr) 32px / minmax(0, 1fr) 112px;
+        grid-template-areas:
+            "message-content-container message-send-controls-container"
+            "message-formatting-controls-container . ";
+        gap: 4px 6px;
+        margin-top: 5px;
+
+        @media ((width >= $sm_min) and (width < $mc_min)) {
+            /* Drop to a 62px wide send column. */
+            grid-template-columns: minmax(0, 1fr) 62px;
+        }
+
+        @media (width < $sm_min) {
+            /* Drop to a 28px wide send column. */
+            grid-template-columns: minmax(0, 1fr) 28px;
+        }
+    }
+
+    .message_content {
+        margin-right: 0;
+    }
+}
+
+#message-content-container {
+    grid-area: message-content-container;
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+}
+
+#preview-message-area-container {
+    /* Keep preview container invisible outside
+       of preview mode. */
+    display: none;
+}
+
+#message-send-controls-container {
+    grid-area: message-send-controls-container;
+    /* A columnar flex does a nice job here
+       holding Drafts to the top of the
+       container, and the send button to
+       the bottom--even as the compose box
+       expands or contracts. */
+    display: flex;
+    flex-direction: column;
+    /* We add 6px of margin to the grid-gap of
+       6px, for 12px of space between the Send
+       button and the textarea. */
+    margin-left: 6px;
+
+    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+        margin-left: 0;
+    }
+}
+
+#message-formatting-controls-container {
+    grid-area: message-formatting-controls-container;
+}
+
+#compose-limit-indicator {
+    font-size: 12px;
+    color: var(--color-limit-indicator);
+    width: max-content;
+
+    /* Keep the limit indicator just above
+       and aligned with the send button */
+    margin-top: auto;
+    padding: 3px 3px 3px 0;
+
+    &.over_limit {
+        color: var(--color-limit-indicator-over-limit);
+        font-weight: bold;
+    }
+}
+
+#compose {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 4;
+}
+
+#compose-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: auto;
+}
+
+#compose_top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    /* Matched to 6px grid-gap on .messagebox grid. */
+    padding-bottom: 6px;
+}
+
+#compose_top_right {
+    display: flex;
+    align-items: center;
+    height: var(--compose-recipient-box-min-height);
+    /* Align to compose controls; that's 112px width,
+       minus 23px for the narrow indicator, but then
+       add back 6px of grid gap for 95px here.
+
+       TODO: Make variables here; expanded use of grid
+       on the compose box will make these unnecessary,
+       eventually. */
+    width: calc(112px - 23px + 6px);
+    justify-content: flex-end;
+
+    @media ((width >= $sm_min) and (width < $mc_min)) {
+        /* Align to compose controls at narrower widths */
+        width: calc(62px - 23px + 6px);
+    }
+
+    @media (width < $sm_min) {
+        /* Don't attempt to control the width
+           at narrowest widths. */
+        width: auto;
+    }
+
+    & button {
+        background: transparent;
+        color: inherit;
+        font-size: 15px;
+        font-weight: normal;
+        line-height: 20px;
+        opacity: 0.7;
+        border: 0;
+        padding: 0;
+        margin-left: 4px;
+        vertical-align: unset;
+        text-shadow: none;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+.collapse_composebox_button,
+#compose_close {
+    display: none;
+}
+
+.main-view-banner {
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    line-height: 18px;
+
+    .main-view-banner-elements-wrapper {
+        display: flex;
+        align-items: center;
+        /* Allow this flex container to grow or
+           shrink to fit the outer container. */
+        flex: 1 1 auto;
+        /* Allow items to wrap; this supports an
+           intrinsic layout for banner text and
+           buttons, which will always occupy the
+           space available, without our having
+           to fiddle with tons of media queries. */
+        flex-wrap: wrap;
+    }
+
+    & .banner_content {
+        /* Override Bootstrap when .banner_content is
+           a paragraph element. */
+        margin: 0;
+        /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
+        padding: 8px 5px 8px 15px;
+        /* The banner text uses a flex-basis of 150px,
+           which is roughly the width at which banner
+           text lines are still comfortably readable.
+           Still, it can grow and shrink as needed. */
+        flex: 1 1 150px;
+
+        & .banner_message {
+            /* Override Bootstrap when .banner_content
+               contains an inner .banner_message
+               paragraph. */
+            margin: 0;
+        }
+    }
+
+    .main-view-banner-action-button,
+    .upload_banner_cancel_button {
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        font-weight: 600;
+        margin-top: 4.5px;
+        margin-bottom: 4.5px;
+        /* Buttons take a minimum height for
+           when their text fits on a single
+           line. */
+        min-height: 32px;
+        /* When we're larger than large mobile
+           scales ($ml_min), flex the button to
+           its max-content, i.e., all its text
+           on a single line. But do not grow in
+           order to avoid awkward, oversized
+           buttons within the flex group. */
+        flex: 0 1 max-content;
+        /* Use this margin-left hack to keep
+           the button to the righthand side of
+           the banner. */
+        margin-left: auto;
+
+        @media (width < $ml_min) {
+            /* When we're smaller than large mobile
+               scales, we allow the button to grow,
+               so that it can span the full width of
+               narrow, mobile-scale banners as it
+               wraps onto a second line.
+
+               We also allow the button to shrink,
+               so that, for example, the text can
+               wrap on the schedule-message button
+               that appears when undoing a scheduled
+               message. */
+            flex: 1 1 max-content;
+            /* Use a 10px left margin to keep the
+               button away from the edge of the
+               banner box to match the banner text;
+               we need this only at small scales,
+               when the button grows to the full
+               width of the flex container. */
+            margin-left: 10px;
+        }
+        /* Extra margin to ensure the layout is identical when there is no
+           close button. */
+        &.right_edge {
+            margin-right: 10px;
+        }
+    }
+
+    .main-view-banner-action-button {
+        /* Establish a uniform top and bottom
+           space around the button, which also
+           works with the space around the message
+           text. */
+        margin-top: 8px;
+        margin-bottom: 8px;
+        /* Make as tall as two lines of banner message
+           text, which have a line-height of 18px, but
+           no more. */
+        max-height: 36px;
+        /* Keep to the top of the box, but stretch
+           taller based on how the box is flexing. */
+        min-height: 0;
+        align-self: stretch;
+    }
+
+    .main-view-banner-close-button {
+        font-size: 16px;
+        text-decoration: none;
+        padding: 0 8px;
+        /* Let the close button's box stretch,
+           but no larger than the height of the
+           banner box when the action button
+           achieves its full height (margin,
+           padding, and height), which keeps
+           the X vertically centered with it. */
+        align-self: stretch;
+        max-height: 52px;
+        /* Display as flexbox to better control
+           the X icon's position. This creates
+           an anonymous flexbox item out of the
+           ::before content where the icon sits. */
+        display: flex;
+        align-items: center;
+    }
+
+    .banner_content + .main-view-banner-close-button {
+        /* When there's no action button, set the max
+           height for the typical height of the box
+           when it contains only banner message text.
+           This will keep the action button aligned
+           with the first or only line of text. */
+        max-height: 34px;
+    }
+
+    &.success {
+        background-color: hsl(147deg 43% 92%);
+        border: 1px solid hsl(147deg 57% 25% / 40%);
+        color: hsl(147deg 57% 25%);
+
+        .main-view-banner-close-button {
+            color: hsl(147deg 57% 25% / 50%);
+
+            &:hover {
+                color: hsl(147deg 57% 25%);
+            }
+
+            &:active {
+                color: hsl(147deg 57% 25% / 75%);
+            }
+        }
+
+        .main-view-banner-action-button {
+            background-color: hsl(147deg 57% 25% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(147deg 57% 25% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(147deg 57% 25% / 15%);
+            }
+        }
+    }
+
+    /* warning and warning-style classes have the same CSS; this is since
+    the warning class has some associated javascript which we do not want
+    for some of the banners, for which we use the warning-style class. */
+    &.warning,
+    &.warning-style {
+        background-color: hsl(50deg 75% 92%);
+        border-color: hsl(38deg 44% 27% / 40%);
+        color: hsl(38deg 44% 27%);
+
+        .main-view-banner-close-button {
+            color: hsl(38deg 44% 27% / 50%);
+
+            &:hover {
+                color: hsl(38deg 44% 27%);
+            }
+
+            &:active {
+                color: hsl(38deg 44% 27% / 75%);
+            }
+        }
+
+        .main-view-banner-action-button {
+            background-color: hsl(38deg 44% 27% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(38deg 44% 27% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(38deg 44% 27% / 15%);
+            }
+        }
+    }
+
+    &.error {
+        background-color: hsl(4deg 35% 90%);
+        border-color: hsl(3deg 57% 33% / 40%);
+        color: hsl(4deg 58% 33%);
+
+        .main-view-banner-close-button {
+            color: hsl(4deg 58% 33% / 50%);
+
+            &:hover {
+                color: hsl(4deg 58% 33%);
+            }
+
+            &:active {
+                color: hsl(4deg 58% 33% / 75%);
+            }
+        }
+
+        .main-view-banner-action-button {
+            background-color: hsl(3deg 57% 33% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(3deg 57% 33% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(3deg 57% 33% / 15%);
+            }
+        }
+    }
+
+    &.info {
+        background-color: hsl(204deg 58% 92%);
+        border-color: hsl(204deg 49% 29% / 40%);
+        position: relative;
+        color: hsl(204deg 49% 29%);
+
+        .main-view-banner-close-button {
+            color: hsl(204deg 49% 29% / 50%);
+
+            &:hover {
+                color: hsl(204deg 49% 29%);
+            }
+
+            &:active {
+                color: hsl(204deg 49% 29% / 75%);
+            }
+        }
+
+        .main-view-banner-action-button,
+        .upload_banner_cancel_button {
+            background-color: hsl(204deg 49% 29% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(204deg 49% 29% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(204deg 49% 29% / 15%);
+            }
+        }
+    }
+}
+
+.upload_banner {
+    overflow: hidden;
+
+    &.hidden {
+        display: none;
+    }
+
+    .moving_bar {
+        position: absolute;
+        width: 0;
+        /* The progress updates seem to come every second or so,
+        so this is the smoothest it can probably get. */
+        transition: width 1s ease-in-out;
+        background: hsl(204deg 63% 85%);
+        top: 0;
+        bottom: 0;
+    }
+
+    /* Keep these elements visible above the
+       .moving_bar element on file uploads. */
+    .upload_msg,
+    .main-view-banner-close-button,
+    .upload_banner_cancel_button {
+        z-index: 1;
+        position: relative;
+    }
+}
+
+.composition-area {
+    position: relative;
+    flex: 1;
+}
+
+@keyframes message-limit-flash {
+    0% {
+        box-shadow: none;
+    }
+
+    100% {
+        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+    }
+}
+
+textarea.new_message_textarea {
+    display: table-cell;
+    padding: 5px;
+    height: 1.5em;
+    max-height: 22em;
+    margin: 0;
+    resize: vertical !important;
+    border-radius: 4px;
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
+
+    &.over_limit,
+    &.over_limit:focus {
+        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+
+        &.flash {
+            animation: message-limit-flash 0.5s ease-in-out infinite;
+        }
+    }
+
+    &:read-only,
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
+
+    &.invalid,
+    &.invalid:focus {
+        border: 1px solid hsl(3deg 57% 33%);
+        box-shadow: 0 0 2px hsl(3deg 57% 33%);
+    }
+}
+
+textarea.new_message_textarea,
+#compose_recipient_box {
+    border: 1px solid hsl(0deg 0% 0% / 20%);
+    box-shadow: none;
+    transition: border 0.2s ease;
+    color: var(--color-text-default);
+
+    &:focus {
+        outline: 0;
+        border: 1px solid hsl(0deg 0% 67%);
+        box-shadow: none;
+    }
+}
+
+#compose_recipient_box {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: stretch;
+    flex: 1 1 0;
+    border-radius: 3px;
+    background: hsl(0deg 0% 100%);
+
+    /* Give the recipient box, a `<div>`, the
+       correct styles when focus is in the
+       #stream_message_recipient_topic `<input>` */
+    &:focus-within {
+        outline: 0;
+        border: 1px solid hsl(0deg 0% 67%);
+        box-shadow: none;
+    }
+
+    #stream_message_recipient_topic,
+    #recipient_box_clear_topic_button {
+        background: none;
+        border: none;
+    }
+
+    /* Styles for input in the recipient_box */
+    #stream_message_recipient_topic {
+        /* Override grid's effective `max-content` min-width */
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        box-shadow: none;
+        outline: none;
+
+        padding: 4px 6px;
+        /* Reset height to let `align-items: stretch` on the grid parent handle this. */
+        height: auto;
+    }
+
+    /* Styles for new conversation button in the recipient_box */
+    #recipient_box_clear_topic_button {
+        /* Set the border radius smaller, relative to the parent */
+        border-radius: 2px;
+        padding: 6px;
+        margin: 1px;
+        color: var(--color-compose-embedded-button-text-color);
+
+        .zulip-icon {
+            display: block;
+        }
+
+        &:hover {
+            background-color: var(
+                --color-compose-embedded-button-background-hover
+            );
+            color: var(--color-compose-embedded-button-text-color-hover);
+        }
+
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
+    & input {
+        margin-bottom: 0;
+    }
+}
+
+#compose_select_recipient_widget {
+    width: auto;
+    outline: none;
+
+    &.dropdown-widget-button {
+        padding: 0 6px;
+        border-radius: 4px;
+    }
+}
+
+#private_message_recipient.recipient_box {
+    width: 100%;
+}
+
+.compose-send-or-save-button {
+    border-radius: 4px;
+    border: 0;
+    margin-bottom: 0;
+    color: var(--color-compose-send-button-icon-color);
+    background-color: var(--color-compose-send-button-background);
+
+    &:active {
+        transition: all 80ms;
+        transform: scale(0.96);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        border: 1px solid var(--color-compose-send-button-focus-border);
+        box-shadow: 0 0 5px var(--color-compose-send-button-focus-shadow);
+        background-color: var(
+            --color-compose-send-button-background-interactive
+        );
+    }
+
+    &:hover {
+        background-color: var(
+            --color-compose-send-button-background-interactive
+        );
+    }
+}
+
+#compose-send-button {
+    width: 74px;
+    height: 28px;
+    /* Allow to grow but not shrink */
+    flex: 1 0 auto;
+    /* Override inherited styles
+       so that flexbox can do the
+       job of positioning the icon. */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Flex items respect z-index values;
+       this is needed to keep the send
+       button over top of the vdots
+       background */
+    z-index: 1;
+
+    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+        /* Drop to a square button,
+           and don't flex any wider. */
+        width: 30px;
+        flex-grow: 0;
+    }
+
+    .zulip-icon-send {
+        display: block;
+        font-size: 17px;
+        line-height: 16px;
+    }
+
+    .loader {
+        display: none;
+    }
+}
+
+.enter_sends_choices {
+    .enter_sends_choice {
+        display: flex;
+        gap: 8px;
+        padding-top: 4px;
+
+        & input[type="radio"] {
+            position: relative;
+            top: 5px;
+            width: auto;
+            cursor: pointer;
+            margin: 4px 0 0;
+
+            &:focus {
+                outline: 1px dotted hsl(0deg 0% 20%);
+                outline: 5px auto -webkit-focus-ring-color;
+                outline-offset: -2px;
+            }
+        }
+
+        &:first-child {
+            padding: 0 0 4px;
+            border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+        }
+    }
+
+    .enter_sends_choice_text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .enter_sends_minor,
+    .enter_sends_minor kbd {
+        opacity: 0.9;
+        font-size: 11px;
+        color: hsl(0deg 0% 50%);
+    }
+}
+
+.drafts-item-in-popover {
+    display: none;
+    /* Only show the Drafts item in the popover when it's not visible
+       in the compose box. */
+    @media (width < $sm_min) {
+        display: block;
+    }
+}
+
+#compose-recipient {
+    display: flex;
+    flex: 1 1 0;
+    /* Use this containing flex element to
+      establish the minimum height of all its
+      children; the default `align-items: stretch`
+      (which is set on any flexbox without specifying
+      it) ensures that the child flex items will
+      always stretch to fit the height set here;
+      larger heights, such as on group-DM pills,
+      will allow this to grow as needed.
+      Child flex items like chevrons take
+      `align-self: center` to center only
+      themselves, where necessary. */
+    min-height: var(--compose-recipient-box-min-height);
+    min-width: 0;
+}
+
+.compose-control-buttons-container {
+    display: flex;
+    align-items: center;
+
+    .compose_control_button {
+        height: 28px;
+        width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        color: inherit;
+        text-decoration: none;
+        font-size: 22px;
+        border-radius: 3px;
+
+        &:hover {
+            opacity: 1;
+            background-color: hsl(0deg 0% 0% / 10%);
+        }
+    }
+
+    .compose_control_button_container.disabled-on-hover:hover {
+        opacity: 0.3;
+        cursor: not-allowed;
+
+        .compose_control_button {
+            pointer-events: none;
+        }
+    }
+
+    .fa-eye {
+        position: relative;
+        top: -0.7px;
+    }
+
+    .compose_control_menu {
+        padding: 0 1px;
+        font-size: 18px;
+    }
+
+    .compose_control_menu_wrapper {
+        opacity: 0.7;
+        padding: 0;
+        margin: 0;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        .compose_control_menu {
+            opacity: 1;
+            display: none;
+
+            /* The media query below handles the hiding and showing of the
+            vdot menu icon, so that it is hidden when all compose buttons fit
+            in the main row below the compose box. So, this is the same as
+            the media query for .show_popover_buttons. */
+
+            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+                display: flex;
+            }
+        }
+    }
+
+    .divider {
+        color: hsl(0deg 0% 75%);
+        font-size: 20px;
+        margin: 0 3px;
+    }
+
+    .compose_draft_button {
+        font-size: 15px;
+        font-weight: 600;
+        font-family: "Source Sans 3 VF", sans-serif;
+        padding: 0 5px;
+        position: relative;
+        top: 0.7px;
+    }
+
+    .compose_help_button {
+        font-size: 20px;
+        line-height: 17px;
+    }
+
+    .show_popover_buttons {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* We use this class for the div containing those compose buttons, which
+        we hide and show in a popover instead when they no longer fit in a
+        single row. The media query below handles the hiding and showing of the
+        buttons from the main row of compose buttons below the compose box. */
+
+        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+            display: none;
+        }
+    }
+
+    .show_popover_buttons_2 {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* This is similar to show_popover_buttons, but it's only for those
+        compose buttons that we hide, and show in the popover only when the
+        screen gets extremely narrow. */
+
+        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+            display: none;
+        }
+    }
+
+    &.show_in_popover {
+        display: none;
+
+        /* This is to show the popover 2 buttons in the popover, only when
+        they are hidden in the main row below the compose box. */
+
+        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+            display: flex;
+        }
+    }
+}
+
+.message-send-controls {
+    display: flex;
+
+    @media (width < $sm_min) {
+        /* At small widths, we display the
+           diminutive Send button and vdots
+           in a column, using `column-reverse`
+           to put the vdots above Send. */
+        flex-direction: column-reverse;
+    }
+
+    &.disabled-message-send-controls {
+        cursor: not-allowed;
+
+        & button {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    }
+}
+
+.drag {
+    display: none;
+    height: 18px;
+    width: 100%;
+    top: 23px;
+    position: relative;
+    cursor: ns-resize;
+}
+
+.preview_message_area {
+    padding: 5px;
+    /* the maximum height the textarea gets to. */
+    max-height: 308px;
+    /* the minimum height the textarea collapses to. */
+    min-height: 42px;
+    overflow: auto;
+
+    border: 1px solid hsl(0deg 0% 67%);
+    border-radius: 4px;
+    background-color: hsl(0deg 0% 98%);
+    cursor: not-allowed;
+}
+
+.markdown_preview_spinner {
+    margin: auto;
+}
+
+#compose_select_recipient_widget_wrapper {
+    display: flex;
+    justify-content: flex-start;
+    height: var(--compose-recipient-box-min-height);
+
+    .dropdown_widget_value {
+        flex-grow: 1;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-default);
+
+        .stream-privacy-type-icon {
+            font-size: 13px;
+            width: 13px;
+            height: 13px;
+            position: relative;
+            top: 2px;
+        }
+    }
+
+    .zulip-icon-chevron-down {
+        padding-left: 5px;
+        color: var(--color-compose-chevron-arrow);
+        font-weight: lighter;
+    }
+
+    /* This is the "Select a channel" default message */
+    .text-warning {
+        color: inherit;
+    }
+}
+
+.typeahead.dropdown-menu {
+    background: hsl(0deg 0% 100%);
+
+    .typeahead-menu {
+        list-style: none;
+        margin: 0;
+        background-color: var(--color-background-popover);
+    }
+
+    .typeahead-header {
+        margin: 0;
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 4px;
+        border-top: 1px solid hsl(0deg 0% 0% / 20%);
+        display: flex;
+        align-items: center;
+    }
+
+    #typeahead-header-text {
+        font-size: 12px;
+    }
+}
+
+.compose_mobile_stream_button i,
+.compose_mobile_direct_message_button i {
+    margin-right: 4px;
+}
+
+/* Class for send-area buttons, such as
+   Drafts and the send-adjacent vdots */
+.send-control-button {
+    border: 0;
+    outline: 0;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    color: var(--color-compose-send-control-button);
+    background-color: var(--color-compose-send-control-button-background);
+    font-weight: 450;
+
+    &:active {
+        transition: all 80ms;
+        transform: scale(0.96);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+
+    &:hover {
+        /* We need to use !important here, regrettably, to keep the default
+           dark-mode hover colors from showing. */
+        color: var(--color-compose-send-control-button-interactive) !important;
+        background-color: var(
+            --color-compose-send-control-button-background-interactive
+        );
+        text-decoration: none;
+    }
+}
+
+/* vdots icon located next to `Send` button which shows
+   options to schedule the message. */
+#send_later {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    /* Allow to grow but not shrink */
+    flex: 1 0 auto;
+    /* TODO: Set this as a variable shared with
+       the send button. */
+    height: 28px;
+    /* Make the vdots appear to extend from
+       beneath the send button when an
+       interactive background is present.
+       Compensatory padding for this negative
+       margin is handled on the vdots icon
+       below, so as to make for a maximum
+       clickable vdots area. */
+    margin-left: -4px;
+    border-radius: 0 4px 4px 0;
+    /* Flex items respect z-index values;
+       this is needed to keep the vdots
+       background beneath the send button. */
+    z-index: 0;
+
+    &:focus-visible {
+        /* Use a border, not an outline, to preserve the
+           conjoined layout with the Send button. Flexbox
+           will handle the dimension change, so there won't
+           be any movement of the vdots in this state. */
+        outline: 0;
+        border: 2px solid var(--color-outline-focus);
+    }
+
+    @media ((width >= $sm_min) and (width < $mc_min)) {
+        width: 32px;
+    }
+
+    @media (width < $sm_min) {
+        /* Drop to a square, rounded button. */
+        width: 30px;
+        margin-left: 0;
+        border-radius: 4px;
+    }
+
+    .zulip-icon {
+        padding: 5px 0 5px 4px;
+        font-size: 17px;
+        flex-grow: 1;
+    }
+}
+
+#compose-drafts-button {
+    /* Use border-box sizing to make
+       width calculations more predictable
+       in a flex context. */
+    box-sizing: border-box;
+    /* In a columnar flex, we need to
+       use alignment to keep the Drafts
+       button from expanding the full
+       width of the column. */
+    align-self: flex-start;
+    /* Keep the Drafts button text
+       aligned with the Send button's
+       lefthand edge */
+    padding: 0 8px;
+    margin-left: -8px;
+    /* Allow the button to occupy as much
+       as 100% of the container width, plus
+       the 8px from the negative left margin. */
+    max-width: calc(100% + 8px);
+    display: flex;
+    gap: 2px;
+
+    .compose-drafts-text {
+        /* Set an ellipsis when the translated
+           version of `Drafts` exceeds the width,
+           and keep button text to a single line. */
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+    }
+
+    @media (width < $mc_min) {
+        /* Reduce the padding on the sides so the
+        button's edge isn't too close to the textarea */
+        margin-left: -3px;
+        max-width: calc(100% + 3px);
+        /* Align the `Drafts` text with the
+           send icon below. */
+        padding: 0 3px;
+    }
+}
+
+#compose.compose-fullscreen {
+    z-index: 99;
+
+    #compose-container {
+        height: 100%;
+    }
+
+    .message_comp {
+        flex: 1;
+        display: flex !important;
+        flex-flow: column;
+    }
+
+    #compose-textarea,
+    #preview_message_area {
+        /* When in full screen, override max-height
+           properties set from manually resizing. */
+        max-height: none !important;
+    }
+
+    #compose-textarea {
+        /* Additionally, override the height properties
+           on the textarea. This is essential if the
+           textarea has been manually resized prior
+           to going into fullscreen. */
+        height: auto !important;
+    }
+
+    #preview_message_area {
+        /* Setting height to 0 is necessary to make the flex+Simplebar
+           combination work correctly, without pushing the compose
+           controls offscreen when previewing a very tall message. */
+        height: 0;
+        flex: 1;
+    }
+}
+
+.preview_mode {
+    #preview-message-area-container {
+        /* When in preview mode, we display the
+           preview container as a columnar flexbox.
+           This containing element is necessary
+           because Simplebar on its own will cause
+           a grid blowout despite a minmax(0, 1fr)
+           row definition. */
+        display: flex;
+        flex-flow: column;
+    }
+
+    .preview_mode_disabled {
+        cursor: not-allowed;
+        opacity: 0.3;
+
+        .compose_control_button {
+            pointer-events: none;
+        }
+    }
+}

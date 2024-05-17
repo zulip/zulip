@@ -1,0 +1,41 @@
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Re-enable the standard coverage pragma
+    nocoverage
+    # Don't complain if non-runnable code isn't run:
+    if False:
+    # Don't require coverage for base class NotImplementedErrors
+    raise NotImplementedError
+    # Don't require coverage for test suite AssertionError -- they're usually for clarity
+    raise AssertionError
+    # Don't require coverage for __str__ statements just used for printing
+    def __(repr|str)__[(]self[)] -> .*:
+    # Don't require coverage for errors about unsupported webhook event types
+    raise UnsupportedWebhookEventTypeError
+    # Don't require coverage for blocks only run when type-checking
+    if TYPE_CHECKING:
+    # Don't require coverage for abstract methods; they're never called.
+    @abstractmethod
+    # PEP 484 overloading syntax
+    ^\s*\.\.\.
+    # Skipped unit tests
+    @skip
+
+[run]
+data_file=var/.coverage
+
+# dynamic_context=test_function, combined with using
+# html_report(..., show_contexts=True), means the HTML report can detail
+# which test(s) executed each line with coverage. This has modest
+# overhead but is very useful for finding existing tests for a code path.
+dynamic_context=test_function
+
+source =
+    analytics/
+    confirmation/
+    corporate/
+    pgroonga/
+    zerver/
+    zilencer/
+    zproject/

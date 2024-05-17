@@ -1,0 +1,213 @@
+/* common CSS for all image upload widget's */
+.image_upload_widget {
+    position: relative;
+    border-radius: 5px;
+    box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
+    overflow: hidden;
+
+    transition: all 0.3s ease;
+
+    .image-block {
+        background-size: contain;
+        height: 100%;
+    }
+
+    .image-hover-background {
+        content: "";
+        background-color: hsl(0deg 0% 0% / 60%);
+        height: 100%;
+        width: 100%;
+        z-index: 99;
+        position: absolute;
+        display: none;
+        cursor: pointer;
+    }
+
+    .image_upload_button {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+        box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
+        z-index: 99;
+    }
+
+    .image-delete-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: hsl(0deg 0% 75%);
+        opacity: 0;
+        padding: 0;
+        position: absolute;
+        font-size: 2rem;
+        top: 10px;
+        right: 10px;
+        z-index: 99;
+        line-height: 20px;
+    }
+
+    .image-disabled-text {
+        color: hsl(0deg 0% 100%);
+        cursor: not-allowed;
+        position: absolute;
+        text-align: center;
+        visibility: hidden;
+        z-index: 99;
+    }
+
+    .image-delete-text,
+    .image-upload-text,
+    .image-disabled-text {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 0 10px;
+    }
+
+    .image-delete-button:focus,
+    .image-delete-button:hover {
+        color: hsl(0deg 0% 100%);
+    }
+
+    .image-delete-button:hover ~ .image-upload-text {
+        visibility: hidden;
+    }
+
+    .image-delete-button:hover ~ .image-delete-text {
+        visibility: visible;
+    }
+
+    .image-delete-text {
+        color: hsl(0deg 0% 100%);
+        font-size: 0.85rem;
+        position: absolute;
+        visibility: hidden;
+        z-index: 99;
+    }
+
+    .image-upload-text {
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: hsl(0deg 0% 85%);
+        position: absolute;
+        z-index: 99;
+        visibility: hidden;
+    }
+
+    .image-upload-text:hover {
+        color: hsl(0deg 0% 100%);
+    }
+
+    .upload-spinner-background {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: hsl(0deg 0% 10%);
+        font-size: 0.8rem;
+        width: 100%;
+        opacity: 0.8;
+        height: 100%;
+        position: absolute;
+        visibility: hidden;
+        z-index: 99;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .hide {
+        display: none;
+    }
+
+    &:hover {
+        .image-upload-text {
+            visibility: visible;
+        }
+
+        .image-delete-button {
+            opacity: 1;
+        }
+
+        .image-disabled-text {
+            visibility: visible;
+        }
+
+        .image-hover-background {
+            display: block;
+        }
+    }
+}
+
+.user-avatar-section,
+.realm-logo-section,
+.realm-icon-section {
+    margin: 20px 0;
+}
+
+/* CSS related to settings page user avatar upload widget only */
+#user-avatar-upload-widget {
+    .image-block {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+#user-avatar-source {
+    font-size: 1em;
+    z-index: 99;
+    margin-top: 10px;
+}
+
+/* CSS related to settings page realm icon upload widget only */
+#realm-icon-upload-widget {
+    width: 100px;
+    height: 100px;
+    box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
+
+    .image-delete-button {
+        top: 5px;
+        right: 5px;
+    }
+}
+
+/* CSS related to settings page realm day/night logo upload widget only */
+#realm-day-logo-upload-widget,
+#realm-night-logo-upload-widget {
+    width: 220px;
+    height: 55px;
+    text-align: center;
+
+    .image-delete-button {
+        top: 5px;
+        right: 5px;
+    }
+}
+
+#realm-day-logo-upload-widget {
+    background-color: hsl(0deg 100% 100%);
+}
+
+#realm-night-logo-upload-widget {
+    background-color: hsl(212deg 28% 18%);
+}
+
+.realm-logo-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.realm-logo-group {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+/* CSS  related to upload widget's preview image */
+.upload_widget_image_preview {
+    object-fit: cover;
+}

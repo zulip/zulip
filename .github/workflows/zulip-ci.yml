@@ -1,0 +1,266 @@
+# NOTE: Everything test in this file should be in `tools/test-all`.  If there's a
+# reason not to run it there, it should be there as a comment
+# explaining why.
+
+name: Zulip CI
+
+on:
+  push:
+    branches: ["*.x", chat.zulip.org, main]
+    tags: ["*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Base images are built using `tools/ci/Dockerfile.prod.template`.
+          # The comments at the top explain how to build and upload these images.
+          # Ubuntu 22.04 ships with Python 3.10.12.
+          - docker_image: zulip/ci:jammy
+            name: Ubuntu 22.04 (Python 3.10, backend + frontend)
+            os: jammy
+            include_documentation_tests: false
+            include_frontend_tests: true
+          # Debian 12 ships with Python 3.11.2.
+          - docker_image: zulip/ci:bookworm
+            name: Debian 12 (Python 3.11, backend + documentation)
+            os: bookworm
+            include_documentation_tests: true
+            include_frontend_tests: false
+          # Ubuntu 24.04 ships with Python 3.12.2.
+          - docker_image: zulip/ci:noble
+            name: Ubuntu 24.04 (Python 3.12, backend)
+            os: noble
+            include_documentation_tests: false
+            include_frontend_tests: false
+
+    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    container: ${{ matrix.docker_image }}
+    env:
+      # GitHub Actions sets HOME to /github/home which causes
+      # problem later in provision and frontend test that runs
+      # tools/setup/postgresql-init-dev-db because of the .pgpass
+      # location. PostgreSQL (psql) expects .pgpass to be at
+      # /home/github/.pgpass and setting home to `/home/github/`
+      # ensures it written there because we write it to ~/.pgpass.
+      HOME: /home/github/
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-{venv,emoji}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
+      - name: Restore pnpm store
+        uses: actions/cache@v4
+        with:
+          path: /__w/.pnpm-store
+          key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Restore python cache
+        uses: actions/cache@v4
+        with:
+          path: /srv/zulip-venv-cache
+          key: v1-venv-${{ matrix.os }}-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: v1-venv-${{ matrix.os }}
+
+      - name: Restore emoji cache
+        uses: actions/cache@v4
+        with:
+          path: /srv/zulip-emoji-cache
+          key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json', 'tools/setup/emoji/build_emoji', 'tools/setup/emoji/emoji_setup_utils.py', 'tools/setup/emoji/emoji_names.py', 'package.json') }}
+          restore-keys: v1-emoji-${{ matrix.os }}
+
+      - name: Install dependencies
+        run: |
+          # This is the main setup job for the test suite
+          ./tools/ci/setup-backend --skip-dev-db-build
+          scripts/lib/clean_unused_caches.py --verbose --threshold=0
+
+      - name: Run tools test
+        run: |
+          source tools/ci/activate-venv
+          ./tools/test-tools
+
+      - name: Run Codespell lint
+        run: |
+          source tools/ci/activate-venv
+          ./tools/run-codespell
+
+      # We run the tests that are only run in a specific job early, so
+      # that we get feedback to the developer about likely failures as
+      # quickly as possible. Backend/mypy failures that aren't
+      # identical across different versions are much more rare than
+      # frontend linter or node test failures.
+      - name: Run documentation and api tests
+        if: ${{ matrix.include_documentation_tests }}
+        run: |
+          source tools/ci/activate-venv
+          # In CI, we only test links we control in test-documentation to avoid flakes
+          ./tools/test-documentation --skip-external-links
+          ./tools/test-help-documentation --skip-external-links
+          ./tools/test-api
+
+      - name: Run node tests
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          # Run the node tests first, since they're fast and deterministic
+          ./tools/test-js-with-node --coverage --parallel=1
+
+      - name: Run frontend lint
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          ./tools/lint --groups=frontend --skip=gitlint # gitlint disabled because flaky
+
+      - name: Check schemas
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          # Check that various schemas are consistent. (is fast)
+          ./tools/check-schemas
+
+      - name: Check capitalization of strings
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          ./manage.py makemessages --locale en
+          PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+          PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+
+      - name: Run puppeteer tests
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          ./tools/test-js-with-puppeteer
+
+      - name: Check pnpm dedupe
+        if: ${{ matrix.include_frontend_tests }}
+        run: pnpm dedupe --check
+
+      - name: Run backend lint
+        run: |
+          source tools/ci/activate-venv
+          echo "Test suite is running under $(python --version)."
+          ./tools/lint --groups=backend --skip=gitlint,mypy # gitlint disabled because flaky
+
+      - name: Run backend tests
+        run: |
+          source tools/ci/activate-venv
+          ./tools/test-backend ${{ matrix.os != 'bookworm' && '--coverage' || '' }} --xml-report --no-html-report --include-webhooks --include-transaction-tests --no-cov-cleanup --ban-console-output
+
+      - name: Run mypy
+        run: |
+          source tools/ci/activate-venv
+          # We run mypy after the backend tests so we get output from the
+          # backend tests, which tend to uncover more serious problems, first.
+          ./tools/run-mypy --version
+          ./tools/run-mypy
+
+      - name: Run miscellaneous tests
+        run: |
+          source tools/ci/activate-venv
+
+          # Currently our compiled requirements files will differ for different
+          # Python versions, so we will run test-locked-requirements only on the
+          # platform with the oldest one.
+          # ./tools/test-locked-requirements
+          # ./tools/test-run-dev  # https://github.com/zulip/zulip/pull/14233
+          #
+          # This test has been persistently flaky at like 1% frequency, is slow,
+          # and is for a very specific single feature, so we don't run it by default:
+          # ./tools/test-queue-worker-reload
+
+          ./tools/test-migrations
+          ./tools/setup/optimize-svg --check
+          ./tools/setup/generate_integration_bots_avatars.py --check-missing
+          ./tools/ci/check-executables
+
+          # Ban check-database-compatibility from transitively
+          # relying on static/generated, because it might not be
+          # up-to-date at that point in upgrade-zulip-stage-2.
+          chmod 000 static/generated web/generated
+          ./scripts/lib/check-database-compatibility
+          chmod 755 static/generated web/generated
+
+      - name: Check for untracked files
+        run: |
+          source tools/ci/activate-venv
+          # This final check looks for untracked files that may have been
+          # created by test-backend or provision.
+          untracked="$(git ls-files --exclude-standard --others)"
+          if [ -n "$untracked" ]; then
+              printf >&2 "Error: untracked files:\n%s\n" "$untracked"
+              exit 1
+          fi
+
+      - name: Test locked requirements
+        if: ${{ matrix.os == 'jammy' }}
+        run: |
+          . /srv/zulip-py3-venv/bin/activate && \
+          ./tools/test-locked-requirements
+
+      - name: Upload coverage reports
+
+        # Only upload coverage when both frontend and backend
+        # tests are run.
+        if: ${{ matrix.include_frontend_tests }}
+        uses: codecov/codecov-action@v4
+        with:
+          files: var/coverage.xml,var/node-coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Store Puppeteer artifacts
+        # Upload these on failure, as well
+        if: ${{ always() && matrix.include_frontend_tests }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: puppeteer
+          path: ./var/puppeteer
+          retention-days: 60
+
+      - name: Check development database build
+        run: ./tools/ci/setup-backend
+
+      - name: Verify pnpm store path
+        run: |
+          set -x
+          path="$(pnpm store path)"
+          [[ "$path" == /__w/.pnpm-store/* ]]
+
+      - name: Generate failure report string
+        id: failure_report_string
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
+
+      - name: Report status to CZO
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "automated testing"
+          topic: ${{ steps.failure_report_string.outputs.topic }}
+          type: "stream"
+          content: ${{ steps.failure_report_string.outputs.content }}

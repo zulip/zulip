@@ -1,0 +1,359 @@
+# See https://semgrep.dev/docs/writing-rules/rule-syntax/ for documentation on YAML rule syntax
+
+rules:
+  ####################### PYTHON RULES #######################
+  - id: deprecated-render-usage
+    pattern: django.shortcuts.render_to_response(...)
+    message: "Use render() (from django.shortcuts) instead of render_to_response()"
+    languages: [python]
+    severity: ERROR
+
+  - id: dont-use-stream-objects-filter
+    pattern: Stream.objects.filter(...)
+    message: "Please use access_stream_by_*() to fetch Stream objects"
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - zerver/views/
+
+  - id: time-machine-travel-specify-tick
+    patterns:
+      - pattern: time_machine.travel(...)
+      - pattern-not: time_machine.travel(..., tick=..., ...)
+    message: |
+      Specify tick kwarg value for time_machine.travel(). Most cases will want to use False.
+    languages: [python]
+    severity: ERROR
+
+  - id: limit-message-filter
+    patterns:
+      - pattern: Message.objects.filter(...)
+      - pattern-not: Message.objects.filter(..., realm=..., ...)
+      - pattern-not: Message.objects.filter(..., realm_id=..., ...)
+      - pattern-not: Message.objects.filter(..., realm_id__in=..., ...)
+      - pattern-not: Message.objects.filter(..., id=..., ...)
+      - pattern-not: Message.objects.filter(..., id__in=..., ...)
+      - pattern-not: Message.objects.filter(..., id__lt=..., ...)
+      - pattern-not: Message.objects.filter(..., id__gt=..., ...)
+    message: "Set either a realm limit or an id limit on Message queries"
+    languages: [python]
+    severity: ERROR
+    paths:
+      exclude:
+        - "**/migrations/"
+
+  - id: dont-use-empty-select_related
+    pattern-either:
+      - pattern: $X.select_related()
+      - pattern: $X.prefetch_related()
+    message: |
+      Do not use a bare '.select_related()' or '.prefetch_related()', which can join many more tables than expected.  Specify the relations to follow explicitly.
+    languages: [python]
+    severity: ERROR
+
+  - id: dont-import-models-in-migrations
+    patterns:
+      - pattern-not: from zerver.lib.redis_utils import get_redis_client
+      - pattern-not: from zerver.lib.utils import generate_api_key
+      - pattern-not: from zerver.models.linkifiers import filter_pattern_validator
+      - pattern-not: from zerver.models.linkifiers import url_template_validator
+      - pattern-not: from zerver.models.streams import generate_email_token_for_stream
+      - pattern-not: from zerver.models.realms import generate_realm_uuid_owner_secret
+      - pattern-either:
+          - pattern: from zerver import $X
+          - pattern: from analytics import $X
+          - pattern: from confirmation import $X
+    message: "Don't import models or other code in migrations; see https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html"
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - "**/migrations"
+      exclude:
+        - zerver/migrations/0032_verify_all_medium_avatar_images.py
+        - zerver/migrations/0104_fix_unreads.py
+        - zerver/migrations/0206_stream_rendered_description.py
+        - zerver/migrations/0209_user_profile_no_empty_password.py
+        - zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py
+        - zerver/migrations/0387_reupload_realmemoji_again.py
+        - zerver/migrations/0443_userpresence_new_table_schema.py
+        - zerver/migrations/0493_rename_userhotspot_to_onboardingstep.py
+        - pgroonga/migrations/0002_html_escape_subject.py
+
+  - id: use-addindexconcurrently
+    pattern: django.db.migrations.AddIndex(...)
+    message: "Import and use AddIndexConcurrently from django.contrib.postgres.operations rather than AddIndex"
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - "**/migrations"
+      exclude:
+        - analytics/migrations/0008_add_count_indexes.py
+        - zerver/migrations/0001_initial.py
+        - zerver/migrations/0082_index_starred_user_messages.py
+        - zerver/migrations/0083_index_mentioned_user_messages.py
+        - zerver/migrations/0095_index_unread_user_messages.py
+        - zerver/migrations/0098_index_has_alert_word_user_messages.py
+        - zerver/migrations/0099_index_wildcard_mentioned_user_messages.py
+        - zerver/migrations/0112_index_muted_topics.py
+        - zerver/migrations/0177_user_message_add_and_index_is_private_flag.py
+        - zerver/migrations/0180_usermessage_add_active_mobile_push_notification.py
+        - zerver/migrations/0268_add_userpresence_realm_timestamp_index.py
+        - zerver/migrations/0343_alter_useractivityinterval_index_together.py
+        - zerver/migrations/0351_user_topic_visibility_indexes.py
+        - zerver/migrations/0443_userpresence_new_table_schema.py
+        - zerver/migrations/0446_realmauditlog_zerver_realmauditlog_user_subscriptions_idx.py
+        - zerver/migrations/0449_scheduledmessage_zerver_unsent_scheduled_messages_indexes.py
+        - zilencer/migrations/0016_remote_counts.py
+        - zilencer/migrations/0017_installationcount_indexes.py
+        - zilencer/migrations/0029_update_remoterealm_indexes.py
+        - zilencer/migrations/0058_remoteinstallationcount_add_mobile_pushes_forwarded_index.py
+        - zilencer/migrations/0059_remoterealmauditlog_add_synced_billing_event_type_index.py
+
+  - id: use-removeindexconcurrently
+    pattern: django.db.migrations.RemoveIndex(...)
+    message: "Import and use RemoveIndexConcurrently from django.contrib.postgres.operations rather than RemoveIndex"
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - "**/migrations"
+      exclude:
+        - zerver/migrations/0473_remove_message_non_realm_id_indexes.py
+        - zerver/migrations/0486_clear_old_data_for_unused_usermessage_flags.py
+        - zilencer/migrations/0038_unique_server_remote_id.py
+
+  - id: html-format
+    languages: [python]
+    pattern-either:
+      - pattern: markupsafe.Markup(... .format(...))
+      - pattern: markupsafe.Markup(f"...")
+      - pattern: markupsafe.Markup(... + ...)
+    severity: ERROR
+    message: "Do not write an HTML injection vulnerability please"
+
+  - id: sql-format
+    languages: [python]
+    pattern-either:
+      - pattern: ... .execute("...".format(...))
+      - pattern: ... .execute(f"...")
+      - pattern: ... .execute(... + ...)
+      - pattern: psycopg2.sql.SQL(... .format(...))
+      - pattern: psycopg2.sql.SQL(f"...")
+      - pattern: psycopg2.sql.SQL(... + ...)
+      - pattern: django.db.migrations.RunSQL(..., "..." .format(...), ...)
+      - pattern: django.db.migrations.RunSQL(..., f"...", ...)
+      - pattern: django.db.migrations.RunSQL(..., ... + ..., ...)
+      - pattern: django.db.migrations.RunSQL(..., [..., "..." .format(...), ...], ...)
+      - pattern: django.db.migrations.RunSQL(..., [..., f"...", ...], ...)
+      - pattern: django.db.migrations.RunSQL(..., [..., ... + ..., ...], ...)
+    severity: ERROR
+    message: "Do not write a SQL injection vulnerability please"
+
+  - id: translated-format-lazy
+    languages: [python]
+    pattern: django.utils.translation.gettext_lazy(...).format(...)
+    severity: ERROR
+    message: "Immediately formatting a lazily translated string destroys its laziness"
+
+  - id: translated-positional-field
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: django.utils.translation.gettext("$MESSAGE")
+          - pattern: django.utils.translation.pgettext($CONTEXT, "$MESSAGE")
+          - pattern: django.utils.translation.gettext_lazy("$MESSAGE")
+          - pattern: django.utils.translation.pgettext_lazy($CONTEXT, "$MESSAGE")
+      - metavariable-regex:
+          metavariable: $MESSAGE
+          regex: (^|.*[^{])(\{\{)*\{[:!}].*
+    severity: ERROR
+    message: "Prefer {named} fields over positional {} in translated strings"
+
+  - id: mutable-default-type
+    languages: [python]
+    pattern-either:
+      - pattern: |
+          def $F(..., $A: typing.List[...] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.List[...]] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Dict[...] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.Dict[...]] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
+              ...
+    severity: ERROR
+    message: "Guard mutable default with read-only type (Sequence, Mapping, AbstractSet)"
+
+  - id: percent-formatting
+    languages: [python]
+    pattern-either:
+      - pattern: '"..." % ...'
+      - pattern: django.utils.translation.gettext(...) % ...
+      - pattern: django.utils.translation.pgettext(...) % ...
+      - pattern: django.utils.translation.gettext_lazy(...) % ...
+      - pattern: django.utils.translation.pgettext_lazy(...) % ...
+    severity: ERROR
+    message: "Prefer f-strings or .format for string formatting"
+
+  - id: change-user-is-active
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $X.is_active = ...
+          - pattern: |
+              setattr($X, 'is_active', ...)
+      - pattern-not-inside: |
+          def change_user_is_active(...):
+            ...
+    message: "Use change_user_is_active to mutate user_profile.is_active"
+    severity: ERROR
+    paths:
+      exclude:
+        - zerver/migrations/0373_fix_deleteduser_dummies.py
+
+  - id: confirmation-object-get
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: Confirmation.objects.get(...)
+          - pattern: Confirmation.objects.filter(..., confirmation_key=..., ...)
+      - pattern-not-inside: |
+          def get_object_from_key(...):
+            ...
+    paths:
+      exclude:
+        - zerver/tests/
+    message: "Do not fetch a Confirmation object directly, use get_object_from_key instead"
+    severity: ERROR
+
+  - id: dont-make-batched-migration-atomic
+    patterns:
+      - pattern: |
+          class Migration(migrations.Migration):
+              ...
+      - pattern-inside: |
+          ...
+          BATCH_SIZE = ...
+          ...
+      - pattern-not: |
+          class Migration(migrations.Migration):
+              atomic = False
+    paths:
+      include:
+        - "**/migrations"
+    message: 'A batched migration should not be atomic. Add "atomic = False" to the Migration class'
+    languages: [python]
+    severity: ERROR
+
+  - id: typed_endpoint_without_keyword_only_param
+    patterns:
+      - pattern: |
+          @typed_endpoint
+          def $F(...)-> ...:
+            ...
+      - pattern-not-inside: |
+          @typed_endpoint
+          def $F(..., *, ...)-> ...:
+            ...
+    message: |
+      @typed_endpoint should not be used without keyword-only parameters.
+      Make parameters to be parsed from the request as keyword-only,
+      or use @typed_endpoint_without_parameters instead.
+    languages: [python]
+    severity: ERROR
+
+  - id: dont-nest-annotated-types-with-param-config
+    patterns:
+      - pattern-not: |
+          def $F(..., invalid_param: typing.Optional[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
+            ...
+      - pattern-not: |
+          def $F(..., $A: typing_extensions.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
+            ...
+      - pattern-not: |
+          def $F(..., $A: typing_extensions.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>] = ..., ...) -> ...:
+            ...
+      - pattern-either:
+          - pattern: |
+              def $F(..., $A: $B[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
+                ...
+          - pattern: |
+              def $F(..., $A: $B[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>] = ..., ...) -> ...:
+                ...
+    message: |
+      Annotated types containing zerver.lib.typed_endpoint.ApiParamConfig should not be nested inside Optional. Use Annotated[Optional[...], zerver.lib.typed_endpoint.ApiParamConfig(...)] instead.
+    languages: [python]
+    severity: ERROR
+
+  - id: exists-instead-of-count
+    patterns:
+      - pattern-either:
+          - pattern: ... .count() == 0
+          - pattern: |
+              if not ... .count():
+                  ...
+    message: 'Use "not .exists()" instead; it is more efficient'
+    languages: [python]
+    severity: ERROR
+
+  - id: exists-instead-of-count-not-zero
+    patterns:
+      - pattern-either:
+          - pattern: ... .count() != 0
+          - pattern: ... .count() > 0
+          - pattern: ... .count() >= 1
+          - pattern: |
+              if ... .count():
+                  ...
+    message: 'Use ".exists()" instead; it is more efficient'
+    languages: [python]
+    severity: ERROR
+
+  - id: functools-partial
+    pattern: functools.partial
+    message: "Replace functools.partial with zerver.lib.partial.partial for type safety"
+    languages: [python]
+    severity: ERROR
+
+  - id: timedelta-positional-argument
+    patterns:
+      - pattern: datetime.timedelta(...)
+      - pattern-not: datetime.timedelta(0)
+      - pattern-not: datetime.timedelta(..., days=..., ...)
+      - pattern-not: datetime.timedelta(..., seconds=..., ...)
+      - pattern-not: datetime.timedelta(..., microseconds=..., ...)
+      - pattern-not: datetime.timedelta(..., milliseconds=..., ...)
+      - pattern-not: datetime.timedelta(..., minutes=..., ...)
+      - pattern-not: datetime.timedelta(..., hours=..., ...)
+      - pattern-not: datetime.timedelta(..., weeks=..., ...)
+    message: |
+      Specify timedelta with named arguments.
+    languages: [python]
+    severity: ERROR
+
+  - id: time-machine
+    languages: [python]
+    patterns:
+      - pattern: unittest.mock.patch("$FUNCTION", return_value=$TIME)
+      - metavariable-regex:
+          metavariable: $FUNCTION
+          regex: .*timezone_now
+    fix: time_machine.travel($TIME, tick=False)
+    severity: ERROR
+    message: "Use the time_machine package, rather than mocking timezone_now"
+
+  - id: urlparse
+    languages: [python]
+    pattern-either:
+      - pattern: urllib.parse.urlparse
+      - pattern: urllib.parse.urlunparse
+      - pattern: urllib.parse.ParseResult
+    severity: ERROR
+    message: "Use urlsplit rather than urlparse"

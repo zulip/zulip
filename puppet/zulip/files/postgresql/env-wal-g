@@ -1,0 +1,48 @@
+#!/bin/sh
+if [ -z "$ZULIP_SECRETS_CONF" ]; then
+    ZULIP_SECRETS_CONF=/etc/zulip/zulip-secrets.conf
+fi
+
+export PGHOST=/var/run/postgresql/
+
+WALG_DELTA_MAX_STEPS=$(crudini --get /etc/zulip/zulip.conf postgresql backups_incremental 2>/dev/null)
+export WALG_DELTA_MAX_STEPS
+
+s3_backups_bucket=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_bucket 2>/dev/null)
+
+if [ "$s3_backups_bucket" != "" ] || [ -n "$WALG_S3_PREFIX" ]; then
+    AWS_REGION=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_region 2>/dev/null)
+    if [ "$AWS_REGION" = "" ]; then
+        # Fall back to the current region, if possible
+        AZ=$(ec2metadata --availability-zone || true)
+        if [ -n "$AZ" ] && [ "$AZ" != "unavailable" ]; then
+            AWS_REGION=$(echo "$AZ" | sed 's/.$//')
+        fi
+    fi
+    export AWS_REGION
+    AWS_ACCESS_KEY_ID=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_key 2>/dev/null)
+    export AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_secret_key 2>/dev/null)
+    export AWS_SECRET_ACCESS_KEY
+    : "${WALG_S3_PREFIX:=s3://$s3_backups_bucket}"
+    export WALG_S3_PREFIX
+
+    if storage_class=$(crudini --get /etc/zulip/zulip.conf postgresql backups_storage_class 2>&1); then
+        export WALG_S3_STORAGE_CLASS="$storage_class"
+    fi
+else
+    WALG_FILE_PREFIX=$(crudini --get /etc/zulip/zulip.conf postgresql backups_directory 2>/dev/null)
+    if [ "$WALG_FILE_PREFIX" != "" ]; then
+        export WALG_FILE_PREFIX
+        if [ "$WALG_DELTA_MAX_STEPS" = "" ]; then
+            # Default to only taking a full backup every week
+            export WALG_DELTA_MAX_STEPS=6
+        fi
+
+    else
+        echo "Could not determine where to back up data to!"
+        exit 1
+    fi
+fi
+
+exec /usr/local/bin/wal-g "$@"

@@ -1,0 +1,26 @@
+{% extends "zerver/config_error/container.html" %}
+
+{% block error_content %}
+    <p>
+        It appears there are problems with the
+        email configuration.
+    </p>
+    {% if not development_environment %}
+        <p>
+            See <code>/var/log/zulip/errors.log</code> for more
+            details on the error.
+        </p>
+        <p>
+            You may also want to test your email configuration,
+            as described in the
+            <a href="https://zulip.readthedocs.io/en/latest/production/email.html">Production installation docs</a>.
+        </p>
+    {% else %}
+        <p>
+            Please have a look at our
+            <a target="_blank" rel="noopener noreferrer" href="https://zulip.readthedocs.io/en/latest/subsystems/email.html#development-and-testing"> setup guide</a>
+            for forwarding emails sent in development
+            environment to an email account.
+        </p>
+    {% endif %}
+{% endblock %}

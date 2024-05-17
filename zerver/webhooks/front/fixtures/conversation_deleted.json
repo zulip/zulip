@@ -1,0 +1,124 @@
+{
+  "_links": {
+    "self": "https://api2.frontapp.com/events/evt_28du84i"
+  },
+  "id": "evt_28du84i",
+  "type": "trash",
+  "emitted_at": 1518307977.111,
+  "conversation": {
+    "_links": {
+      "self": "https://api2.frontapp.com/conversations/cnv_keo696",
+      "related": {
+        "events": "https://api2.frontapp.com/conversations/cnv_keo696/events",
+        "followers": "https://api2.frontapp.com/conversations/cnv_keo696/followers",
+        "messages": "https://api2.frontapp.com/conversations/cnv_keo696/messages",
+        "comments": "https://api2.frontapp.com/conversations/cnv_keo696/comments",
+        "inboxes": "https://api2.frontapp.com/conversations/cnv_keo696/inboxes"
+      }
+    },
+    "id": "cnv_keo696",
+    "subject": "Your next delivery is on Epsilon 96Z",
+    "status": "deleted",
+    "assignee": {
+      "_links": {
+        "self": "https://api2.frontapp.com/teammates/tea_40yq",
+        "related": {
+          "inboxes": "https://api2.frontapp.com/teammates/tea_40yq/inboxes",
+          "conversations": "https://api2.frontapp.com/teammates/tea_40yq/conversations"
+        }
+      },
+      "id": "tea_40yq",
+      "email": "leela@planet-express.com",
+      "username": "leela",
+      "first_name": "Leela",
+      "last_name": "Turanga",
+      "is_admin": true,
+      "is_available": true
+    },
+    "recipient": {
+      "_links": {
+        "related": {
+          "contact": "https://api2.frontapp.com/contacts/crd_62euuy"
+        }
+      },
+      "handle": "calculon@momsbot.com",
+      "role": "to"
+    },
+    "tags": [],
+    "last_message": {
+      "_links": {
+        "self": "https://api2.frontapp.com/messages/msg_1176ie2",
+        "related": {
+          "conversation": "https://api2.frontapp.com/conversations/cnv_keo696"
+        }
+      },
+      "id": "msg_1176ie2",
+      "type": "email",
+      "is_inbound": false,
+      "created_at": 1518307909.541,
+      "blurb": "There will be plenty of time to discuss your objections when and if you return. ",
+      "body": "<div>There will be plenty of time to discuss your objections when and if you return.</div>",
+      "text": "There will be plenty of time to discuss your objections when and if you return.\n",
+      "metadata": {},
+      "author": {
+        "_links": {
+          "self": "https://api2.frontapp.com/teammates/tea_40yq",
+          "related": {
+            "inboxes": "https://api2.frontapp.com/teammates/tea_40yq/inboxes",
+            "conversations": "https://api2.frontapp.com/teammates/tea_40yq/conversations"
+          }
+        },
+        "id": "tea_40yq",
+        "email": "leela@planet-express.com",
+        "username": "leela",
+        "first_name": "Leela",
+        "last_name": "Turanga",
+        "is_admin": true,
+        "is_available": true
+      },
+      "recipients": [
+        {
+          "_links": {
+            "related": {
+              "contact": null
+            }
+          },
+          "handle": "support@planet-express.com",
+          "role": "from"
+        },
+        {
+          "_links": {
+            "related": {
+              "contact": "https://api2.frontapp.com/contacts/crd_62euuy"
+            }
+          },
+          "handle": "calculon@momsbot.com",
+          "role": "to"
+        }
+      ],
+      "attachments": []
+    },
+    "created_at": 1518307874.673
+  },
+  "source": {
+    "_meta": {
+      "type": "teammate"
+    },
+    "data": {
+      "_links": {
+        "self": "https://api2.frontapp.com/teammates/tea_40yq",
+        "related": {
+          "inboxes": "https://api2.frontapp.com/teammates/tea_40yq/inboxes",
+          "conversations": "https://api2.frontapp.com/teammates/tea_40yq/conversations"
+        }
+      },
+      "id": "tea_40yq",
+      "email": "leela@planet-express.com",
+      "username": "leela",
+      "first_name": "Leela",
+      "last_name": "Turanga",
+      "is_admin": true,
+      "is_available": true
+    }
+  }
+}

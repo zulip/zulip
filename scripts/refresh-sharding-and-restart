@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Stand up the new zulip-tornado supervisor instances, and write out
+# the newly generated config files, with .tmp suffix
+SUPPRESS_SHARDING_NOTICE=1 "$(dirname "$0")/zulip-puppet-apply" -f
+
+# Verify, before we move them into place
+if ! [ -e /etc/zulip/nginx_sharding_map.conf.tmp ] || ! [ -e /etc/zulip/sharding.json.tmp ]; then
+    echo "No sharding updates found to apply."
+    exit 1
+fi
+
+chown root:root /etc/zulip/nginx_sharding_map.conf.tmp
+chmod 644 /etc/zulip/nginx_sharding_map.conf.tmp
+chown zulip:zulip /etc/zulip/sharding.json.tmp
+chmod 644 /etc/zulip/sharding.json.tmp
+mv /etc/zulip/nginx_sharding_map.conf.tmp /etc/zulip/nginx_sharding_map.conf
+mv /etc/zulip/sharding.json.tmp /etc/zulip/sharding.json
+
+# In the ordering of operations below, the crucial detail is that
+# zulip-django and zulip-workers:* need to be restarted before
+# reloading nginx. Django has an in-memory map of which realm belongs
+# to which shard. Reloading nginx will cause users' tornado requests
+# to be routed according to the new sharding scheme. If that happens
+# before Django is restarted, updating its realm->shard map, users on
+# realms, whose shard has changed, will have their tornado requests
+# handled by the new tornado process, while Django will still use the
+# old process for its internal communication with tornado when
+# servicing the user's requests.  That's a bad state that leads to
+# clients getting into reload loops ending in crashing on 500 response
+# while Django is restarting.  For this reason it's important to
+# reload nginx only after Django.
+supervisorctl restart zulip-django
+supervisorctl restart 'zulip-workers:*'
+if [ -f /etc/supervisor/conf.d/zulip/zulip-once.conf ]; then
+    supervisorctl restart zulip_deliver_scheduled_emails zulip_deliver_scheduled_messages
+fi
+service nginx reload
