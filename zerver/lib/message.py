@@ -1220,12 +1220,12 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[i
 
     for group in user_groups:
         can_mention_group = group.can_mention_group
+        if (
+            hasattr(can_mention_group, "named_user_group")
+            and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
+        ):
+            continue
         if sender_is_system_bot:
-            if (
-                hasattr(can_mention_group, "named_user_group")
-                and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
-            ):
-                continue
             raise JsonableError(
                 _("You are not allowed to mention user group '{user_group_name}'.").format(
                     user_group_name=group.name
