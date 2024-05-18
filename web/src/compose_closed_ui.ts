@@ -134,14 +134,18 @@ export function update_buttons_for_private(): void {
     const text_stream = $t({defaultMessage: "Start new conversation"});
     const is_direct_message_narrow = true;
     const pm_ids_string = narrow_state.pm_ids_string();
+
+    let disable_reply;
+
     if (!pm_ids_string || people.user_can_direct_message(pm_ids_string)) {
-        $("#new_conversation_button").attr("data-conversation-type", "direct");
-        update_buttons(text_stream, is_direct_message_narrow);
-        return;
+        disable_reply = false;
+    } else {
+        // disable the [Message X] button when in a private narrow
+        // if the user cannot dm the current recipient
+        disable_reply = true;
     }
-    // disable the [Message X] button when in a private narrow
-    // if the user cannot dm the current recipient
-    const disable_reply = true;
+    $("#new_conversation_button").attr("data-conversation-type", "direct");
+
     update_buttons(text_stream, is_direct_message_narrow, disable_reply);
 }
 
