@@ -1,7 +1,7 @@
 import $ from "jquery";
 import tippy from "tippy.js";
 
-import render_personal_menu from "../templates/personal_menu.hbs";
+import render_navbar_personal_menu_popover from "../templates/popovers/navbar_personal_menu_popover.hbs";
 
 import * as channel from "./channel";
 import * as narrow from "./narrow";
@@ -101,7 +101,7 @@ export function initialize() {
         },
         onShow(instance) {
             const args = popover_menus_data.get_personal_menu_content_context();
-            instance.setContent(parse_html(render_personal_menu(args)));
+            instance.setContent(parse_html(render_navbar_personal_menu_popover(args)));
         },
         onHidden(instance) {
             instance.destroy();
