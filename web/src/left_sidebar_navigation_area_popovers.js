@@ -1,11 +1,11 @@
 import $ from "jquery";
 
-import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar_all_messages_popover.hbs";
-import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar_condensed_views_popover.hbs";
-import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar_drafts_popover.hbs";
-import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar_inbox_popover.hbs";
-import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar_recent_view_popover.hbs";
-import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar_starred_messages_popover.hbs";
+import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
+import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar/left_sidebar_condensed_views_popover.hbs";
+import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.hbs";
+import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar/left_sidebar_inbox_popover.hbs";
+import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.hbs";
+import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_starred_messages_popover.hbs";
 
 import * as channel from "./channel";
 import * as drafts from "./drafts";
