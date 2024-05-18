@@ -1,9 +1,12 @@
 import $ from "jquery";
 
 import * as dropdown_widget from "./dropdown_widget";
+import {$t_html} from "./i18n";
 import * as settings_components from "./settings_components";
 import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
+
+export let active_group_id: number | undefined;
 
 export function setup_permissions_dropdown(group: UserGroup, for_group_creation: boolean): void {
     let widget_name: string;
@@ -55,3 +58,36 @@ export function setup_permissions_dropdown(group: UserGroup, for_group_creation:
     }
     can_mention_group_widget.setup();
 }
+
+export function set_active_group_id(group_id: number): void {
+    active_group_id = group_id;
+}
+
+export function reset_active_group_id(): void {
+    active_group_id = undefined;
+}
+
+export const show_user_group_settings_pane = {
+    nothing_selected() {
+        $("#groups_overlay .settings, #user-group-creation").hide();
+        reset_active_group_id();
+        $("#groups_overlay .nothing-selected").show();
+        $("#groups_overlay .user-group-info-title").text(
+            $t_html({defaultMessage: "User group settings"}),
+        );
+    },
+    settings(group: UserGroup) {
+        $("#groups_overlay .nothing-selected, #user-group-creation").hide();
+        $("#groups_overlay .settings").show();
+        set_active_group_id(group.id);
+        $("#groups_overlay .user-group-info-title").text(group.name);
+    },
+    create_user_group() {
+        $("#groups_overlay .nothing-selected, #groups_overlay .settings").hide();
+        reset_active_group_id();
+        $("#user-group-creation").show();
+        $("#groups_overlay .user-group-info-title").text(
+            $t_html({defaultMessage: "Create user group"}),
+        );
+    },
+};
