@@ -1668,7 +1668,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         do_set_realm_authentication_methods(zephyr_realm, new_auth_method_dict, acting_user=user)
 
         # Deactivation is synced.
-        do_deactivate_realm(zephyr_realm, acting_user=None)
+        do_deactivate_realm(zephyr_realm, acting_user=None, deactivation_reason="owner_request")
 
         send_server_data_to_push_bouncer()
         check_counts(5, 5, 1, 1, 7)

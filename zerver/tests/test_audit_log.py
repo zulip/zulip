@@ -421,11 +421,15 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_realm_activation(self) -> None:
         realm = get_realm("zulip")
         user = self.example_user("desdemona")
-        do_deactivate_realm(realm, acting_user=user)
+        do_deactivate_realm(realm, acting_user=user, deactivation_reason="owner_request")
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
         )
         extra_data = log_entry.extra_data
+
+        deactivation_reason = extra_data["deactivation_reason"]
+        self.assertEqual(deactivation_reason, "owner_request")
+
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
         do_reactivate_realm(realm)

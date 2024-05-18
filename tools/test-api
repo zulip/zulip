@@ -116,7 +116,7 @@ with test_server_running(
     do_reactivate_user(guest_user, acting_user=None)
 
     # Test realm deactivated error
-    do_deactivate_realm(guest_user.realm, acting_user=None)
+    do_deactivate_realm(guest_user.realm, acting_user=None, deactivation_reason="owner_request")
 
     client = Client(
         email=email,

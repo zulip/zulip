@@ -295,7 +295,7 @@ class RealmTest(ZulipTestCase):
         hamlet_id = self.example_user("hamlet").id
         get_user_profile_by_id(hamlet_id)
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         user = get_user_profile_by_id(hamlet_id)
         self.assertTrue(user.realm.deactivated)
 
@@ -342,7 +342,7 @@ class RealmTest(ZulipTestCase):
             delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
-        do_deactivate_realm(user.realm, acting_user=None)
+        do_deactivate_realm(user.realm, acting_user=None, deactivation_reason="owner_request")
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
     def test_do_change_realm_description_clears_cached_descriptions(self) -> None:
@@ -366,10 +366,10 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertFalse(realm.deactivated)
 
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         self.assertTrue(realm.deactivated)
 
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         self.assertTrue(realm.deactivated)
 
     def test_do_set_deactivated_redirect_on_deactivated_realm(self) -> None:
@@ -377,7 +377,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
 
         redirect_url = "new_server.zulip.com"
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         self.assertTrue(realm.deactivated)
         do_add_deactivated_redirect(realm, redirect_url)
         self.assertEqual(realm.deactivated_redirect, redirect_url)
@@ -389,7 +389,7 @@ class RealmTest(ZulipTestCase):
 
     def test_do_reactivate_realm(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         self.assertTrue(realm.deactivated)
 
         do_reactivate_realm(realm)
@@ -419,7 +419,7 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_reactivation_link(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         self.assertTrue(realm.deactivated)
 
         obj = RealmReactivationStatus.objects.create(realm=realm)
@@ -432,13 +432,13 @@ class RealmTest(ZulipTestCase):
         self.assertFalse(realm.deactivated)
 
         # Make sure the link can't be reused.
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         response = self.client_get(confirmation_url)
         self.assertEqual(response.status_code, 404)
 
     def test_realm_reactivation_confirmation_object(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         self.assertTrue(realm.deactivated)
         obj = RealmReactivationStatus.objects.create(realm=realm)
         create_confirmation_link(obj, Confirmation.REALM_REACTIVATION)
@@ -449,7 +449,7 @@ class RealmTest(ZulipTestCase):
 
     def test_do_send_realm_reactivation_email(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         self.assertEqual(realm.deactivated, True)
         iago = self.example_user("iago")
         do_send_realm_reactivation_email(realm, acting_user=iago)
