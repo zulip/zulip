@@ -120,10 +120,6 @@
         .tippy-content a,
         p {
             color: hsl(236deg 33% 90%);
-
-            &.compose_control_button:hover {
-                color: hsl(200deg 79% 66%);
-            }
         }
     }
 
@@ -514,7 +510,7 @@
     }
 
     .compose_control_button:hover {
-        background-color: hsl(0deg 0% 100% / 10%);
+        color: inherit;
     }
 
     #compose-content {

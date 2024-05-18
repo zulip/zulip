@@ -260,13 +260,13 @@
         /* Vlad's design calls for 122px for the send column
            at its widest; 112px accounts for 6px of gap and
            4px outside padding. */
-        grid-template: minmax(0, 1fr) 32px / minmax(0, 1fr) var(
-                --compose-send-controls-width
-            );
+        grid-template:
+            minmax(0, 1fr) var(--compose-formatting-buttons-row-height)
+            / minmax(0, 1fr) var(--compose-send-controls-width);
         grid-template-areas:
             "message-content-container message-send-controls-container"
-            "message-formatting-controls-container . ";
-        gap: 4px 6px;
+            "message-formatting-controls-container message-send-controls-container";
+        gap: 0 6px;
         margin-top: 5px;
     }
 
@@ -282,6 +282,28 @@
             --composebox-buttons-width
         );
     grid-template-areas: "message-content composebox-buttons";
+    border-radius: 4px;
+    border: 1px solid var(--color-message-content-container-border);
+    transition: border 0.2s ease;
+
+    &:has(.new_message_textarea:focus) {
+        border-color: var(--color-message-content-container-border-focus);
+    }
+
+    &:has(.new_message_textarea.over_limit),
+    &:has(.new_message_textarea.over_limit:focus) {
+        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+
+        &.flash {
+            animation: message-limit-flash 0.5s ease-in-out infinite;
+        }
+    }
+
+    &:has(.new_message_textarea.invalid),
+    &:has(.new_message_textarea.invalid:focus) {
+        border-color: hsl(3deg 57% 33%);
+        box-shadow: 0 0 2px hsl(3deg 57% 33%);
+    }
 }
 
 #message-content-container .composebox-buttons {
@@ -289,8 +311,6 @@
     /* z-index is needed to avoid flickering of cursor and the
     button when hovering it in preview mode. */
     z-index: 1;
-    padding-top: 1px;
-    padding-right: 1px;
     height: max-content;
 
     button {
@@ -339,6 +359,24 @@
     padding-right: var(--composebox-buttons-width);
 }
 
+.surround-formatting-buttons-row {
+    /* This is to extend it under the formatting buttons
+       row, so that any border / box-shadow styles applied
+       to it surround the formatting buttons row as well. */
+    padding-bottom: var(--compose-formatting-buttons-row-height);
+    /* The extra 1px of margin-bottom is to ensure the 1px of
+       border-bottom shows below the formatting buttons row. */
+    margin-bottom: calc(
+        (var(--compose-formatting-buttons-row-height) + 1px) * -1
+    );
+
+    textarea {
+        /* Flatten the bottom edge of the textarea to
+           merge with the flat top edge of the buttons row */
+        border-radius: 3px 3px 0 0;
+    }
+}
+
 #preview-message-area-container {
     /* Keep preview container invisible outside
        of preview mode. */
@@ -370,6 +408,11 @@
 
 #message-formatting-controls-container {
     grid-area: message-formatting-controls-container;
+    border-radius: 0 0 3px 3px;
+    background-color: var(--color-message-formatting-controls-container);
+    /* margin on either side to let the border of
+       .message-content-container show through. */
+    margin: 0 1px;
 }
 
 #compose-limit-indicator:not(:empty) {
@@ -778,19 +821,15 @@ textarea.new_message_textarea {
     max-height: 22em;
     margin: 0;
     resize: vertical !important;
-    border-radius: 4px;
-    color: hsl(0deg 0% 33%);
+    border-radius: 3px 3px 0 0;
+    border: none;
     background-color: hsl(0deg 0% 100%);
     scrollbar-width: thin;
     scrollbar-color: hsl(0deg 0% 50%) transparent;
+    box-shadow: none;
 
-    &.over_limit,
-    &.over_limit:focus {
-        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
-
-        &.flash {
-            animation: message-limit-flash 0.5s ease-in-out infinite;
-        }
+    &:focus {
+        outline: 0;
     }
 
     &:read-only,
@@ -798,26 +837,11 @@ textarea.new_message_textarea {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
     }
-
-    &.invalid,
-    &.invalid:focus {
-        border: 1px solid hsl(3deg 57% 33%);
-        box-shadow: 0 0 2px hsl(3deg 57% 33%);
-    }
 }
 
-textarea.new_message_textarea,
+#message-content-container,
 #compose_recipient_box {
-    border: 1px solid hsl(0deg 0% 0% / 20%);
-    box-shadow: none;
-    transition: border 0.2s ease;
     color: var(--color-text-default);
-
-    &:focus {
-        outline: 0;
-        border: 1px solid hsl(0deg 0% 67%);
-        box-shadow: none;
-    }
 }
 
 #compose_recipient_box {
@@ -825,16 +849,16 @@ textarea.new_message_textarea,
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: stretch;
     flex: 1 1 0;
+    border: 1px solid hsl(0deg 0% 0% / 20%);
     border-radius: 3px;
+    transition: border 0.2s ease;
     background: hsl(0deg 0% 100%);
 
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
        #stream_message_recipient_topic `<input>` */
     &:focus-within {
-        outline: 0;
         border: 1px solid hsl(0deg 0% 67%);
-        box-shadow: none;
     }
 
     #stream_message_recipient_topic,
@@ -1039,7 +1063,7 @@ textarea.new_message_textarea,
     align-items: center;
 
     .compose_control_button {
-        height: 28px;
+        height: var(--compose-formatting-buttons-row-height);
         width: 30px;
         display: flex;
         align-items: center;
@@ -1048,11 +1072,12 @@ textarea.new_message_textarea,
         color: inherit;
         text-decoration: none;
         font-size: 22px;
-        border-radius: 3px;
 
         &:hover {
             opacity: 1;
-            background-color: hsl(0deg 0% 0% / 10%);
+            background-color: var(
+                --color-compose-control-button-background-hover
+            );
         }
     }
 
@@ -1110,6 +1135,7 @@ textarea.new_message_textarea,
         color: hsl(0deg 0% 75%);
         font-size: 20px;
         margin: 0 3px;
+        height: var(--compose-formatting-buttons-row-height);
     }
 
     .compose_draft_button {
@@ -1207,8 +1233,7 @@ textarea.new_message_textarea,
     min-height: 42px;
     overflow: auto;
 
-    border: 1px solid hsl(0deg 0% 67%);
-    border-radius: 4px;
+    border-radius: 3px 3px 0 0;
     background-color: hsl(0deg 0% 100%);
     cursor: not-allowed;
 }
@@ -1358,12 +1383,9 @@ textarea.new_message_textarea,
         width: 30px;
         /* This reduces the vdots button so that
            it and the send button fit within the
-           54px height the compose textarea occupies.
-           TODO: Should formatting buttons become part
-           of the textarea, the height here and its
-           participation in the columnar flexbox
-           should get a rewrite. */
-        height: 26px;
+           53px height the compose textarea occupies,
+           including its top border. */
+        height: 25px;
         margin-left: 0;
         border-radius: 4px;
     }

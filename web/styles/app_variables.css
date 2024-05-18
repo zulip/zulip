@@ -156,6 +156,7 @@
     flex item. 2.1786em is 30.5px at 14px/1em.
     */
     --compose-recipient-box-min-height: 2.1786em;
+    --compose-formatting-buttons-row-height: 28px;
 
     /*
     Width of the area where the compose box buttons are placed, "inside"
@@ -164,7 +165,7 @@
     expand / collapse buttons area, but keep the text from showing under the
     the buttons.
     */
-    --composebox-buttons-width: 25px;
+    --composebox-buttons-width: 24px;
 
     /*
     Width of the send menu area with the Send button, Draft(s) button
@@ -370,6 +371,10 @@
     --color-composebox-button-hover: var(--color-text-default);
     --color-composebox-button-background: hsl(0deg 100% 100% / 60%);
     --color-composebox-button-background-hover: hsl(0deg 0% 95%);
+    --color-message-formatting-controls-container: hsl(232deg 30% 96%);
+    --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
+    --color-message-content-container-border-focus: hsl(0deg 0% 57%);
+    --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -720,6 +725,10 @@
     --color-composebox-button: hsl(0deg 100% 100% / 55%);
     --color-composebox-button-background: hsl(231deg 8% 13.5% / 80%);
     --color-composebox-button-background-hover: hsl(231deg 12% 18%);
+    --color-message-formatting-controls-container: hsl(0deg 0% 0% / 8%);
+    --color-message-content-container-border: hsl(0deg 0% 0% / 80%);
+    --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
+    --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
