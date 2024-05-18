@@ -17,7 +17,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, NamedUserGroup, Realm, UserProfile, UserTopic
+from zerver.models import Message, NamedUserGroup, Realm, UserGroup, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -1487,7 +1487,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         )
 
         # The restriction does not apply on silent mention.
@@ -1536,7 +1536,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         )
 
         msg_id = self.send_stream_message(othello, "test_stream", "Test message")
@@ -1571,7 +1571,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         )
 
         msg_id = self.send_stream_message(othello, "test_stream", "Test message")
@@ -1584,11 +1584,70 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         )
 
         msg_id = self.send_stream_message(shiva, "test_stream", "Test message")
         self.login("shiva")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        # Test all the cases when can_mention_group is not a named user group.
+        content = "Test mentioning user group @*leadership*"
+        user_group = UserGroup.objects.create(realm=iago.realm)
+        user_group.direct_members.set([othello])
+        user_group.direct_subgroups.set([moderators_system_group])
+        leadership.can_mention_group = user_group
+        leadership.save()
+
+        msg_id = self.send_stream_message(othello, "test_stream", "Test message")
+        self.login("othello")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(shiva, "test_stream", "Test message")
+        self.login("shiva")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(iago, "test_stream", "Test message")
+        self.login("iago")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(cordelia, "test_stream", "Test message")
+        self.login("cordelia")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_error(
+            result, f"You are not allowed to mention user group '{leadership.name}'."
+        )
+
+        content = "Test mentioning user group @_*leadership*"
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
