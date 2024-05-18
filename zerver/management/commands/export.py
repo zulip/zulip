@@ -202,7 +202,9 @@ class Command(ZulipBaseCommand):
 
         if options["deactivate_realm"]:
             print(f"\033[94mDeactivating realm\033[0m: {realm.string_id}")
-            do_deactivate_realm(realm, acting_user=None)
+            do_deactivate_realm(
+                realm, acting_user=None, deactivation_reason="self_hosting_migration"
+            )
 
         def percent_callback(bytes_transferred: Any) -> None:
             print(end=".", flush=True)

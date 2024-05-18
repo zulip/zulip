@@ -2932,7 +2932,7 @@ class NormalActionsTest(BaseAction):
         # correct because were one to somehow compute page_params (as
         # this test does), but that's not actually possible.
         with self.verify_action(state_change_expected=False) as events:
-            do_deactivate_realm(realm, acting_user=None)
+            do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         check_realm_deactivated("events[0]", events[0])
 
     def test_do_mark_onboarding_step_as_read(self) -> None:
