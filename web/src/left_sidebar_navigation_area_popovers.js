@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar_all_messages_popover.hbs";
 import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar_condensed_views_popover.hbs";
+import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar_drafts_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar_inbox_popover.hbs";
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar_recent_view_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
@@ -103,7 +103,7 @@ export function initialize() {
         onShow(instance) {
             popovers.hide_all();
 
-            instance.setContent(ui_util.parse_html(render_drafts_sidebar_actions({})));
+            instance.setContent(ui_util.parse_html(render_left_sidebar_drafts_popover({})));
         },
         onHidden(instance) {
             instance.destroy();
