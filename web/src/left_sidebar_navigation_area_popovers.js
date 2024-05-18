@@ -5,7 +5,7 @@ import render_left_sidebar_condensed_views_popover from "../templates/popovers/l
 import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar_drafts_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar_inbox_popover.hbs";
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar_recent_view_popover.hbs";
-import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
+import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar_starred_messages_popover.hbs";
 
 import * as channel from "./channel";
 import * as drafts from "./drafts";
@@ -72,7 +72,7 @@ export function initialize() {
 
             instance.setContent(
                 ui_util.parse_html(
-                    render_starred_messages_sidebar_actions({
+                    render_left_sidebar_starred_messages_popover({
                         show_unstar_all_button,
                         starred_message_counts: user_settings.starred_message_counts,
                     }),
