@@ -55,6 +55,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -2128,7 +2129,7 @@ class StreamMessagesTest(ZulipTestCase):
         leadership.save()
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         ):
             self.send_stream_message(cordelia, "test_stream", content)
 
@@ -2155,7 +2156,7 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
@@ -2170,13 +2171,13 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support* @*leadership*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         ):
             self.send_stream_message(othello, "test_stream", content)
 
@@ -2196,7 +2197,7 @@ class StreamMessagesTest(ZulipTestCase):
         system_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{members_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
 
@@ -2210,6 +2211,43 @@ class StreamMessagesTest(ZulipTestCase):
             system_bot, "test_stream", content, recipient_realm=iago.realm
         )
         result = self.api_get(shiva, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        # Test all the cases when can_mention_group is not a named user group.
+        content = "Test mentioning user group @*leadership*"
+        user_group = UserGroup.objects.create(realm=iago.realm)
+        user_group.direct_members.set([othello])
+        user_group.direct_subgroups.set([moderators_system_group])
+        leadership.can_mention_group = user_group
+        leadership.save()
+
+        msg_id = self.send_stream_message(othello, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(iago, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{leadership.name}'.",
+        ):
+            self.send_stream_message(cordelia, "test_stream", content)
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{leadership.name}'.",
+        ):
+            self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
+
+        content = "Test mentioning user group @_*leadership*"
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
         self.assert_json_success(result)
 
     def test_stream_message_mirroring(self) -> None:
