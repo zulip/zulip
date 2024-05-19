@@ -174,7 +174,7 @@ class DocPageTest(ZulipTestCase):
             "/api/get-own-user": "does not accept any parameters.",
             "/api/get-stream-id": "The name of the channel to access.",
             "/api/get-streams": "include_public",
-            "/api/get-subscriptions": "Get all streams that the user is subscribed to.",
+            "/api/get-subscriptions": "Get all channels that the user is subscribed to.",
             "/api/get-users": "client_gravatar",
             "/api/installation-instructions": "No download required!",
             "/api/register-queue": "apply_markdown",

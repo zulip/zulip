@@ -9141,10 +9141,10 @@ paths:
   /users/me/subscriptions:
     get:
       operationId: get-subscriptions
-      summary: Get subscribed streams
+      summary: Get subscribed channels
       tags: ["streams"]
       description: |
-        Get all streams that the user is subscribed to.
+        Get all channels that the user is subscribed to.
       # operationId can be used to record which view function
       # corresponds to an endpoint.  TODO: Add these for more
       # endpoints, and perhaps use this to provide links to implementations.
@@ -9182,7 +9182,7 @@ paths:
                         type: array
                         description: |
                           A list of dictionaries where each dictionary contains
-                          information about one of the subscribed streams.
+                          information about one of the subscribed channels.
 
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
