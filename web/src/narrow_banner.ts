@@ -37,6 +37,8 @@ function retrieve_search_query_data(): SearchData {
     const search_string_result: SearchData = {
         query_words: [],
         has_stop_word: false,
+        size: 0,
+        query_words_shortened: "",
     };
 
     // Add in stream:foo and topic:bar if present
@@ -53,6 +55,8 @@ function retrieve_search_query_data(): SearchData {
 
     // Gather information about each query word
     for (const query_word of query_words) {
+        search_string_result.size += query_word.length;
+        search_string_result.query_words_shortened += query_word + " ";
         if (realm.stop_words.includes(query_word)) {
             search_string_result.has_stop_word = true;
             search_string_result.query_words.push({
@@ -67,8 +71,14 @@ function retrieve_search_query_data(): SearchData {
         }
     }
 
+    if (search_string_result.size > 60) {
+        search_string_result.query_words_shortened
+         = search_string_result.query_words_shortened.substring(0, 60) + "...";
+        search_string_result.size = 0;
+    }
+
     return search_string_result;
-}
+} 
 
 function pick_empty_narrow_banner(): NarrowBannerData {
     const default_banner = {
