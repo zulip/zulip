@@ -913,7 +913,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
-            '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
+            '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "channel"}]\' \\',
             "    --data-urlencode client_gravatar=false \\",
             "    --data-urlencode apply_markdown=false \\",
             "    --data-urlencode use_first_unread_anchor=true",
@@ -988,7 +988,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
-            '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
+            '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "channel"}]\' \\',
             "    --data-urlencode use_first_unread_anchor=true",
             "```",
         ]
