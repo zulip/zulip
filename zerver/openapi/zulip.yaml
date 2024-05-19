@@ -9075,17 +9075,17 @@ paths:
   /users/me/{stream_id}/topics:
     get:
       operationId: get-stream-topics
-      summary: Get topics in a stream
+      summary: Get topics in a channel
       tags: ["streams"]
       description: |
-        Get all topics the user has access to in a specific stream.
+        Get all topics the user has access to in a specific channel.
 
-        Note that for private streams with [protected
+        Note that for private channels with [protected
         history](/help/channel-permissions), the user will only have access to
         topics of messages sent after they [subscribed to](/api/subscribe) the
-        stream. Similarly, a user's [bot](/help/bots-overview#bot-type)
+        channel. Similarly, a user's [bot](/help/bots-overview#bot-type)
         will only have access to messages sent after the bot was subscribed to
-        the stream, instead of when the user subscribed.
+        the channel, instead of when the user subscribed.
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
@@ -9137,7 +9137,7 @@ paths:
                   - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
                       An example JSON response for when the user is attempting to fetch the topics
-                      of a non-existing stream (or also a private stream they don't have access to):
+                      of a non-existing channel (or also a private channel they don't have access to):
   /users/me/subscriptions:
     get:
       operationId: get-subscriptions
