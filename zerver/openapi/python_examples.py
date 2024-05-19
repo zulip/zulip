@@ -118,11 +118,11 @@ def test_add_subscriptions_already_subscribed(client: Client) -> None:
 def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> None:
     client.add_subscriptions(
         streams=[
-            {"name": "private_stream"},
+            {"name": "private-channel"},
         ],
     )
 
-    stream_id = client.get_stream_id("private_stream")["stream_id"]
+    stream_id = client.get_stream_id("private-channel")["stream_id"]
     client.call_endpoint(
         f"streams/{stream_id}",
         method="PATCH",
@@ -131,7 +131,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
 
     result = nonadmin_client.add_subscriptions(
         streams=[
-            {"name": "private_stream"},
+            {"name": "private-channel"},
         ],
         authorization_errors_fatal=False,
     )
@@ -140,7 +140,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
 
     result = nonadmin_client.add_subscriptions(
         streams=[
-            {"name": "private_stream"},
+            {"name": "private-channel"},
         ],
         authorization_errors_fatal=True,
     )
@@ -1135,7 +1135,7 @@ def get_read_receipts(client: Client, message_id: int) -> None:
 def test_nonexistent_stream_error(client: Client) -> None:
     request = {
         "type": "stream",
-        "to": "nonexistent_stream",
+        "to": "nonexistent-channel",
         "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts.",
     }
