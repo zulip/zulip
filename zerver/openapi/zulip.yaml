@@ -7513,7 +7513,7 @@ paths:
             [construct a narrow](/api/construct-narrow).
 
             **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
-            for two new filters related to stream messages: `channel` and `channels`;
+            for two new filters related to channel messages: `channel` and `channels`;
             which are aliases for (and return the same results as) the `stream` and
             `streams` filters respectively.
 
