@@ -9723,7 +9723,7 @@ paths:
       summary: Topic muting
       tags: ["streams"]
       description: |
-        [Mute or unmute a topic](/help/mute-a-topic) within a stream that
+        [Mute or unmute a topic](/help/mute-a-topic) within a channel that
         the current user is subscribed to.
 
         **Changes**: Deprecated in Zulip 7.0 (feature level 170). Clients connecting
@@ -9748,7 +9748,7 @@ paths:
               properties:
                 stream_id:
                   description: |
-                    The ID of the stream to access.
+                    The ID of the channel to access.
 
                     Clients must provide either `stream` or `stream_id` as a parameter
                     to this endpoint, but not both.
@@ -9758,7 +9758,7 @@ paths:
                   example: 43
                 stream:
                   description: |
-                    The name of the stream to access.
+                    The name of the channel to access.
 
                     Clients must provide either `stream` or `stream_id` as a parameter
                     to this endpoint, but not both. Clients should use `stream_id`
