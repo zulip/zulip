@@ -164,6 +164,29 @@ run_test("empty_narrow_html", ({mock_template}) => {
 </div>
 `,
     );
+
+    const search_data_with_long_query = {
+        has_stop_word: false,
+        query_words: [],
+        size: 0,
+        query_words_shortened: "this is a really big query and should not be fully displayed...",
+    };
+    actual_html = empty_narrow_html(
+        "No search results.",
+        undefined,
+        search_data_with_long_query,
+    );
+    assert.equal(
+        actual_html,
+        `<div class="empty_feed_notice">
+    <h4 class="empty-feed-notice-title"> No search results. </h4>
+    <div class="empty-feed-notice-description">
+            You searched for:
+                <span>this is a really big query and should not be fully displayed...</span>
+    </div>
+</div>
+`,
+    );
 });
 
 run_test("urls", () => {
