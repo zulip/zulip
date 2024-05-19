@@ -6697,7 +6697,7 @@ paths:
         snapshot will be the only one present if the message has never been edited.
 
         Also note that each snapshot object will only contain additional data for the
-        modified fields for that particular edit (e.g. if only the topic or stream
+        modified fields for that particular edit (e.g. if only the topic or channel
         was edited, `prev_content`, `prev_rendered_content`, and
         `content_html_diff` will not appear).
       responses:
@@ -6734,18 +6734,18 @@ paths:
                             stream:
                               type: integer
                               description: |
-                                Only present if message's stream was edited.
+                                Only present if message's channel was edited.
 
-                                The ID of the stream containing the message
+                                The ID of the channel containing the message
                                 immediately after this edit event.
 
                                 **Changes**: New in Zulip 5.0 (feature level 118).
                             prev_stream:
                               type: integer
                               description: |
-                                Only present if message's stream was edited.
+                                Only present if message's channel was edited.
 
-                                The ID of the stream containing the message immediately
+                                The ID of the channel containing the message immediately
                                 prior to this edit event.
 
                                 **Changes**: New in Zulip 3.0 (feature level 1).
