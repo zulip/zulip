@@ -5688,7 +5688,7 @@ paths:
                 type:
                   description: |
                     The type of scheduled message to be sent. `"direct"` for a direct
-                    message and `"stream"` or `"channel"` for a stream message.
+                    message and `"stream"` or `"channel"` for a channel message.
 
                     Note that, while `"private"` is supported for scheduling direct
                     messages, clients are encouraged to use to the modern convention of
@@ -5696,7 +5696,7 @@ paths:
                     `"private"` may eventually be removed.
 
                     **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
-                    an additional value for this parameter to indicate the type of a stream
+                    an additional value for this parameter to indicate the type of a channel
                     message.
                   type: string
                   enum:
@@ -5709,7 +5709,7 @@ paths:
                   description: |
                     The scheduled message's tentative target audience.
 
-                    For stream messages, the integer ID of the stream.
+                    For channel messages, the integer ID of the channel.
                     For direct messages, a list containing integer user IDs.
                   oneOf:
                     - type: integer
@@ -5722,8 +5722,8 @@ paths:
                   $ref: "#/components/schemas/RequiredContent"
                 topic:
                   description: |
-                    The topic of the message. Only required for stream messages
-                    (`"type": "stream"`), ignored otherwise.
+                    The topic of the message. Only required for channel messages
+                    (`"type": "stream"` or `"type": "channel"`), ignored otherwise.
 
                     Clients should use the `max_topic_length` returned by the
                     [`POST /register`](/api/register-queue) endpoint to determine
@@ -5792,8 +5792,8 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/NonExistingChannelIdError"
                       - description: |
-                          A typical failed JSON response for when a stream message is scheduled
-                          to be sent to a stream that does not exist:
+                          A typical failed JSON response for when a channel message is scheduled
+                          to be sent to a channel that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
