@@ -6046,13 +6046,13 @@ paths:
                           to the default channels set:
     delete:
       operationId: remove-default-stream
-      summary: Remove a default stream
+      summary: Remove a default channel
       tags: ["streams"]
       description: |
-        Remove a stream from the set of [default streams][default-streams]
+        Remove a channel from the set of [default channels][default-channels]
         for new users joining the organization.
 
-        [default-streams]: /help/set-default-channels-for-new-users
+        [default-channels]: /help/set-default-channels-for-new-users
       x-requires-administrator: true
       requestBody:
         required: true
@@ -6063,7 +6063,7 @@ paths:
               properties:
                 stream_id:
                   description: |
-                    The ID of the target stream.
+                    The ID of the target channel.
                   type: integer
                   example: 10
               required:
@@ -6082,7 +6082,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
-                      A typical failed JSON response for when an invalid stream ID is passed:
+                      A typical failed JSON response for when an invalid channel ID is passed:
   /messages:
     get:
       operationId: get-messages
