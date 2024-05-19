@@ -167,7 +167,7 @@ add_example("get_messages", "/messages:get", 200, async (client, console) => {
         num_after: 0,
         narrow: [
             {operator: "sender", operand: "iago@zulip.com"},
-            {operator: "stream", operand: "Verona"},
+            {operator: "channel", operand: "Verona"},
         ],
     };
 

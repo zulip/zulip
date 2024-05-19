@@ -967,7 +967,7 @@ def get_messages(client: Client) -> None:
         "num_after": 0,
         "narrow": [
             {"operator": "sender", "operand": "iago@zulip.com"},
-            {"operator": "stream", "operand": "Verona"},
+            {"operator": "channel", "operand": "Verona"},
         ],
     }
     result = client.get_messages(request)
