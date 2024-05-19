@@ -5836,7 +5836,7 @@ paths:
                 type:
                   description: |
                     The type of scheduled message to be sent. `"direct"` for a direct
-                    message and `"stream"` or `"channel"` for a stream message.
+                    message and `"stream"` or `"channel"` for a channel message.
 
                     When updating the type of the scheduled message, the `to` parameter
                     is required. And, if updating the type of the scheduled message to
@@ -5848,7 +5848,7 @@ paths:
                     `"private"` may eventually be removed.
 
                     **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
-                    an additional value for this parameter to indicate the type of a stream
+                    an additional value for this parameter to indicate the type of a channel
                     message.
                   type: string
                   enum:
@@ -5861,7 +5861,7 @@ paths:
                   description: |
                     The scheduled message's tentative target audience.
 
-                    For stream messages, the integer ID of the stream.
+                    For channel messages, the integer ID of the channel.
                     For direct messages, a list containing integer user IDs.
 
                     Required when updating the `type` of the scheduled message.
@@ -5886,8 +5886,8 @@ paths:
                     The updated topic of the scheduled message.
 
                     Required when updating the `type` of the scheduled message to
-                    `"stream"`. Ignored when the existing or updated `type` of the
-                    scheduled message is `"direct"` (or `"private"`).
+                    `"stream"` or `"channel"`. Ignored when the existing or updated
+                    `type` of the scheduled message is `"direct"` (or `"private"`).
 
                     Clients should use the `max_topic_length` returned by the
                     [`POST /register`](/api/register-queue) endpoint to determine
@@ -5923,8 +5923,8 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/NonExistingChannelIdError"
                       - description: |
-                          A typical failed JSON response for when a stream message is scheduled
-                          to be sent to a stream that does not exist:
+                          A typical failed JSON response for when a channel message is scheduled
+                          to be sent to a channel that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
