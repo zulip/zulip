@@ -5095,15 +5095,15 @@ paths:
   /get_stream_id:
     get:
       operationId: get-stream-id
-      summary: Get stream ID
+      summary: Get channel ID
       tags: ["streams"]
       description: |
-        Get the unique ID of a given stream.
+        Get the unique ID of a given channel.
       parameters:
         - name: stream
           in: query
           description: |
-            The name of the stream to access.
+            The name of the channel to access.
           schema:
             type: string
           example: Denmark
@@ -5124,7 +5124,7 @@ paths:
                       stream_id:
                         type: integer
                         description: |
-                          The ID of the given stream.
+                          The ID of the given channel.
                     example: {"msg": "", "result": "success", "stream_id": 15}
         "400":
           description: Bad request.
@@ -5140,7 +5140,7 @@ paths:
                         "result": "error",
                       }
                     description: |
-                      An example JSON response for when the supplied stream does not exist:
+                      An example JSON response for when the supplied channel does not exist:
   /mark_all_as_read:
     post:
       deprecated: true
