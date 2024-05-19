@@ -1,7 +1,10 @@
+import assert from "minimalistic-assert";
+
 import * as internal_url from "../shared/src/internal_url";
 
 import * as blueslip from "./blueslip";
 import type {Message} from "./message_store";
+import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
@@ -127,6 +130,12 @@ export function huddle_with_url(user_ids_string: string): string {
     // list of user_ids.  We should be careful to keep this
     // consistent with hash_util.decode_operand.
     return "#narrow/dm/" + user_ids_string + "-group";
+}
+
+export function by_conversation_and_time_url_by_message_id(message_id: number): string {
+    const message = message_store.get(message_id);
+    assert(message !== undefined);
+    return by_conversation_and_time_url(message);
 }
 
 export function by_conversation_and_time_url(message: Message): string {

@@ -52,11 +52,7 @@ import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as views_util from "./views_util";
 
-type Row = {
-    last_msg_id: number;
-    participated: boolean;
-    type: "private" | "stream";
-};
+type Row = ConversationData;
 let topics_widget: ListWidget<ConversationData, Row> | undefined;
 let filters_dropdown_widget: dropdown_widget.DropdownWidget;
 export let is_backfill_in_progress = false;
@@ -387,6 +383,7 @@ export function get_focused_row_message(): Message | undefined {
         const last_conversation = recent_view_data.conversations.get(conversation_id);
         assert(last_conversation !== undefined);
         const topic_last_msg_id = last_conversation.last_msg_id;
+        // We are not guaranteed to get a message in the message store.
         return message_store.get(topic_last_msg_id);
     }
     return undefined;
@@ -477,7 +474,7 @@ export function process_messages(
         for (const msg of messages) {
             if (recent_view_data.process_message(msg)) {
                 conversation_data_updated = true;
-                const key = recent_view_util.get_key_from_message(msg);
+                const key = recent_view_util.get_key_from_conversation_data(msg);
                 updated_rows.add(key);
             }
         }
@@ -498,13 +495,6 @@ export function process_messages(
             complete_rerender();
         }
     }
-}
-
-function message_to_conversation_unread_count(msg: Message): number {
-    if (msg.type === "private") {
-        return unread.num_unread_for_user_ids_string(msg.to_user_ids);
-    }
-    return unread.num_unread_for_topic(msg.stream_id, msg.topic);
 }
 
 export function get_pm_tooltip_data(user_ids_string: string): {
@@ -591,15 +581,13 @@ type ConversationContext = {
 );
 
 function format_conversation(conversation_data: ConversationData): ConversationContext {
-    const last_msg = message_store.get(conversation_data.last_msg_id);
-    assert(last_msg !== undefined);
-    const time = new Date(last_msg.timestamp * 1000);
-    const type = last_msg.type;
+    const time = new Date(conversation_data.latest_message_timestamp * 1000);
+    const type = conversation_data.type;
     const full_last_msg_date_time = timerender.get_full_datetime_clarification(time);
-    const conversation_key = recent_view_util.get_key_from_message(last_msg);
-    const unread_count = message_to_conversation_unread_count(last_msg);
+    const conversation_key = recent_view_util.get_key_from_conversation_data(conversation_data);
+    const unread_count = conversation_data.unread_count;
     const last_msg_time = timerender.relative_time_string_from_date(time);
-    const is_private = last_msg.type === "private";
+    const is_private = conversation_data.type === "private";
     let all_senders;
     let senders;
     let displayed_other_senders;
@@ -609,16 +597,16 @@ function format_conversation(conversation_data: ConversationData): ConversationC
     let dm_context;
     if (type === "stream") {
         // Stream info
-        const stream_info = sub_store.get(last_msg.stream_id);
+        const stream_info = sub_store.get(conversation_data.stream_id);
         assert(stream_info !== undefined);
-        const stream_id = last_msg.stream_id;
-        const stream_name = stream_data.get_stream_name_from_id(last_msg.stream_id);
+        const stream_id = conversation_data.stream_id;
+        const stream_name = stream_data.get_stream_name_from_id(conversation_data.stream_id);
         const stream_color = stream_info.color;
         const stream_url = hash_util.by_stream_url(stream_id);
         const invite_only = stream_info.invite_only;
         const is_web_public = stream_info.is_web_public;
         // Topic info
-        const topic = last_msg.topic;
+        const topic = conversation_data.topic;
         const topic_url = hash_util.by_stream_topic_url(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
@@ -657,12 +645,13 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         };
     } else {
         // Direct message info
-        const user_ids_string = last_msg.to_user_ids;
-        assert(typeof last_msg.display_recipient !== "string");
-        const rendered_pm_with = last_msg.display_recipient
+        const user_ids_string = conversation_data.to_user_ids;
+        assert(typeof conversation_data.display_recipient !== "string");
+        const rendered_pm_with = conversation_data.display_recipient
             .filter(
                 (recipient: DisplayRecipientUser) =>
-                    !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
+                    !people.is_my_user_id(recipient.id) ||
+                    conversation_data.display_recipient.length === 1,
             )
             .map((user: DisplayRecipientUser) =>
                 render_user_with_status_icon({
@@ -672,14 +661,14 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             )
             .sort()
             .join(", ");
-        const recipient_id = last_msg.recipient_id;
-        const pm_url = last_msg.pm_with_url;
-        const is_group = last_msg.display_recipient.length > 2;
+        const recipient_id = conversation_data.recipient_id;
+        const pm_url = conversation_data.pm_with_url;
+        const is_group = conversation_data.display_recipient.length > 2;
 
         let is_bot = false;
         let user_circle_class;
         if (!is_group) {
-            const user_id = Number.parseInt(last_msg.to_user_ids, 10);
+            const user_id = Number.parseInt(conversation_data.to_user_ids, 10);
             const user = people.get_by_user_id(user_id);
             if (user.is_bot) {
                 // We display the bot icon rather than a user circle for bots.
@@ -742,7 +731,11 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         senders: people.sender_info_for_recent_view_row(senders),
         other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
         other_sender_names_html: displayed_other_names.map((name) => _.escape(name)).join("<br />"),
-        last_msg_url: hash_util.by_conversation_and_time_url(last_msg),
+        // Note: this expects the conversation_data.last_msg_id to exist in message_store, which
+        // we are trying to avoid. Ideally we refactor this function to not need a message id.
+        last_msg_url: hash_util.by_conversation_and_time_url_by_message_id(
+            conversation_data.last_msg_id,
+        ),
         is_spectator: page_params.is_spectator,
     };
     if (is_private) {
@@ -762,9 +755,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
 }
 
 function get_topic_row(topic_data: ConversationData): JQuery {
-    const msg = message_store.get(topic_data.last_msg_id);
-    assert(msg !== undefined);
-    const topic_key = recent_view_util.get_key_from_message(msg);
+    const topic_key = recent_view_util.get_key_from_conversation_data(topic_data);
     return $(`#${CSS.escape(recent_conversation_key_prefix + topic_key)}`);
 }
 
@@ -809,11 +800,8 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
 }
 
 export function filters_should_hide_row(topic_data: ConversationData): boolean {
-    const msg = message_store.get(topic_data.last_msg_id);
-    assert(msg !== undefined);
-
-    if (msg.type === "stream") {
-        const sub = sub_store.get(msg.stream_id);
+    if (topic_data.type === "stream") {
+        const sub = sub_store.get(topic_data.stream_id);
         if (!sub?.subscribed && topic_data.type === "stream") {
             // Never try to process deactivated & unsubscribed stream msgs.
             return true;
@@ -821,7 +809,7 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     }
 
     if (filters.has("unread")) {
-        const unread_count = message_to_conversation_unread_count(msg);
+        const unread_count = topic_data.unread_count;
         if (unread_count === 0) {
             return true;
         }
@@ -831,14 +819,16 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         return true;
     }
 
-    if (dropdown_filters.has(views_util.FILTERS.UNMUTED_TOPICS) && msg.type === "stream") {
+    if (dropdown_filters.has(views_util.FILTERS.UNMUTED_TOPICS) && topic_data.type === "stream") {
         // We want to show the unmuted or followed topics within muted
         // streams in Recent Conversations.
         const topic_unmuted_or_followed = Boolean(
-            user_topics.is_topic_unmuted_or_followed(msg.stream_id, msg.topic),
+            user_topics.is_topic_unmuted_or_followed(topic_data.stream_id, topic_data.topic),
         );
-        const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
-        const stream_muted = stream_data.is_muted(msg.stream_id);
+        const topic_muted = Boolean(
+            user_topics.is_topic_muted(topic_data.stream_id, topic_data.topic),
+        );
+        const stream_muted = stream_data.is_muted(topic_data.stream_id);
         if (topic_muted || (stream_muted && !topic_unmuted_or_followed)) {
             return true;
         }
@@ -848,8 +838,8 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         return true;
     }
 
-    if (filters.has("include_private") && msg.type === "private") {
-        const recipients = people.split_to_ints(msg.to_user_ids);
+    if (filters.has("include_private") && topic_data.type === "private") {
+        const recipients = people.split_to_ints(topic_data.to_user_ids);
 
         if (recipients.every((id) => muted_users.is_user_muted(id))) {
             return true;
@@ -858,34 +848,31 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
 
     if (
         dropdown_filters.has(views_util.FILTERS.FOLLOWED_TOPICS) &&
-        msg.type === "stream" &&
-        !user_topics.is_topic_followed(msg.stream_id, msg.topic)
+        topic_data.type === "stream" &&
+        !user_topics.is_topic_followed(topic_data.stream_id, topic_data.topic)
     ) {
         return true;
     }
 
     if (
         dropdown_filters.has(views_util.FILTERS.UNMUTED_TOPICS) &&
-        msg.type === "stream" &&
-        (user_topics.is_topic_muted(msg.stream_id, msg.topic) ||
-            stream_data.is_muted(msg.stream_id)) &&
-        !user_topics.is_topic_unmuted_or_followed(msg.stream_id, msg.topic)
+        topic_data.type === "stream" &&
+        (user_topics.is_topic_muted(topic_data.stream_id, topic_data.topic) ||
+            stream_data.is_muted(topic_data.stream_id)) &&
+        !user_topics.is_topic_unmuted_or_followed(topic_data.stream_id, topic_data.topic)
     ) {
         return true;
     }
 
     const search_keyword = $<HTMLInputElement>("#recent_view_search").val();
     assert(search_keyword !== undefined);
-    if (msg.type === "stream") {
-        const stream_name = stream_data.get_stream_name_from_id(msg.stream_id);
-        if (!topic_in_search_results(search_keyword, stream_name, msg.topic)) {
+    if (topic_data.type === "stream") {
+        const stream_name = stream_data.get_stream_name_from_id(topic_data.stream_id);
+        if (!topic_in_search_results(search_keyword, stream_name, topic_data.topic)) {
             return true;
         }
     } else {
-        assert(msg.type === "private");
-        // Display recipient contains user information for DMs.
-        assert(typeof msg.display_recipient !== "string");
-        const participants = [...msg.display_recipient].map((recipient) =>
+        const participants = [...topic_data.display_recipient].map((recipient) =>
             people.get_by_user_id(recipient.id),
         );
         return people.filter_people_by_search_terms(participants, search_keyword).size === 0;
@@ -986,7 +973,7 @@ export function update_topic_visibility_policy(stream_id: number, topic: string)
 }
 
 export function update_topic_unread_count(message: Message): void {
-    const topic_key = recent_view_util.get_key_from_message(message);
+    const topic_key = recent_view_util.get_key_from_conversation_data(message);
     inplace_rerender(topic_key);
 }
 
@@ -1072,47 +1059,34 @@ function sort_comparator(a: string, b: string): number {
 
 function stream_sort(a: Row, b: Row): number {
     if (a.type === b.type) {
-        const a_msg = message_store.get(a.last_msg_id);
-        assert(a_msg !== undefined);
-        const b_msg = message_store.get(b.last_msg_id);
-        assert(b_msg !== undefined);
-
-        if (a_msg.type === "stream") {
-            assert(b_msg.type === "stream");
-            const a_stream_name = stream_data.get_stream_name_from_id(a_msg.stream_id);
-            const b_stream_name = stream_data.get_stream_name_from_id(b_msg.stream_id);
+        if (a.type === "stream") {
+            assert(b.type === "stream");
+            const a_stream_name = stream_data.get_stream_name_from_id(a.stream_id);
+            const b_stream_name = stream_data.get_stream_name_from_id(b.stream_id);
             return sort_comparator(a_stream_name, b_stream_name);
         }
-        assert(a_msg.type === "private");
-        assert(b_msg.type === "private");
-        return sort_comparator(a_msg.display_reply_to, b_msg.display_reply_to);
+        assert(a.type === "private");
+        assert(b.type === "private");
+        return sort_comparator(a.display_reply_to, b.display_reply_to);
     }
     // if type is not same sort between "private" and "stream"
     return sort_comparator(a.type, b.type);
 }
 
 function topic_sort_key(conversation_data: ConversationData): string {
-    const message = message_store.get(conversation_data.last_msg_id);
-    assert(message !== undefined);
-    if (message.type === "private") {
-        return message.display_reply_to;
+    if (conversation_data.type === "private") {
+        return conversation_data.display_reply_to;
     }
-    return message.topic;
+    return conversation_data.topic;
 }
 
 function topic_sort(a: ConversationData, b: ConversationData): number {
     return sort_comparator(topic_sort_key(a), topic_sort_key(b));
 }
 
-function unread_count(conversation_data: ConversationData): number {
-    const message = message_store.get(conversation_data.last_msg_id);
-    assert(message !== undefined);
-    return message_to_conversation_unread_count(message);
-}
-
 function unread_sort(a: ConversationData, b: ConversationData): number {
-    const a_unread_count = unread_count(a);
-    const b_unread_count = unread_count(b);
+    const a_unread_count = a.unread_count;
+    const b_unread_count = b.unread_count;
     if (a_unread_count !== b_unread_count) {
         return a_unread_count - b_unread_count;
     }
@@ -1362,13 +1336,7 @@ function has_unread(row: number): boolean {
     assert(topics_widget !== undefined);
     const current_row = topics_widget.get_current_list()[row];
     assert(current_row !== undefined);
-    const last_msg_id = current_row.last_msg_id;
-    const last_msg = message_store.get(last_msg_id);
-    assert(last_msg !== undefined);
-    if (last_msg.type === "stream") {
-        return unread.num_unread_for_topic(last_msg.stream_id, last_msg.topic) > 0;
-    }
-    return unread.num_unread_for_user_ids_string(last_msg.to_user_ids) > 0;
+    return current_row.unread_count > 0;
 }
 
 export function focus_clicked_element(
