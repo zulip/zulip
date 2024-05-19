@@ -9594,24 +9594,24 @@ paths:
                       }
     delete:
       operationId: unsubscribe
-      summary: Unsubscribe from a stream
+      summary: Unsubscribe from a channel
       tags: ["streams"]
       description: |
-        Unsubscribe yourself or other users from one or more streams.
+        Unsubscribe yourself or other users from one or more channels.
 
         In addition to managing the current user's subscriptions, this
-        endpoint can be used to remove other users from streams. This
+        endpoint can be used to remove other users from channels. This
         is possible in 3 situations:
 
         - Organization administrators can remove any user from any
-          stream.
-        - Users can remove a bot that they own from any stream that
+          channel.
+        - Users can remove a bot that they own from any channel that
           the user [can access](/help/channel-permissions).
-        - Users can unsubscribe any user from a stream if they [have
-          access](/help/channel-permissions) to the stream and are a
+        - Users can unsubscribe any user from a channel if they [have
+          access](/help/channel-permissions) to the channel and are a
           member of the [user group](/api/get-user-groups) specified
           by the [`can_remove_subscribers_group`][can-remove-parameter]
-          for the stream.
+          for the channel.
 
         **Changes**: Before Zulip 8.0 (feature level 208), if a user
         specified by the [`principals`][principals-param] parameter was
@@ -9626,7 +9626,7 @@ paths:
         was named `can_remove_subscribers_group_id`.
 
         Before Zulip 7.0 (feature level 161), the
-        `can_remove_subscribers_group_id` for all streams was always
+        `can_remove_subscribers_group_id` for all channels was always
         the system group for organization administrators.
 
         Before Zulip 6.0 (feature level 145), users had no special
@@ -9638,7 +9638,7 @@ paths:
         oneOf:
           - type: include
             description: |
-              **Note**: Unsubscribing another user from a stream requires
+              **Note**: Unsubscribing another user from a channel requires
               administrative privileges.
             parameters:
               enum:
@@ -9658,7 +9658,7 @@ paths:
               properties:
                 subscriptions:
                   description: |
-                    A list of stream names to unsubscribe from. This parameter is called
+                    A list of channel names to unsubscribe from. This parameter is called
                     `streams` in our Python API.
                   type: array
                   items:
@@ -9691,20 +9691,20 @@ paths:
                         items:
                           type: string
                         description: |
-                          A list of the names of streams that the user is already unsubscribed
+                          A list of the names of channels that the user is already unsubscribed
                           from, and hence doesn't need to be unsubscribed.
                       removed:
                         type: array
                         items:
                           type: string
                         description: |
-                          A list of the names of streams which were unsubscribed from as a result
+                          A list of the names of channels which were unsubscribed from as a result
                           of the query.
                     example:
                       {
                         "msg": "",
                         "not_removed": [],
-                        "removed": ["new stream"],
+                        "removed": ["testing-help"],
                         "result": "success",
                       }
         "400":
@@ -9715,7 +9715,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/NonExistingChannelNameError"
                   - description: |
-                      A typical failed JSON response for when the target stream does not exist:
+                      A typical failed JSON response for when the target channel does not exist:
   /users/me/subscriptions/muted_topics:
     patch:
       deprecated: true
