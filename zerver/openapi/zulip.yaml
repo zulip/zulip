@@ -6465,7 +6465,7 @@ paths:
       summary: Send a message
       tags: ["messages"]
       description: |
-        Send a [stream message](/help/introduction-to-topics) or a
+        Send a [channel message](/help/introduction-to-topics) or a
         [direct message](/help/direct-messages).
       requestBody:
         required: true
@@ -6479,10 +6479,10 @@ paths:
                     The type of message to be sent.
 
                     `"direct"` for a direct message and `"stream"` or `"channel"` for a
-                    stream message.
+                    channel message.
 
                     **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
-                    an additional value for this parameter to request a stream message.
+                    an additional value for this parameter to request a channel message.
 
                     In Zulip 7.0 (feature level 174), `"direct"` was added as
                     the preferred way to request a direct message, deprecating the original
@@ -6499,11 +6499,11 @@ paths:
                   example: direct
                 to:
                   description: |
-                    For stream messages, either the name or integer ID of the stream. For
+                    For channel messages, either the name or integer ID of the channel. For
                     direct messages, either a list containing integer user IDs or a list
                     containing string Zulip API email addresses.
 
-                    **Changes**: Support for using user/stream IDs was added in Zulip 2.0.0.
+                    **Changes**: Support for using user/channel IDs was added in Zulip 2.0.0.
                   oneOf:
                     - type: string
                     - type: integer
@@ -6519,8 +6519,8 @@ paths:
                   $ref: "#/components/schemas/RequiredContent"
                 topic:
                   description: |
-                    The topic of the message. Only required for stream messages
-                    (`"type": "stream"`), ignored otherwise.
+                    The topic of the message. Only required for channel messages
+                    (`"type": "stream"` or `"type": "channel"`), ignored otherwise.
 
                     Clients should use the `max_topic_length` returned by the
                     [`POST /register`](/api/register-queue) endpoint to determine
@@ -6611,7 +6611,7 @@ paths:
 
                           For example, the Zulip web application uses this field to decide whether
                           to display a warning or notice suggesting to unmute the topic after
-                          sending a message to a muted stream. Such a notice would be confusing in
+                          sending a message to a muted channel. Such a notice would be confusing in
                           the event that the act of sending the message had already resulted in the
                           user automatically unmuting or following the topic in question.
 
@@ -6632,7 +6632,7 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/NonExistingChannelNameError"
                       - description: |
-                          A typical failed JSON response for when a stream message is sent to a stream
+                          A typical failed JSON response for when a channel message is sent to a channel
                           that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
@@ -6656,7 +6656,7 @@ paths:
                         description: |
                           An example JSON error response for when the message was rejected because
                           of the organization's `wildcard_mention_policy` and large number of
-                          subscribers to the stream.
+                          subscribers to the channel.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
                           error returned the `"BAD_REQUEST"` code.
