@@ -9,6 +9,7 @@
             {{#if search_data.topic_query}}
             <span>topic: {{search_data.topic_query}}</span>
             {{/if}}
+            {{#if search_data.size}}
             {{#each search_data.query_words}}
                 {{#if is_stop_word}}
                 <del>{{query_word}}</del>
@@ -16,6 +17,9 @@
                 <span>{{query_word}}</span>
                 {{/if}}
             {{/each}}
+            {{else}}
+                <span>{{search_data.query_words_shortened}}</span>
+            {{/if}}
         {{else}}
             {{{ html }}}
         {{/if}}
