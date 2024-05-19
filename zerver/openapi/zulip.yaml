@@ -9229,17 +9229,17 @@ paths:
                       }
     post:
       operationId: subscribe
-      summary: Subscribe to a stream
+      summary: Subscribe to a channel
       tags: ["streams"]
       description: |
-        Subscribe one or more users to one or more streams.
+        Subscribe one or more users to one or more channels.
 
-        If any of the specified streams do not exist, they are automatically
-        created. The initial [stream settings](/api/update-stream) will be determined
+        If any of the specified channels do not exist, they are automatically
+        created. The initial [channel settings](/api/update-stream) will be determined
         by the optional parameters, like `invite_only`, detailed below.
 
         Note that the ability to subscribe oneself and/or other users to a specified
-        stream depends on the [stream's privacy settings](/help/channel-permissions).
+        channel depends on the [channel's privacy settings](/help/channel-permissions).
 
         **Changes**: Before Zulip 8.0 (feature level 208), if a user
         specified by the [`principals`][principals-param] parameter was
@@ -9258,7 +9258,7 @@ paths:
                 - subscriptions
           - type: include
             description: |
-              To subscribe another user to a stream, you may pass in
+              To subscribe another user to a channel, you may pass in
               the `principals` parameter, like so:
             parameters:
               enum:
@@ -9274,8 +9274,8 @@ paths:
                 subscriptions:
                   description: |
                     A list of dictionaries containing the key `name` and value
-                    specifying the name of the stream to subscribe. If the stream does not
-                    exist a new stream is created. The description of the stream created can
+                    specifying the name of the channel to subscribe. If the channel does not
+                    exist a new channel is created. The description of the channel created can
                     be specified by setting the dictionary key `description` with an
                     appropriate value.
                   type: array
@@ -9286,20 +9286,20 @@ paths:
                       name:
                         type: string
                         description: |
-                          The name of the stream.
+                          The name of the channel.
 
                           Clients should use the `max_stream_name_length` returned by the
                           [`POST /register`](/api/register-queue) endpoint to determine
-                          the maximum stream name length.
+                          the maximum channel name length.
                       description:
                         type: string
                         description: |
                           The [description](/help/change-the-channel-description)
-                          to use for a new stream being created, in text/markdown format.
+                          to use for a new channel being created, in text/markdown format.
 
                           Clients should use the `max_stream_description_length` returned
                           by the [`POST /register`](/api/register-queue) endpoint to
-                          determine the maximum stream description length.
+                          determine the maximum channel description length.
                     required:
                       - name
                     example:
@@ -9313,9 +9313,9 @@ paths:
                 authorization_errors_fatal:
                   description: |
                     A boolean specifying whether authorization errors (such as when the
-                    requesting user is not authorized to access a private stream) should be
+                    requesting user is not authorized to access a private channel) should be
                     considered fatal or not. When `true`, an authorization error is reported
-                    as such. When set to `false`, the response will be a 200 and any streams
+                    as such. When set to `false`, the response will be a 200 and any channels
                     where the request encountered an authorization error will be listed
                     in the `unauthorized` key.
                   type: boolean
@@ -9323,30 +9323,30 @@ paths:
                   example: false
                 announce:
                   description: |
-                    If one of the streams specified did not exist previously and is thus created
+                    If one of the channels specified did not exist previously and is thus created
                     by this call, this determines whether [notification bot](/help/configure-automated-notices)
-                    will send an announcement about the new stream's creation.
+                    will send an announcement about the new channel's creation.
                   type: boolean
                   default: false
                   example: true
                 invite_only:
                   description: |
-                    As described above, this endpoint will create a new stream if passed
-                    a stream name that doesn't already exist. This parameters and the ones
+                    As described above, this endpoint will create a new channel if passed
+                    a channel name that doesn't already exist. This parameters and the ones
                     that follow are used to request an initial configuration of a created
-                    stream; they are ignored for streams that already exist.
+                    channel; they are ignored for channels that already exist.
 
-                    This parameter determines whether any newly created streams will be
-                    private streams.
+                    This parameter determines whether any newly created channels will be
+                    private channels.
                   type: boolean
                   default: false
                   example: true
                 is_web_public:
                   description: |
-                    This parameter determines whether any newly created streams will be
-                    web-public streams.
+                    This parameter determines whether any newly created channels will be
+                    web-public channels.
 
-                    Note that creating web-public streams requires the
+                    Note that creating web-public channels requires the
                     `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
                     to be enabled on the Zulip server in question, the organization
                     to have enabled the `enable_spectator_access` realm setting, and
@@ -9361,13 +9361,13 @@ paths:
                   example: true
                 is_default_stream:
                   description: |
-                    This parameter determines whether any newly created streams will be
-                    added as [default streams][default-streams] for new users joining
+                    This parameter determines whether any newly created channels will be
+                    added as [default channels][default-channels] for new users joining
                     the organization.
 
-                    [default-streams]: /help/set-default-channels-for-new-users
+                    [default-channels]: /help/set-default-channels-for-new-users
 
-                    **Changes**: New in Zulip 8.0 (feature level 200). Previously, default stream status
+                    **Changes**: New in Zulip 8.0 (feature level 200). Previously, default channel status
                     could only be changed using the [dedicated API endpoint](/api/add-default-stream).
                   type: boolean
                   default: false
@@ -9420,11 +9420,11 @@ paths:
                         type: object
                         description: |
                           A dictionary where the key is the Zulip API email address of the user/bot
-                          and the value is a list of the names of the streams that were subscribed
+                          and the value is a list of the names of the channels that were subscribed
                           to as a result of the query.
                         additionalProperties:
                           description: |
-                            `{email_address}`: List of the names of the streams that were subscribed
+                            `{email_address}`: List of the names of the channels that were subscribed
                             to as a result of the query.
                           type: array
                           items:
@@ -9433,11 +9433,11 @@ paths:
                         type: object
                         description: |
                           A dictionary where the key is the Zulip API email address of the user/bot
-                          and the value is a list of the names of the streams that the user/bot is
+                          and the value is a list of the names of the channels that the user/bot is
                           already subscribed to.
                         additionalProperties:
                           description: |
-                            `{email_address}`: List of the names of the streams that the user is
+                            `{email_address}`: List of the names of the channels that the user is
                             already subscribed to.
                           type: array
                           items:
@@ -9447,15 +9447,15 @@ paths:
                         items:
                           type: string
                         description: |
-                          A list of names of streams that the requesting user/bot was not
+                          A list of names of channels that the requesting user/bot was not
                           authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
                     example:
                       {
                         "already_subscribed":
-                          {"iago@zulip.com": ["new stream"]},
+                          {"iago@zulip.com": ["testing-help"]},
                         "msg": "",
                         "result": "success",
-                        "subscribed": {"newbie@zulip.com": ["new stream"]},
+                        "subscribed": {"newbie@zulip.com": ["testing-help"]},
                       }
         "400":
           description: Bad request.
@@ -9472,7 +9472,7 @@ paths:
                       }
                     description: |
                       An example JSON response for when the requesting user does not have
-                      access to a private stream and `"authorization_errors_fatal": true`:
+                      access to a private channel and `"authorization_errors_fatal": true`:
     patch:
       operationId: update-subscriptions
       summary: Update subscriptions
