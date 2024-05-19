@@ -9478,7 +9478,7 @@ paths:
       summary: Update subscriptions
       tags: ["streams"]
       description: |
-        Update which streams you are subscribed to.
+        Update which channels you are subscribed to.
       requestBody:
         required: false
         content:
@@ -9488,16 +9488,16 @@ paths:
               properties:
                 delete:
                   description: |
-                    A list of stream names to unsubscribe from.
+                    A list of channel names to unsubscribe from.
                   type: array
                   items:
                     type: string
                   example: ["Verona", "Denmark"]
                 add:
                   description: |
-                    A list of objects describing which streams to subscribe to, optionally
+                    A list of objects describing which channels to subscribe to, optionally
                     including per-user subscription parameters (e.g. color) and if the
-                    stream is to be created, its description.
+                    channel is to be created, its description.
                   type: array
                   items:
                     type: object
@@ -9545,11 +9545,11 @@ paths:
                         description: |
                           A dictionary where the key is the Zulip API email
                           address of the user/bot and the value is a
-                          list of the names of the streams that were
+                          list of the names of the channels that were
                           subscribed to as a result of the query.
                         additionalProperties:
                           description: |
-                            `{email_id}`: A list of the names of streams that
+                            `{email_id}`: A list of the names of channels that
                             the user was subscribed to as a result of the query.
                           type: array
                           items:
@@ -9559,11 +9559,11 @@ paths:
                         description: |
                           A dictionary where the key is the Zulip API email
                           address of the user/bot and the value is a
-                          list of the names of the streams that the
+                          list of the names of the channels that the
                           user/bot is already subscribed to.
                         additionalProperties:
                           description: |
-                            `{email_id}`: A list of the names of streams that
+                            `{email_id}`: A list of the names of channels that
                             the user was already subscribed to.
                           type: array
                           items:
@@ -9573,7 +9573,7 @@ paths:
                         items:
                           type: string
                         description: |
-                          A list of the names of streams that the user
+                          A list of the names of channels that the user
                           is already unsubscribed from, and hence
                           doesn't need to be unsubscribed.
                       removed:
@@ -9581,7 +9581,7 @@ paths:
                         items:
                           type: string
                         description: |
-                          A list of the names of streams which were unsubscribed
+                          A list of the names of channels which were unsubscribed
                           from as a result of the query.
                     example:
                       {
@@ -9589,7 +9589,7 @@ paths:
                         "subscribed": {},
                         "already_subscribed": {"iago@zulip.com": ["Verona"]},
                         "not_removed": [],
-                        "removed": ["new stream"],
+                        "removed": ["testing-help"],
                         "result": "success",
                       }
     delete:
