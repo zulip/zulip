@@ -5509,8 +5509,8 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/CodedError"
                   - description: |
-                      JSON response for when a draft targeted towards a stream does not specify
-                      exactly one stream ID:
+                      JSON response for when a draft targeted towards a channel does not specify
+                      exactly one channel ID:
                     example:
                       {
                         "code": "BAD_REQUEST",
