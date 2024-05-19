@@ -5251,7 +5251,7 @@ paths:
               properties:
                 stream_id:
                   description: |
-                    The ID of the stream to access.
+                    The ID of the channel to access.
                   type: integer
                   example: 43
                 topic_name:
