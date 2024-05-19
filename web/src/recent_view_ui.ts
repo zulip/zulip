@@ -175,9 +175,22 @@ let oldest_message_timestamp = Number.POSITIVE_INFINITY;
 function set_oldest_message_date(msg_list_data: MessageListData): void {
     const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
     const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+    const oldest_message_in_data = msg_list_data.first_including_muted();
+    if (oldest_message_in_data) {
+        oldest_message_timestamp = Math.min(
+            oldest_message_in_data.timestamp,
+            oldest_message_timestamp,
+        );
+    }
 
-    const first_message_timestamp = msg_list_data.first()?.timestamp ?? Number.POSITIVE_INFINITY;
-    oldest_message_timestamp = Math.min(first_message_timestamp, oldest_message_timestamp);
+    if (oldest_message_timestamp === Number.POSITIVE_INFINITY && !has_found_oldest) {
+        // This should only happen either very early in loading the
+        // message list, since it requires the msg_list_data object
+        // being empty, without having server confirmation that's the
+        // case. Wait for server data to do anything in that
+        // situation.
+        return;
+    }
 
     if (has_found_oldest) {
         loading_state = ALL_MESSAGES_LOADED;
