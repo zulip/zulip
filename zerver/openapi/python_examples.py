@@ -75,12 +75,12 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
 @openapi_test_function("/users/me/subscriptions:post")
 def add_subscriptions(client: Client) -> None:
     # {code_example|start}
-    # Subscribe to the stream "new stream"
+    # Create and subscribe to channel "python-test".
     result = client.add_subscriptions(
         streams=[
             {
-                "name": "new stream",
-                "description": "New stream for testing",
+                "name": "python-test",
+                "description": "Channel for testing Python",
             },
         ],
     )
@@ -95,7 +95,7 @@ def add_subscriptions(client: Client) -> None:
     user_id = 25
     result = client.add_subscriptions(
         streams=[
-            {"name": "new stream", "description": "New stream for testing"},
+            {"name": "python-test"},
         ],
         principals=[user_id],
     )
@@ -107,7 +107,7 @@ def add_subscriptions(client: Client) -> None:
 def test_add_subscriptions_already_subscribed(client: Client) -> None:
     result = client.add_subscriptions(
         streams=[
-            {"name": "new stream", "description": "New stream for testing"},
+            {"name": "python-test"},
         ],
         principals=["newbie@zulip.com"],
     )
@@ -622,8 +622,8 @@ def deactivate_own_user(client: Client, owner_client: Client) -> None:
 def get_stream_id(client: Client) -> int:
     # {code_example|start}
     # Get the ID of a given stream
-    stream_name = "new stream"
-    result = client.get_stream_id(stream_name)
+    name = "python-test"
+    result = client.get_stream_id(name)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/get_stream_id", "get", "200")
@@ -675,8 +675,8 @@ def get_streams(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/streams", "get", "200")
-    streams = [s for s in result["streams"] if s["name"] == "new stream"]
-    assert streams[0]["description"] == "New stream for testing"
+    streams = [s for s in result["streams"] if s["name"] == "python-test"]
+    assert streams[0]["description"] == "Channel for testing Python"
 
     # {code_example|start}
     # You may pass in one or more of the query parameters mentioned above
@@ -732,7 +732,7 @@ def get_subscribers(client: Client) -> None:
 
     # {code_example|start}
     # Get the subscribers to a stream
-    result = client.get_subscribers(stream="new stream")
+    result = client.get_subscribers(stream="python-test")
     # {code_example|end}
     assert result["subscribers"] == [11, 25]
 
@@ -751,16 +751,16 @@ def get_subscriptions(client: Client) -> None:
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "get", "200")
 
-    streams = [s for s in result["subscriptions"] if s["name"] == "new stream"]
-    assert streams[0]["description"] == "New stream for testing"
+    streams = [s for s in result["subscriptions"] if s["name"] == "python-test"]
+    assert streams[0]["description"] == "Channel for testing Python"
 
 
 @openapi_test_function("/users/me/subscriptions:delete")
 def remove_subscriptions(client: Client) -> None:
     # {code_example|start}
-    # Unsubscribe from the stream "new stream"
+    # Unsubscribe from channel "python-test".
     result = client.remove_subscriptions(
-        ["new stream"],
+        ["python-test"],
     )
     # {code_example|end}
 
@@ -769,13 +769,13 @@ def remove_subscriptions(client: Client) -> None:
     # test it was actually removed
     result = client.get_subscriptions()
     assert result["result"] == "success"
-    streams = [s for s in result["subscriptions"] if s["name"] == "new stream"]
+    streams = [s for s in result["subscriptions"] if s["name"] == "python-test"]
     assert len(streams) == 0
 
     # {code_example|start}
-    # Unsubscribe another user from the stream "new stream"
+    # Unsubscribe another user from channel "python-test".
     result = client.remove_subscriptions(
-        ["new stream"],
+        ["python-test"],
         principals=["newbie@zulip.com"],
     )
     # {code_example|end}
