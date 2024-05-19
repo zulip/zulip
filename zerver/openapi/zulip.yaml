@@ -6097,8 +6097,8 @@ paths:
         clients, backup scripts, etc.
 
         Note that a user's message history does not contain messages sent to
-        streams before they [subscribe](/api/subscribe), and newly created
-        bot users are not usually subscribed to any streams.
+        channels before they [subscribe](/api/subscribe), and newly created
+        bot users are not usually subscribed to any channels.
 
         By specifying a [narrow filter](/api/get-messages#parameter-narrow),
         you can use this endpoint to fetch the messages matching any search
@@ -6184,24 +6184,24 @@ paths:
             The narrow where you want to fetch the messages from. See how to
             [construct a narrow](/api/construct-narrow).
 
-            Note that many narrows, including all that lack a `stream`
-            or `streams` operator, search the user's personal message
+            Note that many narrows, including all that lack a `channel`, `channels`,
+            `stream`, or `streams` operator, search the user's personal message
             history. See [searching shared
             history](/help/search-for-messages#searching-shared-history)
             for details.
 
-            For example, if you would like to fetch messages from all public streams instead
+            For example, if you would like to fetch messages from all public channels instead
             of only the user's message history, then a specific narrow for
-            messages sent to all public streams can be used:
-            `{"operator": "streams", "operand": "public"}`.
+            messages sent to all public channels can be used:
+            `{"operator": "channels", "operand": "public"}`.
 
             Newly created bot users are not usually subscribed to any
-            streams, so bots using this API should either be
-            subscribed to appropriate streams or use a shared history
+            channels, so bots using this API should either be
+            subscribed to appropriate channels or use a shared history
             search narrow with this endpoint.
 
             **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
-            for two new filters related to stream messages: `channel` and `channels`;
+            for two new filters related to channel messages: `channel` and `channels`;
             which are aliases for (and return the same results as) the `stream` and
             `streams` filters respectively.
 
@@ -6214,8 +6214,8 @@ paths:
             `dm-including`; replacing and deprecating `is:private`, `pm-with` and
             `group-pm-with` respectively.
 
-            In Zulip 2.1.0, added support for using user/stream IDs when
-            constructing narrows for a message's sender, its stream and/or
+            In Zulip 2.1.0, added support for using user/channel IDs when
+            constructing narrows for a message's sender, its channel and/or
             its recipient(s).
           content:
             application/json:
@@ -6246,7 +6246,7 @@ paths:
                       minItems: 2
                       maxItems: 2
                 default: []
-              example: [{"operand": "Denmark", "operator": "stream"}]
+              example: [{"operand": "Denmark", "operator": "channel"}]
         - $ref: "#/components/parameters/ClientGravatar"
         - name: apply_markdown
           in: query
