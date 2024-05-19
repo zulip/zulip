@@ -6887,10 +6887,10 @@ paths:
                         <td><code>stream_wildcard_mentioned</code></td>
                         <td>
                             Whether this message contained a
-                            <a href="/help/mention-a-user-or-group#mention-everyone-on-a-stream">stream wildcard mention</a>
+                            <a href="/help/mention-a-user-or-group#mention-everyone-on-a-channel">channel wildcard mention</a>
                             (like @**all**). Cannot be changed by the user directly, but
                             can change if the message is edited to add/remove
-                            a stream wildcard mention.
+                            a channel wildcard mention.
                             <br /><br />
                             <b>Changes</b>: New in Zulip 8.0 (feature level 224).
                         </td>
@@ -6922,8 +6922,8 @@ paths:
                             Is <code>true</code> for messages that the user did not receive
                             at the time they were sent but later was added to
                             the user's history (e.g. because they starred or
-                            reacted to a message sent to a public stream
-                            before they subscribed to that stream). Cannot be
+                            reacted to a message sent to a public channel
+                            before they subscribed to that channel). Cannot be
                             changed by the user directly.
                         </td>
                     </tr>
@@ -6931,11 +6931,11 @@ paths:
                         <td><code>wildcard_mentioned</code></td>
                         <td>
                             Whether this message contained either a
-                            <a href="/help/mention-a-user-or-group#mention-everyone-on-a-stream">stream wildcard mention</a>
+                            <a href="/help/mention-a-user-or-group#mention-everyone-on-a-channel">channel wildcard mention</a>
                             (like @**all**) or a
                             <a href="/help/mention-a-user-or-group#mention-all-topic-participants">topic wildcard mention</a>
                             (@**topic**). Cannot be changed by the user directly, but can change if
-                            the message is edited to add/remove a stream and/or topic wildcard
+                            the message is edited to add/remove a channel and/or topic wildcard
                             mention.
                             <br /><br />
                             <b>Changes</b>: Deprecated in Zulip 8.0 (feature level 224), in favor of
@@ -7080,7 +7080,7 @@ paths:
                     the server has a database index for unread messages.
 
                     **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
-                    for two new filters related to stream messages: `channel` and `channels`;
+                    for two new filters related to channel messages: `channel` and `channels`;
                     which are aliases for (and return the same results as) the `stream` and
                     `streams` filters respectively.
 
@@ -7118,7 +7118,7 @@ paths:
                         minItems: 2
                         maxItems: 2
                   default: []
-                  example: [{"operand": "Denmark", "operator": "stream"}]
+                  example: [{"operand": "Denmark", "operator": "channel"}]
                 op:
                   description: |
                     Whether to `add` the flag or `remove` it.
