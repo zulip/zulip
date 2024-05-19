@@ -5202,10 +5202,10 @@ paths:
     post:
       deprecated: true
       operationId: mark-stream-as-read
-      summary: Mark messages in a stream as read
+      summary: Mark messages in a channel as read
       tags: ["messages"]
       description: |
-        Mark all the unread messages in a stream as read.
+        Mark all the unread messages in a channel as read.
 
         **Changes**: Deprecated; clients should use the [update personal message
         flags for narrow](/api/update-message-flags-for-narrow) endpoint instead
@@ -5219,7 +5219,7 @@ paths:
               properties:
                 stream_id:
                   description: |
-                    The ID of the stream to access.
+                    The ID of the channel to access.
                   type: integer
                   example: 43
               required:
