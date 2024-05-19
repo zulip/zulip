@@ -7748,7 +7748,7 @@ paths:
       summary: Edit a message
       tags: ["messages"]
       description: |
-        Edit/update the content, topic, or stream of a message.
+        Edit/update the content, topic, or channel of a message.
 
         `{msg_id}` in the above URL should be replaced with the ID of the
         message you wish you update.
@@ -7760,7 +7760,7 @@ paths:
         documentation on when users are allowed to edit message content and
         [restricting moving messages][restrict-move-messages] for detailed
         documentation on when users are allowed to change a message's topic
-        and/or stream.
+        and/or channel.
 
         The relevant realm settings in the API that are related to the above
         linked documentation on when users are allowed to update messages are:
@@ -7778,7 +7778,7 @@ paths:
         event in [`GET /events`](/api/get-events).
 
         **Changes**: Prior to Zulip 7.0 (feature level 172), anyone could add a
-        topic to stream messages without a topic, regardless of the organization's
+        topic to channel messages without a topic, regardless of the organization's
         [topic editing permissions](/help/restrict-moving-messages). As of this
         feature level, messages without topics have the same restrictions for
         topic edits as messages with topics.
@@ -7786,7 +7786,7 @@ paths:
         Before Zulip 7.0 (feature level 172), by using the `change_all` value for
         the `propagate_mode` parameter, users could move messages after the
         organization's configured time limits for changing a message's topic or
-        stream had passed. As of this feature level, the server will [return an
+        channel had passed. As of this feature level, the server will [return an
         error](/api/update-message#response) with `"code":
         "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"` if users, other than organization
         administrators or moderators, try to move messages after these time
@@ -7796,13 +7796,13 @@ paths:
         moderators could only edit topics if the target message was sent within the
         last 3 days. As of this feature level, that time limit is now controlled by
         the realm setting `move_messages_within_stream_limit_seconds`. Also at this
-        feature level, a similar time limit for moving messages between streams was
+        feature level, a similar time limit for moving messages between channels was
         added, controlled by the realm setting
         `move_messages_between_streams_limit_seconds`. Previously, all users who
-        had permission to move messages between streams did not have any time limit
+        had permission to move messages between channels did not have any time limit
         restrictions when doing so.
 
-        Before Zulip 7.0 (feature level 159), editing streams and topics of messages
+        Before Zulip 7.0 (feature level 159), editing channels and topics of messages
         was forbidden if the realm setting for `allow_message_editing` was `false`,
         regardless of an organization's configuration for the realm settings
         `edit_topic_policy` or `move_messages_between_streams_policy`.
@@ -7836,7 +7836,7 @@ paths:
                     the maximum topic length
 
                     Should only be sent when changing the topic, and will throw an error
-                    if the target message is not a stream message.
+                    if the target message is not a channel message.
 
                     **Changes**: New in Zulip 2.0.0. Previous Zulip releases encoded
                     this as `subject`, which is currently a deprecated alias.
@@ -7856,7 +7856,7 @@ paths:
                     This parameter determines both which messages get moved and also whether
                     clients that are currently narrowed to the topic containing the message
                     should navigate or adjust their compose box recipient to point to the
-                    post-edit stream/topic.
+                    post-edit channel/topic.
                   type: string
                   enum:
                     - change_one
@@ -7870,7 +7870,7 @@ paths:
                     notify users where the messages were moved to.
 
                     **Changes**: Before Zulip 6.0 (feature level 152), this parameter
-                    had a default of `true` and was ignored unless the stream was changed.
+                    had a default of `true` and was ignored unless the channel was changed.
 
                     New in Zulip 3.0 (feature level 9).
                   type: boolean
@@ -7885,7 +7885,7 @@ paths:
                     this parameter will not trigger an additional notification.
 
                     **Changes**: Before Zulip 6.0 (feature level 152), this parameter
-                    was ignored unless the stream was changed.
+                    was ignored unless the channel was changed.
 
                     New in Zulip 3.0 (feature level 9).
                   type: boolean
@@ -7895,13 +7895,13 @@ paths:
                   $ref: "#/components/schemas/OptionalContent"
                 stream_id:
                   description: |
-                    The stream ID to move the message(s) to, to request moving
-                    messages to another stream.
+                    The channel ID to move the message(s) to, to request moving
+                    messages to another channel.
 
-                    Should only be sent when changing the stream, and will throw an error
-                    if the target message is not a stream message.
+                    Should only be sent when changing the channel, and will throw an error
+                    if the target message is not a channel message.
 
-                    Note that a message's content and stream cannot be changed at the
+                    Note that a message's content and channel cannot be changed at the
                     same time, so sending both `content` and `stream_id` parameters will
                     throw an error.
 
@@ -7993,11 +7993,11 @@ paths:
                           a target message ID of `first_message_id_allowed_to_move`, if the user
                           desires to move only the portion of the topic that they can.
 
-                          Note that in a stream with [protected history](/help/channel-permissions),
+                          Note that in a channel with [protected history](/help/channel-permissions),
                           the Zulip security model requires that the above calculations only include
                           messages the acting user has access to. So in the rare case of a user
                           attempting to move a topic that started before the user joined a private
-                          stream with protected history, this API endpoint might move only the portion
+                          channel with protected history, this API endpoint might move only the portion
                           of a topic that they have access to, without this error or any confirmation
                           dialog.
 
@@ -8013,7 +8013,7 @@ paths:
                         description: |
                           An example JSON error response for when the message was rejected because
                           of the organization's `wildcard_mention_policy` and large number of
-                          subscribers to the stream.
+                          subscribers to the channel.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
                           error returned the `"BAD_REQUEST"` code.
