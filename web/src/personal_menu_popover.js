@@ -1,7 +1,7 @@
 import $ from "jquery";
 import tippy from "tippy.js";
 
-import render_navbar_personal_menu_popover from "../templates/popovers/navbar_personal_menu_popover.hbs";
+import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
 import * as channel from "./channel";
 import * as narrow from "./narrow";
