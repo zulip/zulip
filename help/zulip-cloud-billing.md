@@ -71,6 +71,28 @@ If there are any circumstances that make regular pricing unaffordable for your
 organization, contact [sales@zulip.com](mailto:sales@zulip.com) to discuss your
 situation.
 
+### Education pricing
+
+Educators using Zulip with students are eligible for discounted [education
+pricing](https://zulip.com/for/education/#feature-pricing). Other educational
+uses (e.g., by teaching staff or university IT) may qualify for a non-profit
+discount instead.
+
+!!! tip ""
+    Organizations operated by individual educators (for example, a professor
+    teaching one or more classes) usually find that the [Zulip Cloud Free
+    plan](https://zulip.com/plans/#cloud) suits their needs.
+
+
+Non-profit educational pricing applies to online purchases with no additional
+legal agreements, for use at registered non-profit institutions (e.g. colleges
+and universities).
+
+To arrange discounted pricing for your organization, please [apply for
+sponosorship](#apply-for-sponsorship). Contact
+[sales@zulip.com](mailto:sales@zulip.com) with any questions.
+
+
 ### Apply for sponsorship
 
 Submit a sponsorship request to apply for a free or discounted Zulip Cloud
