@@ -33,9 +33,9 @@ Steps and best practices for starting a conversation:
 1. [**Join** the Zulip development
    community](https://zulip.com/development-community/) if you don't already
    have an account.
-2. Pick an **appropriate stream** to discuss your idea:
+2. Pick an **appropriate channel** to discuss your idea:
    - [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback) for suggestions for
-     the Zulip web app or server. Use this stream if you aren't sure which stream is
+     the Zulip web app or server. Use this channel if you aren't sure which channel is
      most appropriate.
    - [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) for suggestions
      for the mobile apps.
@@ -51,7 +51,7 @@ Steps and best practices for starting a conversation:
    name of the topic.
 
 If you aren't sure where to post or how to name your topic, don't worry!
-Moderators can always rename the topic, or move the thread to another stream.
+Moderators can always rename the topic, or move the thread to another channel.
 
 Members of the development community will jump in to discuss your idea. You can
 help by participating in the discussion, including replying to any follow-up
