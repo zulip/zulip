@@ -9934,7 +9934,7 @@ paths:
         - Clients should exclude muted users from presence lists or other UI
           for viewing or composing one-on-one direct messages. One-on-one direct
           messages sent by muted users should be hidden everywhere in the Zulip UI.
-        - Stream messages and group direct messages sent by the muted
+        - Channel messages and group direct messages sent by the muted
           user should avoid displaying the content and name/avatar,
           but should display that N messages by a muted user were
           hidden (so that it is possible to interpret the messages by
@@ -9944,8 +9944,8 @@ paths:
           showing their name, in lists of such conversations, along with using
           a blank grey avatar where avatars are displayed.
         - Administrative/settings UI elements for showing "All users that exist
-          on this stream or realm", e.g. for organization
-          administration or showing stream subscribers, should display
+          on this channel or realm", e.g. for organization
+          administration or showing channel subscribers, should display
           the user's name as normal.
 
         **Changes**: New in Zulip 4.0 (feature level 48).
