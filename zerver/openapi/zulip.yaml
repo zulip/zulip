@@ -18351,10 +18351,10 @@ paths:
   /streams/{stream_id}/email_address:
     get:
       operationId: get-stream-email-address
-      summary: Get the email address of a stream
+      summary: Get the email address of a channel
       tags: ["streams"]
       description: |
-        Get email address of a stream.
+        Get email address of a channel.
 
         **Changes**: New in Zulip 8.0 (feature level 226).
       parameters:
@@ -18375,12 +18375,12 @@ paths:
                       email:
                         type: string
                         description: |
-                          Email address of the stream.
+                          Email address of the channel.
                     example:
                       {
                         "result": "success",
                         "msg": "",
-                        "email": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
+                        "email": "test.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
                       }
         "400":
           description: Bad request.
@@ -18390,8 +18390,8 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
-                      An example JSON response for when the requested stream does not exist,
-                      or where the user does not have permission to access the target stream:
+                      An example JSON response for when the requested channel does not exist,
+                      or where the user does not have permission to access the target channel:
   /streams/{stream_id}/delete_topic:
     post:
       operationId: delete-topic
