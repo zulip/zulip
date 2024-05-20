@@ -19383,7 +19383,7 @@ paths:
           description: |
             Title to use for the BigBlueButton meeting.
 
-            A good choice is something like "{stream_name} meeting".
+            A good choice is something like "{channel_name} meeting".
       responses:
         "200":
           description: Success.
