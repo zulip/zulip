@@ -10323,7 +10323,7 @@ paths:
         organization administrators, who can deactivate any custom emoji.
 
         Note that deactivated emoji will still be visible in old messages, reactions,
-        user statuses and stream descriptions.
+        user statuses and channel descriptions.
 
         **Changes**: Before Zulip 8.0 (feature level 190), this endpoint returned an
         HTTP status code of 400 when the emoji did not exist, instead of 404.
