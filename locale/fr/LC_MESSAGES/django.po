@@ -22,6 +22,7 @@
 # Paul Lubawy <paul.lubawy@hotmail.fr>, 2017
 # psyray <psyray@free.fr>, 2017
 # Reid Barton <rwbarton@gmail.com>, 2015
+# sephii, 2024
 # Sulian Lanteri, 2017
 # Sylvain R., 2023
 # Thomas Chuffart <tchuffart@gmail.com>, 2019
@@ -35,7 +36,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-05-02 16:53+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2018,2020-2023\n"
+"Last-Translator: sephii, 2024\n"
 "Language-Team: French (http://app.transifex.com/zulip/zulip/language/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -54,11 +55,11 @@ msgstr "Organisation non valide"
 
 #: analytics/views/stats.py:313
 msgid "Public channels"
-msgstr ""
+msgstr "Canaux publics"
 
 #: analytics/views/stats.py:314
 msgid "Private channels"
-msgstr ""
+msgstr "Canaux privés"
 
 #: analytics/views/stats.py:315
 msgid "Direct messages"
@@ -71,7 +72,7 @@ msgstr "Messages directs de groupe"
 #: analytics/views/stats.py:339
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "Canal manquant pour graphique: {chart_name}"
 
 #: analytics/views/stats.py:347
 #, python-brace-format
@@ -214,7 +215,7 @@ msgstr "Impossible de mettre le plan à jour. Ce type de plan n'est plus disponi
 #: corporate/lib/stripe.py:2843
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
-msgstr ""
+msgstr "Impossible de mettre à jour les licences dans la période de facturation en cours pour le plan d’essai."
 
 #: corporate/lib/stripe.py:2848 corporate/lib/stripe.py:2876
 msgid ""
@@ -236,7 +237,7 @@ msgstr "Vous ne pouvez pas réduire les licences dans la période de facturation
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
-msgstr ""
+msgstr "Impossible de changer les licences pour le prochain cycle de facturation pour un plan en cours de rétrogradation."
 
 #: corporate/lib/stripe.py:2891
 #, python-brace-format
@@ -250,11 +251,11 @@ msgstr "Le renouvellement de votre plan est déjà programmé avec {licenses_at_
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
-msgstr ""
+msgstr "Vous avez déjà acheté {licenses_at_next_renewal} licences pour la prochaine période de facturation."
 
 #: corporate/lib/stripe.py:2937
 msgid "Nothing to change."
-msgstr "Rien à changer"
+msgstr "Rien à changer."
 
 #: corporate/lib/stripe.py:3188
 msgid "No customer for this organization!"
@@ -304,12 +305,12 @@ msgstr ""
 
 #: corporate/views/remote_billing_page.py:300
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "Le compte utilisateur n’existe pas encore."
 
 #: corporate/views/remote_billing_page.py:305
 #: corporate/views/remote_billing_page.py:733
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "Vous devez accepter les conditions d’utilisation pour continuer."
 
 #: corporate/views/remote_billing_page.py:543
 msgid ""
@@ -822,7 +823,7 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:284
 #: templates/corporate/comparison_table_integrated.html:285
 msgid "Unlimited"
-msgstr ""
+msgstr "Illimité"
 
 #: templates/corporate/comparison_table_integrated.html:211
 #: templates/corporate/comparison_table_integrated.html:212
@@ -1956,7 +1957,7 @@ msgstr "Confirmer la modification de l'adresse email"
 #: templates/zerver/emails/confirm_new_email.subject.txt:1
 #, python-format
 msgid "Verify your new email address for %(organization_host)s"
-msgstr ""
+msgstr "Vérifiez votre nouvelle adresse de courriel pour %(organization_host)s"
 
 #: templates/zerver/emails/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.txt:2
@@ -1967,7 +1968,7 @@ msgstr ""
 #: templates/zerver/emails/confirm_registration.txt:5
 #, python-format
 msgid "Organization type: %(organization_type)s"
-msgstr ""
+msgstr "Type d’organisation: %(organization_type)s"
 
 #: templates/zerver/emails/confirm_registration.html:16
 #: templates/zerver/emails/confirm_registration.txt:7
@@ -2050,7 +2051,7 @@ msgstr "\nVotre compte Zulip sur %(realm_uri)s a été désactivé et vous ne po
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
 msgid "New channels"
-msgstr ""
+msgstr "Nouveaux canaux"
 
 #: templates/zerver/emails/digest.html:34
 msgid "Click here to log in to Zulip and catch up."
@@ -2552,7 +2553,7 @@ msgstr ""
 msgid ""
 "<a href=\"%(invite_users)s\"><b>Invite your teammates</b></a> to explore "
 "with you and share their unique perspectives."
-msgstr ""
+msgstr "<a href=\"%(invite_users)s\"><b>Invitez vos coéquipiers</b></a> à explorer avec vous et à partager leurs points de vue."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:16
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
@@ -2899,7 +2900,7 @@ msgid ""
 "\n"
 "    Click the button below to log in.\n"
 "    "
-msgstr ""
+msgstr "\nCliquez sur le bouton ci-dessous pour vous connecter."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:16
 #, python-format
@@ -2907,7 +2908,7 @@ msgid ""
 "\n"
 "    This link will expire in %(validity_in_hours)s hours.\n"
 "    "
-msgstr ""
+msgstr "\nCe lien expirera dans %(validity_in_hours)s heures."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:24
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:17
@@ -2930,12 +2931,12 @@ msgstr ""
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
 msgid "Click the link below to log in."
-msgstr ""
+msgstr "Cliquez surle lien ci-dessous pour vous connecter."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
 #, python-format
 msgid "This link will expire in %(validity_in_hours)s hours."
-msgstr ""
+msgstr "Ce lien expirera dans %(validity_in_hours)s heures."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:8
 #: templates/zerver/emails/remote_realm_billing_confirm_login.txt:6
@@ -3589,7 +3590,7 @@ msgstr "Importer les paramètres à partir d'un compte Zulip existant"
 
 #: templates/zerver/register.html:119
 msgid "Your full name"
-msgstr ""
+msgstr "Votre nom complet"
 
 #: templates/zerver/register.html:120
 msgid "Name"
@@ -3597,7 +3598,7 @@ msgstr "Nom"
 
 #: templates/zerver/register.html:127
 msgid "This is how your account is displayed in Zulip."
-msgstr ""
+msgstr "Votre compte est affiché de la façon suivante dans Zulip."
 
 #: templates/zerver/register.html:141
 msgid "Enter your LDAP/Active Directory password."
@@ -5235,7 +5236,7 @@ msgstr ""
 #: zerver/lib/streams.py:438 zerver/lib/streams.py:504
 #: zerver/views/streams.py:383 zerver/views/user_topics.py:102
 msgid "Invalid channel ID"
-msgstr ""
+msgstr "Identifiant de canal invalide"
 
 #: zerver/lib/streams.py:480
 msgid "Channel name already in use."

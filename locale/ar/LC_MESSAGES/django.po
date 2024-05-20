@@ -15,7 +15,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-05-02 16:53+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2022,2024\n"
+"Last-Translator: ilyes khayati, 2024\n"
 "Language-Team: Arabic (http://app.transifex.com/zulip/zulip/language/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -34,11 +34,11 @@ msgstr "منظمة غير صالحة"
 
 #: analytics/views/stats.py:313
 msgid "Public channels"
-msgstr ""
+msgstr "القنوات العامة"
 
 #: analytics/views/stats.py:314
 msgid "Private channels"
-msgstr ""
+msgstr "القنوات الخاصة"
 
 #: analytics/views/stats.py:315
 msgid "Direct messages"
@@ -266,15 +266,15 @@ msgstr ""
 
 #: corporate/views/billing_page.py:340
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "المعلمة \"مؤكدة\" مطلوبة"
 
 #: corporate/views/remote_billing_page.py:142
 msgid "Billing access token expired."
-msgstr ""
+msgstr "انتهت صلاحية رمز الوصول للفوترة."
 
 #: corporate/views/remote_billing_page.py:144
 msgid "Invalid billing access token."
-msgstr ""
+msgstr "رمز الوصول للفوترة غير صالح."
 
 #: corporate/views/remote_billing_page.py:220
 msgid ""
@@ -284,12 +284,12 @@ msgstr ""
 
 #: corporate/views/remote_billing_page.py:300
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "حساب المستخدم غير موجود بعد."
 
 #: corporate/views/remote_billing_page.py:305
 #: corporate/views/remote_billing_page.py:733
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "يجب عليك قبول شروط الخدمة للمتابعة."
 
 #: corporate/views/remote_billing_page.py:543
 msgid ""
@@ -302,7 +302,7 @@ msgstr ""
 
 #: corporate/views/remote_billing_page.py:554
 msgid "Your server registration has been deactivated."
-msgstr ""
+msgstr "لقد تم إلغاء تنشيط تسجيل الخادم الخاص بك."
 
 #: corporate/views/support.py:372 zerver/views/streams.py:283
 #: zerver/views/streams.py:287 zerver/views/streams.py:295
@@ -312,11 +312,11 @@ msgstr "إعدادات غير صالحة"
 #: templates/404.html:4 templates/4xx.html:4
 #: templates/zerver/remote_realm_server_mismatch_error.html:4
 msgid "Error"
-msgstr ""
+msgstr "خطأ"
 
 #: templates/404.html:16
 msgid "Page not found (404)"
-msgstr ""
+msgstr "لم يتم العثور على الصفحة (404)"
 
 #: templates/404.html:18 templates/4xx.html:42
 #, python-format
@@ -329,7 +329,7 @@ msgstr ""
 
 #: templates/4xx.html:16
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "ممنوع الوصول (403)"
 
 #: templates/4xx.html:18
 msgid ""
@@ -358,7 +358,7 @@ msgstr ""
 
 #: templates/4xx.html:40
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "الطريقة غير مسموح بها (405)"
 
 #: templates/500.html:4 templates/500.html:21
 #: zerver/actions/scheduled_messages.py:396 zerver/middleware.py:396
@@ -424,7 +424,7 @@ msgstr "Zulip analytics for %(target_name)s"
 
 #: templates/analytics/stats.html:25
 msgid "Organization summary"
-msgstr ""
+msgstr "ملخص المنظمة"
 
 #: templates/analytics/stats.html:27
 msgid "Number of users"
@@ -432,23 +432,23 @@ msgstr "عدد المستخدمين"
 
 #: templates/analytics/stats.html:28
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "المستخدمون النشطون خلال آخر 15 يومًا"
 
 #: templates/analytics/stats.html:29
 msgid "Number of guests"
-msgstr ""
+msgstr "عدد الضيوف"
 
 #: templates/analytics/stats.html:30
 msgid "Total number of messages"
-msgstr ""
+msgstr "إجمالي عدد الرسائل"
 
 #: templates/analytics/stats.html:31
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "عدد الرسائل في آخر 30 يومًا"
 
 #: templates/analytics/stats.html:32
 msgid "File storage in use"
-msgstr ""
+msgstr "تخزين الملفات قيد الاستخدام"
 
 #: templates/analytics/stats.html:37
 msgid "Active users"
@@ -561,11 +561,11 @@ msgstr "\n            هذا يؤكد أن عنوان البريد الإلكت�
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
-msgstr ""
+msgstr "تأكيد عنوان بريدك الإلكتروني"
 
 #: templates/confirmation/link_does_not_exist.html:4
 msgid "Confirmation link does not exist"
-msgstr ""
+msgstr "رابط التأكيد غير موجود"
 
 #: templates/confirmation/link_does_not_exist.html:13
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -582,7 +582,7 @@ msgstr "\n                    على أي حال راسلنا على %(support_e
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "رابط التأكيد منتهي الصلاحية أو معطل"
 
 #: templates/confirmation/link_expired.html:14
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -594,7 +594,7 @@ msgstr "يرجى الاتصال بمسؤول مؤسستك للحصول على ا
 
 #: templates/confirmation/link_malformed.html:4
 msgid "Confirmation link malformed"
-msgstr ""
+msgstr "رابط التأكيد غير صحيح"
 
 #: templates/confirmation/link_malformed.html:13
 msgid "Whoops. The confirmation link is malformed."
@@ -654,11 +654,11 @@ msgstr ""
 
 #: templates/corporate/billing/event_status.html:5
 msgid "Billing status"
-msgstr ""
+msgstr "حالة الفواتير"
 
 #: templates/corporate/billing/remote_billing_server_deactivate.html:5
 msgid "Deactivate server registration?"
-msgstr ""
+msgstr "الغاء تسجيل السيرفر؟"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:4
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:16
@@ -708,7 +708,7 @@ msgstr ""
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:4
 #: templates/zerver/rate_limit_exceeded.html:4
 msgid "Rate limit exceeded"
-msgstr ""
+msgstr "حد معدل تجاوز"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:15
 #: templates/zerver/rate_limit_exceeded.html:15
@@ -764,7 +764,7 @@ msgstr "الجميع"
 
 #: templates/corporate/comparison_table_integrated.html:103
 msgid "10,000 messages"
-msgstr ""
+msgstr "10.000 رسالة"
 
 #: templates/corporate/comparison_table_integrated.html:107
 #: templates/corporate/comparison_table_integrated.html:108
@@ -802,7 +802,7 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:284
 #: templates/corporate/comparison_table_integrated.html:285
 msgid "Unlimited"
-msgstr ""
+msgstr "غير محدود"
 
 #: templates/corporate/comparison_table_integrated.html:211
 #: templates/corporate/comparison_table_integrated.html:212
@@ -1055,7 +1055,7 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:1594
 #: templates/corporate/comparison_table_integrated.html:1605
 msgid "Supported"
-msgstr ""
+msgstr "مسنود"
 
 #: templates/corporate/comparison_table_integrated.html:230
 #: templates/corporate/comparison_table_integrated.html:244
@@ -1186,15 +1186,15 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:1547
 #: templates/corporate/comparison_table_integrated.html:1548
 msgid "Self-managed"
-msgstr ""
+msgstr "تدار ذاتيا"
 
 #: templates/corporate/comparison_table_integrated.html:282
 msgid "For organizations with up to 10 users"
-msgstr ""
+msgstr "للمؤسسات التي تضم ما يصل إلى 10 مستخدمين"
 
 #: templates/corporate/comparison_table_integrated.html:1002
 msgid "25 users minimum"
-msgstr ""
+msgstr "25 مستخدمًا كحد أدنى"
 
 #: templates/corporate/comparison_table_integrated.html:1290
 #: templates/corporate/comparison_table_integrated.html:1509
@@ -1209,7 +1209,7 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:1603
 #: templates/corporate/comparison_table_integrated.html:1604
 msgid "Not available"
-msgstr ""
+msgstr "غير متاح"
 
 #: templates/corporate/development-community.html:23
 msgid "The Zulip development community"
@@ -1248,7 +1248,7 @@ msgstr "إنشاء منظمة"
 #: templates/corporate/for/business.html:27
 #: templates/corporate/self-hosting.html:27 templates/zerver/footer.html:11
 msgid "Plans & pricing"
-msgstr ""
+msgstr "الخطط والتسعير"
 
 #: templates/corporate/for/business.html:30
 #: templates/corporate/for/communities.html:40
@@ -1322,7 +1322,7 @@ msgstr "شكراً لاتصالك بنا!"
 
 #: templates/corporate/support/support_request_thanks.html:11
 msgid "We will be in touch with you soon."
-msgstr ""
+msgstr "سنكون على اتصال بك قريبا."
 
 #: templates/corporate/support/support_request_thanks.html:13
 msgid ""
@@ -1338,7 +1338,7 @@ msgstr "الصورة الرمزية"
 
 #: templates/corporate/try-zulip.html:36
 msgid "Try Zulip now"
-msgstr ""
+msgstr "جرب زوليب الآن"
 
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
@@ -1365,7 +1365,7 @@ msgstr "اقبل شروط الخدمة"
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
-msgstr ""
+msgstr "مرحبا بكم في زوليب"
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/login.html:102 templates/zerver/register.html:83
@@ -1383,7 +1383,7 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
-msgstr ""
+msgstr "استمر"
 
 #: templates/zerver/accounts_home.html:5
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:154
@@ -1412,7 +1412,7 @@ msgstr "سجل عن طريق %(identity_provider)s"
 
 #: templates/zerver/accounts_home.html:92
 msgid "Already have an account?"
-msgstr ""
+msgstr "لديك حساب؟"
 
 #: templates/zerver/accounts_home.html:92
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:21
@@ -1428,7 +1428,7 @@ msgstr "تسجيل الدخول"
 #: templates/zerver/accounts_send_confirm.html:5
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Confirm your email address"
-msgstr ""
+msgstr "أكد عنوان بريدك الألكتروني"
 
 #: templates/zerver/accounts_send_confirm.html:21
 #, python-format

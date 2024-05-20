@@ -5,6 +5,7 @@
 # Translators:
 # Chriser Chaoo <jsf.chris@foxmail.com>, 2017
 # Clay Cheng <569735195@qq.com>, 2023-2024
+# Cranyozen, 2024
 # FaZang, 2022
 # Greg Price <gnprice@gmail.com>, 2017
 # Hanson Sin <yeehangsin@yahoo.com>, 2020
@@ -20,7 +21,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-05-02 16:53+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Clay Cheng <569735195@qq.com>, 2023-2024\n"
+"Last-Translator: Cranyozen, 2024\n"
 "Language-Team: Chinese Simplified (http://app.transifex.com/zulip/zulip/language/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -39,11 +40,11 @@ msgstr "无效的组织"
 
 #: analytics/views/stats.py:313
 msgid "Public channels"
-msgstr ""
+msgstr "公共频道"
 
 #: analytics/views/stats.py:314
 msgid "Private channels"
-msgstr ""
+msgstr "私人频道"
 
 #: analytics/views/stats.py:315
 msgid "Direct messages"

@@ -3,8 +3,9 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Jens Hymøller, 2023
 # Jens Hymøller, 2023-2024
+# Jens Hymøller, 2023-2024
+# Jesper Nissen, 2024
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
@@ -22,19 +23,19 @@ msgstr ""
 #: analytics/views/stats.py:110 zerver/decorator.py:645
 #: zerver/decorator.py:663
 msgid "Not allowed for guest users"
-msgstr ""
+msgstr "Ikke tilladt for gæstebrugere"
 
 #: analytics/views/stats.py:153
 msgid "Invalid organization"
-msgstr ""
+msgstr "Ugyldig organisation"
 
 #: analytics/views/stats.py:313
 msgid "Public channels"
-msgstr ""
+msgstr "Offentlige kanaler"
 
 #: analytics/views/stats.py:314
 msgid "Private channels"
-msgstr ""
+msgstr "Private kanaler"
 
 #: analytics/views/stats.py:315
 msgid "Direct messages"
@@ -312,7 +313,7 @@ msgstr "Fejl"
 
 #: templates/404.html:16
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Siden blev ikke fundet (404)"
 
 #: templates/404.html:18 templates/4xx.html:42
 #, python-format
@@ -325,7 +326,7 @@ msgstr ""
 
 #: templates/4xx.html:16
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "Adgang forbudt (403)"
 
 #: templates/4xx.html:18
 msgid ""
@@ -733,11 +734,11 @@ msgstr ""
 
 #: templates/corporate/billing/upgrade.html:350
 msgid "Send invoice and start free trial"
-msgstr ""
+msgstr "Send faktura og start gratis prøveperiode"
 
 #: templates/corporate/billing/upgrade.html:352
 msgid "Send invoice"
-msgstr ""
+msgstr "Send faktura"
 
 #: templates/corporate/communities.html:28
 msgid "Open communities directory"
@@ -1190,7 +1191,7 @@ msgstr ""
 
 #: templates/corporate/comparison_table_integrated.html:1002
 msgid "25 users minimum"
-msgstr ""
+msgstr "Mindst 25 brugere"
 
 #: templates/corporate/comparison_table_integrated.html:1290
 #: templates/corporate/comparison_table_integrated.html:1509
@@ -2026,7 +2027,7 @@ msgstr ""
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
 msgid "New channels"
-msgstr ""
+msgstr "Nye kanaler"
 
 #: templates/zerver/emails/digest.html:34
 msgid "Click here to log in to Zulip and catch up."
@@ -6277,7 +6278,7 @@ msgstr ""
 
 #: zerver/views/streams.py:767
 msgid "new channels"
-msgstr ""
+msgstr "Nye kanaler"
 
 #: zerver/views/streams.py:801
 #, python-brace-format
