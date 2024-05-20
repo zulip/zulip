@@ -377,11 +377,8 @@ function disable_submit_btn_if_no_property_changed(
     $profile_field_form: JQuery,
     field: CustomProfileField,
 ): void {
-    const data = settings_components.populate_data_for_request(
+    const data = settings_components.populate_data_for_custom_profile_field_request(
         $profile_field_form,
-        false,
-        undefined,
-        undefined,
         field,
     );
     let save_changes_button_disabled = false;
@@ -518,11 +515,8 @@ function open_edit_form_modal(this: HTMLElement): void {
     function submit_form(): void {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
 
-        const data = settings_components.populate_data_for_request(
+        const data = settings_components.populate_data_for_custom_profile_field_request(
             $profile_field_form,
-            false,
-            undefined,
-            undefined,
             field,
         );
 
