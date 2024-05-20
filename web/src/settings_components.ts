@@ -900,14 +900,14 @@ export function check_property_changed(
 }
 
 export function populate_data_for_request(
-    subsection: JQuery,
+    $subsection_elem: JQuery,
     for_realm_default_settings: boolean,
     sub: StreamSubscription | undefined,
     group: UserGroup | undefined,
     custom_profile_field?: CustomProfileField | undefined,
 ): Record<string, string | boolean | number> {
     let data: Record<string, string | boolean | number> = {};
-    const properties_elements = get_subsection_property_elements(subsection);
+    const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
         const $input_elem = $(input_elem);
         if (
