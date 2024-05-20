@@ -18110,10 +18110,10 @@ paths:
   /streams/{stream_id}:
     get:
       operationId: get-stream-by-id
-      summary: Get a stream by ID
+      summary: Get a channel by ID
       tags: ["streams"]
       description: |
-        Fetch details for the stream with the ID `stream_id`.
+        Fetch details for the channel with the ID `stream_id`.
 
         **Changes**: New in Zulip 6.0 (feature level 132).
       parameters:
@@ -18164,7 +18164,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
-                      An example JSON response for when the stream ID is not valid:
+                      An example JSON response for when the channel ID is not valid:
     delete:
       operationId: archive-stream
       summary: Archive a stream
