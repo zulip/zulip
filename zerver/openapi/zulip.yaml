@@ -18533,12 +18533,12 @@ paths:
         for additional design details on Zulip's typing notifications protocol.
 
         **Changes**: Clients shouldn't care about the APIs prior to Zulip 8.0 (feature level 215)
-        for stream typing notifications, as no client actually implemented
+        for channel typing notifications, as no client actually implemented
         the previous API for those.
 
-        Support for displaying stream typing notifications was new
+        Support for displaying channel typing notifications was new
         in Zulip 4.0 (feature level 58). Clients should indicate they support
-        processing stream typing notifications via the `stream_typing_notifications`
+        processing channel typing notifications via the `stream_typing_notifications`
         value in the `client_capabilities` parameter of the
         [`POST /register`][client-capabilities] endpoint.
 
@@ -18566,7 +18566,7 @@ paths:
                     Type of the message being composed.
 
                     **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
-                    an additional value for this parameter to indicate a stream message is
+                    an additional value for this parameter to indicate a channel message is
                     being composed.
 
                     In Zulip 8.0 (feature level 215), stopped supporting
@@ -18597,15 +18597,18 @@ paths:
                 to:
                   description: |
                     User IDs of the recipients of the message being typed. Required for the
-                    `"direct"` type. Ignored in the case of `"stream"` type. Send a JSON-encoded
-                    list of user IDs. (Use a list even if there is only one recipient.)
+                    `"direct"` type. Ignored in the case of `"stream"` or `"channel"` type.
+
+                    Clients should send a JSON-encoded list of user IDs, even if there is only
+                    one recipient.
 
                     **Changes**: In Zulip 8.0 (feature level 215), stopped using this parameter
                     for the `"stream"` type. Previously, in the case of the `"stream"` type, it
-                    accepted a single-element list containing the ID of the stream. A new parameter,
-                    `stream_id`, is now used for this.
+                    accepted a single-element list containing the ID of the channel. A new parameter,
+                    `stream_id`, is now used for this. Note that the `"channel"` type did not
+                    exist at this feature level.
 
-                    Support for typing notifications for stream messages
+                    Support for typing notifications for channel' messages
                     is new in Zulip 4.0 (feature level 58). Previously, typing
                     notifications were only for direct messages.
 
@@ -18619,17 +18622,17 @@ paths:
                   example: [9, 10]
                 stream_id:
                   description: |
-                    ID of the stream in which the message is being typed. Required for the `"stream"`
-                    type. Ignored in the case of `"direct"` type.
+                    ID of the channel in which the message is being typed. Required for the `"stream"`
+                    or `"channel"` type. Ignored in the case of `"direct"` type.
 
                     **Changes**: New in Zulip 8.0 (feature level 215). Previously, a single-element
-                    list containing the ID of the stream was passed in `to` parameter.
+                    list containing the ID of the channel was passed in `to` parameter.
                   type: integer
                   example: 7
                 topic:
                   description: |
-                    Topic to which message is being typed. Required for the `"stream"` type.
-                    Ignored in the case of `"direct"` type.
+                    Topic to which message is being typed. Required for the `"stream"` or `"channel"`
+                    type. Ignored in the case of `"direct"` type.
 
                     **Changes**: New in Zulip 4.0 (feature level 58). Previously, typing
                     notifications were only for direct messages.
@@ -18659,7 +18662,7 @@ paths:
                         "result": "error",
                       }
                     description: |
-                      An example JSON error response when the user composes a stream message
+                      An example JSON error response when the user composes a channel message
                       and `stream_id` is not specified:
   /user_groups/create:
     post:
