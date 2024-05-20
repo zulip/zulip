@@ -17898,10 +17898,10 @@ paths:
   /streams:
     get:
       operationId: get-streams
-      summary: Get all streams
+      summary: Get all channels
       tags: ["streams"]
       description: |
-        Get all streams that the user [has access to](/help/channel-permissions).
+        Get all channels that the user [has access to](/help/channel-permissions).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -17919,7 +17919,7 @@ paths:
         - name: include_public
           in: query
           description: |
-            Include all public streams.
+            Include all public channels.
           schema:
             type: boolean
             default: true
@@ -17927,7 +17927,7 @@ paths:
         - name: include_web_public
           in: query
           description: |
-            Include all web-public streams.
+            Include all web-public channels.
           schema:
             type: boolean
             default: false
@@ -17935,7 +17935,7 @@ paths:
         - name: include_subscribed
           in: query
           description: |
-            Include all streams that the user is subscribed to.
+            Include all channels that the user is subscribed to.
           schema:
             type: boolean
             default: true
@@ -17943,7 +17943,7 @@ paths:
         - name: include_all_active
           in: query
           description: |
-            Include all active streams. The user must have administrative privileges
+            Include all active channels. The user must have administrative privileges
             to use this parameter.
           schema:
             type: boolean
@@ -17952,7 +17952,7 @@ paths:
         - name: include_default
           in: query
           description: |
-            Include all default streams for the user's realm.
+            Include all default channels for the user's realm.
           schema:
             type: boolean
             default: false
@@ -17960,7 +17960,7 @@ paths:
         - name: include_owner_subscribed
           in: query
           description: |
-            If the user is a bot, include all streams that the bot's owner is
+            If the user is a bot, include all channels that the bot's owner is
             subscribed to.
           schema:
             type: boolean
@@ -17981,7 +17981,7 @@ paths:
                       ignored_parameters_unsupported: {}
                       streams:
                         description: |
-                          A list of stream objects with details on the requested streams.
+                          A list of channel objects with details on the requested channels.
                         type: array
                         items:
                           allOf:
@@ -18009,11 +18009,11 @@ paths:
                                   type: integer
                                   nullable: true
                                   description: |
-                                    The average number of messages sent to the stream per week, as
+                                    The average number of messages sent to the channel per week, as
                                     estimated based on recent weeks, rounded to the nearest integer.
 
                                     If `null`, no information is provided on the average traffic.
-                                    This can be because the stream was recently created and there
+                                    This can be because the channel was recently created and there
                                     is insufficient data to make an estimate, or because the server
                                     wishes to omit this information for this client, this realm, or
                                     this endpoint or type of event.
@@ -18026,8 +18026,8 @@ paths:
                                     Only present when [`include_default`][include_default]
                                     parameter is `true`.
 
-                                    Whether the given stream is a
-                                    [default stream](/help/set-default-channels-for-new-users).
+                                    Whether the given channel is a
+                                    [default channel](/help/set-default-channels-for-new-users).
 
                                     [include_default]: /api/get-streams#parameter-include_default
                               required:
@@ -18056,7 +18056,7 @@ paths:
                               "can_remove_subscribers_group": 10,
                               "creator_id": null,
                               "date_created": 1691057093,
-                              "description": "A private stream",
+                              "description": "A private channel",
                               "first_message_id": 18,
                               "history_public_to_subscribers": false,
                               "invite_only": true,
@@ -18065,7 +18065,7 @@ paths:
                               "is_web_public": false,
                               "message_retention_days": null,
                               "name": "management",
-                              "rendered_description": "<p>A private stream</p>",
+                              "rendered_description": "<p>A private channel</p>",
                               "stream_id": 2,
                               "stream_post_policy": 1,
                               "stream_weekly_traffic": null,
@@ -18074,7 +18074,7 @@ paths:
                               "can_remove_subscribers_group": 9,
                               "creator_id": 12,
                               "date_created": 1691057093,
-                              "description": "A default public stream",
+                              "description": "A default public channel",
                               "first_message_id": 21,
                               "history_public_to_subscribers": true,
                               "invite_only": false,
@@ -18083,7 +18083,7 @@ paths:
                               "is_web_public": false,
                               "message_retention_days": null,
                               "name": "welcome",
-                              "rendered_description": "<p>A default public stream</p>",
+                              "rendered_description": "<p>A default public channel</p>",
                               "stream_id": 1,
                               "stream_post_policy": 1,
                               "stream_weekly_traffic": null,
