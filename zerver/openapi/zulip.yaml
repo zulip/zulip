@@ -17007,10 +17007,10 @@ paths:
                         type: boolean
                         description: |
                           Whether the organization has enabled the creation of
-                          [web-public streams](/help/public-access-option) and
-                          at least one web-public stream on the server currently
+                          [web-public channels](/help/public-access-option) and
+                          at least one web-public channel on the server currently
                           exists. Clients that support viewing content
-                          in web-public streams without an account can
+                          in web-public channels without an account can
                           use this to determine whether to offer that
                           feature on the login page for an organization.
 
