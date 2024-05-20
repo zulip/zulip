@@ -10239,7 +10239,7 @@ paths:
       summary: Get subscription status
       tags: ["streams"]
       description: |
-        Check whether a user is subscribed to a stream.
+        Check whether a user is subscribed to a channel.
 
         **Changes**: New in Zulip 3.0 (feature level 12).
       parameters:
@@ -10261,7 +10261,7 @@ paths:
                       is_subscribed:
                         type: boolean
                         description: |
-                          Whether the user is subscribed to the stream.
+                          Whether the user is subscribed to the channel.
                     example:
                       {"msg": "", "result": "success", "is_subscribed": false}
   /realm/emoji/{emoji_name}:
