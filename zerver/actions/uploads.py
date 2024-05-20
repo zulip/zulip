@@ -53,7 +53,7 @@ def do_claim_attachments(
 
         claimed = True
         attachment = claim_attachment(
-            user_profile, path_id, message, is_message_realm_public, is_message_web_public
+            path_id, message, is_message_realm_public, is_message_web_public
         )
         if not isinstance(message, ScheduledMessage):
             # attachment update events don't say anything about scheduled messages,
