@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
@@ -17,18 +18,19 @@ $(() => {
     if ($password_field.length > 0) {
         $.validator.addMethod(
             "password_strength",
-            (value: string) => password_quality(value, undefined, $password_field),
+            (value: string) => password_quality(value, $("#pw_strength .bar"), $password_field),
             () => password_warning($password_field.val()!, $password_field),
         );
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
         password_quality($password_field.val()!, $("#pw_strength .bar"), $password_field);
 
-        $password_field.on("input", function () {
-            // Update the password strength bar even if we aren't validating
-            // the field yet.
-            password_quality($(this).val()!, $("#pw_strength .bar"), $(this));
-        });
+        $password_field.on(
+            "input",
+            _.debounce(() => {
+                $password_field.valid();
+            }, 500),
+        );
     }
 
     common.setup_password_visibility_toggle(
@@ -49,6 +51,7 @@ $(() => {
     );
 
     $("#registration, #password_reset, #create_realm").validate({
+        onkeyup: false,
         rules: {
             password: "password_strength",
             new_password1: "password_strength",
