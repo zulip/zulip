@@ -300,7 +300,7 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     # have changed since the message was originally scheduled. This
     # means that Markdown syntax referencing mutable organization data
     # (for example, mentioning a user by name) will work (or not) as
-    # if the message was sent at the delviery time, not the sending
+    # if the message was sent at the delivery time, not the sending
     # time.
     send_request = check_message(
         scheduled_message.sender,

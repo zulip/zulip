@@ -6,7 +6,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 
 START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
@@ -127,7 +127,7 @@ class TabbedSectionsGenerator(Extension):
         md.preprocessors.register(
             TabbedSectionsPreprocessor(md, self.getConfigs()),
             "tabbed_sections",
-            PREPROCESSOR_PRIORITES["tabbed_sections"],
+            PREPROCESSOR_PRIORITIES["tabbed_sections"],
         )
 
 

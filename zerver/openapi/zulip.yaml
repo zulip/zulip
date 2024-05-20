@@ -8730,7 +8730,7 @@ paths:
                         description: |
                           Whether the current user is the only organization owner (meaning there
                           are other active users in the organization) or the only active user in the
-                          organzation.
+                          organization.
                     required:
                       - entity
                       - is_last_owner
