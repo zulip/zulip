@@ -18188,21 +18188,21 @@ paths:
                       An example JSON response for when the supplied channel does not exist:
     patch:
       operationId: update-stream
-      summary: Update a stream
+      summary: Update a channel
       tags: ["streams"]
       description: |
-        Configure the stream with the ID `stream_id`. This endpoint supports
-        an organization administrator editing any property of a stream,
+        Configure the channel with the ID `stream_id`. This endpoint supports
+        an organization administrator editing any property of a channel,
         including:
 
-        - Stream [name](/help/rename-a-channel) and [description](/help/change-the-channel-description)
-        - Stream [permissions](/help/channel-permissions), including
+        - Channel [name](/help/rename-a-channel) and [description](/help/change-the-channel-description)
+        - Channel [permissions](/help/channel-permissions), including
           [privacy](/help/change-the-privacy-of-a-channel) and [who can
           send](/help/channel-posting-policy).
 
         Note that an organization administrator's ability to change a
-        [private stream's permissions](/help/channel-permissions#private-channels)
-        depends on them being subscribed to the stream.
+        [private channel's permissions](/help/channel-permissions#private-channels)
+        depends on them being subscribed to the channel.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -18223,11 +18223,11 @@ paths:
                 description:
                   description: |
                     The new [description](/help/change-the-channel-description) for
-                    the stream, in text/markdown format.
+                    the channel, in text/markdown format.
 
                     Clients should use the `max_stream_description_length` returned
                     by the [`POST /register`](/api/register-queue) endpoint to
-                    determine the maximum stream description length.
+                    determine the maximum channel description length.
 
                     **Changes**: Removed unnecessary JSON-encoding of this parameter in
                     Zulip 4.0 (feature level 64).
@@ -18235,11 +18235,11 @@ paths:
                   example: "Discuss Italian history and travel destinations."
                 new_name:
                   description: |
-                    The new name for the stream.
+                    The new name for the channel.
 
                     Clients should use the `max_stream_name_length` returned by the
                     [`POST /register`](/api/register-queue) endpoint to determine
-                    the maximum stream name length.
+                    the maximum channel name length.
 
                     **Changes**: Removed unnecessary JSON-encoding of this parameter in
                     Zulip 4.0 (feature level 64).
@@ -18247,13 +18247,13 @@ paths:
                   example: Italy
                 is_private:
                   description: |
-                    Change whether the stream is a private stream.
+                    Change whether the channel is a private channel.
                   type: boolean
                   example: true
                 is_announcement_only:
                   deprecated: true
                   description: |
-                    Whether the stream is limited to announcements.
+                    Whether the channel is limited to announcements.
 
                     **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
                     should use `stream_post_policy` instead.
@@ -18261,9 +18261,9 @@ paths:
                   example: true
                 is_web_public:
                   description: |
-                    Change whether the stream is a web-public stream.
+                    Change whether the channel is a web-public channel.
 
-                    Note that creating web-public streams requires the
+                    Note that creating web-public channels requires the
                     `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
                     to be enabled on the Zulip server in question, the organization
                     to have enabled the `enable_spectator_access` realm setting, and
@@ -18277,15 +18277,15 @@ paths:
                   example: true
                 history_public_to_subscribers:
                   description: |
-                    Whether the stream's message history should be available to
+                    Whether the channel's message history should be available to
                     newly subscribed members, or users can only access messages
-                    they actually received while subscribed to the stream.
+                    they actually received while subscribed to the channel.
 
                     Corresponds to the [shared history](/help/channel-permissions)
                     option in documentation.
 
                     It's an error for this parameter to be false for a public or
-                    web-public stream and when is_private is false.
+                    web-public channel and when is_private is false.
 
                     **Changes**: Before Zulip 6.0 (feature level 136), `history_public_to_subscribers`
                     was silently ignored unless the request also contained either `is_private` or
@@ -18294,12 +18294,12 @@ paths:
                   example: false
                 is_default_stream:
                   description: |
-                    Add or remove the stream as a [default stream][default-stream]
+                    Add or remove the channel as a [default channel][default-channel]
                     for new users joining the organization.
 
-                    [default-stream]: /help/set-default-channels-for-new-users
+                    [default-channel]: /help/set-default-channels-for-new-users
 
-                    **Changes**: New in Zulip 8.0 (feature level 200). Previously, default stream status
+                    **Changes**: New in Zulip 8.0 (feature level 200). Previously, default channel status
                     could only be changed using the [dedicated API endpoint](/api/add-default-stream).
                   type: boolean
                   example: false
@@ -18336,7 +18336,7 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/InvalidChannelError"
                       - description: |
-                          An example JSON response for when the supplied stream does not exist:
+                          An example JSON response for when the supplied channel does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -18346,7 +18346,7 @@ paths:
                             "result": "error",
                           }
                         description: |
-                          An example JSON response for when invalid combination of stream permission
+                          An example JSON response for when invalid combination of channel permission
                           parameters are passed:
   /streams/{stream_id}/email_address:
     get:
