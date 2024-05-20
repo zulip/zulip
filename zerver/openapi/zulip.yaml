@@ -12632,11 +12632,11 @@ paths:
                   example: false
                 include_subscribers:
                   description: |
-                    Whether each returned stream object should include a `subscribers`
+                    Whether each returned channel object should include a `subscribers`
                     field containing a list of the user IDs of its subscribers.
 
                     (This may be significantly slower in organizations with
-                    thousands of users subscribed to many streams.)
+                    thousands of users subscribed to many channels.)
 
                     Passing `true` in an [unauthenticated
                     request](/help/public-access-option) is an error.
@@ -12669,12 +12669,12 @@ paths:
 
                     - `notification_settings_null`: Boolean for whether the
                       client can handle the current API with `null` values for
-                      stream-level notification settings (which means the stream
+                      channel-level notification settings (which means the channel
                       is not customized and should inherit the user's global
-                      notification settings for stream messages).
+                      notification settings for channel messages).
                       <br />
                       **Changes**: New in Zulip 2.1.0. In earlier Zulip releases,
-                      stream-level notification settings were simple booleans.
+                      channel-level notification settings were simple booleans.
 
                     - `bulk_message_deletion`: Boolean for whether the client's
                       handler for the `delete_message` event type has been
@@ -12698,7 +12698,7 @@ paths:
                       **Changes**: New in Zulip 3.0 (feature level 18).
 
                     - `stream_typing_notifications`: Boolean for whether the client
-                      supports stream typing notifications.
+                      supports channel typing notifications.
                       <br />
                       **Changes**: New in Zulip 4.0 (feature level 58). This capability is
                       for backwards-compatibility; it will be required in a
@@ -12952,7 +12952,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a stream name, in Unicode code
+                          The maximum allowed length for a channel name, in Unicode code
                           points. Clients should use this property rather than hardcoding
                           field sizes.
 
@@ -12964,7 +12964,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a stream description, in Unicode
+                          The maximum allowed length for a channel description, in Unicode
                           code points. Clients should use this property rather than hardcoding
                           field sizes.
 
@@ -13068,7 +13068,7 @@ paths:
                           Present if `muted_topics` is present in `fetch_event_types`.
 
                           Array of tuples, where each tuple describes a muted topic.
-                          The first element of the tuple is the stream name in which the topic
+                          The first element of the tuple is the channel name in which the topic
                           has to be muted, the second element is the topic name to be muted
                           and the third element is an integer UNIX timestamp representing
                           when the topic was muted.
@@ -13366,8 +13366,8 @@ paths:
                           Present if `subscription` is present in `fetch_event_types`.
 
                           A array of dictionaries where each dictionary describes the properties
-                          of a stream the user is subscribed to (as well as that user's
-                          personal per-stream settings).
+                          of a channel the user is subscribed to (as well as that user's
+                          personal per-channel settings).
 
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
@@ -13382,11 +13382,11 @@ paths:
                           Present if `subscription` is present in `fetch_event_types`.
 
                           A array of dictionaries where each dictionary describes one of the
-                          streams the user has unsubscribed from but was previously subscribed to
+                          channels the user has unsubscribed from but was previously subscribed to
                           along with the subscription details.
 
                           Unlike `never_subscribed`, the user might have messages in their personal
-                          message history that were sent to these streams.
+                          message history that were sent to these channels.
 
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
@@ -13421,10 +13421,10 @@ paths:
                                   type: integer
                                   nullable: true
                                   description: |
-                                    The average number of messages sent to the stream per week, as
+                                    The average number of messages sent to the channel per week, as
                                     estimated based on recent weeks, rounded to the nearest integer.
 
-                                    If `null`, the stream was recently created and there is
+                                    If `null`, the channel was recently created and there is
                                     insufficient data to estimate the average traffic.
                                 subscribers:
                                   type: array
@@ -13432,10 +13432,10 @@ paths:
                                     type: integer
                                   description: |
                                     A list of user IDs of users who are subscribed
-                                    to the stream. Included only if `include_subscribers` is `true`.
+                                    to the channel. Included only if `include_subscribers` is `true`.
 
                                     If a user is not allowed to know the subscribers for
-                                    a stream, we will send an empty array. API authors
+                                    a channel, we will send an empty array. API authors
                                     should use other data to determine whether users like
                                     guest users are forbidden to know the subscribers.
 
@@ -13443,10 +13443,10 @@ paths:
                           Present if `subscription` is present in `fetch_event_types`.
 
                           A array of dictionaries where each dictionary describes one of the
-                          streams that is visible to the user and the user has never been subscribed
+                          channels that is visible to the user and the user has never been subscribed
                           to.
 
-                          Important for clients containing UI where one can browse streams to subscribe
+                          Important for clients containing UI where one can browse channels to subscribe
                           to.
                       unread_msgs:
                         type: object
@@ -13464,7 +13464,7 @@ paths:
                             type: integer
                             description: |
                               The total number of unread messages to display. This includes one-on-one and group
-                              direct messages, as well as stream messages that are not [muted](/help/mute-a-topic).
+                              direct messages, as well as channel messages that are not [muted](/help/mute-a-topic).
 
                               **Changes**: Before Zulip 8.0 (feature level 213), the unmute and follow
                               topic features were not handled correctly in calculating this field.
@@ -13513,7 +13513,7 @@ paths:
                             type: array
                             description: |
                               An array of dictionaries where each dictionary contains details of all
-                              unread messages of a single subscribed stream. This includes muted streams
+                              unread messages of a single subscribed channel. This includes muted channels
                               and muted topics, even though those messages are excluded from `count`.
 
                               **Changes**: Prior to Zulip 5.0 (feature level 90), these objects
@@ -13530,11 +13530,11 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    The ID of the stream to which the messages were sent.
+                                    The ID of the channel to which the messages were sent.
                                 unread_message_ids:
                                   type: array
                                   description: |
-                                    The message IDs of the recent unread messages sent in this stream,
+                                    The message IDs of the recent unread messages sent in this channel,
                                     sorted in ascending order.
                                   items:
                                     type: integer
@@ -13601,13 +13601,13 @@ paths:
                           Present if `stream` is present in `fetch_event_types`.
 
                           Array of dictionaries where each dictionary contains details about
-                          a single stream in the organization that is visible to the user.
+                          a single channel in the organization that is visible to the user.
 
-                          For organization administrators, this will include all private streams
+                          For organization administrators, this will include all private channels
                           in the organization.
 
                           **Changes**: As of Zulip 8.0 (feature level 205), this will include all
-                          web-public streams in the organization as well.
+                          web-public channels in the organization as well.
                       realm_default_streams:
                         type: array
                         items:
@@ -13616,7 +13616,7 @@ paths:
                           Present if `default_streams` is present in `fetch_event_types`.
 
                           An array of dictionaries where each dictionary contains details
-                          about a single [default stream](/help/set-default-channels-for-new-users)
+                          about a single [default channel](/help/set-default-channels-for-new-users)
                           for the Zulip organization.
                       realm_default_stream_groups:
                         type: array
@@ -13626,10 +13626,10 @@ paths:
                           Present if `default_stream_groups` is present in `fetch_event_types`.
 
                           An array of dictionaries where each dictionary contains details
-                          about a single default stream group configured for this
+                          about a single default channel group configured for this
                           Zulip organization.
 
-                          Default stream groups are an experimental feature.
+                          Default channel groups are an experimental feature.
                       stop_words:
                         type: array
                         items:
@@ -13865,7 +13865,7 @@ paths:
                           demote_inactive_streams:
                             type: integer
                             description: |
-                              Whether to [demote inactive streams](/help/manage-inactive-channels) in the left sidebar.
+                              Whether to [demote inactive channels](/help/manage-inactive-channels) in the left sidebar.
 
                               - 1 - Automatic
                               - 2 - Always
@@ -13883,13 +13883,13 @@ paths:
                           web_stream_unreads_count_display_policy:
                             type: integer
                             description: |
-                              Configuration for which streams should be displayed with a numeric unread count in the left sidebar.
-                              Streams that do not have an unread count will have a simple dot indicator for whether there are any
+                              Configuration for which channels should be displayed with a numeric unread count in the left sidebar.
+                              Channels that do not have an unread count will have a simple dot indicator for whether there are any
                               unread messages.
 
-                              - 1 - All streams
-                              - 2 - Unmuted streams and topics
-                              - 3 - No streams
+                              - 1 - All channels
+                              - 2 - Unmuted channels and topics
+                              - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
                           timezone:
@@ -13913,19 +13913,19 @@ paths:
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
-                              Enable visual desktop notifications for stream messages.
+                              Enable visual desktop notifications for channel messages.
                           enable_stream_email_notifications:
                             type: boolean
                             description: |
-                              Enable email notifications for stream messages.
+                              Enable email notifications for channel messages.
                           enable_stream_push_notifications:
                             type: boolean
                             description: |
-                              Enable mobile notifications for stream messages.
+                              Enable mobile notifications for channel messages.
                           enable_stream_audible_notifications:
                             type: boolean
                             description: |
-                              Enable audible desktop notifications for stream messages.
+                              Enable audible desktop notifications for channel messages.
                           notification_sound:
                             type: string
                             description: |
@@ -14055,7 +14055,7 @@ paths:
                           automatically_unmute_topics_in_muted_streams_policy:
                             type: integer
                             description: |
-                              Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+                              Which [topics to unmute automatically in muted channels](/help/mute-a-topic).
 
                               - 1 - Topics the user participates in
                               - 2 - Topics the user sends a message to
@@ -14122,8 +14122,8 @@ paths:
                             description: |
                               Whether the user has chosen to send [typing
                               notifications](/help/typing-notifications)
-                              when composing stream messages. The client should send typing
-                              notifications for stream messages if and only if this setting is enabled.
+                              when composing channel messages. The client should send typing
+                              notifications for channel messages if and only if this setting is enabled.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           send_read_receipts:
@@ -14151,7 +14151,7 @@ paths:
                             stream_id:
                               type: integer
                               description: |
-                                The ID of the stream to which the topic belongs.
+                                The ID of the channel to which the topic belongs.
                             topic_name:
                               type: string
                               description: |
@@ -14608,7 +14608,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          Whether the user has chosen to demote inactive streams.
+                          Whether the user has chosen to demote inactive channels.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -14956,7 +14956,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The [policy][permission-level] for which users can create public streams
+                          The [policy][permission-level] for which users can create public channels
                           in this organization.
 
                           - 1 = Members only
@@ -14965,7 +14965,7 @@ paths:
                           - 4 = Admins and moderators only
 
                           **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                          create streams was controlled by the `realm_create_stream_policy` setting.
+                          create channels was controlled by the `realm_create_stream_policy` setting.
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -14974,7 +14974,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The [policy][permission-level] for which users can create private streams
+                          The [policy][permission-level] for which users can create private channels
                           in this organization.
 
                           - 1 = Members only
@@ -14983,7 +14983,7 @@ paths:
                           - 4 = Admins and moderators only
 
                           **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                          create streams was controlled by the `realm_create_stream_policy` setting.
+                          create channels was controlled by the `realm_create_stream_policy` setting.
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -14998,7 +14998,7 @@ paths:
                           the `enable_spectator_access` realm setting.
 
                           The [policy][permission-level] for which users can create web
-                          public streams in this organization. Allowed
+                          public channels in this organization. Allowed
                           values are:
 
                           - 2 = Admins only
@@ -15015,27 +15015,27 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The [policy](/api/roles-and-permissions#permission-levels)
-                          for which users can add other users to streams in this organization.
+                          for which users can add other users to channels in this organization.
                       realm_wildcard_mention_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           The [policy][permission-level] for who can use wildcard mentions
-                          in large streams.
+                          in large channels.
 
-                          - 1 = Any user can use wildcard mentions in large streams.
-                          - 2 = Only members can use wildcard mentions in large streams.
-                          - 3 = Only [full members][calc-full-member] can use wildcard mentions in large streams.
-                          - 5 = Only organization administrators can use wildcard mentions in large streams.
-                          - 6 = Nobody can use wildcard mentions in large streams.
-                          - 7 = Only organization administrators and moderators can use wildcard mentions in large streams.
+                          - 1 = Any user can use wildcard mentions in large channels.
+                          - 2 = Only members can use wildcard mentions in large channels.
+                          - 3 = Only [full members][calc-full-member] can use wildcard mentions in large channels.
+                          - 5 = Only organization administrators can use wildcard mentions in large channels.
+                          - 6 = Nobody can use wildcard mentions in large channels.
+                          - 7 = Only organization administrators and moderators can use wildcard mentions in large channels.
 
                           All users will receive a warning/reminder when using
-                          mentions in large streams, even when permitted to do so.
+                          mentions in large channels, even when permitted to do so.
 
                           **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
-                          Zulip 4.0 (feature level 62). Stream administrators option removed in
+                          Zulip 4.0 (feature level 62). Channel administrators option removed in
                           Zulip 6.0 (feature level 133).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
@@ -15120,7 +15120,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The [policy][permission-level] for which users can move messages
-                          from one stream to another.
+                          from one channel to another.
 
                           - 1 = Members only
                           - 2 = Administrators only
@@ -15233,7 +15233,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether web-public streams and related anonymous access APIs/features
+                          Whether web-public channels and related anonymous access APIs/features
                           are enabled in this organization.
 
                           Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
@@ -15440,7 +15440,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be moved within a
-                          stream to another topic by users who have permission to do so based on this
+                          channel to another topic by users who have permission to do so based on this
                           organization's [topic edit policy](/help/restrict-moving-messages). This
                           setting does not affect moderators and administrators.
 
@@ -15457,7 +15457,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be moved between
-                          streams by users who have permission to do so based on this organization's
+                          channels by users who have permission to do so based on this organization's
                           [message move policy](/help/restrict-moving-messages). This setting does
                           not affect moderators and administrators.
 
@@ -15465,7 +15465,7 @@ paths:
                           regardless of how long ago they were sent.
 
                           **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
-                          no time limit for moving messages between streams for users with permission
+                          no time limit for moving messages between channels for users with permission
                           to do so.
                       realm_enable_read_receipts:
                         type: boolean
@@ -15943,11 +15943,11 @@ paths:
 
                           The value of the `WEB_PUBLIC_STREAMS_ENABLED` Zulip server level
                           setting. A server that has disabled this setting intends to not offer [web
-                          public streams](/help/public-access-option) to realms it hosts. (Zulip Cloud
+                          public channels](/help/public-access-option) to realms it hosts. (Zulip Cloud
                           defaults to `true`; self-hosted servers default to `false`).
 
                           Clients should use this to determine whether to offer UI for the
-                          realm-level setting for enabling web-public streams
+                          realm-level setting for enabling web-public channels
                           (`realm_enable_spectator_access`).
 
                           **Changes**: New in Zulip 5.0 (feature level 110).
@@ -15999,15 +15999,15 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The ID of the stream to which automated messages announcing the
-                          [creation of new streams][new-stream-announce] are sent.
+                          The ID of the channel to which automated messages announcing the
+                          [creation of new channels][new-channel-announce] are sent.
 
                           Will be `-1` if such automated messages are disabled.
 
                           Since these automated messages are sent by the server, this field is
                           primarily relevant to clients containing UI for changing it.
 
-                          [new-stream-announce]: /help/configure-automated-notices#new-channel-announcements
+                          [new-channel-announce]: /help/configure-automated-notices#new-channel-announcements
 
                           **Changes**: In Zulip 9.0 (feature level 241), renamed 'realm_notifications_stream_id'
                           to `realm_new_stream_announcements_stream_id`.
@@ -16016,7 +16016,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The ID of the stream to which automated messages announcing
+                          The ID of the channel to which automated messages announcing
                           that [new users have joined the organization][new-user-announce] are sent.
 
                           Will be `-1` if such automated messages are disabled.
@@ -16033,7 +16033,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The ID of the stream to which automated messages announcing
+                          The ID of the channel to which automated messages announcing
                           new features or other end-user updates about the Zulip software are sent.
 
                           Will be `-1` if such automated messages are disabled.
@@ -16201,7 +16201,7 @@ paths:
                           demote_inactive_streams:
                             type: integer
                             description: |
-                              Whether to [demote inactive streams](/help/manage-inactive-channels) in the left sidebar.
+                              Whether to [demote inactive channels](/help/manage-inactive-channels) in the left sidebar.
 
                               - 1 - Automatic
                               - 2 - Always
@@ -16219,31 +16219,31 @@ paths:
                           web_stream_unreads_count_display_policy:
                             type: integer
                             description: |
-                              Configuration for which streams should be displayed with a numeric unread count in the left sidebar.
-                              Streams that do not have an unread count will have a simple dot indicator for whether there are any
+                              Configuration for which channels should be displayed with a numeric unread count in the left sidebar.
+                              Channels that do not have an unread count will have a simple dot indicator for whether there are any
                               unread messages.
 
-                              - 1 - All streams
-                              - 2 - Unmuted streams and topics
-                              - 3 - No streams
+                              - 1 - All channels
+                              - 2 - Unmuted channels and topics
+                              - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
-                              Enable visual desktop notifications for stream messages.
+                              Enable visual desktop notifications for channel messages.
                           enable_stream_email_notifications:
                             type: boolean
                             description: |
-                              Enable email notifications for stream messages.
+                              Enable email notifications for channel messages.
                           enable_stream_push_notifications:
                             type: boolean
                             description: |
-                              Enable mobile notifications for stream messages.
+                              Enable mobile notifications for channel messages.
                           enable_stream_audible_notifications:
                             type: boolean
                             description: |
-                              Enable audible desktop notifications for stream messages.
+                              Enable audible desktop notifications for channel messages.
                           notification_sound:
                             type: string
                             description: |
@@ -16368,7 +16368,7 @@ paths:
                           automatically_unmute_topics_in_muted_streams_policy:
                             type: integer
                             description: |
-                              Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+                              Which [topics to unmute automatically in muted channels](/help/mute-a-topic).
 
                               - 1 - Topics the user participates in
                               - 2 - Topics the user sends a message to
@@ -16451,7 +16451,7 @@ paths:
                             type: boolean
                             description: |
                               Whether [typing notifications](/help/typing-notifications) be sent when composing
-                              stream messages.
+                              channel messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           send_read_receipts:
@@ -16532,14 +16532,14 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is allowed to create at least one type
-                          of stream with the organization's [stream creation
+                          of channel with the organization's [channel creation
                           policy](/help/configure-who-can-create-channels). Its value will
                           always equal `can_create_public_streams || can_create_private_streams`.
 
                           **Changes**: Deprecated in Zulip 5.0 (feature level 102), when
                           the new `create_private_stream_policy` and
                           `create_public_stream_policy` properties introduced the
-                          possibility that a user could only create one type of stream.
+                          possibility that a user could only create one type of channel.
 
                           This field will be removed in a future release.
                       can_create_public_streams:
@@ -16547,30 +16547,30 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is allowed to create public streams with
-                          the organization's [stream creation policy](/help/configure-who-can-create-channels).
+                          Whether the current user is allowed to create public channels with
+                          the organization's [channel creation policy](/help/configure-who-can-create-channels).
 
                           **Changes**: New in Zulip 5.0 (feature level 102). In older
                           versions, the deprecated `can_create_streams` property should be
-                          used to determine whether the user can create public streams.
+                          used to determine whether the user can create public channels.
                       can_create_private_streams:
                         type: boolean
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is allowed to create private streams with
-                          the organization's [stream creation policy](/help/configure-who-can-create-channels).
+                          Whether the current user is allowed to create private channels with
+                          the organization's [channel creation policy](/help/configure-who-can-create-channels).
 
                           **Changes**: New in Zulip 5.0 (feature level 102). In older
                           versions, the deprecated `can_create_streams` property should be
-                          used to determine whether the user can create private streams.
+                          used to determine whether the user can create private channels.
                       can_create_web_public_streams:
                         type: boolean
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is allowed to create public streams with
-                          the organization's [stream creation policy](/help/configure-who-can-create-channels).
+                          Whether the current user is allowed to create public channels with
+                          the organization's [channel creation policy](/help/configure-who-can-create-channels).
 
                           Note that this will be false if the Zulip server does not have the
                           `WEB_PUBLIC_STREAMS_ENABLED` setting enabled or if the organization has
@@ -16582,8 +16582,8 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is allowed to subscribe other users to streams with
-                          the organization's [streams policy](/help/configure-who-can-invite-to-channels).
+                          Whether the current user is allowed to subscribe other users to channels with
+                          the organization's [channels policy](/help/configure-who-can-invite-to-channels).
                       can_invite_others_to_realm:
                         type: boolean
                         description: |
@@ -16733,7 +16733,7 @@ paths:
                           stream:
                             type: object
                             description: |
-                              Configuration for stream level group permission settings.
+                              Configuration for channel level group permission settings.
                             additionalProperties:
                               $ref: "#/components/schemas/GroupPermissionSetting"
                           group:
