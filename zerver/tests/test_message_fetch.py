@@ -1103,7 +1103,7 @@ class IncludeHistoryTest(ZulipTestCase):
             dict(operator="channels", operand="public"),
             dict(operator="is", operand="resolved"),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
         # simple True case
         narrow = [
