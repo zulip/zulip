@@ -176,7 +176,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     Mark the very most recent messages as unread.
     """
 
-    # Find recipient ids for the the user's streams, limiting to just
+    # Find recipient ids for the user's streams, limiting to just
     # those where we can access the streams' full history.
     #
     # TODO: This will do database queries in a loop if many private

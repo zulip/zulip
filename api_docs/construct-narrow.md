@@ -2,7 +2,7 @@
 
 A **narrow** is a set of filters for Zulip messages, that can be based
 on many different factors (like sender, channel, topic, search
-keywords, etc.). Narrows are used in various places in the the Zulip
+keywords, etc.). Narrows are used in various places in the Zulip
 API (most importantly, in the API for fetching messages).
 
 It is simplest to explain the algorithm for encoding a search as a

@@ -57,7 +57,7 @@ class ZulipSCIMUser(SCIMUser):
 
         # These attributes are custom to this class and will be
         # populated with values in handle_replace and similar methods
-        # in response to a request for the the corresponding
+        # in response to a request for the corresponding
         # UserProfile fields to change. The .save() method inspects
         # these fields an executes the requested changes.
         self._email_new_value: Optional[str] = None

@@ -2,7 +2,7 @@
 
 Outgoing webhooks allow you to build or set up Zulip integrations
 which are notified when certain types of messages are sent in
-Zulip. When one of those events is triggered, we'll send a HTTP POST
+Zulip. When one of those events is triggered, we'll send an HTTP POST
 payload to the webhook's configured URL.  Webhooks can be used to
 power a wide range of Zulip integrations.  For example, the
 [Zulip Botserver][zulip-botserver] is built on top of this API.

@@ -145,7 +145,7 @@ def register_remote_server(
         AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.API_KEY_LENGTH)),
     ] = None,
 ) -> HttpResponse:
-    # StringConstraints validated the the field lengths, but we still need to
+    # StringConstraints validated the field lengths, but we still need to
     # validate the format of these fields.
     try:
         # TODO: Ideally we'd not abuse the URL validator this way

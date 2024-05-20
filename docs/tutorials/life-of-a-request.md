@@ -212,6 +212,6 @@ This will result in a JSON string:
 {"result": "success", "msg": "", "data": {"var_name1": "var_value1", "var_name2": "var_value2"}}
 ```
 
-with a HTTP 200 status and a `Content-Type` of 'application/json'.
+with an HTTP 200 status and a `Content-Type` of 'application/json'.
 
 That's it!

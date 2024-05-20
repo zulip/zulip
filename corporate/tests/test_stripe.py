@@ -7746,7 +7746,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         )
         self.assert_in_success_response(
             [
-                f"New plan for {billing_entity} can not be scheduled until all the invoices of the current plan are processed."
+                f"New plan for {billing_entity} cannot be scheduled until all the invoices of the current plan are processed."
             ],
             result,
         )

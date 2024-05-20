@@ -148,7 +148,7 @@ export const update_elements = ($content: JQuery): void => {
                 //
                 // In these cases, the best we can do is leave the
                 // existing name in the existing mention pill
-                // HTML. Clicking on the pill will show the the
+                // HTML. Clicking on the pill will show the
                 // "Unknown user" popover.
                 if (person === undefined) {
                     people.add_inaccessible_user(user_id);

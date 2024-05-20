@@ -2,7 +2,7 @@
    content from the edge of the window */
 $far_left_gutter_size: 10px;
 /* This represents the space in the sidebar reserved for symbols like
-   the #; labels like the the stream name go to the right of this. */
+   the #; labels like the stream name go to the right of this. */
 $left_col_size: 19px;
 /* The full topic indentation includes 4px of indent in addition to
    the above (and another 5px of padding not measured here) */
@@ -1030,7 +1030,7 @@ li.top_left_scheduled_messages {
 
     /*
         Hover does not work for touch-based devices like mobile phones.
-        Hence the the icons does not appear, making the user unaware of its
+        Hence the icons does not appear, making the user unaware of its
         presence on such devices. The following media property displays the
         icon by default for such behaviour.
     */

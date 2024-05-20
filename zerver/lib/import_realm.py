@@ -408,7 +408,7 @@ def fix_message_rendered_content(
             # This generally happens with two possible causes:
             # * rendering Markdown throwing an uncaught exception
             # * rendering Markdown failing with the exception being
-            #   caught in Markdown (which then returns None, causing the the
+            #   caught in Markdown (which then returns None, causing the
             #   rendered_content assert above to fire).
             logging.warning(
                 "Error in Markdown rendering for message ID %s; continuing", message["id"]

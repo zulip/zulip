@@ -901,7 +901,7 @@ export class MessageListView {
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
-        // each others' data we will make a new message object to add data to
+        // each other's data we will make a new message object to add data to
         // for rendering.
         const message_containers = messages.map((message) => {
             if (message.starred) {
