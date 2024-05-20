@@ -282,8 +282,9 @@ Organizations operated by individual educators (for example, a professor
 teaching one or more classes) are generally eligible for a free
 Community plan.
 
-Departments and other institutions using Zulip are eligible for discounted
-education pricing.
+Departments and other institutions using Zulip with students are eligible for
+discounted education pricing. Other educational uses (e.g., by teaching staff or
+university IT) may qualify for [non-profit pricing](#non-profit-pricing).
 
 - **For-profit education pricing**:
     - **Basic plan**: $0.50 per user per month
