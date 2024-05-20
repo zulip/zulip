@@ -18167,10 +18167,10 @@ paths:
                       An example JSON response for when the channel ID is not valid:
     delete:
       operationId: archive-stream
-      summary: Archive a stream
+      summary: Archive a channel
       tags: ["streams"]
       description: |
-        [Archive the stream](/help/archive-a-channel) with the ID `stream_id`.
+        [Archive the channel](/help/archive-a-channel) with the ID `stream_id`.
       x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
@@ -18185,7 +18185,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
-                      An example JSON response for when the supplied stream does not exist:
+                      An example JSON response for when the supplied channel does not exist:
     patch:
       operationId: update-stream
       summary: Update a stream
