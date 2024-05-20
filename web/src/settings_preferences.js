@@ -76,7 +76,9 @@ function org_notification_default_language_modal_post_render() {
             );
             $language_element.text(new_language);
             $language_element.attr("data-language-code", setting_value);
-            settings_components.save_discard_widget_status_handler($("#org-notifications"));
+            settings_components.save_discard_realm_settings_widget_status_handler(
+                $("#org-notifications"),
+            );
         });
 }
 

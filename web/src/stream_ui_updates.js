@@ -382,7 +382,7 @@ export function update_setting_element(sub, setting_name) {
     }
 
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
-    settings_org.discard_property_element_changes($elem, false, sub);
+    settings_org.discard_stream_property_element_changes($elem, sub);
 }
 
 export function enable_or_disable_add_subscribers_elements(

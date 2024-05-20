@@ -251,12 +251,7 @@ export function update_settings_pane(group) {
     $edit_container.find(".group-name").text(group.name);
     $edit_container.find(".group-description").text(group.description);
 
-    settings_org.discard_property_element_changes(
-        $("#id_can_mention_group"),
-        false,
-        undefined,
-        group,
-    );
+    settings_org.discard_group_property_element_changes($("#id_can_mention_group"), group);
 }
 
 function update_toggler_for_group_setting() {
@@ -928,10 +923,8 @@ export function initialize() {
 
             const group_id = $save_button.closest(".user_group_settings_wrapper").data("group-id");
             const group = user_groups.get_user_group_from_id(group_id);
-            const data = settings_components.populate_data_for_request(
+            const data = settings_components.populate_data_for_group_request(
                 $subsection_elem,
-                false,
-                undefined,
                 group,
             );
 
@@ -952,7 +945,7 @@ export function initialize() {
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
             for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-                settings_org.discard_property_element_changes(elem, false, undefined, group);
+                settings_org.discard_group_property_element_changes(elem, group);
             }
             const $save_btn_controls = $(e.target).closest(".save-button-controls");
             settings_components.change_save_button_state($save_btn_controls, "discarded");

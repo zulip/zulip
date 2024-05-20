@@ -211,9 +211,8 @@ function setup_dropdown(sub, slim_sub) {
             event.preventDefault();
             event.stopPropagation();
             can_remove_subscribers_group_widget.render();
-            settings_components.save_discard_widget_status_handler(
+            settings_components.save_discard_stream_settings_widget_status_handler(
                 $("#stream_permission_settings"),
-                false,
                 slim_sub,
             );
         },
@@ -683,7 +682,7 @@ export function initialize() {
         const stream_id = get_stream_id(e.target);
         const sub = sub_store.get(stream_id);
         const $subsection = $(e.target).closest(".settings-subsection-parent");
-        settings_components.save_discard_widget_status_handler($subsection, false, sub);
+        settings_components.save_discard_stream_settings_widget_status_handler($subsection, sub);
         if (sub) {
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
         }
@@ -703,9 +702,8 @@ export function initialize() {
                 $save_button.closest(".subscription_settings.show").attr("data-stream-id"),
             );
             const sub = sub_store.get(stream_id);
-            const data = settings_components.populate_data_for_request(
+            const data = settings_components.populate_data_for_stream_settings_request(
                 $subsection_elem,
-                false,
                 sub,
             );
 
@@ -744,7 +742,7 @@ export function initialize() {
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
             for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-                settings_org.discard_property_element_changes(elem, false, sub);
+                settings_org.discard_stream_property_element_changes(elem, sub);
             }
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
             const $save_btn_controls = $(e.target).closest(".save-button-controls");
