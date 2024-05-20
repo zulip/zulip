@@ -37,10 +37,10 @@ and narrowing).
 The compose box does a lot of fancy things that are out of scope for
 this article. But it also does a decent amount of client-side
 validation before sending a message off to the server, especially
-around mentions (E.g. checking the stream name is a valid stream,
+around mentions (E.g. checking the channel name is a valid channel,
 displaying a warning about the number of recipients before a user can
 use `@**all**` or mention a user who is not subscribed to the current
-stream, etc.).
+channel, etc.).
 
 ## Backend implementation
 
@@ -257,7 +257,7 @@ For background, Zulip’s threading model requires tracking which
 individual messages each user has received and read (in other chat
 products, the system either doesn’t track what the user has read at
 all, or just needs to store a pointer for “how far the user has read”
-in each room, channel, or stream).
+in each room or channel).
 
 We track these data in the backend in the `UserMessage` table, storing
 rows `(message_id, user_id, flags)`, where `flags` is 32 bits of space
@@ -268,7 +268,7 @@ the database indexes on this table (with joins to the `Message` table
 containing the actual message content where required).
 
 The downside of this design is that when a new message is sent to a
-stream with `N` recipients, we need to write `N` rows to the
+channel with `N` recipients, we need to write `N` rows to the
 `UserMessage` table to record those users receiving those messages.
 Each row is just 3 integers in size, but even with modern databases
 and SSDs, writing thousands of rows to a database starts to take a few
@@ -278,10 +278,10 @@ This isn’t a problem for most Zulip servers, but is a major problem
 for communities like chat.zulip.org, where there might be 10,000s of
 inactive users who only stopped by briefly to check out the product or
 ask a single question, but are subscribed to whatever the default
-streams in the organization are.
+channels in the organization are.
 
 The total amount of work being done here was acceptable (a few seconds
-of total CPU work per message to large public streams), but the
+of total CPU work per message to large public channels), but the
 latency was unacceptable: The server backend was introducing a latency
 of about 1 second per 2000 users subscribed to receive the message.
 While these delays may not be immediately obvious to users (Zulip,
@@ -294,18 +294,18 @@ even simple questions).
 
 A key insight for addressing this problem is that there isn’t much of
 a use case for long chat discussions among 1000s of users who are all
-continuously online and actively participating. Streams with a very
+continuously online and actively participating. Channels with a very
 large number of active users are likely to only be used for occasional
 announcements, where some latency before everyone sees the message is
 fine. Even in giant organizations, almost all messages are sent to
-smaller streams with dozens or hundreds of active users, representing
+smaller channels with dozens or hundreds of active users, representing
 some organizational unit within the community or company.
 
-However, large, active streams are common in open source projects,
+However, large, active channels are common in open source projects,
 standards bodies, professional development groups, and other large
 communities with the rough structure of the Zulip development
 community. These communities usually have thousands of user accounts
-subscribed to all the default streams, even if they only have dozens
+subscribed to all the default channels, even if they only have dozens
 or hundreds of those users active in any given month. Many of the
 other accounts may be from people who signed up just to check the
 community out, or who signed up to ask a few questions and may never
@@ -330,14 +330,14 @@ organization for a few weeks, they are tagged as soft-deactivated.
 The way this works internally is:
 
 - We (usually) skip creating UserMessage rows for soft-deactivated
-  users when a message is sent to a stream where they are subscribed.
+  users when a message is sent to a channel where they are subscribed.
 
 - If/when the user ever returns to Zulip, we can at that time
   reconstruct the UserMessage rows that they missed, and create the rows
   at that time (or, to avoid a latency spike if/when the user returns to
   Zulip, this work can be done in a nightly cron job). We can construct
   those rows later because we already have the data for when the user
-  might have been subscribed or unsubscribed from streams by other
+  might have been subscribed or unsubscribed from channels by other
   users, and, importantly, we also know that the user didn’t interact
   with the UI since the message was sent (and thus we can safely assume
   that the messages have not been marked as read by the user). This is
@@ -369,9 +369,9 @@ The end result is the best of both worlds:
   with Zulip.
 
 Empirically, we've found this technique completely resolved the "send
-latency" scaling problem. The latency of sending a message to a stream
+latency" scaling problem. The latency of sending a message to a channel
 now scales only with the number of active subscribers, so one can send
-a message to a stream with 5K subscribers of which 500 are active, and
+a message to a channel with 5K subscribers of which 500 are active, and
 it’ll arrive in the couple hundred milliseconds one would expect if
 the extra 4500 inactive subscribers didn’t exist.
 
@@ -384,7 +384,7 @@ There are a few details that require special care with this system:
   assumed a `UserMessage` row would always exist for a message that
   triggers a notification to a given user.
 - Digest emails, which use the `UserMessage` table extensively to
-  determine what has happened in streams the user can see. We can use
+  determine what has happened in channels the user can see. We can use
   the user's subscriptions to construct what messages they should have
   access to for this feature.
 - Soft-deactivated users experience high loading latency when

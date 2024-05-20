@@ -2,12 +2,12 @@
 
 Zulip has a cool analytics system for tracking various useful statistics
 that currently power the `/stats` page, and over time will power other
-features, like showing usage statistics for the various streams. It is
+features, like showing usage statistics for the various channels. It is
 designed around the following goals:
 
 - Minimal impact on scalability and service complexity.
 - Well-tested so that we can count on the results being correct.
-- Efficient to query so that we can display data in-app (e.g. on the streams
+- Efficient to query so that we can display data in-app (e.g. on the channels
   page) with minimum impact on the overall performance of those pages.
 - Storage size smaller than the size of the main Message/UserMessage
   database tables, so that we can store the data in the main PostgreSQL
@@ -164,7 +164,7 @@ a given realm). The only piece that you can't test here is the "Me"
 buttons, which won't have any data. For those, you can instead log in
 as the `shylock@analytics.ds` in the `analytics` realm and visit
 `/stats` there (which is only a bit more work). Note that the
-`analytics` realm is a shell with no streams, so you'll only want to
+`analytics` realm is a shell with no channels, so you'll only want to
 use it for testing the graphs.
 
 If you're adding a new stat/table, you'll want to edit
