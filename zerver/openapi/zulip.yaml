@@ -11347,8 +11347,8 @@ paths:
       tags: ["streams"]
       description: |
         This endpoint is used to update the user's personal settings for the
-        streams they are subscribed to, including muting, color, pinning, and
-        per-stream notification settings.
+        channels they are subscribed to, including muting, color, pinning, and
+        per-channel notification settings.
 
         **Changes**: Prior to Zulip 5.0 (feature level 111), response
         object included the `subscription_data` in the the
@@ -11367,7 +11367,7 @@ paths:
                   description: |
                     A list of objects that describe the changes that should be applied in
                     each subscription. Each object represents a subscription, and must have
-                    a `stream_id` key that identifies the stream, as well as the `property`
+                    a `stream_id` key that identifies the channel, as well as the `property`
                     being modified and its new `value`.
                   type: array
                   items:
@@ -11377,7 +11377,7 @@ paths:
                       stream_id:
                         type: integer
                         description: |
-                          The unique ID of a stream.
+                          The unique ID of a channel.
                       property:
                         type: string
                         enum:
@@ -11391,11 +11391,11 @@ paths:
                           - email_notifications
                           - wildcard_mentions_notify
                         description: |
-                          One of the stream properties described below:
+                          One of the channel properties described below:
 
-                          - `"color"`: The hex value of the user's display color for the stream.
+                          - `"color"`: The hex value of the user's display color for the channel.
 
-                          - `"is_muted"`: Whether the stream is [muted](/help/mute-a-channel).<br>
+                          - `"is_muted"`: Whether the channel is [muted](/help/mute-a-channel).<br>
                             **Changes**: As of Zulip 6.0 (feature level 139), updating either
                             `"is_muted"` or `"in_home_view"` generates two [subscription update
                             events](/api/get-events#subscription-update), one for each property,
@@ -11407,22 +11407,22 @@ paths:
                             opposite value: `in_home_view=!is_muted`); for
                             backwards-compatibility, modern Zulip still accepts that property.
 
-                          - `"pin_to_top"`: Whether to pin the stream at the top of the stream list.
+                          - `"pin_to_top"`: Whether to pin the channel at the top of the channel list.
 
                           - `"desktop_notifications"`: Whether to show desktop notifications
-                            for all messages sent to the stream.
+                            for all messages sent to the channel.
 
                           - `"audible_notifications"`: Whether to play a sound
-                            notification for all messages sent to the stream.
+                            notification for all messages sent to the channel.
 
                           - `"push_notifications"`: Whether to trigger a mobile push
-                            notification for all messages sent to the stream.
+                            notification for all messages sent to the channel.
 
                           - `"email_notifications"`: Whether to trigger an email
-                            notification for all messages sent to the stream.
+                            notification for all messages sent to the channel.
 
                           - `"wildcard_mentions_notify"`: Whether wildcard mentions trigger
-                            notifications as though they were personal mentions in this stream.
+                            notifications as though they were personal mentions in this channel.
                       value:
                         oneOf:
                           - type: boolean
@@ -11432,7 +11432,7 @@ paths:
 
                           If the property is `"color"`, then `value` is a string
                           representing the hex value of the user's display
-                          color for the stream. For all other above properties,
+                          color for the channel. For all other above properties,
                           `value` is a boolean.
                     required:
                       - stream_id
