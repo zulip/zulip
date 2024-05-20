@@ -17857,10 +17857,10 @@ paths:
   /streams/{stream_id}/members:
     get:
       operationId: get-subscribers
-      summary: Get the subscribers of a stream
+      summary: Get the subscribers of a channel
       tags: ["streams"]
       description: |
-        Get all users subscribed to a stream.
+        Get all users subscribed to a channel.
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
@@ -17882,7 +17882,7 @@ paths:
                           type: integer
                         description: |
                           A list containing the IDs of all active users who are subscribed
-                          to the stream.
+                          to the channel.
                     example:
                       {"result": "success", "msg": "", "subscribers": [11, 26]}
         "400":
@@ -17893,8 +17893,8 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
-                      An example JSON response for when the requested stream does not exist,
-                      or where the user does not have permission to access the target stream:
+                      An example JSON response for when the requested channel does not exist,
+                      or where the user does not have permission to access the target channel:
   /streams:
     get:
       operationId: get-streams
