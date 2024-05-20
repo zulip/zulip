@@ -824,7 +824,7 @@ def get_messages_iterator(
             messages = []
             for message in get_data_file(message_dir):
                 if message.get("user") == "U00":
-                    # Skip messages involving the the "U00" user,
+                    # Skip messages involving the "U00" user,
                     # which is apparently used in some channel rename
                     # messages.  It's likely just the result of some
                     # bug in Slack's export system.  Arguably we could

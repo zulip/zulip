@@ -1445,7 +1445,7 @@ class BillingSession(ABC):
             # invoice for the 12th month is processed.
             if current_plan.end_date != self.get_next_billing_cycle(current_plan):
                 raise SupportRequestError(
-                    f"New plan for {self.billing_entity_display_name} can not be scheduled until all the invoices of the current plan are processed."
+                    f"New plan for {self.billing_entity_display_name} cannot be scheduled until all the invoices of the current plan are processed."
                 )
             fixed_price_plan_params["billing_cycle_anchor"] = current_plan.end_date
             fixed_price_plan_params["end_date"] = add_months(

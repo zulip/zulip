@@ -525,7 +525,7 @@ class LicenseLedger(models.Model):
 
     event_time = models.DateTimeField()
 
-    # The number of licenses ("seats") purchased by the the organization at the time of ledger
+    # The number of licenses ("seats") purchased by the organization at the time of ledger
     # entry creation. Normally, to add a user the organization needs at least one spare license.
     # Once a license is purchased, it is valid till the end of the billing period, irrespective
     # of whether the license is used or not. So the value of licenses will never decrease for

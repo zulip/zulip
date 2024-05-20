@@ -11351,7 +11351,7 @@ paths:
         per-channel notification settings.
 
         **Changes**: Prior to Zulip 5.0 (feature level 111), response
-        object included the `subscription_data` in the the
+        object included the `subscription_data` in the
         request. The endpoint now returns the more ergonomic
         [`ignored_parameters_unsupported`][ignored-parameters] array instead.
 
@@ -20912,7 +20912,7 @@ components:
               - timestamp
           description: |
             An array of objects, with each object documenting the
-            changes in a previous edit made to the the message,
+            changes in a previous edit made to the message,
             ordered chronologically from most recent to least recent
             edit.
 

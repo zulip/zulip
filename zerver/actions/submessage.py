@@ -20,7 +20,7 @@ def verify_submessage_sender(
 ) -> None:
     """Even though our submessage architecture is geared toward
     collaboration among all message readers, we still enforce
-    the the first person to attach a submessage to the message
+    the first person to attach a submessage to the message
     must be the original sender of the message.
     """
 

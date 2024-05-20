@@ -156,7 +156,7 @@ class OpenAPIToolsTest(ZulipTestCase):
         # pass, Test 2 has a 'deep' extraneous key and Test 3 has a
         # 'deep' opaque object. Also the parameters are a heterogeneous
         # mix of arrays and objects to verify that our descent logic
-        # correctly gets to the the deeply nested objects.
+        # correctly gets to the deeply nested objects.
         test_filename = os.path.join(os.path.dirname(OPENAPI_SPEC_PATH), "testing.yaml")
         with open(test_filename) as test_file:
             test_dict = yaml.safe_load(test_file)
@@ -533,7 +533,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 vname = defval.post_var_name
                 assert vname is not None
                 if vname in json_params:
-                    # Here we have two cases.  If the the REQ type is
+                    # Here we have two cases.  If the REQ type is
                     # string then there is no point in comparing as
                     # JSON can always be returned as string.  Ideally,
                     # we wouldn't use REQ for a JSON object without a

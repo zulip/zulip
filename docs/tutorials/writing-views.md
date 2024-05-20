@@ -74,7 +74,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 This decorator ensures that the request was a POST--here, we're
 checking that the registration submission page is requested with a
 post, and inside the function, we'll check the form data. If you
-request this page with GET, you'll get a HTTP 405 METHOD NOT ALLOWED
+request this page with GET, you'll get an HTTP 405 METHOD NOT ALLOWED
 error.
 
 `zulip_login_required`:

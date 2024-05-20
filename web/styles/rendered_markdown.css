@@ -498,7 +498,7 @@
     .message_inline_image img,
     .message_inline_ref img {
         /* We use `scale-down` so that images smaller than the container are
-           neither scaled up up or cropped to fit. This preserves
+           neither scaled up nor cropped to fit. This preserves
            their aspect ratio, which is often helpful. */
         object-fit: scale-down;
 
