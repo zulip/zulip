@@ -9853,7 +9853,7 @@ paths:
         [mute a topic](/help/mute-a-topic) and related features.
 
         This endpoint can be used to update the visibility policy for the single
-        stream and topic pair indicated by the parameters for a user.
+        channel and topic pair indicated by the parameters for a user.
 
         **Changes**: New in Zulip 7.0 (feature level 170). Previously,
         toggling whether a topic was muted or unmuted was managed by the
@@ -9867,7 +9867,7 @@ paths:
               properties:
                 stream_id:
                   description: |
-                    The ID of the stream to access.
+                    The ID of the channel to access.
                   type: integer
                   example: 1
                 topic:
@@ -9886,11 +9886,11 @@ paths:
                     Controls which visibility policy to set.
 
                     - 0 = None. Removes the visibility policy previously set for the topic.
-                    - 1 = Muted. [Mutes the topic](/help/mute-a-topic) in a stream.
-                    - 2 = Unmuted. [Unmutes the topic](/help/mute-a-topic) in a muted stream.
+                    - 1 = Muted. [Mutes the topic](/help/mute-a-topic) in a channel.
+                    - 2 = Unmuted. [Unmutes the topic](/help/mute-a-topic) in a muted channel.
                     - 3 = Followed. [Follows the topic](/help/follow-a-topic).
 
-                    In an unmuted stream, a topic visibility policy of unmuted will have the
+                    In an unmuted channel, a topic visibility policy of unmuted will have the
                     same effect as the "None" visibility policy.
 
                     **Changes**: In Zulip 7.0 (feature level 219), added followed as
