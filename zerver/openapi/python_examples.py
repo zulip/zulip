@@ -90,7 +90,7 @@ def add_subscriptions(client: Client) -> None:
 
     ensure_users([25], ["newbie"])
     # {code_example|start}
-    # To subscribe other users to a stream, you may pass
+    # To subscribe other users to a channel, you may pass
     # the `principals` argument, like so:
     user_id = 25
     result = client.add_subscriptions(
@@ -160,7 +160,7 @@ def get_presence(client: Client) -> None:
 @openapi_test_function("/default_streams:post")
 def add_default_stream(client: Client) -> None:
     # {code_example|start}
-    # Add a stream to the set of default streams for new users.
+    # Add a channel to the set of default channels for new users.
     stream_id = 10
 
     result = client.add_default_stream(stream_id)
@@ -172,7 +172,7 @@ def add_default_stream(client: Client) -> None:
 @openapi_test_function("/default_streams:delete")
 def remove_default_stream(client: Client) -> None:
     # {code_example|start}
-    # Remove a stream from the set of default streams for new users.
+    # Remove a channel from the set of default channels for new users.
     request = {"stream_id": 10}
 
     result = client.call_endpoint(
@@ -445,7 +445,7 @@ def get_subscription_status(client: Client) -> None:
     ensure_users([7], ["zoe"])
 
     # {code_example|start}
-    # Check whether a user is a subscriber to a given stream.
+    # Check whether a user is a subscriber to a given channel.
     user_id = 7
     stream_id = 1
     result = client.call_endpoint(
@@ -621,7 +621,7 @@ def deactivate_own_user(client: Client, owner_client: Client) -> None:
 @openapi_test_function("/get_stream_id:get")
 def get_stream_id(client: Client) -> int:
     # {code_example|start}
-    # Get the ID of a given stream
+    # Get the ID of a given channel name.
     name = "python-test"
     result = client.get_stream_id(name)
     # {code_example|end}
@@ -654,7 +654,7 @@ def archive_stream(client: Client) -> None:
 @openapi_test_function("/streams/{stream_id}/delete_topic:post")
 def delete_topic(client: Client, stream_id: int, topic: str) -> None:
     # {code_example|start}
-    # Delete a topic given its stream_id
+    # Delete a topic in a channel, given the channel's ID.
     request = {
         "topic_name": topic,
     }
@@ -670,7 +670,7 @@ def delete_topic(client: Client, stream_id: int, topic: str) -> None:
 @openapi_test_function("/streams:get")
 def get_streams(client: Client) -> None:
     # {code_example|start}
-    # Get all streams that the user has access to
+    # Get all channels that the user has access to.
     result = client.get_streams()
     # {code_example|end}
 
@@ -691,7 +691,7 @@ def get_streams(client: Client) -> None:
 @openapi_test_function("/streams/{stream_id}:patch")
 def update_stream(client: Client, stream_id: int) -> None:
     # {code_example|start}
-    # Update the stream by a given ID
+    # Update settings for the channel with a given ID.
     request = {
         "stream_id": stream_id,
         "stream_post_policy": 2,
@@ -731,7 +731,9 @@ def get_subscribers(client: Client) -> None:
     ensure_users([11, 25], ["iago", "newbie"])
 
     # {code_example|start}
-    # Get the subscribers to a stream
+    # Get the subscribers to a channel. Note that `client.get_subscribers`
+    # takes a `stream` parameter with the channel's name and not the
+    # channel's ID.
     result = client.get_subscribers(stream="python-test")
     # {code_example|end}
     assert result["subscribers"] == [11, 25]
@@ -745,7 +747,7 @@ def get_user_agent(client: Client) -> None:
 @openapi_test_function("/users/me/subscriptions:get")
 def get_subscriptions(client: Client) -> None:
     # {code_example|start}
-    # Get all streams that the user is subscribed to
+    # Get all channels that the user is subscribed to.
     result = client.get_subscriptions()
     # {code_example|end}
 
@@ -798,7 +800,7 @@ def toggle_mute_topic(client: Client) -> None:
     )
 
     # {code_example|start}
-    # Mute the topic "boat party" in the stream "Denmark"
+    # Mute the topic "boat party" in the channel named "Denmark".
     request = {
         "stream": "Denmark",
         "topic": "boat party",
@@ -810,7 +812,7 @@ def toggle_mute_topic(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
 
     # {code_example|start}
-    # Unmute the topic "boat party" in the stream "Denmark"
+    # Unmute the topic "boat party" in the channel named "Denmark".
     request = {
         "stream": "Denmark",
         "topic": "boat party",
@@ -828,7 +830,7 @@ def update_user_topic(client: Client) -> None:
     stream_id = client.get_stream_id("Denmark")["stream_id"]
 
     # {code_example|start}
-    # Mute the topic "dinner" in the stream having id 'stream_id'.
+    # Mute the topic "dinner" in a channel, given the channel's ID.
     request = {
         "stream_id": stream_id,
         "topic": "dinner",
@@ -844,7 +846,7 @@ def update_user_topic(client: Client) -> None:
     validate_against_openapi_schema(result, "/user_topics", "post", "200")
 
     # {code_example|start}
-    # Remove mute from the topic "dinner" in the stream having id 'stream_id'.
+    # Remove mute from the topic "dinner" in a channel, given the channel's ID.
     request = {
         "stream_id": stream_id,
         "topic": "dinner",
@@ -900,7 +902,7 @@ def mark_all_as_read(client: Client) -> None:
 @openapi_test_function("/mark_stream_as_read:post")
 def mark_stream_as_read(client: Client) -> None:
     # {code_example|start}
-    # Mark the unread messages in stream with ID "1" as read
+    # Mark the unread messages in the channel with ID 1 as read.
     result = client.mark_stream_as_read(1)
     # {code_example|end}
 
@@ -913,7 +915,8 @@ def mark_topic_as_read(client: Client) -> None:
     topic_name = client.get_stream_topics(1)["topics"][0]["name"]
 
     # {code_example|start}
-    # Mark the unread messages in stream 1's topic "topic_name" as read
+    # Mark unread messages in a given topic, in the channel with ID 1,
+    # as read.
     result = client.mark_topic_as_read(1, topic_name)
     # {code_example|end}
 
@@ -923,8 +926,9 @@ def mark_topic_as_read(client: Client) -> None:
 @openapi_test_function("/users/me/subscriptions/properties:post")
 def update_subscription_settings(client: Client) -> None:
     # {code_example|start}
-    # Update the user's subscription in stream #1 to pin it to the top of the
-    # stream list; and in stream #3 to have the hex color "f00"
+    # Update the user's subscription of the channel with ID 1 so that
+    # it's pinned to the top of the user's channel list, and in the
+    # channel with ID 3 so that it has the hex color "f00".
     request = [
         {
             "stream_id": 1,
@@ -959,7 +963,8 @@ def render_message(client: Client) -> None:
 @openapi_test_function("/messages:get")
 def get_messages(client: Client) -> None:
     # {code_example|start}
-    # Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
+    # Get the 100 last messages sent by "iago@zulip.com" to
+    # the channel named "Verona".
     request: Dict[str, Any] = {
         "anchor": "newest",
         "num_before": 100,
@@ -1041,7 +1046,7 @@ def send_message(client: Client) -> int:
     request: Dict[str, Any] = {}
 
     # {code_example|start}
-    # Send a stream message
+    # Send a channel message.
     request = {
         "type": "stream",
         "to": "Denmark",
@@ -1470,7 +1475,7 @@ def set_typing_status(client: Client) -> None:
 
     # {code_example|start}
     # The user has started to type in topic "typing status"
-    # of stream "Denmark"
+    # of the channel named "Denmark".
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
 
@@ -1488,7 +1493,7 @@ def set_typing_status(client: Client) -> None:
 
     # {code_example|start}
     # The user has finished typing in topic "typing status"
-    # of stream "Denmark"
+    # of the channel named "Denmark".
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
 
