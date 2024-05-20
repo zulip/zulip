@@ -32,11 +32,11 @@ msgstr "Invalid organisation"
 
 #: analytics/views/stats.py:313
 msgid "Public channels"
-msgstr ""
+msgstr "Public channels"
 
 #: analytics/views/stats.py:314
 msgid "Private channels"
-msgstr ""
+msgstr "Private channels"
 
 #: analytics/views/stats.py:315
 msgid "Direct messages"
@@ -49,7 +49,7 @@ msgstr "Group direct messages"
 #: analytics/views/stats.py:339
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "Missing channel for chart: {chart_name}"
 
 #: analytics/views/stats.py:347
 #, python-brace-format
@@ -228,7 +228,7 @@ msgstr "Your plan is already scheduled to renew with {licenses_at_next_renewal} 
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
-msgstr ""
+msgstr "You’ve already purchased {licenses_at_next_renewal} licenses for the next billing period."
 
 #: corporate/lib/stripe.py:2937
 msgid "Nothing to change."
@@ -735,11 +735,11 @@ msgstr "Convert demo organisation before upgrading."
 
 #: templates/corporate/billing/upgrade.html:350
 msgid "Send invoice and start free trial"
-msgstr ""
+msgstr "Send invoice and start free trial"
 
 #: templates/corporate/billing/upgrade.html:352
 msgid "Send invoice"
-msgstr ""
+msgstr "Send invoice"
 
 #: templates/corporate/communities.html:28
 msgid "Open communities directory"
@@ -1192,7 +1192,7 @@ msgstr "For organisations with up to 10 users"
 
 #: templates/corporate/comparison_table_integrated.html:1002
 msgid "25 users minimum"
-msgstr ""
+msgstr "25 users minimum"
 
 #: templates/corporate/comparison_table_integrated.html:1290
 #: templates/corporate/comparison_table_integrated.html:1509
@@ -2028,7 +2028,7 @@ msgstr "\nYour Zulip account on %(realm_uri)s has been deactivated, and you will
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
 msgid "New channels"
-msgstr ""
+msgstr "New channels"
 
 #: templates/zerver/emails/digest.html:34
 msgid "Click here to log in to Zulip and catch up."
@@ -2072,7 +2072,7 @@ msgstr "Thanks for your request!"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip Cloud "
 "organizations:"
-msgstr ""
+msgstr "Your email address %(email)s has accounts with the following Zulip Cloud organisations:"
 
 #: templates/zerver/emails/find_team.html:14
 #: templates/zerver/emails/find_team.txt:7
@@ -2087,18 +2087,18 @@ msgstr "Your email address %(email)s has accounts with the following Zulip organ
 msgid ""
 "If you have trouble logging in, you can <a "
 "href=\"%(help_reset_password_link)s\">reset your password</a>."
-msgstr ""
+msgstr "If you have trouble logging in, you can <a href=\"%(help_reset_password_link)s\">reset your password</a>."
 
 #: templates/zerver/emails/find_team.html:28
 #: templates/zerver/emails/find_team.txt:21
 #: templates/zerver/emails/find_team.txt:28
 msgid "You have requested a list of Zulip accounts for this email address."
-msgstr ""
+msgstr "You have requested a list of Zulip accounts for this email address."
 
 #: templates/zerver/emails/find_team.html:30
 #: templates/zerver/emails/find_team.txt:21
 msgid "Unfortunately, no Zulip Cloud accounts were found."
-msgstr ""
+msgstr "Unfortunately, no Zulip Cloud accounts were found."
 
 #: templates/zerver/emails/find_team.html:32
 #: templates/zerver/emails/find_team.txt:28
@@ -2106,7 +2106,7 @@ msgstr ""
 msgid ""
 "Unfortunately, no accounts were found in Zulip organizations hosted by "
 "%(external_host)s."
-msgstr ""
+msgstr "Unfortunately, no accounts were found in Zulip organisations hosted by %(external_host)s."
 
 #: templates/zerver/emails/find_team.html:37
 #, python-format
@@ -2114,14 +2114,14 @@ msgid ""
 "You can <a href = \"%(find_accounts_link)s\" >check for accounts</a> with "
 "another email, or <a href =\"%(help_logging_in_link)s\">try another way</a> "
 "to find your account."
-msgstr ""
+msgstr "You can <a href = \"%(find_accounts_link)s\" >check for accounts</a> with another email, or <a href =\"%(help_logging_in_link)s\">try another way</a> to find your account."
 
 #: templates/zerver/emails/find_team.html:38
 #: templates/zerver/emails/find_team.txt:26
 #: templates/zerver/emails/find_team.txt:34
 msgid ""
 "If you do not recognize this request, you can safely ignore this email."
-msgstr ""
+msgstr "If you do not recognize this request, you can safely ignore this email."
 
 #: templates/zerver/emails/find_team.subject.txt:2
 msgid "Your Zulip accounts"
@@ -2129,11 +2129,11 @@ msgstr "Your Zulip accounts"
 
 #: templates/zerver/emails/find_team.subject.txt:4
 msgid "No Zulip accounts found"
-msgstr ""
+msgstr "No Zulip accounts found"
 
 #: templates/zerver/emails/find_team.txt:15
 msgid "If you have trouble logging in, you can reset your password."
-msgstr ""
+msgstr "If you have trouble logging in, you can reset your password."
 
 #: templates/zerver/emails/find_team.txt:23
 #: templates/zerver/emails/find_team.txt:31
@@ -2141,7 +2141,7 @@ msgstr ""
 msgid ""
 "You can check for accounts with another email (%(find_accounts_link)s), or "
 "try another way to find your account (%(help_logging_in_link)s)."
-msgstr ""
+msgstr "You can check for accounts with another email (%(find_accounts_link)s), or try another way to find your account (%(help_logging_in_link)s)."
 
 #: templates/zerver/emails/invitation.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2273,7 +2273,7 @@ msgstr "You are receiving this because @%(mentioned_user_group_name)s was mentio
 msgid ""
 "You are receiving this because all topic participants were mentioned in "
 "#%(channel_name)s > %(topic_name)s."
-msgstr ""
+msgstr "You are receiving this because all topic participants were mentioned in #%(channel_name)s > %(topic_name)s."
 
 #: templates/zerver/emails/missed_message.html:35
 #: templates/zerver/emails/missed_message.txt:31
@@ -2287,7 +2287,7 @@ msgstr "You are receiving this because you have wildcard mention notifications e
 #, python-format
 msgid ""
 "You are receiving this because everyone was mentioned in #%(channel_name)s."
-msgstr ""
+msgstr "You are receiving this because everyone was mentioned in #%(channel_name)s."
 
 #: templates/zerver/emails/missed_message.html:41
 #: templates/zerver/emails/missed_message.txt:37
@@ -2302,7 +2302,7 @@ msgstr "You are receiving this because you have email notifications enabled for 
 msgid ""
 "You are receiving this because you have email notifications enabled for "
 "#%(channel_name)s."
-msgstr ""
+msgstr "You are receiving this because you have email notifications enabled for #%(channel_name)s."
 
 #: templates/zerver/emails/missed_message.html:46
 #, python-format
@@ -2347,7 +2347,7 @@ msgstr "DMs with %(sender_str)s"
 #: templates/zerver/emails/missed_message.subject.txt:12
 #, python-format
 msgid "[resolved] #%(channel_name)s > %(topic_name)s"
-msgstr ""
+msgstr "[resolved] #%(channel_name)s > %(topic_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:17
 msgid "New messages"
@@ -2680,7 +2680,7 @@ msgstr "Here are some tips for keeping your Zulip conversations organised with t
 msgid ""
 "In Zulip, <b>channels</b> determine who gets a message. <b>Topics</b> tell "
 "you what the message is about."
-msgstr ""
+msgstr "In Zulip, <b>channels</b> determine who gets a message. <b>Topics</b> tell you what the message is about."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:13
 #: templates/zerver/emails/onboarding_zulip_topics.txt:3
@@ -2691,7 +2691,7 @@ msgstr "Using topics, you can read Zulip one conversation at a time. You'll see 
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:16
 msgid "Channels and topics in the Zulip app"
-msgstr ""
+msgstr "Channels and topics in the Zulip app"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:19
 #: templates/zerver/emails/onboarding_zulip_topics.txt:5
@@ -2700,7 +2700,7 @@ msgid ""
 "This way, the new conversation thread won't interrupt ongoing discussions. "
 "For a good topic name, think about finishing the sentence: “Hey, can we chat"
 " about…?”"
-msgstr ""
+msgstr "To kick off a new conversation, just pick a channel and start a new topic. This way, the new conversation thread won't interrupt ongoing discussions. For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:22
 msgid "Examples of short topics"
@@ -2713,7 +2713,7 @@ msgid ""
 "out of place, it's easy to <a href=\"%(move_messages_link)s\">move "
 "messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even "
 "<a href=\"%(move_channels_link)s\">move a topic to a different channel</a>."
-msgstr ""
+msgstr "Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to <a href=\"%(move_messages_link)s\">move messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even <a href=\"%(move_channels_link)s\">move a topic to a different channel</a>."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:28
 #: templates/zerver/emails/onboarding_zulip_topics.txt:10
@@ -2729,7 +2729,7 @@ msgstr "Keep your conversations organised with topics"
 msgid ""
 "In Zulip, channels determine who gets a message. Topics tell you what the "
 "message is about."
-msgstr ""
+msgstr "In Zulip, channels determine who gets a message. Topics tell you what the message is about."
 
 #: templates/zerver/emails/onboarding_zulip_topics.txt:7
 #, python-format
@@ -2738,7 +2738,7 @@ msgid ""
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
 "topics (%(rename_topics_link)s), or even move a topic to a different channel"
 " (%(move_channels_link)s)."
-msgstr ""
+msgstr "Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to move messages (%(move_messages_link)s), rename topics (%(rename_topics_link)s), or even move a topic to a different channel (%(move_channels_link)s)."
 
 #: templates/zerver/emails/password_reset.html:9
 #: templates/zerver/emails/password_reset.txt:1
@@ -2991,7 +2991,7 @@ msgid ""
 "\n"
 "                    Emails sent! The addresses entered on the previous page are listed below:\n"
 "                    "
-msgstr ""
+msgstr "\n                    Emails sent! The addresses entered on the previous page are listed below:\n                    "
 
 #: templates/zerver/find_account.html:30
 #, python-format
@@ -3567,7 +3567,7 @@ msgstr "Import settings from existing Zulip account"
 
 #: templates/zerver/register.html:119
 msgid "Your full name"
-msgstr ""
+msgstr "Your full name"
 
 #: templates/zerver/register.html:120
 msgid "Name"
@@ -3575,7 +3575,7 @@ msgstr "Name"
 
 #: templates/zerver/register.html:127
 msgid "This is how your account is displayed in Zulip."
-msgstr ""
+msgstr "This is how your account is displayed in Zulip."
 
 #: templates/zerver/register.html:141
 msgid "Enter your LDAP/Active Directory password."
@@ -3597,29 +3597,29 @@ msgstr "What are you interested in?"
 
 #: templates/zerver/register.html:202
 msgid "How did you first hear about Zulip?"
-msgstr ""
+msgstr "How did you first hear about Zulip?"
 
 #: templates/zerver/register.html:204
 msgid ""
 "This value is used only if you sign up for a plan, in which case it will be "
 "sent to the Zulip team."
-msgstr ""
+msgstr "This value is used only if you sign up for a plan, in which case it will be sent to the Zulip team."
 
 #: templates/zerver/register.html:208
 msgid "Select an option"
-msgstr ""
+msgstr "Select an option"
 
 #: templates/zerver/register.html:213
 msgid "Please describe"
-msgstr ""
+msgstr "Please describe"
 
 #: templates/zerver/register.html:214
 msgid "Where did you see the ad?"
-msgstr ""
+msgstr "Where did you see the ad?"
 
 #: templates/zerver/register.html:215
 msgid "Which organization?"
-msgstr ""
+msgstr "Which organisation?"
 
 #: templates/zerver/register.html:249
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
@@ -3831,53 +3831,53 @@ msgstr "Field id {id} not found."
 #: zerver/actions/default_streams.py:20
 #, python-brace-format
 msgid "Invalid default channel group name '{group_name}'"
-msgstr ""
+msgstr "Invalid default channel group name '{group_name}'"
 
 #: zerver/actions/default_streams.py:24
 #, python-brace-format
 msgid "Default channel group name too long (limit: {max_length} characters)"
-msgstr ""
+msgstr "Default channel group name too long (limit: {max_length} characters)"
 
 #: zerver/actions/default_streams.py:32
 #, python-brace-format
 msgid ""
 "Default channel group name '{group_name}' contains NULL (0x00) characters."
-msgstr ""
+msgstr "Default channel group name '{group_name}' contains NULL (0x00) characters."
 
 #: zerver/actions/default_streams.py:48
 #, python-brace-format
 msgid "Invalid default channel group {group_name}"
-msgstr ""
+msgstr "Invalid default channel group {group_name}"
 
 #: zerver/actions/default_streams.py:96 zerver/actions/default_streams.py:123
 #, python-brace-format
 msgid ""
 "'{channel_name}' is a default channel and cannot be added to '{group_name}'"
-msgstr ""
+msgstr "'{channel_name}' is a default channel and cannot be added to '{group_name}'"
 
 #: zerver/actions/default_streams.py:107 zerver/actions/default_streams.py:168
 #, python-brace-format
 msgid "Default channel group '{group_name}' already exists"
-msgstr ""
+msgstr "Default channel group '{group_name}' already exists"
 
 #: zerver/actions/default_streams.py:129
 #, python-brace-format
 msgid ""
 "Channel '{channel_name}' is already present in default channel group "
 "'{group_name}'"
-msgstr ""
+msgstr "Channel '{channel_name}' is already present in default channel group '{group_name}'"
 
 #: zerver/actions/default_streams.py:146
 #, python-brace-format
 msgid ""
 "Channel '{channel_name}' is not present in default channel group "
 "'{group_name}'"
-msgstr ""
+msgstr "Channel '{channel_name}' is not present in default channel group '{group_name}'"
 
 #: zerver/actions/default_streams.py:161
 #, python-brace-format
 msgid "This default channel group is already named '{group_name}'"
-msgstr ""
+msgstr "This default channel group is already named '{group_name}'"
 
 #: zerver/actions/invites.py:165
 msgid ""
@@ -3911,7 +3911,7 @@ msgstr "Nothing to change"
 
 #: zerver/actions/message_edit.py:106
 msgid "Direct messages cannot be moved to channels."
-msgstr ""
+msgstr "Direct messages cannot be moved to channels."
 
 #: zerver/actions/message_edit.py:108
 msgid "Direct messages cannot have topics."
@@ -3923,7 +3923,7 @@ msgstr "Invalid propagate_mode without topic edit"
 
 #: zerver/actions/message_edit.py:117
 msgid "Cannot change message content while changing channel"
-msgstr ""
+msgstr "Cannot change message content while changing channel"
 
 #: zerver/actions/message_edit.py:121
 msgid "Widgets cannot be edited."
@@ -3996,7 +3996,7 @@ msgstr "You don't have permission to move this message"
 
 #: zerver/actions/message_edit.py:1328
 msgid "The time limit for editing this message's channel has passed"
-msgstr ""
+msgstr "The time limit for editing this message's channel has passed"
 
 #: zerver/actions/message_flags.py:265
 #, python-brace-format
@@ -4025,11 +4025,11 @@ msgstr "Unable to render message"
 
 #: zerver/actions/message_send.py:1263
 msgid "Expected exactly one channel"
-msgstr ""
+msgstr "Expected exactly one channel"
 
 #: zerver/actions/message_send.py:1274
 msgid "Invalid data type for channel"
-msgstr ""
+msgstr "Invalid data type for channel"
 
 #: zerver/actions/message_send.py:1290 zerver/actions/message_send.py:1300
 #: zerver/lib/recipient_parsing.py:25
@@ -4045,7 +4045,7 @@ msgstr "Recipient lists may contain emails or user IDs, but not both."
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, "
 "but there is no channel with that ID."
-msgstr ""
+msgstr "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, but there is no channel with that ID."
 
 #: zerver/actions/message_send.py:1477
 #, python-brace-format
@@ -4053,14 +4053,14 @@ msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}, "
 "but that channel does not exist. Click [here]({new_channel_link}) to create "
 "it."
-msgstr ""
+msgstr "Your bot {bot_identity} tried to send a message to channel {channel_name}, but that channel does not exist. Click [here]({new_channel_link}) to create it."
 
 #: zerver/actions/message_send.py:1489
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}. "
 "The channel exists but does not have any subscribers."
-msgstr ""
+msgstr "Your bot {bot_identity} tried to send a message to channel {channel_name}. The channel exists but does not have any subscribers."
 
 #: zerver/actions/message_send.py:1538
 msgid "Direct messages are disabled in this organization."
@@ -4139,28 +4139,28 @@ msgstr "[View scheduled messages](#scheduled)"
 
 #: zerver/actions/streams.py:117
 msgid "Channel is already deactivated"
-msgstr ""
+msgstr "Channel is already deactivated"
 
 #: zerver/actions/streams.py:241
 msgid "Channel is not currently deactivated"
-msgstr ""
+msgstr "Channel is not currently deactivated"
 
 #: zerver/actions/streams.py:244
 #, python-brace-format
 msgid "Channel named {channel_name} already exists"
-msgstr ""
+msgstr "Channel named {channel_name} already exists"
 
 #: zerver/actions/streams.py:315
 #, python-brace-format
 msgid "Channel {channel_name} un-archived."
-msgstr ""
+msgstr "Channel {channel_name} un-archived."
 
 #: zerver/actions/streams.py:1179
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions]({help_link}) for this channel from "
 "**{old_policy}** to **{new_policy}**."
-msgstr ""
+msgstr "{user} changed the [access permissions]({help_link}) for this channel from **{old_policy}** to **{new_policy}**."
 
 #: zerver/actions/streams.py:1355
 #, python-brace-format
@@ -4169,12 +4169,12 @@ msgid ""
 "\n"
 "* **Old permissions**: {old_policy}.\n"
 "* **New permissions**: {new_policy}.\n"
-msgstr ""
+msgstr "{user} changed the [posting permissions]({help_link}) for this channel:\n\n* **Old permissions**: {old_policy}.\n* **New permissions**: {new_policy}.\n"
 
 #: zerver/actions/streams.py:1472
 #, python-brace-format
 msgid "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
-msgstr ""
+msgstr "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
 
 #: zerver/actions/streams.py:1488 zerver/actions/streams.py:1490
 #: zerver/views/streams.py:792
@@ -4184,7 +4184,7 @@ msgstr "No description."
 #: zerver/actions/streams.py:1493
 #, python-brace-format
 msgid "{user} changed the description for this channel."
-msgstr ""
+msgstr "{user} changed the description for this channel."
 
 #: zerver/actions/streams.py:1495
 msgid "Old description"
@@ -4202,18 +4202,18 @@ msgstr "Forever"
 #: zerver/actions/streams.py:1575 zerver/actions/streams.py:1576
 #, python-brace-format
 msgid "{number_of_days} days"
-msgstr ""
+msgstr "{number_of_days} days"
 
 #: zerver/actions/streams.py:1568 zerver/actions/streams.py:1578
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
-msgstr ""
+msgstr "Messages in this channel will now be automatically deleted {number_of_days} days after they are sent."
 
 #: zerver/actions/streams.py:1573
 msgid "Messages in this channel will now be retained forever."
-msgstr ""
+msgstr "Messages in this channel will now be retained forever."
 
 #: zerver/actions/streams.py:1581
 #, python-brace-format
@@ -4223,7 +4223,7 @@ msgid ""
 "* **New retention period**: {new_retention_period}\n"
 "\n"
 "{summary_line}"
-msgstr ""
+msgstr "{user} has changed the [message retention period]({help_link}) for this channel:\n* **Old retention period**: {old_retention_period}\n* **New retention period**: {new_retention_period}\n\n{summary_line}"
 
 #: zerver/actions/submessage.py:36
 msgid "You cannot attach a submessage to this message."
@@ -4396,11 +4396,11 @@ msgstr "Missing topic"
 
 #: zerver/lib/addressee.py:111
 msgid "Cannot send to multiple channels"
-msgstr ""
+msgstr "Cannot send to multiple channels"
 
 #: zerver/lib/addressee.py:123
 msgid "Missing channel"
-msgstr ""
+msgstr "Missing channel"
 
 #: zerver/lib/addressee.py:134
 msgid "Message must have recipients"
@@ -4466,7 +4466,7 @@ msgstr "Topic must not contain null bytes"
 
 #: zerver/lib/drafts.py:63
 msgid "Must specify exactly 1 channel ID for channel messages"
-msgstr ""
+msgstr "Must specify exactly 1 channel ID for channel messages"
 
 #: zerver/lib/drafts.py:93
 msgid "User has disabled synchronizing drafts."
@@ -4481,7 +4481,7 @@ msgstr "Draft does not exist"
 msgid ""
 "Error sending message to channel {channel_name} via message notification email reply:\n"
 "{error_message}"
-msgstr ""
+msgstr "Error sending message to channel {channel_name} via message notification email reply:\n{error_message}"
 
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
 msgid "Open Zulip to see the spoiler content"
@@ -4579,17 +4579,17 @@ msgstr "Not logged in: API authentication or user session required"
 #: zerver/lib/exceptions.py:177
 #, python-brace-format
 msgid "Channel '{stream}' does not exist"
-msgstr ""
+msgstr "Channel '{stream}' does not exist"
 
 #: zerver/lib/exceptions.py:190
 #, python-brace-format
 msgid "Channel with ID '{stream_id}' does not exist"
-msgstr ""
+msgstr "Channel with ID '{stream_id}' does not exist"
 
 #: zerver/lib/exceptions.py:202
 #, python-brace-format
 msgid "Unsupported parameter combination: {parameters}"
-msgstr ""
+msgstr "Unsupported parameter combination: {parameters}"
 
 #: zerver/lib/exceptions.py:211
 msgid "organization owner"
@@ -4718,7 +4718,7 @@ msgstr "Organisation not registered"
 #: zerver/lib/exceptions.py:646
 msgid ""
 "You do not have permission to use channel wildcard mentions in this channel."
-msgstr ""
+msgstr "You do not have permission to use channel wildcard mentions in this channel."
 
 #: zerver/lib/exceptions.py:658
 msgid ""
@@ -4743,13 +4743,13 @@ msgstr "Invalid external account type"
 
 #: zerver/lib/hotspots.py:34
 msgid "Catch up on a channel"
-msgstr ""
+msgstr "Catch up on a channel"
 
 #: zerver/lib/hotspots.py:36
 msgid ""
 "Messages sent to a channel are seen by everyone subscribed to that channel. "
 "Try clicking on one of the channel links below."
-msgstr ""
+msgstr "Messages sent to a channel are seen by everyone subscribed to that channel. Try clicking on one of the channel links below."
 
 #: zerver/lib/hotspots.py:42
 msgid "Topics"
@@ -4946,12 +4946,12 @@ msgstr "Go to [Preferences](#settings/preferences) to [switch between the light 
 #: zerver/lib/onboarding.py:175
 #, python-brace-format
 msgid "In Zulip, channels [determine who gets a message]({help_link})."
-msgstr ""
+msgstr "In Zulip, channels [determine who gets a message]({help_link})."
 
 #: zerver/lib/onboarding.py:179
 #, python-brace-format
 msgid "[Browse and subscribe to channels]({settings_link})."
-msgstr ""
+msgstr "[Browse and subscribe to channels]({settings_link})."
 
 #: zerver/lib/onboarding.py:188
 msgid ""
@@ -5006,25 +5006,25 @@ msgstr "I’m sorry, I did not understand your message. Please try one of the fo
 msgid ""
 "This is a private channel, as indicated by the lock icon next to the channel"
 " name."
-msgstr ""
+msgstr "This is a private channel, as indicated by the lock icon next to the channel name."
 
 #: zerver/lib/onboarding.py:274
 msgid "Private channels are only visible to channel members."
-msgstr ""
+msgstr "Private channels are only visible to channel members."
 
 #: zerver/lib/onboarding.py:278
 #, python-brace-format
 msgid ""
 "To manage this channel, go to [Channel settings]({channel_settings_url}) and"
 " click on `{initial_private_channel_name}`."
-msgstr ""
+msgstr "To manage this channel, go to [Channel settings]({channel_settings_url}) and click on `{initial_private_channel_name}`."
 
 #: zerver/lib/onboarding.py:288
 #, python-brace-format
 msgid ""
 "This is a message on channel #**{default_notification_channel_name}** with "
 "the topic `topic demonstration`."
-msgstr ""
+msgstr "This is a message on channel #**{default_notification_channel_name}** with the topic `topic demonstration`."
 
 #: zerver/lib/onboarding.py:294
 msgid "Topics are a lightweight tool to keep conversations organized."
@@ -5035,14 +5035,14 @@ msgstr "Topics are a lightweight tool to keep conversations organised."
 msgid ""
 "You can learn more about topics at [Channels and "
 "topics]({about_topics_help_url})."
-msgstr ""
+msgstr "You can learn more about topics at [Channels and topics]({about_topics_help_url})."
 
 #: zerver/lib/onboarding.py:303
 #, python-brace-format
 msgid ""
 "This is a message on channel #**{default_notification_channel_name}** with "
 "the topic `swimming turtles`."
-msgstr ""
+msgstr "This is a message on channel #**{default_notification_channel_name}** with the topic `swimming turtles`."
 
 #: zerver/lib/onboarding.py:312
 #, python-brace-format
@@ -5063,7 +5063,7 @@ msgid ""
 "If your organization does not want to receive these announcements,\n"
 "they can be disabled. [Learn more]({zulip_update_announcements_help_url}).\n"
 "            "
-msgstr ""
+msgstr "\nWelcome! To help you learn about new features and configuration options,\nthis topic will receive messages about important changes in Zulip.\n\nYou can read these update messages whenever it's convenient, or\n[mute]({mute_topic_help_url}) this topic if you are not interested.\nIf your organisation does not want to receive these announcements,\nthey can be disabled. [Learn more]({zulip_update_announcements_help_url}).\n            "
 
 #: zerver/lib/outgoing_webhook.py:318
 msgid "Invalid JSON in response"
@@ -5125,7 +5125,7 @@ msgstr "Device not recognized by the push bouncer"
 
 #: zerver/lib/recipient_parsing.py:14
 msgid "Invalid data type for channel ID"
-msgstr ""
+msgstr "Invalid data type for channel ID"
 
 #: zerver/lib/recipient_parsing.py:29
 msgid "Recipient list may only contain user IDs"
@@ -5189,72 +5189,72 @@ msgstr "{service_name} account security"
 
 #: zerver/lib/streams.py:244
 msgid "Only organization administrators can send to this channel."
-msgstr ""
+msgstr "Only organisation administrators can send to this channel."
 
 #: zerver/lib/streams.py:250
 msgid ""
 "Only organization administrators and moderators can send to this channel."
-msgstr ""
+msgstr "Only organisation administrators and moderators can send to this channel."
 
 #: zerver/lib/streams.py:253
 msgid "Guests cannot send to this channel."
-msgstr ""
+msgstr "Guests cannot send to this channel."
 
 #: zerver/lib/streams.py:258
 msgid "New members cannot send to this channel."
-msgstr ""
+msgstr "New members cannot send to this channel."
 
 #: zerver/lib/streams.py:318
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
-msgstr ""
+msgstr "Not authorised to send to channel '{channel_name}'"
 
 #: zerver/lib/streams.py:336 zerver/lib/streams.py:355
 #: zerver/lib/streams.py:438 zerver/lib/streams.py:504
 #: zerver/views/streams.py:383 zerver/views/user_topics.py:102
 msgid "Invalid channel ID"
-msgstr ""
+msgstr "Invalid channel ID"
 
 #: zerver/lib/streams.py:480
 msgid "Channel name already in use."
-msgstr ""
+msgstr "Channel name already in use."
 
 #: zerver/lib/streams.py:488 zerver/lib/streams.py:608
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
-msgstr ""
+msgstr "Invalid channel name '{channel_name}'"
 
 #: zerver/lib/streams.py:753 zerver/views/streams.py:299
 msgid "A default channel cannot be private."
-msgstr ""
+msgstr "A default channel cannot be private."
 
 #: zerver/lib/streams.py:757
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
-msgstr ""
+msgstr "Channel(s) ({channel_names}) do not exist"
 
 #: zerver/lib/streams.py:766 zerver/views/streams.py:312
 msgid "Web-public channels are not enabled."
-msgstr ""
+msgstr "Web-public channels are not enabled."
 
 #: zerver/lib/streams.py:796
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
-msgstr ""
+msgstr "Default channel group with id '{group_id}' does not exist."
 
 #: zerver/lib/string_validation.py:41
 msgid "Channel name can't be empty."
-msgstr ""
+msgstr "Channel name can't be empty."
 
 #: zerver/lib/string_validation.py:45
 #, python-brace-format
 msgid "Channel name too long (limit: {max_length} characters)."
-msgstr ""
+msgstr "Channel name too long (limit: {max_length} characters)."
 
 #: zerver/lib/string_validation.py:53
 #, python-brace-format
 msgid "Invalid character in channel name, at position {position}."
-msgstr ""
+msgstr "Invalid character in channel name, at position {position}."
 
 #: zerver/lib/string_validation.py:61
 msgid "Topic can't be empty!"
@@ -5267,11 +5267,11 @@ msgstr "Invalid character in topic, at position {position}!"
 
 #: zerver/lib/subscription_info.py:332
 msgid "Subscriber data is not available for this channel"
-msgstr ""
+msgstr "Subscriber data is not available for this channel"
 
 #: zerver/lib/subscription_info.py:339
 msgid "Unable to retrieve subscribers for private channel"
-msgstr ""
+msgstr "Unable to retrieve subscribers for private channel"
 
 #: zerver/lib/typed_endpoint.py:314 zerver/lib/typed_endpoint.py:315
 #: zerver/lib/validator.py:202
@@ -5354,12 +5354,12 @@ msgstr "{var_name} is not a string"
 #: zerver/lib/typed_endpoint.py:334
 #, python-brace-format
 msgid "{var_name} has invalid format"
-msgstr ""
+msgstr "{var_name} has invalid format"
 
 #: zerver/lib/typed_endpoint.py:335
 #, python-brace-format
 msgid "{var_name} is not length {length}"
-msgstr ""
+msgstr "{var_name} is not length {length}"
 
 #: zerver/lib/typed_endpoint.py:369
 #, python-brace-format
@@ -5464,7 +5464,7 @@ msgstr "Invalid format!"
 
 #: zerver/lib/users.py:88
 msgid "Unique names required in this organization."
-msgstr ""
+msgstr "Unique names required in this organisation."
 
 #: zerver/lib/users.py:110
 msgid "Name is already in use!"
@@ -5729,7 +5729,7 @@ msgstr "\"code\" should be the only variable present in the URL template"
 
 #: zerver/models/realms.py:338
 msgid "channel events"
-msgstr ""
+msgstr "channel events"
 
 #: zerver/models/realms.py:354
 msgid "Zulip updates"
@@ -5789,7 +5789,7 @@ msgstr "Public, protected history"
 
 #: zerver/models/streams.py:93
 msgid "All channel members can post"
-msgstr ""
+msgstr "All channel members can post"
 
 #: zerver/models/streams.py:94
 msgid "Only organization administrators can post"
@@ -5993,11 +5993,11 @@ msgstr "You must specify at least one email address."
 #: zerver/views/invite.py:87 zerver/views/invite.py:224
 #, python-brace-format
 msgid "Invalid channel ID {channel_id}. No invites were sent."
-msgstr ""
+msgstr "Invalid channel ID {channel_id}. No invites were sent."
 
 #: zerver/views/invite.py:94 zerver/views/invite.py:231
 msgid "You do not have permission to subscribe other users to channels."
-msgstr ""
+msgstr "You do not have permission to subscribe other users to channels."
 
 #: zerver/views/invite.py:131 zerver/views/invite.py:134
 #: zerver/views/invite.py:151 zerver/views/invite.py:154
@@ -6217,7 +6217,7 @@ msgstr "Recipient required when updating type of scheduled message."
 
 #: zerver/views/scheduled_messages.py:76
 msgid "Topic required when updating scheduled message type to channel."
-msgstr ""
+msgstr "Topic required when updating scheduled message type to channel."
 
 #: zerver/views/sentry.py:39
 msgid "Invalid request format"
@@ -6229,7 +6229,7 @@ msgstr "Invalid DSN"
 
 #: zerver/views/streams.py:133
 msgid "Private channels cannot be made default."
-msgstr ""
+msgstr "Private channels cannot be made default."
 
 #: zerver/views/streams.py:165
 msgid "You must pass \"new_description\" or \"new_group_name\"."
@@ -6241,7 +6241,7 @@ msgstr "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 
 #: zerver/views/streams.py:354
 msgid "Channel already has that name."
-msgstr ""
+msgstr "Channel already has that name."
 
 #: zerver/views/streams.py:433 zerver/views/user_groups.py:170
 #: zerver/views/user_groups.py:369
@@ -6251,40 +6251,40 @@ msgstr "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 #: zerver/views/streams.py:517
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the channel {channel_name}."
-msgstr ""
+msgstr "{user_full_name} subscribed you to the channel {channel_name}."
 
 #: zerver/views/streams.py:523
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
-msgstr ""
+msgstr "{user_full_name} subscribed you to the following channels:"
 
 #: zerver/views/streams.py:639
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
-msgstr ""
+msgstr "Unable to access channel ({channel_name})."
 
 #: zerver/views/streams.py:652
 msgid "You can only invite other Zephyr mirroring users to private channels."
-msgstr ""
+msgstr "You can only invite other Zephyr mirroring users to private channels."
 
 #: zerver/views/streams.py:764
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
-msgstr ""
+msgstr "{user_name} created the following channels: {new_channels}."
 
 #: zerver/views/streams.py:766
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
-msgstr ""
+msgstr "{user_name} created a new channel {new_channels}."
 
 #: zerver/views/streams.py:767
 msgid "new channels"
-msgstr ""
+msgstr "new channels"
 
 #: zerver/views/streams.py:801
 #, python-brace-format
 msgid "**{policy}** channel created by {user_name}. **Description:**"
-msgstr ""
+msgstr "**{policy}** channel created by {user_name}. **Description:**"
 
 #: zerver/views/streams.py:1013
 #, python-brace-format
@@ -6294,7 +6294,7 @@ msgstr "Unknown subscription property: {property}"
 #: zerver/views/streams.py:1019
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
-msgstr ""
+msgstr "Not subscribed to channel ID {channel_id}"
 
 #: zerver/views/submessage.py:38
 msgid "Invalid json for submessage"
@@ -6306,7 +6306,7 @@ msgstr "<p>You are not authorised to view this file.</p>"
 
 #: zerver/views/typing.py:47
 msgid "User has disabled typing notifications for channel messages"
-msgstr ""
+msgstr "User has disabled typing notifications for channel messages"
 
 #: zerver/views/typing.py:56
 msgid "Missing 'to' argument"

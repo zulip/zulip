@@ -3066,7 +3066,7 @@ msgstr "Образование"
 
 #: templates/zerver/footer.html:27
 msgid "Research"
-msgstr ""
+msgstr "Проучвания"
 
 #: templates/zerver/footer.html:28
 msgid "Events & conferences"
@@ -5088,7 +5088,7 @@ msgstr "Този тоукън не съществува"
 
 #: zerver/lib/push_notifications.py:926
 msgid "New message"
-msgstr ""
+msgstr "Ново съобщение"
 
 #: zerver/lib/push_notifications.py:1036
 #, python-brace-format
@@ -5673,7 +5673,7 @@ msgstr "Външен акаунт"
 
 #: zerver/models/custom_profile_fields.py:121
 msgid "Pronouns"
-msgstr ""
+msgstr "Местоимения"
 
 #: zerver/models/linkifiers.py:32 zerver/models/linkifiers.py:35
 #, python-brace-format
@@ -5776,15 +5776,15 @@ msgstr "Публичен"
 
 #: zerver/models/streams.py:59
 msgid "Private, shared history"
-msgstr ""
+msgstr "Лична, споделена история"
 
 #: zerver/models/streams.py:65
 msgid "Private, protected history"
-msgstr ""
+msgstr "Лична, защитена история"
 
 #: zerver/models/streams.py:73
 msgid "Public, protected history"
-msgstr ""
+msgstr "Публична, защитена история"
 
 #: zerver/models/streams.py:93
 msgid "All channel members can post"
