@@ -12355,7 +12355,7 @@ paths:
 
                     **Changes**: New in Zulip 9.0 (feature level 261). Previous versions
                     of Zulip behaved as though this parameter was always `false`; clients
-                    needed to include the organization's default streams in the
+                    needed to include the organization's default channels in the
                     `stream_ids` parameter for a newly created user to be automatically
                     subscribed to them.
 
@@ -12419,9 +12419,9 @@ paths:
                             "result": "error",
                           }
                         description: |
-                          An example JSON error response for when any of the specified streams
+                          An example JSON error response for when any of the specified channels
                           does not exist or the user does not have permission to access one of
-                          the targeted streams.
+                          the targeted channels.
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -12432,7 +12432,7 @@ paths:
                           }
                         description: |
                           An example JSON error response for when the user doesn't have permission
-                          to subscribe other users to streams and `stream_ids` is not empty.
+                          to subscribe other users to channels and `stream_ids` is not empty.
   /invites/{invite_id}:
     delete:
       operationId: revoke-email-invite
