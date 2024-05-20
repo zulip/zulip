@@ -456,7 +456,6 @@ export function revive_current_focus(): boolean {
 
 export function show_loading_indicator(): void {
     loading.make_indicator($("#recent_view_loading_messages_indicator"));
-    $("#recent_view_table tbody").removeClass("required-text");
 }
 
 export function hide_loading_indicator(): void {
