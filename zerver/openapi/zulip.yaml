@@ -5096,7 +5096,7 @@ paths:
     get:
       operationId: get-stream-id
       summary: Get channel ID
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Get the unique ID of a given channel.
       parameters:
@@ -5995,7 +5995,7 @@ paths:
   /default_streams:
     post:
       operationId: add-default-stream
-      tags: ["streams"]
+      tags: ["channels"]
       summary: Add a default channel
       x-requires-administrator: true
       description: |
@@ -6047,7 +6047,7 @@ paths:
     delete:
       operationId: remove-default-stream
       summary: Remove a default channel
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Remove a channel from the set of [default channels][default-channels]
         for new users joining the organization.
@@ -9076,7 +9076,7 @@ paths:
     get:
       operationId: get-stream-topics
       summary: Get topics in a channel
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Get all topics the user has access to in a specific channel.
 
@@ -9142,7 +9142,7 @@ paths:
     get:
       operationId: get-subscriptions
       summary: Get subscribed channels
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Get all channels that the user is subscribed to.
       # operationId can be used to record which view function
@@ -9230,7 +9230,7 @@ paths:
     post:
       operationId: subscribe
       summary: Subscribe to a channel
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Subscribe one or more users to one or more channels.
 
@@ -9476,7 +9476,7 @@ paths:
     patch:
       operationId: update-subscriptions
       summary: Update subscriptions
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Update which channels you are subscribed to.
       requestBody:
@@ -9595,7 +9595,7 @@ paths:
     delete:
       operationId: unsubscribe
       summary: Unsubscribe from a channel
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Unsubscribe yourself or other users from one or more channels.
 
@@ -9721,7 +9721,7 @@ paths:
       deprecated: true
       operationId: mute-topic
       summary: Topic muting
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         [Mute or unmute a topic](/help/mute-a-topic) within a channel that
         the current user is subscribed to.
@@ -9846,7 +9846,7 @@ paths:
     post:
       operationId: update-user-topic
       summary: Update personal preferences for a topic
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         This endpoint is used to update the personal preferences for a topic,
         such as the topic's visibility policy, which is used to implement
@@ -10237,7 +10237,7 @@ paths:
     get:
       operationId: get-subscription-status
       summary: Get subscription status
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Check whether a user is subscribed to a channel.
 
@@ -11344,7 +11344,7 @@ paths:
     post:
       operationId: update-subscription-settings
       summary: Update subscription settings
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         This endpoint is used to update the user's personal settings for the
         channels they are subscribed to, including muting, color, pinning, and
@@ -17858,7 +17858,7 @@ paths:
     get:
       operationId: get-subscribers
       summary: Get the subscribers of a channel
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Get all users subscribed to a channel.
       parameters:
@@ -17899,7 +17899,7 @@ paths:
     get:
       operationId: get-streams
       summary: Get all channels
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Get all channels that the user [has access to](/help/channel-permissions).
       x-curl-examples-parameters:
@@ -18111,7 +18111,7 @@ paths:
     get:
       operationId: get-stream-by-id
       summary: Get a channel by ID
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Fetch details for the channel with the ID `stream_id`.
 
@@ -18168,7 +18168,7 @@ paths:
     delete:
       operationId: archive-stream
       summary: Archive a channel
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         [Archive the channel](/help/archive-a-channel) with the ID `stream_id`.
       x-requires-administrator: true
@@ -18189,7 +18189,7 @@ paths:
     patch:
       operationId: update-stream
       summary: Update a channel
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Configure the channel with the ID `stream_id`. This endpoint supports
         an organization administrator editing any property of a channel,
@@ -18352,7 +18352,7 @@ paths:
     get:
       operationId: get-stream-email-address
       summary: Get the email address of a channel
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Get email address of a channel.
 
@@ -18396,7 +18396,7 @@ paths:
     post:
       operationId: delete-topic
       summary: Delete a topic
-      tags: ["streams"]
+      tags: ["channels"]
       description: |
         Delete all messages in a topic.
 
@@ -19368,7 +19368,7 @@ paths:
 
   /calls/bigbluebutton/create:
     get:
-      tags: ["streams"]
+      tags: ["channels"]
       operationId: create-big-blue-button-video-call
       summary: Create BigBlueButton video call
       description: |
