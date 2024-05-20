@@ -12,9 +12,9 @@ because it enables:
   documentation](https://zulip.com/integrations/doc/email) for
   details.
 
-Once this integration is configured, each stream will have a special
-email address displayed on the stream settings page. Emails sent to
-that address will be delivered into the stream.
+Once this integration is configured, each channel will have a special
+email address displayed on the channel settings page. Emails sent to
+that address will be delivered into the channel.
 
 There are two ways to configure Zulip's email gateway:
 

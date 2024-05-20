@@ -99,26 +99,26 @@ strength allowed is controlled by two settings in
   parser which escapes content to protect against cross-site scripting
   attacks.
 
-- Zulip supports both public streams and private streams.
+- Zulip supports both public channels and private channels.
 
-  - Any non-guest user can join any public stream in the organization,
-    and can view the complete message history of any public stream
-    without joining the stream. Guests can only access streams that
+  - Any non-guest user can join any public channel in the organization,
+    and can view the complete message history of any public channel
+    without joining the channel. Guests can only access channels that
     another user adds them to.
 
   - Organization owners and administrators can see and modify most
-    aspects of a private stream, including the membership and
+    aspects of a private channel, including the membership and
     estimated traffic. Owners and administrators generally cannot see
-    messages sent to private streams or do things that would
+    messages sent to private channels or do things that would
     indirectly give them access to those messages, like adding members
-    or changing the stream privacy settings.
+    or changing the channel privacy settings.
 
-  - Non-admins cannot easily see which private streams exist, or interact
-    with them in any way until they are added. Given a stream name, they can
-    figure out whether a stream with that name exists, but cannot see any
-    other details about the stream.
+  - Non-admins cannot easily see which private channels exist, or interact
+    with them in any way until they are added. Given a channel name, they can
+    figure out whether a channel with that name exists, but cannot see any
+    other details about the channel.
 
-  - See [Stream permissions](https://zulip.com/help/stream-permissions) for more details.
+  - See [Channel permissions](https://zulip.com/help/stream-permissions) for more details.
 
 - Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide
@@ -143,21 +143,21 @@ strength allowed is controlled by two settings in
   and bots.
 
 - Owners and administrators have the ability to deactivate and
-  reactivate other human and bot users, archive streams, add/remove
+  reactivate other human and bot users, archive channels, add/remove
   administrator privileges, as well as change configuration for the
   organization.
 
   Being an organization administrator does not generally provide the ability
   to read other users' direct messages or messages sent to private
-  streams to which the administrator is not subscribed. There are two
+  channels to which the administrator is not subscribed. There are two
   exceptions:
 
   - Organization owners may get access to direct messages via some types of
     [data export](https://zulip.com/help/export-your-organization).
 
   - Administrators can change the ownership of a bot. If a bot is subscribed
-    to a private stream, then an administrator can indirectly get access to
-    stream messages by taking control of the bot, though the access will be
+    to a private channel, then an administrator can indirectly get access to
+    channel messages by taking control of the bot, though the access will be
     limited to what the bot can do. (E.g. incoming webhook bots cannot read
     messages.)
 
@@ -181,7 +181,7 @@ strength allowed is controlled by two settings in
   you should rotate the user's Zulip API key.
 
 - Guest users are like Members, but they do not have automatic access
-  to public streams.
+  to public channels.
 
 - Zulip supports several kinds of bots with different capabilities.
 
@@ -192,7 +192,7 @@ strength allowed is controlled by two settings in
     notifications, or create other bots).
   - Bots with the `can_forge_sender` permission can send messages that appear to have been sent by
     another user. They also have the ability to see the names of all
-    streams, including private streams. This is important for implementing
+    channels, including private channels. This is important for implementing
     integrations like the Jabber, IRC, and Zephyr mirrors.
 
     These bots cannot be created by Zulip users, including

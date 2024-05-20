@@ -8,7 +8,7 @@ provide free, interactive support for the vast majority of questions about
 running a Zulip server.
 
 To report a problem or ask a question, please start a new topic in the
-[#production help][production-help] stream in the [Zulip development community
+[#production help][production-help] channel in the [Zulip development community
 ][chat-zulip-org]:
 
 - Describe what you are trying to do and any problems you've encountered.

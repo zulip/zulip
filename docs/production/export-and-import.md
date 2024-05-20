@@ -59,7 +59,7 @@ service (or back):
 - Zulip also has an [HTML archive
   tool](https://github.com/zulip/zulip-archive), which is primarily
   intended for public archives, but can also be useful to
-  inexpensively preserve public stream conversations when
+  inexpensively preserve public channel conversations when
   decommissioning a Zulip organization.
 
 - It's possible to set up [PostgreSQL streaming
@@ -264,7 +264,7 @@ a few downsides in comparison:
 - All users will have their passwords randomized and be logged out of
   their accounts, both on web and mobile clients.
 - All bots and integrations will need to be updated with new API keys.
-- Users, streams, and messages are usually renumbered, which will
+- Users, channels, and messages are usually renumbered, which will
   break most links from external programs referencing these objects.
 
 ### Consider upgrading

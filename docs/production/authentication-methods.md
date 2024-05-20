@@ -153,7 +153,7 @@ login form.
 You may also want to configure Zulip's settings for [inviting new
 users](https://zulip.com/help/invite-new-users). If LDAP is the
 only enabled authentication method, the main use case for Zulip's
-invitation feature is selecting the initial streams for invited users
+invitation feature is selecting the initial channels for invited users
 (invited users will still need to use their LDAP password to create an
 account).
 
