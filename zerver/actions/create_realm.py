@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import internal_send_stream_message
@@ -281,24 +282,26 @@ def do_create_realm(
         maybe_enqueue_audit_log_upload(realm)
 
     # Create channels once Realm object has been saved
-    zulip_discussion_channel = ensure_stream(
-        realm,
-        str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-        stream_description=_("Questions and discussion about using Zulip."),
-        acting_user=None,
-    )
-    zulip_sandbox_channel = ensure_stream(
-        realm,
-        str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
-        stream_description=_("Experiment with Zulip here. :test_tube:"),
-        acting_user=None,
-    )
-    new_stream_announcements_stream = ensure_stream(
-        realm,
-        str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
-        stream_description=_("For team-wide conversations"),
-        acting_user=None,
-    )
+    with override_language(realm.default_language):
+        zulip_discussion_channel = ensure_stream(
+            realm,
+            str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            stream_description=_("Questions and discussion about using Zulip."),
+            acting_user=None,
+        )
+        zulip_sandbox_channel = ensure_stream(
+            realm,
+            str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            stream_description=_("Experiment with Zulip here. :test_tube:"),
+            acting_user=None,
+        )
+        new_stream_announcements_stream = ensure_stream(
+            realm,
+            str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
+            stream_description=_("For team-wide conversations"),
+            acting_user=None,
+        )
+
     # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
     realm.new_stream_announcements_stream = new_stream_announcements_stream
     realm.zulip_update_announcements_stream = new_stream_announcements_stream
