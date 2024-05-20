@@ -89,10 +89,10 @@ Steps and best practices for starting a conversation:
 1. [**Join** the Zulip development
    community](https://zulip.com/development-community/) if you don't already
    have an account.
-2. Pick an **appropriate stream** to report your issue:
+2. Pick an **appropriate channel** to report your issue:
    - [#issues](https://chat.zulip.org/#narrow/stream/9-issues) for issues with
-     the Zulip web app or server. Use this stream if you aren't sure which
-     stream is most appropriate.
+     the Zulip web app or server. Use this channel if you aren't sure which
+     channel is most appropriate.
    - [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) for issues with
      the mobile apps.
    - [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) for issues
@@ -108,7 +108,7 @@ Steps and best practices for starting a conversation:
    discussing your issue, using a brief summary of the issue as the name of the topic.
 
 If you aren't sure where to post or how to name your topic, don't worry!
-Moderators can always rename the topic, or move the thread to another stream.
+Moderators can always rename the topic, or move the thread to another channel.
 
 Once a possible bug is reported, members of the development community will jump
 in to discuss whether the report constitutes a bug, how to reproduce it, and how
@@ -133,7 +133,7 @@ renamed or resolved.
   impact, it is best to both file a GitHub issue and immediately start a
   discussion in the development community. This helps us address important
   issues as quickly as possible.
-- For minor bugs (e.g., a visual glitch in a settings menu for very long stream
+- For minor bugs (e.g., a visual glitch in a settings menu for very long channel
   names), filing a GitHub issue is sufficient.
 - If a potential bug discussed in the development community is confirmed to be
   an actual, reproducible bug, anyone can help out by filing a GitHub issue to
