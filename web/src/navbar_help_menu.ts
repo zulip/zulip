@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_navbar_help_menu from "../templates/popovers/navbar_help_menu_popover.hbs";
+import render_navbar_help_menu from "../templates/popovers/navbar/navbar_help_menu_popover.hbs";
 
 import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
