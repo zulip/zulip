@@ -162,6 +162,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
+import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
 import {get_string_diff} from "./util";
@@ -379,8 +380,9 @@ export class Typeahead<ItemType extends string | object> {
         }
         this.mouse_moved_since_typeahead = false;
 
+        const input_element = this.input_element;
         if (!this.non_tippy_parent_element) {
-            this.instance = tippy.default(this.input_element.$element[0]!, {
+            this.instance = tippy.default(input_element.$element[0]!, {
                 // Lets typeahead take the width needed to fit the content
                 // and wraps it if it overflows the visible container.
                 maxWidth: "none",
@@ -417,7 +419,32 @@ export class Typeahead<ItemType extends string | object> {
                 // We expect the typeahead creator to handle when to hide / show the typeahead.
                 trigger: "manual",
                 arrow: false,
-                offset: [0, 2],
+                offset({placement, reference}) {
+                    // Gap separates the typeahead and caret by 2px vertically.
+                    const gap = 2;
+
+                    if (input_element.type === "textarea") {
+                        const caret = getCaretCoordinates(
+                            input_element.$element[0]!,
+                            input_element.$element[0]!.selectionStart,
+                        );
+                        // Used to consider the scroll height of textbox in the vertical offset.
+                        const scrollTop = input_element.$element.scrollTop() ?? 0;
+
+                        if (placement === "top-start") {
+                            return [caret.left, -caret.top + scrollTop + gap];
+                        }
+
+                        // In bottom-start, the offset is calculated from bottom of the popper reference.
+                        if (placement === "bottom-start") {
+                            // Height of the reference is the input_element height.
+                            const field_height = reference.height;
+                            const distance = field_height - caret.top + scrollTop - caret.height;
+                            return [caret.left, -distance + gap];
+                        }
+                    }
+                    return [0, gap];
+                },
                 // We have event handlers to hide the typeahead, so we
                 // don't want tippy to hide it for us.
                 hideOnClick: false,
