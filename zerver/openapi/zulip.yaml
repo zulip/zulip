@@ -18411,7 +18411,7 @@ paths:
         response will return `"complete": true`.
 
         **Changes**: Before Zulip 9.0 (feature level 256), the server never sent
-        events updating the `first_message_id` for a stream when the oldest
+        events updating the `first_message_id` for a channel when the oldest
         message that had been sent to it changed.
 
         Before Zulip 8.0 (feature level 211), if the server's
