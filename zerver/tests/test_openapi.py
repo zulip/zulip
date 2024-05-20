@@ -1010,7 +1010,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "server_and_organizations",
             "authentication",
             "real_time_events",
-            "streams",
+            "channels",
             "messages",
             "drafts",
             "webhooks",
