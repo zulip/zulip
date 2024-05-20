@@ -10933,7 +10933,7 @@ paths:
                   example: "google"
                 demote_inactive_streams:
                   description: |
-                    Whether to [demote inactive streams](/help/manage-inactive-channels) in the left sidebar.
+                    Whether to [demote inactive channels](/help/manage-inactive-channels) in the left sidebar.
 
                     - 1 - Automatic
                     - 2 - Always
@@ -10961,13 +10961,13 @@ paths:
                   example: 1
                 web_stream_unreads_count_display_policy:
                   description: |
-                    Configuration for which streams should be displayed with a numeric unread count in the left sidebar.
-                    Streams that do not have an unread count will have a simple dot indicator for whether there are any
+                    Configuration for which channels should be displayed with a numeric unread count in the left sidebar.
+                    Channels that do not have an unread count will have a simple dot indicator for whether there are any
                     unread messages.
 
-                    - 1 - All streams
-                    - 2 - Unmuted streams and topics
-                    - 3 - No streams
+                    - 1 - All channels
+                    - 2 - Unmuted channels and topics
+                    - 3 - No channels
 
                     **Changes**: New in Zulip 8.0 (feature level 210).
                   type: integer
@@ -10978,22 +10978,22 @@ paths:
                   example: 2
                 enable_stream_desktop_notifications:
                   description: |
-                    Enable visual desktop notifications for stream messages.
+                    Enable visual desktop notifications for channel messages.
                   type: boolean
                   example: true
                 enable_stream_email_notifications:
                   description: |
-                    Enable email notifications for stream messages.
+                    Enable email notifications for channel messages.
                   type: boolean
                   example: true
                 enable_stream_push_notifications:
                   description: |
-                    Enable mobile notifications for stream messages.
+                    Enable mobile notifications for channel messages.
                   type: boolean
                   example: true
                 enable_stream_audible_notifications:
                   description: |
-                    Enable audible desktop notifications for stream messages.
+                    Enable audible desktop notifications for channel messages.
                   type: boolean
                   example: true
                 notification_sound:
@@ -11148,7 +11148,7 @@ paths:
                   example: 1
                 automatically_unmute_topics_in_muted_streams_policy:
                   description: |
-                    Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+                    Which [topics to unmute automatically in muted channels](/help/mute-a-topic).
 
                     - 1 - Topics the user participates in
                     - 2 - Topics the user sends a message to
@@ -11202,7 +11202,7 @@ paths:
                 send_stream_typing_notifications:
                   description: |
                     Whether [typing notifications](/help/typing-notifications) be sent when composing
-                    stream messages.
+                    channel messages.
 
                     **Changes**: New in Zulip 5.0 (feature level 105).
                   type: boolean
