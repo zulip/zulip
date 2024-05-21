@@ -1,5 +1,12 @@
 <div class="current-plan-information">
-    <p class="support-section-header">📅 Current plan information:</p>
+    <p class="support-section-header">
+        {% if plan_data.stripe_customer_url %}
+        <a target="_blank" rel="noopener noreferrer" href="{{ plan_data.stripe_customer_url }}"><i class="fa fa-credit-card"></i></a>
+        {% else %}
+        <i class="fa fa-credit-card"></i>
+        {% endif %}
+        Current plan information:
+    </p>
     {% if plan_data.warning %}
     <div class="current-plan-data-missing">
         <b>{{ plan_data.warning }}</b><br />

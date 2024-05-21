@@ -84,6 +84,7 @@ class PlanData:
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
     is_current_plan_billable: bool = False
+    stripe_customer_url: Optional[str] = None
     warning: Optional[str] = None
     annual_recurring_revenue: Optional[int] = None
     estimated_next_plan_revenue: Optional[int] = None
@@ -112,6 +113,10 @@ class RemoteSupportData:
 class CloudSupportData:
     plan_data: PlanData
     sponsorship_data: SponsorshipData
+
+
+def get_stripe_customer_url(stripe_id: str) -> str:
+    return f"https://dashboard.stripe.com/customers/{stripe_id}"  # nocoverage
 
 
 def get_realm_support_url(realm: Realm) -> str:
@@ -294,6 +299,12 @@ def get_plan_data_for_support_view(
         next_plan_data = get_next_plan_data(billing_session, customer, plan_data.current_plan)
         plan_data.next_plan = next_plan_data.plan
         plan_data.estimated_next_plan_revenue = next_plan_data.estimated_revenue
+
+    # If customer has a stripe ID, add link to stripe customer dashboard
+    if customer is not None and customer.stripe_customer_id is not None:
+        plan_data.stripe_customer_url = get_stripe_customer_url(
+            customer.stripe_customer_id
+        )  # nocoverage
 
     return plan_data
 
