@@ -997,13 +997,10 @@ export function populate_data_for_request(
     return data;
 }
 
-function switching_to_private(
-    properties_elements: HTMLElement[],
-    for_realm_default_settings: boolean,
-): boolean {
+function switching_to_private(properties_elements: HTMLElement[]): boolean {
     for (const elem of properties_elements) {
         const $elem = $(elem);
-        const property_name = extract_property_name($elem, for_realm_default_settings);
+        const property_name = extract_property_name($elem);
         if (property_name !== "stream_privacy") {
             continue;
         }
@@ -1041,7 +1038,7 @@ export function save_discard_widget_status_handler(
         button_state === "unsaved" &&
         !sub.invite_only &&
         !sub.subscribed &&
-        switching_to_private(properties_elements, for_realm_default_settings)
+        switching_to_private(properties_elements)
     ) {
         if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
             return;
