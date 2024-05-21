@@ -26,6 +26,8 @@ import * as util from "./util";
 // for more details on how this system is designed.
 
 export let old_unreads_missing = false;
+// Note this doesn't handle the case of `old_unreads_missing` because
+// it is simpler and we as a client are not expected to.
 export let first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
 
 export function clear_old_unreads_missing(): void {

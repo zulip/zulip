@@ -102,9 +102,15 @@ function create_and_update_message_list(filter, id_info, opts) {
     // we need to add a `is_equal` function to `Filter` to compare the filters.
     let msg_list;
     let restore_rendered_list = false;
+    const is_combined_feed_global_view = filter.is_in_home();
     for (const list of message_lists.all_rendered_message_lists()) {
-        if (filter.is_in_home() && list.preserve_rendered_state) {
-            assert(list.data.filter.is_in_home());
+        if (is_combined_feed_global_view && list.data.filter.is_in_home()) {
+            if (opts.then_select_id > 0 && !list.msg_id_in_fetched_range(opts.then_select_id)) {
+                // We don't have the target message in the current rendered list.
+                // Read MessageList.should_preserve_current_rendered_state for details.
+                break;
+            }
+
             msg_list = list;
             restore_rendered_list = true;
             break;
