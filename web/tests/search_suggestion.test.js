@@ -841,9 +841,7 @@ test("channel_completion", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("people_suggestions", ({override, mock_template}) => {
-    mock_template("search_description.hbs", true, (_data, html) => html);
-
+test("people_suggestions", ({override}) => {
     let query = "te";
 
     override(narrow_state, "stream_name", noop);
@@ -927,7 +925,7 @@ test("people_suggestions", ({override, mock_template}) => {
     assert.equal(is_person("dm-including:ted@zulip.com"), true);
 
     function has_image(q) {
-        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context.has_image;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context[0].has_image;
     }
     assert.equal(has_image("dm:bob@zulip.com"), true);
     assert.equal(has_image("sender:bob@zulip.com"), true);
@@ -943,8 +941,8 @@ test("people_suggestions", ({override, mock_template}) => {
     let expectedString = "<strong>Te</strong>d Smith";
 
     function get_full_name(q) {
-        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context.display_value
-            .string;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context[0]
+            .display_value.string;
     }
     assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
     assert.equal(get_full_name("dm:ted@zulip.com"), expectedString);
@@ -953,14 +951,14 @@ test("people_suggestions", ({override, mock_template}) => {
     expectedString = example_avatar_url + "?s=50";
 
     function get_avatar_url(q) {
-        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context.img_src;
+        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context[0].img_src;
     }
     assert.equal(get_avatar_url("dm:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("dm-including:bob@zulip.com"), expectedString);
 
     function get_should_add_guest_user_indicator(q) {
-        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context
+        return suggestions.lookup_table.get(q).suggestion_parts[0].user_pill_context[0]
             .should_add_guest_user_indicator;
     }
 
@@ -1005,6 +1003,16 @@ test("people_suggestions", ({override, mock_template}) => {
     expected = ["sender:ted@tulip.com+new"];
     suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, expected);
+
+    function get_user_display_value(q) {
+        return suggestions.lookup_table.get(q).suggestion_parts[1].user_pill_context[1]
+            .display_value;
+    }
+
+    query = "dm:ted@zulip.com dm:ted,ted,t";
+    expected = ", ted";
+    suggestions = get_suggestions(query);
+    assert.deepEqual(get_user_display_value("dm:ted@zulip.com dm:ted,ted,t"), expected);
 });
 
 test("operator_suggestions", ({override, mock_template}) => {

@@ -16,7 +16,7 @@ import * as typeahead_helper from "./typeahead_helper";
 
 type UserPillItem = {
     id: number;
-    display_value: Handlebars.SafeString;
+    display_value: Handlebars.SafeString | string;
     has_image: boolean;
     img_src: string;
     should_add_guest_user_indicator: boolean;
@@ -27,7 +27,7 @@ type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "opera
 export type SuggestionPart = {
     description_html: string;
     is_person?: boolean;
-    user_pill_context?: UserPillItem;
+    user_pill_context?: UserPillItem[];
 };
 
 export type Suggestion = {
@@ -90,7 +90,57 @@ function check_validity(
 }
 
 function get_suggestion_parts(terms: NarrowTerm[]): SuggestionPart[] {
-    return [{description_html: Filter.search_description_as_html(terms)}];
+    const person_operators = new Set(["dm", "sender", "dm-including", "pm-with"]);
+    const result: SuggestionPart[] = [];
+    let prefix_search_operators: NarrowTerm[] = [];
+
+    for (const term of terms) {
+        if (person_operators.has(term.operator)) {
+            const operands = term.operand.split(",");
+            const user_pill_contexts: UserPillItem[] = [];
+            for (const email of operands) {
+                const user = people.get_by_email(email);
+                if (user) {
+                    const person_highlighter = make_person_highlighter(user.full_name);
+                    user_pill_contexts.push(highlight_person(user, person_highlighter));
+                } else {
+                    let comma_prefix = "";
+                    const previous_item = user_pill_contexts.at(-1);
+                    if (previous_item && previous_item.id === -1) {
+                        comma_prefix = ", ";
+                    }
+                    user_pill_contexts.push({
+                        id: -1,
+                        display_value: comma_prefix + email,
+                        has_image: false,
+                        img_src: "",
+                        should_add_guest_user_indicator: false,
+                    });
+                }
+            }
+            if (prefix_search_operators.length > 0) {
+                result.push({
+                    description_html: Filter.search_description_as_html(prefix_search_operators),
+                });
+                prefix_search_operators = [];
+            }
+            const part = Filter.parts_for_describe([term]);
+            if ("prefix_for_operator" in part[0]) {
+                result.push({
+                    description_html: part[0].prefix_for_operator,
+                    is_person: true,
+                    user_pill_context: user_pill_contexts,
+                });
+            }
+        } else {
+            prefix_search_operators.push(term);
+        }
+    }
+    if (prefix_search_operators.length > 0) {
+        result.push({description_html: Filter.search_description_as_html(prefix_search_operators)});
+    }
+
+    return result;
 }
 
 function format_as_suggestion(terms: NarrowTerm[]): Suggestion {
@@ -228,13 +278,35 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         // Note that description_html won't contain the user's
         // identity; that instead will be rendered in the separate
         // user pill.
-        const description_html =
-            prefix + Handlebars.Utils.escapeExpression(" " + all_but_last_part + ",");
+        const description_html = prefix + Handlebars.Utils.escapeExpression(" ");
 
         let terms: NarrowTerm[] = [term];
         if (negated) {
             terms = [{operator: "is", operand: "dm"}, term];
         }
+        const user_pill_contexts: UserPillItem[] = [];
+        for (const user_email of all_but_last_part.split(",")) {
+            const user = people.get_by_email(user_email.trim());
+            if (user) {
+                const person_highlighter = make_person_highlighter(user.full_name);
+                user_pill_contexts.push(highlight_person(user, person_highlighter));
+            } else {
+                let comma_prefix = "";
+                const last_user_pill_context = user_pill_contexts.at(-1);
+                if (last_user_pill_context && last_user_pill_context.id === -1) {
+                    comma_prefix = ", ";
+                }
+                user_pill_contexts.push({
+                    id: -1,
+                    display_value: comma_prefix + user_email,
+                    has_image: false,
+                    img_src: "",
+                    should_add_guest_user_indicator: false,
+                });
+            }
+        }
+
+        user_pill_contexts.push(highlight_person(person, person_highlighter));
 
         return {
             search_string: Filter.unparse(terms),
@@ -242,7 +314,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
                 {
                     description_html,
                     is_person: true,
-                    user_pill_context: highlight_person(person, person_highlighter),
+                    user_pill_context: user_pill_contexts,
                 },
             ],
         };
@@ -355,7 +427,7 @@ function get_person_suggestions(
                 {
                     description_html: prefix,
                     is_person: true,
-                    user_pill_context: highlight_person(person, person_highlighter),
+                    user_pill_context: [highlight_person(person, person_highlighter)],
                 },
             ],
         };

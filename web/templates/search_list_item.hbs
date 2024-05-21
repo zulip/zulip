@@ -5,9 +5,15 @@
             {{{ this.description_html }}}
         </span>
         {{#if this.is_person}}
-            <span class="pill-container pill-container-btn">
-                {{> input_pill user_pill_context}}
-            </span>
+            {{#each this.user_pill_context}}
+                {{#if (eq this.id -1) }}
+                    <span>{{this.display_value}}</span>
+                {{else}}
+                    <span class="pill-container pill-container-btn">
+                        {{> input_pill this}}
+                    </span>
+                {{/if}}
+            {{/each}}
         {{/if}}
     {{/each}}
 </div>
