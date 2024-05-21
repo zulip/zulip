@@ -880,24 +880,6 @@ export function register_save_discard_widget_handlers(
         let data = {};
 
         switch (subsection) {
-            case "join_settings": {
-                const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
-                switch (org_join_restrictions) {
-                    case "only_selected_domain":
-                        data.emails_restricted_to_domains = true;
-                        data.disallow_disposable_email_addresses = false;
-                        break;
-                    case "no_disposable_email":
-                        data.emails_restricted_to_domains = false;
-                        data.disallow_disposable_email_addresses = true;
-                        break;
-                    case "no_restriction":
-                        data.disallow_disposable_email_addresses = false;
-                        data.emails_restricted_to_domains = false;
-                        break;
-                }
-                break;
-            }
             case "auth_settings":
                 data = {};
                 data.authentication_methods = JSON.stringify(
