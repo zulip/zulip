@@ -1003,6 +1003,10 @@ textarea.new_message_textarea,
     }
 
     .compose_control_menu_wrapper {
+        /* Since `compose_control_menu_wrapper` is the reference for the tippy popover, it is
+           important to set it's display correctly so that tippy knows when to hide / show popover
+           on window resize. */
+        display: none;
         opacity: 0.7;
         padding: 0;
         margin: 0;
@@ -1014,13 +1018,16 @@ textarea.new_message_textarea,
         .compose_control_menu {
             opacity: 1;
             display: none;
+        }
 
-            /* The media query below handles the hiding and showing of the
-            vdot menu icon, so that it is hidden when all compose buttons fit
-            in the main row below the compose box. So, this is the same as
-            the media query for .show_popover_buttons. */
+        /* The media query below handles the hiding and showing of the
+        vdot menu icon, so that it is hidden when all compose buttons fit
+        in the main row below the compose box. So, this is the same as
+        the media query for .show_popover_buttons. */
+        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+            display: block;
 
-            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+            .compose_control_menu {
                 display: flex;
             }
         }
