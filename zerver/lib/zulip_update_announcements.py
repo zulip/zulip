@@ -84,8 +84,8 @@ them. [Learn more]({typing_notifications_help_url}).
     ZulipUpdateAnnouncement(
         level=4,
         message="""
-- To simplify Zulip for new users, **Streams** have been renamed to
-**Channels**. The functionality remains exactly the same, and bots do not need
+- To simplify Zulip for new users, **Streams** have been renamed to **Channels**.
+The functionality remains exactly the same, and bots do not need
 to be updated. [Learn more]({introduction_to_channels_help_url}).
 
 - Topics and messages now load much faster when you open the web or desktop app.
