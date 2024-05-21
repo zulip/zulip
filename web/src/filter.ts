@@ -1266,4 +1266,8 @@ export class Filter {
             !this.has_operand("is", "starred")
         );
     }
+
+    is_stream_only_narrow(): boolean {
+        return this._terms.length === 1 && Filter.term_type(this._terms[0]) === "channel";
+    }
 }
