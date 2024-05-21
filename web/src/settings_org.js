@@ -880,11 +880,6 @@ export function register_save_discard_widget_handlers(
         let data = {};
 
         switch (subsection) {
-            case "notifications":
-                data.default_language = $(
-                    "#org-notifications .language_selection_widget .language_selection_button span",
-                ).attr("data-language-code");
-                break;
             case "join_settings": {
                 const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
                 switch (org_join_restrictions) {
