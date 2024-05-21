@@ -390,7 +390,9 @@ def has_message_access(
         return has_user_message()
 
     if stream is None:
-        stream = Stream.objects.get(id=message.recipient.type_id)
+        stream = Stream.objects.select_related("stream_topic_access_group__named_user_group").get(
+            id=message.recipient.type_id
+        )
     else:
         assert stream.recipient_id == message.recipient_id
 
