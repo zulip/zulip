@@ -564,6 +564,8 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             set_jitsi_server_url_dropdown();
             break;
         case "realm_message_retention_days":
+            set_message_retention_setting_dropdown(undefined);
+            break;
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
             break;
