@@ -24,11 +24,15 @@ type UserPillItem = {
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
-export type Suggestion = {
+export type SuggestionPart = {
     description_html: string;
-    search_string: string;
     is_person?: boolean;
     user_pill_context?: UserPillItem;
+};
+
+export type Suggestion = {
+    suggestion_parts: SuggestionPart[];
+    search_string: string;
 };
 
 export const max_num_of_search_results = 12;
@@ -85,9 +89,13 @@ function check_validity(
     return true;
 }
 
+function get_suggestion_parts(terms: NarrowTerm[]): SuggestionPart[] {
+    return [{description_html: Filter.search_description_as_html(terms)}];
+}
+
 function format_as_suggestion(terms: NarrowTerm[]): Suggestion {
     return {
-        description_html: Filter.search_description_as_html(terms),
+        suggestion_parts: get_suggestion_parts(terms),
         search_string: Filter.unparse(terms),
     };
 }
@@ -155,7 +163,10 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
-        return {description_html, search_string};
+        return {
+            suggestion_parts: [{description_html}],
+            search_string,
+        };
     });
 
     return objs;
@@ -226,10 +237,14 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         }
 
         return {
-            description_html,
             search_string: Filter.unparse(terms),
-            is_person: true,
-            user_pill_context: highlight_person(person, person_highlighter),
+            suggestion_parts: [
+                {
+                    description_html,
+                    is_person: true,
+                    user_pill_context: highlight_person(person, person_highlighter),
+                },
+            ],
         };
     });
 
@@ -335,10 +350,14 @@ function get_person_suggestions(
         }
 
         return {
-            description_html: prefix,
             search_string: Filter.unparse(terms),
-            is_person: true,
-            user_pill_context: highlight_person(person, person_highlighter),
+            suggestion_parts: [
+                {
+                    description_html: prefix,
+                    is_person: true,
+                    user_pill_context: highlight_person(person, person_highlighter),
+                },
+            ],
         };
     });
 
@@ -349,7 +368,7 @@ function get_default_suggestion(terms: NarrowTerm[]): Suggestion {
     // Here we return the canonical suggestion for the query that the
     // user typed. (The caller passes us the parsed query as "terms".)
     if (terms.length === 0) {
-        return {description_html: "", search_string: ""};
+        return {suggestion_parts: [], search_string: ""};
     }
     return format_as_suggestion(terms);
 }
@@ -518,7 +537,11 @@ function get_special_filter_suggestions(
     if (last.negated === true || is_search_operand_negated) {
         suggestions = suggestions.map((suggestion) => ({
             search_string: "-" + suggestion.search_string,
-            description_html: "exclude " + suggestion.description_html,
+            suggestion_parts: [
+                {
+                    description_html: "exclude " + suggestion.suggestion_parts[0].description_html,
+                },
+            ],
             incompatible_patterns: suggestion.incompatible_patterns,
         }));
     }
@@ -540,7 +563,9 @@ function get_special_filter_suggestions(
         return (
             s.search_string.toLowerCase().startsWith(last_string) ||
             show_operator_suggestions ||
-            s.description_html.toLowerCase().startsWith(last_string)
+            s.suggestion_parts.some((part) =>
+                part.description_html.toLowerCase().startsWith(last_string),
+            )
         );
     });
     const filtered_suggestions = suggestions.map(({incompatible_patterns, ...s}) => s);
@@ -558,7 +583,11 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     const suggestions = [
         {
             search_string,
-            description_html: "All public channels in organization",
+            suggestion_parts: [
+                {
+                    description_html: "All public streams in organization",
+                },
+            ],
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
                 {operator: "channel"},
@@ -575,7 +604,11 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
     const suggestions = [
         {
             search_string: "is:dm",
-            description_html: "direct messages",
+            suggestion_parts: [
+                {
+                    description_html: "direct messages",
+                },
+            ],
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
                 {operator: "is", operand: "resolved"},
@@ -586,27 +619,47 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
         },
         {
             search_string: "is:starred",
-            description_html: "starred messages",
+            suggestion_parts: [
+                {
+                    description_html: "starred messages",
+                },
+            ],
             incompatible_patterns: [{operator: "is", operand: "starred"}],
         },
         {
             search_string: "is:mentioned",
-            description_html: "@-mentions",
+            suggestion_parts: [
+                {
+                    description_html: "@-mentions",
+                },
+            ],
             incompatible_patterns: [{operator: "is", operand: "mentioned"}],
         },
         {
             search_string: "is:alerted",
-            description_html: "alerted messages",
+            suggestion_parts: [
+                {
+                    description_html: "alerted messages",
+                },
+            ],
             incompatible_patterns: [{operator: "is", operand: "alerted"}],
         },
         {
             search_string: "is:unread",
-            description_html: "unread messages",
+            suggestion_parts: [
+                {
+                    description_html: "unread messages",
+                },
+            ],
             incompatible_patterns: [{operator: "is", operand: "unread"}],
         },
         {
             search_string: "is:resolved",
-            description_html: "topics marked as resolved",
+            suggestion_parts: [
+                {
+                    description_html: "topics marked as resolved",
+                },
+            ],
             incompatible_patterns: [
                 {operator: "is", operand: "resolved"},
                 {operator: "is", operand: "dm"},
@@ -622,17 +675,29 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     const suggestions = [
         {
             search_string: "has:link",
-            description_html: "messages that contain links",
+            suggestion_parts: [
+                {
+                    description_html: "messages that contain links",
+                },
+            ],
             incompatible_patterns: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
-            description_html: "messages that contain images",
+            suggestion_parts: [
+                {
+                    description_html: "messages that contain images",
+                },
+            ],
             incompatible_patterns: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
-            description_html: "messages that contain attachments",
+            suggestion_parts: [
+                {
+                    description_html: "messages that contain attachments",
+                },
+            ],
             incompatible_patterns: [{operator: "has", operand: "attachment"}],
         },
     ];
@@ -668,7 +733,11 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
         return [
             {
                 search_string: sender_query,
-                description_html,
+                suggestion_parts: [
+                    {
+                        description_html,
+                    },
+                ],
             },
         ];
     }
@@ -734,10 +803,14 @@ class Attacher {
     }
 
     prepend_base(suggestion: Suggestion): void {
-        if (this.base && this.base.description_html.length > 0) {
+        if (this.base) {
+            suggestion.suggestion_parts = [
+                ...this.base.suggestion_parts,
+                ...suggestion.suggestion_parts,
+            ];
+        }
+        if (this.base.search_string && suggestion.search_string) {
             suggestion.search_string = this.base.search_string + " " + suggestion.search_string;
-            suggestion.description_html =
-                this.base.description_html + ", " + suggestion.description_html;
         }
     }
 
@@ -810,9 +883,13 @@ export function get_search_result(query: string): Suggestion[] {
     if (last.operator === "search") {
         suggestion = {
             search_string: last.operand,
-            description_html: `search for <strong>${Handlebars.Utils.escapeExpression(
-                last.operand,
-            )}</strong>`,
+            suggestion_parts: [
+                {
+                    description_html: `search for <strong>${Handlebars.Utils.escapeExpression(
+                        last.operand,
+                    )}</strong>`,
+                },
+            ],
         };
         attacher.prepend_base(suggestion);
         attacher.push(suggestion);
@@ -890,8 +967,9 @@ export function finalize_search_result(result: Suggestion[]): {
     lookup_table: Map<string, Suggestion>;
 } {
     for (const sug of result) {
-        const first = sug.description_html.charAt(0).toUpperCase();
-        sug.description_html = first + sug.description_html.slice(1);
+        const first = sug.suggestion_parts[0].description_html.charAt(0).toUpperCase();
+        sug.suggestion_parts[0].description_html =
+            first + sug.suggestion_parts[0].description_html.slice(1);
     }
 
     // Typeahead expects us to give it strings, not objects,
