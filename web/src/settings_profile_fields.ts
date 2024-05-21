@@ -801,5 +801,5 @@ export function build_page(): void {
         "input.display_in_profile_summary",
         toggle_display_in_profile_summary_profile_field,
     );
-    $("#admin_profile_fields_table").on("click", "required-field-toggle", toggle_required);
+    $("#admin_profile_fields_table").on("click", ".required-field-toggle", toggle_required);
 }
