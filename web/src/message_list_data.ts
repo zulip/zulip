@@ -100,6 +100,14 @@ export class MessageListData {
         return this._all_items.at(-1);
     }
 
+    msg_id_in_fetched_range(msg_id: number): boolean {
+        if (this.empty()) {
+            return false;
+        }
+
+        return this.first().id <= msg_id && msg_id <= this.last()!.id;
+    }
+
     ids_greater_or_equal_than(my_id: number): number[] {
         const result = [];
 
@@ -284,13 +292,20 @@ export class MessageListData {
     }
 
     first_unread_message_id(): number | undefined {
+        // NOTE: This function returns the first unread that was fetched and is not
+        // necessarily the first unread for the narrow. There could be more unread messages.
+        // See https://github.com/zulip/zulip/pull/30008#discussion_r1597279862 for how
+        // ideas on how to possibly improve this.
+        // before `first_unread` calculated below that we haven't fetched yet.
         const first_unread = this._items.find((message) => unread.message_unread(message));
 
         if (first_unread) {
             return first_unread.id;
         }
 
-        // if no unread, return the bottom message
+        // If no unread, return the bottom message
+        // NOTE: This is only valid if we have found the latest message for the narrow as
+        // there could be more message that we haven't fetched yet.
         return this.last()?.id;
     }
 

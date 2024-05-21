@@ -11,6 +11,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as stream_data from "./stream_data";
+import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 
 export class MessageList {
@@ -68,7 +69,11 @@ export class MessageList {
         // the user. Possibly this can be unified in some nice way.
         this.reading_prevented = false;
 
-        // Whether this message list's is preserved in the DOM even
+        return this;
+    }
+
+    should_preserve_current_rendered_state() {
+        // Whether this message list is preserved in the DOM even
         // when viewing other views -- a valuable optimization for
         // fast toggling between the combined feed and other views,
         // which we enable only when that is the user's home view.
@@ -76,10 +81,45 @@ export class MessageList {
         // This is intentionally not live-updated when web_home_view
         // changes, since it's easier to reason about if this
         // optimization is active or not for an entire session.
-        this.preserve_rendered_state =
-            user_settings.web_home_view === "all_messages" && !this.narrowed;
+        if (user_settings.web_home_view !== "all_messages" || this.narrowed) {
+            return false;
+        }
 
-        return this;
+        // If we click on a narrow, we go the first unread message.
+        // If first unread message is not available in a cached message list,
+        // we render by selecting the `message_list.last()` message.
+        // This is incorrect unless we have found the newest message.
+        //
+        // So, we don't preserve the rendered state of this list if first unread message
+        // is not available to us. Otherwise, this leads to confusion when we are
+        // restoring the rendered list but our first unread message is not available
+        // and fetching it from the server could lead to non-contiguous messages history.
+        //
+        // NOTE: Non-contiguous message history can still happen in the opposite situation
+        // where user is narrowing to a message id which is not present in the rendered list.
+        // In this case, we create a new list and if the new fetched history contains first
+        // unread message, we preserve this list and discard others with the same filter.
+        //
+        // This nicely supports the common workflow of user reloading with a `then_select_id`
+        // and then scrolling to the first unread message; then narrowing to the unread topic
+        // and combing back to combined feed. The combined feed will be rendered in this case
+        // but not if we decided to discard this list based on if anchor was on `first_unread.
+        //
+        // Since we know we are checking for first unread unmuted message in combined feed,
+        // we can use `unread.first_unread_unmuted_message_id` to correctly check if we have
+        // fetched the first unread message.
+        //
+        // TODO: For supporting other narrows, we need to check if we have fetched the first
+        // unread message for that narrow, for which we will have to query server for the
+        // first unread message id. Maybe that can be part of the narrow fetch query itself.
+        const first_unread_message = this.get(unread.first_unread_unmuted_message_id);
+        if (!first_unread_message?.unread) {
+            // If we have found the newest message, we can preserve the rendered state.
+            return this.data.fetch_status.has_found_newest();
+        }
+
+        // If we have found the first unread message, we can preserve the rendered state.
+        return true;
     }
 
     is_current_message_list() {
@@ -144,6 +184,10 @@ export class MessageList {
 
     get(id) {
         return this.data.get(id);
+    }
+
+    msg_id_in_fetched_range(msg_id) {
+        return this.data.msg_id_in_fetched_range(msg_id);
     }
 
     num_items() {

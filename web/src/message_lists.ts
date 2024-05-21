@@ -58,6 +58,7 @@ export type MessageList = {
     last: () => Message | undefined;
     visibly_empty: () => boolean;
     selected_message: () => Message;
+    should_preserve_current_rendered_state: () => boolean;
 };
 
 export let current: MessageList | undefined;
@@ -70,12 +71,34 @@ export function set_current(msg_list: MessageList | undefined): void {
 }
 
 export function update_current_message_list(msg_list: MessageList | undefined): void {
-    if (current && !current.preserve_rendered_state) {
+    // Since we change `current` message list in the function, we need to decide if the
+    // current message list needs to be cached or discarded.
+    //
+    // If we are caching the current message list, we need to remove any other message lists
+    // that we have cached with the same filter.
+    //
+    // If we are discarding the current message list, we need to remove the
+    // current message list from the DOM.
+    if (current && !current.should_preserve_current_rendered_state()) {
         // Remove the current message list from the DOM.
         current.view.$list.remove();
         rendered_message_lists.delete(current.id);
     } else {
+        // We plan to keep the current message list cached.
         current?.view.$list.removeClass("focused-message-list");
+        // Remove any existing message lists that we have with the same filter.
+        // TODO: If we start supporting more messages lists than just Combined feed,
+        // make this a proper filter comparison between the lists.
+        if (current?.data.filter.is_in_home()) {
+            for (const [id, msg_list] of rendered_message_lists) {
+                if (id !== current.id && msg_list.data.filter.is_in_home()) {
+                    msg_list.view.$list.remove();
+                    rendered_message_lists.delete(id);
+                    // We only expect to have one instance of a message list filter cached.
+                    break;
+                }
+            }
+        }
     }
 
     current = msg_list;
