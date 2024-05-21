@@ -4,7 +4,7 @@ conversations are happening, and to read one conversation at a time.
 
 Here is what topics look like in Zulip.
 
-![Channels and topics](/static/images/help/streams-and-topics.png)
+![Channels and topics](/static/images/help/channels-and-topics.png)
 
 Topics are one of the most wonderful aspects of using Zulip:
 
