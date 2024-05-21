@@ -726,6 +726,8 @@ export function get_input_element_value(
             return get_dropdown_list_widget_setting_value($input_elem);
         case "field-data-setting":
             return get_field_data_input_value($input_elem);
+        case "language-setting":
+            return $input_elem.find(".language_selection_button span").attr("data-language-code");
         default:
             return undefined;
     }
