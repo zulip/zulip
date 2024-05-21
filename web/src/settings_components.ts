@@ -901,6 +901,32 @@ export function check_property_changed(
     return current_val !== proposed_val;
 }
 
+function get_request_data_for_org_join_restrictions(selected_val: string): {
+    disallow_disposable_email_addresses: boolean;
+    emails_restricted_to_domains: boolean;
+} {
+    switch (selected_val) {
+        case "only_selected_domain": {
+            return {
+                emails_restricted_to_domains: true,
+                disallow_disposable_email_addresses: false,
+            };
+        }
+        case "no_disposable_email": {
+            return {
+                emails_restricted_to_domains: false,
+                disallow_disposable_email_addresses: true,
+            };
+        }
+        default: {
+            return {
+                disallow_disposable_email_addresses: false,
+                emails_restricted_to_domains: false,
+            };
+        }
+    }
+}
+
 export function populate_data_for_request(
     $subsection_elem: JQuery,
     for_realm_default_settings: boolean,
@@ -964,6 +990,14 @@ export function populate_data_for_request(
                         new: input_value,
                         old: group!.can_mention_group,
                     });
+                    continue;
+                }
+
+                if (property_name === "org_join_restrictions") {
+                    data = {
+                        ...data,
+                        ...get_request_data_for_org_join_restrictions(input_value.toString()),
+                    };
                     continue;
                 }
                 data[property_name] = input_value;
