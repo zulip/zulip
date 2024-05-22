@@ -59,6 +59,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
+from zerver.models.realms import WildcardMentionPolicyEnum
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -1173,22 +1174,22 @@ def wildcard_mention_policy_authorizes_user(sender: UserProfile, realm: Realm) -
     This check is used only if the participants count in the topic or the subscribers
     count in the stream is greater than 'Realm.WILDCARD_MENTION_THRESHOLD'.
     """
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_NOBODY:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.NOBODY:
         return False
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_EVERYONE:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.EVERYONE:
         return True
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_ADMINS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.ADMINS:
         return sender.is_realm_admin
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MODERATORS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MODERATORS:
         return sender.is_realm_admin or sender.is_moderator
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.FULL_MEMBERS:
         return sender.is_realm_admin or (not sender.is_provisional_member and not sender.is_guest)
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MEMBERS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MEMBERS:
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")

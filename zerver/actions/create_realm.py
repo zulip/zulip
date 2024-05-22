@@ -35,7 +35,13 @@ from zerver.models import (
     Stream,
     UserProfile,
 )
-from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.realms import (
+    CommonPolicyEnum,
+    InviteToRealmPolicyEnum,
+    MoveMessagesBetweenStreamsPolicyEnum,
+    get_org_type_display_name,
+    get_realm,
+)
 from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
 
@@ -112,16 +118,18 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         Realm.ORG_TYPES["education"]["id"],
     ):
         # Limit user creation to administrators.
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
+        realm.invite_to_realm_policy = InviteToRealmPolicyEnum.ADMINS_ONLY
         # Restrict public stream creation to staff, but allow private
         # streams (useful for study groups, etc.).
-        realm.create_public_stream_policy = Realm.POLICY_ADMINS_ONLY
+        realm.create_public_stream_policy = CommonPolicyEnum.ADMINS_ONLY
         # Don't allow members (students) to manage user groups or
         # stream subscriptions.
-        realm.user_group_edit_policy = Realm.POLICY_MODERATORS_ONLY
-        realm.invite_to_stream_policy = Realm.POLICY_MODERATORS_ONLY
+        realm.user_group_edit_policy = CommonPolicyEnum.MODERATORS_ONLY
+        realm.invite_to_stream_policy = CommonPolicyEnum.MODERATORS_ONLY
         # Allow moderators (TAs?) to move topics between streams.
-        realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
+        realm.move_messages_between_streams_policy = (
+            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY
+        )
 
 
 @transaction.atomic(savepoint=False)

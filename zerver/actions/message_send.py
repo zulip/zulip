@@ -104,6 +104,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.realms import PrivateMessagePolicyEnum
 from zerver.models.recipients import get_huddle_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream, get_stream_by_id_in_realm
@@ -1527,7 +1528,7 @@ def validate_stream_id_with_pm_notification(
 def check_private_message_policy(
     realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
 ) -> None:
-    if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
+    if realm.private_message_policy == PrivateMessagePolicyEnum.DISABLED:
         if sender.is_bot or (
             len(user_profiles) == 1 and (user_profiles[0].is_bot or user_profiles[0] == sender)
         ):

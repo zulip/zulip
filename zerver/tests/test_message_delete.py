@@ -9,8 +9,8 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Realm, UserProfile
-from zerver.models.realms import get_realm
+from zerver.models import Message, UserProfile
+from zerver.models.realms import CommonMessagePolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ class DeleteMessageTest(ZulipTestCase):
             result = self.client_patch(
                 "/json/realm",
                 {
-                    "delete_own_message_policy": delete_own_message_policy,
+                    "delete_own_message_policy": orjson.dumps(delete_own_message_policy).decode(),
                     "message_content_delete_limit_seconds": orjson.dumps(
                         message_content_delete_limit_seconds
                     ).decode(),
@@ -59,7 +59,7 @@ class DeleteMessageTest(ZulipTestCase):
             return result
 
         # Test if message deleting is not allowed(default).
-        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
+        set_message_deleting_params(CommonMessagePolicyEnum.ADMINS_ONLY, "unlimited")
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         msg_id = self.send_stream_message(hamlet, "Denmark")
@@ -75,7 +75,7 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test if message deleting is allowed.
         # Test if time limit is None(no limit).
-        set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
+        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, "unlimited")
         msg_id = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id)
         message.date_sent = message.date_sent - timedelta(seconds=600)
@@ -88,7 +88,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Test if time limit is non-zero.
-        set_message_deleting_params(Realm.POLICY_EVERYONE, 240)
+        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, 240)
         msg_id_1 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_1)
         message.date_sent = message.date_sent - timedelta(seconds=120)
@@ -142,7 +142,7 @@ class DeleteMessageTest(ZulipTestCase):
                 iago,
                 "/api/v1/realm",
                 {
-                    "delete_own_message_policy": delete_own_message_policy,
+                    "delete_own_message_policy": orjson.dumps(delete_own_message_policy).decode(),
                     "message_content_delete_limit_seconds": orjson.dumps(
                         message_content_delete_limit_seconds
                     ).decode(),
@@ -162,7 +162,7 @@ class DeleteMessageTest(ZulipTestCase):
             result = self.api_delete(cordelia, f"/api/v1/messages/{msg_id}")
             return result
 
-        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
+        set_message_deleting_params(CommonMessagePolicyEnum.ADMINS_ONLY, "unlimited")
 
         hamlet = self.example_user("hamlet")
         test_bot = self.create_test_bot("test-bot", hamlet)
@@ -178,7 +178,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         msg_id = self.send_stream_message(test_bot, "Denmark")
-        set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
+        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, "unlimited")
 
         result = test_delete_message_by_other_user(msg_id)
         self.assert_json_error(result, "You don't have permission to delete this message")
@@ -187,7 +187,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         msg_id = self.send_stream_message(test_bot, "Denmark")
-        set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
+        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, 600)
 
         message = Message.objects.get(id=msg_id)
         message.date_sent = timezone_now() - timedelta(seconds=700)
@@ -204,12 +204,12 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Check that the bot can also delete the messages sent by them
         # depending on the realm permissions for message deletion.
-        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, 600)
+        set_message_deleting_params(CommonMessagePolicyEnum.ADMINS_ONLY, 600)
         msg_id = self.send_stream_message(test_bot, "Denmark")
         result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
         self.assert_json_error(result, "You don't have permission to delete this message")
 
-        set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
+        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, 600)
         message = Message.objects.get(id=msg_id)
         message.date_sent = timezone_now() - timedelta(seconds=700)
         message.save()
@@ -238,13 +238,19 @@ class DeleteMessageTest(ZulipTestCase):
         realm = get_realm("zulip")
 
         do_set_realm_property(
-            realm, "delete_own_message_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            realm,
+            "delete_own_message_policy",
+            CommonMessagePolicyEnum.ADMINS_ONLY,
+            acting_user=None,
         )
         check_delete_message_by_sender("shiva", "You don't have permission to delete this message")
         check_delete_message_by_sender("iago")
 
         do_set_realm_property(
-            realm, "delete_own_message_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+            realm,
+            "delete_own_message_policy",
+            CommonMessagePolicyEnum.MODERATORS_ONLY,
+            acting_user=None,
         )
         check_delete_message_by_sender(
             "cordelia", "You don't have permission to delete this message"
@@ -252,7 +258,10 @@ class DeleteMessageTest(ZulipTestCase):
         check_delete_message_by_sender("shiva")
 
         do_set_realm_property(
-            realm, "delete_own_message_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm,
+            "delete_own_message_policy",
+            CommonMessagePolicyEnum.MEMBERS_ONLY,
+            acting_user=None,
         )
         check_delete_message_by_sender(
             "polonius", "You don't have permission to delete this message"
@@ -260,7 +269,10 @@ class DeleteMessageTest(ZulipTestCase):
         check_delete_message_by_sender("cordelia")
 
         do_set_realm_property(
-            realm, "delete_own_message_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+            realm,
+            "delete_own_message_policy",
+            CommonMessagePolicyEnum.FULL_MEMBERS_ONLY,
+            acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         cordelia = self.example_user("cordelia")
@@ -274,7 +286,7 @@ class DeleteMessageTest(ZulipTestCase):
         check_delete_message_by_sender("cordelia")
 
         do_set_realm_property(
-            realm, "delete_own_message_policy", Realm.POLICY_EVERYONE, acting_user=None
+            realm, "delete_own_message_policy", CommonMessagePolicyEnum.EVERYONE, acting_user=None
         )
         check_delete_message_by_sender("cordelia")
         check_delete_message_by_sender("polonius")

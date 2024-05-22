@@ -57,7 +57,13 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import (
+    CommonMessagePolicyEnum,
+    CommonPolicyEnum,
+    InviteToRealmPolicyEnum,
+    MoveMessagesBetweenStreamsPolicyEnum,
+    get_realm,
+)
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -99,12 +105,15 @@ class RealmTest(ZulipTestCase):
             org_type=Realm.ORG_TYPES["education_nonprofit"]["id"],
         )
 
-        self.assertEqual(realm.create_public_stream_policy, Realm.POLICY_ADMINS_ONLY)
-        self.assertEqual(realm.create_private_stream_policy, Realm.POLICY_MEMBERS_ONLY)
-        self.assertEqual(realm.invite_to_realm_policy, Realm.POLICY_ADMINS_ONLY)
-        self.assertEqual(realm.move_messages_between_streams_policy, Realm.POLICY_MODERATORS_ONLY)
-        self.assertEqual(realm.user_group_edit_policy, Realm.POLICY_MODERATORS_ONLY)
-        self.assertEqual(realm.invite_to_stream_policy, Realm.POLICY_MODERATORS_ONLY)
+        self.assertEqual(realm.create_public_stream_policy, CommonPolicyEnum.ADMINS_ONLY)
+        self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
+        self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
+        self.assertEqual(
+            realm.move_messages_between_streams_policy,
+            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
+        )
+        self.assertEqual(realm.user_group_edit_policy, CommonPolicyEnum.MODERATORS_ONLY)
+        self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
 
     def test_permission_for_education_for_profit_organization(self) -> None:
         realm = do_create_realm(
@@ -113,12 +122,15 @@ class RealmTest(ZulipTestCase):
             org_type=Realm.ORG_TYPES["education"]["id"],
         )
 
-        self.assertEqual(realm.create_public_stream_policy, Realm.POLICY_ADMINS_ONLY)
-        self.assertEqual(realm.create_private_stream_policy, Realm.POLICY_MEMBERS_ONLY)
-        self.assertEqual(realm.invite_to_realm_policy, Realm.POLICY_ADMINS_ONLY)
-        self.assertEqual(realm.move_messages_between_streams_policy, Realm.POLICY_MODERATORS_ONLY)
-        self.assertEqual(realm.user_group_edit_policy, Realm.POLICY_MODERATORS_ONLY)
-        self.assertEqual(realm.invite_to_stream_policy, Realm.POLICY_MODERATORS_ONLY)
+        self.assertEqual(realm.create_public_stream_policy, CommonPolicyEnum.ADMINS_ONLY)
+        self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
+        self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
+        self.assertEqual(
+            realm.move_messages_between_streams_policy,
+            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
+        )
+        self.assertEqual(realm.user_group_edit_policy, CommonPolicyEnum.MODERATORS_ONLY)
+        self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
 
     def test_realm_enable_spectator_access(self) -> None:
         realm = do_create_realm(
@@ -1710,27 +1722,35 @@ class RealmAPITest(ZulipTestCase):
     def test_update_realm_delete_own_message_policy(self) -> None:
         """Tests updating the realm property 'delete_own_message_policy'."""
         realm = get_realm("zulip")
-        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_EVERYONE)
-        realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_ADMINS_ONLY)
-        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_ADMINS_ONLY)
+        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.EVERYONE)
+        realm = self.update_with_api(
+            "delete_own_message_policy", CommonMessagePolicyEnum.ADMINS_ONLY
+        )
+        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.ADMINS_ONLY)
         self.assertEqual(realm.message_content_delete_limit_seconds, 600)
-        realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_EVERYONE)
+        realm = self.update_with_api("delete_own_message_policy", CommonMessagePolicyEnum.EVERYONE)
         realm = self.update_with_api("message_content_delete_limit_seconds", 100)
-        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_EVERYONE)
+        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.EVERYONE)
         self.assertEqual(realm.message_content_delete_limit_seconds, 100)
         realm = self.update_with_api(
             "message_content_delete_limit_seconds", orjson.dumps("unlimited").decode()
         )
         self.assertEqual(realm.message_content_delete_limit_seconds, None)
         realm = self.update_with_api("message_content_delete_limit_seconds", 600)
-        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_EVERYONE)
+        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.EVERYONE)
         self.assertEqual(realm.message_content_delete_limit_seconds, 600)
-        realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_MODERATORS_ONLY)
-        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_MODERATORS_ONLY)
-        realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
-        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_FULL_MEMBERS_ONLY)
-        realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_MEMBERS_ONLY)
-        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_MEMBERS_ONLY)
+        realm = self.update_with_api(
+            "delete_own_message_policy", CommonMessagePolicyEnum.MODERATORS_ONLY
+        )
+        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.MODERATORS_ONLY)
+        realm = self.update_with_api(
+            "delete_own_message_policy", CommonMessagePolicyEnum.FULL_MEMBERS_ONLY
+        )
+        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.FULL_MEMBERS_ONLY)
+        realm = self.update_with_api(
+            "delete_own_message_policy", CommonMessagePolicyEnum.MEMBERS_ONLY
+        )
+        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.MEMBERS_ONLY)
 
         # Test that 0 is invalid value.
         req = dict(message_content_delete_limit_seconds=orjson.dumps(0).decode())
@@ -1747,7 +1767,10 @@ class RealmAPITest(ZulipTestCase):
     def do_test_changing_settings_by_owners_only(self, setting_name: str) -> None:
         bool_tests: List[bool] = [False, True]
         test_values: Dict[str, Any] = dict(
-            invite_to_realm_policy=[Realm.POLICY_MEMBERS_ONLY, Realm.POLICY_ADMINS_ONLY],
+            invite_to_realm_policy=[
+                InviteToRealmPolicyEnum.MEMBERS_ONLY,
+                InviteToRealmPolicyEnum.ADMINS_ONLY,
+            ],
             waiting_period_threshold=[10, 20],
         )
 

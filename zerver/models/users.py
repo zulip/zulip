@@ -725,12 +725,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def allowed_bot_types(self) -> List[int]:
-        from zerver.models import Realm
+        from zerver.models.realms import BotCreationPolicyEnum
 
         allowed_bot_types = []
         if (
             self.is_realm_admin
-            or self.realm.bot_creation_policy != Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+            or self.realm.bot_creation_policy != BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         ):
             allowed_bot_types.append(UserProfile.DEFAULT_BOT)
         allowed_bot_types += [

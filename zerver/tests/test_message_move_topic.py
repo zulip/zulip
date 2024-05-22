@@ -17,8 +17,9 @@ from zerver.lib.user_topics import (
     topic_has_visibility_policy,
 )
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Realm, UserMessage, UserProfile, UserTopic
+from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.realms import CommonMessagePolicyEnum
 from zerver.models.streams import Stream
 
 
@@ -882,7 +883,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             do_set_realm_property(
                 hamlet.realm,
                 "delete_own_message_policy",
-                Realm.POLICY_MEMBERS_ONLY,
+                CommonMessagePolicyEnum.MEMBERS_ONLY,
                 acting_user=None,
             )
             self.client_delete(f"/json/messages/{target_message_id}")

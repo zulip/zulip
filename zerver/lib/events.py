@@ -88,7 +88,7 @@ from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
-from zerver.models.realms import get_realm_domains
+from zerver.models.realms import CommonMessagePolicyEnum, EditTopicPolicyEnum, get_realm_domains
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
@@ -286,10 +286,12 @@ def fetch_initial_state_data(
             False if user_profile is None else realm.allow_message_editing
         )
         state["realm_edit_topic_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
+            EditTopicPolicyEnum.ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
         state["realm_delete_own_message_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
+            CommonMessagePolicyEnum.ADMINS_ONLY
+            if user_profile is None
+            else realm.delete_own_message_policy
         )
 
         # This setting determines whether to send presence and also
