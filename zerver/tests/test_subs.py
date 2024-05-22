@@ -110,7 +110,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
-from zerver.models.realms import get_realm
+from zerver.models.realms import CommonPolicyEnum, CreateWebPublicStreamPolicyEnum, get_realm
 from zerver.models.streams import get_default_stream_groups, get_stream
 from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
 from zerver.views.streams import compose_views
@@ -967,21 +967,30 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Must be an organization administrator")
 
         do_set_realm_property(
-            realm, "create_web_public_stream_policy", Realm.POLICY_OWNERS_ONLY, acting_user=None
+            realm,
+            "create_web_public_stream_policy",
+            CreateWebPublicStreamPolicyEnum.OWNERS_ONLY,
+            acting_user=None,
         )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Insufficient permission")
 
         do_set_realm_property(
-            realm, "create_web_public_stream_policy", Realm.POLICY_NOBODY, acting_user=None
+            realm,
+            "create_web_public_stream_policy",
+            CreateWebPublicStreamPolicyEnum.NOBODY,
+            acting_user=None,
         )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Insufficient permission")
 
         do_set_realm_property(
-            realm, "create_web_public_stream_policy", Realm.POLICY_OWNERS_ONLY, acting_user=None
+            realm,
+            "create_web_public_stream_policy",
+            CreateWebPublicStreamPolicyEnum.OWNERS_ONLY,
+            acting_user=None,
         )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
@@ -4359,7 +4368,7 @@ class SubscriptionAPITest(ZulipTestCase):
         user_profile = self.example_user("cordelia")
         realm = user_profile.realm
 
-        do_set_realm_property(realm, stream_policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
+        do_set_realm_property(realm, stream_policy, CommonPolicyEnum.ADMINS_ONLY, acting_user=None)
         do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
@@ -4373,7 +4382,9 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream1"], invite_only=invite_only)
 
-        do_set_realm_property(realm, stream_policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
+        do_set_realm_property(
+            realm, stream_policy, CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
+        )
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below moderator in the role hierarchy.
@@ -4390,7 +4401,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream2"], invite_only=invite_only)
 
-        do_set_realm_property(realm, stream_policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
+        do_set_realm_property(realm, stream_policy, CommonPolicyEnum.MEMBERS_ONLY, acting_user=None)
         do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
@@ -4410,7 +4421,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
         do_set_realm_property(
-            realm, stream_policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+            realm, stream_policy, CommonPolicyEnum.FULL_MEMBERS_ONLY, acting_user=None
         )
         do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
         result = self.common_subscribe_to_streams(
@@ -4514,10 +4525,10 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = user_profile.realm
 
         do_set_realm_property(
-            realm, "create_public_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm, "create_public_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
         )
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
         )
         do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
         result = self.common_subscribe_to_streams(
@@ -4534,7 +4545,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
         )
         do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
         # Make sure that we are checking the permission with a full member,
@@ -4555,7 +4566,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.unsubscribe(user_profile, "stream2")
 
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
         )
         do_change_user_role(self.test_user, UserProfile.ROLE_GUEST, acting_user=None)
         result = self.common_subscribe_to_streams(
@@ -4577,7 +4588,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "invite_to_stream_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
+            CommonPolicyEnum.FULL_MEMBERS_ONLY,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)

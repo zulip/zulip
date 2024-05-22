@@ -61,7 +61,7 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import PrivateMessagePolicyEnum, WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
@@ -1884,7 +1884,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            WildcardMentionPolicyEnum.EVERYONE,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius")
@@ -1892,7 +1892,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            WildcardMentionPolicyEnum.MEMBERS,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius", test_fails=True)
@@ -1903,7 +1903,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            WildcardMentionPolicyEnum.FULL_MEMBERS,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
@@ -1926,7 +1926,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            WildcardMentionPolicyEnum.MODERATORS,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
@@ -1936,7 +1936,10 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.ADMINS,
+            acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on topics with less than 'Realm.WILDCARD_MENTION_THRESHOLD' participants.
@@ -1944,7 +1947,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_topic_wildcard_mention_message("iago")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.NOBODY,
+            acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_topic_wildcard_mention_message("iago", topic_participant_count=10)
@@ -1983,7 +1989,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            WildcardMentionPolicyEnum.EVERYONE,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("polonius")
@@ -1991,7 +1997,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            WildcardMentionPolicyEnum.MEMBERS,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("polonius", test_fails=True)
@@ -2002,7 +2008,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            WildcardMentionPolicyEnum.FULL_MEMBERS,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
@@ -2025,7 +2031,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            WildcardMentionPolicyEnum.MODERATORS,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
@@ -2035,7 +2041,10 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.ADMINS,
+            acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on small streams.
@@ -2043,7 +2052,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("iago")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.NOBODY,
+            acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
@@ -2403,14 +2415,14 @@ class PersonalMessageSendTest(ZulipTestCase):
 
     def test_private_message_policy(self) -> None:
         """
-        Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
+        Tests that PrivateMessagePolicyEnum.DISABLED works correctly.
         """
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         do_set_realm_property(
             user_profile.realm,
             "private_message_policy",
-            Realm.PRIVATE_MESSAGE_POLICY_DISABLED,
+            PrivateMessagePolicyEnum.DISABLED,
             acting_user=None,
         )
         with self.assertRaises(JsonableError):
@@ -2667,7 +2679,7 @@ class InternalPrepTest(ZulipTestCase):
         Test that a user can send a direct message to themselves and to a bot in a DM disabled organization
         """
         sender = self.example_user("hamlet")
-        sender.realm.private_message_policy = Realm.PRIVATE_MESSAGE_POLICY_DISABLED
+        sender.realm.private_message_policy = PrivateMessagePolicyEnum.DISABLED
         sender.realm.save()
 
         #  Create a non-bot user

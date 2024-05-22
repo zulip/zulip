@@ -68,7 +68,7 @@ from zerver.models import (
 )
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
-from zerver.models.realms import get_realm
+from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
@@ -377,7 +377,7 @@ class Command(BaseCommand):
                 # Default to allowing all members to send mentions in
                 # large streams for the test suite to keep
                 # mention-related tests simple.
-                zulip_realm.wildcard_mention_policy = Realm.WILDCARD_MENTION_POLICY_MEMBERS
+                zulip_realm.wildcard_mention_policy = WildcardMentionPolicyEnum.MEMBERS
                 zulip_realm.save(update_fields=["wildcard_mention_policy"])
 
             # Realms should have matching RemoteRealm entries - simulating having realms registered

@@ -67,7 +67,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import CommonPolicyEnum, InviteToRealmPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
@@ -845,7 +845,7 @@ class InviteUserTest(InviteUserBase):
 
         realm = get_realm("zulip")
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_NOBODY, acting_user=None
+            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.NOBODY, acting_user=None
         )
         desdemona = self.example_user("desdemona")
         self.assertFalse(validation_func(desdemona))
@@ -858,7 +858,7 @@ class InviteUserTest(InviteUserBase):
         """
         realm = get_realm("zulip")
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_NOBODY, acting_user=None
+            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.NOBODY, acting_user=None
         )
         self.login("desdemona")
         email = "alice-test@zulip.com"
@@ -870,7 +870,7 @@ class InviteUserTest(InviteUserBase):
         )
 
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.ADMINS_ONLY, acting_user=None
         )
 
         self.login("shiva")
@@ -890,7 +890,10 @@ class InviteUserTest(InviteUserBase):
         mail.outbox = []
 
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+            realm,
+            "invite_to_realm_policy",
+            InviteToRealmPolicyEnum.MODERATORS_ONLY,
+            acting_user=None,
         )
         self.login("hamlet")
         email = "carol-test@zulip.com"
@@ -910,7 +913,7 @@ class InviteUserTest(InviteUserBase):
         mail.outbox = []
 
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.MEMBERS_ONLY, acting_user=None
         )
 
         self.login("polonius")
@@ -928,7 +931,10 @@ class InviteUserTest(InviteUserBase):
         mail.outbox = []
 
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+            realm,
+            "invite_to_realm_policy",
+            InviteToRealmPolicyEnum.FULL_MEMBERS_ONLY,
+            acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
 
@@ -1326,7 +1332,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     def test_invite_without_permission_to_subscribe_others(self) -> None:
         realm = get_realm("zulip")
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
         )
 
         invitee = self.nonreg_email("alice")
@@ -1371,7 +1377,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         mail.outbox.pop()
 
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
         )
         self.login("hamlet")
         invitee = self.nonreg_email("test")
@@ -2668,7 +2674,7 @@ class MultiuseInviteTest(ZulipTestCase):
             realm, "create_multiuse_invite_group", members_group, acting_user=None
         )
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
         )
 
         self.login("hamlet")
@@ -2711,7 +2717,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assert_json_success(result)
 
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
         )
         self.login("hamlet")
         result = self.client_post(

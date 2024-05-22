@@ -37,13 +37,12 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     GroupGroupMembership,
     NamedUserGroup,
-    Realm,
     UserGroup,
     UserGroupMembership,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import CommonPolicyEnum, get_realm
 
 
 class UserGroupTestCase(ZulipTestCase):
@@ -1226,7 +1225,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_ADMINS_ONLY,
+            CommonPolicyEnum.ADMINS_ONLY,
             acting_user=None,
         )
         check_create_user_group("shiva", "Insufficient permission")
@@ -1240,7 +1239,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_MODERATORS_ONLY,
+            CommonPolicyEnum.MODERATORS_ONLY,
             acting_user=None,
         )
         check_create_user_group("cordelia", "Insufficient permission")
@@ -1254,7 +1253,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            CommonPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
         check_create_user_group("polonius", "Not allowed for guest users")
@@ -1269,7 +1268,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
+            CommonPolicyEnum.FULL_MEMBERS_ONLY,
             acting_user=None,
         )
         cordelia = self.example_user("cordelia")
@@ -1335,7 +1334,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_ADMINS_ONLY,
+            CommonPolicyEnum.ADMINS_ONLY,
             acting_user=None,
         )
         check_update_user_group("help", "Troubleshooting team", "shiva", "Insufficient permission")
@@ -1346,7 +1345,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_MODERATORS_ONLY,
+            CommonPolicyEnum.MODERATORS_ONLY,
             acting_user=None,
         )
         check_update_user_group("support", "Support team", "othello", "Insufficient permission")
@@ -1357,7 +1356,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            CommonPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
         check_update_user_group(
@@ -1374,7 +1373,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # Check only full members are allowed to update the user group and only if belong to the
         # user group.
         do_set_realm_property(
-            realm, "user_group_edit_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+            realm, "user_group_edit_policy", CommonPolicyEnum.FULL_MEMBERS_ONLY, acting_user=None
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         othello = self.example_user("othello")
@@ -1434,7 +1433,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_ADMINS_ONLY,
+            CommonPolicyEnum.ADMINS_ONLY,
             acting_user=None,
         )
         check_adding_members_to_group("shiva", "Insufficient permission")
@@ -1448,7 +1447,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_MODERATORS_ONLY,
+            CommonPolicyEnum.MODERATORS_ONLY,
             acting_user=None,
         )
         check_adding_members_to_group("cordelia", "Insufficient permission")
@@ -1462,7 +1461,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            CommonPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
         check_adding_members_to_group("polonius", "Not allowed for guest users")
@@ -1478,7 +1477,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
+            CommonPolicyEnum.FULL_MEMBERS_ONLY,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
