@@ -5,6 +5,7 @@ import * as blueslip from "./blueslip";
 import * as people from "./people";
 import {topic_link_schema} from "./types";
 import type {UserStatusEmojiInfo} from "./user_status";
+import * as util from "./util";
 
 const stored_messages = new Map<number, Message>();
 
@@ -229,9 +230,10 @@ export function get_pm_emails(message: Message | MessageWithBooleans): string {
 
 export function get_pm_full_names(user_ids: number[]): string {
     user_ids = people.sorted_other_user_ids(user_ids);
-    const names = people.get_display_full_names(user_ids).sort();
+    const names = people.get_display_full_names(user_ids);
+    const sorted_names = names.sort(util.make_strcmp());
 
-    return names.join(", ");
+    return sorted_names.join(", ");
 }
 
 export function convert_raw_message_to_message_with_booleans(
