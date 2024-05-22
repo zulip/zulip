@@ -2305,6 +2305,19 @@ class BillingSession(ABC):
             ).first()
         return None
 
+    def get_annual_recurring_revenue_for_support_data(
+        self, plan: CustomerPlan, last_ledger_entry: LicenseLedger
+    ) -> int:
+        if plan.fixed_price is not None:
+            # For support and activity views, we want to show the annual
+            # revenue for the currently configured fixed price, which
+            # is the annual amount charged in cents.
+            return plan.fixed_price
+        revenue = self.get_customer_plan_renewal_amount(plan, last_ledger_entry)
+        if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+            revenue *= 12
+        return revenue
+
     def get_customer_plan_renewal_amount(
         self,
         plan: CustomerPlan,

@@ -191,17 +191,14 @@ def get_remote_activity_plan_data(
     elif remote_realm is not None:
         renewal_cents = RemoteRealmBillingSession(
             remote_realm=remote_realm
-        ).get_customer_plan_renewal_amount(plan, license_ledger)
+        ).get_annual_recurring_revenue_for_support_data(plan, license_ledger)
         current_rate = get_plan_rate_percentage(plan.discount)
     else:
         assert remote_server is not None
         renewal_cents = RemoteServerBillingSession(
             remote_server=remote_server
-        ).get_customer_plan_renewal_amount(plan, license_ledger)
+        ).get_annual_recurring_revenue_for_support_data(plan, license_ledger)
         current_rate = get_plan_rate_percentage(plan.discount)
-
-    if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-        renewal_cents *= 12
 
     return RemoteActivityPlanData(
         current_status=plan.get_plan_status_as_text(),
@@ -238,9 +235,7 @@ def get_estimated_arr_and_rate_by_realm() -> Tuple[Dict[str, int], Dict[str, str
         assert latest_ledger_entry is not None
         renewal_cents = RealmBillingSession(
             realm=plan.customer.realm
-        ).get_customer_plan_renewal_amount(plan, latest_ledger_entry)
-        if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-            renewal_cents *= 12
+        ).get_annual_recurring_revenue_for_support_data(plan, latest_ledger_entry)
         annual_revenue[plan.customer.realm.string_id] = renewal_cents
         plan_rate[plan.customer.realm.string_id] = get_plan_rate_percentage(plan.discount)
     return annual_revenue, plan_rate

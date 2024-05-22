@@ -186,7 +186,7 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
 def get_annual_invoice_count(billing_schedule: int) -> int:
     if billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
         return 12
-    else:
+    else:  # nocoverage
         return 1
 
 
@@ -283,13 +283,11 @@ def get_plan_data_for_support_view(
         plan_data.is_current_plan_billable = billing_session.check_plan_tier_is_billable(
             plan_tier=plan_data.current_plan.tier
         )
-        annual_invoice_count = get_annual_invoice_count(plan_data.current_plan.billing_schedule)
         if last_ledger_entry is not None:
             plan_data.annual_recurring_revenue = (
-                billing_session.get_customer_plan_renewal_amount(
+                billing_session.get_annual_recurring_revenue_for_support_data(
                     plan_data.current_plan, last_ledger_entry
                 )
-                * annual_invoice_count
             )
         else:
             plan_data.annual_recurring_revenue = 0  # nocoverage
