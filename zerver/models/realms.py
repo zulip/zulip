@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict, Union
 from uuid import uuid4
 
@@ -98,6 +98,88 @@ class OrgTypeDict(TypedDict):
     hidden: bool
     display_order: int
     onboarding_zulip_guide_url: Optional[str]
+
+
+class CommonPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+
+
+class CommonMessagePolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    EVERYONE = 5
+
+
+class EditTopicPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    EVERYONE = 5
+    NOBODY = 6
+
+
+class InviteToRealmPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    NOBODY = 6
+
+
+class CreateWebPublicStreamPolicyEnum(IntEnum):
+    # We don't allow granting roles less than Moderator access to
+    # create web-public streams, since it's a sensitive feature that
+    # can be used to send spam.
+    ADMINS_ONLY = 2
+    MODERATORS_ONLY = 4
+    NOBODY = 6
+    OWNERS_ONLY = 7
+
+
+class BotCreationPolicyEnum(IntEnum):
+    # This value is also being used in web/src/settings_bots.bot_creation_policy_values.
+    # On updating it here, update it there as well.
+    EVERYONE = 1
+    LIMIT_GENERIC_BOTS = 2
+    ADMINS_ONLY = 3
+
+
+class MoveMessagesBetweenStreamsPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    NOBODY = 6
+
+
+class PrivateMessagePolicyEnum(IntEnum):
+    UNLIMITED = 1
+    DISABLED = 2
+
+
+class WildcardMentionPolicyEnum(IntEnum):
+    EVERYONE = 1
+    MEMBERS = 2
+    FULL_MEMBERS = 3
+    ADMINS = 5
+    NOBODY = 6
+    MODERATORS = 7
+
+
+class DigestWeekdayEnum(IntEnum):
+    MONDAY = 0
+    TUESDAY = 1
+    WEDNESDAY = 2
+    THURSDAY = 3
+    FRIDAY = 4
+    SATURDAY = 5
+    SUNDAY = 6
 
 
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
