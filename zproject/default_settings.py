@@ -575,7 +575,7 @@ GOOGLE_ANALYTICS_ID: Optional[str] = None
 # This is overridden by dev_settings.py for droplets.
 IS_DEV_DROPLET = False
 
-# Used by puppet/kandra/files/cron.d/check_send_receive_time.
+# Used by the `check_send_receive_time` monitoring tool.
 NAGIOS_BOT_HOST = SYSTEM_BOT_REALM + "." + EXTERNAL_HOST
 
 # Use half of the available CPUs for data import purposes.
