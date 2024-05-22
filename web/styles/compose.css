@@ -284,6 +284,10 @@
        expands or contracts. */
     display: flex;
     flex-direction: column;
+    /* With a columnar flex, this ensures that
+       send controls occupy the same space as
+       the adjacent textbox. */
+    justify-content: space-between;
     /* We add 6px of margin to the grid-gap of
        6px, for 12px of space between the Send
        button and the textarea. */
@@ -298,13 +302,17 @@
     grid-area: message-formatting-controls-container;
 }
 
-#compose-limit-indicator {
+#compose-limit-indicator:not(:empty) {
     font-size: 12px;
     color: var(--color-limit-indicator);
     width: max-content;
 
     /* Keep the limit indicator just above
-       and aligned with the send button */
+       and aligned with the send button.
+       `:not(:empty)` prevents the padding
+       and margin-top from affecting layout
+       in the controls area when no indicator
+       is present. */
     margin-top: auto;
     padding: 3px 3px 3px 0;
 
