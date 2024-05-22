@@ -1291,6 +1291,14 @@ textarea.new_message_textarea,
     @media (width < $sm_min) {
         /* Drop to a square, rounded button. */
         width: 30px;
+        /* This reduces the vdots button so that
+           it and the send button fit within the
+           54px height the compose textarea occupies.
+           TODO: Should formatting buttons become part
+           of the textarea, the height here and its
+           participation in the columnar flexbox
+           should get a rewrite. */
+        height: 26px;
         margin-left: 0;
         border-radius: 4px;
     }
@@ -1299,6 +1307,12 @@ textarea.new_message_textarea,
         padding: 5px 0 5px 4px;
         font-size: 17px;
         flex-grow: 1;
+
+        @media (width < $sm_min) {
+            /* Keep vdots centered above the
+               Send button at smallest sizes. */
+            padding-left: 0;
+        }
     }
 }
 
