@@ -33,11 +33,18 @@
 
     & label.checkbox {
         display: flex; /* Arrange that a multi-line description line wraps properly. */
-        position: relative;
-        vertical-align: top;
+        /* Keep checkboxes vertically aligned, including with multi-line tasks. */
+        align-items: baseline;
+        /* Reset things from .new-style */
+        gap: 5px;
+        position: static;
+        min-height: 0;
 
         & input[type="checkbox"] {
             ~ .custom-checkbox {
+                position: static;
+                margin-right: 0;
+
                 height: 12px;
                 width: 12px;
                 border: 2px solid hsl(156deg 28% 70%);
