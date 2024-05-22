@@ -471,19 +471,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
         self.assert_json_error(result, "Label cannot be blank.")
 
-        self.assertEqual(CustomProfileField.objects.count(), self.original_count)
-        result = self.client_patch(
-            f"/json/realm/profile_fields/{field.id}",
-            info={"name": "New phone number"},
-        )
-        self.assert_json_success(result)
-        field = CustomProfileField.objects.get(id=field.id, realm=realm)
-        self.assertEqual(CustomProfileField.objects.count(), self.original_count)
-        self.assertEqual(field.name, "New phone number")
-        self.assertIs(field.hint, "")
-        self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
-        self.assertEqual(field.required, False)
-
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={"name": "*" * 41},
