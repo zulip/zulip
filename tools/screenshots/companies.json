@@ -1,0 +1,89 @@
+[
+    {
+        "recipient_type": "channel",
+        "channel": "general",
+        "color": "#94C849",
+        "topic": "Zulip features",
+        "users": {
+            "Bo Williams": {},
+            "Ariella Drake": {},
+            "Kevin Lin": {},
+            "Nolan Turner": {},
+            "Anna Smith": {},
+            "Zoe Davis": {}
+        },
+        "messages": [
+            {
+                "sender": "Bo Williams",
+                "content": "When you hover over a Python code block, you'll now see a button that opens the code in a playground. Try it out: :playground_slide:\n\n```python\nprint(\"Hello world!\")\n```",
+                "reactions": {
+                    "tada": [
+                        "Zoe Davis",
+                        "Nolan Turner",
+                        "Anna Smith",
+                        "Ariella Drake",
+                        "Kevin Lin"
+                    ]
+                },
+                "date": {"year": 2024, "month": 5, "day": 16, "hour": 13, "minute": 59}
+            },
+            {
+                "sender": "Ariella Drake",
+                "content": "LaTeX math blocks are nice — I wish I had them in grad school. :wink:",
+                "date": {"year": 2024, "month": 5, "day": 16, "hour": 14, "minute": 27}
+            },
+            {
+                "sender": "Ariella Drake",
+                "content": "```math\n\\phi = 1 + \\cfrac{1}{1+\\cfrac{1}{1+\\cdots}}\n```",
+                "date": {"year": 2024, "month": 5, "day": 16, "hour": 14, "minute": 30}
+            },
+            {
+                "sender": "Kevin Lin",
+                "content": "Interesting! https://www.youtube.com/watch?v=cbj59mVwErg",
+                "date": {"year": 2024, "month": 5, "day": 16, "hour": 15, "minute": 5}
+            }
+        ],
+        "screenshot": "static/images/landing-page/companies/message-formatting-top.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "general",
+        "color": "#9987E1",
+        "topic": "presentation feedback",
+        "users": {
+            "Maxy Stert": {},
+            "Kevin Lin": {}
+        },
+        "messages": [
+            {
+                "sender": "Maxy Stert",
+                "content": "Could someone take a look at my presentation draft? [presentation](#)",
+                "date": {"year": 2024, "month": 5, "day": 17, "hour": 16, "minute": 35}
+            },
+            {
+                "sender": "Kevin Lin",
+                "content": "Sure! Let’s do a call at <time:2024-05-17T14:30:00-07:00> to go through it.",
+                "reactions": {
+                    "+1": ["Maxy Stert"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 17, "hour": 17, "minute": 37}
+            },
+            {
+                "sender": "Maxy Stert",
+                "content": "[Join video call.](#)",
+                "date": {"year": 2024, "month": 5, "day": 17, "hour": 21, "minute": 30}
+            },
+            {
+                "sender": "Maxy Stert",
+                "content": "I got great feedback from @_**Kevin Lin**",
+                "date": {"year": 2024, "month": 5, "day": 17, "hour": 22, "minute": 7}
+            },
+            {
+                "sender": "Maxy Stert",
+                "content": "/poll When we should do a dry run?\nExtend tomorrow's meeting\nNext week",
+                "date": {"year": 2024, "month": 5, "day": 17, "hour": 22, "minute": 15}
+            }
+        ],
+        "screenshot": "static/images/landing-page/companies/message-formatting-bottom.png"
+    }
+]
