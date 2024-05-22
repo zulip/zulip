@@ -131,7 +131,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
             page,
             "#drafts_table .overlay-message-row .message_header_private_message .stream_label",
         ),
-        "You and King Hamlet, Cordelia, Lear's daughter",
+        "You and Cordelia, Lear's daughter, King Hamlet",
     );
     assert.strictEqual(
         await common.get_text_from_selector(

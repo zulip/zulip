@@ -324,16 +324,17 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
 }
 
 export function emails_to_full_names_string(emails: string[]): string {
-    return emails
-        .map((email) => {
-            email = email.trim();
-            const person = get_by_email(email);
-            if (person !== undefined) {
-                return person.full_name;
-            }
-            return INACCESSIBLE_USER_NAME;
-        })
-        .join(", ");
+    const names = emails.map((email) => {
+        email = email.trim();
+        const person = get_by_email(email);
+        if (person !== undefined) {
+            return person.full_name;
+        }
+        return INACCESSIBLE_USER_NAME;
+    });
+
+    const sorted_names = names.sort(util.make_strcmp());
+    return sorted_names.join(", ");
 }
 
 export function get_user_time(user_id: number): string | undefined {

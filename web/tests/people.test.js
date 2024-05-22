@@ -852,7 +852,7 @@ test_people("emails_to_full_names_string", () => {
             "unknown-email@example.com",
             maria.email,
         ]),
-        `${charles.full_name}, translated: Unknown user, ${maria.full_name}`,
+        `${charles.full_name}, ${maria.full_name}, translated: Unknown user`,
     );
 });
 
