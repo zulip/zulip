@@ -432,8 +432,10 @@ export function get_recipients(user_ids_string: string): string {
         return my_full_name();
     }
 
-    const names = get_display_full_names(other_ids).sort();
-    return names.join(", ");
+    const names = get_display_full_names(other_ids);
+    const sorted_names = names.sort(util.make_strcmp());
+
+    return sorted_names.join(", ");
 }
 
 export function pm_reply_user_string(message: Message | MessageWithBooleans): string | undefined {
