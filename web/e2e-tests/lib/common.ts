@@ -207,7 +207,7 @@ export async function get_text_from_selector(page: Page, selector: string): Prom
 
 export async function check_compose_state(
     page: Page,
-    params: Record<string, string>,
+    params: {stream_name?: string; topic?: string; content: string},
 ): Promise<void> {
     const form_params: Record<string, string> = {content: params.content};
     if (params.stream_name) {
