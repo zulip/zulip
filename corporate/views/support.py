@@ -2,7 +2,6 @@ import uuid
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
-from decimal import Decimal
 from operator import attrgetter
 from typing import Any, Dict, Iterable, List, Optional, Union
 from urllib.parse import urlencode, urlsplit
@@ -23,6 +22,7 @@ from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
 from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
 from corporate.lib.stripe import (
+    BILLING_SUPPORT_EMAIL,
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
@@ -33,7 +33,6 @@ from corporate.lib.stripe import (
     cents_to_dollar_string,
     do_deactivate_remote_server,
     do_reactivate_remote_server,
-    format_discount_percentage,
 )
 from corporate.lib.support import (
     CloudSupportData,
@@ -55,6 +54,7 @@ from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin, zulip_login_required
 from zerver.forms import check_subdomain_available
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress, send_email
@@ -64,7 +64,6 @@ from zerver.lib.validator import (
     check_date,
     check_string,
     check_string_in,
-    to_decimal,
     to_non_negative_int,
 )
 from zerver.models import (
@@ -93,6 +92,21 @@ class SupportRequestForm(forms.Form):
     MAX_SUBJECT_LENGTH = 50
     request_subject = forms.CharField(max_length=MAX_SUBJECT_LENGTH)
     request_message = forms.CharField(widget=forms.Textarea)
+
+
+class DemoRequestForm(forms.Form):
+    MAX_INPUT_LENGTH = 50
+    SORTED_ORG_TYPE_NAMES = sorted(
+        ([org_type["name"] for org_type in Realm.ORG_TYPES.values() if not org_type["hidden"]]),
+    )
+    full_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    email = forms.EmailField()
+    role = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    organization_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    organization_type = forms.CharField()
+    organization_website = forms.URLField(required=True)
+    expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    message = forms.CharField(widget=forms.Textarea)
 
 
 @zulip_login_required
@@ -136,6 +150,49 @@ def support_request(request: HttpRequest) -> HttpResponse:
             return response
 
     response = render(request, "corporate/support/support_request.html", context=context)
+    return response
+
+
+@has_request_variables
+def demo_request(request: HttpRequest) -> HttpResponse:
+    context = {
+        "MAX_INPUT_LENGTH": DemoRequestForm.MAX_INPUT_LENGTH,
+        "SORTED_ORG_TYPE_NAMES": DemoRequestForm.SORTED_ORG_TYPE_NAMES,
+    }
+
+    if request.POST:
+        post_data = request.POST.copy()
+        form = DemoRequestForm(post_data)
+
+        if form.is_valid():
+            rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+
+            email_context = {
+                "full_name": form.cleaned_data["full_name"],
+                "email": form.cleaned_data["email"],
+                "role": form.cleaned_data["role"],
+                "organization_name": form.cleaned_data["organization_name"],
+                "organization_type": form.cleaned_data["organization_type"],
+                "organization_website": form.cleaned_data["organization_website"],
+                "expected_user_count": form.cleaned_data["expected_user_count"],
+                "message": form.cleaned_data["message"],
+            }
+            # Sent to the server's sales team, so this email is not user-facing.
+            send_email(
+                "zerver/emails/demo_request",
+                to_emails=[BILLING_SUPPORT_EMAIL],
+                from_name="Zulip demo request",
+                from_address=FromAddress.tokenized_no_reply_address(),
+                reply_to_email=email_context["email"],
+                context=email_context,
+            )
+
+            response = render(
+                request, "corporate/support/support_request_thanks.html", context=context
+            )
+            return response
+
+    response = render(request, "corporate/support/demo_request.html", context=context)
     return response
 
 
@@ -240,6 +297,21 @@ def get_realm_plan_type_options() -> List[SupportSelectOption]:
     return plan_types
 
 
+def get_realm_plan_type_options_for_discount() -> List[SupportSelectOption]:
+    plan_types = [
+        SupportSelectOption("None", 0),
+        SupportSelectOption(
+            CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_STANDARD),
+            CustomerPlan.TIER_CLOUD_STANDARD,
+        ),
+        SupportSelectOption(
+            CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_PLUS),
+            CustomerPlan.TIER_CLOUD_PLUS,
+        ),
+    ]
+    return plan_types
+
+
 VALID_MODIFY_PLAN_METHODS = [
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
@@ -264,7 +336,10 @@ def support(
     request: HttpRequest,
     realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     plan_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    monthly_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    annual_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     new_subdomain: Optional[str] = REQ(default=None),
     status: Optional[str] = REQ(default=None, str_validator=check_string_in(VALID_STATUS_VALUES)),
     billing_modality: Optional[str] = REQ(
@@ -294,7 +369,11 @@ def support(
         keys = set(request.POST.keys())
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
-        if len(keys) != 2:
+        REQUIRED_KEYS = 2
+        if monthly_discounted_price is not None or annual_discounted_price is not None:
+            REQUIRED_KEYS = 3
+
+        if len(keys) != REQUIRED_KEYS:
             raise JsonableError(_("Invalid parameters"))
 
         assert realm_id is not None
@@ -309,10 +388,21 @@ def support(
                 support_type=SupportType.update_sponsorship_status,
                 sponsorship_status=sponsorship_pending,
             )
-        elif discount is not None:
+        elif monthly_discounted_price is not None or annual_discounted_price is not None:
             support_view_request = SupportViewRequest(
                 support_type=SupportType.attach_discount,
-                discount=discount,
+                monthly_discounted_price=monthly_discounted_price,
+                annual_discounted_price=annual_discounted_price,
+            )
+        elif minimum_licenses is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_minimum_licenses,
+                minimum_licenses=minimum_licenses,
+            )
+        elif required_plan_tier is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_required_plan_tier,
+                required_plan_tier=required_plan_tier,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(
@@ -357,7 +447,11 @@ def support(
                     f"Realm reactivation email sent to admins of {realm.string_id}."
                 )
             elif status == "deactivated":
-                do_deactivate_realm(realm, acting_user=acting_user)
+                # TODO: Add support for deactivation reason in the support UI that'll be passed
+                # here.
+                do_deactivate_realm(
+                    realm, acting_user=acting_user, deactivation_reason="owner_request"
+                )
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif scrub_realm:
             do_scrub_realm(realm, acting_user=acting_user)
@@ -476,11 +570,11 @@ def support(
 
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
-    context["format_discount"] = format_discount_percentage
     context["dollar_amount"] = cents_to_dollar_string
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
     context["REALM_PLAN_TYPES"] = get_realm_plan_type_options()
+    context["REALM_PLAN_TYPES_FOR_DISCOUNT"] = get_realm_plan_type_options_for_discount()
     context["ORGANIZATION_TYPES"] = sorted(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
@@ -537,7 +631,8 @@ def remote_servers_support(
     query: Optional[str] = REQ("q", default=None),
     remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     remote_realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    monthly_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    annual_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     fixed_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
@@ -586,10 +681,11 @@ def remote_servers_support(
                 support_type=SupportType.update_sponsorship_status,
                 sponsorship_status=sponsorship_pending,
             )
-        elif discount is not None:
+        elif monthly_discounted_price is not None or annual_discounted_price is not None:
             support_view_request = SupportViewRequest(
                 support_type=SupportType.attach_discount,
-                discount=discount,
+                monthly_discounted_price=monthly_discounted_price,
+                annual_discounted_price=annual_discounted_price,
             )
         elif minimum_licenses is not None:
             support_view_request = SupportViewRequest(
@@ -738,7 +834,6 @@ def remote_servers_support(
     context["remote_realms_support_data"] = realm_support_data
     context["get_plan_type_name"] = get_plan_type_string
     context["get_org_type_display_name"] = get_org_type_display_name
-    context["format_discount"] = format_discount_percentage
     context["format_optional_datetime"] = format_optional_datetime
     context["dollar_amount"] = cents_to_dollar_string
     context["server_analytics_link"] = remote_installation_stats_link

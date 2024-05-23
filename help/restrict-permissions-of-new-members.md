@@ -13,7 +13,7 @@ You can configure how long the waiting period is, as well as which actions requi
 being a full member.
 
 For some features, Zulip supports restricting access to only full members. These
-features include [creating streams](/help/configure-who-can-create-streams),
+features include [creating channels](/help/configure-who-can-create-channels),
 [inviting users to the organization](/help/invite-new-users),
 [adding custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
 and many more.

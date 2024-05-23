@@ -10,7 +10,6 @@ from django.utils.translation import override as override_language
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from confirmation import settings as confirmation_settings
-from zerver.actions.invites import notify_invites_changed
 from zerver.actions.message_send import (
     internal_send_huddle_message,
     internal_send_private_message,
@@ -24,6 +23,7 @@ from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.invites import notify_invites_changed
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
@@ -42,6 +42,7 @@ from zerver.lib.users import (
 from zerver.models import (
     DefaultStreamGroup,
     Message,
+    NamedUserGroup,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -49,7 +50,6 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -139,18 +139,15 @@ def set_up_streams_for_new_human_user(
         streams = []
         acting_user = None
 
-    user_was_invited = prereg_user is not None and (
-        prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
-    )
-
     if add_initial_stream_subscriptions:
-        # If the Preregistration object didn't explicitly list some streams (it
-        # happens when user directly signs up without any invitation), we add the
-        # default streams for the realm. Note that we are fine with "slim" Stream
-        # objects for calling bulk_add_subscriptions and add_new_user_history,
-        # which we verify in StreamSetupTest tests that check query counts.
-        if len(streams) == 0 and not user_was_invited:
-            streams = get_slim_realm_default_streams(realm.id)
+        # If prereg_user.include_realm_default_subscriptions is true, we
+        # add the default streams for the realm to the list of streams.
+        # Note that we are fine with "slim" Stream objects for calling
+        # bulk_add_subscriptions and add_new_user_history, which we verify
+        # in StreamSetupTest tests that check query counts.
+        if prereg_user is None or prereg_user.include_realm_default_subscriptions:
+            default_streams = get_slim_realm_default_streams(realm.id)
+            streams = list(set(streams) | set(default_streams))
 
         for default_stream_group in default_stream_groups:
             default_stream_group_streams = default_stream_group.streams.all()
@@ -179,7 +176,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     Mark the very most recent messages as unread.
     """
 
-    # Find recipient ids for the the user's streams, limiting to just
+    # Find recipient ids for the user's streams, limiting to just
     # those where we can access the streams' full history.
     #
     # TODO: This will do database queries in a loop if many private
@@ -539,7 +536,7 @@ def do_create_user(
         )
 
         if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
-            full_members_system_group = UserGroup.objects.get(
+            full_members_system_group = NamedUserGroup.objects.get(
                 name=SystemGroups.FULL_MEMBERS,
                 realm=user_profile.realm,
                 is_system_group=True,
@@ -580,14 +577,10 @@ def do_create_user(
         )
 
     if realm_creation:
-        assert realm.signup_announcements_stream is not None
-        bulk_add_subscriptions(
-            realm, [realm.signup_announcements_stream], [user_profile], acting_user=None
-        )
-
         from zerver.lib.onboarding import send_initial_realm_messages
 
-        send_initial_realm_messages(realm)
+        with override_language(realm.default_language):
+            send_initial_realm_messages(realm)
 
     return user_profile
 

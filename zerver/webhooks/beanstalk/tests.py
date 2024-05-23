@@ -8,7 +8,7 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class BeanstalkHookTests(WebhookTestCase):
-    STREAM_NAME = "commits"
+    CHANNEL_NAME = "commits"
     URL_TEMPLATE = "/api/v1/external/beanstalk?stream={stream}"
 
     def test_git_single(self) -> None:
@@ -16,7 +16,7 @@ class BeanstalkHookTests(WebhookTestCase):
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 1 commit to branch master.
 
 * add some stuff ([e50508df24c](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "git_singlecommit",
             expected_topic_name,
@@ -30,7 +30,7 @@ class BeanstalkHookTests(WebhookTestCase):
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 1 commit to branch master.
 
 * add some stuff ([e50508df24c](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "git_singlecommit",
             expected_topic_name,
@@ -45,7 +45,7 @@ class BeanstalkHookTests(WebhookTestCase):
 * Added new file ([edf529c7a64](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7))
 * Filled in new file with some stuff ([c2a191b9e79](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/c2a191b9))
 * More work to fix some bugs ([20098158e20](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/20098158))"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "git_multiple_committers",
             expected_topic_name,
@@ -61,7 +61,7 @@ class BeanstalkHookTests(WebhookTestCase):
 * Added new file ([edf529c7a64](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7))
 * Filled in new file with some stuff ([c2a191b9e79](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/c2a191b9))
 * More work to fix some bugs ([20098158e20](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/20098158))"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "git_multiple_committers",
             expected_topic_name,
@@ -76,7 +76,7 @@ class BeanstalkHookTests(WebhookTestCase):
 * Added new file ([edf529c7a64](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7))
 * Filled in new file with some stuff ([c2a191b9e79](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/c2a191b9))
 * More work to fix some bugs ([20098158e20](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/20098158))"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user, "git_multiple", expected_topic_name, expected_message, content_type=None
         )
 
@@ -88,7 +88,7 @@ class BeanstalkHookTests(WebhookTestCase):
 * Added new file ([edf529c7a64](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7))
 * Filled in new file with some stuff ([c2a191b9e79](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/c2a191b9))
 * More work to fix some bugs ([20098158e20](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/20098158))"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user, "git_multiple", expected_topic_name, expected_message, content_type=None
         )
 
@@ -98,7 +98,7 @@ class BeanstalkHookTests(WebhookTestCase):
         expected_message = f"""Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 50 commits to branch master.
 
 {(commits_info * COMMITS_LIMIT)}[and {50 - COMMITS_LIMIT} more commit(s)]"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "git_morethanlimitcommits",
             expected_topic_name,
@@ -113,7 +113,7 @@ class BeanstalkHookTests(WebhookTestCase):
         expected_message = f"""Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 50 commits to branch master.
 
 {(commits_info * COMMITS_LIMIT)}[and {50 - COMMITS_LIMIT} more commit(s)]"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "git_morethanlimitcommits",
             expected_topic_name,
@@ -166,7 +166,7 @@ class BeanstalkHookTests(WebhookTestCase):
         expected_message = """Leo Franchi pushed [revision 3](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/3):
 
 > Removed a file and added another one!"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "svn_addremove",
             expected_topic_name,
@@ -179,7 +179,7 @@ class BeanstalkHookTests(WebhookTestCase):
         expected_message = """Leo Franchi pushed [revision 2](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/2):
 
 > Added some code"""
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "svn_changefile",
             expected_topic_name,

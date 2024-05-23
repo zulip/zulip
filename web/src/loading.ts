@@ -11,7 +11,12 @@ export function make_indicator(
         text,
         width,
         height,
-    }: {abs_positioned?: boolean; text?: string; width?: number; height?: number} = {},
+    }: {
+        abs_positioned?: boolean;
+        text?: string;
+        width?: number | undefined;
+        height?: number | undefined;
+    } = {},
 ): void {
     let $container = $outer_container;
 
@@ -74,12 +79,6 @@ export function destroy_indicator($container: JQuery): void {
         return;
     }
     $container.data("destroying", true);
-
-    const spinner = $container.data("spinner_obj");
-    if (spinner !== undefined) {
-        spinner.stop();
-    }
-    $container.removeData("spinner_obj");
     $container.empty();
     $container.css({width: 0, height: 0});
 }

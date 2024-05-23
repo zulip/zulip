@@ -12,7 +12,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTransactionTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.user_groups import access_user_group_by_id
-from zerver.models import Realm, UserGroup, UserProfile
+from zerver.models import NamedUserGroup, Realm, UserGroup, UserProfile
 from zerver.models.realms import get_realm
 from zerver.views.user_groups import update_subgroups_of_user_group
 
@@ -77,7 +77,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
 
         super().tearDown()
 
-    def create_user_group_chain(self, realm: Realm) -> List[UserGroup]:
+    def create_user_group_chain(self, realm: Realm) -> List[NamedUserGroup]:
         """Build a user groups forming a chain through group-group memberships
         returning a list where each group is the supergroup of its subsequent group.
         """

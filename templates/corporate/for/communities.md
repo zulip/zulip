@@ -132,10 +132,10 @@ most of their time integrating improvements into Zulip.
 Many communities that migrated from
 [Slack](/help/import-from-slack),
 [Mattermost](/help/import-from-mattermost),
-[Gitter](/help/import-from-gitter), or
-[Rocket.Chat](/help/import-from-rocketchat) to Zulip tell us
-that Zulip helped them manage and grow an inclusive, healthy
-community. We hope Zulip can help your community succeed too!
+[Rocket.Chat](/help/import-from-rocketchat), or
+Gitter to Zulip tell us that Zulip helped them manage
+and grow an inclusive, healthy community. We hope Zulip
+can help your community succeed too!
 
 
 >  “I highly recommend Zulip to other communities. We’re coming from
@@ -143,7 +143,7 @@ community. We hope Zulip can help your community succeed too!
 >  night and day. Slack is a no-go for many due to not being FLOSS,
 >  and I’m concerned about vendor lock-in if they were to stop being
 >  so generous. Slack’s threading model is much worse than Zulip’s
->  IMO. The streams/topics flow is an incredibly intuitive way to keep
+>  IMO. The channels/topics flow is an incredibly intuitive way to keep
 >  track of everything that is going on.”
 
 > — RJ Ryan, Mixxx Developer

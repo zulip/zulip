@@ -157,7 +157,7 @@ def log_extra_usermessage_rows(apps: StateApps, schema_editor: BaseDatabaseSchem
 
         for message in messages:
             realm = message.realm
-            # Reimplement realm.uri
+            # Reimplement realm.url
             if realm.string_id == "":
                 hostname = settings.EXTERNAL_HOST
             else:

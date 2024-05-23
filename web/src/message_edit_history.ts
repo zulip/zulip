@@ -30,15 +30,15 @@ type EditHistoryEntry = {
     edited_by_notice: string;
     timestamp: number; // require to set data-message-id for overlay message row
     is_stream: boolean;
-    recipient_bar_color?: string;
-    body_to_render?: string;
-    topic_edited?: boolean;
-    prev_topic?: string;
-    new_topic?: string;
-    stream_changed?: boolean;
-    prev_stream?: string;
-    prev_stream_id?: number;
-    new_stream?: string;
+    recipient_bar_color: string | undefined;
+    body_to_render: string | undefined;
+    topic_edited: boolean | undefined;
+    prev_topic: string | undefined;
+    new_topic: string | undefined;
+    stream_changed: boolean | undefined;
+    prev_stream: string | undefined;
+    prev_stream_id: number | undefined;
+    new_stream: string | undefined;
 };
 
 const server_message_history_schema = z.object({
@@ -89,7 +89,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
 function get_display_stream_name(stream_id: number): string {
     const stream_name = sub_store.maybe_get_stream_name(stream_id);
     if (stream_name === undefined) {
-        return $t({defaultMessage: "Unknown stream"});
+        return $t({defaultMessage: "Unknown channel"});
     }
     return stream_name;
 }
@@ -289,11 +289,11 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("click", ".message_edit_notice", (e) => {
+    $("body").on("click", ".message_edit_notice", function (this: HTMLElement, e) {
         e.stopPropagation();
         e.preventDefault();
 
-        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
+        const message_id = rows.id($(this).closest(".message_row"));
         assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(message_id);
         const row_id = rows.id($row);
@@ -311,7 +311,11 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("focus", "#message-history-overlay .overlay-message-info-box", (e) => {
-        messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
-    });
+    $("body").on(
+        "focus",
+        "#message-history-overlay .overlay-message-info-box",
+        function (this: HTMLElement) {
+            messages_overlay_ui.activate_element(this, keyboard_handling_context);
+        },
+    );
 }

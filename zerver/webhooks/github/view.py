@@ -3,10 +3,10 @@ from datetime import datetime, timezone
 from typing import Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
-from returns.curry import partial
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
@@ -251,7 +251,7 @@ def get_change_deployment_status_body(helper: Helper) -> str:
     )
 
 
-def get_create_or_delete_body(helper: Helper, action: str) -> str:
+def get_create_or_delete_body(action: str, helper: Helper) -> str:
     payload = helper.payload
     ref_type = payload["ref_type"].tame(check_string)
     return "{} {} {} {}.".format(
@@ -814,9 +814,9 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
 EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "commit_comment": get_commit_comment_body,
     "closed_pull_request": get_closed_pull_request_body,
-    "create": partial(get_create_or_delete_body, action="created"),
+    "create": partial(get_create_or_delete_body, "created"),
     "check_run": get_check_run_body,
-    "delete": partial(get_create_or_delete_body, action="deleted"),
+    "delete": partial(get_create_or_delete_body, "deleted"),
     "deployment": get_deployment_body,
     "deployment_status": get_change_deployment_status_body,
     "discussion": get_discussion_body,

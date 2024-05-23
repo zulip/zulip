@@ -21,9 +21,9 @@ web/desktop app.
   you can choose this option for the mobile app.
 - **Only in conversation views**: In Zulip, a **conversation** is a [direct
   message](/help/direct-messages) thread (one-on-one or with a group), or a
-  [topic in a stream](/help/streams-and-topics). This option makes it convenient
-  to preview new messages in a stream, or skim [All
-  messages](/help/all-messages), and later read each topic in detail.
+  [topic in a channel](/help/introduction-to-topics). This option makes it
+  convenient to preview new messages in a channel, or skim [Combined
+  feed](/help/combined-feed), and later read each topic in detail.
 
 {start_tabs}
 
@@ -63,13 +63,13 @@ web/desktop app.
 ## Mark all messages as read
 
 You can manually **mark all messages as read**, or **mark all messages in a
-stream or topic as read**.
+channel or topic as read**.
 
 {start_tabs}
 
 {tab|via-left-sidebar}
 
-1. Hover over a stream, topic, or **All messages** in the left sidebar.
+1. Hover over a channel, topic, or **Combined feed** in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
@@ -85,7 +85,7 @@ stream or topic as read**.
 
 {!go-to-inbox.md!}
 
-1. Hover over a stream or topic in the left sidebar.
+1. Hover over a channel or topic in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
@@ -100,11 +100,11 @@ stream or topic as read**.
 
 {tab|mobile}
 
-1. Tap a stream, topic, or the **All messages**
+1. Tap a channel, topic, or the **Combined feed**
    (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
    tab.
 
-2. Tap **Mark stream as read**, **Mark topic as read**, or **Mark all as read**
+2. Tap **Mark channel as read**, **Mark topic as read**, or **Mark all as read**
    near the top right corner of the app.
 
 !!! tip ""

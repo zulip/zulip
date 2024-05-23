@@ -414,14 +414,14 @@ export function register_popover_menu(target: string, popover_props: Partial<Pop
     //
     // TODO: Should we instead we wrap the caller's `onHidden` hook,
     // if any, to add `instance.destroy()`?
-    $("body").on("click", target, (e) => {
+    $("body").on("click", target, function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
 
         // Hide popovers when user clicks on an element which navigates user to a link.
         // We don't explicitly handle these clicks per element and let browser handle them but in doing so,
         // we are not able to hide the popover which we would do otherwise.
-        const instance = toggle_popover_menu(e.currentTarget, popover_props);
+        const instance = toggle_popover_menu(this, popover_props);
         const $popper = $(instance.popper);
         $popper.on("click", "a[href]", () => {
             hide_current_popover_if_visible(instance);

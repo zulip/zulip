@@ -61,6 +61,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
 from zerver.views.message_fetch import get_messages_backend
 
@@ -362,7 +363,21 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_huddle(self) -> None:
+        # If the group doesn't exist, it's a flat false
+        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
+        term = dict(operator="dm", operand=two_others)
+        self._do_add_term_test(term, "WHERE false")
+
     def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
+        # Make the huddle first
+        get_or_create_huddle(
+            [
+                self.example_user("hamlet").id,
+                self.example_user("cordelia").id,
+                self.example_user("othello").id,
+            ]
+        )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = dict(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
@@ -379,9 +394,25 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_huddle_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        # If the group doesn't exist, it's a flat true
+        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
+        term = dict(operator="dm", operand=two_others, negated=True)
+        self._do_add_term_test(term, "WHERE true")
+
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
+        # Make the huddle first
+        get_or_create_huddle(
+            [
+                self.example_user("hamlet").id,
+                self.example_user("cordelia").id,
+                self.example_user("othello").id,
+            ]
+        )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = dict(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
@@ -1072,7 +1103,7 @@ class IncludeHistoryTest(ZulipTestCase):
             dict(operator="channels", operand="public"),
             dict(operator="is", operand="resolved"),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
         # simple True case
         narrow = [
@@ -2171,6 +2202,23 @@ class GetOldMessagesTest(ZulipTestCase):
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message["display_recipient"]), emails)
 
+    def test_get_messages_with_nonexistent_group_dm(self) -> None:
+        me = self.example_user("hamlet")
+        # Huddle which doesn't match anything gets no results
+        non_existent_huddle = [
+            me.id,
+            self.example_user("iago").id,
+            self.example_user("othello").id,
+        ]
+        self.login_user(me)
+        narrow: List[Dict[str, Any]] = [dict(operator="dm", operand=non_existent_huddle)]
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertEqual(result["messages"], [])
+
+        narrow = [dict(operator="dm", operand=non_existent_huddle, negated=True)]
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertEqual([m["id"] for m in result["messages"]], [1, 3])
+
     def test_get_visible_messages_with_narrow_dm(self) -> None:
         me = self.example_user("hamlet")
         self.login_user(me)
@@ -3118,7 +3166,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [dict(operator="is", operand="resolved")]
         result = self.get_and_check_messages(
-            dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=1, num_after=1)
+            dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=0, num_after=0)
         )
         self.assert_length(result["messages"], 1)
         self.assertEqual(result["messages"][0]["id"], anchor)

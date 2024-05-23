@@ -2,32 +2,34 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container new-style" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <div class="modal__header">
-                {{#unless is_bot}}
-                    {{#if is_active}}
-                        <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
-                            <span class="{{user_circle_class}} user_circle user_profile_presence"></span>
-                        </div>
-                    {{else}}
-                        <div>
-                            <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
-                        </div>
-                    {{/if}}
-                {{/unless}}
-                <h1 class="modal__title user_profile_name_heading" id="name">
+                <h1 class="modal__title user-profile-name-heading" id="name">
+                    {{#unless is_bot}}
+                        {{#if is_active}}
+                            <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
+                                <span class="{{user_circle_class}} user_circle user_profile_presence"></span>
+                            </div>
+                        {{else}}
+                            <div>
+                                <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
+                            </div>
+                        {{/if}}
+                    {{/unless}}
                     {{#if is_bot}}
                         <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                     {{/if}}
-                    <span class="user_profile_name">{{> user_full_name name=full_name}}</span>
-                    <a id="user_profile_manage_own_copy_link" class="copy_link_to_user_profile" tabindex="0" data-user-id="{{user_id}}">
-                        <i class="fa fa-link tippy-zulip-tooltip user_profile_manage_own_copy_link_button" data-tippy-content="{{t 'Copy link to profile' }}" aria-hidden="true"></i>
+                    <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
+                    <a class="copy-link-to-user-profile user-profile-manage-own-copy-link-button" tabindex="0" data-user-id="{{user_id}}">
+                        <i class="zulip-icon zulip-icon-link tippy-zulip-tooltip " data-tippy-content="{{t 'Copy link to profile' }}" aria-hidden="true"></i>
                     </a>
                     {{#if is_me}}
-                        <a id="user_profile_manage_own_edit_link" href="/#settings/profile">
-                            <i class="fa fa-edit tippy-zulip-tooltip user_profile_manage_own_edit_button" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>
+                        <a class="user-profile-manage-own-edit-button" href="/#settings/profile">
+                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>
                         </a>
                     {{/if}}
                     {{#if can_manage_profile}}
-                        <i class="fa fa-edit tippy-zulip-tooltip user_profile_manage_others_edit_button" data-tippy-content="{{t 'Manage user' }}" aria-hidden="true"></i>
+                        <div class="user-profile-manage-others-edit-button">
+                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Manage user' }}" aria-hidden="true"></i>
+                        </div>
                     {{/if}}
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
@@ -105,21 +107,21 @@
                         <div class="alert stream_list_info"></div>
                         {{#if show_user_subscribe_widget}}
                             <div class="header-section">
-                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to streams'}}</h3>
+                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
                             </div>
                             {{> user_profile_subscribe_widget}}
                         {{/if}}
                         <div class="stream-list-top-section">
                             <div class="header-section">
-                                <h3 class="stream-tab-element-header">{{t 'Subscribed streams' }}</h3>
+                                <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
                             </div>
-                            <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter streams' }}" />
+                            <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter channels' }}" />
                             <button type="button" class="clear_search_button" id="clear_stream_search">
                                 <i class="fa fa-remove" aria-hidden="true"></i>
                             </button>
                         </div>
                         <div class="subscription-stream-list empty-list">
-                            <table class="user-stream-list" data-empty="{{t 'No stream subscriptions.'}}" data-search-results-empty="{{t 'No matching streams' }}"></table>
+                            <table class="user-stream-list" data-empty="{{t 'No channel subscriptions.'}}" data-search-results-empty="{{t 'No matching channels' }}"></table>
                         </div>
                     </div>
 

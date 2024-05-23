@@ -75,12 +75,12 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
 @openapi_test_function("/users/me/subscriptions:post")
 def add_subscriptions(client: Client) -> None:
     # {code_example|start}
-    # Subscribe to the stream "new stream"
+    # Create and subscribe to channel "python-test".
     result = client.add_subscriptions(
         streams=[
             {
-                "name": "new stream",
-                "description": "New stream for testing",
+                "name": "python-test",
+                "description": "Channel for testing Python",
             },
         ],
     )
@@ -90,12 +90,12 @@ def add_subscriptions(client: Client) -> None:
 
     ensure_users([25], ["newbie"])
     # {code_example|start}
-    # To subscribe other users to a stream, you may pass
+    # To subscribe other users to a channel, you may pass
     # the `principals` argument, like so:
     user_id = 25
     result = client.add_subscriptions(
         streams=[
-            {"name": "new stream", "description": "New stream for testing"},
+            {"name": "python-test"},
         ],
         principals=[user_id],
     )
@@ -107,7 +107,7 @@ def add_subscriptions(client: Client) -> None:
 def test_add_subscriptions_already_subscribed(client: Client) -> None:
     result = client.add_subscriptions(
         streams=[
-            {"name": "new stream", "description": "New stream for testing"},
+            {"name": "python-test"},
         ],
         principals=["newbie@zulip.com"],
     )
@@ -118,11 +118,11 @@ def test_add_subscriptions_already_subscribed(client: Client) -> None:
 def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> None:
     client.add_subscriptions(
         streams=[
-            {"name": "private_stream"},
+            {"name": "private-channel"},
         ],
     )
 
-    stream_id = client.get_stream_id("private_stream")["stream_id"]
+    stream_id = client.get_stream_id("private-channel")["stream_id"]
     client.call_endpoint(
         f"streams/{stream_id}",
         method="PATCH",
@@ -131,7 +131,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
 
     result = nonadmin_client.add_subscriptions(
         streams=[
-            {"name": "private_stream"},
+            {"name": "private-channel"},
         ],
         authorization_errors_fatal=False,
     )
@@ -140,7 +140,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
 
     result = nonadmin_client.add_subscriptions(
         streams=[
-            {"name": "private_stream"},
+            {"name": "private-channel"},
         ],
         authorization_errors_fatal=True,
     )
@@ -160,8 +160,8 @@ def get_presence(client: Client) -> None:
 @openapi_test_function("/default_streams:post")
 def add_default_stream(client: Client) -> None:
     # {code_example|start}
-    # Add a stream to the set of default streams for new users.
-    stream_id = 7
+    # Add a channel to the set of default channels for new users.
+    stream_id = 10
 
     result = client.add_default_stream(stream_id)
     # {code_example|end}
@@ -172,8 +172,8 @@ def add_default_stream(client: Client) -> None:
 @openapi_test_function("/default_streams:delete")
 def remove_default_stream(client: Client) -> None:
     # {code_example|start}
-    # Remove a stream from the set of default streams for new users.
-    request = {"stream_id": 7}
+    # Remove a channel from the set of default channels for new users.
+    request = {"stream_id": 10}
 
     result = client.call_endpoint(
         url="/default_streams",
@@ -193,6 +193,20 @@ def get_user_presence(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/{user_id_or_email}/presence", "get", "200")
+
+
+@openapi_test_function("/users/{user_id}/status:get")
+def get_user_status(client: Client) -> None:
+    # {code_example|start}
+    # Get the status currently set by a user.
+    user_id = 11
+    result = client.call_endpoint(
+        url=f"/users/{user_id}/status",
+        method="GET",
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/{user_id}/status", "get", "200")
 
 
 @openapi_test_function("/users/me/presence:post")
@@ -321,7 +335,7 @@ def send_invitations(client: Client) -> None:
         "invitee_emails": "example@zulip.com, logan@zulip.com",
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 8, 9],
+        "stream_ids": [1, 11, 12],
     }
     result = client.call_endpoint(url="/invites", method="POST", request=request)
     # {code_example|end}
@@ -336,12 +350,49 @@ def create_reusable_invitation_link(client: Client) -> None:
     request = {
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 8, 9],
+        "stream_ids": [1, 11, 12],
     }
     result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/invites/multiuse", "post", "200")
+
+
+@openapi_test_function("/invites/{invite_id}:delete")
+def revoke_email_invitation(client: Client) -> None:
+    request = {
+        "invitee_emails": "delete-invite@zulip.com",
+        "invite_expires_in_minutes": 14400,  # 10 days
+        "invite_as": 400,
+        "stream_ids": [1, 11, 12],
+    }
+    result = client.call_endpoint(url="/invites", method="POST", request=request)
+
+    # {code_example|start}
+    # Revoke email invitation
+    invite_id = 3
+    result = client.call_endpoint(url=f"/invites/{invite_id}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/invites/{invite_id}", "delete", "200")
+
+
+@openapi_test_function("/invites/multiuse/{invite_id}:delete")
+def revoke_reusable_invitation_link(client: Client) -> None:
+    request = {
+        "invite_expires_in_minutes": 14400,  # 10 days
+        "invite_as": 400,
+        "stream_ids": [1],
+    }
+    result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
+
+    # {code_example|start}
+    # Revoke reusable invitation link
+    invite_id = 2
+    result = client.call_endpoint(url=f"/invites/multiuse/{invite_id}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/invites/multiuse/{invite_id}", "delete", "200")
 
 
 @openapi_test_function("/users/{user_id}:get")
@@ -408,7 +459,7 @@ def get_subscription_status(client: Client) -> None:
     ensure_users([7], ["zoe"])
 
     # {code_example|start}
-    # Check whether a user is a subscriber to a given stream.
+    # Check whether a user is a subscriber to a given channel.
     user_id = 7
     stream_id = 1
     result = client.call_endpoint(
@@ -584,9 +635,9 @@ def deactivate_own_user(client: Client, owner_client: Client) -> None:
 @openapi_test_function("/get_stream_id:get")
 def get_stream_id(client: Client) -> int:
     # {code_example|start}
-    # Get the ID of a given stream
-    stream_name = "new stream"
-    result = client.get_stream_id(stream_name)
+    # Get the ID of a given channel name.
+    name = "python-test"
+    result = client.get_stream_id(name)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/get_stream_id", "get", "200")
@@ -595,19 +646,18 @@ def get_stream_id(client: Client) -> int:
 
 
 @openapi_test_function("/streams/{stream_id}:delete")
-def archive_stream(client: Client, stream_id: int) -> None:
+def archive_stream(client: Client) -> None:
     result = client.add_subscriptions(
         streams=[
             {
-                "name": "stream to be archived",
-                "description": "New stream for testing",
+                "name": "example to archive",
             },
         ],
     )
 
     # {code_example|start}
-    # Archive the stream named 'stream to be archived'
-    stream_id = client.get_stream_id("stream to be archived")["stream_id"]
+    # Archive channel named "example to archive".
+    stream_id = client.get_stream_id("example to archive")["stream_id"]
     result = client.delete_stream(stream_id)
     # {code_example|end}
     validate_against_openapi_schema(result, "/streams/{stream_id}", "delete", "200")
@@ -618,7 +668,7 @@ def archive_stream(client: Client, stream_id: int) -> None:
 @openapi_test_function("/streams/{stream_id}/delete_topic:post")
 def delete_topic(client: Client, stream_id: int, topic: str) -> None:
     # {code_example|start}
-    # Delete a topic given its stream_id
+    # Delete a topic in a channel, given the channel's ID.
     request = {
         "topic_name": topic,
     }
@@ -634,13 +684,13 @@ def delete_topic(client: Client, stream_id: int, topic: str) -> None:
 @openapi_test_function("/streams:get")
 def get_streams(client: Client) -> None:
     # {code_example|start}
-    # Get all streams that the user has access to
+    # Get all channels that the user has access to.
     result = client.get_streams()
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/streams", "get", "200")
-    streams = [s for s in result["streams"] if s["name"] == "new stream"]
-    assert streams[0]["description"] == "New stream for testing"
+    streams = [s for s in result["streams"] if s["name"] == "python-test"]
+    assert streams[0]["description"] == "Channel for testing Python"
 
     # {code_example|start}
     # You may pass in one or more of the query parameters mentioned above
@@ -649,13 +699,13 @@ def get_streams(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/streams", "get", "200")
-    assert len(result["streams"]) == 5
+    assert len(result["streams"]) == 7
 
 
 @openapi_test_function("/streams/{stream_id}:patch")
 def update_stream(client: Client, stream_id: int) -> None:
     # {code_example|start}
-    # Update the stream by a given ID
+    # Update settings for the channel with a given ID.
     request = {
         "stream_id": stream_id,
         "stream_post_policy": 2,
@@ -695,8 +745,10 @@ def get_subscribers(client: Client) -> None:
     ensure_users([11, 25], ["iago", "newbie"])
 
     # {code_example|start}
-    # Get the subscribers to a stream
-    result = client.get_subscribers(stream="new stream")
+    # Get the subscribers to a channel. Note that `client.get_subscribers`
+    # takes a `stream` parameter with the channel's name and not the
+    # channel's ID.
+    result = client.get_subscribers(stream="python-test")
     # {code_example|end}
     assert result["subscribers"] == [11, 25]
 
@@ -709,22 +761,22 @@ def get_user_agent(client: Client) -> None:
 @openapi_test_function("/users/me/subscriptions:get")
 def get_subscriptions(client: Client) -> None:
     # {code_example|start}
-    # Get all streams that the user is subscribed to
+    # Get all channels that the user is subscribed to.
     result = client.get_subscriptions()
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "get", "200")
 
-    streams = [s for s in result["subscriptions"] if s["name"] == "new stream"]
-    assert streams[0]["description"] == "New stream for testing"
+    streams = [s for s in result["subscriptions"] if s["name"] == "python-test"]
+    assert streams[0]["description"] == "Channel for testing Python"
 
 
 @openapi_test_function("/users/me/subscriptions:delete")
 def remove_subscriptions(client: Client) -> None:
     # {code_example|start}
-    # Unsubscribe from the stream "new stream"
+    # Unsubscribe from channel "python-test".
     result = client.remove_subscriptions(
-        ["new stream"],
+        ["python-test"],
     )
     # {code_example|end}
 
@@ -733,13 +785,13 @@ def remove_subscriptions(client: Client) -> None:
     # test it was actually removed
     result = client.get_subscriptions()
     assert result["result"] == "success"
-    streams = [s for s in result["subscriptions"] if s["name"] == "new stream"]
+    streams = [s for s in result["subscriptions"] if s["name"] == "python-test"]
     assert len(streams) == 0
 
     # {code_example|start}
-    # Unsubscribe another user from the stream "new stream"
+    # Unsubscribe another user from channel "python-test".
     result = client.remove_subscriptions(
-        ["new stream"],
+        ["python-test"],
         principals=["newbie@zulip.com"],
     )
     # {code_example|end}
@@ -762,7 +814,7 @@ def toggle_mute_topic(client: Client) -> None:
     )
 
     # {code_example|start}
-    # Mute the topic "boat party" in the stream "Denmark"
+    # Mute the topic "boat party" in the channel named "Denmark".
     request = {
         "stream": "Denmark",
         "topic": "boat party",
@@ -774,7 +826,7 @@ def toggle_mute_topic(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
 
     # {code_example|start}
-    # Unmute the topic "boat party" in the stream "Denmark"
+    # Unmute the topic "boat party" in the channel named "Denmark".
     request = {
         "stream": "Denmark",
         "topic": "boat party",
@@ -792,7 +844,7 @@ def update_user_topic(client: Client) -> None:
     stream_id = client.get_stream_id("Denmark")["stream_id"]
 
     # {code_example|start}
-    # Mute the topic "dinner" in the stream having id 'stream_id'.
+    # Mute the topic "dinner" in a channel, given the channel's ID.
     request = {
         "stream_id": stream_id,
         "topic": "dinner",
@@ -808,7 +860,7 @@ def update_user_topic(client: Client) -> None:
     validate_against_openapi_schema(result, "/user_topics", "post", "200")
 
     # {code_example|start}
-    # Remove mute from the topic "dinner" in the stream having id 'stream_id'.
+    # Remove mute from the topic "dinner" in a channel, given the channel's ID.
     request = {
         "stream_id": stream_id,
         "topic": "dinner",
@@ -864,7 +916,7 @@ def mark_all_as_read(client: Client) -> None:
 @openapi_test_function("/mark_stream_as_read:post")
 def mark_stream_as_read(client: Client) -> None:
     # {code_example|start}
-    # Mark the unread messages in stream with ID "1" as read
+    # Mark the unread messages in the channel with ID 1 as read.
     result = client.mark_stream_as_read(1)
     # {code_example|end}
 
@@ -877,7 +929,8 @@ def mark_topic_as_read(client: Client) -> None:
     topic_name = client.get_stream_topics(1)["topics"][0]["name"]
 
     # {code_example|start}
-    # Mark the unread messages in stream 1's topic "topic_name" as read
+    # Mark unread messages in a given topic, in the channel with ID 1,
+    # as read.
     result = client.mark_topic_as_read(1, topic_name)
     # {code_example|end}
 
@@ -887,8 +940,9 @@ def mark_topic_as_read(client: Client) -> None:
 @openapi_test_function("/users/me/subscriptions/properties:post")
 def update_subscription_settings(client: Client) -> None:
     # {code_example|start}
-    # Update the user's subscription in stream #1 to pin it to the top of the
-    # stream list; and in stream #3 to have the hex color "f00"
+    # Update the user's subscription of the channel with ID 1 so that
+    # it's pinned to the top of the user's channel list, and in the
+    # channel with ID 3 so that it has the hex color "f00".
     request = [
         {
             "stream_id": 1,
@@ -896,7 +950,7 @@ def update_subscription_settings(client: Client) -> None:
             "value": True,
         },
         {
-            "stream_id": 7,
+            "stream_id": 10,
             "property": "color",
             "value": "#f00f00",
         },
@@ -923,14 +977,15 @@ def render_message(client: Client) -> None:
 @openapi_test_function("/messages:get")
 def get_messages(client: Client) -> None:
     # {code_example|start}
-    # Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
+    # Get the 100 last messages sent by "iago@zulip.com" to
+    # the channel named "Verona".
     request: Dict[str, Any] = {
         "anchor": "newest",
         "num_before": 100,
         "num_after": 0,
         "narrow": [
             {"operator": "sender", "operand": "iago@zulip.com"},
-            {"operator": "stream", "operand": "Verona"},
+            {"operator": "channel", "operand": "Verona"},
         ],
     }
     result = client.get_messages(request)
@@ -1005,7 +1060,7 @@ def send_message(client: Client) -> int:
     request: Dict[str, Any] = {}
 
     # {code_example|start}
-    # Send a stream message
+    # Send a channel message.
     request = {
         "type": "stream",
         "to": "Denmark",
@@ -1099,7 +1154,7 @@ def get_read_receipts(client: Client, message_id: int) -> None:
 def test_nonexistent_stream_error(client: Client) -> None:
     request = {
         "type": "stream",
-        "to": "nonexistent_stream",
+        "to": "nonexistent-channel",
         "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts.",
     }
@@ -1348,6 +1403,54 @@ def get_stream_topics(client: Client, stream_id: int) -> None:
     validate_against_openapi_schema(result, "/users/me/{stream_id}/topics", "get", "200")
 
 
+@openapi_test_function("/users/me/apns_device_token:post")
+def add_apns_token(client: Client) -> None:
+    # {code_example|start}
+    request = {"token": "apple-tokenbb", "appid": "org.zulip.Zulip"}
+    result = client.call_endpoint(url="/users/me/apns_device_token", method="POST", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/apns_device_token", "post", "200")
+
+
+@openapi_test_function("/users/me/apns_device_token:delete")
+def remove_apns_token(client: Client) -> None:
+    # {code_example|start}
+    request = {
+        "token": "apple-tokenbb",
+    }
+    result = client.call_endpoint(
+        url="/users/me/apns_device_token", method="DELETE", request=request
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/apns_device_token", "delete", "200")
+
+
+@openapi_test_function("/users/me/android_gcm_reg_id:post")
+def add_fcm_token(client: Client) -> None:
+    # {code_example|start}
+    request = {"token": "android-token"}
+    result = client.call_endpoint(
+        url="/users/me/android_gcm_reg_id", method="POST", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "post", "200")
+
+
+@openapi_test_function("/users/me/android_gcm_reg_id:delete")
+def remove_fcm_token(client: Client) -> None:
+    # {code_example|start}
+    request = {
+        "token": "android-token",
+    }
+    result = client.call_endpoint(
+        url="/users/me/android_gcm_reg_id", method="DELETE", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "delete", "200")
+
+
 @openapi_test_function("/typing:post")
 def set_typing_status(client: Client) -> None:
     ensure_users([10, 11], ["hamlet", "iago"])
@@ -1386,7 +1489,7 @@ def set_typing_status(client: Client) -> None:
 
     # {code_example|start}
     # The user has started to type in topic "typing status"
-    # of stream "Denmark"
+    # of the channel named "Denmark".
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
 
@@ -1404,7 +1507,7 @@ def set_typing_status(client: Client) -> None:
 
     # {code_example|start}
     # The user has finished typing in topic "typing status"
-    # of stream "Denmark"
+    # of the channel named "Denmark".
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
 
@@ -1612,6 +1715,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     reactivate_user(client)
     update_user(client)
     update_status(client)
+    get_user_status(client)
     get_user_by_email(client)
     get_subscription_status(client)
     get_profile(client)
@@ -1637,6 +1741,10 @@ def test_users(client: Client, owner_client: Client) -> None:
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)
+    add_apns_token(client)
+    remove_apns_token(client)
+    add_fcm_token(client)
+    remove_fcm_token(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:
@@ -1653,7 +1761,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     update_subscription_settings(client)
     get_stream_topics(client, 1)
     delete_topic(client, 1, "test")
-    archive_stream(client, stream_id)
+    archive_stream(client)
     add_default_stream(client)
     remove_default_stream(client)
 
@@ -1701,7 +1809,9 @@ def test_errors(client: Client) -> None:
 
 def test_invitations(client: Client) -> None:
     send_invitations(client)
+    revoke_email_invitation(client)
     create_reusable_invitation_link(client)
+    revoke_reusable_invitation_link(client)
     get_invitations(client)
 
 

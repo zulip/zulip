@@ -135,7 +135,7 @@ def absolute_avatar_url(user_profile: UserProfile) -> str:
     avatar = avatar_url(user_profile)
     # avatar_url can return None if client_gravatar=True, however here we use the default value of False
     assert avatar is not None
-    return urljoin(user_profile.realm.uri, avatar)
+    return urljoin(user_profile.realm.url, avatar)
 
 
 def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:

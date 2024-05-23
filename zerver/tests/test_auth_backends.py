@@ -110,11 +110,11 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     MultiuseInvite,
+    NamedUserGroup,
     PreregistrationUser,
     Realm,
     RealmDomain,
     Stream,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
@@ -214,7 +214,9 @@ class AuthBackendTest(ZulipTestCase):
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated realm
-        do_deactivate_realm(user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+        )
         result = backend.authenticate(**good_kwargs)
 
         self.assertIsNone(result)
@@ -1166,7 +1168,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
                 result["Location"],
-                f"{user_profile.realm.uri}/login/?"
+                f"{user_profile.realm.url}/login/?"
                 + urlencode({"is_deactivated": user_profile.delivery_email}),
             )
         self.assertEqual(
@@ -1215,12 +1217,12 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             ],
         )
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], realm.uri + "/register/")
+        self.assertEqual(result["Location"], realm.url + "/register/")
 
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         result = self.social_auth_test(account_data_dict, subdomain="nonexistent")
-        self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
+        self.assert_in_response("There is no Zulip organization at", result)
         self.assertEqual(result.status_code, 404)
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
@@ -1541,7 +1543,14 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         realm = get_realm("zulip")
 
         iago = self.example_user("iago")
-        do_invite_users(iago, [email], [], invite_expires_in_minutes=2 * 24 * 60)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                iago,
+                [email],
+                [],
+                include_realm_default_subscriptions=True,
+                invite_expires_in_minutes=2 * 24 * 60,
+            )
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1883,13 +1892,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         name = "Alice Jones"
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            iago,
-            [email],
-            [],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                iago,
+                [email],
+                [],
+                include_realm_default_subscriptions=False,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
         now = timezone_now() + timedelta(days=3)
 
         subdomain = "zulip"
@@ -2840,7 +2851,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             warn_log.output, [self.logger_output("SAML got invalid email argument.", "warning")]
         )
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], realm.uri + "/register/")
+        self.assertEqual(result["Location"], realm.url + "/register/")
 
     def test_social_auth_saml_multiple_idps_configured(self) -> None:
         # Set up a new SOCIAL_AUTH_SAML_ENABLED_IDPS dict with two idps.
@@ -3982,7 +3993,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 account_data_dict, subdomain=subdomain, email_data=email_data
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4004,7 +4015,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         ), self.assertLogs(self.logger_string, level="INFO") as mock_info:
             result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             mock_info.output,
             [
@@ -4040,7 +4051,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         ), self.assertLogs(self.logger_string, level="INFO") as mock_info:
             result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             mock_info.output,
             [
@@ -4290,7 +4301,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4343,7 +4354,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4375,7 +4386,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4431,7 +4442,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         with self.assertLogs(self.logger_string, level="WARNING") as m:
             result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4654,7 +4665,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
 
         url = re.findall(
-            'action="(http://zulip.testserver/accounts/do_confirm[^"]*)"',
+            r'action="(http://zulip.testserver/accounts/do_confirm[^"]*)"',
             result.content.decode(),
         )[0]
         confirmation = Confirmation.objects.all().first()
@@ -4700,7 +4711,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
         # Now confirm an invitation link works
         referrer = self.example_user("hamlet")
-        multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
+        multiuse_obj = MultiuseInvite.objects.create(
+            realm=realm, referred_by=referrer, include_realm_default_subscriptions=False
+        )
         multiuse_obj.streams.set(streams)
         validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
@@ -4978,7 +4991,9 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Account is deactivated", 401)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            self.user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+        )
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
@@ -5040,7 +5055,9 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Account is deactivated", 401)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            self.user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+        )
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         self.assert_json_error_contains(result, "This organization has been deactivated", 401)
 
@@ -5216,6 +5233,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ("email_auth_enabled", check_bool),
                     ("is_incompatible", check_bool),
                     ("require_email_format_usernames", check_bool),
+                    ("realm_url", check_string),
                     ("realm_uri", check_string),
                     ("zulip_version", check_string),
                     ("zulip_merge_base", check_string),
@@ -5239,6 +5257,7 @@ class FetchAuthBackends(ZulipTestCase):
         result = self.client_get(
             "/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="ZulipInvalid"
         )
+
         response_dict = self.assert_json_success(result)
         self.assertTrue(response_dict["is_incompatible"])
 
@@ -5339,7 +5358,7 @@ class TestTwoFactor(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "http://zulip.testserver")
 
-            # Going to login page should redirect to `realm.uri` if user is
+            # Going to login page should redirect to `realm.url` if user is
             # already logged in.
             result = self.client_get("/accounts/login/")
             self.assertEqual(result.status_code, 302)
@@ -6330,7 +6349,9 @@ class TestLDAP(ZulipLDAPTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = "nonexisting@zulip.com"
-            do_deactivate_realm(backend._realm, acting_user=None)
+            do_deactivate_realm(
+                backend._realm, acting_user=None, deactivation_reason="owner_request"
+            )
             with self.assertRaisesRegex(Exception, "Realm has been deactivated"):
                 backend.get_or_build_user(email, _LDAPUser())
 
@@ -7451,7 +7472,9 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
 
     def test_inactive_realm_failure(self) -> None:
         payload = {"email": self.email}
-        do_deactivate_realm(self.user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            self.user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+        )
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
@@ -7497,15 +7520,19 @@ class LDAPGroupSyncTest(ZulipTestCase):
             },
             LDAP_APPEND_DOMAIN="zulip.com",
         ), self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log:
-            self.assertFalse(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
+            self.assertFalse(
+                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+            )
 
             create_user_group_in_database(
                 "cool_test_group", [], realm, acting_user=None, description="Created by LDAP sync"
             )
 
-            self.assertTrue(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
+            self.assertTrue(
+                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+            )
 
-            user_group = UserGroup.objects.get(realm=realm, name="cool_test_group")
+            user_group = NamedUserGroup.objects.get(realm=realm, name="cool_test_group")
 
             self.assertFalse(
                 is_user_in_group(
@@ -7536,7 +7563,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertTrue(
                 is_user_in_group(
-                    UserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
                     cordelia,
                     direct_member_only=True,
                 )
@@ -7547,7 +7574,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertFalse(
                 is_user_in_group(
-                    UserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
                     cordelia,
                     direct_member_only=True,
                 )

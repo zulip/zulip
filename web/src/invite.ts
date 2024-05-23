@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import {add} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
@@ -25,6 +26,7 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
+import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
@@ -46,14 +48,13 @@ function get_common_invitation_data(): {
     stream_ids: string;
     invite_expires_in_minutes: string;
     invitee_emails: string;
+    include_realm_default_subscriptions: string;
 } {
     const invite_as = Number.parseInt(
-        $<HTMLSelectElement & {type: "select-one"}>("select:not([multiple])#invite_as").val()!,
+        $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
     );
-    const raw_expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-        "select:not([multiple])#expires_in",
-    ).val()!;
+    const raw_expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in").val()!;
     // See settings_config.expires_in_values for why we do this conversion.
     let expires_in: number | null;
     if (raw_expires_in === "null") {
@@ -64,10 +65,13 @@ function get_common_invitation_data(): {
         expires_in = Number.parseFloat(raw_expires_in);
     }
 
-    let stream_ids: number[] = [];
-    const default_stream_ids = stream_data.get_default_stream_ids();
-    if (default_stream_ids.length !== 0 && $("#invite_select_default_streams").prop("checked")) {
-        stream_ids = default_stream_ids;
+    const stream_ids: number[] = [];
+    let include_realm_default_subscriptions = false;
+    if (
+        $("#invite_select_default_streams").prop("checked") ||
+        !settings_data.user_can_subscribe_other_users()
+    ) {
+        include_realm_default_subscriptions = true;
     } else {
         $<HTMLInputElement>("#invite-stream-checkboxes input:checked").each(function () {
             const stream_id = Number.parseInt($(this).val()!, 10);
@@ -85,6 +89,7 @@ function get_common_invitation_data(): {
             .items()
             .map((pill) => email_pill.get_email_from_item(pill))
             .join(","),
+        include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
     const current_email = email_pill.get_current_email(pills);
     if (current_email) {
@@ -104,15 +109,14 @@ function beforeSend(): void {
     // aren't in the right domain, etc.)
     //
     // OR, you could just let the server do it. Probably my temptation.
-    const loading_text = $("#invite-user-modal .dialog_submit_button").data("loading-text");
+    const loading_text = $("#invite-user-modal .dialog_submit_button").attr("data-loading-text");
+    assert(loading_text !== undefined);
     $("#invite-user-modal .dialog_submit_button").text(loading_text);
     $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 }
 
 function submit_invitation_form(): void {
-    const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-        "select:not([multiple])#expires_in",
-    );
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const $invite_status = $("#dialog_error");
     const data = get_common_invitation_data();
 
@@ -153,17 +157,26 @@ function submit_invitation_form(): void {
             }
         },
         error(xhr) {
-            if (xhr.responseJSON?.errors === undefined) {
+            const parsed = z
+                .object({
+                    result: z.literal("error"),
+                    code: z.literal("INVITATION_FAILED"),
+                    msg: z.string(),
+                    errors: z.array(z.tuple([z.string(), z.string(), z.boolean()])),
+                    sent_invitations: z.boolean(),
+                    license_limit_reached: z.boolean(),
+                    daily_limit_reached: z.boolean(),
+                })
+                .safeParse(xhr.responseJSON);
+            if (!parsed.success) {
                 // There was a fatal error, no partial processing occurred.
                 ui_report.error("", xhr, $invite_status);
             } else {
                 // Some users were not invited.
-                const response_body = xhr.responseJSON;
                 const invitee_emails_errored = [];
                 const error_list = [];
                 let is_invitee_deactivated = false;
-                for (const value of response_body.errors) {
-                    const [email, error_message, deactivated] = value;
+                for (const [email, error_message, deactivated] of parsed.data.errors) {
                     error_list.push(`${email}: ${error_message}`);
                     if (deactivated) {
                         is_invitee_deactivated = true;
@@ -172,17 +185,17 @@ function submit_invitation_form(): void {
                 }
 
                 const error_response = render_invitation_failed_error({
-                    error_message: response_body.msg,
+                    error_message: parsed.data.msg,
                     error_list,
                     is_admin: current_user.is_admin,
                     is_invitee_deactivated,
-                    license_limit_reached: response_body.license_limit_reached,
+                    license_limit_reached: parsed.data.license_limit_reached,
                     has_billing_access: current_user.is_owner || current_user.is_billing_admin,
-                    daily_limit_reached: response_body.daily_limit_reached,
+                    daily_limit_reached: parsed.data.daily_limit_reached,
                 });
                 ui_report.message(error_response, $invite_status, "alert-error");
 
-                if (response_body.sent_invitations) {
+                if (parsed.data.sent_invitations) {
                     for (const email of invitee_emails_errored) {
                         pills.appendValue(email);
                     }
@@ -269,9 +282,7 @@ function get_expiration_time_in_minutes(): number {
 }
 
 function set_expires_on_text(): void {
-    const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-        "select:not([multiple])#expires_in",
-    );
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     if ($expires_in.val() === "custom") {
         $("#expires_on").hide();
         $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
@@ -282,14 +293,12 @@ function set_expires_on_text(): void {
 }
 
 function set_custom_time_inputs_visibility(): void {
-    const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-        "select:not([multiple])#expires_in",
-    );
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     if ($expires_in.val() === "custom") {
         $("#custom-expiration-time-input").val(custom_expiration_time_input);
-        $<HTMLSelectElement & {type: "select-one"}>(
-            "select:not([multiple])#custom-expiration-time-unit",
-        ).val(custom_expiration_time_unit);
+        $<HTMLSelectOneElement>("select:not([multiple])#custom-expiration-time-unit").val(
+            custom_expiration_time_unit,
+        );
         $("#custom-invite-expiration-time").show();
     } else {
         $("#custom-invite-expiration-time").hide();
@@ -297,7 +306,8 @@ function set_custom_time_inputs_visibility(): void {
 }
 
 function set_streams_to_join_list_visibility(): void {
-    const default_streams_selected = $("#invite_select_default_streams").prop("checked");
+    const default_streams_selected = $<HTMLInputElement>("input#invite_select_default_streams")[0]
+        .checked;
     if (default_streams_selected) {
         $("#streams_to_add .invite-stream-controls").hide();
         $("#invite-stream-checkboxes").hide();
@@ -335,12 +345,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         new_stream_announcements_stream: stream_data.get_new_stream_announcements_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
+        can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
     });
 
     function invite_user_modal_post_render(): void {
-        const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-            "select:not([multiple])#expires_in",
-        );
+        const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
         const $pill_container = $("#invitee_emails_container .pill-container");
         pills = input_pill.create({
             $container: $pill_container,
@@ -355,7 +364,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         set_custom_time_inputs_visibility();
         set_expires_on_text();
-        set_streams_to_join_list_visibility();
+
+        if (settings_data.user_can_subscribe_other_users()) {
+            set_streams_to_join_list_visibility();
+        }
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
             dialog_widget.close();
@@ -376,10 +388,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             );
             if ($("#invitee_emails_container").is(":visible")) {
                 $button.text($t({defaultMessage: "Invite"}));
-                $button.data("loading-text", $t({defaultMessage: "Inviting..."}));
+                $button.attr("data-loading-text", $t({defaultMessage: "Inviting..."}));
             } else {
                 $button.text($t({defaultMessage: "Generate invite link"}));
-                $button.data("loading-text", $t({defaultMessage: "Generating link..."}));
+                $button.attr("data-loading-text", $t({defaultMessage: "Generating link..."}));
             }
         }
 
@@ -409,7 +421,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             custom_expiration_time_input = Number.parseFloat(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
-            custom_expiration_time_unit = $<HTMLSelectElement & {type: "select-one"}>(
+            custom_expiration_time_unit = $<HTMLSelectOneElement>(
                 "select:not([multiple])#custom-expiration-time-unit",
             ).val()!;
             $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));

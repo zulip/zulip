@@ -3,7 +3,7 @@ IFTTT supports integrations with hundreds of
 dishwashers, cars, web services, and more. Get IFTTT notifications directly
 in Zulip.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

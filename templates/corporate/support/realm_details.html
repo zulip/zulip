@@ -1,14 +1,14 @@
 <div class="realm-support-information">
     <span class="cloud-label">Cloud realm</span>
     <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
-    <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.uri }}">{{ realm.uri }}</a> |
+    <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.url }}">{{ realm.url }}</a> |
     <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
     <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
     <b>Date created</b>: {{ realm.date_created|timesince }} ago<br />
     {% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
     <b>Owners</b>: {{ owner_emails_string }}
     {% if owner_emails_string %}
-    <a title="Copy emails" class="copy-button" data-copytext="{{ owner_emails_string }}">
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ owner_emails_string }}">
         <i class="fa fa-copy"></i>
     </a>
     {% endif %}
@@ -16,7 +16,7 @@
     {% set admin_emails_string = get_realm_admin_emails_as_string(realm) %}
     <b>Admins</b>: {{ admin_emails_string }}
     {% if admin_emails_string %}
-    <a title="Copy emails" class="copy-button" data-copytext="{{ admin_emails_string }}">
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ admin_emails_string }}">
         <i class="fa fa-copy"></i>
     </a>
     {% endif %}
@@ -24,7 +24,7 @@
     {% set first_human_user = realm.get_first_human_user() %}
     {% if first_human_user %}
     <b>First human user</b>: {{ first_human_user.delivery_email  }}
-    <a title="Copy emails" class="copy-button" data-copytext="{{ first_human_user.delivery_email }}">
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ first_human_user.delivery_email }}">
         <i class="fa fa-copy"></i>
     </a>
     {% else %}
@@ -103,18 +103,13 @@
         </form>
         {% endif %}
 
-        <form method="POST" class="support-discount-form support-form">
-            <b>Discount (use 85 for nonprofits)</b>:<br />
-            {{ csrf_input }}
-            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            {% if realm_support_data[realm.id].plan_data.current_plan and realm_support_data[realm.id].plan_data.current_plan.fixed_price %}
-            <input type="number" name="discount" value="{{ format_discount(realm_support_data[realm.id].sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" disabled />
-            <button type="submit" class="support-submit-button" disabled>Update</button>
-            {% else %}
-            <input type="number" name="discount" value="{{ format_discount(realm_support_data[realm.id].sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" required />
-            <button type="submit" class="support-submit-button">Update</button>
-            {% endif %}
-        </form>
+        {% with %}
+            {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
+            {% set PLAN_TYPES = REALM_PLAN_TYPES_FOR_DISCOUNT %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/sponsorship_discount_forms.html' %}
+        {% endwith %}
 
         {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
             {% with %}
@@ -127,7 +122,6 @@
     <div class="current-plan-container">
         {% with %}
             {% set plan_data = realm_support_data[realm.id].plan_data %}
-            {% set format_discount = format_discount %}
             {% set dollar_amount = dollar_amount %}
             {% include 'corporate/support/current_plan_details.html' %}
         {% endwith %}

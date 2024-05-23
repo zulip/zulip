@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# This script serves only to verify that the OS is a supported
+# version, before we attempt to rely on that version in
+# upgrade-zulip-stage-3
+
+if [ -f /etc/os-release ]; then
+    os_info="$(
+        . /etc/os-release
+        printf '%s\n' "$ID" "$VERSION_ID"
+    )"
+    {
+        read -r os_id
+        read -r os_version_id
+    } <<<"$os_info"
+fi
+
+case "$os_id $os_version_id" in
+    'debian 12' | 'ubuntu 22.04' | 'ubuntu 24.04')
+        exit 0
+        ;;
+    *)
+        exit 1
+        ;;
+esac

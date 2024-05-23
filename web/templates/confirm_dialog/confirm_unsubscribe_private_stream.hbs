@@ -1,17 +1,17 @@
 {{#unless unsubscribing_other_user}}
-    <p>{{t "Once you leave this stream, you will not be able to rejoin."}}</p>
+    <p>{{t "Once you leave this channel, you will not be able to rejoin."}}</p>
 {{/unless}}
 {{#if display_stream_archive_warning}}
     <p>
         {{#if unsubscribing_other_user}}
             {{#tr}}
-            Because you are removing the last subscriber from a private stream, it will be automatically <z-link>archived</z-link>.
-            {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/archive-a-stream">{{> @partial-block}}</a>{{/inline}}
+            Because you are removing the last subscriber from a private channel, it will be automatically <z-link>archived</z-link>.
+            {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/archive-a-channel">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         {{else}}
             {{#tr}}
-            Because you are the only subscriber, this stream will be automatically <z-link>archived</z-link>.
-            {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/archive-a-stream">{{> @partial-block}}</a>{{/inline}}
+            Because you are the only subscriber, this channel will be automatically <z-link>archived</z-link>.
+            {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/archive-a-channel">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         {{/if}}
     </p>

@@ -5,7 +5,7 @@
 {!inbox-intro.md!}
 
 Inbox is a convenient [home view](/help/configure-home-view) if you
-regularly clear all unread messages in your subscribed streams.
+regularly clear all unread messages in your subscribed channels.
 
 {!inbox-instructions.md!}
 
@@ -42,7 +42,7 @@ In the web app, you can control whether the **Inbox** includes all topics, just
 {!go-to-inbox.md!}
 
 1. Use the **Filter** box at the top to find a conversation.
-   You can filter by stream, topic, or direct message participants.
+   You can filter by channel, topic, or direct message participants.
 
 {end_tabs}
 
@@ -51,7 +51,7 @@ In the web app, you can control whether the **Inbox** includes all topics, just
 
 * [Reading strategies](/help/reading-strategies)
 * [Recent conversations](/help/recent-conversations)
-* [All messages](/help/all-messages)
-* [Mute or unmute a stream](/help/mute-a-stream)
+* [Combined feed](/help/combined-feed)
+* [Mute or unmute a channel](/help/mute-a-channel)
 * [Mute or unmute a topic](/help/mute-a-topic)
-* [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
+* [Introduction to channels](/help/introduction-to-channels)

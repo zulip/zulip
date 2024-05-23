@@ -57,7 +57,7 @@ class ZulipSCIMUser(SCIMUser):
 
         # These attributes are custom to this class and will be
         # populated with values in handle_replace and similar methods
-        # in response to a request for the the corresponding
+        # in response to a request for the corresponding
         # UserProfile fields to change. The .save() method inspects
         # these fields an executes the requested changes.
         self._email_new_value: Optional[str] = None
@@ -380,13 +380,13 @@ def base_scim_location_getter(request: HttpRequest, *args: Any, **kwargs: Any) -
 
     Since SCIM synchronization is scoped to an individual realm, we
     need these locations to be namespaced within the realm's domain
-    namespace, which is conveniently accessed via realm.uri.
+    namespace, which is conveniently accessed via realm.url.
     """
 
     realm = RequestNotes.get_notes(request).realm
     assert realm is not None
 
-    return realm.uri
+    return realm.url
 
 
 class ConflictError(scim_exceptions.IntegrityError):

@@ -4,3 +4,12 @@
 <i class="fa fa-{{icon}}" aria-hidden="true"></i>
 {{/if}}
 <span class="message-header-navbar-title">{{title}}</span>
+{{#if description}}
+    <span class="narrow_description rendered_markdown">{{description}}
+        {{#if link}}
+        <a class="help_link_widget" href="{{link}}" target="_blank" rel="noopener noreferrer">
+            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+        </a>
+        {{/if}}
+    </span>
+{{/if}}

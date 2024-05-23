@@ -115,7 +115,6 @@ input::placeholder {
         box-shadow: none;
 
         cursor: pointer;
-        transition: all 0.2s ease;
 
         /* -- button style variations -- */
         &.no-style {
@@ -155,6 +154,15 @@ input::placeholder {
             border-color: hsl(0deg 0% 60%);
             color: inherit;
             background-color: hsl(0deg 0% 95%);
+        }
+
+        &.add-subscription-button {
+            &:focus-visible {
+                border: 1px solid;
+                border-color: var(
+                    --color-border-add-subscription-button-focus
+                ) !important;
+            }
         }
 
         &.sea-green {
@@ -521,14 +529,14 @@ div.overlay {
 
 .upgrade-tip,
 .upgrade-or-sponsorship-tip,
-.tip {
+.tip,
+.invite-stream-notice {
     position: relative;
     display: block;
     background-color: hsl(46deg 63% 95%);
     border: 1px solid hsl(49deg 20% 84%);
     border-radius: 4px;
     padding: 10px;
-    margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
     color: hsl(0deg 0% 40%);
@@ -539,6 +547,16 @@ div.overlay {
         font-family: FontAwesome;
         font-weight: 600;
     }
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip,
+.tip {
+    margin: 10px 0;
+}
+
+.invite-stream-notice {
+    margin-bottom: 20px;
 }
 
 .tip::before {
@@ -1139,6 +1157,7 @@ div.overlay {
     align-items: center;
     box-sizing: border-box;
     padding: 1px;
+    margin: 0 10px;
     height: 33px;
     gap: 2px;
     background-color: var(--color-background-tab-picker-container);

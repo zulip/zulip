@@ -21,51 +21,32 @@ export const narrow_term_schema = z.object({
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
 // Sync this with zerver.lib.events.do_events_register.
 
-const placement_schema = z.enum([
-    "top",
-    "left",
-    "right",
-    "bottom",
-    "left_bottom",
-    "viewport_center",
-]);
-
-export type Placement = z.infer<typeof placement_schema>;
-
-const hotspot_location_schema = z.object({
-    element: z.string(),
-    offset_x: z.number(),
-    offset_y: z.number(),
-    popover: z.optional(placement_schema),
-});
-
-export type HotspotLocation = z.output<typeof hotspot_location_schema>;
-
-const raw_hotspot_schema = z.object({
-    delay: z.number(),
-    description: z.string(),
-    has_trigger: z.boolean(),
-    name: z.string(),
-    title: z.string(),
-    type: z.literal("hotspot"),
-});
-
-export type RawHotspot = z.output<typeof raw_hotspot_schema>;
-
-const hotspot_schema = raw_hotspot_schema.extend({
-    location: hotspot_location_schema,
-});
-
-export type Hotspot = z.output<typeof hotspot_schema>;
-
 const one_time_notice_schema = z.object({
     name: z.string(),
     type: z.literal("one_time_notice"),
 });
 
-const onboarding_step_schema = z.union([one_time_notice_schema, raw_hotspot_schema]);
+/* We may introduce onboarding step of types other than 'one time notice'
+in future. Earlier, we had 'hotspot' and 'one time notice' as the two
+types. We can simply do:
+const onboarding_step_schema = z.union([one_time_notice_schema, other_type_schema]);
+to avoid major refactoring when new type is introduced in the future. */
+const onboarding_step_schema = one_time_notice_schema;
 
 export type OnboardingStep = z.output<typeof onboarding_step_schema>;
+
+export const custom_profile_field_schema = z.object({
+    display_in_profile_summary: z.optional(z.boolean()),
+    field_data: z.string(),
+    hint: z.string(),
+    id: z.number(),
+    name: z.string(),
+    order: z.number(),
+    required: z.boolean(),
+    type: z.number(),
+});
+
+export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
 
 export const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -81,18 +62,7 @@ export const current_user_schema = z.object({
 // Sync this with zerver.lib.events.do_events_register.
 
 export const realm_schema = z.object({
-    custom_profile_fields: z.array(
-        z.object({
-            display_in_profile_summary: z.optional(z.boolean()),
-            field_data: z.string(),
-            hint: z.string(),
-            id: z.number(),
-            name: z.string(),
-            order: z.number(),
-            required: z.boolean(),
-            type: z.number(),
-        }),
-    ),
+    custom_profile_fields: z.array(custom_profile_field_schema),
     custom_profile_field_types: z.object({
         SHORT_TEXT: z.object({id: z.number(), name: z.string()}),
         LONG_TEXT: z.object({id: z.number(), name: z.string()}),
@@ -104,6 +74,7 @@ export const realm_schema = z.object({
         PRONOUNS: z.object({id: z.number(), name: z.string()}),
     }),
     max_avatar_file_size_mib: z.number(),
+    max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
     max_message_length: z.number(),
@@ -131,6 +102,15 @@ export const realm_schema = z.object({
     realm_create_public_stream_policy: z.number(),
     realm_create_web_public_stream_policy: z.number(),
     realm_default_code_block_language: z.string(),
+    realm_default_external_accounts: z.record(
+        z.string(),
+        z.object({
+            text: z.string(),
+            url_pattern: z.string(),
+            name: z.string(),
+            hint: z.string(),
+        }),
+    ),
     realm_default_language: z.string(),
     realm_delete_own_message_policy: z.number(),
     realm_description: z.string(),

@@ -90,7 +90,7 @@ There are a few ways to set up Zulip, and different ones may be convenient for y
     - This makes it simple to manage permissions. e.g. if you want to
       make sure TAs from one class cannot moderate discussion from a
       different class.
-    - Students can’t see who is in streams for other classes.
+    - Students can’t see who is in channels for other classes.
     - You can easily switch between multiple Zulip organizations in
       the [Zulip desktop apps](/apps/).
 
@@ -163,20 +163,20 @@ how to assign roles and permissions for a class.
   (Recommended: Admins)
 - Set [who can access user email addresses](/help/configure-email-visibility).
   (Recommended: Admins only)
-- Set [who can create streams](/help/configure-who-can-create-streams).
-  (Recommended: Admins for public streams; Admins, moderators and members for private streams)
-- Set [who can add users to streams](/help/configure-who-can-invite-to-streams).
+- Set [who can create channels](/help/configure-who-can-create-channels).
+  (Recommended: Admins for public channels; Admins, moderators and members for private channels)
+- Set [who can add users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: (default) Members for small classes;
   Admins and moderators for large classes)
-- Set [who can move messages between streams][move-between-streams].
+- Set [who can move messages between channels][move-between-channels].
   (Recommended: Admins and moderators)
 - Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
 [user-group-permissions]: /help/manage-user-groups#configure-who-can-create-and-manage-user-groups
-[move-between-streams]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream
+[move-between-channels]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel
 
 #### Recommended roles and permissions for a department
 
@@ -193,64 +193,64 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 - Set [who can access user email addresses](/help/configure-email-visibility).
   (Recommended: Admins only)
-- Set [who can create streams](/help/configure-who-can-create-streams).
-  (Recommended: Admins and moderators for public streams;
-   Admins, moderators and members for private streams)
-- Set [who can add users to streams](/help/configure-who-can-invite-to-streams).
+- Set [who can create channels](/help/configure-who-can-create-channels).
+  (Recommended: Admins and moderators for public channels;
+   Admins, moderators and members for private channels)
+- Set [who can add users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: Admins and moderators)
-- Set [who can move messages between streams][move-between-streams].
+- Set [who can move messages between channels][move-between-channels].
   (Recommended: Admins and moderators)
 - Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
-## Create streams
+## Create channels
 
-{!create-streams-intro.md!}
+{!create-channels-intro.md!}
 
-### How to create a stream
+### How to create a channel
 
 {start_tabs}
 
-{relative|stream|all}
+{relative|channel|all}
 
-1. Click **Create stream** on the right.
+1. Click **Create channel** on the right.
 
 1. Fill out the requested info, and click **Create**.
 
 {end_tabs}
 
-For more details about stream settings, see [Create a
-stream](/help/create-a-stream#stream-options).
+For more details about channel settings, see [Create a
+channel](/help/create-a-channel#channel-options).
 
-### Tips for creating streams
+### Tips for creating channels
 
-For most classes, the following streams are recommended:
+For most classes, the following channels are recommended:
 
 - **#announcements**: For general announcements about the class. When
-  creating this stream, [restrict posting
-  permissions](/help/stream-sending-policy) so that only course staff
-  ([Administrators and moderators](/help/roles-and-permissions) are
+  creating this channel, [restrict posting
+  permissions](/help/channel-posting-policy) so that only course staff
+  ([administrators and moderators](/help/roles-and-permissions)) are
   allowed to post.
 - **#staff (private)**: For discussions among course staff.
 - **#general**: For random topics, e.g. students forming study groups.
-- A stream for each **lecture** or **unit**, e.g. “Lecture 1: Course
+- A channel for each **lecture** or **unit**, e.g. “Lecture 1: Course
   intro” or “Unit 3: Sorting algorithms”.
-- A stream for each **section**/**tutorial group** (e.g. “Section 1”)
+- A channel for each **section**/**tutorial group** (e.g. “Section 1”)
 
 
 !!! tip ""
 
-    You can start by creating streams for just the first few
-    lectures/units at this point. When you create a new stream,
-    you will be able to copy stream membership from existing streams.
+    You can start by creating channels for just the first few
+    lectures/units at this point. When you create a new channel,
+    you will be able to copy channel membership from existing channels.
 
 A few notes:
 
-- Small classes may need just one discussion stream for all lectures.
+- Small classes may need just one discussion channel for all lectures.
 - If you are [using a single Zulip organization][separate-orgs] for
-  more than one class, all stream names should be prefixed with the
+  more than one class, all channel names should be prefixed with the
   name of the class, e.g. “CS101 > Lecture 1: Course intro”.
 
 [separate-orgs]: /help/setting-up-zulip-for-a-class#do-i-need-a-separate-zulip-organization-for-each-class
@@ -262,8 +262,8 @@ A few notes:
 !!! tip ""
 
     If using your Zulip organization for a single class, set default
-    streams for new users to include **#announcements**, **#general**,
-    and all lecture/unit streams.
+    channels for new users to include **#announcements**, **#general**,
+    and all lecture/unit channels.
 
 ## Invite users to join
 
@@ -276,10 +276,10 @@ A few notes:
 
 ### How to invite users to join
 
-To simplify subscription management, be sure to set the streams
+To simplify subscription management, be sure to set the channels
 students and staff should be added to when you create the
 invitations. You may choose to send invitations to course staff
-separately, so that they can immediately be added to private streams
+separately, so that they can immediately be added to private channels
 for your class.
 
 {!how-to-invite-users-to-join.md!}
@@ -290,9 +290,9 @@ to [Getting started with Zulip][getting-started] and the guide to
 
 !!! tip ""
 
-    If you create new streams later on, you can add users
+    If you create new channels later on, you can add users
     [by group][create-user-groups] or copy membership from another
-    stream (e.g. from Lecture 5 to Lecture 6).
+    channel (e.g. from Lecture 5 to Lecture 6).
 
 [create-user-groups]: /help/setting-up-zulip-for-a-class#create-user-groups
 
@@ -329,18 +329,18 @@ product.
 If you plan to use the same Zulip organization in future terms (either
 for your own classes or for your department), you will likely want to:
 
-- Rename all streams to indicate the class and term in which they were used, e.g.:
+- Rename all channels to indicate the class and term in which they were used, e.g.:
     - **#announcements** → **#FA21 - CS101 - announcements**
     - **#CS101 > Lecture 1: Course intro** → **#FA21 - CS101 > Lecture 1: Course
       intro**
 - If you do *not* want students from future classes to see messages
   from the prior term (e.g. because you posted homework solutions),
-  [make all the streams from the class private][make-private]. You’ll
+  [make all the channels from the class private][make-private]. You’ll
   be able to find and reuse content yourself, and [invite course
-  staff][add-to-stream] to these private streams as needed.
+  staff][add-to-channel] to these private channels as needed.
 - You may choose to [deactivate students’ Zulip
   accounts][deactivate-user] when the class is over.
-- [Unpin streams](/help/pin-a-stream) from the class from your
+- [Unpin channels](/help/pin-a-channel) from the class from your
   personal view.
 
 If you do not plan to reuse the Zulip organization, you can instead:
@@ -353,9 +353,9 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 
 * [Using Zulip for a class](/help/using-zulip-for-a-class)
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Streams and topics](/help/streams-and-topics)
+* [Introduction to topics](/help/introduction-to-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 
-[make-private]: /help/change-the-privacy-of-a-stream
-[add-to-stream]: /help/add-or-remove-users-from-a-stream
+[make-private]: /help/change-the-privacy-of-a-channel
+[add-to-channel]: /help/add-or-remove-users-from-a-channel
 [deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user

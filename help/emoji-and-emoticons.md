@@ -81,7 +81,7 @@ names.
 
 {tab|mac}
 
-1. [Start a new topic](/help/starting-a-new-topic).
+1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
 
 1. Press <kbd>Command ⌘</kbd> + <kbd>Control</kbd> + <kbd>Space</kbd>
    to open the **Character Viewer**. See the
@@ -93,7 +93,7 @@ names.
 
 {tab|windows}
 
-1. [Start a new topic](/help/starting-a-new-topic).
+1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
 
 1. Press <kbd>Windows</kbd> + <kbd>.</kbd>
    to open the **emoji keyboard**. See the
@@ -105,7 +105,7 @@ names.
 
 {tab|linux}
 
-1. [Start a new topic](/help/starting-a-new-topic).
+1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
 
 1. Open the [Characters app for GNOME](https://apps.gnome.org/en/Characters/).
 
@@ -114,7 +114,7 @@ names.
 
 {tab|chrome}
 
-1. [Start a new topic](/help/starting-a-new-topic).
+1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
 
 1. Right-click on the text input box.
 
@@ -126,7 +126,7 @@ names.
 
 {tab|via-paste}
 
-1. [Start a new topic](/help/starting-a-new-topic).
+1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
 
 1. Paste an emoji copied from outside of Zulip directly into the text input box.
 

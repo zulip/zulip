@@ -17,10 +17,10 @@ single place for:
 ## Posting lecture notes and announcements
 
 !!! tip ""
-    [Subscribe to email notifications](/help/stream-notifications) for
-    streams such as **#announcements** to make sure you never miss an important message.
+    [Subscribe to email notifications](/help/channel-notifications) for
+    channels such as **#announcements** to make sure you never miss an important message.
 
-Many classes use a dedicated stream to post general announcements, e.g.:
+Many classes use a dedicated channel to post general announcements, e.g.:
 
 * **\#announcements** > **office hours**: My office hours this week
 will be rescheduled from `Mon, Oct 11 2021, 1:00 PM` to `Thu, Oct 14 2021, 3:30 PM`.
@@ -40,13 +40,13 @@ from today’s lecture. [lecture notes 10/2.pdf]() You can view a recording of t
 
 ## Answering students’ questions
 
-In Zulip, streams determine who receives a message. Topics are
+In Zulip, channels determine who receives a message. Topics are
 light-weight subjects for individual conversations. You can more about
-streams and topics [here](/help/streams-and-topics).
+[channels](introduction-to-channels) and [topics](/help/introduction-to-topics).
 
 Zulip works best when each conversation has its own topic. When you
 have a question to ask, simply start a new topic! For example, one
-might see the following topics in a stream where a lecture and the
+might see the following topics in a channel where a lecture and the
 corresponding assignment are being discussed:
 
 * problem 2a clarification
@@ -70,7 +70,7 @@ staff to see which conversations still require their attention.
 
 ## Coordination among teaching staff
 
-Use private streams to coordinate among course staff, e.g.:
+Use private channels to coordinate among course staff, e.g.:
 
 * **\#staff** > **homework 2 exercise 3b**: How many points should I
   take off for this? The assignment says clearly to use Python 3 syntax.

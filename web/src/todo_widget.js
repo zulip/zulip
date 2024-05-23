@@ -137,9 +137,8 @@ export class TaskData {
             },
 
             inbound: (sender_id, data) => {
-                // All messages readers may add tasks.
-                // for legacy reasons, the inbound idx is
-                // called key in the event
+                // All readers may add tasks. For legacy reasons, the
+                // inbound idx is called key in the event.
                 const idx = data.key;
                 const task = data.task;
                 const desc = data.desc;
@@ -225,7 +224,7 @@ export function activate({$elem, callback, extra_data, message}) {
     const parse_result = todo_widget_extra_data_schema.safeParse(extra_data);
     if (!parse_result.success) {
         blueslip.warn("invalid todo extra data", parse_result.error.issues);
-        return;
+        return () => {};
     }
     const {data} = parse_result;
     const {task_list_title = "", tasks = []} = data || {};
@@ -384,7 +383,7 @@ export function activate({$elem, callback, extra_data, message}) {
         });
     }
 
-    $elem.handle_events = function (events) {
+    const handle_events = function (events) {
         for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
         }
@@ -396,4 +395,6 @@ export function activate({$elem, callback, extra_data, message}) {
     build_widget();
     render_task_list_title();
     render_results();
+
+    return handle_events;
 }

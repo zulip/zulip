@@ -13,7 +13,7 @@ import DebugRequirePlugin from "./debug-require-webpack-plugin";
 import assets from "./webpack.assets.json";
 import dev_assets from "./webpack.dev-assets.json";
 
-export default (
+const config = (
     env: {minimize?: boolean; ZULIP_VERSION?: string} = {},
     argv: {mode?: string},
 ): webpack.Configuration[] => {
@@ -272,3 +272,4 @@ export default (
 
     return [frontendConfig, serverConfig];
 };
+export default config;

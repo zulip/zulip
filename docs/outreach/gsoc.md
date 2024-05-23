@@ -160,7 +160,7 @@ Django, TypeScript/JavaScript, and CSS.
   open-source projects. Much of the basic design, API structure, and scaffolding
   is complete, but there is a lot of work that remains to complete this vision.
   The project can likely support a couple students; there is considerable work
-  to be done on the settings UI, both for user groups and for stream and
+  to be done on the settings UI, both for user groups and for channel and
   organization-level settings, dozens of existing settings to migrate, and [many
   new settings][organization-settings-label] that users have long requested that
   we've delayed adding in order to avoid having to migrate them. 175 or 350
@@ -171,19 +171,19 @@ Django, TypeScript/JavaScript, and CSS.
   Experts: Sahil Batra
 
 - Improve the framework and UI in **Zulip's overlays for managing
-  streams and groups**. These two components have very parallel design
+  channels and groups**. These two components have very parallel design
   patterns and implementations (the groups one is quite new!). Coupled
   with the user groups permissions migration, the goal of this project
   is to make these important settings panels ergonomic for the large
   number of new settings that we expect to migrate or add via the
   groups migration. See the [user groups
-  settings][group-settings-issues] and [stream
-  settings][stream-settings-issues] area labels for starter projects.
+  settings][group-settings-issues] and [channel
+  settings][channel-settings-issues] area labels for starter projects.
 
   Experts: Purushottam Tiwari, Sahil Batra
 
 [group-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22area%3A+settings+%28user+groups%29%22
-[stream-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+stream+settings%22
+[channel-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+stream+settings%22
 [user-group-permissions]: https://github.com/zulip/zulip/issues/19525
 [organization-settings-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+settings+%28admin%2Forg%29%22
 

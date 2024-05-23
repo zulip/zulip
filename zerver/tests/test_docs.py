@@ -172,9 +172,9 @@ class DocPageTest(ZulipTestCase):
             "/api/delete-queue": "Delete a previously registered queue",
             "/api/get-events": "dont_block",
             "/api/get-own-user": "does not accept any parameters.",
-            "/api/get-stream-id": "The name of the stream to access.",
+            "/api/get-stream-id": "The name of the channel to access.",
             "/api/get-streams": "include_public",
-            "/api/get-subscriptions": "Get all streams that the user is subscribed to.",
+            "/api/get-subscriptions": "Get all channels that the user is subscribed to.",
             "/api/get-users": "client_gravatar",
             "/api/installation-instructions": "No download required!",
             "/api/register-queue": "apply_markdown",
@@ -424,21 +424,21 @@ class HelpTest(ZulipTestCase):
         self.assertNotIn("/stats", str(result.content))
 
     def test_help_relative_links_for_stream(self) -> None:
-        result = self.client_get("/help/message-a-stream-by-email")
+        result = self.client_get("/help/message-a-channel-by-email")
         self.assertIn(
-            '<a href="/#streams/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Stream settings</a>',
+            '<a href="/#channels/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Channel settings</a>',
             str(result.content),
         )
         self.assertEqual(result.status_code, 200)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/message-a-stream-by-email", subdomain="")
+            result = self.client_get("/help/message-a-channel-by-email", subdomain="")
         self.assertEqual(result.status_code, 200)
         self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-hash"></i> Stream settings</strong>',
+            '<strong><i class="zulip-icon zulip-icon-hash"></i> Channel settings</strong>',
             str(result.content),
         )
-        self.assertNotIn("/#streams", str(result.content))
+        self.assertNotIn("/#channels", str(result.content))
 
 
 class IntegrationTest(ZulipTestCase):
@@ -516,7 +516,7 @@ class PlansPageTest(ZulipTestCase):
         non_existent_domain = "moo"
         result = self.client_get("/plans/", subdomain=non_existent_domain)
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("does not exist", result)
+        self.assert_in_response("There is no Zulip organization at", result)
 
         realm = get_realm("zulip")
         realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE

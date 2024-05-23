@@ -1,10 +1,10 @@
 from typing import Callable, Dict, Iterable, Iterator, List, Optional
 
 from django.http import HttpRequest, HttpResponse
-from returns.curry import partial
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
@@ -172,7 +172,7 @@ def get_epic_create_body(payload: WildValue, action: WildValue) -> str:
     )
 
 
-def get_comment_added_body(payload: WildValue, action: WildValue, entity: str) -> str:
+def get_comment_added_body(entity: str, payload: WildValue, action: WildValue) -> str:
     actions = payload["actions"]
     kwargs = {"entity": entity}
     for action in actions:
@@ -188,7 +188,7 @@ def get_comment_added_body(payload: WildValue, action: WildValue, entity: str) -
     return COMMENT_ADDED_TEMPLATE.format(**kwargs)
 
 
-def get_update_description_body(payload: WildValue, action: WildValue, entity: str) -> str:
+def get_update_description_body(entity: str, payload: WildValue, action: WildValue) -> str:
     desc = action["changes"]["description"]
 
     kwargs = {
@@ -249,7 +249,7 @@ def get_story_update_state_body(payload: WildValue, action: WildValue) -> str:
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
 
 
-def get_update_name_body(payload: WildValue, action: WildValue, entity: str) -> str:
+def get_update_name_body(entity: str, payload: WildValue, action: WildValue) -> str:
     name = action["changes"]["name"]
     kwargs = {
         "entity": entity,
@@ -264,7 +264,7 @@ def get_update_name_body(payload: WildValue, action: WildValue, entity: str) -> 
     return NAME_CHANGED_TEMPLATE.format(**kwargs)
 
 
-def get_update_archived_body(payload: WildValue, action: WildValue, entity: str) -> str:
+def get_update_archived_body(entity: str, payload: WildValue, action: WildValue) -> str:
     archived = action["changes"]["archived"]
     if archived["new"]:
         operation = "archived"
@@ -283,7 +283,7 @@ def get_update_archived_body(payload: WildValue, action: WildValue, entity: str)
     return ARCHIVED_TEMPLATE.format(**kwargs)
 
 
-def get_story_task_body(payload: WildValue, action: WildValue, operation: str) -> str:
+def get_story_task_body(operation: str, payload: WildValue, action: WildValue) -> str:
     kwargs = {
         "task_description": action["description"].tame(check_string),
         "operation": operation,
@@ -381,7 +381,7 @@ def get_reference_by_id(payload: WildValue, ref_id: Optional[int]) -> Optional[W
 
 
 def get_secondary_actions_with_param(
-    payload: WildValue, entity: str, changed_attr: str
+    entity: str, changed_attr: str, payload: WildValue
 ) -> Iterator[WildValue]:
     # This function is a generator for secondary actions that have the required changed attributes,
     # i.e.: "story" that has "pull-request_ids" changed.
@@ -390,7 +390,7 @@ def get_secondary_actions_with_param(
             yield action
 
 
-def get_story_create_github_entity_body(payload: WildValue, action: WildValue, entity: str) -> str:
+def get_story_create_github_entity_body(entity: str, payload: WildValue, action: WildValue) -> str:
     pull_request_action: WildValue = get_action_with_primary_id(payload)
 
     kwargs = {
@@ -662,9 +662,7 @@ def get_story_update_batch_body(payload: WildValue, action: WildValue) -> Option
     return STORY_UPDATE_BATCH_TEMPLATE.format(**kwargs)
 
 
-def get_entity_name(
-    payload: WildValue, action: WildValue, entity: Optional[str] = None
-) -> Optional[str]:
+def get_entity_name(entity: str, payload: WildValue, action: WildValue) -> Optional[str]:
     name = action["name"].tame(check_string) if "name" in action else None
 
     if name is None or action["entity_type"] == "branch":
@@ -686,7 +684,7 @@ def get_name_template(entity: str) -> str:
     return EPIC_NAME_TEMPLATE
 
 
-def send_stream_messages_for_actions(
+def send_channel_messages_for_actions(
     request: HttpRequest,
     user_profile: UserProfile,
     payload: WildValue,
@@ -706,18 +704,16 @@ def send_stream_messages_for_actions(
 
 
 EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
-    "story_update_archived": partial(get_update_archived_body, entity="story"),
-    "epic_update_archived": partial(get_update_archived_body, entity="epic"),
+    "story_update_archived": partial(get_update_archived_body, "story"),
+    "epic_update_archived": partial(get_update_archived_body, "epic"),
     "story_create": get_story_create_body,
-    "pull-request_create": partial(get_story_create_github_entity_body, entity="pull-request"),
-    "pull-request_comment": partial(
-        get_story_create_github_entity_body, entity="pull-request-comment"
-    ),
-    "branch_create": partial(get_story_create_github_entity_body, entity="branch"),
+    "pull-request_create": partial(get_story_create_github_entity_body, "pull-request"),
+    "pull-request_comment": partial(get_story_create_github_entity_body, "pull-request-comment"),
+    "branch_create": partial(get_story_create_github_entity_body, "branch"),
     "story_delete": get_delete_body,
     "epic_delete": get_delete_body,
-    "story-task_create": partial(get_story_task_body, operation="added to"),
-    "story-task_delete": partial(get_story_task_body, operation="removed from"),
+    "story-task_create": partial(get_story_task_body, "added to"),
+    "story-task_delete": partial(get_story_task_body, "removed from"),
     "story-task_update_complete": get_story_task_completed_body,
     "story_update_epic": get_story_update_epic_body,
     "story_update_estimate": get_story_update_estimate_body,
@@ -727,27 +723,27 @@ EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[
     "story_update_project": get_story_update_project_body,
     "story_update_type": get_story_update_type_body,
     "epic_create": get_epic_create_body,
-    "epic-comment_create": partial(get_comment_added_body, entity="epic"),
-    "story-comment_create": partial(get_comment_added_body, entity="story"),
-    "epic_update_description": partial(get_update_description_body, entity="epic"),
-    "story_update_description": partial(get_update_description_body, entity="story"),
+    "epic-comment_create": partial(get_comment_added_body, "epic"),
+    "story-comment_create": partial(get_comment_added_body, "story"),
+    "epic_update_description": partial(get_update_description_body, "epic"),
+    "story_update_description": partial(get_update_description_body, "story"),
     "epic_update_state": get_epic_update_state_body,
     "story_update_state": get_story_update_state_body,
-    "epic_update_name": partial(get_update_name_body, entity="epic"),
-    "story_update_name": partial(get_update_name_body, entity="story"),
+    "epic_update_name": partial(get_update_name_body, "epic"),
+    "story_update_name": partial(get_update_name_body, "story"),
     "story_update_batch": get_story_update_batch_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_BODY_FUNCTION_MAPPER.keys())
 
 EVENT_TOPIC_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
-    "story": partial(get_entity_name, entity="story"),
-    "pull-request": partial(get_entity_name, entity="story"),
-    "branch": partial(get_entity_name, entity="story"),
-    "story-comment": partial(get_entity_name, entity="story"),
-    "story-task": partial(get_entity_name, entity="story"),
-    "epic": partial(get_entity_name, entity="epic"),
-    "epic-comment": partial(get_entity_name, entity="epic"),
+    "story": partial(get_entity_name, "story"),
+    "pull-request": partial(get_entity_name, "story"),
+    "branch": partial(get_entity_name, "story"),
+    "story-comment": partial(get_entity_name, "story"),
+    "story-task": partial(get_entity_name, "story"),
+    "epic": partial(get_entity_name, "epic"),
+    "epic-comment": partial(get_entity_name, "epic"),
 }
 
 IGNORED_EVENTS = {
@@ -755,15 +751,9 @@ IGNORED_EVENTS = {
 }
 
 EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Iterator[WildValue]]] = {
-    "pull-request_create": partial(
-        get_secondary_actions_with_param, entity="story", changed_attr="pull_request_ids"
-    ),
-    "branch_create": partial(
-        get_secondary_actions_with_param, entity="story", changed_attr="branch_ids"
-    ),
-    "pull-request_comment": partial(
-        get_secondary_actions_with_param, entity="story", changed_attr="pull_request_ids"
-    ),
+    "pull-request_create": partial(get_secondary_actions_with_param, "story", "pull_request_ids"),
+    "branch_create": partial(get_secondary_actions_with_param, "story", "branch_ids"),
+    "pull-request_comment": partial(get_secondary_actions_with_param, "story", "pull_request_ids"),
 }
 
 
@@ -796,8 +786,8 @@ def api_clubhouse_webhook(
         if event in EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER:
             sec_actions_func = EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER[event]
             for sec_action in sec_actions_func(payload):
-                send_stream_messages_for_actions(request, user_profile, payload, sec_action, event)
+                send_channel_messages_for_actions(request, user_profile, payload, sec_action, event)
         else:
-            send_stream_messages_for_actions(request, user_profile, payload, primary_action, event)
+            send_channel_messages_for_actions(request, user_profile, payload, primary_action, event)
 
     return json_success(request)

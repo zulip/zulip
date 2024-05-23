@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import * as helpers from "./helpers";
 
@@ -65,12 +66,13 @@ function create_ajax_request(): void {
         },
         error(xhr) {
             hide_submit_loading_indicator();
-            if (xhr.responseJSON?.msg) {
-                if (xhr.responseJSON.msg === "Enter a valid URL.") {
-                    $("#sponsorship-org-website-error").text(xhr.responseJSON.msg);
+            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            if (parsed.success) {
+                if (parsed.data.msg === "Enter a valid URL.") {
+                    $("#sponsorship-org-website-error").text(parsed.data.msg);
                     return;
                 }
-                $("#sponsorship-error").show().text(xhr.responseJSON.msg);
+                $("#sponsorship-error").show().text(parsed.data.msg);
             }
         },
     });

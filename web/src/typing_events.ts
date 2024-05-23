@@ -146,3 +146,8 @@ export function display_notification(event: TypingEvent): void {
         },
     );
 }
+
+export function disable_typing_notification(): void {
+    typing_data.clear_typing_data();
+    render_notifications_for_narrow();
+}

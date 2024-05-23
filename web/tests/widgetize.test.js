@@ -36,6 +36,7 @@ const sample_events = [
 
 let events;
 let $widget_elem;
+let handle_events;
 let is_event_handled;
 let is_widget_activated;
 
@@ -44,11 +45,12 @@ const fake_poll_widget = {
         is_widget_activated = true;
         $widget_elem = data.$elem;
         assert.ok($widget_elem.hasClass("widget-content"));
-        $widget_elem.handle_events = (e) => {
+        handle_events = (e) => {
             is_event_handled = true;
             assert.deepStrictEqual(e, events);
         };
         data.callback("test_data");
+        return handle_events;
     },
 };
 
@@ -66,6 +68,7 @@ function test(label, f) {
     run_test(label, ({override}) => {
         events = [...sample_events];
         $widget_elem = undefined;
+        handle_events = undefined;
         is_event_handled = false;
         is_widget_activated = false;
         widgetize.clear_for_testing();
@@ -75,8 +78,9 @@ function test(label, f) {
 
 test("activate", ({override}) => {
     // Both widgetize.activate and widgetize.handle_event are tested
-    // here to use the "caching" of widgets
+    // here to use the "caching" of widget event handlers.
     const $row = $.create("<stub message row>");
+    $row.length = 1;
     $row.attr("id", `message-row-${message_lists.current.id}-2909`);
     const $message_content = $.create(`#message-row-${message_lists.current.id}-2909`);
     $row.set_find_results(".message_content", $message_content);
@@ -106,33 +110,20 @@ test("activate", ({override}) => {
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
-    assert.ok(!widgetize.widget_contents.has(opts.message.id));
+    assert.ok(!widgetize.widget_event_handlers.has(opts.message.id));
 
-    $message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(is_widget_elem_inserted);
     assert.ok(is_widget_activated);
     assert.ok(is_event_handled);
-    assert.equal(widgetize.widget_contents.get(opts.message.id), $widget_elem);
-
-    is_widget_elem_inserted = false;
-    is_widget_activated = false;
-    is_event_handled = false;
-
-    $message_content.set_find_results(".widget-content", false);
-    widgetize.activate(opts);
-
-    assert.ok(is_widget_elem_inserted);
-    assert.ok(!is_widget_activated);
-    assert.ok(!is_event_handled);
+    assert.equal(widgetize.widget_event_handlers.get(opts.message.id), handle_events);
 
     message_lists.current = undefined;
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
 
-    $message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(!is_widget_elem_inserted);
@@ -159,6 +150,7 @@ test("activate", ({override}) => {
     assert.ok(!is_event_handled);
 
     /* Testing widgetize.handle_events */
+    message_lists.current = {id: 2};
     const post_activate_event = {
         data: {
             idx: 1,
@@ -167,10 +159,15 @@ test("activate", ({override}) => {
         message_id: 2001,
         sender_id: 102,
     };
-    $widget_elem.handle_events = (e) => {
+    handle_events = (e) => {
         is_event_handled = true;
         assert.deepEqual(e, [post_activate_event]);
     };
+    widgetize.widget_event_handlers.set(2001, handle_events);
+    override(message_lists.current, "get_row", (idx) => {
+        assert.equal(idx, 2001);
+        return $row;
+    });
     is_event_handled = false;
     widgetize.handle_event(post_activate_event);
     assert.ok(is_event_handled);
@@ -179,16 +176,4 @@ test("activate", ({override}) => {
     post_activate_event.message_id = 1000;
     widgetize.handle_event(post_activate_event);
     assert.ok(!is_event_handled);
-
-    message_lists.current = {id: 2};
-    /* Test narrow change message update */
-    override(message_lists.current, "get", (idx) => {
-        assert.equal(idx, 2001);
-        return {};
-    });
-    override(message_lists.current, "get_row", (idx) => {
-        assert.equal(idx, 2001);
-        return $row;
-    });
-    widgetize.set_widgets_for_list();
 });

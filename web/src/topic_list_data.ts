@@ -153,6 +153,7 @@ export function get_list_info(
     zoomed: boolean,
     search_term: string,
 ): TopicListInfo {
+    const narrowed_topic = narrow_state.topic();
     const topic_choice_state: TopicChoiceState = {
         items: [],
         topics_selected: 0,
@@ -169,6 +170,15 @@ export function get_list_info(
     const stream_muted = sub.is_muted;
 
     let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
+
+    if (
+        stream_id === narrow_state.stream_id() &&
+        narrowed_topic &&
+        !topic_names.includes(narrowed_topic)
+    ) {
+        topic_names.unshift(narrowed_topic);
+    }
+
     if (zoomed) {
         topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
     }

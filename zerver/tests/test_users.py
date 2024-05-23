@@ -622,9 +622,9 @@ class PermissionTest(ZulipTestCase):
             if new_role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]:
                 # If the new role is owner or admin, the peer_add event will be
                 # sent for one private stream as well.
-                num_events += 5
+                num_events += 7
             else:
-                num_events += 4
+                num_events += 6
         elif new_role in [
             UserProfile.ROLE_REALM_ADMINISTRATOR,
             UserProfile.ROLE_REALM_OWNER,
@@ -897,18 +897,20 @@ class QueryCountTest(ZulipTestCase):
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
         invite_expires_in_minutes = 4 * 24 * 60
-        do_invite_users(
-            user_profile=self.example_user("hamlet"),
-            invitee_emails=["fred@zulip.com"],
-            streams=streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                user_profile=self.example_user("hamlet"),
+                invitee_emails=["fred@zulip.com"],
+                streams=streams,
+                include_realm_default_subscriptions=False,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(93):
-            with self.assert_memcached_count(23):
-                with self.capture_send_event_calls(expected_num_events=11) as events:
+        with self.assert_database_query_count(81):
+            with self.assert_memcached_count(19):
+                with self.capture_send_event_calls(expected_num_events=10) as events:
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -1312,9 +1314,9 @@ class UserProfileTest(ZulipTestCase):
 
         OnboardingStep.objects.filter(user=cordelia).delete()
         OnboardingStep.objects.filter(user=iago).delete()
-        hotspots_completed = {"intro_streams", "intro_topics"}
-        for hotspot in hotspots_completed:
-            OnboardingStep.objects.create(user=cordelia, onboarding_step=hotspot)
+        onboarding_steps_completed = {"intro_inbox_view_modal", "intro_recent_view_modal"}
+        for onboarding_step in onboarding_steps_completed:
+            OnboardingStep.objects.create(user=cordelia, onboarding_step=onboarding_step)
 
         # Check that we didn't send an realm_user update events to
         # users; this work is happening before the user account is
@@ -1356,10 +1358,10 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.enter_sends, False)
         self.assertEqual(hamlet.enter_sends, True)
 
-        hotspots = set(
+        onboarding_steps = set(
             OnboardingStep.objects.filter(user=iago).values_list("onboarding_step", flat=True)
         )
-        self.assertEqual(hotspots, hotspots_completed)
+        self.assertEqual(onboarding_steps, onboarding_steps_completed)
 
     def test_copy_default_settings_from_realm_user_default(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -1492,7 +1494,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Invalid stream ID.
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/25")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         result = orjson.loads(
             self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
@@ -1541,7 +1543,7 @@ class UserProfileTest(ZulipTestCase):
         # Unsubscribed non-admins cannot check subscription status in a private stream.
         self.login("shiva")
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # Subscribed non-admins can check subscription status in a private stream
         self.subscribe(self.example_user("shiva"), stream.name)
@@ -1701,48 +1703,65 @@ class ActivateTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            iago,
-            ["new1@zulip.com", "new2@zulip.com"],
-            [],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
-        do_invite_users(
-            desdemona,
-            ["new3@zulip.com", "new4@zulip.com"],
-            [],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                iago,
+                ["new1@zulip.com", "new2@zulip.com"],
+                [],
+                include_realm_default_subscriptions=False,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
+            do_invite_users(
+                desdemona,
+                ["new3@zulip.com", "new4@zulip.com"],
+                [],
+                include_realm_default_subscriptions=False,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
 
-        do_invite_users(
-            iago,
-            ["new5@zulip.com"],
-            [],
-            invite_expires_in_minutes=None,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
-        do_invite_users(
-            desdemona,
-            ["new6@zulip.com"],
-            [],
-            invite_expires_in_minutes=None,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
+            do_invite_users(
+                iago,
+                ["new5@zulip.com"],
+                [],
+                include_realm_default_subscriptions=False,
+                invite_expires_in_minutes=None,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
+            do_invite_users(
+                desdemona,
+                ["new6@zulip.com"],
+                [],
+                include_realm_default_subscriptions=False,
+                invite_expires_in_minutes=None,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
 
         iago_multiuse_key = do_create_multiuse_invite_link(
-            iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+            iago,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         ).split("/")[-2]
         desdemona_multiuse_key = do_create_multiuse_invite_link(
-            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+            desdemona,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         ).split("/")[-2]
 
         iago_never_expire_multiuse_key = do_create_multiuse_invite_link(
-            iago, PreregistrationUser.INVITE_AS["MEMBER"], None
+            iago,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            None,
+            include_realm_default_subscriptions=False,
         ).split("/")[-2]
         desdemona_never_expire_multiuse_key = do_create_multiuse_invite_link(
-            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], None
+            desdemona,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            None,
+            include_realm_default_subscriptions=False,
         ).split("/")[-2]
 
         self.assertEqual(

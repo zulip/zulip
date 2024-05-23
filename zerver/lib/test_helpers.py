@@ -261,7 +261,7 @@ def make_client(name: str) -> Client:
 def find_key_by_email(address: str) -> Optional[str]:
     from django.core.mail import outbox
 
-    key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
+    key_regex = re.compile(r"accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
         if address in message.to:
             match = key_regex.search(str(message.body))
@@ -737,24 +737,12 @@ def mock_queue_publish(
 
 
 @contextmanager
-def timeout_mock(mock_path: str) -> Iterator[None]:
-    # timeout() doesn't work in test environment with database operations
-    # and they don't get committed - so we need to replace it with a mock
-    # that just calls the function.
-    def mock_timeout(seconds: int, func: Callable[[], object]) -> object:
-        return func()
-
-    with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
-        yield
-
-
-@contextmanager
 def ratelimit_rule(
     range_seconds: int,
     num_requests: int,
     domain: str = "api_by_user",
 ) -> Iterator[None]:
-    """Temporarily add a rate-limiting rule to the ratelimiter"""
+    """Temporarily add a rate-limiting rule to the rate limiter"""
     RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
 
     domain_rules = rules.get(domain, []).copy()

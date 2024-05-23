@@ -166,7 +166,6 @@ export function insert_new_messages(messages, sent_by_this_client) {
     message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    recent_view_ui.process_messages(messages);
 }
 
 export function update_messages(events) {
@@ -406,7 +405,7 @@ export function update_messages(events) {
                     // The fix is likely somewhat involved, so punting for now.
                     const new_stream_name = sub_store.get(new_stream_id).name;
                     new_filter = new_filter.filter_with_new_params({
-                        operator: "stream",
+                        operator: "channel",
                         operand: new_stream_name,
                     });
                     changed_narrow = true;
@@ -532,7 +531,6 @@ export function update_messages(events) {
     // propagated edits to be updated (since the topic edits can have
     // changed the correct grouping of messages).
     if (any_topic_edited || any_stream_changed) {
-        message_lists.home.update_muting_and_rerender();
         // However, we don't need to rerender message_list if
         // we just changed the narrow earlier in this function.
         //
@@ -542,8 +540,15 @@ export function update_messages(events) {
         // edit.  Doing so could save significant work, since most
         // topic edits will not match the current topic narrow in
         // large organizations.
-        if (!changed_narrow && message_lists.current?.narrowed) {
-            message_lists.current.update_muting_and_rerender();
+
+        for (const list of message_lists.all_rendered_message_lists()) {
+            if (changed_narrow && list === message_lists.current) {
+                // Avoid updating current message list if user switched to a different narrow and
+                // we don't want to preserver the rendered state for the current one.
+                continue;
+            }
+
+            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
         }
     } else {
         // If the content of the message was edited, we do a special animation.

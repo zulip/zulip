@@ -28,7 +28,7 @@ from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
-from zerver.worker.queue_processors import UserActivityWorker
+from zerver.worker.user_activity import UserActivityWorker
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -192,6 +192,7 @@ class HomeTest(ZulipTestCase):
         "realm_signup_announcements_stream_id",
         "realm_upload_quota_mib",
         "realm_uri",
+        "realm_url",
         "realm_user_group_edit_policy",
         "realm_user_groups",
         "realm_user_settings_defaults",
@@ -256,7 +257,7 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(52):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -561,7 +562,7 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(52):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
@@ -592,7 +593,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(46):
+        with self.assert_database_query_count(47):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.

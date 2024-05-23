@@ -7,12 +7,10 @@ from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
 
-from .config import DEVELOPMENT, PRODUCTION, get_secret
+from .config import DEVELOPMENT, PRODUCTION, get_config, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
-
-    from zerver.models.users import UserProfile
 
 if PRODUCTION:  # nocoverage
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
@@ -137,11 +135,11 @@ LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
 
 # Sentry.io error defaults to off
-SENTRY_DSN: Optional[str] = None
+SENTRY_DSN: Optional[str] = get_config("sentry", "project_dsn", None)
 SENTRY_TRACE_WORKER_RATE: Union[float, Dict[str, float]] = 0.0
 SENTRY_TRACE_RATE: float = 0.0
 SENTRY_PROFILE_RATE: float = 0.1
-SENTRY_FRONTEND_DSN: Optional[str] = None
+SENTRY_FRONTEND_DSN: Optional[str] = get_config("sentry", "frontend_project_dsn", None)
 SENTRY_FRONTEND_SAMPLE_RATE: float = 1.0
 SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 
@@ -232,7 +230,7 @@ DEFAULT_RATE_LIMITING_RULES = {
     # Rate limiting general API access protects the server against
     # clients causing unreasonable server load.
     "api_by_user": [
-        # 200 requests per limit
+        # 200 requests per minute
         (60, 200),
     ],
     # Limits total number of unauthenticated API requests (primarily
@@ -312,12 +310,9 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {}
 # Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 
-# This is used to send all hotspots for convenient manual testing
-# in development mode.
-ALWAYS_SEND_ALL_HOTSPOTS = False
-
-# The new user tutorial is enabled by default, but can be disabled for
-# self-hosters who want to disable the tutorial entirely on their system.
+# The new user tutorial can be disabled for self-hosters who want to
+# disable the tutorial entirely on their system. Primarily useful for
+# products embedding Zulip as their chat feature.
 TUTORIAL_ENABLED = True
 
 # We log emails in development environment for accessing
@@ -581,7 +576,7 @@ GOOGLE_ANALYTICS_ID: Optional[str] = None
 IS_DEV_DROPLET = False
 
 # Used by puppet/kandra/files/cron.d/check_send_receive_time.
-NAGIOS_BOT_HOST = EXTERNAL_HOST
+NAGIOS_BOT_HOST = SYSTEM_BOT_REALM + "." + EXTERNAL_HOST
 
 # Use half of the available CPUs for data import purposes.
 DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1
@@ -623,6 +618,10 @@ TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 30000
 # load in large organizations.
 MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 
+# The maximum user-group size value upto which members should
+# be soft-reactivated in the case of user group mention.
+MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION = 11
+
 # Limiting guest access to other users via the
 # can_access_all_users_group setting makes presence queries much more
 # expensive. This can be a significant performance problem for
@@ -634,4 +633,4 @@ CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
 # in some places through the codebase.
 SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
 
-CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Optional["UserProfile"]]] = None
+CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Any]] = None

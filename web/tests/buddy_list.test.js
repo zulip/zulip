@@ -144,7 +144,7 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
     assert.ok(appended_to_other_users);
     appended_to_other_users = false;
 
-    // a user matching the view, and an other user
+    // a user matching the view, and another user
     clear_buddy_list(buddy_list);
     buddy_list_add_user_matching_view(alice.user_id, $alice_li);
     buddy_list_add_other_user(bob.user_id, $bob_li);

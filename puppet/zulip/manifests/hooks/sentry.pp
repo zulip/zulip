@@ -1,24 +1,8 @@
-# @summary Install sentry-cli binary and pre/post deploy hooks
+# @summary Install Sentry pre/post deploy hooks
 #
 class zulip::hooks::sentry {
   include zulip::hooks::base
-  $version = $zulip::common::versions['sentry-cli']['version']
-  $bin = "/srv/zulip-sentry-cli-${version}"
-
-  $arch = $facts['os']['architecture'] ? {
-    'amd64'   => 'x86_64',
-    'aarch64' => 'aarch64',
-  }
-
-  zulip::external_dep { 'sentry-cli':
-    version => $version,
-    url     => "https://downloads.sentry-cdn.com/sentry-cli/${version}/sentry-cli-Linux-${arch}",
-  }
-
-  file { '/usr/local/bin/sentry-cli':
-    ensure => link,
-    target => $bin,
-  }
+  include zulip::sentry_cli
 
   zulip::hooks::file { [
     'common/sentry.sh',

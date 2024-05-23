@@ -12,7 +12,7 @@ discussions.
 Everyone is welcome to sign up and participate — we love hearing from our users!
 Please see the [Zulip development community][development-community] guide for
 detailed instructions on how to join the community, [community norms][community-norms]
-and [where][development-community-streams] to ask your questions or give
+and [where][development-community-channels] to ask your questions or give
 feedback.
 
 ## Support requests
@@ -62,7 +62,7 @@ for your organization.
 
 [development-community]: https://zulip.com/development-community/
 [community-norms]: https://zulip.com/development-community/#community-norms
-[development-community-streams]: https://zulip.com/development-community/#streams-for-zulip-users-and-administrators
+[development-community-channels]: https://zulip.com/development-community/#channels-for-zulip-users-and-administrators
 
 ## Related articles
 

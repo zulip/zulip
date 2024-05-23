@@ -1,0 +1,295 @@
+.message_header {
+    vertical-align: middle;
+    text-align: left;
+    /* We can overflow-y if the font size gets big */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: calc(15em / 14);
+    line-height: 120%;
+    position: relative;
+    z-index: 0;
+    background-color: var(--color-background);
+
+    .message-header-contents {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 28px;
+        border: 1px solid var(--color-message-header-contents-border);
+        border-bottom-color: var(--color-message-header-contents-border-bottom);
+        border-radius: 7px 7px 0 0;
+    }
+
+    &.message_header_stream {
+        /* Add box shadow to hide message border (first one) and message
+           selected box shadow (second one) that are visible
+           due to top borders of sticky recipient bar being curved. */
+        box-shadow:
+            -1px -5px 0 5px var(--color-background),
+            1px -5px 0 0 var(--color-background);
+
+        & a.message_label_clickable {
+            color: var(--color-text-message-header);
+
+            &:hover {
+                color: var(--color-text-message-header) !important;
+                text-decoration: none;
+            }
+        }
+
+        .stream_topic_separator {
+            line-height: 0;
+            color: var(--color-message-header-icon-non-interactive);
+            position: relative;
+            top: 0.5px;
+        }
+
+        .stream_topic {
+            display: inline-block;
+            padding: 5px 6px 5px 2px;
+            height: 17px;
+            line-height: 17px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            .message_label_clickable.narrows_by_topic {
+                position: relative;
+                top: 0.5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .stream-privacy i {
+            font-size: 15px;
+
+            &.zulip-icon-globe,
+            &.zulip-icon-hashtag {
+                position: relative;
+                top: -0.5px;
+            }
+        }
+    }
+}
+
+.message_header_private_message {
+    /* This is required for box-shadow appear above the message content. */
+    z-index: 1;
+    box-shadow:
+        -1px -5px 0 5px var(--color-background),
+        1px -5px 0 0 var(--color-background);
+    background-color: var(--color-background);
+
+    .message-header-contents {
+        border-color: var(--color-private-message-header-border);
+        border-bottom-color: var(--color-private-message-header-border-bottom);
+        background-color: var(--color-background-private-message-header);
+    }
+
+    .message_label_clickable {
+        display: flex;
+        padding: 5px 0 5px 10px;
+        font-weight: 600;
+        height: 17px;
+        line-height: 17px;
+        color: var(--color-text-message-header);
+
+        &:hover {
+            color: var(--color-text-message-header) !important;
+            text-decoration: none;
+        }
+
+        .private_message_header_icon {
+            font-size: 15px;
+            position: relative;
+            top: 1px;
+            width: 16px;
+            height: 16px;
+        }
+
+        .private_message_header_name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+.message-feed {
+    .recipient_row {
+        /* Browser overlaps extra top padding of message header and
+           the bottom border message if this margin is not present. */
+        margin-bottom: 1px;
+        border-radius: 5px;
+
+        .message_row:last-of-type {
+            border-radius: 0 0 7px 7px;
+            border-bottom: 1px solid var(--color-message-list-border);
+
+            .unread-marker-fill {
+                border-radius: 0 0 0 7px;
+                height: calc(100% - 2px);
+            }
+
+            .messagebox {
+                border-radius: 0 0 7px 7px;
+                padding-bottom: 4px;
+            }
+        }
+
+        .message_header + .message_row {
+            .messagebox {
+                padding-top: 5px;
+            }
+        }
+    }
+
+    .message_header {
+        position: sticky;
+        top: var(--navbar-fixed-height);
+        /* Needs to be higher than the z-index of date_row. */
+        z-index: 4;
+        box-shadow: 0 -1px 0 0 var(--color-background);
+
+        .message-header-contents {
+            margin-top: var(--header-padding-bottom);
+        }
+
+        &.sticky_header {
+            box-shadow: var(--unread-marker-left) 0 0 0 var(--color-background);
+
+            .recipient_row_date {
+                display: block;
+            }
+        }
+    }
+}
+
+.stream_label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 2px 5px 10px;
+    height: 17px;
+    line-height: 17px;
+    position: relative;
+    top: 0.5px;
+    text-decoration: none;
+    font-weight: 600;
+    overflow: hidden;
+
+    .recipient-row-stream-icon {
+        font-size: 12px;
+        line-height: 12px;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        position: relative;
+        top: 1px;
+    }
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    .stream-privacy {
+        min-width: unset;
+        width: 16px;
+        height: 16px;
+
+        .hashtag {
+            padding-right: 0;
+
+            &::after {
+                font-size: 16px;
+            }
+        }
+    }
+}
+
+.recipient_bar_controls {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+
+    .external-topic-link {
+        /* Vertically center the external link
+           icon inside its containing anchor. */
+        display: flex;
+        align-items: center;
+    }
+
+    .change_visibility_policy {
+        cursor: pointer;
+
+        i {
+            display: block;
+        }
+    }
+}
+
+.always_visible_topic_edit,
+.on_hover_topic_read,
+.stream_unmuted.on_hover_topic_unmute,
+.stream_muted.on_hover_topic_mute {
+    opacity: 0.7;
+
+    &:hover {
+        cursor: pointer;
+        opacity: 1;
+    }
+}
+
+.on_hover_topic_edit,
+.on_hover_topic_unresolve,
+.on_hover_topic_resolve,
+.stream_unmuted.on_hover_topic_mute,
+.stream_muted.on_hover_topic_unmute {
+    opacity: 0.2;
+
+    &:hover {
+        cursor: pointer;
+        opacity: 0.7;
+    }
+}
+
+.recipient_row_date {
+    color: var(--color-date);
+    font-size: calc(12em / 14);
+    padding: 0 10px;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 17px; /* identical to box height, or 131% */
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding-top: 1px;
+
+    /* Display the date when unchanged only for sticky headers. */
+    &.recipient_row_date_unchanged {
+        display: none;
+
+        .sticky_header & {
+            display: block;
+        }
+    }
+
+    &.hide-date-separator-header {
+        display: none;
+    }
+}
+
+.recipient_bar_icon {
+    color: var(--color-message-header-icon-interactive);
+    opacity: 0.2;
+    padding-left: 6px;
+    padding-right: 6px;
+
+    &:hover {
+        opacity: 0.4 !important;
+        cursor: pointer;
+    }
+}

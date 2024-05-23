@@ -52,7 +52,7 @@ run_test("settings", ({override, override_rewire}) => {
 
     const topic_change_handler = $("body").get_on_handler(
         "change",
-        ".settings_user_topic_visibility_policy",
+        "select.settings_user_topic_visibility_policy",
     );
     assert.equal(typeof topic_change_handler, "function");
 
@@ -104,8 +104,11 @@ run_test("settings", ({override, override_rewire}) => {
             user_topic_visibility_policy_changed = true;
         },
     );
-    $topic_fake_this.value = user_topics.all_visibility_policies.UNMUTED;
-    topic_change_handler.call($topic_fake_this, event);
+    const topic_fake_this = {
+        to_$: () => $topic_fake_this,
+        value: user_topics.all_visibility_policies.UNMUTED,
+    };
+    topic_change_handler.call(topic_fake_this, event);
     assert.ok(user_topic_visibility_policy_changed);
     assert.equal(topic_data_called, 2);
 });

@@ -1,0 +1,4 @@
+# libarrow1600 is missing on Debian 12
+Package: libgroonga0
+Pin: version 14.0.3-1
+Pin-Priority: 499

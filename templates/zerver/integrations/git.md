@@ -4,7 +4,7 @@ Get Zulip notifications for your Git repositories!
 
 1. {!download-python-bindings.md!}
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!change-zulip-config-file.md!}
 

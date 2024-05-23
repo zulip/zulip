@@ -1,5 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-USER=zulip
-
-30 * * * * zulip /home/zulip/deployments/current/manage.py check_analytics_state

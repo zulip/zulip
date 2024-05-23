@@ -3,7 +3,7 @@
 In Zulip, you can configure how you get notified about new messages for topics
 you follow.
 
-In muted streams, topics you follow are automatically treated as
+In muted channels, topics you follow are automatically treated as
 [unmuted](/help/mute-a-topic), and you can configure when to automatically
 unmute topics.
 
@@ -15,13 +15,13 @@ unmute topics.
 
 {!automatically-follow-topics.md!}
 
-## Automatically unmute topics in muted streams
+## Automatically unmute topics in muted channels
 
-{!automatically-unmute-topics-in-muted-streams.md!}
+{!automatically-unmute-topics-in-muted-channels.md!}
 
 ## Related articles
 
 * [Follow a topic](/help/follow-a-topic)
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [Mute or unmute a topic](/help/mute-a-topic)
-* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a channel](/help/mute-a-channel)

@@ -280,17 +280,6 @@ jobs:
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
-      - name: Temporarily bootstrap PostgreSQL upgrades
-        # https://chat.zulip.org/#narrow/stream/43-automated-testing/topic/postgres.20client.20upgrade.20failures/near/1640444
-        # On Debian, there is an ordering issue with post-install maintainer
-        # scripts when postgresql-client-common is upgraded at the same time as
-        # postgresql-client and postgresql-client-15.  Upgrade just
-        # postgresql-client-common first, so the main upgrade process can
-        # succeed.  This is a _temporary_ work-around to improve CI signal, as
-        # the failure does represent a real failure that production systems may
-        # encounter.
-        run: sudo apt-get update && sudo apt-get install -y --only-upgrade postgresql-client-common
-
       - name: Upgrade production
         run: sudo /tmp/production-upgrade
 

@@ -2,13 +2,10 @@ import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
-import {Filter} from "./filter";
 import {MessageListData} from "./message_list_data";
 import * as message_list_tooltips from "./message_list_tooltips";
 import {MessageListView} from "./message_list_view";
-import * as message_lists from "./message_lists";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -59,8 +56,7 @@ export class MessageList {
         // DOM.
         this.view = new MessageListView(this, collapse_messages, opts.is_node_test);
 
-        // Whether this is a narrowed message list. The only message
-        // list that is not is the home_msg_list global.
+        // If this message list is not for the global feed.
         this.narrowed = !this.data.filter.is_in_home();
 
         // Keeps track of whether the user has done a UI interaction,
@@ -72,7 +68,22 @@ export class MessageList {
         // the user. Possibly this can be unified in some nice way.
         this.reading_prevented = false;
 
+        // Whether this message list's is preserved in the DOM even
+        // when viewing other views -- a valuable optimization for
+        // fast toggling between the combined feed and other views,
+        // which we enable only when that is the user's home view.
+        //
+        // This is intentionally not live-updated when web_home_view
+        // changes, since it's easier to reason about if this
+        // optimization is active or not for an entire session.
+        this.preserve_rendered_state =
+            user_settings.web_home_view === "all_messages" && !this.narrowed;
+
         return this;
+    }
+
+    is_current_message_list() {
+        return this.view.is_current_message_list();
     }
 
     prevent_reading() {
@@ -110,14 +121,14 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this.narrowed && !this.visibly_empty()) {
+        if (!this.visibly_empty() && this.is_current_message_list()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
         }
 
-        if (this.narrowed && !this.visibly_empty() && this.selected_id() === -1) {
+        if (!this.visibly_empty() && this.selected_id() === -1 && this.is_current_message_list()) {
             // The message list was previously empty, but now isn't
             // due to adding these messages, and we need to select a
             // message. Regardless of whether the messages are new or
@@ -381,14 +392,16 @@ export class MessageList {
         this.rerender();
     }
 
-    show_edit_message($row, edit_obj) {
+    show_edit_message($row, $form) {
         if ($row.find(".message_edit_form form").length !== 0) {
             return;
         }
-        $row.find(".message_edit_form").append(edit_obj.$form);
+        $row.find(".message_edit_form").append($form);
         $row.find(".message_content, .status-message, .message_controls").hide();
         $row.find(".messagebox-content").addClass("content_edit_mode");
         $row.find(".message_edit").css("display", "block");
+        // autosize will not change the height of the textarea if the `$row` is not
+        // rendered in DOM yet. So, we call `autosize.update` post render.
         autosize($row.find(".message_edit_content"));
     }
 
@@ -468,19 +481,6 @@ export class MessageList {
     }
 
     update_muting_and_rerender() {
-        // For the home message list, we need to re-initialize
-        // _all_items for stream muting/topic unmuting from
-        // all_messages_data, since otherwise unmuting a previously
-        // muted stream won't work.
-        //
-        // "in-home" filter doesn't included muted stream messages, so we
-        // need to repopulate the message list with all messages to include
-        // the previous messages in muted streams so that update_items_for_muting works.
-        if (this.data.filter.is_in_home()) {
-            this.data.clear();
-            this.data.add_messages(all_messages_data.all_messages());
-        }
-
         this.data.update_items_for_muting();
         // We need to rerender whether or not the narrow hides muted
         // topics, because we need to update recipient bars for topics
@@ -528,13 +528,4 @@ export class MessageList {
     get_last_message_sent_by_me() {
         return this.data.get_last_message_sent_by_me();
     }
-}
-
-export function initialize() {
-    /* Create home_msg_list and register it. */
-    const home_msg_list = new MessageList({
-        filter: new Filter([{operator: "in", operand: "home"}]),
-        excludes_muted_topics: true,
-    });
-    message_lists.set_home(home_msg_list);
 }

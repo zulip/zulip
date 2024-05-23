@@ -33,13 +33,14 @@ type ComposeActionsStartOpts = {
     force_close?: boolean;
     trigger?: string;
     private_message_recipient?: string;
-    message?: Message;
-    stream_id?: number;
+    message?: Message | undefined;
+    stream_id?: number | undefined;
     topic?: string;
     content?: string;
     draft_id?: string;
     skip_scrolling_selected_message?: boolean;
     is_reply?: boolean;
+    keep_composebox_empty?: boolean | undefined;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that
@@ -123,7 +124,7 @@ function clear_box(): void {
     compose_state.set_recipient_edited_manually(false);
     clear_textarea();
     compose_validate.check_overflow_text();
-    $("textarea#compose-textarea").removeData("draft-id");
+    drafts.set_compose_draft_id(undefined);
     $("textarea#compose-textarea").toggleClass("invalid", false);
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
@@ -302,6 +303,27 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
 
+    // If we're not explicitly opening a different draft, restore the last
+    // saved draft (if it exists).
+    if (
+        compose_state.can_restore_drafts() &&
+        !opts.content &&
+        opts.draft_id === undefined &&
+        compose_state.message_content().length === 0 &&
+        !opts.keep_composebox_empty
+    ) {
+        const possible_last_draft = drafts.get_last_restorable_draft_based_on_compose_state();
+        if (possible_last_draft !== undefined) {
+            opts.draft_id = possible_last_draft.id;
+            // Add a space at the end so that if the user starts typing
+            // as soon as the composebox opens, they have a bit of separation
+            // from the restored draft. This won't result in a long trail of
+            // spaces if a draft is restored several times, because we trim
+            // whitespace whenever we save drafts.
+            opts.content = possible_last_draft.content + " ";
+        }
+    }
+
     if (opts.content !== undefined) {
         compose_ui.insert_and_scroll_into_view(opts.content, $("textarea#compose-textarea"), true);
         $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
@@ -316,7 +338,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     show_compose_box(opts);
 
     if (opts.draft_id) {
-        $("textarea#compose-textarea").data("draft-id", opts.draft_id);
+        drafts.set_compose_draft_id(opts.draft_id);
     }
 
     const $clear_topic_button = $("#recipient_box_clear_topic_button");

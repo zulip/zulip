@@ -1,7 +1,7 @@
 import {realm} from "./state_data";
 
 export const zoom_token_callbacks = new Map();
-export const video_call_xhrs = new Map();
+export const video_call_xhrs = new Map<string, JQuery.jqXHR<unknown>>();
 
 export function get_jitsi_server_url(): string | null {
     return realm.realm_jitsi_server_url ?? realm.server_jitsi_server_url;
@@ -9,8 +9,9 @@ export function get_jitsi_server_url(): string | null {
 
 export function abort_video_callbacks(edit_message_id = ""): void {
     zoom_token_callbacks.delete(edit_message_id);
-    if (video_call_xhrs.has(edit_message_id)) {
-        video_call_xhrs.get(edit_message_id).abort();
+    const xhr = video_call_xhrs.get(edit_message_id);
+    if (xhr !== undefined) {
+        xhr.abort();
         video_call_xhrs.delete(edit_message_id);
     }
 }

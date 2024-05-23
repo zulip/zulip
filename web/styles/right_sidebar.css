@@ -89,7 +89,7 @@ $user_status_emoji_width: 24px;
 
             /*
             Hover does not work for touch-based devices like mobile phones.
-            Hence the the icons does not appear, making the user unaware of its
+            Hence the icons does not appear, making the user unaware of its
             presence on such devices. The following media property displays the
             icon by default for such behaviour.
             */

@@ -538,7 +538,9 @@ def custom_email_sender(
     # First, we render the Markdown input file just like our
     # user-facing docs with render_markdown_path.
     with open(plain_text_template_path, "w") as f:
-        f.write(parsed_email_template.get_payload())
+        payload = parsed_email_template.get_payload()
+        assert isinstance(payload, str)
+        f.write(payload)
 
     from zerver.lib.templates import render_markdown_path
 
@@ -610,7 +612,7 @@ def send_custom_email(
         context: Dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,
-            "realm_uri": user_profile.realm.uri,
+            "realm_uri": user_profile.realm.url,
             "realm_name": user_profile.realm.name,
         }
         if add_context is not None:

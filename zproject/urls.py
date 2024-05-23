@@ -62,7 +62,6 @@ from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, home
-from zerver.views.hotspots import mark_onboarding_step_as_read
 from zerver.views.invite import (
     generate_multiuse_invite_backend,
     get_user_invites,
@@ -87,8 +86,10 @@ from zerver.views.message_flags import (
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.muted_users import mute_user, unmute_user
+from zerver.views.onboarding_steps import mark_onboarding_step_as_read
 from zerver.views.presence import (
     get_presence_backend,
+    get_status_backend,
     get_statuses_for_realm,
     update_active_status_backend,
     update_user_status_backend,
@@ -316,7 +317,7 @@ v1_api_and_json_patterns = [
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
     rest_path("invites", GET=get_user_invites, POST=invite_users_backend),
-    rest_path("invites/<int:prereg_id>", DELETE=revoke_user_invite),
+    rest_path("invites/<int:invite_id>", DELETE=revoke_user_invite),
     rest_path("invites/<int:prereg_id>/resend", POST=resend_user_invite_email),
     # invites/multiuse -> zerver.views.invite
     rest_path("invites/multiuse", POST=generate_multiuse_invite_backend),
@@ -396,6 +397,7 @@ v1_api_and_json_patterns = [
     rest_path("users/<user_id_or_email>/presence", GET=get_presence_backend),
     rest_path("realm/presence", GET=get_statuses_for_realm),
     rest_path("users/me/status", POST=update_user_status_backend),
+    rest_path("users/<int:user_id>/status", GET=get_status_backend),
     # user_groups -> zerver.views.user_groups
     rest_path("user_groups", GET=get_user_group),
     rest_path("user_groups/create", POST=add_user_group),

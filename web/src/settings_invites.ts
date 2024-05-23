@@ -39,12 +39,13 @@ export const invite_schema = z.intersection(
     ]),
 );
 type Invite = z.output<typeof invite_schema> & {
-    invited_as_text?: string;
+    invited_as_text?: string | undefined;
     invited_absolute_time?: string;
     expiry_date_absolute_time?: string;
     is_admin?: boolean;
     disable_buttons?: boolean;
     referrer_name?: string;
+    img_src?: string;
 };
 
 const meta = {
@@ -101,6 +102,9 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
                 item.invited_as === settings_config.user_role_values.owner.code &&
                 !current_user.is_owner;
             item.referrer_name = people.get_by_user_id(item.invited_by_user_id).full_name;
+            item.img_src = people.small_avatar_url_for_person(
+                people.get_by_user_id(item.invited_by_user_id),
+            );
             return render_admin_invites_list({invite: item});
         },
         filter: {
@@ -124,7 +128,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
         init_sort: sort_invitee,
         sort_fields: {
             invitee: sort_invitee,
-            ...ListWidget.generic_sort_functions("alphabetic", ["ref"]),
+            ...ListWidget.generic_sort_functions("alphabetic", ["referrer_name"]),
             ...ListWidget.generic_sort_functions("numeric", [
                 "invited",
                 "expiry_date",
@@ -197,12 +201,9 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         error(xhr) {
             ui_report.generic_row_button_error(xhr, $resend_button);
         },
-        success(raw_data) {
-            const data = z.object({timestamp: z.number()}).parse(raw_data);
+        success() {
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
-            const timestamp = timerender.absolute_time(data.timestamp * 1000);
-            $row.find(".invited_at").text(timestamp);
         },
     });
 }
@@ -234,16 +235,16 @@ export function on_load_success(
     if (!initialize_event_handlers) {
         return;
     }
-    $(".admin_invites_table").on("click", ".revoke", (e) => {
+    $(".admin_invites_table").on("click", ".revoke", function (this: HTMLElement, e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
-        const $row = $(e.target).closest(".invite_row");
+        const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
         const referred_by = $row.find(".referred_by").text();
-        const invite_id = $(e.currentTarget).attr("data-invite-id")!;
-        const is_multiuse = $(e.currentTarget).attr("data-is-multiuse")!;
+        const invite_id = $(this).attr("data-invite-id")!;
+        const is_multiuse = $(this).attr("data-is-multiuse")!;
         const ctx = {
             is_multiuse: is_multiuse === "true",
             email,
@@ -265,15 +266,15 @@ export function on_load_success(
         $(".dialog_submit_button").attr("data-is-multiuse", is_multiuse);
     });
 
-    $(".admin_invites_table").on("click", ".resend", (e) => {
+    $(".admin_invites_table").on("click", ".resend", function (this: HTMLElement, e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 
-        const $row = $(e.target).closest(".invite_row");
+        const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
-        const invite_id = $(e.currentTarget).attr("data-invite-id")!;
+        const invite_id = $(this).attr("data-invite-id")!;
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({

@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
+import {Typeahead} from "./bootstrap_typeahead";
 import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import {$t} from "./i18n";
 import * as people from "./people";
@@ -169,9 +170,8 @@ export function initialize_custom_pronouns_type_fields(element_id) {
         $element: $(element_id).find(".pronouns_type_field"),
         type: "input",
     };
-    bootstrap_typeahead.create(bootstrap_typeahead_input, {
+    new Typeahead(bootstrap_typeahead_input, {
         items: 3,
-        fixed: true,
         helpOnEmptyStrings: true,
         source() {
             return commonly_used_pronouns;

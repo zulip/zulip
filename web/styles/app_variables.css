@@ -59,21 +59,46 @@
     --left-sidebar-header-icon-width: 15px;
 
     /* Tippy popover related values */
-    --popover-menu-min-width: 230px;
+    --navbar-popover-menu-min-width: 230px;
+    --message-actions-popover-min-width: 230px;
+    --topic-actions-popover-min-width: 200px;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
     --base-font-size-px: 14px;
-    --base-line-height-unitless: calc(20 / 14);
+    --base-line-height-unitless: 1.214;
+    --markdown-interelement-space-px: 5px;
+    --markdown-interelement-doubled-space-px: calc(
+        var(--markdown-interelement-space-px) * 2
+    );
+
+    .more-dense-mode {
+        /* The legacy values here are not altered by JavaScript */
+        --base-font-size-px: 14px;
+        --base-line-height-unitless: 1.214;
+        --markdown-interelement-space-px: 5px;
+        --markdown-interelement-doubled-space-px: 10px;
+        --message-box-markdown-aligned-vertical-space: 5px;
+    }
 
     /*
     Message box elements and values.
     */
     --message-box-avatar-width: 35px;
     --message-box-avatar-height: var(--message-box-avatar-width);
-    --message-box-line-height: 1.214;
+    --message-box-avatar-column-width: 46px;
+    /* 6px appears to provide 5px of space between the avatar
+       and the selected-message outline, which is offset by -1px. */
+    --message-box-vertical-margin: 6px;
+    --message-box-markdown-aligned-vertical-space: var(
+        --markdown-interelement-space-px
+    );
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
+    /* The line-height on the sender line should coordinate with the
+       height of the hover icons. The sender line never wraps, so this
+       just keeps the two in line with the grid definition. */
+    --message-box-sender-line-height: var(--message-box-icon-height);
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
@@ -148,6 +173,10 @@
     */
     --stream-subscriber-list-max-height: 100%;
 
+    /*
+      Reusable dimensions and offsets.
+    */
+    --margin-bottom-field-description: 3px;
     /* Gap between tabs in the tab picker */
     --grid-gap-tab-picker: 2px;
 
@@ -165,6 +194,7 @@
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
     --color-background-stream-message-content: hsl(0deg 0% 100%);
+    --color-selected-message-outline: hsl(217deg 64% 59% / 60%);
     --color-message-list-border: hsl(0deg 0% 0% / 16%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 10%);
     --color-private-message-header-border: hsl(0deg 0% 0% / 10%);
@@ -202,6 +232,7 @@
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
     /* There's no alpha channel here, but this keeps
        the variable names in line. */
     --color-background-unread-counter-no-alpha: var(
@@ -252,12 +283,17 @@
         231deg 100% 90% / 50%
     );
     --color-compose-chevron-arrow: hsl(0deg 0% 58%);
+    --color-limit-indicator: hsl(38deg 100% 36%);
+    --color-limit-indicator-over-limit: hsl(3deg 80% 40%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-default: hsl(0deg 0% 15%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
+    /* Light and dark mode both use the same hover color on
+       sender names. */
+    --color-text-sender-name-hover: hsl(200deg 100% 40%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
@@ -465,6 +501,12 @@
 }
 
 %dark-theme {
+    /* There is no lefthand border to cover in dark mode, so
+       don't apply negative margin that would otherwise pull
+       the unread marker to the left. */
+    --unread-marker-left: 0;
+
+    /* Colors used across the app */
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-background-private-message-content: hsl(46deg 7% 16%);
@@ -475,6 +517,7 @@
     --color-private-message-header-border: hsl(0deg 0% 0% / 48%);
     --color-message-header-contents-border-bottom: hsl(0deg 0% 0% / 50%);
     --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 37%);
+    --color-selected-message-outline: hsl(217deg 64% 59% / 70%);
     --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
     --color-background-widget-input: hsl(225deg 6% 10%);
@@ -558,6 +601,8 @@
         235deg 100% 70% / 11%
     );
     --color-background-popover: hsl(212deg 32% 14%);
+    --color-limit-indicator: hsl(38deg 100% 70%);
+    --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -741,9 +786,8 @@
 
     /* Button colors on modals and message editing. */
     --color-exit-button-text: hsl(0deg 0% 100%);
-    --color-exit-button-border: hsl(0deg 0% 0% / 60%);
-    --color-exit-button-background: hsl(211deg 29% 14%);
-    --color-exit-button-background-interactive: hsl(211deg 29% 17%);
+    --color-exit-button-background: hsl(226deg 1% 30% / 50%);
+    --color-exit-button-background-interactive: hsl(226deg 1% 30% / 65%);
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 0% / 20%);
@@ -755,6 +799,7 @@
     --color-background-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 50%);
     --color-border-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 90%);
     --color-background-emoji-picker-emoji-reacted-focus: hsl(0deg 0% 20% / 70%);
+    --color-border-add-subscription-button-focus: hsl(0deg 0% 67%);
 }
 
 @media screen {

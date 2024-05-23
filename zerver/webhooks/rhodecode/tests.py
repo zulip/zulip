@@ -5,7 +5,7 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class RhodecodeHookTests(WebhookTestCase):
-    STREAM_NAME = "rhodecode"
+    CHANNEL_NAME = "rhodecode"
     URL_TEMPLATE = "/api/v1/external/rhodecode?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "rhodecode"
 

@@ -704,10 +704,10 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
 
     const layout: Partial<Plotly.Layout> = {
         width: 750,
-        height: undefined, // set in draw_plot()
+        // height set in draw_plot()
         margin: {l: 10, r: 10, b: 40, t: 10},
         font: font_14pt,
-        xaxis: {range: undefined}, // set in draw_plot()
+        // xaxis set in draw_plot()
         yaxis: {showticklabels: false},
         showlegend: false,
     };
@@ -813,7 +813,7 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
         $("#id_messages_sent_by_client > div").removeClass("spinner");
         const data_ = plot_data[user_button][time_button];
         layout.height = layout.margin!.b! + data_.trace.x.length * 30;
-        layout.xaxis!.range = [0, Math.max(...data_.trace.x) * 1.3];
+        layout.xaxis = {range: [0, Math.max(...data_.trace.x) * 1.3]};
         void Plotly.newPlot(
             "id_messages_sent_by_client",
             [data_.trace, data_.trace_annotations],
@@ -1378,11 +1378,13 @@ function get_chart_data(
         data,
         success(data) {
             callback(data);
-            update_last_full_update(data.end_times);
+            const {end_times} = z.object({end_times: z.array(z.number())}).parse(data);
+            update_last_full_update(end_times);
         },
         error(xhr) {
-            if (xhr.responseJSON?.msg) {
-                $("#id_stats_errors").show().text(xhr.responseJSON.msg);
+            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            if (parsed.success) {
+                $("#id_stats_errors").show().text(parsed.data.msg);
             }
         },
     });

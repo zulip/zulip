@@ -14,8 +14,8 @@ type ZFormExtraData = {
 
 // TODO: This TodoWidgetExtraData type should be moved to web/src/todo_widget.js when it will be migrated
 type TodoWidgetExtraData = {
-    task_list_title?: string;
-    tasks?: {task: string; desc: string}[];
+    task_list_title?: string | undefined;
+    tasks?: {task: string; desc: string}[] | undefined;
 };
 
 type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
@@ -35,27 +35,19 @@ type WidgetValue = Record<string, unknown> & {
         callback: (data: string) => void;
         message: Message;
         extra_data: WidgetExtraData;
-    }) => void;
+    }) => (events: Event[]) => void;
 };
 
 export const widgets = new Map<string, WidgetValue>();
-export const widget_contents = new Map<number, JQuery>();
+export const widget_event_handlers = new Map<number, (events: Event[]) => void>();
 
 export function clear_for_testing(): void {
-    widget_contents.clear();
+    widget_event_handlers.clear();
 }
 
 function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
     const $content_holder = $row.find(".message_content");
-
-    // Avoid adding the $widget_elem if it already exists.
-    // This can happen when the app loads in the "Recent Conversations"
-    // view and the user changes the view to "All messages".
-    // This is important since jQuery removes all the event handlers
-    // on `empty()`ing an element.
-    if ($content_holder.find(".widget-content").length === 0) {
-        $content_holder.empty().append($widget_elem);
-    }
+    $content_holder.empty().append($widget_elem);
 }
 
 export function activate(in_opts: WidgetOptions): void {
@@ -86,47 +78,32 @@ export function activate(in_opts: WidgetOptions): void {
         return;
     }
 
-    let $widget_elem = widget_contents.get(message.id);
-    if ($widget_elem) {
-        set_widget_in_message($row, $widget_elem);
-        return;
-    }
-
     // We depend on our widgets to use templates to build
     // the HTML that will eventually go in this div.
-    $widget_elem = $("<div>").addClass("widget-content");
+    const $widget_elem = $("<div>").addClass("widget-content");
 
-    widgets.get(widget_type)!.activate({
+    const event_handler = widgets.get(widget_type)!.activate({
         $elem: $widget_elem,
         callback,
         message,
         extra_data,
     });
 
-    widget_contents.set(message.id, $widget_elem);
+    widget_event_handlers.set(message.id, event_handler);
     set_widget_in_message($row, $widget_elem);
 
     // Replay any events that already happened.  (This is common
     // when you narrow to a message after other users have already
     // interacted with it.)
     if (events.length > 0) {
-        $widget_elem.handle_events(events);
-    }
-}
-
-export function set_widgets_for_list(): void {
-    for (const [idx, $widget_elem] of widget_contents) {
-        if (message_lists.current?.get(idx) !== undefined) {
-            const $row = message_lists.current.get_row(idx);
-            set_widget_in_message($row, $widget_elem);
-        }
+        event_handler(events);
     }
 }
 
 export function handle_event(widget_event: Event & {message_id: number}): void {
-    const $widget_elem = widget_contents.get(widget_event.message_id);
+    const event_handler = widget_event_handlers.get(widget_event.message_id);
 
-    if (!$widget_elem) {
+    if (!event_handler || message_lists.current?.get_row(widget_event.message_id).length === 0) {
         // It is common for submessage events to arrive on
         // messages that we don't yet have in view. We
         // just ignore them completely here.
@@ -135,5 +112,5 @@ export function handle_event(widget_event: Event & {message_id: number}): void {
 
     const events = [widget_event];
 
-    $widget_elem.handle_events(events);
+    event_handler(events);
 }

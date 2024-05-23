@@ -6,7 +6,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 
 # There is a lot of duplicated code between this file and
 # help_relative_links.py. So if you're making a change here consider making
@@ -69,10 +69,10 @@ link_mapping = {
         "Bots",
         "/#organization/bot-list-admin",
     ],
-    "default-streams-list": [
+    "default-channels-list": [
         "Organization settings",
-        "Default streams",
-        "/#organization/default-streams-list",
+        "Default channels",
+        "/#organization/default-channels-list",
     ],
     "linkifier-settings": [
         "Organization settings",
@@ -102,7 +102,7 @@ link_mapping = {
 }
 
 settings_markdown = """
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in the upper
    right corner of the web or desktop app.
 
 1. Select **{setting_type_name}**.
@@ -131,7 +131,7 @@ class SettingHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         """Add SettingHelpExtension to the Markdown instance."""
         md.registerExtension(self)
-        md.preprocessors.register(Setting(), "setting", PREPROCESSOR_PRIORITES["setting"])
+        md.preprocessors.register(Setting(), "setting", PREPROCESSOR_PRIORITIES["setting"])
 
 
 relative_settings_links: bool = False

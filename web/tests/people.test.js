@@ -295,8 +295,6 @@ test_people("basics", ({override}) => {
     const email = "isaac@example.com";
 
     assert.ok(!people.is_known_user_id(32));
-    assert.ok(!people.is_known_user(isaac));
-    assert.ok(!people.is_known_user(undefined));
     assert.ok(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
@@ -306,7 +304,6 @@ test_people("basics", ({override}) => {
 
     assert.ok(people.is_valid_full_name_and_user_id(full_name, 32));
     assert.ok(people.is_known_user_id(32));
-    assert.ok(people.is_known_user(isaac));
     assert.equal(people.get_active_human_count(), 2);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);
@@ -729,33 +726,33 @@ test_people("filtered_users", () => {
 
     const search_term = "a";
     const users = people.get_realm_users();
-    let filtered_people = people.filter_people_by_search_terms(users, [search_term]);
+    let filtered_people = people.filter_people_by_search_terms(users, search_term);
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(ashton.user_id));
     assert.ok(filtered_people.has(maria.user_id));
     assert.ok(!filtered_people.has(charles.user_id));
 
-    filtered_people = people.filter_people_by_search_terms(users, []);
-    assert.equal(filtered_people.size, 0);
+    filtered_people = people.filter_people_by_search_terms(users, "");
+    assert.equal(filtered_people.size, 7);
 
-    filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ltorv");
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(linus.user_id));
 
-    filtered_people = people.filter_people_by_search_terms(users, ["ch di", "maria"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ch di, maria");
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(charles.user_id));
     assert.ok(filtered_people.has(maria.user_id));
 
     // Test filtering of names with diacritics
     // This should match Nöôáàh by ignoring diacritics, and also match Nooaah
-    filtered_people = people.filter_people_by_search_terms(users, ["noOa"]);
+    filtered_people = people.filter_people_by_search_terms(users, "noOa");
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(noah.user_id));
     assert.ok(filtered_people.has(plain_noah.user_id));
 
     // This should match ëmerson, but not emerson
-    filtered_people = people.filter_people_by_search_terms(users, ["ëm"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ëm");
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(noah.user_id));
 });
@@ -1153,8 +1150,8 @@ test_people("get_mention_syntax", () => {
     // blueslip warning is not raised for wildcard mentions without a user_id
     assert.equal(people.get_mention_syntax("all"), "@**all**");
     assert.equal(people.get_mention_syntax("everyone", undefined, true), "@_**everyone**");
-    assert.equal(people.get_mention_syntax("stream"), "@**stream**");
-    assert.equal(people.get_mention_syntax("channel"), "@**stream**");
+    assert.equal(people.get_mention_syntax("stream"), "@**channel**");
+    assert.equal(people.get_mention_syntax("channel"), "@**channel**");
     assert.equal(people.get_mention_syntax("topic"), "@**topic**");
 
     people.add_active_user(stephen1);

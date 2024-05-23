@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import render_message_view_header from "../templates/message_view_header.hbs";
 
 import type {Filter} from "./filter";
+import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
 import * as narrow_state from "./narrow_state";
@@ -18,6 +19,8 @@ import type {StreamSubscription} from "./sub_store";
 
 type MessageViewHeaderContext = {
     title: string;
+    description?: string;
+    link?: string;
     is_spectator?: boolean;
     sub_count?: string | number;
     formatted_sub_count?: string;
@@ -38,37 +41,67 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     if (recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
+            description: $t({defaultMessage: "Overview of ongoing conversations."}),
             zulip_icon: "recent",
+            link: "/help/recent-conversations",
         };
     }
+
     if (inbox_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Inbox"}),
+            description: $t({
+                defaultMessage: "Overview of your conversations with unread messages.",
+            }),
             zulip_icon: "inbox",
+            link: "/help/inbox",
         };
     }
-    if (filter === undefined) {
+
+    // TODO: If we're not in the recent or inbox view, there should be
+    // a message feed with a declared filter in the center pane. But
+    // because of an initialization order bug, this function gets
+    // called with a filter of `undefined` when loading the web app
+    // with, say, inbox as the home view.
+    //
+    // TODO: Refactor this function to move the inbox/recent cases
+    // into the caller, and this function can always get a Filter object.
+    //
+    // TODO: This ideally doesn't need a special case, we can just use
+    // `filter.get_description` for it.
+    if (filter === undefined || filter.is_in_home()) {
         return {
-            title: $t({defaultMessage: "All messages"}),
+            title: $t({defaultMessage: "Combined feed"}),
+            description: $t({
+                defaultMessage: "All your messages except those in muted channels and topics.",
+            }),
             zulip_icon: "all-messages",
+            link: "/help/combined-feed",
         };
     }
+
     const title = filter.get_title();
+    const description = filter.get_description()?.description;
+    const link = filter.get_description()?.link;
     assert(title !== undefined);
-    const icon_data = filter.add_icon_data({
+    const context = filter.add_icon_data({
         title,
+        description,
+        link,
         is_spectator: page_params.is_spectator,
     });
+
     if (filter.has_operator("channel") && !filter._sub) {
         return {
-            ...icon_data,
+            ...context,
             sub_count: "0",
             formatted_sub_count: "0",
             rendered_narrow_description: $t({
-                defaultMessage: "This stream does not exist or is private.",
+                defaultMessage: "This channel does not exist or is private.",
             }),
         };
     }
+
     if (filter._sub) {
         // We can now be certain that the narrow
         // involves a stream which exists and
@@ -76,16 +109,16 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         const current_stream = filter._sub;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
         return {
-            ...icon_data,
+            ...context,
             is_admin: current_user.is_admin,
             rendered_narrow_description: current_stream.rendered_description,
             sub_count,
             stream: current_stream,
-            stream_settings_link:
-                "#streams/" + current_stream.stream_id + "/" + current_stream.name + "/general",
+            stream_settings_link: hash_util.channels_settings_edit_url(current_stream, "general"),
         };
     }
-    return icon_data;
+
+    return context;
 }
 
 export function colorize_message_view_header(): void {

@@ -15,7 +15,7 @@
   [pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set),
   [change your language](/help/change-your-language), and make other tweaks to your Zulip experience.
 
-- [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams).
+- [Browse and subscribe to channels](/help/introduction-to-channels#browse-and-subscribe-to-channels).
 
 - Decide whether you want <kbd>Enter</kbd> [to send your message
   or add a new line](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).

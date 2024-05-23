@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GrafanaHookTests(WebhookTestCase):
-    STREAM_NAME = "grafana"
+    CHANNEL_NAME = "grafana"
     URL_TEMPLATE = "/api/v1/external/grafana?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "grafana"
 

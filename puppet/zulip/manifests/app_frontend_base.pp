@@ -137,7 +137,6 @@ class zulip::app_frontend_base {
     'email_mirror',
     'embed_links',
     'embedded_bots',
-    'invites',
     'email_senders',
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
@@ -158,6 +157,7 @@ class zulip::app_frontend_base {
   } else {
     $uwsgi_default_processes = 3
   }
+  $mobile_notification_shards = Integer(zulipconf('application_server','mobile_notification_shards', 1))
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
 
   $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
@@ -208,6 +208,7 @@ class zulip::app_frontend_base {
     '/home/zulip/tornado',
     '/home/zulip/prod-static',
     '/home/zulip/deployments',
+    '/srv/zulip-locks',
     '/srv/zulip-emoji-cache',
     '/srv/zulip-uploaded-files-cache',
   ]:
@@ -245,12 +246,8 @@ class zulip::app_frontend_base {
   }
 
   # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
-  file { '/etc/cron.d/fetch-tor-exit-nodes':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/fetch-tor-exit-nodes',
+  zulip::cron { 'fetch-tor-exit-nodes':
+    minute => '17',
   }
   # This was originally added with a typo in the name.
   file { '/etc/cron.d/fetch-for-exit-nodes':

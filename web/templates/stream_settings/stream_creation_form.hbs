@@ -1,25 +1,25 @@
 <div class="hide" id="stream-creation" tabindex="-1" role="dialog"
-  aria-label="{{t 'Stream creation' }}">
+  aria-label="{{t 'Channel creation' }}">
     <form id="stream_creation_form">
         <div class="stream-creation-simplebar-container" data-simplebar>
             <div class="alert stream_create_info"></div>
             <div id="stream_creating_indicator"></div>
             <div class="stream-creation-body">
                 <section class="block">
-                    <label for="create_stream_name">
-                        {{t "Stream name" }}
+                    <label for="create_stream_name" class="settings-field-label">
+                        {{t "Channel name" }}
                     </label>
                     <input type="text" name="stream_name" id="create_stream_name" class="settings_text_input"
-                      placeholder="{{t 'Stream name' }}" value="" autocomplete="off" maxlength="{{ max_stream_name_length }}" />
+                      placeholder="{{t 'Channel name' }}" value="" autocomplete="off" maxlength="{{ max_stream_name_length }}" />
                     <div id="stream_name_error" class="stream_creation_error"></div>
                 </section>
                 <section class="block">
-                    <label for="create_stream_description">
-                        {{t "Stream description" }}
-                        {{> ../help_link_widget link="/help/change-the-stream-description" }}
+                    <label for="create_stream_description" class="settings-field-label">
+                        {{t "Channel description" }}
+                        {{> ../help_link_widget link="/help/change-the-channel-description" }}
                     </label>
                     <input type="text" name="stream_description" id="create_stream_description" class="settings_text_input"
-                      placeholder="{{t 'Stream description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />
+                      placeholder="{{t 'Channel description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />
                 </section>
                 {{#if ask_to_announce_stream}}
                     <div id="announce-new-stream">
@@ -28,7 +28,7 @@
                 {{/if}}
                 <section class="block" id="make-invite-only">
                     <div class="stream-types">
-                        <h3 class="stream_setting_subsection_title">{{t "Stream permissions" }}</h3>
+                        <h3 class="stream_setting_subsection_title">{{t "Channel permissions" }}</h3>
                         {{> stream_types
                           stream_post_policy=stream_post_policy_values.everyone.code
                           is_stream_edit=false

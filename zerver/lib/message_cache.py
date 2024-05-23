@@ -2,7 +2,7 @@ import copy
 import zlib
 from datetime import datetime
 from email.headerregistry import Address
-from typing import Any, Collection, Dict, List, Optional, TypedDict
+from typing import Any, Dict, Iterable, List, Optional, TypedDict
 
 import orjson
 
@@ -78,7 +78,7 @@ def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -
 
 
 def update_message_cache(
-    changed_messages: Collection[Message], realm_id: Optional[int] = None
+    changed_messages: Iterable[Message], realm_id: Optional[int] = None
 ) -> List[int]:
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
@@ -273,7 +273,7 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache(
-        messages: Collection[Message], realm_id: Optional[int] = None
+        messages: Iterable[Message], realm_id: Optional[int] = None
     ) -> Dict[int, bytes]:
         messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
@@ -281,7 +281,7 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache_helper(
-        messages: Collection[Message], realm_id: Optional[int] = None
+        messages: Iterable[Message], realm_id: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects

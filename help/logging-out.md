@@ -3,7 +3,7 @@
 {start_tabs}
 {tab|desktop-web}
 
-1. Click the **gear** (<i class="fa fa-cog"></i>) icon in the top
+1. Click the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in the top
 right corner of the app.
 
 1. Click **Log out**.

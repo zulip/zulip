@@ -141,7 +141,7 @@ class ActivityTest(ZulipTestCase):
         user_profile.is_staff = True
         user_profile.save(update_fields=["is_staff"])
 
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(11):
             result = self.client_get("/activity")
             self.assertEqual(result.status_code, 200)
 
@@ -367,6 +367,6 @@ class ActivityTest(ZulipTestCase):
         add_audit_log_data(realm.server, remote_realm=realm, realm_id=None)
 
         self.login("iago")
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(11):
             result = self.client_get("/activity/remote")
             self.assertEqual(result.status_code, 200)

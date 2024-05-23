@@ -11,7 +11,7 @@ def extract_stream_id(req_to: str) -> int:
     try:
         stream_id = int(req_to)
     except ValueError:
-        raise JsonableError(_("Invalid data type for stream ID"))
+        raise JsonableError(_("Invalid data type for channel ID"))
     return stream_id
 
 

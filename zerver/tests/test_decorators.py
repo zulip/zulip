@@ -582,7 +582,9 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         realm = get_realm("zulip")
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(
+            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+        )
 
         result = self.client_post(
             "/json/messages",
@@ -649,7 +651,9 @@ class DeactivatedRealmTest(ZulipTestCase):
         Using a webhook while in a deactivated realm fails
 
         """
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(
+            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+        )
         user_profile = self.example_user("hamlet")
         api_key = get_api_key(user_profile)
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
@@ -1426,7 +1430,7 @@ class TestUserAgentParsing(ZulipTestCase):
         with open(user_agents_path) as f:
             for line in f:
                 line = line.strip()
-                match = re.match('^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
+                match = re.match(r'^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
                 assert match is not None
                 groupdict = match.groupdict()
                 count = groupdict["count"]
@@ -1568,9 +1572,7 @@ class TestRequestNotes(ZulipTestCase):
         with mock.patch("zerver.views.home.zulip_login_required") as mock_home_real:
             result = self.client_get("/", subdomain="invalid")
             self.assertEqual(result.status_code, 404)
-            self.assert_in_response(
-                "There is no Zulip organization hosted at this subdomain.", result
-            )
+            self.assert_in_response("There is no Zulip organization at", result)
             mock_home_real.assert_not_called()
 
 

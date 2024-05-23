@@ -89,6 +89,7 @@
 
     > .tippy-content {
         padding: 0;
+        font-size: 14px;
     }
 
     > .tippy-arrow {
@@ -232,22 +233,16 @@
     z-index: 106;
 }
 
-.streams_popover {
-    width: min-content;
-
-    .stream-menu-item {
-        white-space: nowrap;
+#stream-actions-menu-popover {
+    .popover-stream-name {
+        font-weight: 600;
+        color: var(--color-text-popover-menu);
+        line-height: 1.1;
     }
 
-    .stream-name {
-        align-items: baseline;
-        color: var(--color-text-sidebar-popover-menu);
-        display: flex;
-        gap: 3px;
-        font-weight: 700;
-        line-height: 1.1;
-        margin: 6px 0;
-        white-space: normal;
+    .popover-stream-name,
+    .stream-privacy.filter-icon {
+        margin-top: 4px;
     }
 
     .colorpicker-container {
@@ -288,34 +283,19 @@
             }
         }
     }
-
-    .popover_sub_unsub_button {
-        margin-top: 0;
-        float: none;
-    }
 }
 
-.topics_popover {
-    min-width: var(--popover-menu-min-width);
-    width: min-content;
-
-    .topic-menu-item {
-        white-space: nowrap;
-    }
-
-    .topic-name {
-        color: var(--color-text-sidebar-popover-menu);
-        font-weight: 700;
+#topic-actions-menu-popover {
+    .popover-topic-name {
+        font-weight: 600;
+        color: var(--color-text-popover-menu);
         line-height: 1.1;
-        margin: 6px 0;
-        white-space: normal;
+        margin-top: 4px;
     }
 }
 
 ul {
-    &.user-card-popover-actions i,
-    &.streams_popover i,
-    &.topics_popover i {
+    &.user-card-popover-actions i {
         display: inline-block;
         text-align: center;
 
@@ -390,6 +370,12 @@ ul {
 
         .group-name {
             font-weight: bold;
+
+            .zulip-icon-triple-users {
+                position: relative;
+                top: 2px;
+                margin-right: 5px;
+            }
         }
     }
 
@@ -501,13 +487,14 @@ ul {
 
     .name {
         color: hsl(0deg 0% 20%);
-        width: 120px;
         font-weight: 600;
         margin-right: 10px;
+        overflow-wrap: break-word;
     }
 
     .value {
         vertical-align: top;
+        overflow-wrap: anywhere;
     }
 
     #exit-sign {
@@ -548,37 +535,25 @@ ul {
         }
     }
 
-    .user_profile_manage_own_edit_button,
-    .user_profile_manage_others_edit_button {
-        width: 25px;
-        height: 14px;
-        text-align: center;
-        font-size: 18px;
-    }
-
-    .user_profile_manage_own_copy_link_button {
-        width: 20px;
-        height: 15px;
-        text-align: center;
+    .user-profile-manage-own-edit-button,
+    .user-profile-manage-others-edit-button {
+        text-decoration: none;
         font-size: 15px;
     }
 
-    #user_profile_manage_own_copy_link {
-        height: 25px;
-        margin-right: 8px;
+    .user-profile-manage-own-copy-link-button {
+        font-size: 19px;
+        text-decoration: none;
     }
 
-    #user_profile_manage_own_edit_link {
-        height: 25px;
+    .zulip-icon-link,
+    .zulip-icon-edit {
+        vertical-align: middle;
     }
 
     .deactivated-user-icon {
         margin: -1px;
         vertical-align: middle;
-    }
-
-    .user_profile_name {
-        margin: 0 10px;
     }
 
     .zulip-icon.zulip-icon-bot {
@@ -619,7 +594,6 @@ ul {
 
     .col-left {
         padding: 0 10px 0 0;
-        word-break: break-all;
     }
 
     .col-right {
@@ -1210,7 +1184,6 @@ ul {
     border-radius: 6px;
 
     .simplebar-content {
-        min-width: var(--popover-menu-min-width);
         /* Set the popover menu width equal to the width of the
         longest menu item, thus letting the menu items control
         the width of the menu. */
@@ -1309,6 +1282,29 @@ ul {
     .zulip-icon {
         position: relative;
         top: -1px;
+    }
+}
+
+#help-menu-dropdown,
+#gear-menu-dropdown,
+#personal-menu-dropdown {
+    .simplebar-content {
+        min-width: var(--navbar-popover-menu-min-width);
+    }
+}
+
+#message-actions-menu-dropdown {
+    --popover-menu-max-width: 350px;
+
+    .simplebar-content {
+        min-width: var(--message-actions-popover-min-width);
+    }
+}
+
+#stream-actions-menu-popover,
+#topic-actions-menu-popover {
+    .simplebar-content {
+        min-width: var(--topic-actions-popover-min-width);
     }
 }
 
@@ -1480,8 +1476,4 @@ ul.popover-menu-outer-list {
         outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: -1px;
     }
-}
-
-#message-actions-menu-dropdown {
-    --popover-menu-max-width: 350px;
 }

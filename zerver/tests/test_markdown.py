@@ -63,7 +63,7 @@ from zerver.lib.mention import (
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
-from zerver.models import Message, RealmEmoji, RealmFilter, UserGroup, UserMessage, UserProfile
+from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
@@ -2614,7 +2614,7 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
-    def create_user_group_for_test(self, user_group_name: str) -> UserGroup:
+    def create_user_group_for_test(self, user_group_name: str) -> NamedUserGroup:
         othello = self.example_user("othello")
         return check_add_user_group(
             get_realm("zulip"), user_group_name, [othello], acting_user=None
@@ -2847,7 +2847,7 @@ class MarkdownTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
-        moderators_group = UserGroup.objects.get(
+        moderators_group = NamedUserGroup.objects.get(
             realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
         content = "@*role:moderators* @**King Hamlet** test message"
@@ -3175,11 +3175,11 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         sender_user_profile = self.example_user("othello")
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "http://zulip.testserver/#streams/all"
+        msg = "http://zulip.testserver/#channels/all"
 
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#streams/all">http://zulip.testserver/#streams/all</a></p>',
+            '<p><a href="#channels/all">http://zulip.testserver/#channels/all</a></p>',
         )
 
     def test_md_relative_link(self) -> None:
@@ -3305,7 +3305,7 @@ class MarkdownErrorTests(ZulipTestCase):
         throws an exception"""
         msg = "mock rendered message\n" * 10 * settings.MAX_MESSAGE_LENGTH
 
-        with mock.patch("zerver.lib.markdown.timeout", return_value=msg), mock.patch(
+        with mock.patch("zerver.lib.markdown.unsafe_timeout", return_value=msg), mock.patch(
             "zerver.lib.markdown.markdown_logger"
         ):
             with self.assertRaises(MarkdownRenderingError):

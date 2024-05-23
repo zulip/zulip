@@ -517,11 +517,22 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             break;
         case "emojiset":
         case "user_list_style":
-        case "stream_privacy":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
             break;
+        case "stream_privacy": {
+            $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
+
+            // Hide stream privacy warning banner
+            const $stream_permissions_warning_banner = $(
+                "#stream_permission_settings .stream-permissions-warning-banner",
+            );
+            if (!$stream_permissions_warning_banner.is(":empty")) {
+                $stream_permissions_warning_banner.empty();
+            }
+            break;
+        }
         case "email_notifications_batching_period_seconds":
         case "email_notification_batching_period_edit_minutes":
             settings_notifications.set_notification_batching_ui(
@@ -673,7 +684,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_new_stream_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_new_stream_announcements_stream_widget(
         new_stream_announcements_stream_widget,
@@ -696,7 +707,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_signup_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_signup_announcements_stream_widget(signup_announcements_stream_widget);
     signup_announcements_stream_widget.setup();
@@ -717,7 +728,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_zulip_update_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_zulip_update_announcements_stream_widget(
         zulip_update_announcements_stream_widget,
@@ -815,55 +826,6 @@ export function init_dropdown_widgets() {
     can_access_all_users_group_widget.setup();
 }
 
-export function populate_data_for_request(subsection, for_realm_default_settings, sub, group) {
-    let data = {};
-    const properties_elements = settings_components.get_subsection_property_elements(subsection);
-
-    for (const input_elem of properties_elements) {
-        const $input_elem = $(input_elem);
-        if (
-            settings_components.check_property_changed(
-                input_elem,
-                for_realm_default_settings,
-                sub,
-                group,
-            )
-        ) {
-            const input_value = settings_components.get_input_element_value(input_elem);
-            if (input_value !== undefined) {
-                let property_name;
-                if (for_realm_default_settings || sub || group) {
-                    property_name = settings_components.extract_property_name(
-                        $input_elem,
-                        for_realm_default_settings,
-                    );
-                } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
-                    // Authentication Method component IDs include authentication method name
-                    // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
-                    // We need to strip that whole construct down to extract the actual property name.
-                    // The [\da-z]+ part of the regexp covers the auth method name itself.
-                    // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
-                    // this is ensured by a respective allowlist-based filter in populate_auth_methods().
-                    [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec($input_elem.attr("id"));
-                } else {
-                    [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
-                }
-
-                if (property_name === "stream_privacy") {
-                    data = {
-                        ...data,
-                        ...settings_data.get_request_data_for_stream_privacy(input_value),
-                    };
-                    continue;
-                }
-                data[property_name] = input_value;
-            }
-        }
-    }
-
-    return data;
-}
-
 export function register_save_discard_widget_handlers(
     $container,
     patch_url,
@@ -918,29 +880,6 @@ export function register_save_discard_widget_handlers(
         let data = {};
 
         switch (subsection) {
-            case "notifications":
-                data.default_language = $(
-                    "#org-notifications .language_selection_widget .language_selection_button span",
-                ).attr("data-language-code");
-                break;
-            case "join_settings": {
-                const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
-                switch (org_join_restrictions) {
-                    case "only_selected_domain":
-                        data.emails_restricted_to_domains = true;
-                        data.disallow_disposable_email_addresses = false;
-                        break;
-                    case "no_disposable_email":
-                        data.emails_restricted_to_domains = false;
-                        data.disallow_disposable_email_addresses = true;
-                        break;
-                    case "no_restriction":
-                        data.disallow_disposable_email_addresses = false;
-                        data.emails_restricted_to_domains = false;
-                        break;
-                }
-                break;
-            }
             case "auth_settings":
                 data = {};
                 data.authentication_methods = JSON.stringify(
@@ -968,7 +907,10 @@ export function register_save_discard_widget_handlers(
         }
 
         const data = {
-            ...populate_data_for_request($subsection_elem, for_realm_default_settings),
+            ...settings_components.populate_data_for_request(
+                $subsection_elem,
+                for_realm_default_settings,
+            ),
             ...extra_data,
         };
         save_organization_settings(data, $save_button, patch_url);

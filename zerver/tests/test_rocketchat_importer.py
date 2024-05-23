@@ -1003,7 +1003,7 @@ class RocketChatImporter(ZulipTestCase):
             self.assertIsNotNone(message.rendered_content)
         # After removing user_joined, added_user, discussion_created, etc.
         # messages. (Total messages were 66.)
-        self.assert_length(messages, 43)
+        self.assert_length(messages, 44)
 
         stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
         stream_recipients = stream_messages.values_list("recipient", flat=True)
@@ -1025,8 +1025,8 @@ class RocketChatImporter(ZulipTestCase):
             "date_sent"
         )
         huddle_recipients = huddle_messages.values_list("recipient", flat=True)
-        self.assert_length(huddle_messages, 4)
-        self.assert_length(set(huddle_recipients), 1)
+        self.assert_length(huddle_messages, 5)
+        self.assert_length(set(huddle_recipients), 2)
         self.assertEqual(huddle_messages[0].sender.email, "hermionegranger@email.com")
         self.assertEqual(huddle_messages[0].content, "Hey people!")
 

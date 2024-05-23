@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
-import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
+import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
@@ -20,6 +20,7 @@ export function initialize() {
     popover_menus.register_popover_menu(
         "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
         {
+            theme: "popover-menu",
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
                 popover_menus.popover_instances.topics_menu = instance;
@@ -40,7 +41,7 @@ export function initialize() {
                         .expectOne();
                     const $stream_li = $elt.closest(".narrow-filter").expectOne();
                     topic_name = $elt.closest("li").expectOne().attr("data-topic-name");
-                    url = $elt.closest("li").find(".topic-name").expectOne().prop("href");
+                    url = $elt.closest("li").find(".sidebar-topic-name").expectOne().prop("href");
                     stream_id = stream_popover.elem_to_stream_id($stream_li);
                 }
 
@@ -50,7 +51,7 @@ export function initialize() {
                     url,
                 });
                 instance.setContent(
-                    ui_util.parse_html(render_topic_sidebar_actions(instance.context)),
+                    ui_util.parse_html(render_left_sidebar_topic_actions_popover(instance.context)),
                 );
             },
             onMount(instance) {

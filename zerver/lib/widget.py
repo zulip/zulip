@@ -56,8 +56,8 @@ def parse_todo_extra_data(content: str) -> Any:
         task_data = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), count=1)
         if len(task_data) > 0:
             # a task and its description (optional) are separated
-            # by the (first) `:` character
-            task_data_array = task_data.split(":", 1)
+            # by the (first) `: ` substring
+            task_data_array = task_data.split(": ", 1)
             tasks.append(
                 {
                     "task": task_data_array[0].strip(),

@@ -50,9 +50,9 @@ Some details to keep in mind:
 Zulip also offers a wide array of search filters, which can be used on their
 own, or in combination with keywords. For example:
 
-* `stream:design`: Navigate to **#design**.
-* `stream:design logo`: Search for the keyword `logo` within **#design**.
-* `stream:design has:image new logo`: Search for messages in **#design** that
+* `channel:design`: Navigate to **#design**.
+* `channel:design logo`: Search for the keyword `logo` within **#design**.
+* `channel:design has:image new logo`: Search for messages in **#design** that
   include an image and contain the keywords `new` and `logo`. The keywords can
   appear in the message itself or its topic.
 
@@ -66,8 +66,8 @@ own, or in combination with keywords. For example:
 Sometimes you know approximately where the message you are looking for was sent.
 Zulip offers the following filters based on the location of the message.
 
-* `stream:design`: Search within the stream **#design**.
-* `stream:design topic:new+logo`: Search within the topic "new logo" in
+* `channel:design`: Search within the channel **#design**.
+* `channel:design topic:new+logo`: Search within the topic "new logo" in
   **#design**.
 * `is:dm`: Search all your direct messages.
 * `dm:Bo Lin`: Search 1-on-1 direct messages between you and Bo.
@@ -75,9 +75,9 @@ Zulip offers the following filters based on the location of the message.
   between you, Bo, and Elena.
 * `dm-including:Bo Lin`: Search all direct message conversations
   (1-on-1 and group) that include you and Bo, as well as any other users.
-* `streams:public`: Search the history of all [public
-  streams](/help/change-the-privacy-of-a-stream) in the organization, including
-  streams you are not subscribed to; see details
+* `channels:public`: Search the history of all [public
+  channels](/help/change-the-privacy-of-a-channel) in the organization, including
+  channels you are not subscribed to; see details
   [below](#searching-shared-history).
 
 ### Search by sender
@@ -127,37 +127,37 @@ You can use the search bar to navigate to a message by its ID.
 
 * `near:12345`: Show messages around the message with ID `12345`.
 * `id:12345`: Show only message `12345`.
-* `stream:design near:1` Show the oldest messages in the **#design** stream.
+* `channel:design near:1` Show the oldest messages in the **#design** channel.
 
 ### Exclude filters
 
 All of Zulip's search filters can be negated to **exclude** messages matching
 the specified rule. For example:
 
-- `stream:design -is:resolved -has:image`: Search messages in [unresolved
-  topics](/help/resolve-a-topic) in the **#design** stream that don't contain
+- `channel:design -is:resolved -has:image`: Search messages in [unresolved
+  topics](/help/resolve-a-topic) in the **#design** channel that don't contain
   images.
 
 ## Searching shared history
 
-Zulip's [stream permissions](/help/stream-permissions) model allows access to
-the full history of public streams and private streams with shared history,
-including messages sent before you joined the stream (or organization), or those
-sent to public streams you are not subscribed to.
+Zulip's [channel permissions](/help/channel-permissions) model allows access to
+the full history of public channels and private channels with shared history,
+including messages sent before you joined the channel (or organization), or those
+sent to public channels you are not subscribed to.
 
 By default, Zulip searches messages in your history, i.e., the
 messages you actually received.  This avoids cluttering search results
-with irrelevant messages from public streams you're not interested in.
+with irrelevant messages from public channels you're not interested in.
 
 If you'd like to instead search the organization's shared history, any query
-using the `stream:` or `streams:` filters will search all messages that you have
-access to in the selected stream(s).  For example:
+using the `channel:` or `channels:` filters will search all messages that you have
+access to in the selected channel(s).  For example:
 
-* `streams:public logo`: Search for `logo` in all public streams in the
+* `channels:public logo`: Search for `logo` in all public channels in the
   organization.
-* `streams:public sender:Elena García`: Search for all messages sent by
-  Elena to any public stream.
-* `stream:design logo`: Search for the word `logo` in all messages sent to
+* `channels:public sender:Elena García`: Search for all messages sent by
+  Elena to any public channel.
+* `channel:design logo`: Search for the word `logo` in all messages sent to
   **#design**, regardless of whether you were subscribed at the time the message
   was sent.
 

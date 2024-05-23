@@ -49,28 +49,28 @@ us know!
 
 {!customize-organization-settings.md!}
 
-## Create streams
+## Create channels
 
-{!create-streams-intro.md!}
+{!create-channels-intro.md!}
 
-### How to create a stream
+### How to create a channel
 
 {start_tabs}
 
-{relative|stream|all}
+{relative|channel|all}
 
-1. Click **Create stream** on the right.
+1. Click **Create channel** on the right.
 
 1. Fill out the requested info, and click **Create**.
 
 {end_tabs}
 
-For more details about stream settings, see [Create a
-stream](/help/create-a-stream#stream-options).
+For more details about channel settings, see [Create a
+channel](/help/create-a-channel#channel-options).
 
-### Tips for creating streams
+### Tips for creating channels
 
-{!tips-for-creating-streams.md!}
+{!tips-for-creating-channels.md!}
 
 ## Customize settings for new users
 
@@ -110,6 +110,6 @@ users at once, [notifying](/help/dm-mention-alert-notifications) them about a me
 ## Further reading
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Streams and topics](/help/streams-and-topics)
+* [Introduction to topics](/help/introduction-to-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 * [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)

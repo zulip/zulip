@@ -1,4 +1,4 @@
-1.  {!create-stream.md!}
+1.  {!create-channel.md!}
 
 1.  {!download-python-bindings.md!}
 

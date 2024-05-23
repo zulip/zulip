@@ -25,7 +25,7 @@ from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
-from zerver.lib.notification_data import get_mentioned_user_group_name
+from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
@@ -55,7 +55,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
     # is not possible with `make_links_absolute()`.
     for link_info in fragment.iterlinks():
         elem, attrib, link, pos = link_info
-        match = re.match("/?#narrow/", link)
+        match = re.match(r"/?#narrow/", link)
         if match is not None:
             link = re.sub(r"^/?#narrow/", base_url + "/#narrow/", link)
             elem.set(attrib, link)
@@ -230,13 +230,13 @@ def build_message_list(
         # structure of the URL to leverage. We can't use `relative_to_full_url()`
         # function here because it uses a stricter regex which will not work for
         # plain text.
-        plain = re.sub(r"/user_uploads/(\S*)", user.realm.uri + r"/user_uploads/\1", plain)
+        plain = re.sub(r"/user_uploads/(\S*)", user.realm.url + r"/user_uploads/\1", plain)
         plain = fix_spoilers_in_text(plain, user.default_language)
         plain = add_quote_prefix_in_text(plain)
 
         assert message.rendered_content is not None
         fragment = lxml.html.fragment_fromstring(message.rendered_content, create_parent=True)
-        relative_to_full_url(fragment, user.realm.uri)
+        relative_to_full_url(fragment, user.realm.url)
         fix_emojis(fragment, user.emojiset)
         fix_spoilers_in_html(fragment, user.default_language)
         change_katex_to_raw_latex(fragment)
@@ -413,7 +413,13 @@ def do_send_missedmessage_events_reply_in_zulip(
         ),
     )
 
-    mentioned_user_group_name = get_mentioned_user_group_name(missed_messages, user_profile)
+    mentioned_user_group_name = None
+    mentioned_user_group_members_count = None
+    mentioned_user_group = get_mentioned_user_group(missed_messages, user_profile)
+    if mentioned_user_group is not None:
+        mentioned_user_group_name = mentioned_user_group.name
+        mentioned_user_group_members_count = mentioned_user_group.members_count
+
     triggers = [message["trigger"] for message in missed_messages]
     unique_triggers = set(triggers)
 
@@ -527,7 +533,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         context.update(narrow_url=narrow_url)
         topic_resolved, topic_name = get_topic_resolution_and_bare_name(message.topic_name())
         context.update(
-            stream_name=stream.name,
+            channel_name=stream.name,
             topic_name=topic_name,
             topic_resolved=topic_resolved,
         )
@@ -560,7 +566,7 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     # Soft reactivate the long_term_idle user personally mentioned
     soft_reactivate_if_personal_notification(
-        user_profile, unique_triggers, mentioned_user_group_name
+        user_profile, unique_triggers, mentioned_user_group_members_count
     )
 
     with override_language(user_profile.default_language):
@@ -778,7 +784,7 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
         return
 
     from_name, from_address = welcome_sender_information()
-    realm_url = user.realm.uri
+    realm_url = user.realm.url
 
     account_registered_context = common_context(user)
     account_registered_context.update(
@@ -839,7 +845,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         .count()
     )
     unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
-    realm_url = user.realm.uri
+    realm_url = user.realm.url
 
     # Any emails scheduled below should be added to the logic in get_onboarding_email_schedule
     # to determine how long to delay sending the email based on when the user signed up.
@@ -852,7 +858,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
             unsubscribe_link=unsubscribe_link,
             move_messages_link=realm_url + "/help/move-content-to-another-topic",
             rename_topics_link=realm_url + "/help/rename-a-topic",
-            move_topic_to_different_stream_link=realm_url + "/help/move-content-to-another-stream",
+            move_channels_link=realm_url + "/help/move-content-to-another-channel",
         )
 
         send_future_email(
@@ -931,4 +937,4 @@ def convert_html_to_markdown(html: str) -> str:
     # ugly. Run a regex over the resulting description, turning links of the
     # form `![](http://foo.com/image.png?12345)` into
     # `[image.png](http://foo.com/image.png)`.
-    return re.sub("!\\[\\]\\((\\S*)/(\\S*)\\?(\\S*)\\)", "[\\2](\\1/\\2)", markdown)
+    return re.sub(r"!\[\]\((\S*)/(\S*)\?(\S*)\)", "[\\2](\\1/\\2)", markdown)

@@ -204,7 +204,7 @@ export function get_title_data(
     is_group: boolean,
 ): {
     first_line: string;
-    second_line?: string;
+    second_line: string | undefined;
     third_line: string;
     show_you?: boolean;
 } {
@@ -339,14 +339,8 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
     }
 
     // If a query is present in "Search people", we return matches.
-    let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
-    search_terms = search_terms.map((s) => s.trim());
-
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
-
-    const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
-
-    return [...user_id_dict.keys()];
+    return [...people.filter_people_by_search_terms(persons, user_filter_text)];
 }
 
 function get_filtered_user_id_list(user_filter_text: string): number[] {

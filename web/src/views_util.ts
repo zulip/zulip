@@ -1,4 +1,5 @@
 import $ from "jquery";
+import type * as tippy from "tippy.js";
 
 import * as activity_ui from "./activity_ui";
 import * as compose_actions from "./compose_actions";
@@ -21,12 +22,14 @@ export const FILTERS = {
     FOLLOWED_TOPICS: "followed_topics",
 };
 
+const TIPPY_PROPS: Partial<tippy.Props> = {
+    placement: "bottom-start",
+    offset: [0, 2],
+};
+
 export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     get_options: filters_dropdown_options,
-    tippy_props: {
-        placement: "bottom-start",
-        offset: [0, 2],
-    },
+    tippy_props: TIPPY_PROPS,
     unique_id_type: dropdown_widget.DataTypes.STRING,
     hide_search_box: true,
     bold_current_selection: true,
@@ -56,7 +59,7 @@ export function filters_dropdown_options(current_value: string | number | undefi
             unique_id: FILTERS.ALL_TOPICS,
             name: $t({defaultMessage: "All topics"}),
             description: $t({
-                defaultMessage: "Includes muted streams and topics",
+                defaultMessage: "Includes muted channels and topics",
             }),
             bold_current_selection: current_value === FILTERS.ALL_TOPICS,
         },
@@ -72,10 +75,6 @@ export function show(opts: {
     complete_rerender: () => void;
     is_recent_view?: boolean;
 }): void {
-    if (narrow_state.has_shown_message_list_view) {
-        message_lists.save_pre_narrow_offset_for_reload();
-    }
-
     if (opts.is_visible()) {
         // If we're already visible, E.g. because the user hit Esc
         // while already in the view, do nothing.

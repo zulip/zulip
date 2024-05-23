@@ -213,9 +213,9 @@ export function render_empty_list_message_if_needed(
     $container: JQuery,
     filter_value: string,
 ): void {
-    let empty_list_message = $container.data("empty");
+    let empty_list_message = $container.attr("data-empty");
 
-    const empty_search_results_message = $container.data("search-results-empty");
+    const empty_search_results_message = $container.attr("data-search-results-empty");
     if (filter_value && empty_search_results_message) {
         empty_list_message = empty_search_results_message;
     }
@@ -254,7 +254,7 @@ export function create<Key, Item = Key>(
     $container: JQuery,
     list: Key[],
     opts: ListWidgetOpts<Key, Item>,
-): ListWidget<Key, Item> | undefined {
+): ListWidget<Key, Item> {
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // Clear event handlers for prior widget.
         const old_widget = DEFAULTS.instances.get(opts.name)!;
@@ -326,6 +326,9 @@ export function create<Key, Item = Key>(
             // Stop once the offset reaches the length of the original list.
             if (this.all_rendered()) {
                 render_empty_list_message_if_needed($container, meta.filter_value);
+                if (opts.callback_after_render) {
+                    opts.callback_after_render();
+                }
                 return;
             }
 
@@ -430,9 +433,13 @@ export function create<Key, Item = Key>(
             });
 
             if (opts.$parent_container) {
-                opts.$parent_container.on("click.list_widget_sort", "[data-sort]", function () {
-                    handle_sort($(this), widget);
-                });
+                opts.$parent_container.on(
+                    "click.list_widget_sort",
+                    "[data-sort]",
+                    function (this: HTMLElement) {
+                        handle_sort($(this), widget);
+                    },
+                );
             }
 
             opts.filter?.$element?.on("input.list_widget_filter", function () {
@@ -579,8 +586,9 @@ export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>)
             <th data-sort="status"></th>
         </thead>
         */
-    const sort_type: string = $th.data("sort");
-    const prop_name: string = $th.data("sort-prop");
+    const sort_type = $th.attr("data-sort");
+    const prop_name = $th.attr("data-sort-prop");
+    assert(sort_type !== undefined);
 
     if ($th.hasClass("active")) {
         if (!$th.hasClass("descend")) {

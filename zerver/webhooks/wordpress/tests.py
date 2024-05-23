@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class WordPressHookTests(WebhookTestCase):
-    STREAM_NAME = "wordpress"
+    CHANNEL_NAME = "wordpress"
     URL_TEMPLATE = "/api/v1/external/wordpress?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "wordpress"
 
@@ -83,8 +83,8 @@ class WordPressHookTests(WebhookTestCase):
         # we are testing. The value of result is the error message the webhook should
         # return if no params are sent. The fixture for this test is an empty file.
 
-        # subscribe to the target stream
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        # subscribe to the target channel
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
 
         # post to the webhook url
         result = self.client_post(
@@ -100,7 +100,7 @@ class WordPressHookTests(WebhookTestCase):
         # Similar to unknown_action_no_data, except the fixture contains valid blog post
         # params but without the hook parameter. This should also return an error.
 
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
         result = self.client_post(
             self.url,
             self.get_body("unknown_action_no_hook_provided"),

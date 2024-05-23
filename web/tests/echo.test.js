@@ -41,14 +41,15 @@ message_lists.current = {
     },
     change_message_id: noop,
 };
-message_lists.home = {
+const home_msg_list = {
     view: {
         rerender_messages: noop,
         change_message_id: noop,
     },
+    preserver_rendered_state: true,
     change_message_id: noop,
 };
-message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
+message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 
 const echo = zrequire("echo");
 const people = zrequire("people");
@@ -76,7 +77,7 @@ run_test("process_from_server for un-echoed messages", () => {
 run_test("process_from_server for differently rendered messages", ({override}) => {
     let messages_to_rerender = [];
 
-    override(message_lists.home.view, "rerender_messages", (msgs) => {
+    override(home_msg_list.view, "rerender_messages", (msgs) => {
         messages_to_rerender = msgs;
     });
 
@@ -193,13 +194,13 @@ run_test("build_display_recipient", () => {
 });
 
 run_test("update_message_lists", () => {
-    message_lists.home.view = {};
+    home_msg_list.view = {};
 
     const stub = make_stub();
     const view_stub = make_stub();
 
-    message_lists.home.change_message_id = stub.f;
-    message_lists.home.view.change_message_id = view_stub.f;
+    home_msg_list.change_message_id = stub.f;
+    home_msg_list.view.change_message_id = view_stub.f;
 
     echo.update_message_lists({old_id: 401, new_id: 402});
 

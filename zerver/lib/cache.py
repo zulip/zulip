@@ -26,7 +26,6 @@ from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
-from django.http import HttpRequest
 from django_stubs_ext import QuerySetAny
 from typing_extensions import ParamSpec
 
@@ -684,10 +683,8 @@ def to_dict_cache_key(message: "Message", realm_id: Optional[int] = None) -> str
     return to_dict_cache_key_id(message.id)
 
 
-def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> str:
-    return "open_graph_description_path:{}".format(
-        hashlib.sha1(request.META["PATH_INFO"].encode()).hexdigest()
-    )
+def open_graph_description_cache_key(content: bytes, request_url: str) -> str:
+    return f"open_graph_description_path:{hashlib.sha1(request_url.encode()).hexdigest()}"
 
 
 def flush_message(*, instance: "Message", **kwargs: object) -> None:

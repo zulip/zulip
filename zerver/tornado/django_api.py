@@ -9,10 +9,10 @@ from django.conf import settings
 from django.db import transaction
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
-from returns.curry import partial
 from typing_extensions import override
 from urllib3.util import Retry
 
+from zerver.lib.partial import partial
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
 from zerver.tornado.sharding import (

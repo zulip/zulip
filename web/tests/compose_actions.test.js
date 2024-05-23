@@ -45,6 +45,8 @@ mock_esm("../src/reload_state", {
 mock_esm("../src/drafts", {
     update_draft: noop,
     update_compose_draft_count: noop,
+    get_last_restorable_draft_based_on_compose_state: noop,
+    set_compose_draft_id: noop,
 });
 mock_esm("../src/unread_ops", {
     notify_server_message_read: noop,
@@ -328,7 +330,6 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
         sender_full_name: "Bob Roberts",
         sender_id: 40,
     };
-    override(message_lists.current, "get", (_id) => undefined);
     override(message_lists.current, "selected_message", () => msg);
 
     let syntax_to_insert;

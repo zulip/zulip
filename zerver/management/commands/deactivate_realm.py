@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Any
+from typing import Any, cast
 
 from typing_extensions import override
 
@@ -15,11 +15,18 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--redirect_url", metavar="<redirect_url>", help="URL to which the realm has moved"
         )
+        parser.add_argument(
+            "--deactivation_reason",
+            metavar="<deactivation_reason>",
+            help="Reason for deactivation",
+            required=True,
+        )
         self.add_realm_args(parser, required=True)
 
     @override
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
+        deactivation_reason = options["deactivation_reason"]
 
         assert realm is not None  # Should be ensured by parser
 
@@ -32,5 +39,7 @@ class Command(ZulipBaseCommand):
             return
 
         print("Deactivating", options["realm_id"])
-        do_deactivate_realm(realm, acting_user=None)
+        do_deactivate_realm(
+            realm, acting_user=None, deactivation_reason=cast(Any, deactivation_reason)
+        )
         print("Done!")

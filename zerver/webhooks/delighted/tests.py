@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class DelightedHookTests(WebhookTestCase):
-    STREAM_NAME = "delighted"
+    CHANNEL_NAME = "delighted"
     URL_TEMPLATE = "/api/v1/external/delighted?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "delighted"
 

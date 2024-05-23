@@ -13,7 +13,7 @@
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
             <div class="new_message_button reply_button_container">
-                <div class="compose-reply-button-wrapper" data-tooltip-template-id="compose_reply_message_button_tooltip_template">
+                <div class="compose-reply-button-wrapper" data-reply-button-type="selected_message">
                     <button type="button" class="button small compose_reply_button"
                       id="left_bar_compose_reply_button_big">
                         {{t 'Compose message' }}
@@ -69,27 +69,31 @@
                                     <i class="zulip-icon zulip-icon-close"></i>
                                 </button>
                             </div>
-                            <div id="compose-direct-recipient" class="pill-container" data-before="{{t 'You and' }}">
-                                <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
+                            <div id="compose-direct-recipient" data-before="{{t 'You and' }}">
+                                <div class="pill-container">
+                                    <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="messagebox-wrapper">
                         <div class="messagebox">
-                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
-                            <div id="preview-message-area-container">
-                                <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
-                                    <div class="markdown_preview_spinner"></div>
-                                    <div class="preview_content rendered_markdown"></div>
+                            <div id="message-content-container">
+                                <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
+                                <div id="preview-message-area-container">
+                                    <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
+                                        <div class="markdown_preview_spinner"></div>
+                                        <div class="preview_content rendered_markdown"></div>
+                                    </div>
                                 </div>
+                                <div class="drag"></div>
                             </div>
-                            <div class="drag"></div>
 
                             <div id="message-send-controls-container">
                                 <a id="compose-drafts-button" role="button" class="send-control-button hide-sm" tabindex=0 href="#drafts">
                                     <span class="compose-drafts-text">{{t 'Drafts' }}</span><span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span>
                                 </a>
-                                <span id="compose-limit-indicator"></span>
+                                <span id="compose-limit-indicator" class="tippy-zulip-tooltip" data-tippy-content="{{t 'Maximum message length: {max_message_length} characters' }}"></span>
                                 <div class="message-send-controls">
                                     <button type="submit" id="compose-send-button" class="send_message compose-submit-button compose-send-or-save-button" aria-label="{{t 'Send' }}">
                                         <img class="loader" alt="" src="" />

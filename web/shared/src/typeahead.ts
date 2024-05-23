@@ -30,11 +30,13 @@ export const popular_emojis = [
 
 const unicode_marks = /\p{M}/gu;
 
-type Emoji =
+export type Emoji =
     | {
           emoji_name: string;
           reaction_type: "realm_emoji" | "zulip_extra_emoji";
           is_realm_emoji: true;
+          emoji_url?: string | undefined;
+          emoji_code?: undefined;
       }
     | UnicodeEmoji;
 
@@ -44,6 +46,10 @@ type UnicodeEmoji = {
     emoji_code: string;
     reaction_type: "unicode_emoji";
     is_realm_emoji: false;
+    emoji_url?: string | undefined;
+};
+export type EmojiSuggestion = Emoji & {
+    type: "emoji";
 };
 
 export function remove_diacritics(s: string): string {
@@ -193,7 +199,7 @@ export const parse_unicode_emoji_code = (code: string): string =>
         .map((hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
         .join("");
 
-export function get_emoji_matcher(query: string): (emoji: Emoji) => boolean {
+export function get_emoji_matcher(query: string): (emoji: EmojiSuggestion) => boolean {
     // replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
     query = clean_query_lowercase(query);
@@ -308,7 +314,7 @@ export function triage<T>(
     };
 }
 
-export function sort_emojis<T extends Emoji>(objs: T[], query: string): T[] {
+export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string): T[] {
     // replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
     query = query.toLowerCase();
@@ -320,7 +326,7 @@ export function sort_emojis<T extends Emoji>(objs: T[], query: string): T[] {
 
     const popular_set = new Set(popular_emojis);
 
-    function is_popular(obj: Emoji): boolean {
+    function is_popular(obj: EmojiSuggestion): boolean {
         return (
             obj.reaction_type === "unicode_emoji" &&
             popular_set.has(obj.emoji_code) &&

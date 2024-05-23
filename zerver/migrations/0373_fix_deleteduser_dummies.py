@@ -45,7 +45,7 @@ def fix_dummy_users(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) ->
     """
     do_delete_users had two bugs:
     1. Creating the replacement dummy users with active=True
-    2. Creating the replacement dummy users with email domain set to realm.uri,
+    2. Creating the replacement dummy users with email domain set to realm.url,
     which may not be a valid email domain.
     Prior commits fixed the bugs, and this migration fixes the pre-existing objects.
     """

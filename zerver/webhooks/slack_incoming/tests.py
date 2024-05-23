@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class SlackIncomingHookTests(WebhookTestCase):
-    STREAM_NAME = "slack_incoming"
+    CHANNEL_NAME = "slack_incoming"
     URL_TEMPLATE = "/api/v1/external/slack_incoming?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "slack_incoming"
 
@@ -28,7 +28,7 @@ Hello, world.
             ("*foo*a*bar*", "*foo*a*bar*"),
             ("some _foo_ word", "some *foo* word"),
         ]
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
         for input_value, output_value in tests:
             payload = {"text": input_value}
             msg = self.send_webhook_payload(
@@ -37,9 +37,9 @@ Hello, world.
                 payload,
                 content_type="application/json",
             )
-            self.assert_stream_message(
+            self.assert_channel_message(
                 message=msg,
-                stream_name=self.STREAM_NAME,
+                channel_name=self.CHANNEL_NAME,
                 topic_name="(no topic)",
                 content=output_value,
             )

@@ -26,7 +26,7 @@ export const is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
 let realm_url = "http://zulip.zulipdev.com:9981/";
 const gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
 
-let last_current_msg_list_id: number | null = null;
+let last_current_msg_list_id: number | undefined;
 
 export const pm_recipient = {
     async set(page: Page, recipient: string): Promise<void> {
@@ -34,14 +34,12 @@ export const pm_recipient = {
         // a flake where the typeahead doesn't show up.
         await page.type("#private_message_recipient", recipient, {delay: 100});
 
-        // We use [style*="display: block"] here to distinguish
-        // the visible typeahead menu from the invisible ones
-        // meant for something else; e.g., the direct message
-        // input typeahead is different from the topic input
-        // typeahead but both can be present in the DOM.
-        const entry = await page.waitForSelector('.typeahead[style*="display: block"] .active a', {
+        // PM typeaheads always have an image. This ensures we are waiting for the right typeahead to appear.
+        const entry = await page.waitForSelector(".typeahead .active a .typeahead-image", {
             visible: false,
         });
+        // log entry in puppeteer logs
+        console.log(await entry!.evaluate((el) => el.textContent));
         await entry!.click();
     },
 
@@ -231,27 +229,30 @@ export function has_class_x(class_name: string): string {
     return `contains(concat(" ", @class, " "), " ${class_name} ")`;
 }
 
-export async function get_stream_id(page: Page, stream_name: string): Promise<number> {
+export async function get_stream_id(page: Page, stream_name: string): Promise<number | undefined> {
     return await page.evaluate(
         (stream_name: string) => zulip_test.get_stream_id(stream_name),
         stream_name,
     );
 }
 
-export async function get_user_id_from_name(page: Page, name: string): Promise<number> {
+export async function get_user_id_from_name(page: Page, name: string): Promise<number | undefined> {
     if (fullname[name] !== undefined) {
         name = fullname[name];
     }
     return await page.evaluate((name: string) => zulip_test.get_user_id_from_name(name), name);
 }
 
-export async function get_internal_email_from_name(page: Page, name: string): Promise<string> {
+export async function get_internal_email_from_name(
+    page: Page,
+    name: string,
+): Promise<string | undefined> {
     if (fullname[name] !== undefined) {
         name = fullname[name];
     }
     return await page.evaluate((fullname: string) => {
         const user_id = zulip_test.get_user_id_from_name(fullname);
-        return zulip_test.get_person_by_user_id(user_id).email;
+        return user_id === undefined ? undefined : zulip_test.get_person_by_user_id(user_id).email;
     }, name);
 }
 
@@ -359,7 +360,7 @@ export async function wait_for_fully_processed_message(page: Page, content: stri
                     - does it look to have been
                       re-rendered based on server info?
             */
-            const last_msg = zulip_test.current_msg_list.last();
+            const last_msg = zulip_test.current_msg_list?.last();
             if (last_msg === undefined) {
                 return false;
             }
@@ -463,7 +464,9 @@ export async function send_message(
     }
 
     // Close the compose box after sending the message.
-    await page.evaluate(() => zulip_test.cancel_compose());
+    await page.evaluate(() => {
+        zulip_test.cancel_compose();
+    });
     // Make sure the compose box is closed.
     await page.waitForSelector("#compose-textarea", {hidden: true});
 }
@@ -544,7 +547,7 @@ export async function open_streams_modal(page: Page): Promise<void> {
 
     await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
     const url = await page_url_with_fragment(page);
-    assert.ok(url.includes("#streams/all"));
+    assert.ok(url.includes("#channels/all"));
 }
 
 export async function open_personal_menu(page: Page): Promise<void> {
@@ -579,9 +582,7 @@ export async function select_item_via_typeahead(
     console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
     await clear_and_type(page, field_selector, str);
     const entry = await page.waitForSelector(
-        `xpath///*[${has_class_x(
-            "typeahead",
-        )} and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
+        `xpath///*[${has_class_x("typeahead")}]//li[contains(normalize-space(), "${item}")]//a`,
         {visible: true},
     );
     assert.ok(entry);
@@ -627,9 +628,9 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
             columnNumber,
         }: ConsoleMessageLocation): Promise<string> => {
             let frame = new StackFrame({
-                fileName: url,
-                lineNumber: lineNumber === undefined ? undefined : lineNumber + 1,
-                columnNumber: columnNumber === undefined ? undefined : columnNumber + 1,
+                ...(url !== undefined && {fileName: url}),
+                ...(lineNumber !== undefined && {lineNumber: lineNumber + 1}),
+                ...(columnNumber !== undefined && {columnNumber: columnNumber + 1}),
             });
             try {
                 frame = await gps.getMappedLocation(frame);
@@ -731,12 +732,18 @@ export async function get_current_msg_list_id(
         // NOTE: This only checks if the current message list id changed from the last call to this function,
         // so, make sure to have a call to this function before changing to the narrow that you want to check.
         await page.waitForFunction(
-            (last_current_msg_list_id) =>
-                zulip_test.current_msg_list.id !== last_current_msg_list_id,
+            (last_current_msg_list_id) => {
+                const current_msg_list = zulip_test.current_msg_list;
+                return (
+                    current_msg_list !== undefined &&
+                    current_msg_list.id !== last_current_msg_list_id
+                );
+            },
             {},
             last_current_msg_list_id,
         );
     }
-    last_current_msg_list_id = await page.evaluate(() => zulip_test.current_msg_list.id);
-    return last_current_msg_list_id!;
+    last_current_msg_list_id = await page.evaluate(() => zulip_test.current_msg_list?.id);
+    assert(last_current_msg_list_id !== undefined);
+    return last_current_msg_list_id;
 }

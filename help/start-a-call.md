@@ -23,14 +23,14 @@
 
 {tab|mobile}
 
-1. Navigate to a stream, topic, or direct message view.
+1. Navigate to a channel, topic, or direct message view.
 
 1. Tap the **video camera**
    (<img src="/static/images/help/mobile-video-icon.svg" alt="video" class="help-center-icon"/>)
    button at the bottom of the app. This will insert a **Click to join video call**
    link into your message.
 
-1. If you are in a stream view, choose a destination topic by tapping the
+1. If you are in a channel view, choose a destination topic by tapping the
    compose box and selecting an existing topic or typing a new topic name.
 
 1. Send the message.

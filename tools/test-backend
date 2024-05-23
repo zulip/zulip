@@ -66,12 +66,20 @@ not_yet_fully_covered = [
     "zerver/lib/i18n.py",
     "zerver/lib/send_email.py",
     "zerver/lib/url_preview/preview.py",
-    "zerver/worker/queue_processors.py",
     # Markdown sub-libs should have full coverage too; a lot are really close
     "zerver/lib/markdown/api_arguments_table_generator.py",
     "zerver/lib/markdown/fenced_code.py",
     "zerver/lib/markdown/help_relative_links.py",
     "zerver/lib/markdown/nested_code_blocks.py",
+    # Workers should get full coverage; many have it already
+    "zerver/worker/deferred_work.py",
+    "zerver/worker/email_senders.py",
+    "zerver/worker/invites.py",
+    "zerver/worker/missedmessage_emails.py",
+    # Worker-associated files; lower-priority to get testing on
+    "zerver/worker/base.py",
+    "zerver/worker/queue_processors.py",
+    "zerver/worker/test.py",
     # Other lib files that ideally would coverage, but aren't sorted
     "zerver/filters.py",
     "zerver/middleware.py",
@@ -111,7 +119,6 @@ not_yet_fully_covered = [
     # Data import files; relatively low priority
     "zerver/data_import/sequencer.py",
     "zerver/data_import/slack.py",
-    "zerver/data_import/gitter.py",
     "zerver/data_import/import_util.py",
     # Webhook integrations with incomplete coverage
     "zerver/webhooks/greenhouse/view.py",

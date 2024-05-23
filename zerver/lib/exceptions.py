@@ -52,6 +52,7 @@ class ErrorCode(Enum):
     REMOTE_BILLING_UNAUTHENTICATED_USER = auto()
     REMOTE_REALM_SERVER_MISMATCH_ERROR = auto()
     PUSH_NOTIFICATIONS_DISALLOWED = auto()
+    EXPECTATION_MISMATCH = auto()
 
 
 class JsonableError(Exception):
@@ -174,7 +175,7 @@ class StreamDoesNotExistError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("Stream '{stream}' does not exist")
+        return _("Channel '{stream}' does not exist")
 
 
 class StreamWithIDDoesNotExistError(JsonableError):
@@ -187,7 +188,19 @@ class StreamWithIDDoesNotExistError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("Stream with ID '{stream_id}' does not exist")
+        return _("Channel with ID '{stream_id}' does not exist")
+
+
+class IncompatibleParametersError(JsonableError):
+    data_fields = ["parameters"]
+
+    def __init__(self, parameters: List[str]) -> None:
+        self.parameters = ", ".join(parameters)
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Unsupported parameter combination: {parameters}")
 
 
 class CannotDeactivateLastUserError(JsonableError):
@@ -631,7 +644,7 @@ class StreamWildcardMentionNotAllowedError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("You do not have permission to use stream wildcard mentions in this stream.")
+        return _("You do not have permission to use channel wildcard mentions in this channel.")
 
 
 class TopicWildcardMentionNotAllowedError(JsonableError):
@@ -644,3 +657,15 @@ class TopicWildcardMentionNotAllowedError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to use topic wildcard mentions in this topic.")
+
+
+class PreviousSettingValueMismatchedError(JsonableError):
+    code: ErrorCode = ErrorCode.EXPECTATION_MISMATCH
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("'old' value does not match the expected value.")

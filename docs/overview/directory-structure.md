@@ -34,7 +34,7 @@ paths will be familiar to Django developers.
 
 - `zerver/tornado/views.py` Tornado views.
 
-- `zerver/worker/queue_processors.py` [Queue workers](../subsystems/queuing.md).
+- `zerver/worker/` [Queue workers](../subsystems/queuing.md).
 
 - `zerver/lib/markdown/` [Backend Markdown processor](../subsystems/markdown.md).
 

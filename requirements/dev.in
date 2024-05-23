@@ -33,6 +33,7 @@ ruff
 
 # Needed for watching file changes
 pyinotify
+pyasyncore  # https://github.com/seb-m/pyinotify/issues/204
 
 # Needed to run tests in parallel
 tblib

@@ -1,7 +1,7 @@
 Get personal message notifications in Zulip for the results of your
 Dialogflow queries!
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

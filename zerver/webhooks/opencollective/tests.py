@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class OpenCollectiveHookTests(WebhookTestCase):
-    STREAM_NAME = "test"
+    CHANNEL_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/opencollective?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "opencollective"
 

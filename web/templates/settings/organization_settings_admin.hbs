@@ -50,7 +50,7 @@
                   label=admin_settings_label.realm_digest_emails_enabled}}
                 {{/if}}
                 <div class="input-group">
-                    <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
+                    <label for="realm_digest_weekday" class="settings-field-label">{{t "Day of the week to send digests" }}</label>
                     <select name="realm_digest_weekday"
                       id="id_realm_digest_weekday"
                       class="setting-widget prop-element settings_select bootstrap-focus-style"
@@ -79,7 +79,7 @@
 
             <div class="inline-block organization-settings-parent">
                 <div class="input-group time-limit-setting">
-                    <label for="id_realm_message_retention_days" class="dropdown-title">{{t "Message retention period" }}
+                    <label for="id_realm_message_retention_days" class="settings-field-label">{{t "Message retention period" }}
                     </label>
                     <select name="realm_message_retention_days"
                       id="id_realm_message_retention_days" class="prop-element settings_select bootstrap-focus-style"
@@ -110,7 +110,7 @@
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
-                    <label for="realm_video_chat_provider" class="dropdown-title">
+                    <label for="realm_video_chat_provider" class="settings-field-label">
                         {{t 'Call provider' }}
                         {{> ../help_link_widget link="/help/start-a-call" }}
                     </label>
@@ -122,7 +122,7 @@
 
                     <div class="dependent-settings-block" id="realm_jitsi_server_url_setting">
                         <div>
-                            <label for="id_realm_jitsi_server_url" class="dropdown-title">
+                            <label for="id_realm_jitsi_server_url" class="settings-field-label">
                                 {{t "Jitsi server URL" }}
                                 {{> ../help_link_widget link="/help/start-a-call#configure-a-self-hosted-instance-of-jitsi-meet" }}
                             </label>
@@ -148,7 +148,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="realm_giphy_rating" class="dropdown-title">
+                    <label for="realm_giphy_rating" class="settings-field-label">
                         {{t 'GIPHY integration' }}
                         {{> ../help_link_widget link=giphy_help_link }}
                     </label>

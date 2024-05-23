@@ -1,14 +1,16 @@
-<span class="pill-container">
+<span class="pill-container display_only_pill {{#if is_inline}}inline_with_text_pill{{/if}}">
     <a data-user-id="{{user_id}}" class="view_user_profile pill" tabindex="0">
         {{#if img_src}}
         <img class="pill-image" src="{{img_src}}" />
         {{/if}}
-        <span class="pill-value">{{display_value}}</span>
-        {{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
-        {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
-        {{~#if deactivated}}&nbsp;({{t 'deactivated'}}){{~/if~}}
-        {{~#if has_status~}}
-        {{~> status_emoji status_emoji_info~}}
-        {{~/if~}}
+        <span class="pill-label">
+            <span class="pill-value">{{display_value}}</span>
+            {{#if is_current_user}}<span class="my_user_status">{{t '(you)'}}</span>{{/if}}
+            {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
+            {{~#if deactivated}}&nbsp;({{t 'deactivated'}}){{~/if~}}
+            {{~#if has_status~}}
+            {{~> status_emoji status_emoji_info~}}
+            {{~/if~}}
+        </span>
     </a>
 </span>

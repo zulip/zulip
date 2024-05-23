@@ -3,13 +3,13 @@
         {{> ../help_link_widget link="/help/export-your-organization" }}
     </h3>
     <p>
-        {{t 'Exports all users, settings, and all data visible in public streams.' }}
+        {{t 'Exports all users, settings, and all data visible in public channels.' }}
         {{t 'Any organization administrator can conduct an export.'}}
         {{t 'Depending on the size of your organization, an export can take anywhere from seconds to an hour.' }}
     </p>
     <p>
         {{#tr}}
-            <z-link>Click here</z-link> to learn about exporting private streams and direct messages.
+            <z-link>Click here</z-link> to learn about exporting private channels and direct messages.
             {{#*inline "z-link"}}<a href="/help/export-your-organization" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
         {{t 'Note that organizations are limited to five exports per week.' }}

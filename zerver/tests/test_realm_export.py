@@ -177,7 +177,7 @@ class RealmExportTest(ZulipTestCase):
         # Test that the export we have is the export we created.
         export_dict = response_dict["exports"]
         self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
-        self.assertEqual(export_dict[0]["export_url"], admin.realm.uri + export_path)
+        self.assertEqual(export_dict[0]["export_url"], admin.realm.url + export_path)
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
         self.assert_length(
             export_dict,
@@ -256,7 +256,7 @@ class RealmExportTest(ZulipTestCase):
             info_logs.output,
             [
                 (
-                    "ERROR:zerver.worker.queue_processors:Marking export for realm zulip "
+                    "ERROR:zerver.worker.deferred_work:Marking export for realm zulip "
                     "as failed due to retry -- possible OOM during export?"
                 )
             ],

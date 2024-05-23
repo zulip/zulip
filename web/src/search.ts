@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_search_list_item from "../templates/search_list_item.hbs";
 
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
+import {Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import {Filter} from "./filter";
 import * as keydown_util from "./keydown_util";
@@ -14,6 +14,8 @@ import type {NarrowTerm} from "./state_data";
 
 // Exported for unit testing
 export let is_using_input_method = false;
+
+let search_typeahead: Typeahead<string>;
 
 export function set_search_bar_text(text: string): void {
     $("#search_query").val(text);
@@ -70,13 +72,13 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
     // (It's a bit of legacy that we have an object with only one important
     // field.  There's also a "search_string" field on each element that actually
     // just represents the key of the hash, so it's redundant.)
-    let search_map = new Map();
+    let search_map = new Map<string, search_suggestion.Suggestion>();
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $search_query_box,
         type: "input",
     };
-    bootstrap_typeahead.create(bootstrap_typeahead_input, {
+    search_typeahead = new Typeahead(bootstrap_typeahead_input, {
         source(query: string): string[] {
             const suggestions = search_suggestion.get_suggestions(query);
             // Update our global search_map hash
@@ -218,7 +220,7 @@ export function initiate_search(): void {
     // Open the typeahead after opening the search bar, so that we don't
     // get a weird visual jump where the typeahead results are narrow
     // before the search bar expands and then wider it expands.
-    bootstrap_typeahead.lookup($("#search_query"));
+    search_typeahead.lookup(false);
     $("#search_query").trigger("select");
 }
 

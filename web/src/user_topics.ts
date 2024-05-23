@@ -15,7 +15,7 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import {get_time_from_date_muted} from "./util";
 
-type ServerUserTopic = z.infer<typeof user_topic_schema>;
+export type ServerUserTopic = z.infer<typeof user_topic_schema>;
 
 export type UserTopic = {
     stream_id: number;
@@ -70,7 +70,7 @@ export function update_user_topics(
     }
 }
 
-export function get_topic_visibility_policy(stream_id: number, topic: string): number | boolean {
+export function get_topic_visibility_policy(stream_id: number, topic: string): number | false {
     if (stream_id === undefined) {
         return false;
     }

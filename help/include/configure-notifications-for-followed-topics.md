@@ -12,4 +12,5 @@
 !!! tip ""
 
     You will receive both followed topics notifications and
-    [stream notifications](/help/stream-notifications) in topics you follow.
+    [channel notifications](/help/channel-notifications) in
+    topics you follow.

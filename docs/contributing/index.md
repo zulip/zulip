@@ -12,8 +12,8 @@ asking-great-questions
 design-discussions
 commit-discipline
 code-style
-reviewable-prs
 code-reviewing
+reviewable-prs
 review-process
 zulipbot-usage
 reporting-bugs

@@ -19,11 +19,10 @@ class kandra::profile::staging_app_frontend inherits kandra::profile::base {
   }
 
   # Eventually, this will go in a staging_app_frontend_once.pp
-  file { '/etc/cron.d/check_send_receive_time':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/kandra/cron.d/check_send_receive_time',
+  zulip::cron { 'check_send_receive_time':
+    hour      => '*',
+    minute    => '*',
+    command   => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time',
+    use_proxy => false,
   }
 }

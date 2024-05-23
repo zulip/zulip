@@ -66,7 +66,7 @@ test("stream", () => {
 
     const public_terms = narrow_state.public_search_terms();
     assert.deepEqual(public_terms, expected_terms);
-    assert.equal(narrow_state.search_string(), "stream:Test topic:Bar yo");
+    assert.equal(narrow_state.search_string(), "channel:Test topic:Bar yo");
 });
 
 test("narrowed", () => {
@@ -154,7 +154,7 @@ test("excludes_muted_topics", () => {
     let filter = set_filter([["stream", "devel"]]);
     assert.ok(filter.excludes_muted_topics());
 
-    // All messages view.
+    // Combined feed view.
     filter = set_filter([["in", "home"]]);
     assert.ok(filter.excludes_muted_topics());
 

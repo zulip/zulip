@@ -4,7 +4,7 @@
 Users: @**Bo Lin** or @**Ariella Drake|26** (two `*`)
 User group: @*support team* (one `*`)
 Silent mention: @_**Bo Lin** or @_**Ariella Drake|26** (`@_` instead of `@`)
-Wildcard mentions: @**all**, @**everyone**, @**stream**, or @**topic** (two `*`)
+Wildcard mentions: @**all**, @**everyone**, @**channel**, @**topic** (two `*`)
 ```
 
 !!! tip ""

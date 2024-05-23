@@ -31,7 +31,6 @@ for any particular type of object.
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from decimal import Decimal
 from typing import (
     Any,
     Callable,
@@ -603,10 +602,6 @@ def to_non_negative_int(var_name: str, s: str, max_int_size: int = 2**32 - 1) ->
 
 def to_float(var_name: str, s: str) -> float:
     return float(s)
-
-
-def to_decimal(var_name: str, s: str) -> Decimal:
-    return Decimal(s)
 
 
 def to_timezone_or_empty(var_name: str, s: str) -> str:

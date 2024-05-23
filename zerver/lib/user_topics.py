@@ -78,6 +78,7 @@ def get_topic_mutes(
     ]
 
 
+@transaction.atomic(savepoint=False)
 def set_topic_visibility_policy(
     user_profile: UserProfile,
     topics: List[List[str]],

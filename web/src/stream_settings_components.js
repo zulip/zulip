@@ -36,7 +36,9 @@ export const show_subs_pane = {
     nothing_selected() {
         $(".settings, #stream-creation").hide();
         $(".nothing-selected").show();
-        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Stream settings"}));
+        $("#subscription_overlay .stream-info-title").text(
+            $t({defaultMessage: "Channel settings"}),
+        );
     },
     settings(sub) {
         $(".settings, #stream-creation").hide();
@@ -46,7 +48,7 @@ export const show_subs_pane = {
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
         $("#stream-creation").show();
-        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create stream"}));
+        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create channel"}));
     },
 };
 
@@ -140,8 +142,8 @@ export function ajaxSubscribe(stream, color, $stream_row) {
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
                 ui_report.success(
                     $t_html(
-                        {defaultMessage: "Already subscribed to {stream}"},
-                        {stream: true_stream_name},
+                        {defaultMessage: "Already subscribed to {channel}"},
+                        {channel: true_stream_name},
                     ),
                     $(".stream_change_property_info"),
                 );
@@ -208,7 +210,9 @@ export function unsubscribe_from_private_stream(sub) {
         let $stream_row;
         if (overlays.streams_open()) {
             $stream_row = $(
-                "#streams_overlay_container div.stream-row[data-stream-id='" + sub.stream_id + "']",
+                "#channels_overlay_container div.stream-row[data-stream-id='" +
+                    sub.stream_id +
+                    "']",
             );
         }
 

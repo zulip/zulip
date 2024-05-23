@@ -1,3 +1,5 @@
+import type {ExternalAccountFieldData} from "./settings_components";
+
 // TODO/typescript: Move this to submessage.js
 export type Submessage = {
     id: number;
@@ -52,3 +54,21 @@ export type UpdateMessageEvent = {
     // This will not be set until it gets fixed.
     topic?: string;
 };
+
+// TODO/typescript: Move this to user_profile
+export type UserExternalAccountData = {
+    display_in_profile_summary: boolean | undefined;
+    field_data?: ExternalAccountFieldData;
+    id: number;
+    is_external_account: boolean;
+    is_link: boolean;
+    is_user_field: boolean;
+    name: string;
+    type: number;
+    required: boolean;
+    value: string;
+    subtype?: string;
+    link?: string;
+};
+
+export type HTMLSelectOneElement = HTMLSelectElement & {type: "select-one"};

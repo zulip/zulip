@@ -1,3 +1,7 @@
+.widget-content {
+    margin-bottom: var(--markdown-interelement-space-px);
+}
+
 .widget-choices {
     & ul {
         padding: 3px;
@@ -66,10 +70,6 @@
                 outline-color: hsl(0deg 0% 100% / 0%);
             }
         }
-    }
-
-    .add-task-bar {
-        margin-bottom: 5px;
     }
 }
 

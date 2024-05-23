@@ -66,7 +66,7 @@ export function decode_operand(operator: string, operand: string): string {
 
     operand = internal_url.decodeHashComponent(operand);
 
-    if (operator === "stream") {
+    if (util.canonicalize_stream_synonyms(operator) === "stream") {
         return stream_data.slug_to_name(operand);
     }
 
@@ -87,6 +87,8 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
 // corresponding hash: the # component
 // of the narrow URL
 export function search_terms_to_hash(terms?: NarrowTerm[]): string {
+    // Note: This does not return the correct hash for combined feed, recent and inbox view.
+    // These views can have multiple hashes that lead to them, so this function cannot support them.
     let hash = "#";
 
     if (terms !== undefined) {
@@ -144,23 +146,17 @@ export function by_conversation_and_time_url(message: Message): string {
     return absolute_url + people.pm_perma_link(message) + suffix;
 }
 
-export function stream_edit_url(sub: StreamSubscription, right_side_tab: string): string {
-    return `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(
-        sub.name,
-    )}/${right_side_tab}`;
-}
-
 export function group_edit_url(group: UserGroup, right_side_tab: string): string {
     const hash = `#groups/${group.id}/${internal_url.encodeHashComponent(group.name)}/${right_side_tab}`;
     return hash;
 }
 
 export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
-    const public_operator = {operator: "streams", operand: "public"};
+    const public_operator = {operator: "channels", operand: "public"};
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
-export function parse_narrow(hash: string): NarrowTerm[] | undefined {
+export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
@@ -192,7 +188,25 @@ export function parse_narrow(hash: string): NarrowTerm[] | undefined {
     return terms;
 }
 
-export function validate_stream_settings_hash(hash: string): string {
+export function channels_settings_edit_url(
+    sub: StreamSubscription,
+    right_side_tab: string,
+): string {
+    return `#channels/${sub.stream_id}/${internal_url.encodeHashComponent(
+        sub.name,
+    )}/${right_side_tab}`;
+}
+
+export function channels_settings_section_url(section = "subscribed"): string {
+    const valid_section_values = new Set(["new", "subscribed", "all"]);
+    if (!valid_section_values.has(section)) {
+        blueslip.warn("invalid section for channels settings: " + section);
+        return "#channels/subscribed";
+    }
+    return `#channels/${section}`;
+}
+
+export function validate_channels_settings_hash(hash: string): string {
     const hash_components = hash.slice(1).split(/\//);
     const section = hash_components[1];
 
@@ -201,7 +215,7 @@ export function validate_stream_settings_hash(hash: string): string {
         settings_data.user_can_create_web_public_streams() ||
         settings_data.user_can_create_private_streams();
     if (section === "new" && !can_create_streams) {
-        return "#streams/subscribed";
+        return channels_settings_section_url();
     }
 
     if (/\d+/.test(section)) {
@@ -216,27 +230,18 @@ export function validate_stream_settings_hash(hash: string): string {
         //
         // In all these cases we redirect the user to 'subscribed' tab.
         if (sub === undefined || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
-            return "#streams/subscribed";
+            return channels_settings_section_url();
         }
 
-        const stream_name = hash_components[2];
         let right_side_tab = hash_components[3];
         const valid_right_side_tab_values = new Set(["general", "personal", "subscribers"]);
-        if (sub.name === stream_name && valid_right_side_tab_values.has(right_side_tab)) {
-            return hash;
-        }
         if (!valid_right_side_tab_values.has(right_side_tab)) {
             right_side_tab = "general";
         }
-        return stream_edit_url(sub, right_side_tab);
+        return channels_settings_edit_url(sub, right_side_tab);
     }
 
-    const valid_section_values = ["new", "subscribed", "all"];
-    if (!valid_section_values.includes(section)) {
-        blueslip.warn("invalid section for streams: " + section);
-        return "#streams/subscribed";
-    }
-    return hash;
+    return channels_settings_section_url(section);
 }
 
 export function validate_group_settings_hash(hash: string): string {

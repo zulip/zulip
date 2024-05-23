@@ -59,7 +59,7 @@ type DropdownWidgetOptions = {
     focus_target_on_hidden?: boolean;
     tippy_props?: Partial<tippy.Props>;
     // NOTE: Any value other than `undefined` will be rendered when class is initialized.
-    default_id?: string | number;
+    default_id?: string | number | undefined;
     unique_id_type?: DataTypes;
     // Text to show if the current value is not in `get_options()`.
     text_if_current_value_not_in_options?: string;

@@ -9,7 +9,7 @@ from zerver.webhooks.teamcity.view import MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSA
 
 
 class TeamCityHookTests(WebhookTestCase):
-    STREAM_NAME = "teamcity"
+    CHANNEL_NAME = "teamcity"
     URL_TEMPLATE = "/api/v1/external/teamcity?stream={stream}&api_key={api_key}"
     TOPIC_NAME = "Project :: Compile"
     WEBHOOK_DIR_NAME = "teamcity"

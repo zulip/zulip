@@ -23,7 +23,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL
-from returns.curry import partial
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
@@ -33,6 +32,7 @@ from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.mention import MentionData
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
+from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
@@ -47,11 +47,11 @@ from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
     Message,
+    NamedUserGroup,
     Realm,
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserMessage,
     UserProfile,
     UserTopic,
@@ -59,6 +59,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
+from zerver.models.realms import WildcardMentionPolicyEnum
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -420,7 +421,10 @@ def has_message_access(
 
 
 def bulk_access_messages(
-    user_profile: UserProfile, messages: Collection[Message], *, stream: Optional[Stream] = None
+    user_profile: UserProfile,
+    messages: Collection[Message] | QuerySet[Message],
+    *,
+    stream: Optional[Stream] = None,
 ) -> List[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary
@@ -1170,22 +1174,22 @@ def wildcard_mention_policy_authorizes_user(sender: UserProfile, realm: Realm) -
     This check is used only if the participants count in the topic or the subscribers
     count in the stream is greater than 'Realm.WILDCARD_MENTION_THRESHOLD'.
     """
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_NOBODY:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.NOBODY:
         return False
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_EVERYONE:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.EVERYONE:
         return True
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_ADMINS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.ADMINS:
         return sender.is_realm_admin
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MODERATORS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MODERATORS:
         return sender.is_realm_admin or sender.is_moderator
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.FULL_MEMBERS:
         return sender.is_realm_admin or (not sender.is_provisional_member and not sender.is_guest)
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MEMBERS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MEMBERS:
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")
@@ -1210,28 +1214,30 @@ def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: 
 
 
 def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[int]) -> None:
-    user_groups = UserGroup.objects.filter(id__in=user_group_ids).select_related(
-        "can_mention_group"
+    user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids).select_related(
+        "can_mention_group", "can_mention_group__named_user_group"
     )
     sender_is_system_bot = is_cross_realm_bot_email(sender.delivery_email)
 
     for group in user_groups:
         can_mention_group = group.can_mention_group
-
+        if (
+            hasattr(can_mention_group, "named_user_group")
+            and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
+        ):
+            continue
         if sender_is_system_bot:
-            if can_mention_group.name == SystemGroups.EVERYONE:
-                continue
             raise JsonableError(
-                _(
-                    "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
-                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group.name)
+                _("You are not allowed to mention user group '{user_group_name}'.").format(
+                    user_group_name=group.name
+                )
             )
 
         if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
             raise JsonableError(
-                _(
-                    "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
-                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group.name)
+                _("You are not allowed to mention user group '{user_group_name}'.").format(
+                    user_group_name=group.name
+                )
             )
 
 

@@ -3,10 +3,10 @@ from typing import Dict, List, Optional, Protocol, Union
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
-from returns.curry import partial
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
@@ -92,7 +92,7 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
     if description:
         stringified_description = description.tame(check_string)
         stringified_description = re.sub(
-            "<!--.*?-->", "", stringified_description, count=0, flags=re.DOTALL
+            r"<!--.*?-->", "", stringified_description, count=0, flags=re.DOTALL
         )
         stringified_description = stringified_description.rstrip()
     else:
@@ -109,7 +109,7 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
     )
 
 
-def get_issue_event_body(payload: WildValue, action: str, include_title: bool) -> str:
+def get_issue_event_body(action: str, payload: WildValue, include_title: bool) -> str:
     return get_issue_event_message(
         user_name=get_issue_user_name(payload),
         action=action,
@@ -122,19 +122,19 @@ def get_issue_event_body(payload: WildValue, action: str, include_title: bool) -
 def get_merge_request_updated_event_body(payload: WildValue, include_title: bool) -> str:
     if payload["object_attributes"].get("oldrev"):
         return get_merge_request_event_body(
-            payload,
             "added commit(s) to",
+            payload,
             include_title=include_title,
         )
 
     return get_merge_request_open_or_updated_body(
-        payload,
         "updated",
+        payload,
         include_title=include_title,
     )
 
 
-def get_merge_request_event_body(payload: WildValue, action: str, include_title: bool) -> str:
+def get_merge_request_event_body(action: str, payload: WildValue, include_title: bool) -> str:
     pull_request = payload["object_attributes"]
     target_branch = None
     base_branch = None
@@ -155,7 +155,7 @@ def get_merge_request_event_body(payload: WildValue, action: str, include_title:
 
 
 def get_merge_request_open_or_updated_body(
-    payload: WildValue, action: str, include_title: bool
+    action: str, payload: WildValue, include_title: bool
 ) -> str:
     pull_request = payload["object_attributes"]
     return get_pull_request_event_message(
@@ -272,7 +272,7 @@ def get_commented_snippet_event_body(payload: WildValue, include_title: bool) ->
     )
 
 
-def get_wiki_page_event_body(payload: WildValue, action: str, include_title: bool) -> str:
+def get_wiki_page_event_body(action: str, payload: WildValue, include_title: bool) -> str:
     return '{} {} [wiki page "{}"]({}).'.format(
         get_issue_user_name(payload),
         action,
@@ -387,27 +387,27 @@ EVENT_FUNCTION_MAPPER: Dict[str, EventFunction] = {
     "Tag Push Hook": get_tag_push_event_body,
     "Test Hook": get_test_event_body,
     "Issue Hook open": get_issue_created_event_body,
-    "Issue Hook close": partial(get_issue_event_body, action="closed"),
-    "Issue Hook reopen": partial(get_issue_event_body, action="reopened"),
-    "Issue Hook update": partial(get_issue_event_body, action="updated"),
+    "Issue Hook close": partial(get_issue_event_body, "closed"),
+    "Issue Hook reopen": partial(get_issue_event_body, "reopened"),
+    "Issue Hook update": partial(get_issue_event_body, "updated"),
     "Confidential Issue Hook open": get_issue_created_event_body,
-    "Confidential Issue Hook close": partial(get_issue_event_body, action="closed"),
-    "Confidential Issue Hook reopen": partial(get_issue_event_body, action="reopened"),
-    "Confidential Issue Hook update": partial(get_issue_event_body, action="updated"),
+    "Confidential Issue Hook close": partial(get_issue_event_body, "closed"),
+    "Confidential Issue Hook reopen": partial(get_issue_event_body, "reopened"),
+    "Confidential Issue Hook update": partial(get_issue_event_body, "updated"),
     "Note Hook Commit": get_commented_commit_event_body,
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
     "Confidential Note Hook Issue": get_commented_issue_event_body,
     "Note Hook Snippet": get_commented_snippet_event_body,
-    "Merge Request Hook approved": partial(get_merge_request_event_body, action="approved"),
-    "Merge Request Hook unapproved": partial(get_merge_request_event_body, action="unapproved"),
-    "Merge Request Hook open": partial(get_merge_request_open_or_updated_body, action="created"),
+    "Merge Request Hook approved": partial(get_merge_request_event_body, "approved"),
+    "Merge Request Hook unapproved": partial(get_merge_request_event_body, "unapproved"),
+    "Merge Request Hook open": partial(get_merge_request_open_or_updated_body, "created"),
     "Merge Request Hook update": get_merge_request_updated_event_body,
-    "Merge Request Hook merge": partial(get_merge_request_event_body, action="merged"),
-    "Merge Request Hook close": partial(get_merge_request_event_body, action="closed"),
-    "Merge Request Hook reopen": partial(get_merge_request_event_body, action="reopened"),
-    "Wiki Page Hook create": partial(get_wiki_page_event_body, action="created"),
-    "Wiki Page Hook update": partial(get_wiki_page_event_body, action="updated"),
+    "Merge Request Hook merge": partial(get_merge_request_event_body, "merged"),
+    "Merge Request Hook close": partial(get_merge_request_event_body, "closed"),
+    "Merge Request Hook reopen": partial(get_merge_request_event_body, "reopened"),
+    "Wiki Page Hook create": partial(get_wiki_page_event_body, "created"),
+    "Wiki Page Hook update": partial(get_wiki_page_event_body, "updated"),
     "Job Hook": get_build_hook_event_body,
     "Build Hook": get_build_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,

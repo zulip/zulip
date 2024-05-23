@@ -116,7 +116,7 @@ export function toggle(opts: {
     }
 
     meta.$ind_tab.on("click", function () {
-        const idx = $(this).data("tab-id");
+        const idx = Number($(this).attr("data-tab-id"));
         select_tab(idx);
     });
 

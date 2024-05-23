@@ -1,8 +1,9 @@
 # Draft messages
 
-Zulip automatically saves the content of your message as a draft when you
-close the compose box, ensuring that you never lose your work. Drafts are
-saved for 30 days.
+Zulip automatically saves the content of your message as a draft when you close
+the compose box, ensuring that you never lose your work. When you start
+composing, the most recently edited draft for the conversation you are composing
+to automatically appears in the compose box. Drafts are saved for 30 days.
 
 !!! warn ""
 
@@ -10,6 +11,8 @@ saved for 30 days.
     other devices and browsers.
 
 ## Save a draft
+
+### Save a draft and stop composing
 
 {start_tabs}
 
@@ -31,23 +34,56 @@ saved for 30 days.
 
 {end_tabs}
 
-## Edit a draft
+### Save a draft and start a new message
 
 {start_tabs}
 
 {tab|desktop-web}
 
+{!start-composing.md!}
+
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
+   in the bottom right corner of the compose box, next to the **Send**
+   (<i class="zulip-icon zulip-icon-send"></i>) button.
+
+1. Select **Save draft and start a new message**.
+
+{end_tabs}
+
+## Restore a draft
+
+To make it easier to find the draft you are looking for, drafts for the
+conversation you are composing to are shown at the top of the drafts list in the
+web and desktop apps. If you have saved drafts for the current conversation, the
+counter next to the **Drafts** button in the compose box shows how many there are.
+
+{start_tabs}
+
+{tab|via-left-sidebar}
+
 {!go-to-draft-messages.md!}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the draft you
-   want to edit.
-
-1. Edit the message.
+   want to restore.
 
 !!! keyboard_tip ""
 
-    You can also use <kbd>Enter</kbd> within the drafts view to restore the
-    selected draft.
+    You can also use <kbd>D</kbd> to bring up your list of saved drafts, and
+    <kbd>Enter</kbd> within the drafts view to restore the selected draft.
+
+{tab|via-compose-box-buttons}
+
+{!start-composing.md!}
+
+1. Click the **Drafts** button on the right side of the compose box.
+
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the draft you
+   want to restore.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>D</kbd> to bring up your list of saved drafts, and
+    <kbd>Enter</kbd> within the drafts view to restore the selected draft.
 
 {end_tabs}
 
@@ -57,7 +93,7 @@ saved for 30 days.
 
 {start_tabs}
 
-{tab|desktop-web}
+{tab|via-left-sidebar}
 
 {!go-to-draft-messages.md!}
 
@@ -66,8 +102,22 @@ saved for 30 days.
 
 !!! keyboard_tip ""
 
-    You can also use <kbd>Backspace</kbd> within the drafts view to delete the
-    selected draft.
+    You can also use <kbd>D</kbd> to bring up your list of saved drafts, and
+    <kbd>Backspace</kbd> within the drafts view to delete the selected draft.
+
+{tab|via-compose-box-buttons}
+
+{!start-composing.md!}
+
+1. Click the **Drafts** button on the right side of the compose box.
+
+1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the draft you
+   want to delete.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>D</kbd> to bring up your list of saved drafts, and
+    <kbd>Backspace</kbd> within the drafts view to delete the selected draft.
 
 {end_tabs}
 
@@ -75,7 +125,7 @@ saved for 30 days.
 
 {start_tabs}
 
-{tab|desktop-web}
+{tab|via-left-sidebar}
 
 {!go-to-draft-messages.md!}
 
@@ -86,19 +136,26 @@ saved for 30 days.
 1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon in the
    upper right corner of the drafts view to delete all selected drafts.
 
-{end_tabs}
+!!! keyboard_tip ""
 
-## View your drafts
+    You can also use <kbd>D</kbd> to bring up your list of saved drafts.
 
-{start_tabs}
+{tab|via-compose-box-buttons}
 
-{tab|desktop-web}
+{!start-composing.md!}
 
-{!go-to-draft-messages.md!}
+1. Click the **Drafts** button on the right side of the compose box.
+
+1. Click **Select all drafts** in the upper right corner of
+   the drafts view, or select the drafts you want to delete
+   by toggling the checkboxes on the right.
+
+1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon in the
+   upper right corner of the drafts view to delete all selected drafts.
 
 !!! keyboard_tip ""
 
-    Use <kbd>D</kbd> to bring up your list of saved drafts.
+    You can also use <kbd>D</kbd> to bring up your list of saved drafts.
 
 {end_tabs}
 

@@ -49,6 +49,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     Message,
+    NamedUserGroup,
     Realm,
     RealmDomain,
     Recipient,
@@ -60,7 +61,7 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import PrivateMessagePolicyEnum, WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
@@ -135,12 +136,12 @@ class MessagePOSTTest(ZulipTestCase):
                 "topic": "Test topic for stream ID message",
             },
         )
-        self.assert_json_error(result, "Stream with ID '99999' does not exist")
+        self.assert_json_error(result, "Channel with ID '99999' does not exist")
 
         msg = self.get_last_message()
         expected = (
             "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "stream ID 99999, but there is no stream with that ID."
+            "channel ID 99999, but there is no channel with that ID."
         )
         self.assertEqual(msg.content, expected)
 
@@ -175,7 +176,7 @@ class MessagePOSTTest(ZulipTestCase):
         msg = self.get_second_to_last_message()
         expected = (
             "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "stream #**Acropolis**. The stream exists but does not have any subscribers."
+            "channel #**Acropolis**. The channel exists but does not have any subscribers."
         )
         self.assertEqual(msg.content, expected)
 
@@ -210,7 +211,7 @@ class MessagePOSTTest(ZulipTestCase):
         msg = self.get_second_to_last_message()
         expected = (
             "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "stream #**Acropolis**. The stream exists but does not have any subscribers."
+            "channel #**Acropolis**. The channel exists but does not have any subscribers."
         )
         self.assertEqual(msg.content, expected)
 
@@ -268,7 +269,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             non_admin_profile,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
         non_admin_owned_bot = self.create_test_bot(
             short_name="whatever2",
@@ -278,7 +279,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             non_admin_owned_bot,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
 
         moderator_profile = self.example_user("shiva")
@@ -288,7 +289,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             moderator_profile,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
         moderator_owned_bot = self.create_test_bot(
             short_name="whatever3",
@@ -298,7 +299,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             moderator_owned_bot,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
 
         # Bots without owner (except cross realm bot) cannot send to announcement only streams
@@ -313,7 +314,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             bot_without_owner,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
 
         # Cross realm bots should be allowed
@@ -326,7 +327,7 @@ class MessagePOSTTest(ZulipTestCase):
         guest_profile = self.example_user("polonius")
         # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
         self._send_and_verify_message(
-            guest_profile, stream_name, "Only organization administrators can send to this stream."
+            guest_profile, stream_name, "Only organization administrators can send to this channel."
         )
 
     def test_sending_message_as_stream_post_policy_moderators(self) -> None:
@@ -370,7 +371,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             non_admin_profile,
             stream_name,
-            "Only organization administrators and moderators can send to this stream.",
+            "Only organization administrators and moderators can send to this channel.",
         )
         non_admin_owned_bot = self.create_test_bot(
             short_name="whatever3",
@@ -380,7 +381,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             non_admin_owned_bot,
             stream_name,
-            "Only organization administrators and moderators can send to this stream.",
+            "Only organization administrators and moderators can send to this channel.",
         )
 
         # Bots without owner (except cross realm bot) cannot send to STREAM_POST_POLICY_MODERATORS streams.
@@ -395,7 +396,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             bot_without_owner,
             stream_name,
-            "Only organization administrators and moderators can send to this stream.",
+            "Only organization administrators and moderators can send to this channel.",
         )
 
         # System bots should be allowed
@@ -410,7 +411,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             guest_profile,
             stream_name,
-            "Only organization administrators and moderators can send to this stream.",
+            "Only organization administrators and moderators can send to this channel.",
         )
 
     def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
@@ -453,7 +454,7 @@ class MessagePOSTTest(ZulipTestCase):
         # Non admins and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
         # if the user is not a new member
         self._send_and_verify_message(
-            non_admin_profile, stream_name, "New members cannot send to this stream."
+            non_admin_profile, stream_name, "New members cannot send to this channel."
         )
         non_admin_owned_bot = self.create_test_bot(
             short_name="whatever2",
@@ -461,7 +462,7 @@ class MessagePOSTTest(ZulipTestCase):
             user_profile=non_admin_profile,
         )
         self._send_and_verify_message(
-            non_admin_owned_bot, stream_name, "New members cannot send to this stream."
+            non_admin_owned_bot, stream_name, "New members cannot send to this channel."
         )
 
         non_admin_profile.date_joined = timezone_now() - timedelta(days=11)
@@ -485,7 +486,7 @@ class MessagePOSTTest(ZulipTestCase):
             acting_user=None,
         )
         self._send_and_verify_message(
-            bot_without_owner, stream_name, "New members cannot send to this stream."
+            bot_without_owner, stream_name, "New members cannot send to this channel."
         )
 
         moderator_profile = self.example_user("shiva")
@@ -516,7 +517,7 @@ class MessagePOSTTest(ZulipTestCase):
         guest_profile = self.example_user("polonius")
         # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
         self._send_and_verify_message(
-            guest_profile, stream_name, "Guests cannot send to this stream."
+            guest_profile, stream_name, "Guests cannot send to this channel."
         )
 
     def test_api_message_with_default_to(self) -> None:
@@ -558,7 +559,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "topic": "Test topic",
             },
         )
-        self.assert_json_error(result, "Stream 'nonexistent_stream' does not exist")
+        self.assert_json_error(result, "Channel 'nonexistent_stream' does not exist")
 
     def test_message_to_nonexistent_stream_with_bad_characters(self) -> None:
         """
@@ -576,7 +577,7 @@ class MessagePOSTTest(ZulipTestCase):
             },
         )
         self.assert_json_error(
-            result, "Stream '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist"
+            result, "Channel '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist"
         )
 
     def test_message_to_stream_with_automatically_change_visibility_policy(self) -> None:
@@ -1447,7 +1448,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         # Guest user can't send message to unsubscribed public streams
         result = self.api_post(sender, "/api/v1/messages", payload)
-        self.assert_json_error(result, "Not authorized to send to stream 'public stream'")
+        self.assert_json_error(result, "Not authorized to send to channel 'public stream'")
 
         self.subscribe(sender, stream_name)
         # Guest user can send message to subscribed public streams
@@ -1769,6 +1770,7 @@ class StreamMessagesTest(ZulipTestCase):
                 user,
                 stream_name,
                 content=content,
+                skip_capture_on_commit_callbacks=True,
             )
         users = events[0]["users"]
         user_ids = {u["id"] for u in users}
@@ -1882,7 +1884,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            WildcardMentionPolicyEnum.EVERYONE,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius")
@@ -1890,7 +1892,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            WildcardMentionPolicyEnum.MEMBERS,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius", test_fails=True)
@@ -1901,7 +1903,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            WildcardMentionPolicyEnum.FULL_MEMBERS,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
@@ -1924,7 +1926,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            WildcardMentionPolicyEnum.MODERATORS,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
@@ -1934,7 +1936,10 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.ADMINS,
+            acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on topics with less than 'Realm.WILDCARD_MENTION_THRESHOLD' participants.
@@ -1942,7 +1947,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_topic_wildcard_mention_message("iago")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.NOBODY,
+            acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_topic_wildcard_mention_message("iago", topic_participant_count=10)
@@ -1961,7 +1969,7 @@ class StreamMessagesTest(ZulipTestCase):
             else:
                 with self.assertRaisesRegex(
                     JsonableError,
-                    "You do not have permission to use stream wildcard mentions in this stream.",
+                    "You do not have permission to use channel wildcard mentions in this channel.",
                 ):
                     self.send_stream_message(sender, "test_stream", content)
 
@@ -1981,7 +1989,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            WildcardMentionPolicyEnum.EVERYONE,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("polonius")
@@ -1989,7 +1997,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            WildcardMentionPolicyEnum.MEMBERS,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("polonius", test_fails=True)
@@ -2000,7 +2008,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            WildcardMentionPolicyEnum.FULL_MEMBERS,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
@@ -2023,7 +2031,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            WildcardMentionPolicyEnum.MODERATORS,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
@@ -2033,7 +2041,10 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.ADMINS,
+            acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on small streams.
@@ -2041,7 +2052,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("iago")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.NOBODY,
+            acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
@@ -2115,7 +2129,7 @@ class StreamMessagesTest(ZulipTestCase):
         leadership = check_add_user_group(othello.realm, "leadership", [othello], acting_user=None)
         support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
 
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
 
@@ -2128,7 +2142,7 @@ class StreamMessagesTest(ZulipTestCase):
         leadership.save()
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         ):
             self.send_stream_message(cordelia, "test_stream", content)
 
@@ -2155,7 +2169,7 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
@@ -2170,13 +2184,13 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support* @*leadership*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         ):
             self.send_stream_message(othello, "test_stream", content)
 
@@ -2186,7 +2200,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         # Test system bots.
         content = "Test mentioning user group @*support*"
-        members_group = UserGroup.objects.get(
+        members_group = NamedUserGroup.objects.get(
             name=SystemGroups.MEMBERS, realm=iago.realm, is_system_group=True
         )
         support.can_mention_group = members_group
@@ -2196,11 +2210,11 @@ class StreamMessagesTest(ZulipTestCase):
         system_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{members_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
 
-        everyone_group = UserGroup.objects.get(
+        everyone_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=iago.realm, is_system_group=True
         )
         support.can_mention_group = everyone_group
@@ -2210,6 +2224,43 @@ class StreamMessagesTest(ZulipTestCase):
             system_bot, "test_stream", content, recipient_realm=iago.realm
         )
         result = self.api_get(shiva, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        # Test all the cases when can_mention_group is not a named user group.
+        content = "Test mentioning user group @*leadership*"
+        user_group = UserGroup.objects.create(realm=iago.realm)
+        user_group.direct_members.set([othello])
+        user_group.direct_subgroups.set([moderators_system_group])
+        leadership.can_mention_group = user_group
+        leadership.save()
+
+        msg_id = self.send_stream_message(othello, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(iago, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{leadership.name}'.",
+        ):
+            self.send_stream_message(cordelia, "test_stream", content)
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{leadership.name}'.",
+        ):
+            self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
+
+        content = "Test mentioning user group @_*leadership*"
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
         self.assert_json_success(result)
 
     def test_stream_message_mirroring(self) -> None:
@@ -2364,14 +2415,14 @@ class PersonalMessageSendTest(ZulipTestCase):
 
     def test_private_message_policy(self) -> None:
         """
-        Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
+        Tests that PrivateMessagePolicyEnum.DISABLED works correctly.
         """
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         do_set_realm_property(
             user_profile.realm,
             "private_message_policy",
-            Realm.PRIVATE_MESSAGE_POLICY_DISABLED,
+            PrivateMessagePolicyEnum.DISABLED,
             acting_user=None,
         )
         with self.assertRaises(JsonableError):
@@ -2428,13 +2479,13 @@ class ExtractTest(ZulipTestCase):
             123,
         )
 
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream"):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for channel"):
             extract_stream_indicator("{}")
 
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream"):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for channel"):
             extract_stream_indicator("[{}]")
 
-        with self.assertRaisesRegex(JsonableError, "Expected exactly one stream"):
+        with self.assertRaisesRegex(JsonableError, "Expected exactly one channel"):
             extract_stream_indicator('[1,2,"general"]')
 
     def test_extract_private_recipients_emails(self) -> None:
@@ -2628,7 +2679,7 @@ class InternalPrepTest(ZulipTestCase):
         Test that a user can send a direct message to themselves and to a bot in a DM disabled organization
         """
         sender = self.example_user("hamlet")
-        sender.realm.private_message_policy = Realm.PRIVATE_MESSAGE_POLICY_DISABLED
+        sender.realm.private_message_policy = PrivateMessagePolicyEnum.DISABLED
         sender.realm.save()
 
         #  Create a non-bot user
@@ -3053,7 +3104,7 @@ class CheckMessageTest(ZulipTestCase):
 
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
-        self.assertIn("that stream does not exist.", most_recent_message(parent).content)
+        self.assertIn("that channel does not exist.", most_recent_message(parent).content)
 
         # Try sending to stream that exists with no subscribers soon
         # after; due to rate-limiting, this should send nothing.

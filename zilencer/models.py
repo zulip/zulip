@@ -416,13 +416,27 @@ class RemoteRealmCount(BaseRemoteCount):
 
     class Meta:
         constraints = [
+            # These two constraints come from the information as
+            # provided by the remote server, for rows they provide.
             UniqueConstraint(
                 fields=["server", "realm_id", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name="unique_server_realm_installation_count",
+            ),
+            UniqueConstraint(
+                fields=["server", "realm_id", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name="unique_server_realm_installation_count_null_subgroup",
+            ),
+            # These two constraints come from our internal
+            # record-keeping, which has a RemoteRealm object.
+            UniqueConstraint(
+                fields=["remote_realm_id", "property", "subgroup", "end_time"],
                 condition=Q(subgroup__isnull=False),
                 name="unique_remote_realm_installation_count",
             ),
             UniqueConstraint(
-                fields=["server", "realm_id", "property", "end_time"],
+                fields=["remote_realm_id", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
                 name="unique_remote_realm_installation_count_null_subgroup",
             ),

@@ -46,6 +46,7 @@ exports.test_streams = {
         invite_only: false,
         stream_id: 101,
         date_created: fake_now,
+        creator_id: null,
         first_message_id: 1,
         history_public_to_subscribers: false,
         is_announcement_only: false,
@@ -61,6 +62,7 @@ exports.test_streams = {
         invite_only: true,
         stream_id: 102,
         date_created: fake_then,
+        creator_id: null,
         first_message_id: 1,
         history_public_to_subscribers: false,
         is_web_public: false,
@@ -193,20 +195,12 @@ exports.fixtures = {
         type: "onboarding_steps",
         onboarding_steps: [
             {
-                type: "hotspot",
-                name: "topics",
-                title: "About topics",
-                description: "Topics are good.",
-                delay: 1.5,
-                has_trigger: false,
+                type: "one_time_notice",
+                name: "intro_inbox_view_modal",
             },
             {
-                type: "hotspot",
-                name: "compose",
-                title: "Compose box",
-                description: "This is where you compose messages.",
-                delay: 3.14159,
-                has_trigger: false,
+                type: "one_time_notice",
+                name: "intro_recent_view_modal",
             },
         ],
     },
@@ -997,6 +991,20 @@ exports.fixtures = {
         op: "update",
         property: "presence_enabled",
         value: true,
+    },
+
+    user_settings__receives_typing_notifications: {
+        type: "user_settings",
+        op: "update",
+        property: "receives_typing_notifications",
+        value: true,
+    },
+
+    user_settings__receives_typing_notifications_disabled: {
+        type: "user_settings",
+        op: "update",
+        property: "receives_typing_notifications",
+        value: false,
     },
 
     user_settings__starred_message_counts: {

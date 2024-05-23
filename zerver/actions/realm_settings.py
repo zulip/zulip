@@ -24,6 +24,7 @@ from zerver.models import (
     ArchivedAttachment,
     Attachment,
     Message,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     RealmAuthenticationMethod,
@@ -454,7 +455,23 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+RealmDeactivationReasonType = Literal[
+    "owner_request",
+    "tos_violation",
+    "inactivity",
+    "self_hosting_migration",
+    # When we change the subdomain of a realm, we leave
+    # behind a deactivated gravestone realm.
+    "subdomain_change",
+]
+
+
+def do_deactivate_realm(
+    realm: Realm,
+    *,
+    acting_user: Optional[UserProfile],
+    deactivation_reason: RealmDeactivationReasonType,
+) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -480,6 +497,7 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             acting_user=acting_user,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "deactivation_reason": deactivation_reason,
             },
         )
 
@@ -658,7 +676,7 @@ def do_change_realm_plan_type(
         # If downgrading to a plan that no longer has access to change
         # can_access_all_users_group, set it back to the default
         # value.
-        everyone_system_group = UserGroup.objects.get(
+        everyone_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
         )
         if realm.can_access_all_users_group_id != everyone_system_group.id:
@@ -739,7 +757,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
     )
     context = {
         "confirmation_url": url,
-        "realm_uri": realm.uri,
+        "realm_uri": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
     }

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {set_global, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {realm} = require("./lib/zpage_params");
@@ -10,10 +10,10 @@ const {realm} = require("./lib/zpage_params");
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
     $users_matching_view_container: {
-        data() {},
+        attr() {},
     },
     $other_users_container: {
-        data() {},
+        attr() {},
     },
     find_li() {},
     first_key() {},
@@ -24,6 +24,18 @@ const fake_buddy_list = {
 mock_esm("../src/buddy_list", {
     buddy_list: fake_buddy_list,
 });
+
+function mock_setTimeout() {
+    let set_timeout_function_called = false;
+    set_global("setTimeout", (func) => {
+        if (set_timeout_function_called) {
+            // This conditional is needed to avoid indefinite calls.
+            return;
+        }
+        set_timeout_function_called = true;
+        func();
+    });
+}
 
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
@@ -130,6 +142,7 @@ test("blur search right", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(popovers, "hide_all", noop);
     override(resize, "resize_sidebars", noop);
+    mock_setTimeout();
 
     $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
@@ -146,6 +159,7 @@ test("blur search left", ({override}) => {
     override(sidebar_ui, "show_streamlist_sidebar", noop);
     override(popovers, "hide_all", noop);
     override(resize, "resize_sidebars", noop);
+    mock_setTimeout();
 
     $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");

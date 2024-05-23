@@ -185,7 +185,7 @@ export function initialize() {
         assert(message_lists.current !== undefined);
         message_lists.current.select_id(id);
 
-        if (message_edit.is_editing(id)) {
+        if (message_edit.currently_editing_messages.has(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
             return;
         }
@@ -287,6 +287,11 @@ export function initialize() {
         e.stopPropagation();
 
         navigate.to_end();
+    });
+
+    $("body").on("click", ".message_row", function () {
+        $(".selected_msg_for_touchscreen").removeClass("selected_msg_for_touchscreen");
+        $(this).addClass("selected_msg_for_touchscreen");
     });
 
     // MESSAGE EDITING
@@ -777,7 +782,7 @@ export function initialize() {
         ".direct-messages-container.zoom-out #private_messages_section_header",
         (e) => {
             if ($(e.target).closest("#show_all_private_messages").length === 1) {
-                // Let the browser handle the "all direct messages" widget.
+                // Let the browser handle the "direct message feed" widget.
                 return;
             }
 

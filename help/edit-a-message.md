@@ -18,8 +18,8 @@ edit the content of a message sent by another user.
 
 {!message-actions.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon. If you do not see
-   the **pencil** (<i class="fa fa-pencil"></i>) icon, you do not have
+1. Click the **pencil** (<i class="zulip-icon zulip-icon-edit"></i>) icon. If you do not see
+   the **pencil** (<i class="zulip-icon zulip-icon-edit"></i>) icon, you do not have
    permission to edit this message.
 
 1. Edit the content of the message.

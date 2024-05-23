@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_actions_popover from "../templates/popovers/actions_popover.hbs";
+import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_reply from "./compose_reply";
@@ -46,7 +46,7 @@ export function toggle_message_actions_menu(message) {
         return true;
     }
 
-    if (message.locally_echoed || message_edit.is_editing(message.id)) {
+    if (message.locally_echoed || message_edit.currently_editing_messages.has(message.id)) {
         // Don't open the popup for locally echoed messages for now.
         // It creates bugs with things like keyboard handlers when
         // we get the server response.
@@ -90,7 +90,7 @@ export function initialize() {
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
-            instance.setContent(parse_html(render_actions_popover(args)));
+            instance.setContent(parse_html(render_message_actions_popover(args)));
             $row.addClass("has_actions_popover");
         },
         onMount(instance) {
@@ -125,7 +125,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".popover_edit_message, .popover_view_source", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 message_edit.start($row);
@@ -135,7 +135,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".popover_move_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 assert(message_lists.current !== undefined);
                 message_lists.current.select_id(message_id);
                 const message = message_lists.current.get(message_id);
@@ -151,7 +151,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".mark_as_unread", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 unread_ops.mark_as_unread_from_here(message_id);
                 e.preventDefault();
                 e.stopPropagation();
@@ -159,7 +159,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".popover_toggle_collapse", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 assert(message_lists.current !== undefined);
                 const message = message_lists.current.get(message_id);
                 assert(message !== undefined);
@@ -174,7 +174,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".rehide_muted_user_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 const message = message_lists.current.get(rows.id($row));
@@ -190,7 +190,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".view_read_receipts", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 read_receipts.show_user_list(message_id);
                 e.preventDefault();
                 e.stopPropagation();
@@ -198,7 +198,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".delete_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 message_edit.delete_message(message_id);
                 e.preventDefault();
                 e.stopPropagation();
@@ -206,7 +206,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".reaction_button", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 // Don't propagate the click event since `toggle_emoji_popover` opens a
                 // emoji_picker which we don't want to hide after actions popover is hidden.
                 e.stopPropagation();

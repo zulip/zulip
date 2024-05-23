@@ -292,7 +292,7 @@ class TestStreamHelpers(ZulipTestCase):
         access_stream_for_send_message(cordelia, stream, forwarder_user_profile=None)
 
         # ...but Othello can't.
-        with self.assertRaisesRegex(JsonableError, "Not authorized to send to stream"):
+        with self.assertRaisesRegex(JsonableError, "Not authorized to send to channel"):
             access_stream_for_send_message(othello, stream, forwarder_user_profile=None)
 
 
@@ -395,9 +395,16 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
         ), self.assertLogs(level="INFO") as logger, mock.patch(
             "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
         ):
-            result = self.client_get(
-                "/emails/generate/"
-            )  # Generates emails and redirects to /emails/
+            # Parts of this endpoint use transactions, and use
+            # transaction.on_commit to run code when the transaction
+            # commits.  Tests are run inside one big outer
+            # transaction, so those never get a chance to run unless
+            # we explicitly make a fake boundary to run them at; that
+            # is what captureOnCommitCallbacks does.
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.client_get(
+                    "/emails/generate/"
+                )  # Generates emails and redirects to /emails/
             self.assertEqual("/emails/", result["Location"])  # Make sure redirect URL is correct.
 
             # The above call to /emails/generate/ creates the emails and

@@ -357,7 +357,7 @@ export function render_date(time: Date): JQuery {
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
     const rendered_time = render_now(time);
-    let $node = $("<span>").attr("class", className);
+    let $node = $("<span>").attr("class", `timerender-content ${className}`);
     $node = render_date_span($node, rendered_time);
     maybe_add_update_list_entry({
         needs_update: rendered_time.needs_update,

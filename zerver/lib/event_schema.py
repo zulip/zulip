@@ -51,6 +51,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 # larger "subscription" events that also contain personal settings.
 default_stream_fields = [
     ("can_remove_subscribers_group", int),
+    ("creator_id", OptionalType(int)),
     ("date_created", int),
     ("description", str),
     ("first_message_id", OptionalType(int)),
@@ -337,13 +338,7 @@ _onboarding_steps = DictType(
     required_keys=[
         ("type", str),
         ("name", str),
-    ],
-    optional_keys=[
-        ("title", str),
-        ("description", str),
-        ("delay", NumberType()),
-        ("has_trigger", bool),
-    ],
+    ]
 )
 
 onboarding_steps_event = event_dict_type(
@@ -1789,6 +1784,18 @@ update_message_flags_remove_event = event_dict_type(
 check_update_message_flags_remove = make_checker(update_message_flags_remove_event)
 
 
+group_setting_type = UnionType(
+    [
+        int,
+        DictType(
+            required_keys=[
+                ("direct_members", ListType(int)),
+                ("direct_subgroups", ListType(int)),
+            ]
+        ),
+    ]
+)
+
 group_type = DictType(
     required_keys=[
         ("id", int),
@@ -1797,7 +1804,7 @@ group_type = DictType(
         ("direct_subgroup_ids", ListType(int)),
         ("description", str),
         ("is_system_group", bool),
-        ("can_mention_group", int),
+        ("can_mention_group", group_setting_type),
     ]
 )
 
@@ -1844,7 +1851,7 @@ user_group_data_type = DictType(
     optional_keys=[
         ("name", str),
         ("description", str),
-        ("can_mention_group", int),
+        ("can_mention_group", group_setting_type),
     ],
 )
 

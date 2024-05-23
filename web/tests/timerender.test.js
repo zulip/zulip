@@ -363,7 +363,7 @@ run_test("render_date_renders_time_html", () => {
     const $actual = timerender.render_date(message_time);
     assert.equal($actual.text(), expected_text);
     assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
-    assert.equal(attrs.class, "timerender0");
+    assert.equal(attrs.class, "timerender-content timerender0");
 
     MockDate.reset();
 });

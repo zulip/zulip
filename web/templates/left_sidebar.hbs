@@ -22,7 +22,7 @@
                     </a>
                 </li>
                 <li class="top_left_all_messages left-sidebar-navigation-condensed-item {{#if is_all_messages_home_view}}selected-home-view{{/if}}">
-                    <a href="#all_messages" {{#if is_all_messages_home_view}}tabindex="0"{{/if}} class="home-link tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="all-message-tooltip-template">
+                    <a href="#feed" {{#if is_all_messages_home_view}}tabindex="0"{{/if}} class="home-link tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="all-message-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-all-messages" aria-hidden="true"></i>
                         </span>
@@ -76,12 +76,12 @@
                 </span>
             </li>
             <li class="tippy-views-tooltip top_left_all_messages top_left_row {{#if is_all_messages_home_view}}selected-home-view{{/if}}" data-tooltip-template-id="all-message-tooltip-template">
-                <a href="#all_messages" {{#if is_all_messages_home_view}}tabindex="0"{{/if}} class="home-link left-sidebar-navigation-label-container">
+                <a href="#feed" {{#if is_all_messages_home_view}}tabindex="0"{{/if}} class="home-link left-sidebar-navigation-label-container">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-all-messages" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
-                    <span class="left-sidebar-navigation-label">{{t 'All messages' }}</span>
+                    <span class="left-sidebar-navigation-label">{{t 'Combined feed' }}</span>
                     <span class="unread_count"></span>
                 </a>
                 <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators {{#if is_all_messages_home_view}}hide{{/if}}">
@@ -140,14 +140,14 @@
                 <h4 class="left-sidebar-title toggle_private_messages_section"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
                 <div class="heading-markers-and-controls">
                     <a id="show_all_private_messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-pms-template">
-                        <i class="fa fa-align-right" aria-label="{{t 'All direct messages' }}"></i>
+                        <i class="fa fa-align-right" aria-label="{{t 'Direct message feed' }}"></i>
                     </a>
                     <span class="unread_count"></span>
                 </div>
             </div>
         </div>
         <a class="zoom-out-hide" id="hide-more-direct-messages">
-            <span> {{t 'back to streams' }}</span>
+            <span> {{t 'back to channels' }}</span>
         </a>
     </div>
     {{~!-- squash whitespace --~}}
@@ -158,10 +158,10 @@
 
         <div id="streams_list" class="zoom-out">
             <div id="streams_header" class="zoom-in-hide {{#if hide_unread_counts}}hide_unread_counts{{/if}}">
-                <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'STREAMS' }}</span></h4>
+                <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'CHANNELS' }}</span></h4>
                 <div class="heading-markers-and-controls">
                     <i id="filter_streams_tooltip" class="streams_filter_icon fa fa-filter" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
-                    <span id="add_streams_tooltip" class="hidden-for-spectators" data-tippy-content="{{t 'Add streams' }}">
+                    <span id="add_streams_tooltip" class="hidden-for-spectators" data-tippy-content="{{t 'Add channels' }}">
                         <i id="streams_inline_icon" class='fa fa-plus' aria-hidden="true" ></i>
                     </span>
                     <span class="unread_count"></span>
@@ -169,26 +169,28 @@
                 </div>
 
                 <div class="input-append notdisplayed stream_search_section">
-                    <input class="stream-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter streams' }}" />
+                    <input class="stream-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
             <div id="topics_header">
-                <a class="show-all-streams" tabindex="0">{{t 'Back to streams' }}</a> <span class="unread_count"></span>
+                <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count"></span>
             </div>
             <div id="stream-filters-container">
                 <ul id="stream_filters" class="filters"></ul>
                 {{#unless is_guest }}
                     <div id="subscribe-to-more-streams"></div>
                 {{/unless}}
-                <div id="login-link-container" class="only-visible-for-spectators">
-                    <a class="login_button">
+                <div class="only-visible-for-spectators">
+                    <div id="login-link-container" class="login_button">
                         <i class="zulip-icon zulip-icon-log-in" aria-hidden="true"></i>
                         {{~!-- squash whitespace --~}}
-                        {{t 'Log in to browse more streams'}}
-                    </a>
+                        <a class="login-text">
+                            {{t 'Log in to browse more channels'}}
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

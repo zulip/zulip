@@ -755,6 +755,7 @@ function register_click_handlers() {
             compose_actions.start({
                 message_type: "stream",
                 trigger: "sidebar user actions",
+                keep_composebox_empty: true,
             });
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
@@ -769,7 +770,10 @@ function register_click_handlers() {
 
     $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
         if (!compose_state.composing()) {
-            compose_reply.respond_to_message({trigger: "user sidebar popover"});
+            compose_reply.respond_to_message({
+                trigger: "user sidebar popover",
+                keep_composebox_empty: true,
+            });
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
@@ -781,7 +785,7 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".view_user_profile", (e) => {
+    $("body").on("click", ".view_user_profile, .person_picker .pill[data-user-id]", (e) => {
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
         toggle_user_card_popover(e.target, user);

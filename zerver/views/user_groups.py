@@ -1,10 +1,11 @@
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Union
 
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from pydantic import Json
 
 from zerver.actions.message_send import do_send_messages, internal_prep_private_message
 from zerver.actions.user_groups import (
@@ -23,7 +24,10 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
+    GroupSettingChangeRequest,
     access_user_group_by_id,
     access_user_group_for_setting,
     check_user_group_name,
@@ -33,42 +37,41 @@ from zerver.lib.user_groups import (
     get_user_group_member_ids,
     is_user_in_group,
     lock_subgroups_with_respect_to_supergroup,
+    parse_group_setting_value,
     user_groups_in_realm_serialized,
+    validate_group_setting_value_change,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.lib.validator import check_bool, check_int, check_list
-from zerver.models import UserGroup, UserProfile
+from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
 
 @require_user_group_edit_permission
-@has_request_variables
+@typed_endpoint
 def add_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: str = REQ(),
-    members: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
-    description: str = REQ(),
-    can_mention_group_id: Optional[int] = REQ(
-        "can_mention_group", json_validator=check_int, default=None
-    ),
+    *,
+    name: str,
+    members: Json[Sequence[int]],
+    description: str,
+    can_mention_group: Optional[Json[Union[AnonymousSettingGroupDict, int]]] = None,
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
 
     group_settings_map = {}
     request_settings_dict = locals()
-    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        setting_group_id_name = permission_config.id_field_name
-
-        if setting_group_id_name not in request_settings_dict:  # nocoverage
+    for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
+        if setting_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None:
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
+        if request_settings_dict[setting_name] is not None:
+            setting_value = parse_group_setting_value(request_settings_dict[setting_name])
             setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+                setting_value,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
@@ -95,18 +98,17 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
 
 @transaction.atomic
 @require_user_group_edit_permission
-@has_request_variables
+@typed_endpoint
 def edit_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(json_validator=check_int, path_only=True),
-    name: Optional[str] = REQ(default=None),
-    description: Optional[str] = REQ(default=None),
-    can_mention_group_id: Optional[int] = REQ(
-        "can_mention_group", json_validator=check_int, default=None
-    ),
+    *,
+    user_group_id: PathOnly[int],
+    name: Optional[str] = None,
+    description: Optional[str] = None,
+    can_mention_group: Optional[Json[GroupSettingChangeRequest]] = None,
 ) -> HttpResponse:
-    if name is None and description is None and can_mention_group_id is None:
+    if name is None and description is None and can_mention_group is None:
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
@@ -119,21 +121,30 @@ def edit_user_group(
         do_update_user_group_description(user_group, description, acting_user=user_profile)
 
     request_settings_dict = locals()
-    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        setting_group_id_name = permission_config.id_field_name
-
-        if setting_group_id_name not in request_settings_dict:  # nocoverage
+    for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
+        if setting_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
-            setting_group_id_name
-        ] != getattr(user_group, setting_group_id_name):
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
+        if request_settings_dict[setting_name] is None:
+            continue
+
+        setting_value = request_settings_dict[setting_name]
+        new_setting_value = parse_group_setting_value(setting_value.new)
+
+        expected_current_setting_value = None
+        if setting_value.old is not None:
+            expected_current_setting_value = parse_group_setting_value(setting_value.old)
+
+        current_value = getattr(user_group, setting_name)
+        if validate_group_setting_value_change(
+            current_value, new_setting_value, expected_current_setting_value
+        ):
             setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+                new_setting_value,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
+                current_setting_value=current_value,
             )
             do_change_user_group_permission_setting(
                 user_group, setting_name, setting_value_group, acting_user=user_profile
@@ -185,7 +196,7 @@ def update_user_group_backend(
 def notify_for_user_group_subscription_changes(
     acting_user: UserProfile,
     recipient_users: List[UserProfile],
-    user_group: UserGroup,
+    user_group: NamedUserGroup,
     *,
     send_subscription_message: bool = False,
     send_unsubscription_message: bool = False,
@@ -240,7 +251,9 @@ def add_members_to_group_backend(
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     member_users = user_ids_to_users(members, user_profile.realm)
-    existing_member_ids = set(get_direct_memberships_of_users(user_group, member_users))
+    existing_member_ids = set(
+        get_direct_memberships_of_users(user_group.usergroup_ptr, member_users)
+    )
 
     for member_user in member_users:
         if member_user.id in existing_member_ids:

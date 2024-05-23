@@ -9,6 +9,7 @@ import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hb
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
+import * as composebox_typeahead from "./composebox_typeahead";
 import * as emoji from "./emoji";
 import * as keydown_util from "./keydown_util";
 import * as message_store from "./message_store";
@@ -157,6 +158,14 @@ export function rebuild_catalog() {
         icon: category.icon,
         emojis: catalog.get(category.name),
     }));
+    const emojis_by_category = complete_emoji_catalog.flatMap((category) => {
+        if (category.name === "Popular") {
+            // popular category has repeated emojis in the catalog so we skip it
+            return [];
+        }
+        return category.emojis;
+    });
+    composebox_typeahead.update_emoji_data(emojis_by_category);
 }
 
 const generate_emoji_picker_content = function (id) {
@@ -232,7 +241,7 @@ export function is_emoji_present_in_text(text, emoji_dict) {
 function filter_emojis() {
     const $elt = $(".emoji-popover-filter").expectOne();
     const query = $elt.val().trim().toLowerCase();
-    const message_id = $(".emoji-search-results-container").data("message-id");
+    const message_id = Number($(".emoji-search-results-container").attr("data-message-id"));
     const search_results_visible = $(".emoji-search-results-container").is(":visible");
     if (query !== "") {
         const categories = complete_emoji_catalog;
@@ -752,11 +761,11 @@ function register_click_handlers() {
         handle_emoji_clicked($(e.currentTarget), e);
     });
 
-    $("body").on("click", ".emoji_map", (e) => {
+    $("body").on("click", ".emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        const compose_click_target = compose_ui.get_compose_click_target(e);
+        const compose_click_target = compose_ui.get_compose_click_target(this);
         if ($(compose_click_target).parents(".message_edit_form").length === 1) {
             // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.

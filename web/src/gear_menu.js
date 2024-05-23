@@ -1,7 +1,7 @@
 import $ from "jquery";
 import WinChan from "winchan";
 
-import render_gear_menu_popover from "../templates/gear_menu_popover.hbs";
+import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -25,7 +25,7 @@ actually do much of the work.
 Our gear menu has these choices:
 
 =================
-hash:  Stream settings
+hash:  Channel settings
 hash:  Settings
 hash:  Organization settings
 link:  Usage statistics
@@ -59,7 +59,7 @@ The menu itself has the selector
 The items with the prefix of "hash:" are in-page
 links:
 
-    #streams
+    #channels
     #settings
     #organization
     #about-zulip
@@ -86,7 +86,7 @@ the selector and then calls browser_history.go_to_location.
 */
 
 function render(instance) {
-    const rendered_gear_menu = render_gear_menu_popover(
+    const rendered_gear_menu = render_navbar_gear_menu_popover(
         popover_menus_data.get_gear_menu_content_context(),
     );
     instance.setContent(parse_html(rendered_gear_menu));

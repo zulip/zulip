@@ -10,7 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.upload.base import BadImageError
 from zerver.models import Realm, RealmEmoji, UserProfile
-from zerver.models.realms import get_realm
+from zerver.models.realms import CommonPolicyEnum, get_realm
 
 
 class RealmEmojiTest(ZulipTestCase):
@@ -52,7 +52,7 @@ class RealmEmojiTest(ZulipTestCase):
         # having no author are also there in the list.
         self.login("othello")
         realm = get_realm("zulip")
-        realm.add_custom_emoji_policy = Realm.POLICY_ADMINS_ONLY
+        realm.add_custom_emoji_policy = CommonPolicyEnum.ADMINS_ONLY
         realm.save()
         realm_emoji = self.create_test_emoji_with_no_author("my_emoji", realm)
 
@@ -172,7 +172,7 @@ class RealmEmojiTest(ZulipTestCase):
 
         do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
         do_set_realm_property(
-            othello.realm, "add_custom_emoji_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            othello.realm, "add_custom_emoji_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
         )
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
@@ -186,7 +186,10 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
 
         do_set_realm_property(
-            othello.realm, "add_custom_emoji_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+            othello.realm,
+            "add_custom_emoji_policy",
+            CommonPolicyEnum.MODERATORS_ONLY,
+            acting_user=None,
         )
         do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
         with get_test_image_file("img.png") as fp1:
@@ -203,7 +206,7 @@ class RealmEmojiTest(ZulipTestCase):
         do_set_realm_property(
             othello.realm,
             "add_custom_emoji_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
+            CommonPolicyEnum.FULL_MEMBERS_ONLY,
             acting_user=None,
         )
         do_set_realm_property(othello.realm, "waiting_period_threshold", 100000, acting_user=None)
@@ -221,7 +224,10 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
 
         do_set_realm_property(
-            othello.realm, "add_custom_emoji_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            othello.realm,
+            "add_custom_emoji_policy",
+            CommonPolicyEnum.MEMBERS_ONLY,
+            acting_user=None,
         )
         do_change_user_role(othello, UserProfile.ROLE_GUEST, acting_user=None)
         with get_test_image_file("img.png") as fp1:

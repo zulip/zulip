@@ -26,6 +26,6 @@ For more details, see [Communities directory](/help/communities-directory).
 
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Customize organization settings](/help/customize-organization-settings)
-* [Create streams](/help/create-streams)
+* [Create channels](/help/create-channels)
 * [Communities directory](/help/communities-directory)
 * [Getting started with Zulip](/help/getting-started-with-zulip)

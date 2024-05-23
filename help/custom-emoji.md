@@ -3,12 +3,12 @@
 Custom emoji can be used by all users in an organization (including
 bots).  They are supported everywhere that Zulip supports emoji,
 including [emoji reactions][emoji-reactions],
-[messages][emoji-messages], [stream descriptions][emoji-streams] and
+[messages][emoji-messages], [channel descriptions][emoji-channels] and
 [user statuses][emoji-status].
 
 [emoji-reactions]: /help/emoji-reactions
 [emoji-messages]: /help/format-your-message-using-markdown#emoji-and-emoticons
-[emoji-streams]: /help/change-the-stream-description
+[emoji-channels]: /help/change-the-channel-description
 [emoji-status]: /help/status-and-availability
 
 ## Add custom emoji

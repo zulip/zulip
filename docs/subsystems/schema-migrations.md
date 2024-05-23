@@ -33,7 +33,7 @@ migrations.
   - If your migrations were automatically generated using
     `manage.py makemigrations`, a good option is to just remove your
     migration and rerun the command after rebasing. Remember to
-    `git rebase` to do this in the the commit that changed `models/*.py`
+    `git rebase` to do this in the commit that changed `models/*.py`
     if you have a multi-commit branch.
   - If you wrote code as part of preparing your migrations, or prefer
     this workflow, you can use run `./tools/renumber-migrations`,
@@ -180,12 +180,17 @@ If you follow the processes described above, `tools/provision` and
 migrations and run migrations on (`./manage.py migrate`) or rebuild
 the relevant database automatically as appropriate.
 
-While developing migrations, you may accidentally corrupt
-your databases while debugging your new code.
-You can always rebuild these databases from scratch.
+Notably, both `manage.py migrate` (`git grep post_migrate.connect` for
+details) and restarting `tools/run-dev` will flush `memcached`, so you
+shouldn't have to worry about cached objects from a previous database
+schema.
 
-Use `tools/rebuild-test-database` to rebuild the database
-used for `test-backend` and other automated tests.
+While developing migrations, you may accidentally corrupt your
+databases while debugging your new code. You can always rebuild these
+databases from scratch:
 
-Use `tools/rebuild-dev-database` to rebuild the database
-used in [manual testing](../development/using.md).
+- Use `tools/rebuild-test-database` to rebuild the database
+  used for `test-backend` and other automated tests.
+
+- Use `tools/rebuild-dev-database` to rebuild the database
+  used in [manual testing](../development/using.md).

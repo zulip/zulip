@@ -3,7 +3,6 @@
         "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common",
         "sorttable",
-        "./src/activity/activity",
         "./styles/portico/activity.css"
     ],
     "billing": [
@@ -109,9 +108,10 @@
         "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common",
         "sorttable",
-        "./src/activity/activity",
         "./styles/portico/activity.css",
-        "./src/support/support"
+        "./src/support/support",
+        "./src/portico/tippyjs",
+        "tippy.js/dist/tippy.css"
     ],
     "desktop-login": ["./src/bundles/portico", "./src/portico/desktop-login"],
     "desktop-redirect": ["./src/bundles/portico", "./src/portico/desktop-redirect"],

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import Any, Collection, Dict, List, Optional, Set
 
 from zerver.lib.mention import MentionData
-from zerver.lib.user_groups import get_user_group_direct_member_ids
-from zerver.models import UserGroup, UserProfile, UserTopic
+from zerver.lib.user_groups import get_user_group_member_ids
+from zerver.models import NamedUserGroup, UserProfile, UserTopic
 from zerver.models.scheduled_jobs import NotificationTriggers
 
 
@@ -313,9 +313,16 @@ def get_user_group_mentions_data(
     return mentioned_user_groups_map
 
 
-def get_mentioned_user_group_name(
+@dataclass
+class MentionedUserGroup:
+    id: int
+    name: str
+    members_count: int
+
+
+def get_mentioned_user_group(
     messages: List[Dict[str, Any]], user_profile: UserProfile
-) -> Optional[str]:
+) -> Optional[MentionedUserGroup]:
     """Returns the user group name to display in the email notification
     if user group(s) are mentioned.
 
@@ -325,7 +332,7 @@ def get_mentioned_user_group_name(
     """
     for message in messages:
         if (
-            message["mentioned_user_group_id"] is None
+            message.get("mentioned_user_group_id") is None
             and message["trigger"] == NotificationTriggers.MENTION
         ):
             # The user has also been personally mentioned, so that gets prioritized.
@@ -335,21 +342,27 @@ def get_mentioned_user_group_name(
     mentioned_user_group_ids = [
         message["mentioned_user_group_id"]
         for message in messages
-        if message["mentioned_user_group_id"] is not None
+        if message.get("mentioned_user_group_id") is not None
     ]
+
+    if len(mentioned_user_group_ids) == 0:
+        return None
 
     # We now want to calculate the name of the smallest user group mentioned among
     # all these messages.
     smallest_user_group_size = math.inf
-    smallest_user_group_name = None
     for user_group_id in mentioned_user_group_ids:
-        current_user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
-        current_user_group_size = len(get_user_group_direct_member_ids(current_user_group))
+        current_user_group = NamedUserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        current_mentioned_user_group = MentionedUserGroup(
+            id=current_user_group.id,
+            name=current_user_group.name,
+            members_count=len(get_user_group_member_ids(current_user_group)),
+        )
 
-        if current_user_group_size < smallest_user_group_size:
+        if current_mentioned_user_group.members_count < smallest_user_group_size:
             # If multiple user groups are mentioned, we prefer the
             # user group with the least members.
-            smallest_user_group_size = current_user_group_size
-            smallest_user_group_name = current_user_group.name
+            smallest_user_group_size = current_mentioned_user_group.members_count
+            smallest_mentioned_user_group = current_mentioned_user_group
 
-    return smallest_user_group_name
+    return smallest_mentioned_user_group

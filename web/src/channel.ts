@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 import _ from "lodash";
+import {z} from "zod";
 
 import {page_params} from "./base_page_params";
 import * as blueslip from "./blueslip";
@@ -13,17 +14,19 @@ import * as spectators from "./spectators";
 type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
     url: string;
     ignore_reload?: boolean;
-    success?: (
-        data: unknown,
-        textStatus: JQuery.Ajax.SuccessTextStatus,
-        jqXHR: JQuery.jqXHR<unknown>,
-    ) => void;
+    success?:
+        | ((
+              data: unknown,
+              textStatus: JQuery.Ajax.SuccessTextStatus,
+              jqXHR: JQuery.jqXHR<unknown>,
+          ) => void)
+        | undefined;
     error?: JQuery.Ajax.ErrorCallback<unknown>;
 };
 
 type PatchRequestData =
     | {processData: false; data: FormData}
-    | {processData?: true; data: Record<string, unknown>};
+    | {processData?: true | undefined; data: Record<string, unknown>};
 
 export type AjaxRequestHandler = typeof call | typeof patch;
 
@@ -131,7 +134,7 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
                     args,
                 });
             } else if (
-                xhr.responseJSON.code === "CSRF_FAILED" &&
+                z.object({code: z.literal("CSRF_FAILED")}).safeParse(xhr.responseJSON).success &&
                 reload_state.csrf_failed_handler !== undefined
             ) {
                 reload_state.csrf_failed_handler();
@@ -210,10 +213,15 @@ export function patch(
 }
 
 export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): string {
-    if (xhr.status >= 400 && xhr.status < 500 && xhr.responseJSON?.msg) {
+    let parsed;
+    if (
+        xhr.status >= 400 &&
+        xhr.status < 500 &&
+        (parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON)).success
+    ) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        const server_response_html = _.escape(xhr.responseJSON.msg);
+        const server_response_html = _.escape(parsed.data.msg);
         if (message) {
             message += ": " + server_response_html;
         } else {

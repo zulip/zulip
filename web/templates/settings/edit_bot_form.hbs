@@ -2,20 +2,20 @@
     <form class="new-style edit_bot_form name-setting">
         <div class="alert" id="bot-edit-form-error"></div>
         <div class="input-group name_change_container">
-            <label for="edit_bot_full_name">{{t "Name" }}</label>
+            <label for="edit_bot_full_name" class="modal-field-label">{{t "Name" }}</label>
             <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
-            <label for="email">{{t "Email" }}</label>
+            <label for="email" class="modal-field-label">{{t "Email" }}</label>
             <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
         </div>
         <div class="input-group user_id_container">
-            <label for="user_id">{{t "User ID" }}</label>
+            <label for="user_id" class="modal-field-label">{{t "User ID" }}</label>
             <input type="text" autocomplete="off" name="user_id" class="modal_text_input" value="{{ user_id }}" readonly/>
         </div>
         <div class="input-group">
-            <label class="input-label" for="bot-role-select">{{t 'Role' }}
+            <label for="bot-role-select" class="modal-field-label">{{t 'Role' }}
                 {{> ../help_link_widget link="/help/roles-and-permissions" }}
             </label>
             <select name="bot-role-select" id="bot-role-select" class="modal_select bootstrap-focus-style" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
@@ -29,7 +29,7 @@
         <div id="service_data">
         </div>
         <div class="input-group edit-avatar-section">
-            <label>{{t "Avatar" }}</label>
+            <label class="modal-field-label">{{t "Avatar" }}</label>
             {{!-- Shows the current avatar --}}
             <img src="{{bot_avatar_url}}" id="current_bot_avatar_image" />
             <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />

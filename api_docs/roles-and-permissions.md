@@ -76,7 +76,7 @@ event](/api/get-events#realm_user-add), and the
 Many areas of Zulip are customizable by the roles
 above, such as (but not limited to) [restricting message editing and
 deletion](/help/restrict-message-editing-and-deletion) and
-[streams permissions](/help/stream-permissions). The potential
+[channels permissions](/help/channel-permissions). The potential
 permission levels are:
 
 * Everyone / Any user including Guests (least restrictive)
@@ -101,6 +101,11 @@ and owners.
 
 Note that specific settings and policies in the Zulip API that use these
 permission levels will likely support a subset of those listed above.
+
+## Group-based permissions
+
+Some settings have been migrated to a more flexible system based on
+[user groups](/api/group-setting-values).
 
 ## Determining if a user is a full member
 

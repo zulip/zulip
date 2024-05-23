@@ -9,14 +9,14 @@ server hosted at [chat.zulip.org](https://chat.zulip.org/):
   ideas, and generally help each other out.
 
 Everyone is welcome to [sign up](https://chat.zulip.org/) and
-participate — we love hearing from our users! Public streams in the
+participate — we love hearing from our users! Public channels in the
 community receive thousands of messages a week. We recommend signing
 up using the special invite links for
 [users](https://chat.zulip.org/join/t5crtoe62bpcxyisiyglmtvb/),
 [self-hosters](https://chat.zulip.org/join/wnhv3jzm6afa4raenedanfno/)
 and
 [contributors](https://chat.zulip.org/join/npzwak7vpmaknrhxthna3c7p/)
-to get a curated list of initial stream subscriptions.
+to get a curated list of initial channel subscriptions.
 
 To get help in real time, you will have the best luck finding core
 developers during daylight hours in North America (roughly between
@@ -40,7 +40,7 @@ feedback.
 - Send test messages to [#test
   here](https://chat.zulip.org/#narrow/stream/7-test-here) or as a PM
   to yourself to avoid disturbing others.
-- [Start a new topic](/help/starting-a-new-topic) unless you’re replying
+- Start a [new topic](/help/introduction-to-topics) unless you’re replying
   to an existing conversation. If you see a new user talking about
   something unrelated on an existing topic, [move the messages to an
   appropriate new topic](/help/move-content-to-another-topic).
@@ -65,11 +65,11 @@ feedback.
   you. For example, include the **full traceback** in a [code
   block](/help/code-blocks) (not a screenshot), a link to the code or
   a draft PR you’re having trouble debugging, etc.
-- Ask questions on streams rather than DMing core contributors. You’ll
+- Ask questions on channels rather than DMing core contributors. You’ll
   get answers faster since other people can help, and it makes it
   possible for others to benefit from the discussion.
 - Don’t ask the same question in multiple places. Moderators read
-  every public stream, and make sure every question gets a reply.
+  every public channel, and make sure every question gets a reply.
 - Use @-mentions sparingly. Unlike IRC or Slack, Zulip’s topics make
   it easy to see what you’re replying to, so you don’t need to mention
   your conversation partner to make sure they will see or understand
@@ -81,14 +81,14 @@ feedback.
 <br/>
 # Where do I send my message?
 
-This section describes popular public streams on chat.zulip.org. Kick
-off the discussion by [starting a new topic](/help/starting-a-new-topic)
-in the appropriate stream! Don’t stress too much about picking the
+This section describes popular public channels on chat.zulip.org. Kick
+off the discussion by starting a [new topic](/help/introduction-to-topics)
+in the appropriate channel! Don’t stress too much about picking the
 right place if you’re not sure; anyone in the community can edit a
 topic name, and [moderators](/help/roles-and-permissions) can [move a
-topic to a different stream](/help/move-content-to-another-stream).
+topic to a different channel](/help/move-content-to-another-channel).
 
-## Streams for everyone
+## Channels for everyone
 
 - [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback) is
   for posting feedback on Zulip, including feature requests, suggestions for
@@ -111,9 +111,9 @@ topic to a different stream](/help/move-content-to-another-stream).
   uncertain where to start a conversation.
 - [#test here](https://chat.zulip.org/#narrow/stream/7-test-here) is
   for sending test messages without inconveniencing other users :). We
-  recommend muting this stream when not using it.
+  recommend muting this channel when not using it.
 
-## Streams for Zulip users and administrators
+## Channels for Zulip users and administrators
 
 - [#user questions](https://chat.zulip.org/#narrow/stream/138-user-questions) is
   for questions about how to configure your Zulip organization, and accomplish
@@ -127,12 +127,12 @@ topic to a different stream](/help/move-content-to-another-stream).
   all conversations about the [Zulip Cloud](https://zulip.com/plans/)
   service.
 
-## Streams for code contributors
+## Channels for code contributors
 
 - [#development
   help](https://chat.zulip.org/#narrow/stream/49-development-help) is
   for asking for help with any Zulip server/web app development work
-  (use the app streams #mobile, #desktop, or #zulip-terminal for help
+  (use the app channels #mobile, #desktop, or #zulip-terminal for help
   working on one of the apps).
 - [#provision
   help](https://chat.zulip.org/#narrow/stream/21-provision-help) is
@@ -151,7 +151,7 @@ topic to a different stream](/help/move-content-to-another-stream).
 - [#backend](https://chat.zulip.org/#narrow/stream/3-backend),
   [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend),
   [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation),
-  and app-specific streams
+  and app-specific channels
   ([#mobile](https://chat.zulip.org/#narrow/stream/48-mobile), etc.)
   are the right place for general conversations about work in those
   areas (including design discussions, questions, updates on a
@@ -163,23 +163,23 @@ topic to a different stream](/help/move-content-to-another-stream).
   but is also a good place to discuss projects to improve Zulip’s
   automated testing infrastructure.
 - [#api design](https://chat.zulip.org/#narrow/stream/378-api-design)
-  is a low-traffic stream for discussing and coordinating changes to
+  is a low-traffic channel for discussing and coordinating changes to
   the [Zulip API](https://zulip.com/api/rest), with all stakeholders
   present.
 
-## Streams for translators
+## Channels for translators
 - [#translation](https://chat.zulip.org/#narrow/stream/58-translation)
   is for discussing [Zulip’s
   translations](https://zulip.readthedocs.io/en/latest/translating/translating.html).
-- Some languages have streams named like
+- Some languages have channels named like
   [#translation/fr](https://chat.zulip.org/#narrow/stream/371-translation.2Ffr)
   and
   [#translation/zh_tw](https://chat.zulip.org/#narrow/stream/377-translation.2Fzh_tw)
   to coordinate translation work for that language.
 
-## Streams for anyone spending time in the community
+## Channels for anyone spending time in the community
 - [#announce](https://chat.zulip.org/#narrow/stream/1-announce) is our
-  low-traffic stream for project announcements (releases, etc.).
+  low-traffic channel for project announcements (releases, etc.).
 - [#checkins](https://chat.zulip.org/#narrow/stream/65-checkins) is
   for progress updates on what you’re working on and its status;
   usually folks post with their name as the topic. Everyone is welcome
@@ -208,7 +208,7 @@ topic to a different stream](/help/move-content-to-another-stream).
   is for occasional conversations not related to Zulip, usually things
   of general interest to open-source communities.
 
-You can always find the description for the stream you’re reading at
+You can always find the description for the channel you’re reading at
 the top of the Zulip app.
 
 <br/>
@@ -218,8 +218,8 @@ the top of the Zulip app.
 
 Keeping up with **everything** happening in the Zulip project is both
 difficult and rarely a useful goal. To make the best use of your time,
-we highly recommend that you unsubscribe from streams that you aren’t
-interested in, mute streams that are only of occasional interest, and
+we highly recommend that you unsubscribe from channels that you aren’t
+interested in, mute channels that are only of occasional interest, and
 make use of [Zulip’s skimming features](/help/reading-strategies),
 like Recent conversations, to spend your time on topics that interest
 you.
@@ -230,16 +230,16 @@ To look for previous threads about something, we recommend using the
 following [search filters](/help/search-for-messages#search-filters):
 `streams:public <your keyword(s)>`.
 
-This will search the full history of all public streams for `<your
+This will search the full history of all public channels for `<your
 keyword(s)>`, including messages sent before you joined and messages
-on public streams you’re not subscribed to.
+on public channels you’re not subscribed to.
 
 ## Linking to GitHub issues and pull requests
 
 We've set up [custom linkifiers](/help/add-a-custom-linkifier)
 so that it's easy to link to issues and pull requests in Zulip
-project repositories when composing a message or [starting a new
-topic](/help/starting-a-new-topic). Here are examples for linking
+project repositories when composing a message or starting a
+[new topic](/help/introduction-to-topics). Here are examples for linking
 to issue 1234 in the main Zulip project repositories:
 
 - [Server and web app][server-web-repository]: `#1234`

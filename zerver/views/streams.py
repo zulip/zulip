@@ -1,5 +1,6 @@
+import time
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
 
 import orjson
 from django.conf import settings
@@ -66,7 +67,6 @@ from zerver.lib.streams import (
     stream_to_dict,
 )
 from zerver.lib.subscription_info import gather_subscriptions
-from zerver.lib.timeout import TimeoutExpiredError, timeout
 from zerver.lib.topic import (
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
@@ -90,7 +90,7 @@ from zerver.lib.validator import (
     check_union,
     to_non_negative_int,
 )
-from zerver.models import Realm, Stream, UserGroup, UserProfile
+from zerver.models import NamedUserGroup, Realm, Stream, UserProfile
 from zerver.models.users import get_system_bot
 
 
@@ -130,7 +130,7 @@ def add_default_stream(
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
     if stream.invite_only:
-        raise JsonableError(_("Private streams cannot be made default."))
+        raise JsonableError(_("Private channels cannot be made default."))
     do_add_default_stream(stream)
     return json_success(request)
 
@@ -296,7 +296,7 @@ def update_stream_backend(
 
     # Ensure that a stream cannot be both a default stream for new users and private
     if proposed_is_private and proposed_is_default_stream:
-        raise JsonableError(_("A default stream cannot be private."))
+        raise JsonableError(_("A default channel cannot be private."))
 
     if is_private is not None:
         # We require even realm administrators to be actually
@@ -309,7 +309,7 @@ def update_stream_backend(
     # web-public, we don't use an "is not None" check.
     if is_web_public:
         if not user_profile.realm.web_public_streams_enabled():
-            raise JsonableError(_("Web-public streams are not enabled."))
+            raise JsonableError(_("Web-public channels are not enabled."))
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
 
@@ -351,7 +351,7 @@ def update_stream_backend(
     if new_name is not None:
         new_name = new_name.strip()
         if stream.name == new_name:
-            raise JsonableError(_("Stream already has that name!"))
+            raise JsonableError(_("Channel already has that name."))
         if stream.name.lower() != new_name.lower():
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
@@ -380,7 +380,7 @@ def update_stream_backend(
         ] != getattr(stream, setting_group_id_name):
             if sub is None and stream.invite_only:
                 # Admins cannot change this setting for unsubscribed private streams.
-                raise JsonableError(_("Invalid stream ID"))
+                raise JsonableError(_("Invalid channel ID"))
 
             user_group_id = request_settings_dict[setting_group_id_name]
             user_group = access_user_group_for_setting(
@@ -514,18 +514,18 @@ def you_were_just_subscribed_message(
     subscriptions = sorted(stream_names)
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
-            return _("{user_full_name} subscribed you to the stream {stream_name}.").format(
+            return _("{user_full_name} subscribed you to the channel {channel_name}.").format(
                 user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
-                stream_name=f"#**{subscriptions[0]}**",
+                channel_name=f"#**{subscriptions[0]}**",
             )
 
     with override_language(recipient_user.default_language):
-        message = _("{user_full_name} subscribed you to the following streams:").format(
+        message = _("{user_full_name} subscribed you to the following channels:").format(
             user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
         )
     message += "\n\n"
-    for stream_name in subscriptions:
-        message += f"* #**{stream_name}**\n"
+    for channel_name in subscriptions:
+        message += f"* #**{channel_name}**\n"
     return message
 
 
@@ -580,7 +580,7 @@ def add_subscriptions_backend(
         can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
             "can_remove_subscribers_group"
         ].default_group_name
-        can_remove_subscribers_group = UserGroup.objects.get(
+        can_remove_subscribers_group = NamedUserGroup.objects.get(
             name=can_remove_subscribers_group_default_name,
             realm=user_profile.realm,
             is_system_group=True,
@@ -636,8 +636,8 @@ def add_subscriptions_backend(
     )
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
         raise JsonableError(
-            _("Unable to access stream ({stream_name}).").format(
-                stream_name=unauthorized_streams[0].name,
+            _("Unable to access channel ({channel_name}).").format(
+                channel_name=unauthorized_streams[0].name,
             )
         )
     # Newly created streams are also authorized for the creator
@@ -649,7 +649,7 @@ def add_subscriptions_backend(
         and not all(stream.invite_only for stream in streams)
     ):
         raise JsonableError(
-            _("You can only invite other Zephyr mirroring users to private streams.")
+            _("You can only invite other Zephyr mirroring users to private channels.")
         )
 
     if is_default_stream:
@@ -761,14 +761,14 @@ def send_messages_for_new_subscribers(
         if new_stream_announcements_stream is not None:
             with override_language(new_stream_announcements_stream.realm.default_language):
                 if len(created_streams) > 1:
-                    content = _("{user_name} created the following streams: {stream_str}.")
+                    content = _("{user_name} created the following channels: {new_channels}.")
                 else:
-                    content = _("{user_name} created a new stream {stream_str}.")
-                topic_name = _("new streams")
+                    content = _("{user_name} created a new channel {new_channels}.")
+                topic_name = _("new channels")
 
             content = content.format(
                 user_name=silent_mention_syntax_for_user(user_profile),
-                stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
+                new_channels=", ".join(f"#**{s.name}**" for s in created_streams),
             )
 
             sender = get_system_bot(
@@ -798,7 +798,7 @@ def send_messages_for_new_subscribers(
                         stream=stream,
                         topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
                         content=_(
-                            "**{policy}** stream created by {user_name}. **Description:**"
+                            "**{policy}** channel created by {user_name}. **Description:**"
                         ).format(
                             user_name=silent_mention_syntax_for_user(user_profile),
                             policy=get_stream_permission_policy_name(
@@ -922,29 +922,23 @@ def delete_in_topic(
     # the user can see are returned in the query.
     messages = bulk_access_stream_messages_query(user_profile, messages, stream)
 
-    def delete_in_batches() -> Literal[True]:
-        # Topics can be large enough that this request will inevitably time out.
-        # In such a case, it's good for some progress to be accomplished, so that
-        # full deletion can be achieved by repeating the request. For that purpose,
-        # we delete messages in atomic batches, committing after each batch.
-        # TODO: Ideally this should be moved to the deferred_work queue.
-        batch_size = RETENTION_STREAM_MESSAGE_BATCH_SIZE
-        while True:
-            with transaction.atomic(durable=True):
-                messages_to_delete = messages.order_by("-id")[0:batch_size].select_for_update(
-                    of=("self",)
-                )
-                if not messages_to_delete:
-                    break
-                do_delete_messages(user_profile.realm, messages_to_delete)
-
-        # timeout() in which we call this function requires non-None return value.
-        return True
-
-    try:
-        timeout(50, delete_in_batches)
-    except TimeoutExpiredError:
-        return json_success(request, data={"complete": False})
+    # Topics can be large enough that this request will inevitably time out.
+    # In such a case, it's good for some progress to be accomplished, so that
+    # full deletion can be achieved by repeating the request. For that purpose,
+    # we delete messages in atomic batches, committing after each batch.
+    # TODO: Ideally this should be moved to the deferred_work queue.
+    start_time = time.monotonic()
+    batch_size = RETENTION_STREAM_MESSAGE_BATCH_SIZE
+    while True:
+        if time.monotonic() >= start_time + 50:
+            return json_success(request, data={"complete": False})
+        with transaction.atomic(durable=True):
+            messages_to_delete = messages.order_by("-id")[0:batch_size].select_for_update(
+                of=("self",)
+            )
+            if not messages_to_delete:
+                break
+            do_delete_messages(user_profile.realm, messages_to_delete)
 
     return json_success(request, data={"complete": True})
 
@@ -1022,7 +1016,7 @@ def update_subscription_properties_backend(
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
             raise JsonableError(
-                _("Not subscribed to stream id {stream_id}").format(stream_id=stream_id)
+                _("Not subscribed to channel ID {channel_id}").format(channel_id=stream_id)
             )
 
         try:

@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class MentionHookTests(WebhookTestCase):
-    STREAM_NAME = "test"
+    CHANNEL_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/mention?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "mention"
 

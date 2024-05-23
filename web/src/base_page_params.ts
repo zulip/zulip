@@ -93,6 +93,8 @@ const upgrade_params_schema = default_params_schema.extend({
     fixed_price: z.number().nullable(),
     setup_payment_by_invoice: z.boolean(),
     free_trial_days: z.nullable(z.number()),
+    percent_off_annual_price: z.string().nullable(),
+    percent_off_monthly_price: z.string().nullable(),
 });
 
 const page_params_schema = z.discriminatedUnion("page_type", [

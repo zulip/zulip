@@ -91,6 +91,7 @@ class ArchiveTransaction(models.Model):
     timestamp = models.DateTimeField(default=timezone_now, db_index=True)
     # Marks if the data archived in this transaction has been restored:
     restored = models.BooleanField(default=False, db_index=True)
+    restored_timestamp = models.DateTimeField(null=True, db_index=True)
 
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types:
@@ -711,6 +712,15 @@ class Attachment(AbstractAttachment):
     # This is only present for Attachment and not ArchiveAttachment.
     # because ScheduledMessage is not subject to archiving.
     scheduled_messages = models.ManyToManyField("zerver.ScheduledMessage")
+
+    class Meta:
+        indexes = [
+            models.Index(
+                "realm",
+                "create_time",
+                name="zerver_attachment_realm_create_time",
+            ),
+        ]
 
     def is_claimed(self) -> bool:
         return self.messages.exists() or self.scheduled_messages.exists()

@@ -23,7 +23,20 @@ export function hide_userlist_sidebar(): void {
 }
 
 export function show_userlist_sidebar(): void {
-    $(".app-main .column-right").addClass("expanded");
+    const $userlist_sidebar = $(".app-main .column-right");
+    if ($userlist_sidebar.css("display") !== "none") {
+        // Return early if the right sidebar is already visible.
+        return;
+    }
+
+    if (window.innerWidth >= media_breakpoints_num.xl) {
+        $("body").removeClass("hide-right-sidebar");
+        fix_invite_user_button_flicker();
+        return;
+    }
+
+    $userlist_sidebar.addClass("expanded");
+    fix_invite_user_button_flicker();
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
 }
@@ -59,6 +72,18 @@ export function hide_all(): void {
     hide_userlist_sidebar();
 }
 
+function fix_invite_user_button_flicker(): void {
+    // Keep right sidebar hidden after browser renders it to avoid
+    // flickering of "Invite more users" button. Since the user list
+    // is a complex component browser takes time for it to render
+    // causing the invite button to render first.
+    $("body").addClass("hide-right-sidebar-by-visibility");
+    // Show the right sidebar after the browser has completed the above render.
+    setTimeout(() => {
+        $("body").removeClass("hide-right-sidebar-by-visibility");
+    }, 0);
+}
+
 export function initialize(): void {
     $("body").on("click", ".login_button", (e) => {
         e.preventDefault();
@@ -72,6 +97,9 @@ export function initialize(): void {
 
         if (window.innerWidth >= media_breakpoints_num.xl) {
             $("body").toggleClass("hide-right-sidebar");
+            if (!$("body").hasClass("hide-right-sidebar")) {
+                fix_invite_user_button_flicker();
+            }
             return;
         }
 
@@ -181,7 +209,7 @@ export function initialize_right_sidebar(): void {
     $("#buddy-list-users-matching-view").on("mouseenter", ".user_sidebar_entry", (e) => {
         const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
         if ($status_emoji.length) {
-            const animated_url = $status_emoji.data("animated-url");
+            const animated_url = $status_emoji.attr("data-animated-url");
             if (animated_url) {
                 $status_emoji.attr("src", animated_url);
             }
@@ -191,7 +219,7 @@ export function initialize_right_sidebar(): void {
     $("#buddy-list-users-matching-view").on("mouseleave", ".user_sidebar_entry", (e) => {
         const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
         if ($status_emoji.length) {
-            const still_url = $status_emoji.data("still-url");
+            const still_url = $status_emoji.attr("data-still-url");
             if (still_url) {
                 $status_emoji.attr("src", still_url);
             }
