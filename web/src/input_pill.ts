@@ -168,8 +168,25 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             } else {
                 const has_image = item.img_src !== undefined;
 
+                let display_value = item.display_value;
+                // For search pills, we don't need to use + instead
+                // of spaces in the pill, since there is visual separation
+                // of pills. We also chose to add a space after the colon
+                // after the search operator.
+                //
+                // TODO: Ideally this code would live in search files, when
+                // we generate `item.display_value`, but we currently use
+                // `display_value` not only for visual representation but
+                // also for parsing the value a pill represents.
+                // In the future we should change all input pills to have
+                // a `value` as well as a `display_value`.
+                if (item.type === "search") {
+                    display_value = display_value.replaceAll("+", " ");
+                    display_value = display_value.replace(":", ": ");
+                }
+
                 const opts: InputPillRenderingDetails = {
-                    display_value: item.display_value,
+                    display_value,
                     has_image,
                     deactivated: item.deactivated,
                     should_add_guest_user_indicator: item.should_add_guest_user_indicator,
