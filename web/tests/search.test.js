@@ -249,7 +249,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     operand: "Verona",
                 },
             ];
-            expected_pill_display_value = "channel:Verona";
+            expected_pill_display_value = "channel: Verona";
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
