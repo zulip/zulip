@@ -132,7 +132,7 @@ function select_div($div: JQuery, selection: Selection): void {
         background: "#FFF",
     }).attr("id", "copytempdiv");
     $("body").append($div);
-    selection.selectAllChildren($div[0]);
+    selection.selectAllChildren($div[0]!);
 }
 
 function remove_div(_div: JQuery, ranges: Range[]): void {
@@ -591,7 +591,7 @@ function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boole
     // Look at the two characters before the start of the original
     // range in search of the tell-tale `](` from existing Markdown
     // link syntax
-    const possible_markdown_link_markers = $textarea[0].value.slice(range.start - 2, range.start);
+    const possible_markdown_link_markers = $textarea[0]!.value.slice(range.start - 2, range.start);
 
     if (possible_markdown_link_markers === "](") {
         return false;

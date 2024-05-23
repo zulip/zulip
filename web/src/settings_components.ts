@@ -187,7 +187,7 @@ export function extract_property_name($elem: JQuery, for_realm_default_settings?
         // "realm_{settings_name}}" because both user and realm default
         // settings use the same template and each element should have
         // unique id.
-        return /^realm_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
+        return /^realm_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1]!;
     }
 
     if (elem_id.startsWith("id_authmethod")) {
@@ -197,14 +197,14 @@ export function extract_property_name($elem: JQuery, for_realm_default_settings?
         // The [\da-z]+ part of the regexp covers the auth method name itself.
         // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
         // this is ensured by a respective allowlist-based filter in populate_auth_methods().
-        return /^id_authmethod[\da-z]+_(.*)$/.exec(elem_id)![1];
+        return /^id_authmethod[\da-z]+_(.*)$/.exec(elem_id)![1]!;
     }
 
     if (elem_id.startsWith("id-custom-profile-field")) {
-        return /^id_custom_profile_field_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
+        return /^id_custom_profile_field_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1]!;
     }
 
-    return /^id_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
+    return /^id_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1]!;
 }
 
 export function get_subsection_property_elements($subsection: JQuery): HTMLElement[] {
@@ -397,7 +397,7 @@ function read_select_field_data_from_form(
         }
     }
     $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
-        const text = $(this).find("input")[0].value;
+        const text = $(this).find("input")[0]!.value;
         if (text) {
             let value = old_option_value_map.get(text);
             if (value !== undefined) {
@@ -753,7 +753,7 @@ export function get_auth_method_list_data(): Record<string, boolean> {
     for (const method_row of $auth_method_rows) {
         const method = $(method_row).attr("data-method");
         assert(method !== undefined);
-        new_auth_methods[method] = $(method_row).find<HTMLInputElement>("input")[0].checked;
+        new_auth_methods[method] = $(method_row).find<HTMLInputElement>("input")[0]!.checked;
     }
 
     return new_auth_methods;
@@ -957,11 +957,11 @@ export function populate_data_for_request(
                         $input_elem.attr("id")!,
                     );
                     assert(match_array !== null);
-                    property_name = match_array[1];
+                    property_name = match_array[1]!;
                 } else {
                     const match_array = /^id_realm_(.*)$/.exec($input_elem.attr("id")!);
                     assert(match_array !== null);
-                    property_name = match_array[1];
+                    property_name = match_array[1]!;
                 }
 
                 if (property_name === "stream_privacy") {
@@ -1146,7 +1146,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
             ".subsection-changes-save",
         );
-        const tippy_instance = $button_wrapper[0]._tippy;
+        const tippy_instance = $button_wrapper[0]!._tippy;
         if (disable_save_btn) {
             // avoid duplication of tippy
             if (!tippy_instance) {
@@ -1184,5 +1184,5 @@ export function initialize_disable_btn_hint_popover(
     if (hint_text !== undefined) {
         tippy_opts.content = hint_text;
     }
-    tippy.default($btn_wrapper[0], tippy_opts);
+    tippy.default($btn_wrapper[0]!, tippy_opts);
 }

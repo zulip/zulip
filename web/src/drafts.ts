@@ -367,7 +367,7 @@ function draft_notify(): void {
         content: $t({defaultMessage: "Saved as draft"}),
         arrow: true,
         placement: "right",
-    })[0];
+    })[0]!;
     instance.show();
     function remove_instance(): void {
         instance.destroy();

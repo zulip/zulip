@@ -250,7 +250,7 @@ function handle_bulleting_or_numbering(
         if (bulleted_numbered_list_util.strip_bullet(previous_line) === "") {
             // below we select and replace the last 2 characters in the textarea before
             // the cursor - the bullet syntax - with an empty string
-            $textarea[0].setSelectionRange($textarea.caret() - 2, $textarea.caret());
+            $textarea[0]!.setSelectionRange($textarea.caret() - 2, $textarea.caret());
             compose_ui.insert_and_scroll_into_view("", $textarea);
             e.preventDefault();
             return;
@@ -264,7 +264,7 @@ function handle_bulleting_or_numbering(
         if (bulleted_numbered_list_util.strip_numbering(previous_line) === "") {
             // below we select then replaces the last few characters in the textarea before
             // the cursor - the numbering syntax - with an empty string
-            $textarea[0].setSelectionRange(
+            $textarea[0]!.setSelectionRange(
                 $textarea.caret() - previous_number_string.length - 2,
                 $textarea.caret(),
             );
@@ -297,7 +297,7 @@ export function handle_enter($textarea: JQuery<HTMLTextAreaElement>, e: JQuery.K
 
     // If the selectionStart and selectionEnd are not the same, that
     // means that some text was selected.
-    if ($textarea[0].selectionStart !== $textarea[0].selectionEnd) {
+    if ($textarea[0]!.selectionStart !== $textarea[0]!.selectionEnd) {
         // Replace it with the newline, remembering to resize the
         // textarea if needed.
         compose_ui.insert_and_scroll_into_view("\n", $textarea);
@@ -431,7 +431,7 @@ export function tokenize_compose_str(s: string): string {
             case "_":
                 if (i === 0) {
                     return s;
-                } else if (/[\s"'(/<[{]/.test(s[i - 1])) {
+                } else if (/[\s"'(/<[{]/.test(s[i - 1]!)) {
                     return s.slice(i);
                 }
                 break;
@@ -775,7 +775,7 @@ export function get_candidates(
 
     // We will likely want to extend this list to be more i18n-friendly.
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
-    if (rest !== "" && !terminal_symbols.includes(rest[0])) {
+    if (rest !== "" && !terminal_symbols.includes(rest[0]!)) {
         return [];
     }
 
@@ -1158,7 +1158,7 @@ export function content_typeahead_selected(
                 $textbox.caret(beginning.length);
                 compose_ui.autosize_textarea($textbox);
             };
-            flatpickr.show_flatpickr(input_element.$element[0], on_timestamp_selection, timestamp);
+            flatpickr.show_flatpickr(input_element.$element[0]!, on_timestamp_selection, timestamp);
             return beginning + rest;
         }
     }

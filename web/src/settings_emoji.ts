@@ -265,7 +265,7 @@ function show_modal(): void {
         }
 
         const formData = new FormData();
-        const files = $<HTMLInputElement>("input#emoji_file_input")[0].files;
+        const files = $<HTMLInputElement>("input#emoji_file_input")[0]!.files;
         assert(files !== null);
         for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);

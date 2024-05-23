@@ -25,7 +25,7 @@ $(() => {
     }
 
     $.fn.get_offset_to_window = function () {
-        return this[0].getBoundingClientRect();
+        return this[0]!.getBoundingClientRect();
     };
 
     $.fn.expectOne = function () {

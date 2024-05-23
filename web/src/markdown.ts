@@ -250,7 +250,7 @@ function parse_with_options(
                     misfeature).
                 */
                 full_name = match[1];
-                user_id = Number.parseInt(match[2], 10);
+                user_id = Number.parseInt(match[2]!, 10);
 
                 if (full_name === undefined) {
                     // For @**|id** syntax
@@ -420,7 +420,7 @@ export function get_topic_links(topic: string): TopicLink[] {
             const template_context = Object.fromEntries(
                 match
                     .slice(1)
-                    .map((matched_group, i) => [group_number_to_name[i + 1], matched_group]),
+                    .map((matched_group, i) => [group_number_to_name[i + 1]!, matched_group]),
             );
             const link_url = url_template.expand(template_context);
             // We store the starting index as well, to sort the order of occurrence of the links
@@ -563,7 +563,7 @@ function handleLinkifier({
     assert(item !== undefined);
     const {url_template, group_number_to_name} = item;
     const template_context = Object.fromEntries(
-        matches.map((match, i) => [group_number_to_name[i + 1], match]),
+        matches.map((match, i) => [group_number_to_name[i + 1]!, match]),
     );
     return url_template.expand(template_context);
 }

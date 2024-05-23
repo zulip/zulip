@@ -68,12 +68,12 @@ export function last_prefix_match(prefix: string, words: string[]): number | nul
     let found = false;
     while (left < right) {
         const mid = Math.floor((left + right) / 2);
-        if (words[mid].startsWith(prefix)) {
+        if (words[mid]!.startsWith(prefix)) {
             // Note that left can never be 0 if `found` is true,
             // since it is incremented at least once here.
             left = mid + 1;
             found = true;
-        } else if (words[mid] < prefix) {
+        } else if (words[mid]! < prefix) {
             left = mid + 1;
         } else {
             right = mid;

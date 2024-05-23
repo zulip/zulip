@@ -340,7 +340,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     if (using_keyboard) {
         const scroll_element = $(
             "#recent_view_table .table_fix_head .simplebar-content-wrapper",
-        )[0];
+        )[0]!;
         const half_height_of_visible_area = scroll_element.offsetHeight / 2;
         const topic_offset = topic_offset_to_visible_area($topic_row);
 
@@ -1093,14 +1093,14 @@ function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
     }
     const $scroll_container = $("#recent_view_table .table_fix_head");
     const thead_height = $scroll_container.find("thead").outerHeight(true)!;
-    const scroll_container_props = $scroll_container[0].getBoundingClientRect();
+    const scroll_container_props = $scroll_container[0]!.getBoundingClientRect();
 
     // Since user cannot see row under thead, exclude it as part of the scroll container.
     const scroll_container_top = scroll_container_props.top + thead_height;
     const compose_height = $("#compose").outerHeight(true)!;
     const scroll_container_bottom = scroll_container_props.bottom - compose_height;
 
-    const topic_props = $topic_row[0].getBoundingClientRect();
+    const topic_props = $topic_row[0]!.getBoundingClientRect();
 
     // Topic is above the visible scroll region.
     if (topic_props.top < scroll_container_top) {
@@ -1119,7 +1119,7 @@ function recenter_focus_if_off_screen(): void {
         return;
     }
 
-    const table_wrapper_element = $("#recent_view_table .table_fix_head")[0];
+    const table_wrapper_element = $("#recent_view_table .table_fix_head")[0]!;
     const $topic_rows = $("#recent_view_table table tbody tr");
 
     if (row_focus >= $topic_rows.length) {

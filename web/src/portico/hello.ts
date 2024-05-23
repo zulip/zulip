@@ -8,7 +8,7 @@ function get_new_rand(old_random_int: number, max: number): number {
 
 function get_random_item_from_array<T>(array: T[]): T {
     assert(array.length >= 1);
-    return array[Math.floor(Math.random() * array.length)];
+    return array[Math.floor(Math.random() * array.length)]!;
 }
 
 const current_client_logo_class_names = new Set([
@@ -40,7 +40,7 @@ function update_client_logo(): void {
         current_client_logo_class_names_index,
         client_logos.length,
     );
-    const client_logo_elt = client_logos[current_client_logo_class_names_index];
+    const client_logo_elt = client_logos[current_client_logo_class_names_index]!;
 
     const current_logo_class = client_logo_elt.className;
     current_client_logo_class_names.delete(current_logo_class);

@@ -213,7 +213,7 @@ export function update_rendered_message_groups(
     // the other code takes advantage of blocks beneath recipient bars.
     for (const message_group of message_groups) {
         const $elt = get_element(message_group);
-        const first_message = message_group.message_containers[0].msg;
+        const first_message = message_group.message_containers[0]!.msg;
         const should_fade = compose_fade_helper.should_fade_message(first_message);
         change_fade_state($elt, should_fade);
     }

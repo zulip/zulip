@@ -108,7 +108,7 @@ function set_password_toggle_label(
 ): void {
     $(password_selector).attr("aria-label", label);
     if (tippy_tooltips) {
-        const element: tippy.ReferenceElement = $(password_selector)[0];
+        const element: tippy.ReferenceElement = $(password_selector)[0]!;
         const tippy_instance = element._tippy ?? tippy.default(element);
         tippy_instance.setContent(label);
     } else {

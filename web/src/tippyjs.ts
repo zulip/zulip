@@ -285,7 +285,7 @@ export function initialize(): void {
                 const second_line = $t({defaultMessage: "File name: {filename}"}, {filename});
                 $markup.append($("<br>"), $("<span>").text(second_line));
             }
-            instance.setContent($markup[0]);
+            instance.setContent($markup[0]!);
             return undefined;
         },
         onHidden(instance) {

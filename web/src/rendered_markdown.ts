@@ -312,7 +312,7 @@ export const update_elements = ($content: JQuery): void => {
             $view_in_playground_button.attr("aria-label", title);
         }
         const $copy_button = $buttonContainer.find(".copy_codeblock");
-        const clipboard = new ClipboardJS($copy_button[0], {
+        const clipboard = new ClipboardJS($copy_button[0]!, {
             text(copy_element) {
                 const $code = $(copy_element).parent().siblings("code");
                 return $code.text();
@@ -320,7 +320,7 @@ export const update_elements = ($content: JQuery): void => {
         });
 
         clipboard.on("success", () => {
-            show_copied_confirmation($copy_button[0]);
+            show_copied_confirmation($copy_button[0]!);
         });
         $codehilite.addClass("zulip-code-block");
     });

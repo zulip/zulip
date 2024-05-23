@@ -225,10 +225,10 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             const idx = store.pills.findIndex((pill) => pill.$element[0] === element);
 
             if (idx !== -1) {
-                store.pills[idx].$element.remove();
+                store.pills[idx]!.$element.remove();
                 const pill = store.pills.splice(idx, 1);
                 if (store.onPillRemove !== undefined) {
-                    store.onPillRemove(pill[0]);
+                    store.onPillRemove(pill[0]!);
                 }
 
                 // This is needed to run the "change" event handler registered in
@@ -264,7 +264,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 this.removeLastPill(quiet);
             }
 
-            this.clear(store.$input[0]);
+            this.clear(store.$input[0]!);
         },
 
         insertManyPills(pills: string | string[]) {
@@ -285,7 +285,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             // when using the `text` insertion feature with jQuery the caret is
             // placed at the beginning of the input field, so this moves it to
             // the end.
-            ui_util.place_caret_at_end(store.$input[0]);
+            ui_util.place_caret_at_end(store.$input[0]!);
 
             // this sends a flag if the operation wasn't completely successful,
             // which in this case is defined as some of the pills not autofilling
@@ -370,7 +370,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 // if the pill is successful, it will create the pill and clear
                 // the input.
                 if (funcs.appendPill(store.$input.text().trim())) {
-                    funcs.clear(store.$input[0]);
+                    funcs.clear(store.$input[0]!);
                 }
                 e.preventDefault();
 
@@ -399,7 +399,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     break;
                 case "Backspace": {
                     const $next = $pill.next();
-                    funcs.removePill($pill[0]);
+                    funcs.removePill($pill[0]!);
                     $next.trigger("focus");
                     // the "Backspace" key in Firefox will go back a page if you do
                     // not prevent it.
@@ -439,7 +439,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             const $pill = $(this).closest(".pill");
             const $next = $pill.next();
 
-            funcs.removePill($pill[0]);
+            funcs.removePill($pill[0]!);
             $next.trigger("focus");
         });
 

@@ -52,7 +52,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
             },
         });
         clipboard.on("success", () => {
-            show_copied_confirmation($("#generate-integration-url-modal .dialog_submit_button")[0]);
+            show_copied_confirmation(
+                $("#generate-integration-url-modal .dialog_submit_button")[0]!,
+            );
         });
 
         $override_topic.on("change", function () {

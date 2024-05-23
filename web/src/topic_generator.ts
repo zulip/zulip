@@ -19,19 +19,19 @@ export function next_topic(
     const curr_stream_index = streams.indexOf(curr_stream); // -1 if not found
 
     if (curr_stream_index >= 0) {
-        const stream = streams[curr_stream_index];
+        const stream = streams[curr_stream_index]!;
         const topics = get_topics(stream);
         const curr_topic_index = topics.indexOf(curr_topic); // -1 if not found
 
         for (let i = curr_topic_index + 1; i < topics.length; i += 1) {
-            const topic = topics[i];
+            const topic = topics[i]!;
             if (has_unread_messages(stream, topic)) {
                 return {stream, topic};
             }
         }
 
         for (let i = 0; i < curr_topic_index; i += 1) {
-            const topic = topics[i];
+            const topic = topics[i]!;
             if (has_unread_messages(stream, topic)) {
                 return {stream, topic};
             }
@@ -39,7 +39,7 @@ export function next_topic(
     }
 
     for (let i = curr_stream_index + 1; i < streams.length; i += 1) {
-        const stream = streams[i];
+        const stream = streams[i]!;
         for (const topic of get_topics(stream)) {
             if (has_unread_messages(stream, topic)) {
                 return {stream, topic};
@@ -48,7 +48,7 @@ export function next_topic(
     }
 
     for (let i = 0; i < curr_stream_index; i += 1) {
-        const stream = streams[i];
+        const stream = streams[i]!;
         for (const topic of get_topics(stream)) {
             if (has_unread_messages(stream, topic)) {
                 return {stream, topic};
@@ -150,13 +150,13 @@ export function get_next_unread_pm_string(curr_pm: string): string | undefined {
     const curr_pm_index = my_pm_strings.indexOf(curr_pm); // -1 if not found
 
     for (let i = curr_pm_index + 1; i < my_pm_strings.length; i += 1) {
-        if (unread.num_unread_for_user_ids_string(my_pm_strings[i]) > 0) {
+        if (unread.num_unread_for_user_ids_string(my_pm_strings[i]!) > 0) {
             return my_pm_strings[i];
         }
     }
 
     for (let i = 0; i < curr_pm_index; i += 1) {
-        if (unread.num_unread_for_user_ids_string(my_pm_strings[i]) > 0) {
+        if (unread.num_unread_for_user_ids_string(my_pm_strings[i]!) > 0) {
             return my_pm_strings[i];
         }
     }

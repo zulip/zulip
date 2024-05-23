@@ -26,6 +26,7 @@
         "forceConsistentCasingInFileNames": true,
         "isolatedModules": true,
         "noImplicitOverride": true,
+        "noUncheckedIndexedAccess": true,
 
         /* Additional checks */
         "noUnusedLocals": true,

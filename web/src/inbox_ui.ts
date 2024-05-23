@@ -324,7 +324,7 @@ function insert_dms(keys_to_insert: string[]): void {
         }
 
         if (keys_to_insert.includes(key)) {
-            const $previous_row = get_row_from_conversation_key(sorted_keys[i - 1]);
+            const $previous_row = get_row_from_conversation_key(sorted_keys[i - 1]!);
             $previous_row.after($(render_inbox_row(dms_dict.get(key))));
         }
     }
@@ -462,7 +462,7 @@ function insert_stream(
     if (stream_index === 0) {
         $("#inbox-streams-container").prepend($(rendered_stream));
     } else {
-        const previous_stream_key = sorted_stream_keys[stream_index - 1];
+        const previous_stream_key = sorted_stream_keys[stream_index - 1]!;
         $(rendered_stream).insertAfter(get_stream_container(previous_stream_key));
     }
     return !streams_dict.get(stream_key)!.is_hidden;
@@ -486,7 +486,7 @@ function insert_topics(keys: string[], stream_key: string): void {
         }
 
         if (keys.includes(key)) {
-            const $previous_row = get_row_from_conversation_key(sorted_keys[i - 1]);
+            const $previous_row = get_row_from_conversation_key(sorted_keys[i - 1]!);
             $previous_row.after($(render_inbox_row(stream_topics_data.get(key))));
         }
     }
@@ -1393,7 +1393,7 @@ function move_focus_to_visible_area(): void {
     }
 
     const INBOX_ROW_HEIGHT = 30;
-    const position = $("#inbox-filters")[0].getBoundingClientRect();
+    const position = $("#inbox-filters")[0]!.getBoundingClientRect();
     const inbox_center_x = (position.left + position.right) / 2;
     // We are aiming to get the first row if it is completely visible or the second row.
     const inbox_row_below_filters = position.bottom + INBOX_ROW_HEIGHT;

@@ -192,7 +192,7 @@ export const default_popover_props: Partial<tippy.Props> = {
                     // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
                     // but linter wants us to write it like this.
                     const is_reference_outside_window = Object.hasOwn(
-                        $tippy_box[0].dataset,
+                        $tippy_box[0]!.dataset,
                         "referenceHidden",
                     );
                     if (is_reference_outside_window) {
@@ -215,7 +215,7 @@ export const default_popover_props: Partial<tippy.Props> = {
                         return;
                     }
 
-                    const reference_rect = $reference[0].getBoundingClientRect();
+                    const reference_rect = $reference[0]!.getBoundingClientRect();
                     // This is the logic we want but since it is too expensive to run
                     // on every scroll, we run a cheaper version of this to just check if
                     // compose, sticky header or navbar are not obscuring the reference

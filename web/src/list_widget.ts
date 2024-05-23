@@ -518,10 +518,10 @@ export function create<Key, Item = Key>(
                 }
                 const rendered_row = opts.modifier_html(item, meta.filter_value);
                 if (insert_index === meta.filtered_list.length - 1) {
-                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]);
+                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
                     $target_row.after($(rendered_row));
                 } else {
-                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]);
+                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
                     $target_row.before($(rendered_row));
                 }
                 widget.increase_rendered_offset();

@@ -164,7 +164,7 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
     for (i = 1; i < hash.length; i += 2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
-        let operator = internal_url.decodeHashComponent(hash[i]);
+        let operator = internal_url.decodeHashComponent(hash[i]!);
         // Do not parse further if empty operator encountered.
         if (operator === "") {
             break;

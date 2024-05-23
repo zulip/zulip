@@ -126,7 +126,7 @@ function register_click_handlers(): void {
                 }
                 const popover_target = $view_in_playground_button.find(
                     ".playground-links-popover-container",
-                )[0];
+                )[0]!;
                 toggle_playground_links_popover(popover_target, playground_store);
             }
         },

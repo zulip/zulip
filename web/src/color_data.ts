@@ -62,7 +62,7 @@ export function claim_colors(subs: {color: string}[]): void {
 }
 
 export function pick_color(): string {
-    const color = unused_colors[0];
+    const color = unused_colors[0]!;
 
     claim_color(color);
 

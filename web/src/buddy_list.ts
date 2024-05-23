@@ -170,7 +170,7 @@ export class BuddyList extends BuddyListConf {
                     // This will default to "bottom" placement for this tooltip.
                     placement = "auto";
                 }
-                tippy.default($elem[0], {
+                tippy.default($elem[0]!, {
                     // Because the buddy list subheadings are potential click targets
                     // for purposes having nothing to do with the subscriber count
                     // (collapsing/expanding), we delay showing the tooltip until the
@@ -765,7 +765,7 @@ export class BuddyList extends BuddyListConf {
 
         const elem = scroll_util
             .get_scroll_element($(this.scroll_container_selector))
-            .expectOne()[0];
+            .expectOne()[0]!;
 
         // Add a fudge factor.
         height += 10;

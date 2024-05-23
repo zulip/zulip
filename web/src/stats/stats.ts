@@ -419,7 +419,7 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
             .on("plotly_hover", (data) => {
                 $("#hoverinfo").show();
                 document.querySelector("#hover_date")!.textContent =
-                    data.points[0].data.text[data.points[0].pointNumber];
+                    data.points[0]!.data.text[data.points[0]!.pointNumber]!;
                 const values: Plotly.Datum[] = [null, null, null];
                 for (const trace of data.points) {
                     values[trace.curveNumber] = trace.y;
@@ -432,16 +432,16 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
                 ];
                 for (const [i, value] of values.entries()) {
                     if (value !== null) {
-                        document.querySelector<HTMLElement>(hover_text_ids[i])!.style.display =
+                        document.querySelector<HTMLElement>(hover_text_ids[i]!)!.style.display =
                             "inline";
-                        document.querySelector<HTMLElement>(hover_value_ids[i])!.style.display =
+                        document.querySelector<HTMLElement>(hover_value_ids[i]!)!.style.display =
                             "inline";
-                        document.querySelector<HTMLElement>(hover_value_ids[i])!.textContent =
+                        document.querySelector<HTMLElement>(hover_value_ids[i]!)!.textContent =
                             value.toString();
                     } else {
-                        document.querySelector<HTMLElement>(hover_text_ids[i])!.style.display =
+                        document.querySelector<HTMLElement>(hover_text_ids[i]!)!.style.display =
                             "none";
-                        document.querySelector<HTMLElement>(hover_value_ids[i])!.style.display =
+                        document.querySelector<HTMLElement>(hover_value_ids[i]!)!.style.display =
                             "none";
                     }
                 }
@@ -461,13 +461,13 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
         let start;
         let is_boundary;
         if (aggregation === "day") {
-            start = floor_to_local_day(start_dates[0]);
+            start = floor_to_local_day(start_dates[0]!);
             is_boundary = function (date: Date) {
                 return date.getHours() === 0;
             };
         } else {
             assert(aggregation === "week");
-            start = floor_to_local_week(start_dates[0]);
+            start = floor_to_local_week(start_dates[0]!);
             is_boundary = function (date: Date) {
                 return date.getHours() === 0 && date.getDay() === 0;
             };
@@ -476,25 +476,25 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
         const values: DataByUserType<number[]> = {human: [], bot: [], me: []};
         let current: DataByUserType<number> = {human: 0, bot: 0, me: 0};
         let i_init = 0;
-        if (is_boundary(start_dates[0])) {
+        if (is_boundary(start_dates[0]!)) {
             current = {
-                human: data.everyone.human[0],
-                bot: data.everyone.bot[0],
-                me: data.user.human[0],
+                human: data.everyone.human[0]!,
+                bot: data.everyone.bot[0]!,
+                me: data.user.human[0]!,
             };
             i_init = 1;
         }
         for (let i = i_init; i < start_dates.length; i += 1) {
-            if (is_boundary(start_dates[i])) {
-                dates.push(start_dates[i]);
+            if (is_boundary(start_dates[i]!)) {
+                dates.push(start_dates[i]!);
                 values.human.push(current.human);
                 values.bot.push(current.bot);
                 values.me.push(current.me);
                 current = {human: 0, bot: 0, me: 0};
             }
-            current.human += data.everyone.human[i];
-            current.bot += data.everyone.bot[i];
-            current.me += data.user.human[i];
+            current.human += data.everyone.human[i]!;
+            current.bot += data.everyone.bot[i]!;
+            current.me += data.user.human[i]!;
         }
         values.human.push(current.human);
         values.bot.push(current.bot);
@@ -563,9 +563,9 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
             const plotDiv = document.querySelector<Plotly.PlotlyHTMLElement>(
                 "#id_messages_sent_over_time",
             )!;
-            assert("visible" in plotDiv.data[0]);
-            assert("visible" in plotDiv.data[1]);
-            assert("visible" in plotDiv.data[2]);
+            assert("visible" in plotDiv.data[0]!);
+            assert("visible" in plotDiv.data[1]!);
+            assert("visible" in plotDiv.data[2]!);
             traces.me.visible = plotDiv.data[0].visible;
             traces.human.visible = plotDiv.data[1].visible;
             traces.bot.visible = plotDiv.data[2].visible;
@@ -730,8 +730,8 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
     const label_values: {label: string; value: number}[] = [];
     for (let i = 0; i < everyone_month.values.length; i += 1) {
         label_values.push({
-            label: everyone_month.labels[i],
-            value: everyone_month.labels[i] === "Other" ? -1 : everyone_month.values[i],
+            label: everyone_month.labels[i]!,
+            value: everyone_month.labels[i] === "Other" ? -1 : everyone_month.values[i]!,
         });
     }
     label_values.sort((a, b) => b.value - a.value);
@@ -754,9 +754,9 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
             text: [],
         };
         for (let i = 0; i < plot_data.values.length; i += 1) {
-            if (plot_data.values[i] > 0) {
-                annotations.values.push(plot_data.values[i]);
-                annotations.labels.push(plot_data.labels[i]);
+            if (plot_data.values[i]! > 0) {
+                annotations.values.push(plot_data.values[i]!);
+                annotations.labels.push(plot_data.labels[i]!);
                 annotations.text.push(
                     "   " + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")",
                 );
@@ -1044,7 +1044,7 @@ function populate_number_of_users(raw_data: unknown): void {
             .on("plotly_hover", (data) => {
                 $("#users_hover_info").show();
                 document.querySelector("#users_hover_date")!.textContent =
-                    data.points[0].data.text[data.points[0].pointNumber];
+                    data.points[0]!.data.text[data.points[0]!.pointNumber]!;
                 const values: Plotly.Datum[] = [null, null, null];
                 for (const trace of data.points) {
                     values[trace.curveNumber] = trace.y;
@@ -1056,11 +1056,11 @@ function populate_number_of_users(raw_data: unknown): void {
                 ];
                 for (const [i, value] of values.entries()) {
                     if (value !== null) {
-                        document.querySelector<HTMLElement>(hover_value_ids[i])!.style.display =
+                        document.querySelector<HTMLElement>(hover_value_ids[i]!)!.style.display =
                             "inline";
-                        document.querySelector(hover_value_ids[i])!.textContent = value.toString();
+                        document.querySelector(hover_value_ids[i]!)!.textContent = value.toString();
                     } else {
-                        document.querySelector<HTMLElement>(hover_value_ids[i])!.style.display =
+                        document.querySelector<HTMLElement>(hover_value_ids[i]!)!.style.display =
                             "none";
                     }
                 }
@@ -1185,7 +1185,7 @@ function populate_messages_read_over_time(raw_data: unknown): void {
             .on("plotly_hover", (data) => {
                 $("#read_hover_info").show();
                 document.querySelector("#read_hover_date")!.textContent =
-                    data.points[0].data.text[data.points[0].pointNumber];
+                    data.points[0]!.data.text[data.points[0]!.pointNumber]!;
                 const values: Plotly.Datum[] = [null, null];
                 for (const trace of data.points) {
                     values[trace.curveNumber] = trace.y;
@@ -1194,18 +1194,20 @@ function populate_messages_read_over_time(raw_data: unknown): void {
                 const read_hover_value_ids = ["#read_hover_me_value", "#read_hover_everyone_value"];
                 for (const [i, value] of values.entries()) {
                     if (value !== null) {
-                        document.querySelector<HTMLElement>(read_hover_text_ids[i])!.style.display =
-                            "inline";
                         document.querySelector<HTMLElement>(
-                            read_hover_value_ids[i],
+                            read_hover_text_ids[i]!,
                         )!.style.display = "inline";
-                        document.querySelector<HTMLElement>(read_hover_value_ids[i])!.textContent =
+                        document.querySelector<HTMLElement>(
+                            read_hover_value_ids[i]!,
+                        )!.style.display = "inline";
+                        document.querySelector<HTMLElement>(read_hover_value_ids[i]!)!.textContent =
                             value.toString();
                     } else {
-                        document.querySelector<HTMLElement>(read_hover_text_ids[i])!.style.display =
-                            "none";
                         document.querySelector<HTMLElement>(
-                            read_hover_value_ids[i],
+                            read_hover_text_ids[i]!,
+                        )!.style.display = "none";
+                        document.querySelector<HTMLElement>(
+                            read_hover_value_ids[i]!,
                         )!.style.display = "none";
                     }
                 }
@@ -1225,13 +1227,13 @@ function populate_messages_read_over_time(raw_data: unknown): void {
         let start;
         let is_boundary;
         if (aggregation === "day") {
-            start = floor_to_local_day(start_dates[0]);
+            start = floor_to_local_day(start_dates[0]!);
             is_boundary = function (date: Date) {
                 return date.getHours() === 0;
             };
         } else {
             assert(aggregation === "week");
-            start = floor_to_local_week(start_dates[0]);
+            start = floor_to_local_week(start_dates[0]!);
             is_boundary = function (date: Date) {
                 return date.getHours() === 0 && date.getDay() === 0;
             };
@@ -1240,19 +1242,19 @@ function populate_messages_read_over_time(raw_data: unknown): void {
         const values: DataByEveryoneMe<number[]> = {everyone: [], me: []};
         let current: DataByEveryoneMe<number> = {everyone: 0, me: 0};
         let i_init = 0;
-        if (is_boundary(start_dates[0])) {
-            current = {everyone: data.everyone.read[0], me: data.user.read[0]};
+        if (is_boundary(start_dates[0]!)) {
+            current = {everyone: data.everyone.read[0]!, me: data.user.read[0]!};
             i_init = 1;
         }
         for (let i = i_init; i < start_dates.length; i += 1) {
-            if (is_boundary(start_dates[i])) {
-                dates.push(start_dates[i]);
+            if (is_boundary(start_dates[i]!)) {
+                dates.push(start_dates[i]!);
                 values.everyone.push(current.everyone);
                 values.me.push(current.me);
                 current = {everyone: 0, me: 0};
             }
-            current.everyone += data.everyone.read[i];
-            current.me += data.user.read[i];
+            current.everyone += data.everyone.read[i]!;
+            current.me += data.user.read[i]!;
         }
         values.everyone.push(current.everyone);
         values.me.push(current.me);
@@ -1315,8 +1317,8 @@ function populate_messages_read_over_time(raw_data: unknown): void {
             const plotDiv = document.querySelector<Plotly.PlotlyHTMLElement>(
                 "#id_messages_read_over_time",
             )!;
-            assert("visible" in plotDiv.data[0]);
-            assert("visible" in plotDiv.data[1]);
+            assert("visible" in plotDiv.data[0]!);
+            assert("visible" in plotDiv.data[1]!);
             traces.me.visible = plotDiv.data[0].visible;
             traces.everyone.visible = plotDiv.data[1].visible;
         }

@@ -35,7 +35,7 @@ export function lower_bound<T1, T2>(
     while (len > 0) {
         step = Math.floor(len / 2);
         middle = first + step;
-        if (less(array[middle], value, middle)) {
+        if (less(array[middle]!, value, middle)) {
             first = middle;
             first += 1;
             len = len - step - 1;
@@ -204,7 +204,7 @@ export function find_stream_wildcard_mentions(message_content: string): string |
     if (mention === null) {
         return null;
     }
-    return mention[2];
+    return mention[2]!;
 }
 
 export const move_array_elements_to_front = function util_move_array_elements_to_front<T>(

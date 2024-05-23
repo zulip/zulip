@@ -240,7 +240,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 .each(function () {
                     rendered_markdown.update_elements($(this));
                 });
-            const first_element_id = content_edit_history[0].timestamp;
+            const first_element_id = content_edit_history[0]!.timestamp;
             messages_overlay_ui.set_initial_element(
                 String(first_element_id),
                 keyboard_handling_context,

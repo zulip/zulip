@@ -737,7 +737,7 @@ export function slug_to_emails(slug: string): string | undefined {
     */
     const m = /^([\d,]+)(-.*)?/.exec(slug);
     if (m) {
-        let user_ids_string = m[1];
+        let user_ids_string = m[1]!;
         user_ids_string = exclude_me_from_string(user_ids_string);
         return user_ids_string_to_emails_string(user_ids_string);
     }

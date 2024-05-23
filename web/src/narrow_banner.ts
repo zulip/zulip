@@ -32,7 +32,7 @@ function retrieve_search_query_data(): SearchData {
     const current_filter = narrow_state.filter();
     assert(current_filter !== undefined);
     const search_query = current_filter.operands("search")[0];
-    const query_words = search_query.split(" ");
+    const query_words = search_query!.split(" ");
 
     const search_string_result: SearchData = {
         query_words: [],
@@ -96,7 +96,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
         return default_banner;
     }
 
-    const first_term = current_filter.terms()[0];
+    const first_term = current_filter.terms()[0]!;
     const first_operator = first_term.operator;
     const first_operand = first_term.operand;
     const num_terms = current_filter.terms().length;

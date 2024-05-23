@@ -46,7 +46,7 @@ export function poll_options_setup(): void {
 
     // setTimeout is needed to here to give time for simplebar to initialise
     setTimeout(() => {
-        SortableJS.create($("#add-poll-form .poll-options-list .simplebar-content")[0], {
+        SortableJS.create($("#add-poll-form .poll-options-list .simplebar-content")[0]!, {
             onUpdate() {
                 // Do nothing on drag; the order is only processed on submission.
             },

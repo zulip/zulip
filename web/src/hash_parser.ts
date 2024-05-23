@@ -1,6 +1,6 @@
 export function get_hash_category(hash?: string): string {
     // given "#channels/subscribed", returns "channels"
-    return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
+    return hash ? hash.replace(/^#/, "").split(/\//)[0]! : "";
 }
 
 export function get_hash_section(hash?: string): string {
@@ -88,7 +88,7 @@ export function is_editing_stream(desired_stream_id: number): boolean {
 
     // if the string casted to a number is valid, and another component
     // after exists then it's a stream name/id pair.
-    const stream_id = Number.parseFloat(hash_components[1]);
+    const stream_id = Number.parseFloat(hash_components[1]!);
 
     return stream_id === desired_stream_id;
 }

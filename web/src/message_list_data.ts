@@ -233,7 +233,7 @@ export class MessageListData {
                 return true;
             }
 
-            const recipient_id = Number.parseInt(recipients[0], 10);
+            const recipient_id = Number.parseInt(recipients[0]!, 10);
             return (
                 !muted_users.is_user_muted(recipient_id) &&
                 !muted_users.is_user_muted(message.sender_id)
@@ -487,7 +487,7 @@ export class MessageListData {
 
         let idx = this.selected_idx() + 1;
         while (idx < this._items.length) {
-            const msg_id = this._items[idx].id;
+            const msg_id = this._items[idx]!.id;
             if (!id_set.has(msg_id)) {
                 break;
             }

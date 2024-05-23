@@ -421,7 +421,7 @@ function set_up_select_field_edit_form(
 
     // Add blank choice at last
     create_choice_row($choice_list);
-    SortableJS.create($choice_list[0], {
+    SortableJS.create($choice_list[0]!, {
         onUpdate() {
             // Do nothing on drag. We process the order on submission
         },
@@ -706,7 +706,7 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
     display_in_profile_summary_fields_limit_reached = display_in_profile_summary_fields_count >= 2;
 
     if (current_user.is_admin) {
-        const field_list = $("#admin_profile_fields_table")[0];
+        const field_list = $("#admin_profile_fields_table")[0]!;
         SortableJS.create(field_list, {
             onUpdate: update_field_order,
             filter: "input",
@@ -724,7 +724,7 @@ function set_up_select_field(): void {
     create_choice_row($("#profile_field_choices"));
 
     if (current_user.is_admin) {
-        const choice_list = $("#profile_field_choices")[0];
+        const choice_list = $("#profile_field_choices")[0]!;
         SortableJS.create(choice_list, {
             onUpdate() {
                 // Do nothing on drag. We process the order on submission

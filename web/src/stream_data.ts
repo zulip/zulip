@@ -270,7 +270,7 @@ export function slug_to_name(slug: string): string {
     */
     const m = /^(\d+)(-.*)?$/.exec(slug);
     if (m) {
-        const stream_id = Number.parseInt(m[1], 10);
+        const stream_id = Number.parseInt(m[1]!, 10);
         const sub = sub_store.get(stream_id);
         if (sub) {
             return sub.name;

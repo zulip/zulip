@@ -59,7 +59,7 @@ export function highlight_with_escaping_and_regex(regex: RegExp, item: string): 
     let result = "";
 
     for (const [i, piece] of pieces.entries()) {
-        if (regex.test(piece) && (i === 0 || pieces[i - 1].endsWith(" "))) {
+        if (regex.test(piece) && (i === 0 || pieces[i - 1]!.endsWith(" "))) {
             // only highlight if the matching part is a word prefix, ie
             // if it is the 1st piece or if there was a space before it
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
