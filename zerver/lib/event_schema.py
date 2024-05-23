@@ -1030,9 +1030,25 @@ night_logo_data = DictType(
     ]
 )
 
+group_setting_type = UnionType(
+    [
+        int,
+        DictType(
+            required_keys=[
+                ("direct_members", ListType(int)),
+                ("direct_subgroups", ListType(int)),
+            ]
+        ),
+    ]
+)
+
 group_setting_update_data_type = DictType(
     required_keys=[],
-    optional_keys=[("create_multiuse_invite_group", int), ("can_access_all_users_group", int)],
+    optional_keys=[
+        ("create_multiuse_invite_group", int),
+        ("can_access_all_users_group", int),
+        ("can_create_public_channel_group", group_setting_type),
+    ],
 )
 
 update_dict_data = UnionType(
@@ -1786,19 +1802,6 @@ update_message_flags_remove_event = event_dict_type(
     ],
 )
 check_update_message_flags_remove = make_checker(update_message_flags_remove_event)
-
-
-group_setting_type = UnionType(
-    [
-        int,
-        DictType(
-            required_keys=[
-                ("direct_members", ListType(int)),
-                ("direct_subgroups", ListType(int)),
-            ]
-        ),
-    ]
-)
 
 group_type = DictType(
     required_keys=[

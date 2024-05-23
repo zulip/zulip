@@ -882,6 +882,8 @@ def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
+        "realm__can_create_public_channel_group",
+        "realm__can_create_public_channel_group__named_user_group",
         "bot_owner",
     ).get(id=user_profile_id)
 
@@ -903,6 +905,8 @@ def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
             "realm",
             "realm__can_access_all_users_group",
             "realm__can_access_all_users_group__named_user_group",
+            "realm__can_create_public_channel_group",
+            "realm__can_create_public_channel_group__named_user_group",
             "bot_owner",
         ).get(api_key=api_key)
     except UserProfile.DoesNotExist:
@@ -932,6 +936,8 @@ def get_user_by_delivery_email(email: str, realm: "Realm") -> UserProfile:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
+        "realm__can_create_public_channel_group",
+        "realm__can_create_public_channel_group__named_user_group",
         "bot_owner",
     ).get(delivery_email__iexact=email.strip(), realm=realm)
 

@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 264**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_create_public_channel_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to create channels.
+
 **Feature level 263**:
 
 * [`POST /users/me/presence`](/api/update-presence):

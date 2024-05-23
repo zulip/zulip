@@ -1,6 +1,7 @@
 from typing import Any, Dict, Mapping, Optional, Union
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.translation import gettext as _
@@ -35,7 +36,13 @@ from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.lib.user_groups import access_user_group_for_setting
+from zerver.lib.user_groups import (
+    GroupSettingChangeRequest,
+    access_user_group_for_setting,
+    get_group_setting_value_for_api,
+    parse_group_setting_value,
+    validate_group_setting_value_change,
+)
 from zerver.lib.validator import (
     check_bool,
     check_capped_url,
@@ -140,6 +147,7 @@ def update_realm(
     digest_emails_enabled: Optional[Json[bool]] = None,
     message_content_allowed_in_email_notifications: Optional[Json[bool]] = None,
     bot_creation_policy: Optional[Json[BotCreationPolicyEnum]] = None,
+    can_create_public_channel_group: Optional[Json[GroupSettingChangeRequest]] = None,
     create_public_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
     create_private_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
     create_web_public_stream_policy: Optional[Json[CreateWebPublicStreamPolicyEnum]] = None,
@@ -340,8 +348,8 @@ def update_realm(
         if k in realm.property_types:
             req_vars[k] = v
 
-        for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-            if k == permission_configuration.id_field_name:
+        for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+            if k in [permission_configuration.id_field_name, setting_name]:
                 req_group_setting_vars[k] = v
 
     for k, v in req_vars.items():
@@ -355,22 +363,47 @@ def update_realm(
     for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         setting_group_id_name = permission_configuration.id_field_name
 
-        assert setting_group_id_name in req_group_setting_vars
+        expected_current_setting_value = None
+        if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+            assert setting_name in req_group_setting_vars
+            if req_group_setting_vars[setting_name] is None:
+                continue
 
-        if req_group_setting_vars[setting_group_id_name] is not None and req_group_setting_vars[
-            setting_group_id_name
-        ] != getattr(realm, setting_group_id_name):
-            user_group_id = req_group_setting_vars[setting_group_id_name]
-            user_group = access_user_group_for_setting(
-                user_group_id,
-                user_profile,
-                setting_name=setting_name,
-                permission_configuration=permission_configuration,
-            )
-            do_change_realm_permission_group_setting(
-                realm, setting_name, user_group, acting_user=user_profile
-            )
-            data[setting_name] = user_group_id
+            setting_value = req_group_setting_vars[setting_name]
+            new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
+
+            if setting_value.old is not None:
+                expected_current_setting_value = parse_group_setting_value(
+                    setting_value.old, setting_name
+                )
+        else:
+            assert setting_group_id_name in req_group_setting_vars
+            if req_group_setting_vars[setting_group_id_name] is None:
+                continue
+            new_setting_value = req_group_setting_vars[setting_group_id_name]
+
+        current_value = getattr(realm, setting_name)
+        current_setting_api_value = get_group_setting_value_for_api(current_value)
+
+        if validate_group_setting_value_change(
+            current_setting_api_value, new_setting_value, expected_current_setting_value
+        ):
+            with transaction.atomic(durable=True):
+                user_group = access_user_group_for_setting(
+                    new_setting_value,
+                    user_profile,
+                    setting_name=setting_name,
+                    permission_configuration=permission_configuration,
+                    current_setting_value=current_value,
+                )
+                do_change_realm_permission_group_setting(
+                    realm,
+                    setting_name,
+                    user_group,
+                    old_setting_api_value=current_setting_api_value,
+                    acting_user=user_profile,
+                )
+            data[setting_name] = new_setting_value
 
     # The following realm properties do not fit the pattern above
     # authentication_methods is not supported by the do_set_realm_property

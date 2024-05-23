@@ -216,7 +216,11 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
-from zerver.lib.user_groups import AnonymousSettingGroupDict
+from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
+    get_group_setting_value_for_api,
+    get_role_based_system_groups_dict,
+)
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -3573,6 +3577,151 @@ class RealmPropertyActionTest(BaseAction):
 
             old_group_id = new_group_id
 
+    def do_set_realm_permission_group_setting_to_anonymous_groups_test(
+        self, setting_name: str
+    ) -> None:
+        realm = self.user_profile.realm
+        system_user_groups_dict = get_role_based_system_groups_dict(
+            realm,
+        )
+
+        setting_permission_configuration = Realm.REALM_PERMISSION_GROUP_SETTINGS[setting_name]
+
+        default_group_name = setting_permission_configuration.default_group_name
+        default_group = system_user_groups_dict[default_group_name]
+
+        now = timezone_now()
+
+        do_change_realm_permission_group_setting(
+            realm,
+            setting_name,
+            default_group,
+            acting_user=self.user_profile,
+        )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+            ).count(),
+            1,
+        )
+
+        othello = self.example_user("othello")
+        admins_group = system_user_groups_dict[SystemGroups.ADMINISTRATORS]
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [admins_group])
+        now = timezone_now()
+
+        with self.verify_action(state_change_expected=True, num_events=1) as events:
+            do_change_realm_permission_group_setting(
+                realm,
+                setting_name,
+                setting_group,
+                acting_user=self.user_profile,
+            )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: default_group.id,
+                    RealmAuditLog.NEW_VALUE: {
+                        "direct_members": [othello.id],
+                        "direct_subgroups": [admins_group.id],
+                    },
+                    "property": setting_name,
+                },
+            ).count(),
+            1,
+        )
+        check_realm_update_dict("events[0]", events[0])
+        self.assertEqual(
+            events[0]["data"][setting_name],
+            AnonymousSettingGroupDict(
+                direct_members=[othello.id], direct_subgroups=[admins_group.id]
+            ),
+        )
+
+        old_setting_api_value = get_group_setting_value_for_api(setting_group)
+        moderators_group = system_user_groups_dict[SystemGroups.MODERATORS]
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.user_profile], [moderators_group], existing_setting_group=setting_group
+        )
+
+        # state_change_expected is False here because the initial state will
+        # also have the new setting value due to the setting group already
+        # being modified with the new members.
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_change_realm_permission_group_setting(
+                realm,
+                setting_name,
+                setting_group,
+                old_setting_api_value=old_setting_api_value,
+                acting_user=self.user_profile,
+            )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [othello.id],
+                        "direct_subgroups": [admins_group.id],
+                    },
+                    RealmAuditLog.NEW_VALUE: {
+                        "direct_members": [self.user_profile.id],
+                        "direct_subgroups": [moderators_group.id],
+                    },
+                    "property": setting_name,
+                },
+            ).count(),
+            1,
+        )
+        check_realm_update_dict("events[0]", events[0])
+        self.assertEqual(
+            events[0]["data"][setting_name],
+            AnonymousSettingGroupDict(
+                direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
+
+        with self.verify_action(state_change_expected=True, num_events=1) as events:
+            do_change_realm_permission_group_setting(
+                realm,
+                setting_name,
+                default_group,
+                acting_user=self.user_profile,
+            )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [self.user_profile.id],
+                        "direct_subgroups": [moderators_group.id],
+                    },
+                    RealmAuditLog.NEW_VALUE: default_group.id,
+                    "property": setting_name,
+                },
+            ).count(),
+            1,
+        )
+        check_realm_update_dict("events[0]", events[0])
+        self.assertEqual(events[0]["data"][setting_name], default_group.id)
+
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
@@ -3581,6 +3730,10 @@ class RealmPropertyActionTest(BaseAction):
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_permission_group_setting_test(prop)
+
+        for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+            with self.settings(SEND_DIGEST_EMAILs=True):
+                self.do_set_realm_permission_group_setting_to_anonymous_groups_test(prop)
 
     def do_set_realm_user_default_setting_test(self, name: str) -> None:
         bool_tests: List[bool] = [True, False, True]

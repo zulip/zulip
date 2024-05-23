@@ -57,6 +57,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import (
+    get_group_setting_value_for_api,
     get_server_supported_permission_settings,
     user_groups_in_realm_serialized,
 )
@@ -279,6 +280,11 @@ def fetch_initial_state_data(
             setting_name,
             permission_configuration,
         ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                setting_value = getattr(realm, setting_name)
+                state["realm_" + setting_name] = get_group_setting_value_for_api(setting_value)
+                continue
+
             state["realm_" + setting_name] = getattr(realm, permission_configuration.id_field_name)
 
         # Most state is handled via the property_types framework;

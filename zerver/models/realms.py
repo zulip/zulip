@@ -303,6 +303,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=CreateWebPublicStreamPolicyEnum.OWNERS_ONLY
     )
 
+    can_create_public_channel_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Who in the organization is allowed to delete messages they themselves sent.
     delete_own_message_policy = models.PositiveSmallIntegerField(
         default=CommonMessagePolicyEnum.EVERYONE
@@ -697,7 +701,20 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             id_field_name="can_access_all_users_group_id",
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
+        can_create_public_channel_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_create_public_channel_group_id",
+        ),
     )
+
+    REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
+        "can_create_public_channel_group",
+    ]
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
 
@@ -1041,7 +1058,10 @@ post_delete.connect(realm_pre_and_post_delete_handler, sender=Realm)
 
 
 def get_realm(string_id: str) -> Realm:
-    return Realm.objects.get(string_id=string_id)
+    return Realm.objects.select_related(
+        "can_create_public_channel_group",
+        "can_create_public_channel_group__named_user_group",
+    ).get(string_id=string_id)
 
 
 def get_realm_by_id(realm_id: int) -> Realm:

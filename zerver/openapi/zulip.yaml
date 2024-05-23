@@ -4226,6 +4226,20 @@ paths:
                                         `"role:internet"` and `"role:owners"`.
 
                                         **Changes**: New in Zulip 8.0 (feature level 209).
+                                    can_create_public_channel_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create public
+                                            channels in this organization.
+
+                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                                            `"role:owners"` and `"role:nobody"` system groups.
+
+                                            **Changes**: New in Zulip 9.0 (feature level 264). Previously
+                                            `realm_create_public_stream_policy` field used to control the
+                                            permission to create public channels.
                                     create_public_stream_policy:
                                       type: integer
                                       description: |
@@ -15222,6 +15236,20 @@ paths:
 
                           The [policy](/api/roles-and-permissions#permission-levels)
                           for which users can create bot users in this organization.
+                      realm_can_create_public_channel_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create public
+                              channels in this organization.
+
+                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                              `"role:owners"` and `"role:nobody"` system groups.
+
+                              **Changes**: New in Zulip 9.0 (feature level 264). Previously
+                              `realm_create_public_stream_policy` field used to control the
+                              permission to create public channels.
                       realm_create_public_stream_policy:
                         type: integer
                         description: |
