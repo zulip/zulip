@@ -579,10 +579,11 @@ def get_raw_unread_data(
     user_profile: UserProfile, message_ids: Optional[List[int]] = None
 ) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
-
+    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     user_msgs = (
         UserMessage.objects.filter(
             user_profile=user_profile,
+            message_id__gte=first_visible_message_id,
         )
         .exclude(
             message__recipient_id__in=excluded_recipient_ids,
