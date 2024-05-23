@@ -306,9 +306,11 @@ function set_custom_time_inputs_visibility(): void {
 }
 
 function set_streams_to_join_list_visibility(): void {
-    const default_streams_selected = $<HTMLInputElement>("input#invite_select_default_streams")[0]
-        .checked;
-    if (default_streams_selected) {
+    const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
+    const hide_streams_list =
+        realm_has_default_streams &&
+        $<HTMLInputElement>("input#invite_select_default_streams")[0].checked;
+    if (hide_streams_list) {
         $("#streams_to_add .invite-stream-controls").hide();
         $("#invite-stream-checkboxes").hide();
     } else {
