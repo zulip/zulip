@@ -891,19 +891,21 @@ li.top_left_scheduled_messages {
     .stream-privacy {
         grid-area: starting-anchor-element;
         display: flex;
-        align-content: center;
-        justify-content: center;
+        place-content: center center;
 
         .zulip-icon.zulip-icon-globe {
-            font-size: 12px;
+            /* 12px at 14px/1em */
+            font-size: 0.8571em;
         }
 
         .zulip-icon.zulip-icon-hashtag {
-            font-size: 13px;
+            /* 13px at 14px/1em */
+            font-size: 0.9286em;
         }
 
         .zulip-icon.zulip-icon-lock {
-            font-size: 13px;
+            /* 13px at 14px/1em */
+            font-size: 0.9286em;
         }
     }
 
