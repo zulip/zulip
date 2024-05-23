@@ -55,10 +55,10 @@ def traces_sampler(sampling_context: Dict[str, Any]) -> Union[float, bool]:
 
     queue = sampling_context.get("queue")
     if queue is not None and isinstance(queue, str):
-        if isinstance(settings.SENTRY_TRACE_WORKER_RATE, float):
-            return settings.SENTRY_TRACE_WORKER_RATE
-        else:
+        if isinstance(settings.SENTRY_TRACE_WORKER_RATE, dict):
             return settings.SENTRY_TRACE_WORKER_RATE.get(queue, 0.0)
+        else:
+            return settings.SENTRY_TRACE_WORKER_RATE
     else:
         return settings.SENTRY_TRACE_RATE
 
