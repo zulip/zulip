@@ -890,9 +890,9 @@ li.top_left_scheduled_messages {
 
     .stream-privacy {
         grid-area: starting-anchor-element;
-        height: 16px;
-        font-weight: 700;
-        text-align: center;
+        display: flex;
+        align-content: center;
+        justify-content: center;
 
         .zulip-icon.zulip-icon-globe {
             font-size: 12px;
@@ -904,10 +904,6 @@ li.top_left_scheduled_messages {
 
         .zulip-icon.zulip-icon-lock {
             font-size: 13px;
-            /* Slight vertical adjustment so the lock
-               doesn't sit too high, relative to the
-               other stream icons. */
-            padding-top: 2px;
         }
     }
 
