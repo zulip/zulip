@@ -285,6 +285,7 @@ class Command(ZulipBaseCommand):
         android, created = Client.objects.get_or_create(name="ZulipAndroid")
         iOS, created = Client.objects.get_or_create(name="ZulipiOS")
         react_native, created = Client.objects.get_or_create(name="ZulipMobile")
+        flutter, created = Client.objects.get_or_create(name="ZulipFlutter")
         API, created = Client.objects.get_or_create(name="API: Python")
         zephyr_mirror, created = Client.objects.get_or_create(name="zephyr_mirror")
         unused, created = Client.objects.get_or_create(name="unused")
@@ -302,6 +303,7 @@ class Command(ZulipBaseCommand):
             android.id: self.generate_fixture_data(stat, 5, 5, 2, 0.6, 3),
             iOS.id: self.generate_fixture_data(stat, 5, 5, 2, 0.6, 3),
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
+            flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 5, 5, 5, 0.6, 3),
             zephyr_mirror.id: self.generate_fixture_data(stat, 1, 1, 3, 0.6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
@@ -313,6 +315,7 @@ class Command(ZulipBaseCommand):
             old_desktop.id: self.generate_fixture_data(stat, 50, 30, 8, 0.6, 3),
             android.id: self.generate_fixture_data(stat, 50, 50, 2, 0.6, 3),
             iOS.id: self.generate_fixture_data(stat, 50, 50, 2, 0.6, 3),
+            flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 50, 50, 5, 0.6, 3),
             zephyr_mirror.id: self.generate_fixture_data(stat, 10, 10, 3, 0.6, 3),
