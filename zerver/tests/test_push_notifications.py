@@ -8,7 +8,6 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 from unittest import mock, skipUnless
 
 import aioapns
-import DNS
 import orjson
 import responses
 import time_machine
@@ -19,6 +18,7 @@ from django.http.response import ResponseHeaders
 from django.test import override_settings
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
+from dns.resolver import NoAnswer as DNSNoAnswer
 from requests.exceptions import ConnectionError
 from requests.models import PreparedRequest
 from typing_extensions import override
@@ -5247,17 +5247,24 @@ class PushBouncerSignupTest(ZulipTestCase):
         self.assert_json_error(result, "Please use your real email address.")
 
         request["contact_email"] = "admin@zulip.com"
-        with mock.patch("DNS.mxlookup", side_effect=DNS.Base.ServerError("test", 1)):
+        with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
+            resolver.return_value.resolve.side_effect = DNSNoAnswer
+            resolver.return_value.resolve_name.return_value = ["whee"]
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_error(
-                result, "zulip.com does not exist or is not configured to accept email."
+                result, "zulip.com is invalid because it does not have any MX records"
             )
 
-        with mock.patch("DNS.mxlookup", return_value=[]):
+        with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
+            resolver.return_value.resolve.side_effect = DNSNoAnswer
+            resolver.return_value.resolve_name.side_effect = DNSNoAnswer
             result = self.client_post("/api/v1/remotes/server/register", request)
-            self.assert_json_error(
-                result, "zulip.com does not exist or is not configured to accept email."
-            )
+            self.assert_json_error(result, "zulip.com does not exist")
+
+        with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
+            resolver.return_value.resolve.return_value = ["whee"]
+            result = self.client_post("/api/v1/remotes/server/register", request)
+            self.assert_json_success(result)
 
 
 class TestUserPushIdentityCompat(ZulipTestCase):

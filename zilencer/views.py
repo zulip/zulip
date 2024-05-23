@@ -5,7 +5,6 @@ from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Type, TypedDict, TypeVar, Union
 from uuid import UUID
 
-import DNS
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -18,6 +17,8 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
+from dns import resolver as dns_resolver
+from dns.exception import DNSException
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints
 from pydantic.functional_validators import AfterValidator
 from typing_extensions import Annotated
@@ -170,19 +171,25 @@ def register_remote_server(
         raise JsonableError(_("Invalid email address."))
 
     # Check if the domain has an MX record
+    resolver = dns_resolver.Resolver()
+    resolver.timeout = 3
+    dns_mx_check_successful = False
     try:
-        records = DNS.mxlookup(contact_email_domain)
-        dns_mx_check_successful = True
-        if not records:
-            dns_mx_check_successful = False
-    except DNS.Base.ServerError:
-        dns_mx_check_successful = False
+        if resolver.resolve(contact_email_domain, "MX"):
+            dns_mx_check_successful = True
+    except DNSException:
+        pass
     if not dns_mx_check_successful:
-        raise JsonableError(
-            _("{domain} does not exist or is not configured to accept email.").format(
-                domain=contact_email_domain
+        # Check if the A/AAAA exist, for better error reporting
+        try:
+            resolver.resolve_name(contact_email_domain)
+            raise JsonableError(
+                _("{domain} is invalid because it does not have any MX records").format(
+                    domain=contact_email_domain
+                )
             )
-        )
+        except DNSException:
+            raise JsonableError(_("{domain} does not exist").format(domain=contact_email_domain))
 
     try:
         validate_uuid(zulip_org_id)
