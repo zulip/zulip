@@ -26,28 +26,6 @@ $before_unread_count_padding: 3px;
     }
 }
 
-#streams_list .stream-privacy {
-    height: 16px;
-    font-weight: 700;
-    text-align: center;
-
-    .zulip-icon.zulip-icon-globe {
-        font-size: 12px;
-    }
-
-    .zulip-icon.zulip-icon-hashtag {
-        font-size: 13px;
-    }
-
-    .zulip-icon.zulip-icon-lock {
-        font-size: 13px;
-        /* Slight vertical adjustment so the lock
-           doesn't sit too high, relative to the
-           other stream icons. */
-        padding-top: 2px;
-    }
-}
-
 .left-sidebar-title {
     color: var(--color-text-sidebar-heading);
     font-size: inherit;
@@ -912,6 +890,25 @@ li.top_left_scheduled_messages {
 
     .stream-privacy {
         grid-area: starting-anchor-element;
+        height: 16px;
+        font-weight: 700;
+        text-align: center;
+
+        .zulip-icon.zulip-icon-globe {
+            font-size: 12px;
+        }
+
+        .zulip-icon.zulip-icon-hashtag {
+            font-size: 13px;
+        }
+
+        .zulip-icon.zulip-icon-lock {
+            font-size: 13px;
+            /* Slight vertical adjustment so the lock
+               doesn't sit too high, relative to the
+               other stream icons. */
+            padding-top: 2px;
+        }
     }
 
     .stream-name {
