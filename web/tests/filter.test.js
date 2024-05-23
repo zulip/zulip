@@ -11,6 +11,7 @@ const $ = require("./lib/zjquery");
 const {page_params, realm} = require("./lib/zpage_params");
 
 const message_store = mock_esm("../src/message_store");
+const user_topics = mock_esm("../src/user_topics");
 
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 const stream_data = zrequire("stream_data");
@@ -753,7 +754,7 @@ test("canonicalization", () => {
     assert.equal(term.operand, "link");
 });
 
-test("predicate_basics", () => {
+test("predicate_basics", ({override}) => {
     // Predicates are functions that accept a message object with the message
     // attributes (not content), and return true if the message belongs in a
     // given narrow. If the narrow parameters include a search, the predicate
@@ -831,9 +832,32 @@ test("predicate_basics", () => {
     assert.ok(!predicate({type: stream_message, topic: "foo"}));
 
     const unknown_stream_id = 999;
+    override(user_topics, "is_topic_muted", () => false);
+    override(user_topics, "is_topic_unmuted_or_followed", () => false);
     predicate = get_predicate([["in", "home"]]);
     assert.ok(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert.ok(predicate({type: direct_message}));
+
+    // Muted topic is not part of in-home.
+    with_overrides(({override}) => {
+        override(user_topics, "is_topic_muted", () => true);
+        assert.ok(!predicate({stream_id, topic: "bar"}));
+    });
+
+    // Muted stream is not part of in-home.
+    const muted_stream = {
+        stream_id: 94924,
+        name: "muted",
+        is_muted: true,
+    };
+    stream_data.add_sub(muted_stream);
+    assert.ok(!predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
+
+    // Muted stream but topic is unmuted or followed is part of in-home.
+    with_overrides(({override}) => {
+        override(user_topics, "is_topic_unmuted_or_followed", () => true);
+        assert.ok(predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
+    });
 
     make_sub("kiosk", 1234);
     with_overrides(({override}) => {
