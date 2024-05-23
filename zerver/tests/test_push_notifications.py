@@ -5239,7 +5239,7 @@ class PushBouncerSignupTest(ZulipTestCase):
 
         request["contact_email"] = "admin@example.com"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Invalid address.")
+        self.assert_json_error(result, "Invalid email address.")
 
         # An example disposable domain.
         request["contact_email"] = "admin@mailnator.com"
