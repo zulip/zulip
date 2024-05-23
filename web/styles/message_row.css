@@ -454,7 +454,7 @@
        within the grid. */
     line-height: var(--message-box-sender-line-height);
     grid-area: time;
-    display: block;
+    display: none;
     font-size: 13px;
     font-weight: 350;
     text-align: end;
