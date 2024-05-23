@@ -42,7 +42,7 @@ export function all_topics_in_cache(sub: StreamSubscription): boolean {
     // we might be missing the oldest topics in this stream in our
     // cache.
     const first_cached_message = all_messages_data.first();
-    return first_cached_message.id <= sub.first_message_id;
+    return first_cached_message!.id <= sub.first_message_id;
 }
 
 export function is_complete_for_stream_id(stream_id: number): boolean {
