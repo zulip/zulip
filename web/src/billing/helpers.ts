@@ -157,8 +157,8 @@ export function update_discount_details(
     $("#sponsorship-discount-details").text(discount_notice);
 }
 
-export function is_valid_input(elem: JQuery<HTMLFormElement>): boolean {
-    return elem[0].checkValidity();
+export function is_valid_input($elem: JQuery<HTMLFormElement>): boolean {
+    return $elem[0].checkValidity();
 }
 
 export function redirect_to_billing_with_successful_upgrade(billing_base_url: string): void {
