@@ -167,7 +167,7 @@ def register_remote_server(
 
     contact_email_domain = Address(addr_spec=contact_email).domain.lower()
     if contact_email_domain == "example.com":
-        raise JsonableError(_("Invalid address."))
+        raise JsonableError(_("Invalid email address."))
 
     # Check if the domain has an MX record
     try:
