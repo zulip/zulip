@@ -525,7 +525,9 @@ def client_label_map(name: str) -> str:
     if name == "ZulipiOS":
         return "Old iOS app"
     if name == "ZulipMobile":
-        return "Mobile app"
+        return "Mobile app (React Native)"
+    if name in ["ZulipFlutter", "ZulipMobile/flutter"]:
+        return "Mobile app beta (Flutter)"
     if name in ["ZulipPython", "API: Python"]:
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):
