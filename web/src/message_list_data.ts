@@ -84,11 +84,11 @@ export class MessageListData {
         return this._items.length === 0;
     }
 
-    first(): Message {
+    first(): Message | undefined {
         return this._items[0];
     }
 
-    first_including_muted(): Message {
+    first_including_muted(): Message | undefined {
         return this._all_items[0];
     }
 
@@ -105,7 +105,7 @@ export class MessageListData {
             return false;
         }
 
-        return this.first().id <= msg_id && msg_id <= this.last()!.id;
+        return this.first()!.id <= msg_id && msg_id <= this.last()!.id;
     }
 
     ids_greater_or_equal_than(my_id: number): number[] {
@@ -335,7 +335,7 @@ export class MessageListData {
             const last = this.last_including_muted();
             if (last === undefined || msg.id > last.id) {
                 bottom_messages.push(msg);
-            } else if (msg.id < this.first_including_muted().id) {
+            } else if (msg.id < this.first_including_muted()!.id) {
                 top_messages.push(msg);
             } else {
                 interior_messages.push(msg);
