@@ -172,12 +172,12 @@ def register_remote_server(
     # Check if the domain has an MX record
     try:
         records = DNS.mxlookup(contact_email_domain)
-        dns_ms_check_successful = True
+        dns_mx_check_successful = True
         if not records:
-            dns_ms_check_successful = False
+            dns_mx_check_successful = False
     except DNS.Base.ServerError:
-        dns_ms_check_successful = False
-    if not dns_ms_check_successful:
+        dns_mx_check_successful = False
+    if not dns_mx_check_successful:
         raise JsonableError(
             _("{domain} does not exist or is not configured to accept email.").format(
                 domain=contact_email_domain
