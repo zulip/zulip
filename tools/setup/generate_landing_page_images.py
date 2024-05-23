@@ -25,6 +25,10 @@ def get_x_size(size: Tuple[float, float], x: int) -> Tuple[int, int]:
 def generate_landing_page_images() -> None:
     if not os.path.exists(GENERATED_IMAGES_DIR):
         os.mkdir(GENERATED_IMAGES_DIR)
+    else:
+        # Delete folder contents to avoid stale images between different versions of the script.
+        for file in os.listdir(GENERATED_IMAGES_DIR):
+            os.remove(os.path.join(GENERATED_IMAGES_DIR, file))
 
     for image_file_path in glob.glob(f"{ORIGINAL_IMAGES_DIR}/*"):
         file_name = Path(image_file_path).stem
@@ -33,7 +37,6 @@ def generate_landing_page_images() -> None:
             size_1x = get_x_size(image.size, 1)
 
             ## Generate WEBP images.
-            image.save(f"{GENERATED_IMAGES_DIR}/{file_name}-3x.webp", quality=50)
             image_2x = image.resize(size_2x)
             image_2x.save(f"{GENERATED_IMAGES_DIR}/{file_name}-2x.webp", quality=50)
             image_1x = image.resize(size_1x)
@@ -42,7 +45,6 @@ def generate_landing_page_images() -> None:
             ## Generate JPG images.
             # Convert from RGBA to RGB since jpg doesn't support transparency.
             rgb_image = image.convert("RGB")
-            rgb_image.save(f"{GENERATED_IMAGES_DIR}/{file_name}-3x.jpg", quality=19, optimize=True)
             rgb_image_2x = rgb_image.resize(size_2x)
             rgb_image_2x.save(
                 f"{GENERATED_IMAGES_DIR}/{file_name}-2x.jpg", quality=50, optimize=True
