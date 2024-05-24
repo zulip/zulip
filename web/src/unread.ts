@@ -57,6 +57,7 @@ export type StreamCountInfo = {
 type DirectMessageCountInfo = {
     total_count: number;
     pm_dict: Map<string, number>;
+    mention_dict: Map<string, boolean>;
 };
 
 type DirectMessageCountInfoWithLatestMsgId = {
@@ -117,9 +118,16 @@ class UnreadDirectMessageCounter {
 
     get_counts(update_first_unmuted_message_id = false): DirectMessageCountInfo {
         const pm_dict = new Map<string, number>(); // Hash by user_ids_string -> count Optional[, max_id]
+        const mention_dict = new Map<string, boolean>();
         let total_count = 0;
         for (const [user_ids_string, id_set] of this.bucketer) {
             const count = id_set.size;
+            for (const message_id of id_set) {
+                if (message_has_mention(message_id)) {
+                    mention_dict.set(user_ids_string, true);
+                    break;
+                }
+            }
             pm_dict.set(user_ids_string, count);
             total_count += count;
             if (update_first_unmuted_message_id) {
@@ -132,6 +140,7 @@ class UnreadDirectMessageCounter {
         return {
             total_count,
             pm_dict,
+            mention_dict,
         };
     }
 
@@ -897,6 +906,7 @@ export type FullUnreadCountsData = {
     streams_with_mentions: number[];
     streams_with_unmuted_mentions: number[];
     pm_count: Map<string, number>;
+    mention_dict: Map<string, boolean>;
     home_unread_messages: number;
 };
 
@@ -925,6 +935,7 @@ export function get_counts(): FullUnreadCountsData {
             ...unread_topic_counter.get_streams_with_unmuted_mentions(),
         ],
         pm_count: pm_res.pm_dict,
+        mention_dict: pm_res.mention_dict,
         home_unread_messages: topic_res.stream_unread_messages + pm_res.total_count,
     };
 }
@@ -1026,6 +1037,10 @@ export function get_msg_ids_for_topic(stream_id: number, topic_name: string): nu
 
 export function get_msg_ids_for_user_ids_string(user_ids_string: string): number[] {
     return unread_direct_message_counter.get_msg_ids_for_user_ids_string(user_ids_string);
+}
+
+export function message_has_mention(message_id: number): boolean {
+    return direct_message_with_mention_count.has(message_id);
 }
 
 export function get_msg_ids_for_private(): number[] {
