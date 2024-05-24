@@ -81,7 +81,7 @@ from zerver.models import (
 )
 from zerver.models.streams import get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
@@ -363,7 +363,7 @@ def do_update_embedded_data(
             "flags": um.flags_list(),
         }
 
-    send_event(user_profile.realm, event, list(map(user_info, ums)))
+    send_event_on_commit(user_profile.realm, event, list(map(user_info, ums)))
 
 
 def get_visibility_policy_after_merge(
