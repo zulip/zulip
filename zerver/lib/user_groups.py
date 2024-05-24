@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Collection, Dict, Iterable, Iterator, List, Mapping, Optional, TypedDict, Union
 
 from django.conf import settings
@@ -765,3 +765,12 @@ def validate_group_setting_value_change(
         raise PreviousSettingValueMismatchedError
 
     return not are_both_group_setting_values_equal(current_setting_api_value, new_setting_value)
+
+
+def get_group_setting_value_for_audit_log_data(
+    setting_value: Union[int, AnonymousSettingGroupDict],
+) -> Union[int, Dict[str, List[int]]]:
+    if isinstance(setting_value, int):
+        return setting_value
+
+    return asdict(setting_value)

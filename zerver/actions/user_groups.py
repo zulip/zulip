@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
@@ -11,6 +10,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
+    get_group_setting_value_for_audit_log_data,
     get_role_based_system_groups_dict,
     set_defaults_for_group_settings,
 )
@@ -431,15 +431,6 @@ def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProf
     user_group_id = user_group.id
     user_group.delete()
     do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
-
-
-def get_group_setting_value_for_audit_log_data(
-    setting_value: Union[int, AnonymousSettingGroupDict],
-) -> Union[int, Dict[str, List[int]]]:
-    if isinstance(setting_value, int):
-        return setting_value
-
-    return asdict(setting_value)
 
 
 @transaction.atomic(savepoint=False)
