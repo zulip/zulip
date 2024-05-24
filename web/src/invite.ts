@@ -104,7 +104,7 @@ function get_common_invitation_data(): {
 
 function beforeSend(): void {
     reset_error_messages();
-    // TODO: You could alternatively parse the textarea here, and return errors to
+    // TODO: You could alternatively parse the emails here, and return errors to
     // the user if they don't match certain constraints (i.e. not real email addresses,
     // aren't in the right domain, etc.)
     //
