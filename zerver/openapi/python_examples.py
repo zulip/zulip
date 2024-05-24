@@ -576,7 +576,7 @@ def create_realm_profile_field(client: Client) -> None:
 
 
 @openapi_test_function("/realm/filters:post")
-def add_realm_filter(client: Client) -> None:
+def add_realm_filter(client: Client) -> int:
     # TODO: Switch back to using client.add_realm_filter when python-zulip-api
     # begins to support url_template.
 
@@ -591,13 +591,13 @@ def add_realm_filter(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters", "post", "200")
+    return result["id"]
 
 
 @openapi_test_function("/realm/filters/{filter_id}:patch")
-def update_realm_filter(client: Client) -> None:
+def update_realm_filter(client: Client, filter_id: int) -> None:
     # {code_example|start}
-    # Update the linkifier (realm_filter) with ID 4
-    filter_id = 4
+    # Update the linkifier (realm_filter).
     request = {
         "pattern": "#(?P<id>[0-9]+)",
         "url_template": "https://github.com/zulip/zulip/issues/{id}",
@@ -612,10 +612,10 @@ def update_realm_filter(client: Client) -> None:
 
 
 @openapi_test_function("/realm/filters/{filter_id}:delete")
-def remove_realm_filter(client: Client) -> None:
+def remove_realm_filter(client: Client, filter_id: int) -> None:
     # {code_example|start}
-    # Remove the linkifier (realm_filter) with ID 4
-    result = client.remove_realm_filter(4)
+    # Remove the linkifier (realm_filter).
+    result = client.remove_realm_filter(filter_id)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "delete", "200")
@@ -1818,12 +1818,12 @@ def test_queues(client: Client) -> None:
 
 def test_server_organizations(client: Client) -> None:
     get_realm_linkifiers(client)
-    add_realm_filter(client)
-    update_realm_filter(client)
+    filter_id = add_realm_filter(client)
+    update_realm_filter(client, filter_id)
     add_realm_playground(client)
     get_server_settings(client)
     reorder_realm_linkifiers(client)
-    remove_realm_filter(client)
+    remove_realm_filter(client, filter_id)
     remove_realm_playground(client)
     get_realm_emoji(client)
     upload_custom_emoji(client)
