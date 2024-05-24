@@ -1,4 +1,5 @@
 import itertools
+import math
 import os
 import random
 from typing import Any, Dict, List
@@ -25,6 +26,10 @@ def generate_topics(num_topics: int) -> List[str]:
     num_single_word_topics = num_topics // 3
     topic_names = random.choices(config["nouns"], k=num_single_word_topics)
 
+    num_url_topics = math.floor(num_topics * 0.05)
+    if num_url_topics > 0:
+        topic_names.extend(random.choices(config["embedLinks"], k=num_url_topics))
+
     sentence = ["adjectives", "nouns", "connectors", "verbs", "adverbs"]
     for pos in sentence:
         # Add an empty string so that we can generate variable length topics.
@@ -32,7 +37,7 @@ def generate_topics(num_topics: int) -> List[str]:
 
     topic_names.extend(
         " ".join(word for pos in sentence if (word := random.choice(config[pos])) != "")
-        for _ in range(num_topics - num_single_word_topics)
+        for _ in range(num_topics - num_single_word_topics - num_url_topics)
     )
 
     # Mark a small subset of topics as resolved in some streams, and

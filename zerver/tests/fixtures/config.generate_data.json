@@ -62,6 +62,10 @@
       "lists": [
         "* milk\n* eggs\n* bread\n* fruit\n  * apples\n  * oranges\n  * watermelon\n* cookies",
         "* Myrmica ruginodis\n* Myrmica kotokui\n* Crematogaster pilosa"
+      ],
+      "embedLinks": [
+          "https://google.com", "https://youtube.com", "https://facebook.com",
+          "https://www.cnn.com/", "https://zulip.readthedocs.io/en/latest/"
       ]
   },
   "dist_percentages":
