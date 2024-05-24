@@ -984,20 +984,29 @@ def channel_message_to_zerver_message(
         has_image = file_info["has_image"]
 
         # Slack's unthreaded messages go into a single topic, while
-        # threads each generate a unique topic labeled by the date and
-        # a counter among topics on that day.
+        # threads each generate a unique topic labeled by the date,
+        # a snippet of the original message and a counter if there
+        # are any thread with the same topic name
         topic_name = "imported from Slack"
         if convert_slack_threads and "thread_ts" in message:
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             message_ts = datetime.fromtimestamp(float(message["ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
+            parent_user_id: Optional[str] = message.get("parent_user_id")
+            thread_key = f"{thread_ts_str}{parent_user_id}"
 
-            # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
-            # threads with the same date.
+            # The topic name format is date + message snippet + counter, where the counter at the end is to disambiguate
+            # threads with the same datetime.
+            # e.g "2024-05-22 Hello this is a long message that will be c... (1)"
+            thread_snippet = (
+                message["text"] if len(message["text"]) <= 45 else message["text"][:42] + "..."
+            )
             thread_date = thread_ts.strftime(r"%Y-%m-%d")
-            thread_counter[thread_date] += 1
-            count = thread_counter[thread_date]
-            topic_name = f"{thread_date} Slack thread {count}"
+            base_zulip_topic_name = thread_date + thread_snippet
+            collision = thread_counter[base_zulip_topic_name]
+            count = (f" ({collision})") if collision > 0 else ""
+
+            topic_name = f"{thread_date} {thread_snippet}{count}"
             thread_topic_link_str = f"#**{import_channel_name}>{topic_name}**"
 
             # Send thread messages mark as "Also send to #channel" to main import topic
@@ -1026,17 +1035,18 @@ def channel_message_to_zerver_message(
             # message to it.
 
             if thread_ts == message_ts:
-                thread_map[thread_ts_str] = {
+                # thread_map is used to keep the metadata of Slack threads
+                thread_map[thread_key] = {
                     "topic_name": topic_name,
                     "thread_head_message_index": len(zerver_message),
                     "thread_topic_link_str": thread_topic_link_str,
                     "thread_length": 0,
                 }
-            elif thread_ts_str in thread_map:
-                topic_name = thread_map[thread_ts_str].get("topic_name", topic_name)
+            elif thread_key in thread_map:
+                topic_name = thread_map[thread_key].get("topic_name", topic_name)
                 # The first thread reply will have quote-and-reply to the original
                 # thread mesagge / thread head in the main import topic.
-                if thread_map[thread_ts_str]["thread_length"] == 1:
+                if thread_map[thread_key]["thread_length"] == 1:
                     message_link = near_stream_message_url()
                     content = """
                     `{thread_head_sender}` [said]({message_link}):
@@ -1050,7 +1060,7 @@ def channel_message_to_zerver_message(
                         thread_head_message="",
                         first_thread_reply=content,
                     )
-                thread_map[thread_ts_str]["thread_length"] += 1
+                thread_map[thread_key]["thread_length"] += 1
             else:
                 topic_name = (
                     "unsorted Slack threads"  # Have not found a real case of this kind of message
