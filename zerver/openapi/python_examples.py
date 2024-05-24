@@ -824,10 +824,9 @@ def remove_subscriptions(client: Client) -> None:
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "delete", "200")
 
-    # test it was actually removed
-    result = client.get_subscriptions()
-    assert result["result"] == "success"
-    streams = [s for s in result["subscriptions"] if s["name"] == "python-test"]
+    # Confirm user is no longer subscribed to "python-test".
+    subscriptions = client.get_subscriptions()["subscriptions"]
+    streams = [s for s in subscriptions if s["name"] == "python-test"]
     assert len(streams) == 0
 
     # {code_example|start}
