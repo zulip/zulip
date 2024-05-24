@@ -1127,7 +1127,7 @@ class EditMessageTest(ZulipTestCase):
         do_edit_message_assert_success(id_, "G", "cordelia")
         do_edit_message_assert_success(id_, "H", "hamlet")
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_topic_wildcard_mention_in_followed_topic(
         self, mock_send_event: mock.MagicMock
     ) -> None:
@@ -1185,7 +1185,7 @@ class EditMessageTest(ZulipTestCase):
                 called = True
         self.assertTrue(called)
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_stream_wildcard_mention_in_followed_topic(
         self, mock_send_event: mock.MagicMock
     ) -> None:
@@ -1243,7 +1243,7 @@ class EditMessageTest(ZulipTestCase):
                 called = True
         self.assertTrue(called)
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_topic_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -1349,7 +1349,7 @@ class EditMessageTest(ZulipTestCase):
             )
         self.assert_json_success(result)
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_stream_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")

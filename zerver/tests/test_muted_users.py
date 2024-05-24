@@ -333,12 +333,13 @@ class MutedUsersTests(ZulipTestCase):
 
         self.login("cordelia")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
-            result = self.client_patch(
-                "/json/messages/" + str(message_id),
-                dict(
-                    content="@**King Hamlet**",
-                ),
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.client_patch(
+                    "/json/messages/" + str(message_id),
+                    dict(
+                        content="@**King Hamlet**",
+                    ),
+                )
             self.assert_json_success(result)
             m.assert_called_once()
             # `maybe_enqueue_notifications` was called for Hamlet after message edit mentioned him.
