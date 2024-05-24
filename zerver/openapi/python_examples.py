@@ -116,6 +116,7 @@ def add_subscriptions(client: Client) -> None:
     )
     # {code_example|end}
     assert result["result"] == "success"
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
     assert "newbie@zulip.com" in result["subscribed"]
 
 
@@ -151,7 +152,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
         authorization_errors_fatal=False,
     )
 
-    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400")
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
     result = nonadmin_client.add_subscriptions(
         streams=[
@@ -236,6 +237,7 @@ def get_user_status(client: Client) -> None:
 
 @openapi_test_function("/users/me/presence:post")
 def update_presence(client: Client) -> None:
+    # This endpoint is not documented yet. So, we are not validating the schema here.
     request = {
         "status": "active",
         "ping_only": False,
@@ -289,6 +291,7 @@ def update_status(client: Client) -> None:
         "status_text": "This is a message that exceeds 60 characters, and so should throw an error.",
         "away": "false",
     }
+    result = client.call_endpoint(url="/users/me/status", method="POST", request=request)
     validate_against_openapi_schema(result, "/users/me/status", "post", "400")
 
 
@@ -482,7 +485,7 @@ def update_user(client: Client) -> None:
     user_id = 8
     result = client.update_user_by_id(user_id, profile_data=[{"id": 9, "value": "some data"}])
     # {code_example|end}
-    validate_against_openapi_schema(result, "/users/{user_id}", "patch", "400")
+    validate_against_openapi_schema(result, "/users/{user_id}", "patch", "200")
 
 
 @openapi_test_function("/users/{user_id}/subscriptions/{stream_id}:get")
@@ -792,6 +795,7 @@ def get_subscribers(client: Client) -> None:
     # channel's ID.
     result = client.get_subscribers(stream="python-test")
     # {code_example|end}
+    validate_against_openapi_schema(result, "/streams/{stream_id}/members", "get", "200")
     assert result["subscribers"] == [11, 25]
 
 
@@ -1649,7 +1653,7 @@ def update_user_group(client: Client, user_group_id: int) -> None:
 
     result = client.update_user_group(request)
     # {code_example|end}
-    assert result["result"] == "success"
+    validate_against_openapi_schema(result, "/user_groups/{user_group_id}", "patch", "200")
 
 
 @openapi_test_function("/user_groups/{user_group_id}:delete")
