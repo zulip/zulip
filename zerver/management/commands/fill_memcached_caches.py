@@ -1,13 +1,13 @@
 from argparse import ArgumentParser
 from typing import Any, Optional
 
-from django.core.management.base import BaseCommand
 from typing_extensions import override
 
 from zerver.lib.cache_helpers import cache_fillers, fill_remote_cache
+from zerver.lib.management import ZulipBaseCommand
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(

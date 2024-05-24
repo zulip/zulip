@@ -26,10 +26,11 @@ from imaplib import IMAP4_SSL
 from typing import Any, Generator
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from typing_extensions import override
 
 from zerver.lib.email_mirror import logger, process_message
+from zerver.lib.management import ZulipBaseCommand
 
 ## Setup ##
 
@@ -79,7 +80,7 @@ def get_imap_messages() -> Generator[EmailMessage, None, None]:
         mbox.logout()
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = __doc__
 
     @override

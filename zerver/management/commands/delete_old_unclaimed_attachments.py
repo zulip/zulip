@@ -2,18 +2,18 @@ from argparse import ArgumentParser
 from datetime import timedelta
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.attachments import get_old_unclaimed_attachments
-from zerver.lib.management import abort_unless_locked
+from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
 from zerver.lib.upload import all_message_attachments, delete_message_attachments
 from zerver.models import ArchivedAttachment, Attachment
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Remove unclaimed attachments from storage older than a supplied
               numerical value indicating the limit of how old the attachment can be.
               The default is five weeks."""
