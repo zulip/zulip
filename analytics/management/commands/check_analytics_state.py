@@ -3,12 +3,12 @@ import time
 from datetime import timedelta
 from typing import Any, Dict
 
-from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.lib.counts import ALL_COUNT_STATS, CountStat
 from analytics.models import installation_epoch
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.timestamp import TimeZoneNotUTCError, floor_to_day, floor_to_hour, verify_UTC
 from zerver.models import Realm
 
@@ -20,7 +20,7 @@ states = {
 }
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Checks FillState table.
 
     Run as a cron job that runs every hour."""

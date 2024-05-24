@@ -3,7 +3,6 @@ from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Type, Union
 
 from django.core.files.uploadedfile import UploadedFile
-from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from typing_extensions import TypeAlias, override
 
@@ -21,6 +20,7 @@ from analytics.models import (
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.users import do_change_user_role
 from zerver.lib.create_user import create_user
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import floor_to_day
@@ -38,7 +38,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Populates analytics tables with randomly generated data."""
 
     DAYS_OF_DATA = 100

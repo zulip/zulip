@@ -1,11 +1,13 @@
 from typing import Any
 
 import orjson
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from typing_extensions import override
 
+from zerver.lib.management import ZulipBaseCommand
 
-class Command(BaseCommand):
+
+class Command(ZulipBaseCommand):
     help = """
     Compare rendered messages from files.
     Usage: ./manage.py compare_messages <dump1> <dump2>
