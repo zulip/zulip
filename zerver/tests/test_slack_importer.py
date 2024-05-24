@@ -1476,30 +1476,35 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(
             zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
         )
-
+        main_import_topic = "imported from Slack"
         # Test thread topic name contains message snippet
         thread1_topic_name = "2015-06-12 message body text"
-        original_thread1_message = "message body text"
+        original_thread1_message = (
+            f"message body text\n\n*1 reply in #**random>{thread1_topic_name}***"
+        )
         self.assertEqual(zerver_message[1]["content"], original_thread1_message)
         # Original thread message will be sent to the main import topic.
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], thread1_topic_name)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], main_import_topic)
         # Thread reply is in the correct thread topic
         self.assertEqual(zerver_message[2]["content"], "random")
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], thread1_topic_name)
 
         # Test thread topic name cut off
         thread2_topic_name = "2015-08-18 random message but it's too long for the t..."
-        original_thread2_message = "random message but it's too long for the thread topic name"
+        original_thread2_message = f"random message but it's too long for the thread topic name\n\n*1 reply in #**random>{thread2_topic_name}***"
         self.assertEqual(zerver_message[3]["content"], original_thread2_message)
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], thread2_topic_name)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], main_import_topic)
+        # TODO: the first reply will have a quote-and-reply to the original thread message
         self.assertEqual(zerver_message[4]["content"], "replying to the second thread :)")
         self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], thread2_topic_name)
 
         # Test thread topic name collision
         thread3_topic_name = "2015-06-12 message body text (2)"
-        original_thread3_message = "message body text"
+        original_thread3_message = (
+            f"message body text\n\n*1 reply in #**random>{thread3_topic_name}***"
+        )
         self.assertEqual(zerver_message[5]["content"], original_thread3_message)
-        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], thread3_topic_name)
+        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], main_import_topic)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
