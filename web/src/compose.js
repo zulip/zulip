@@ -130,6 +130,7 @@ export function clear_compose_box() {
         compose_ui.make_compose_box_original_size();
     }
     $("textarea#compose-textarea").val("").trigger("focus");
+    compose_ui.compose_textarea_typeahead?.hide();
     compose_validate.check_overflow_text();
     compose_validate.clear_topic_resolved_warning();
     drafts.set_compose_draft_id(undefined);
