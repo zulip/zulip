@@ -1439,3 +1439,41 @@ label.label-title {
         text-decoration: underline;
     }
 }
+
+.events-table-link {
+    line-height: 100%;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.events-table {
+    column-count: 4;
+    column-gap: 10px;
+    margin: 15px 0 0 10px !important;
+
+    & div {
+        margin-bottom: 7px !important;
+    }
+}
+
+@media (width <= 1100px) {
+    .events-table {
+        column-count: 3;
+    }
+}
+
+@media (width <= 600px) {
+    .events-table {
+        column-count: 2;
+    }
+}
+
+@media (width <= 420px) {
+    .events-table {
+        column-count: 1;
+    }
+}
+
+.events-table-ops {
+    margin-left: 12px !important;
+}
