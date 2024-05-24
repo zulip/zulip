@@ -407,10 +407,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         });
         pills.onTextInputHook(toggle_invite_submit_button);
 
-        $("#invite-user-modal").on("input", "input, textarea, select", () => {
-            toggle_invite_submit_button();
-        });
-
         $expires_in.on("change", () => {
             set_custom_time_inputs_visibility();
             set_expires_on_text();
@@ -437,7 +433,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_check_all_button").on("click", () => {
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
-            toggle_invite_submit_button();
         });
 
         $("#invite_uncheck_all_button").on("click", () => {
