@@ -874,6 +874,37 @@ def get_messages_iterator(
         yield from sorted(messages_for_one_day, key=get_timestamp_from_message)
 
 
+def get_parent_user_id(message: ZerverFieldsT, subtype: str) -> str | None:
+    """Retrieves the parent user ID based on message subtype."""
+    if subtype == "thread_broadcast":
+        return message.get("root", {}).get("user")
+    return message.get("parent_user_id")
+
+
+def get_zulip_thread_topic_name(
+    message: ZerverFieldsT, thread_ts: datetime, thread_counter: dict[str, int]
+) -> str:
+    """
+    The topic name format is date + message snippet + counter.
+
+    e.g "2024-05-22 Hello this is a long message that will be c... (1)"
+    """
+
+    THREAD_TOPIC_SNIPPET_LENGTH = 45
+    thread_snippet = (
+        message["text"]
+        if len(message["text"]) <= THREAD_TOPIC_SNIPPET_LENGTH
+        else message["text"][: THREAD_TOPIC_SNIPPET_LENGTH - 3] + "..."
+    )
+    thread_date = thread_ts.strftime(r"%Y-%m-%d")
+    base_zulip_topic_name = thread_date + thread_snippet
+    collision = thread_counter[base_zulip_topic_name]
+    thread_counter[base_zulip_topic_name] += 1
+    count = (f" ({collision+1})") if collision > 0 else ""
+
+    return f"{thread_date} {thread_snippet}{count}"
+
+
 def channel_message_to_zerver_message(
     realm_id: int,
     realm: ZerverFieldsT,
@@ -1012,25 +1043,23 @@ def channel_message_to_zerver_message(
         has_image = file_info["has_image"]
 
         # Slack's unthreaded messages go into a single topic, while
-        # threads each generate a unique topic labeled by the date and
-        # a counter among topics on that day.
+        # threads each generate a unique topic labeled by the date,
+        # a snippet of the original message and a counter if there
+        # are any thread with the same topic name
         topic_name = MAIN_IMPORT_TOPIC
         if convert_slack_threads and "thread_ts" in message:
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             message_ts = datetime.fromtimestamp(float(message["ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
+            parent_user_id = get_parent_user_id(message, subtype)
+
+            thread_key = f"{thread_ts_str}-{parent_user_id}"
 
             if thread_ts == message_ts:
                 # If the message is at the start of a thread, send it to the
                 # main import channel and append a cross-linking notification
                 # message to it.
-
-                # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
-                # threads with the same date.
-                thread_date = thread_ts.strftime(r"%Y-%m-%d")
-                thread_counter[thread_date] += 1
-                count = thread_counter[thread_date]
-                thread_topic_name = f"{thread_date} Slack thread {count}"
+                thread_topic_name = get_zulip_thread_topic_name(message, thread_ts, thread_counter)
                 thread_topic_link_str = f"#**{import_channel_name}>{thread_topic_name}**"
 
                 message_dict = {
@@ -1040,8 +1069,9 @@ def channel_message_to_zerver_message(
                     "topic": topic_name,
                     "display_recipient": import_channel_name,
                 }
+                thread_key = f"{thread_ts_str}-{slack_user_id}"
 
-                thread_map[thread_ts_str] = {
+                thread_map[thread_key] = {
                     "thread_topic_name": thread_topic_name,
                     "thread_head_message_index": len(zerver_message),
                     "thread_topic_link_str": thread_topic_link_str,
@@ -1052,11 +1082,10 @@ def channel_message_to_zerver_message(
                     ),
                     "thread_head_message": content,
                 }
-
-            elif thread_ts_str in thread_map:
+            elif thread_key in thread_map:
                 # The first thread reply will quote and reply to the original
                 # thread message/thread head in the main import topic.
-                thread_metadata = thread_map[thread_ts_str]
+                thread_metadata = thread_map[thread_key]
                 topic_name = thread_metadata.get("thread_topic_name", topic_name)
                 if thread_metadata["thread_length"] == 0:
                     thread_metadata.update({"first_thread_reply": content})
