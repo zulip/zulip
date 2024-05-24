@@ -181,7 +181,7 @@ def get_presence(client: Client) -> None:
 
 @openapi_test_function("/default_streams:post")
 def add_default_stream(client: Client) -> None:
-    result = client.add_subscriptions(
+    client.add_subscriptions(
         streams=[
             {
                 "name": "test channel",
@@ -711,7 +711,7 @@ def get_stream_id(client: Client) -> int:
 
 @openapi_test_function("/streams/{stream_id}:delete")
 def archive_stream(client: Client) -> None:
-    result = client.add_subscriptions(
+    client.add_subscriptions(
         streams=[
             {
                 "name": "example to archive",
