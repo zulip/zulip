@@ -232,15 +232,15 @@ function message_matches_search_term(message: Message, operator: string, operand
         }
 
         case "dm-including": {
-            const operand_ids = people.pm_with_operand_ids(operand);
-            if (!operand_ids) {
+            const operand_user = people.get_by_email(operand);
+            if (operand_user === undefined) {
                 return false;
             }
             const user_ids = people.all_user_ids_in_pm(message);
             if (!user_ids) {
                 return false;
             }
-            return user_ids.includes(operand_ids[0]);
+            return user_ids.includes(operand_user.user_id);
         }
     }
 
