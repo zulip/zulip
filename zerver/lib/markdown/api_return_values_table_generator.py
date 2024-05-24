@@ -1,6 +1,7 @@
 import copy
 import json
 import re
+from collections import OrderedDict
 from typing import Any, Dict, List, Mapping, Optional
 
 import markdown
@@ -198,18 +199,30 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
             "{event_type} {op}</h3></p></div> \n{description}\n\n\n"
         )
+        table_link_template = (
+            '<div class="events-table-link"><a href="#{url}">{link_name}</a></div>'
+        )
+        events_table: OrderedDict[str, List[str]] = OrderedDict()
         for events in events_dict["oneOf"]:
             event_type: Dict[str, Any] = events["properties"]["type"]
             event_type_str: str = event_type["enum"][0]
             # Internal hyperlink name
             h3_id: str = event_type_str
+            event_name: str = event_type_str
             event_type_str = f'<span class="api-argument-required"> {event_type_str}</span>'
             op: Optional[Dict[str, Any]] = events["properties"].pop("op", None)
             op_str: str = ""
             if op is not None:
                 op_str = op["enum"][0]
                 h3_id += "-" + op_str
+                op_type: str = op_str
                 op_str = f'<span class="api-argument-deprecated">op: {op_str}</span>'
+                if event_name in events_table:
+                    events_table[event_name] += [op_type]
+                else:
+                    events_table[event_name] = [op_type]
+            else:
+                events_table[event_name] = []
             description = events["description"]
             text.append(
                 argument_template.format(
@@ -223,6 +236,27 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             example = json.dumps(events["example"], indent=4, sort_keys=True)
             text.append(example)
             text.append("```\n\n")
+
+        # Creates table of links for events
+        events_table_str: List[str] = ['<div class="events-table">']
+        sorted_events_table: OrderedDict[str, List[str]] = OrderedDict(sorted(events_table.items()))
+        for event_name, ops in sorted_events_table.items():
+            if not ops:
+                events_table_str.append(
+                    table_link_template.format(link_name=event_name, url=event_name)
+                )
+            else:
+                events_table_str.append(f'<div class="events-table-link">{event_name}:</div>')
+                events_table_str.append("<div class='events-table-ops'>")
+                ops.sort()
+                op_list = [
+                    table_link_template.format(link_name=op, url=f"{event_name}-{op}") for op in ops
+                ]
+                events_table_str.extend(op_list)
+                events_table_str.append("</div>")
+        events_table_str.append("</div>")
+
+        text = events_table_str + text
         return text
 
 
