@@ -176,6 +176,12 @@ mock_esm("../src/unread", {
         return 0;
     },
     topic_has_any_unread_mentions: () => false,
+    get_counts() {
+        const mention_dict = new Map([["2,3", false]]);
+        return {
+            mention_dict,
+        };
+    },
 });
 mock_esm("../src/resize", {
     update_recent_view_filters_height: noop,

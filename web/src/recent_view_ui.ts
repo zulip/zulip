@@ -662,6 +662,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
+        const has_unread_mention = unread.get_counts().mention_dict.get(user_ids_string);
 
         let is_bot = false;
         let user_circle_class;
@@ -698,6 +699,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             is_group,
             is_bot,
             user_circle_class,
+            has_unread_mention,
         };
     }
 
