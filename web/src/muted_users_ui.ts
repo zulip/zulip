@@ -29,8 +29,8 @@ export function rerender_for_muted_user(): void {
     // mechanism.
 }
 
-export function handle_user_updates(muted_user_ids: RawMutedUser[]): void {
+export function handle_user_updates(raw_muted_users: RawMutedUser[]): void {
     popovers.hide_all();
-    muted_users.set_muted_users(muted_user_ids);
+    muted_users.set_muted_users(raw_muted_users);
     rerender_for_muted_user();
 }
