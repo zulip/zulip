@@ -108,11 +108,11 @@ def add_subscriptions(client: Client) -> None:
     validate_response_result(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
-    ensure_users([25], ["newbie"])
+    user_id = 25
+    ensure_users([user_id], ["newbie"])
     # {code_example|start}
     # To subscribe other users to a channel, you may pass
     # the `principals` argument, like so:
-    user_id = 25
     result = client.add_subscriptions(
         streams=[
             {"name": "python-test"},
@@ -229,9 +229,10 @@ def get_user_presence(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}/status:get")
 def get_user_status(client: Client) -> None:
+    user_id = 11
+    ensure_users([user_id], ["iago"])
     # {code_example|start}
     # Get the status currently set by a user.
-    user_id = 11
     result = client.call_endpoint(
         url=f"/users/{user_id}/status",
         method="GET",
@@ -438,11 +439,10 @@ def revoke_reusable_invitation_link(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
-    ensure_users([8], ["cordelia"])
-
-    # {code_example|start}
-    # Fetch details on a user given a user ID
     user_id = 8
+    ensure_users([user_id], ["cordelia"])
+    # {code_example|start}
+    # Fetch details on a user given a user ID.
     result = client.get_user_by_id(user_id)
     # {code_example|end}
     validate_response_result(result)
@@ -458,11 +458,10 @@ def get_single_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}:delete")
 def deactivate_user(client: Client) -> None:
-    ensure_users([8], ["cordelia"])
-
-    # {code_example|start}
-    # Deactivate a user
     user_id = 8
+    ensure_users([user_id], ["cordelia"])
+    # {code_example|start}
+    # Deactivate a user given a user ID.
     result = client.deactivate_user_by_id(user_id)
     # {code_example|end}
     validate_response_result(result)
@@ -471,9 +470,10 @@ def deactivate_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}/reactivate:post")
 def reactivate_user(client: Client) -> None:
-    # {code_example|start}
-    # Reactivate a user
     user_id = 8
+    ensure_users([user_id], ["cordelia"])
+    # {code_example|start}
+    # Reactivate a user given a user ID.
     result = client.reactivate_user_by_id(user_id)
     # {code_example|end}
     validate_response_result(result)
@@ -483,18 +483,17 @@ def reactivate_user(client: Client) -> None:
 @openapi_test_function("/users/{user_id}:patch")
 def update_user(client: Client) -> None:
     ensure_users([8, 10], ["cordelia", "hamlet"])
-
-    # {code_example|start}
-    # Change a user's full name.
     user_id = 10
+    # {code_example|start}
+    # Change a user's full name given a user ID.
     result = client.update_user_by_id(user_id, full_name="New Name")
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/users/{user_id}", "patch", "200")
 
+    user_id = 8
     # {code_example|start}
     # Change value of the custom profile field with ID 9.
-    user_id = 8
     result = client.update_user_by_id(user_id, profile_data=[{"id": 9, "value": "some data"}])
     # {code_example|end}
     validate_response_result(result)
@@ -503,12 +502,12 @@ def update_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}/subscriptions/{stream_id}:get")
 def get_subscription_status(client: Client) -> None:
-    ensure_users([7], ["zoe"])
+    user_id = 7
+    ensure_users([user_id], ["zoe"])
     stream_id = client.get_subscriptions()["subscriptions"][0]["stream_id"]
 
     # {code_example|start}
     # Check whether a user is a subscriber to a given channel.
-    user_id = 7
     result = client.call_endpoint(
         url=f"/users/{user_id}/subscriptions/{stream_id}",
         method="GET",
@@ -802,8 +801,8 @@ def test_user_not_authorized_error(nonadmin_client: Client) -> None:
 
 @openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
-    ensure_users([11, 25], ["iago", "newbie"])
-
+    user_ids = [11, 25]
+    ensure_users(user_ids, ["iago", "newbie"])
     # {code_example|start}
     # Get the subscribers to a channel. Note that `client.get_subscribers`
     # takes a `stream` parameter with the channel's name and not the
@@ -812,7 +811,7 @@ def get_subscribers(client: Client) -> None:
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/streams/{stream_id}/members", "get", "200")
-    assert result["subscribers"] == [11, 25]
+    assert result["subscribers"] == user_ids
 
 
 def get_user_agent(client: Client) -> None:
@@ -940,10 +939,10 @@ def update_user_topic(client: Client) -> None:
 
 @openapi_test_function("/users/me/muted_users/{muted_user_id}:post")
 def add_user_mute(client: Client) -> None:
-    ensure_users([10], ["hamlet"])
-    # {code_example|start}
-    # Mute user with ID 10
     muted_user_id = 10
+    ensure_users([muted_user_id], ["hamlet"])
+    # {code_example|start}
+    # Mute a user, given the user's ID.
     result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="POST")
     # {code_example|end}
     validate_response_result(result)
@@ -952,10 +951,10 @@ def add_user_mute(client: Client) -> None:
 
 @openapi_test_function("/users/me/muted_users/{muted_user_id}:delete")
 def remove_user_mute(client: Client) -> None:
-    ensure_users([10], ["hamlet"])
-    # {code_example|start}
-    # Unmute user with ID 10
     muted_user_id = 10
+    ensure_users([muted_user_id], ["hamlet"])
+    # {code_example|start}
+    # Unmute a user, given the user's ID.
     result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="DELETE")
     # {code_example|end}
     validate_response_result(result)
@@ -1147,11 +1146,10 @@ def send_message(client: Client) -> int:
     message_id = result["id"]
     validate_message(client, message_id, request["content"])
 
-    ensure_users([10], ["hamlet"])
-
-    # {code_example|start}
-    # Send a direct message
     user_id = 10
+    ensure_users([user_id], ["hamlet"])
+    # {code_example|start}
+    # Send a direct message.
     request = {
         "type": "private",
         "to": [user_id],
@@ -1513,35 +1511,28 @@ def remove_fcm_token(client: Client) -> None:
 @openapi_test_function("/typing:post")
 def set_typing_status(client: Client) -> None:
     ensure_users([10, 11], ["hamlet", "iago"])
-
+    user_a_id = 10
+    user_b_id = 11
     # {code_example|start}
     # The user has started typing in the group direct message
-    # with Iago and Polonius
-    user_id1 = 10
-    user_id2 = 11
-
+    # with two users, "user_a" and "user_b".
     request = {
         "op": "start",
-        "to": [user_id1, user_id2],
+        "to": [user_a_id, user_b_id],
     }
     result = client.set_typing_status(request)
-
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
     # The user has finished typing in the group direct message
-    # with Iago and Polonius
-    user_id1 = 10
-    user_id2 = 11
-
+    # with "user_a" and "user_b".
     request = {
         "op": "stop",
-        "to": [user_id1, user_id2],
+        "to": [user_a_id, user_b_id],
     }
     result = client.set_typing_status(request)
-
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
@@ -1648,15 +1639,14 @@ def remove_alert_words(client: Client) -> None:
 
 @openapi_test_function("/user_groups/create:post")
 def create_user_group(client: Client) -> None:
-    ensure_users([6, 7, 8, 10], ["aaron", "zoe", "cordelia", "hamlet"])
-
+    user_ids = [6, 7, 8, 10]
+    ensure_users(user_ids, ["aaron", "zoe", "cordelia", "hamlet"])
     # {code_example|start}
     request = {
         "name": "marketing",
         "description": "The marketing team.",
-        "members": [6, 7, 8, 10],
+        "members": user_ids,
     }
-
     result = client.create_user_group(request)
     # {code_example|end}
     validate_response_result(result)
@@ -1690,12 +1680,13 @@ def remove_user_group(client: Client, user_group_id: int) -> None:
 @openapi_test_function("/user_groups/{user_group_id}/members:post")
 def update_user_group_members(client: Client, user_group_id: int) -> None:
     ensure_users([8, 10, 11], ["cordelia", "hamlet", "iago"])
+    user_ids_to_add = [11]
+    user_ids_to_remove = [8, 10]
     # {code_example|start}
     request = {
-        "delete": [8, 10],
-        "add": [11],
+        "delete": user_ids_to_remove,
+        "add": user_ids_to_add,
     }
-
     result = client.update_user_group_members(user_group_id, request)
     # {code_example|end}
     validate_response_result(result)
