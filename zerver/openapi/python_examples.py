@@ -72,6 +72,15 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
     assert ids_list == user_ids
 
 
+def validate_message(client: Client, message_id: int, content: Any) -> None:
+    url = "messages/" + str(message_id)
+    result = client.call_endpoint(
+        url=url,
+        method="GET",
+    )
+    assert result["raw_content"] == content
+
+
 @openapi_test_function("/users/me/subscriptions:post")
 def add_subscriptions(client: Client) -> None:
     # {code_example|start}
@@ -1075,13 +1084,7 @@ def send_message(client: Client) -> int:
 
     # test that the message was actually sent
     message_id = result["id"]
-    url = "messages/" + str(message_id)
-    result = client.call_endpoint(
-        url=url,
-        method="GET",
-    )
-    assert result["result"] == "success"
-    assert result["raw_content"] == request["content"]
+    validate_message(client, message_id, request["content"])
 
     ensure_users([10], ["hamlet"])
 
@@ -1101,13 +1104,7 @@ def send_message(client: Client) -> int:
 
     # test that the message was actually sent
     message_id = result["id"]
-    url = "messages/" + str(message_id)
-    result = client.call_endpoint(
-        url=url,
-        method="GET",
-    )
-    assert result["result"] == "success"
-    assert result["raw_content"] == request["content"]
+    validate_message(client, message_id, request["content"])
 
     return message_id
 
@@ -1192,13 +1189,7 @@ def update_message(client: Client, message_id: int) -> None:
     validate_against_openapi_schema(result, "/messages/{message_id}", "patch", "200")
 
     # test it was actually updated
-    url = "messages/" + str(message_id)
-    result = client.call_endpoint(
-        url=url,
-        method="GET",
-    )
-    assert result["result"] == "success"
-    assert result["raw_content"] == request["content"]
+    validate_message(client, message_id, request["content"])
 
 
 def test_update_message_edit_permission_error(client: Client, nonadmin_client: Client) -> None:
