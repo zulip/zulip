@@ -341,9 +341,8 @@ def get_members(client: Client) -> None:
 
 @openapi_test_function("/users/{email}:get")
 def get_user_by_email(client: Client) -> None:
-    # {code_example|start}
-    # Fetch details on a user given a user ID
     email = "iago@zulip.com"
+    # {code_example|start}
     result = client.call_endpoint(
         url=f"/users/{email}",
         method="GET",
@@ -698,9 +697,9 @@ def deactivate_own_user(client: Client, owner_client: Client) -> None:
 
 @openapi_test_function("/get_stream_id:get")
 def get_stream_id(client: Client) -> int:
+    name = "python-test"
     # {code_example|start}
     # Get the ID of a given channel name.
-    name = "python-test"
     result = client.get_stream_id(name)
     # {code_example|end}
     validate_response_result(result)
@@ -718,10 +717,9 @@ def archive_stream(client: Client) -> None:
             },
         ],
     )
-
-    # {code_example|start}
-    # Archive channel named "example to archive".
     stream_id = client.get_stream_id("example to archive")["stream_id"]
+    # {code_example|start}
+    # Archive a channel, given the channel's ID.
     result = client.delete_stream(stream_id)
     # {code_example|end}
     validate_response_result(result)
@@ -989,12 +987,9 @@ def mark_stream_as_read(client: Client) -> None:
 @openapi_test_function("/mark_topic_as_read:post")
 def mark_topic_as_read(client: Client) -> None:
     stream_id = client.get_subscriptions()["subscriptions"][0]["stream_id"]
-    # Grab an existing topic name
     topic_name = client.get_stream_topics(stream_id)["topics"][0]["name"]
-
     # {code_example|start}
-    # Mark unread messages in a given topic, in the channel with ID 1,
-    # as read.
+    # Mark unread messages in a given topic, given a channel ID, as read.
     result = client.mark_topic_as_read(stream_id, topic_name)
     # {code_example|end}
     validate_response_result(result)
@@ -1539,12 +1534,10 @@ def set_typing_status(client: Client) -> None:
     validate_response_result(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
-    # {code_example|start}
-    # The user has started to type in topic "typing status"
-    # of the channel named "Denmark".
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
-
+    # {code_example|start}
+    # The user has started typing in a topic/channel.
     request = {
         "type": "stream",
         "op": "start",
@@ -1558,11 +1551,7 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
-    # The user has finished typing in topic "typing status"
-    # of the channel named "Denmark".
-    stream_id = client.get_stream_id("Denmark")["stream_id"]
-    topic = "typing status"
-
+    # The user has finished typing in a topic/channel.
     request = {
         "type": "stream",
         "op": "stop",
@@ -1596,9 +1585,9 @@ def upload_custom_emoji(client: Client) -> None:
 
 @openapi_test_function("/realm/emoji/{emoji_name}:delete")
 def delete_custom_emoji(client: Client) -> None:
+    emoji_name = "my_custom_emoji"
     # {code_example|start}
     # Delete a custom emoji.
-    emoji_name = "my_custom_emoji"
     result = client.call_endpoint(f"realm/emoji/{emoji_name}", method="DELETE")
     # {code_example|end}
     validate_response_result(result)
@@ -1617,11 +1606,10 @@ def get_alert_words(client: Client) -> None:
 
 @openapi_test_function("/users/me/alert_words:post")
 def add_alert_words(client: Client) -> None:
+    words = ["foo", "bar"]
     # {code_example|start}
     # Add words (or phrases) to the user's set of configured alert words.
-    word = ["foo", "bar"]
-
-    result = client.add_alert_words(word)
+    result = client.add_alert_words(words)
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/users/me/alert_words", "post", "200")
