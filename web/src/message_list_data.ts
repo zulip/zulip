@@ -535,12 +535,14 @@ export class MessageListData {
         item_list: Message[],
         start_index: number,
         op: (idx: number) => number,
-    ): Message {
+    ): Message | undefined {
         let cur_idx = start_index;
+        let message;
         do {
             cur_idx = op(cur_idx);
-        } while (item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
-        return item_list[cur_idx];
+            message = item_list[cur_idx];
+        } while (message !== undefined && this._is_localonly_id(message.id));
+        return message;
     }
 
     change_message_id(old_id: number, new_id: number): boolean {
