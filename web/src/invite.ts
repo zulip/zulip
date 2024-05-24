@@ -358,7 +358,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             create_item_from_text: email_pill.create_item_from_email,
             get_text_from_item: email_pill.get_email_from_item,
         });
-        const $pill_input = $("#invitee_emails_container .pill-container .input");
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
@@ -380,15 +379,20 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $(e.target).parent().remove();
         });
 
-        function toggle_invite_submit_button(): void {
+        function toggle_invite_submit_button(selected_tab?: string): void {
+            if (selected_tab === undefined) {
+                selected_tab = $(".invite_users_option_tabs")
+                    .find(".selected")
+                    .attr("data-tab-key");
+            }
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
-                $pill_input.is(":visible") &&
+                selected_tab === "invite-email-tab" &&
                     pills.items().length === 0 &&
                     email_pill.get_current_email(pills) === null,
             );
-            if ($("#invitee_emails_container").is(":visible")) {
+            if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
                 $button.attr("data-loading-text", $t({defaultMessage: "Inviting..."}));
             } else {
@@ -398,7 +402,9 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         }
 
         pills.onPillCreate(toggle_invite_submit_button);
-        pills.onPillRemove(toggle_invite_submit_button);
+        pills.onPillRemove(() => {
+            toggle_invite_submit_button();
+        });
         pills.onTextInputHook(toggle_invite_submit_button);
 
         $("#invite-user-modal").on("input", "input, textarea, select", () => {
@@ -473,7 +479,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                         $("#invitee_emails_container").hide();
                         break;
                 }
-                toggle_invite_submit_button();
+                toggle_invite_submit_button(key);
                 reset_error_messages();
             },
         });
