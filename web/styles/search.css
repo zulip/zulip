@@ -246,10 +246,18 @@
 
         .search_list_item .pill-container {
             margin-left: 5px;
+            cursor: pointer;
+            padding: 0;
         }
 
         .pill {
             align-items: baseline;
+            margin: 0;
+            border: none;
+
+            .exit {
+                display: none;
+            }
         }
 
         .pill-image {
