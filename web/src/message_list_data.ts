@@ -108,21 +108,6 @@ export class MessageListData {
         return this.first()!.id <= msg_id && msg_id <= this.last()!.id;
     }
 
-    ids_greater_or_equal_than(my_id: number): number[] {
-        const result = [];
-
-        for (let i = this._items.length - 1; i >= 0; i -= 1) {
-            const message_id = this._items[i].id;
-            if (message_id >= my_id) {
-                result.push(message_id);
-            } else {
-                continue;
-            }
-        }
-
-        return result;
-    }
-
     select_idx(): number | undefined {
         if (this._selected_id === -1) {
             return undefined;

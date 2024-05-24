@@ -210,10 +210,6 @@ export class MessageList {
         return this.data.last();
     }
 
-    ids_greater_or_equal_than(id) {
-        return this.data.ids_greater_or_equal_than(id);
-    }
-
     prev() {
         return this.data.prev();
     }
