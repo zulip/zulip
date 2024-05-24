@@ -226,10 +226,6 @@ export class MessageList {
         return this.data.is_at_end();
     }
 
-    nth_most_recent_id(n) {
-        return this.data.nth_most_recent_id(n);
-    }
-
     is_keyword_search() {
         return this.data.is_keyword_search();
     }

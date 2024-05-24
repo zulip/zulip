@@ -180,14 +180,6 @@ export class MessageListData {
         return last_msg.id === this._selected_id;
     }
 
-    nth_most_recent_id(n: number): number {
-        const i = this._items.length - n;
-        if (i < 0) {
-            return -1;
-        }
-        return this._items[i].id;
-    }
-
     clear(): void {
         this._all_items = [];
         this._items = [];

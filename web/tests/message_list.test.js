@@ -192,17 +192,6 @@ run_test("message_range", () => {
     assert.deepEqual(list.message_range(-1, 40), [{id: 30}, {id: 40}]);
 });
 
-run_test("nth_most_recent_id", () => {
-    const list = new MessageList({
-        filter: new Filter([]),
-    });
-    list.append([{id: 10}, {id: 20}, {id: 30}]);
-    assert.equal(list.nth_most_recent_id(1), 30);
-    assert.equal(list.nth_most_recent_id(2), 20);
-    assert.equal(list.nth_most_recent_id(3), 10);
-    assert.equal(list.nth_most_recent_id(4), -1);
-});
-
 run_test("change_message_id", () => {
     const list = new MessageList({
         filter: new Filter([]),
