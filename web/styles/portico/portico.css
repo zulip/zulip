@@ -1488,3 +1488,8 @@ label.label-title {
 .events-table-ops {
     margin-left: 12px !important;
 }
+
+.api-event-name {
+    color: hsl(14deg 75% 60%);
+    font-size: 1rem;
+}

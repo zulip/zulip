@@ -209,7 +209,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             # Internal hyperlink name
             h3_id: str = event_type_str
             event_name: str = event_type_str
-            event_type_str = f'<span class="api-argument-required"> {event_type_str}</span>'
+            event_type_str = f'<span class="api-event-name"> {event_type_str}</span>'
             op: Optional[Dict[str, Any]] = events["properties"].pop("op", None)
             op_str: str = ""
             if op is not None:
