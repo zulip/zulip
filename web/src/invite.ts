@@ -206,7 +206,6 @@ function submit_invitation_form(): void {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            $<HTMLTextAreaElement>("textarea#invitee_emails").trigger("focus");
             $invite_status[0].scrollIntoView();
         },
     });
