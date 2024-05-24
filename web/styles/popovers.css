@@ -1343,10 +1343,11 @@ ul {
 }
 
 #gear-menu-dropdown {
-    .org-info {
+    .org-info-container {
         padding: 9px 0 5px;
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
 
-        & li {
+        .org-info {
             display: flex;
             justify-content: flex-start;
             font-size: 15px;
