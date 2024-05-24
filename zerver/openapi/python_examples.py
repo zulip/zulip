@@ -72,6 +72,12 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
     assert ids_list == user_ids
 
 
+def get_subscribed_stream_ids(client: Client) -> List[int]:
+    streams = client.get_subscriptions()
+    stream_ids = [stream["stream_id"] for stream in streams["subscriptions"]]
+    return stream_ids
+
+
 def validate_message(client: Client, message_id: int, content: Any) -> None:
     url = "messages/" + str(message_id)
     result = client.call_endpoint(
@@ -168,10 +174,18 @@ def get_presence(client: Client) -> None:
 
 @openapi_test_function("/default_streams:post")
 def add_default_stream(client: Client) -> None:
+    result = client.add_subscriptions(
+        streams=[
+            {
+                "name": "test channel",
+                "description": "New channel for testing",
+            },
+        ],
+    )
+    stream_id = client.get_stream_id("test channel")["stream_id"]
+
     # {code_example|start}
     # Add a channel to the set of default channels for new users.
-    stream_id = 10
-
     result = client.add_default_stream(stream_id)
     # {code_example|end}
 
@@ -180,9 +194,11 @@ def add_default_stream(client: Client) -> None:
 
 @openapi_test_function("/default_streams:delete")
 def remove_default_stream(client: Client) -> None:
+    stream_id = client.get_stream_id("test channel")["stream_id"]
+
     # {code_example|start}
     # Remove a channel from the set of default channels for new users.
-    request = {"stream_id": 10}
+    request = {"stream_id": stream_id}
 
     result = client.call_endpoint(
         url="/default_streams",
@@ -338,13 +354,15 @@ def get_invitations(client: Client) -> None:
 
 @openapi_test_function("/invites:post")
 def send_invitations(client: Client) -> None:
+    stream_ids = get_subscribed_stream_ids(client)[:3]
+
     # {code_example|start}
     # Send invitations
     request = {
         "invitee_emails": "example@zulip.com, logan@zulip.com",
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 11, 12],
+        "stream_ids": stream_ids,
     }
     result = client.call_endpoint(url="/invites", method="POST", request=request)
     # {code_example|end}
@@ -354,12 +372,14 @@ def send_invitations(client: Client) -> None:
 
 @openapi_test_function("/invites/multiuse:post")
 def create_reusable_invitation_link(client: Client) -> None:
+    stream_ids = get_subscribed_stream_ids(client)[:3]
+
     # {code_example|start}
     # Create reusable invitation link
     request = {
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 11, 12],
+        "stream_ids": stream_ids,
     }
     result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
     # {code_example|end}
@@ -369,11 +389,12 @@ def create_reusable_invitation_link(client: Client) -> None:
 
 @openapi_test_function("/invites/{invite_id}:delete")
 def revoke_email_invitation(client: Client) -> None:
+    stream_ids = get_subscribed_stream_ids(client)[:3]
     request = {
         "invitee_emails": "delete-invite@zulip.com",
         "invite_expires_in_minutes": 14400,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 11, 12],
+        "stream_ids": stream_ids,
     }
     result = client.call_endpoint(url="/invites", method="POST", request=request)
 
@@ -388,10 +409,11 @@ def revoke_email_invitation(client: Client) -> None:
 
 @openapi_test_function("/invites/multiuse/{invite_id}:delete")
 def revoke_reusable_invitation_link(client: Client) -> None:
+    stream_ids = get_subscribed_stream_ids(client)[:3]
     request = {
         "invite_expires_in_minutes": 14400,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1],
+        "stream_ids": stream_ids,
     }
     result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
 
@@ -466,11 +488,11 @@ def update_user(client: Client) -> None:
 @openapi_test_function("/users/{user_id}/subscriptions/{stream_id}:get")
 def get_subscription_status(client: Client) -> None:
     ensure_users([7], ["zoe"])
+    stream_id = client.get_subscriptions()["subscriptions"][0]["stream_id"]
 
     # {code_example|start}
     # Check whether a user is a subscriber to a given channel.
     user_id = 7
-    stream_id = 1
     result = client.call_endpoint(
         url=f"/users/{user_id}/subscriptions/{stream_id}",
         method="GET",
@@ -496,10 +518,15 @@ def get_realm_linkifiers(client: Client) -> None:
 
 @openapi_test_function("/realm/linkifiers:patch")
 def reorder_realm_linkifiers(client: Client) -> None:
+    realm_linkifiers = client.call_endpoint(
+        url="/realm/linkifiers",
+        method="GET",
+    )
+    reordered_linkifiers = [linkifier["id"] for linkifier in realm_linkifiers["linkifiers"]][::-1]
+
     # {code_example|start}
     # Reorder the linkifiers in the user's organization.
-    order = [4, 3, 2, 1]
-    request = {"ordered_linkifier_ids": json.dumps(order)}
+    request = {"ordered_linkifier_ids": json.dumps(reordered_linkifiers)}
 
     result = client.call_endpoint(url="/realm/linkifiers", method="PATCH", request=request)
     # {code_example|end}
@@ -520,10 +547,16 @@ def get_realm_profile_fields(client: Client) -> None:
 
 @openapi_test_function("/realm/profile_fields:patch")
 def reorder_realm_profile_fields(client: Client) -> None:
+    realm_profile_fields = client.call_endpoint(
+        url="/realm/profile_fields",
+        method="GET",
+    )
+    realm_profile_field_ids = [field["id"] for field in realm_profile_fields["custom_fields"]]
+    reordered_profile_fields = realm_profile_field_ids[::-1]
+
     # {code_example|start}
     # Reorder the custom profile fields in the user's organization.
-    order = [9, 8, 7, 6, 5, 4, 3, 2, 1]
-    request = {"order": json.dumps(order)}
+    request = {"order": json.dumps(reordered_profile_fields)}
 
     result = client.call_endpoint(url="/realm/profile_fields", method="PATCH", request=request)
     # {code_example|end}
@@ -924,9 +957,10 @@ def mark_all_as_read(client: Client) -> None:
 
 @openapi_test_function("/mark_stream_as_read:post")
 def mark_stream_as_read(client: Client) -> None:
+    stream_id = client.get_subscriptions()["subscriptions"][0]["stream_id"]
     # {code_example|start}
     # Mark the unread messages in the channel with ID 1 as read.
-    result = client.mark_stream_as_read(1)
+    result = client.mark_stream_as_read(stream_id)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/mark_stream_as_read", "post", "200")
@@ -934,13 +968,14 @@ def mark_stream_as_read(client: Client) -> None:
 
 @openapi_test_function("/mark_topic_as_read:post")
 def mark_topic_as_read(client: Client) -> None:
+    stream_id = client.get_subscriptions()["subscriptions"][0]["stream_id"]
     # Grab an existing topic name
-    topic_name = client.get_stream_topics(1)["topics"][0]["name"]
+    topic_name = client.get_stream_topics(stream_id)["topics"][0]["name"]
 
     # {code_example|start}
     # Mark unread messages in a given topic, in the channel with ID 1,
     # as read.
-    result = client.mark_topic_as_read(1, topic_name)
+    result = client.mark_topic_as_read(stream_id, topic_name)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/mark_stream_as_read", "post", "200")
@@ -948,18 +983,23 @@ def mark_topic_as_read(client: Client) -> None:
 
 @openapi_test_function("/users/me/subscriptions/properties:post")
 def update_subscription_settings(client: Client) -> None:
+    subscriptions = client.get_subscriptions()["subscriptions"]
+
+    assert len(subscriptions) >= 2
+    stream_a_id = subscriptions[0]["stream_id"]
+    stream_b_id = subscriptions[1]["stream_id"]
     # {code_example|start}
-    # Update the user's subscription of the channel with ID 1 so that
-    # it's pinned to the top of the user's channel list, and in the
-    # channel with ID 3 so that it has the hex color "f00".
+    # Update the user's subscription of the channel with ID `stream_a_id`
+    # so that it's pinned to the top of the user's channel list, and in
+    # the channel with ID `stream_b_id` so that it has the hex color "f00".
     request = [
         {
-            "stream_id": 1,
+            "stream_id": stream_a_id,
             "property": "pin_to_top",
             "value": True,
         },
         {
-            "stream_id": 10,
+            "stream_id": stream_b_id,
             "property": "color",
             "value": "#f00f00",
         },
@@ -1570,11 +1610,11 @@ def add_alert_words(client: Client) -> None:
 
 @openapi_test_function("/users/me/alert_words:delete")
 def remove_alert_words(client: Client) -> None:
+    words = client.get_alert_words()["alert_words"]
+    assert len(words) > 0
     # {code_example|start}
     # Remove words (or phrases) from the user's set of configured alert words.
-    word = ["foo"]
-
-    result = client.remove_alert_words(word)
+    result = client.remove_alert_words(words)
     # {code_example|end}
     validate_against_openapi_schema(result, "/users/me/alert_words", "delete", "200")
 
