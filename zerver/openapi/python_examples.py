@@ -400,18 +400,20 @@ def create_reusable_invitation_link(client: Client) -> None:
 
 @openapi_test_function("/invites/{invite_id}:delete")
 def revoke_email_invitation(client: Client) -> None:
-    stream_ids = get_subscribed_stream_ids(client)[:3]
+    # Send email invitation.
+    email = "delete-invite@zulip.com"
     request = {
-        "invitee_emails": "delete-invite@zulip.com",
-        "invite_expires_in_minutes": 14400,  # 10 days
-        "invite_as": 400,
-        "stream_ids": stream_ids,
+        "invitee_emails": email,
+        "stream_ids": [],
     }
-    result = client.call_endpoint(url="/invites", method="POST", request=request)
-
+    client.call_endpoint(url="/invites", method="POST", request=request)
+    # Get invitation ID.
+    invites = client.call_endpoint(url="/invites", method="GET")["invites"]
+    invite = [s for s in invites if not s["is_multiuse"] and s["email"] == email]
+    assert len(invite) == 1
+    invite_id = invite[0]["id"]
     # {code_example|start}
     # Revoke email invitation
-    invite_id = 3
     result = client.call_endpoint(url=f"/invites/{invite_id}", method="DELETE")
     # {code_example|end}
     validate_response_result(result)
@@ -420,17 +422,17 @@ def revoke_email_invitation(client: Client) -> None:
 
 @openapi_test_function("/invites/multiuse/{invite_id}:delete")
 def revoke_reusable_invitation_link(client: Client) -> None:
-    stream_ids = get_subscribed_stream_ids(client)[:3]
-    request = {
-        "invite_expires_in_minutes": 14400,  # 10 days
-        "invite_as": 400,
-        "stream_ids": stream_ids,
-    }
-    result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
-
+    # Create multiuse invitation link.
+    invite_url = client.call_endpoint(url="/invites/multiuse", method="POST", request={})[
+        "invite_link"
+    ]
+    # Get invitation ID.
+    invites = client.call_endpoint(url="/invites", method="GET")["invites"]
+    invite = [s for s in invites if s["is_multiuse"] and s["link_url"] == invite_url]
+    assert len(invite) == 1
+    invite_id = invite[0]["id"]
     # {code_example|start}
     # Revoke reusable invitation link
-    invite_id = 2
     result = client.call_endpoint(url=f"/invites/multiuse/{invite_id}", method="DELETE")
     # {code_example|end}
     validate_response_result(result)
