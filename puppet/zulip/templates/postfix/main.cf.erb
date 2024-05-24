@@ -38,3 +38,6 @@ virtual_alias_maps = regexp:/etc/postfix/virtual
 allow_percent_hack = no
 allow_untrusted_routing = yes
 strict_rfc821_envelopes = no
+
+# Ingest messages up to 25MB
+message_size_limit = 26214400
