@@ -1,7 +1,7 @@
 # Schema migrations
 
 Zulip uses the [standard Django system for doing schema
-migrations](https://docs.djangoproject.com/en/3.2/topics/migrations/).
+migrations](https://docs.djangoproject.com/en/5.0/topics/migrations/).
 There is some example usage in the [new feature
 tutorial](../tutorials/new-feature-tutorial.md).
 
@@ -171,7 +171,7 @@ an incorrect migration messes up a database in a way that's impossible
 to undo without going to backups.
 
 [django-migration-test-blog-post]: https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
-[migrations-non-atomic]: https://docs.djangoproject.com/en/3.2/howto/writing-migrations/#non-atomic-migrations
+[migrations-non-atomic]: https://docs.djangoproject.com/en/5.0/howto/writing-migrations/#non-atomic-migrations
 
 ## Schema and initial data changes
 

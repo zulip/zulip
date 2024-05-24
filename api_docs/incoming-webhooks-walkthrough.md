@@ -144,7 +144,7 @@ You should name your webhook function as such
 integration and is always lower-case.
 
 At minimum, the webhook function must accept `request` (Django
-[HttpRequest](https://docs.djangoproject.com/en/3.2/ref/request-response/#django.http.HttpRequest)
+[HttpRequest](https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest)
 object), and `user_profile` (Zulip's user object). You may also want to
 define additional parameters using the `REQ` object.
 

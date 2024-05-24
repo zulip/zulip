@@ -100,7 +100,7 @@ def setup_sentry(dsn: Optional[str], environment: str) -> None:
     )
 
     # Ignore all of the loggers from django.security that are for user
-    # errors; see https://docs.djangoproject.com/en/3.2/ref/exceptions/#suspiciousoperation
+    # errors; see https://docs.djangoproject.com/en/5.0/ref/exceptions/#suspiciousoperation
     ignore_logger("django.security.SuspiciousOperation")
     ignore_logger("django.security.DisallowedHost")
     ignore_logger("django.security.DisallowedModelAdminLookup")

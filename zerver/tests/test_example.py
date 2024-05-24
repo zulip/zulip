@@ -19,7 +19,7 @@ from zerver.models.users import get_user_by_delivery_email
 
 # Most Zulip tests use ZulipTestCase, which inherits from django.test.TestCase.
 # We recommend learning Django basics first, so search the web for "django testing".
-# A common first result is https://docs.djangoproject.com/en/3.2/topics/testing/
+# A common first result is https://docs.djangoproject.com/en/5.0/topics/testing/
 class TestBasics(ZulipTestCase):
     def test_basics(self) -> None:
         # Django's tests are based on Python's unittest module, so you

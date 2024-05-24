@@ -207,7 +207,7 @@ aren't receiving emails from Zulip:
   will try to use the TLS protocol on port 465, which won't work.
 
 - Zulip's email sending configuration is based on the standard Django
-  [SMTP backend](https://docs.djangoproject.com/en/3.2/topics/email/#smtp-backend)
+  [SMTP backend](https://docs.djangoproject.com/en/5.0/topics/email/#smtp-backend)
   configuration. So if you're having trouble getting your email
   provider working, you may want to search for documentation related
   to using your email provider with Django.
