@@ -185,4 +185,4 @@ upgrade.
 [zulip-api]: https://zulip.com/api/rest
 [webhook-integrations]: https://zulip.com/api/incoming-webhooks-overview
 [management-commands-dev]: ../subsystems/management-commands.md
-[django-management]: https://docs.djangoproject.com/en/3.2/ref/django-admin/#django-admin-and-manage-py
+[django-management]: https://docs.djangoproject.com/en/5.0/ref/django-admin/#django-admin-and-manage-py

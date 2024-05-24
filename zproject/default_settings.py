@@ -484,7 +484,7 @@ TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 # Configuration for JWT auth (sign in and API key fetch)
 JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {}
 
-# https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SERVER_EMAIL
+# https://docs.djangoproject.com/en/5.0/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
 SERVER_EMAIL = ZULIP_ADMINISTRATOR
 # Django setting for who receives error emails.

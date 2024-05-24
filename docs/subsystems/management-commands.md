@@ -62,4 +62,4 @@ to do anything special like restart the server when iteratively
 testing one, even if testing in a Zulip production environment where
 the server doesn't normally restart whenever a file is edited.
 
-[django-docs]: https://docs.djangoproject.com/en/3.2/howto/custom-management-commands/
+[django-docs]: https://docs.djangoproject.com/en/5.0/howto/custom-management-commands/

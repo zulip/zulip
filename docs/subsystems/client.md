@@ -29,7 +29,7 @@ The `webhook_view` auth decorator, used for most incoming
 webhooks, accepts the name of the integration as an argument and uses
 it to generate a client name that it adds to the `request_notes`
 object that can be accessed with the `request` (Django
-[HttpRequest](https://docs.djangoproject.com/en/3.2/ref/request-response/#django.http.HttpRequest))
+[HttpRequest](https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest))
 object via `zerver.lib.request.get_request_notes(request)`.
 
 In most integrations, `request_notes.client` is then passed to
