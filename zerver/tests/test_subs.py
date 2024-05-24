@@ -25,7 +25,11 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     lookup_default_stream_groups,
 )
-from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_change_realm_plan_type,
+    do_set_realm_property,
+)
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -36,7 +40,11 @@ from zerver.actions.streams import (
     do_deactivate_stream,
     do_unarchive_stream,
 )
-from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    bulk_add_members_to_user_groups,
+    check_add_user_group,
+)
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.attachments import (
     validate_attachment_request,
@@ -110,6 +118,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import CommonPolicyEnum, CreateWebPublicStreamPolicyEnum, get_realm
 from zerver.models.streams import get_default_stream_groups, get_stream
 from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
@@ -4277,6 +4286,10 @@ class SubscriptionAPITest(ZulipTestCase):
         user.realm = realm
         user.save()
 
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        bulk_add_members_to_user_groups([members_group], [user.id], acting_user=None)
         self.common_subscribe_to_streams(
             user,
             invite_streams,
@@ -4436,6 +4449,88 @@ class SubscriptionAPITest(ZulipTestCase):
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream3"], invite_only=invite_only)
 
+    def _test_group_based_settings_for_creating_streams(
+        self,
+        stream_policy: str,
+        *,
+        invite_only: bool,
+        is_web_public: bool,
+    ) -> None:
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+
+        realm = cordelia.realm
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, stream_policy, admins_group.usergroup_ptr, acting_user=None
+        )
+        result = self.common_subscribe_to_streams(
+            cordelia,
+            ["new_stream1"],
+            invite_only=invite_only,
+            is_web_public=is_web_public,
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.common_subscribe_to_streams(iago, ["new_stream1"], invite_only=invite_only)
+
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, stream_policy, full_members_group, acting_user=None
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
+        result = self.common_subscribe_to_streams(
+            cordelia,
+            ["new_stream2"],
+            invite_only=invite_only,
+            is_web_public=is_web_public,
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
+        self.common_subscribe_to_streams(cordelia, ["new_stream2"], invite_only=invite_only)
+
+        leadership_group = check_add_user_group(realm, "Leadership", [desdemona], acting_user=None)
+        do_change_realm_permission_group_setting(
+            realm, stream_policy, leadership_group, acting_user=None
+        )
+        result = self.common_subscribe_to_streams(
+            self.example_user("iago"),
+            ["new_stream3"],
+            invite_only=invite_only,
+            is_web_public=is_web_public,
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.common_subscribe_to_streams(desdemona, ["new_stream3"], invite_only=invite_only)
+
+        staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=None)
+        setting_group = self.create_or_update_anonymous_group_for_setting([cordelia], [staff_group])
+        do_change_realm_permission_group_setting(
+            realm, stream_policy, setting_group, acting_user=None
+        )
+
+        result = self.common_subscribe_to_streams(
+            desdemona,
+            ["new_stream4"],
+            invite_only=invite_only,
+            is_web_public=is_web_public,
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.common_subscribe_to_streams(iago, ["new_stream4"], invite_only=invite_only)
+        self.common_subscribe_to_streams(cordelia, ["new_stream5"], invite_only=invite_only)
+
     def test_user_settings_for_creating_private_streams(self) -> None:
         self._test_user_settings_for_creating_streams(
             "create_private_stream_policy",
@@ -4444,8 +4539,8 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
     def test_user_settings_for_creating_public_streams(self) -> None:
-        self._test_user_settings_for_creating_streams(
-            "create_public_stream_policy",
+        self._test_group_based_settings_for_creating_streams(
+            "can_create_public_channel_group",
             invite_only=False,
             is_web_public=False,
         )
@@ -4502,12 +4597,6 @@ class SubscriptionAPITest(ZulipTestCase):
             return user_profile.can_create_private_streams()
 
         self.check_has_permission_policies("create_private_stream_policy", validation_func)
-
-    def test_public_stream_policies(self) -> None:
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_create_public_streams()
-
-        self.check_has_permission_policies("create_public_stream_policy", validation_func)
 
     def test_web_public_stream_policies(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
@@ -4681,7 +4770,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         streams_to_sub = ["multi_user_stream"]
         with self.capture_send_event_calls(expected_num_events=5) as events:
-            with self.assert_database_query_count(36):
+            with self.assert_database_query_count(37):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -5505,7 +5594,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(36):
+        with self.assert_database_query_count(37):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5525,7 +5614,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(47):
+        with self.assert_database_query_count(48):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],

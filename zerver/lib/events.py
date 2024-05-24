@@ -1194,7 +1194,6 @@ def apply_event(
                 )
 
             policy_permission_dict = {
-                "create_public_stream_policy": "can_create_public_streams",
                 "create_private_stream_policy": "can_create_private_streams",
                 "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
@@ -1234,6 +1233,14 @@ def apply_event(
                         value["Email"]["enabled"] or value["LDAP"]["enabled"]
                     )
                     state["realm_email_auth_enabled"] = value["Email"]["enabled"]
+
+                if key == "can_create_public_channel_group":
+                    state["can_create_public_streams"] = user_profile.has_permission(key)
+                    state["can_create_streams"] = (
+                        state["can_create_private_streams"]
+                        or state["can_create_public_streams"]
+                        or state["can_create_web_public_streams"]
+                    )
         elif event["op"] == "deactivated":
             # The realm has just been deactivated.  If our request had
             # arrived a moment later, we'd have rendered the
