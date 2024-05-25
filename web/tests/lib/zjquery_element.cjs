@@ -28,36 +28,36 @@ function FakeElement(selector, opts) {
         [Symbol.iterator]: Array.prototype.values,
         addClass(class_name) {
             classes.set(class_name, true);
-            return $self;
+            return this;
         },
         append(arg) {
             html = html + arg;
-            return $self;
+            return this;
         },
         attr(name, val) {
             if (val === undefined) {
                 return attrs.get(name);
             }
             attrs.set(name, val);
-            return $self;
+            return this;
         },
         data(name, val) {
             if (val === undefined) {
                 return attrs.get("data-" + name);
             }
             attrs.set("data-" + name, val);
-            return $self;
+            return this;
         },
         empty(arg) {
             if (arg === undefined) {
                 find_results.clear();
                 html = "";
             }
-            return $self;
+            return this;
         },
         expectOne() {
             // silently do nothing
-            return $self;
+            return this;
         },
         fadeTo: noop,
         find(child_selector) {
@@ -97,12 +97,12 @@ function FakeElement(selector, opts) {
         },
         hide() {
             shown = false;
-            return $self;
+            return this;
         },
         html(arg) {
             if (arg !== undefined) {
                 html = arg;
-                return $self;
+                return this;
             }
             return html;
         },
@@ -111,7 +111,7 @@ function FakeElement(selector, opts) {
                 case ":visible":
                     return shown;
                 case ":focus":
-                    return $self.is_focused();
+                    return this.is_focused();
                 /* istanbul ignore next */
                 default:
                     throw new Error("zjquery does not support this is() call");
@@ -124,16 +124,16 @@ function FakeElement(selector, opts) {
         },
         off(...args) {
             event_store.off(...args);
-            return $self;
+            return this;
         },
         on(...args) {
             event_store.on(...args);
-            return $self;
+            return this;
         },
         /* istanbul ignore next */
         one(...args) {
             event_store.one(...args);
-            return $self;
+            return this;
         },
         parent() {
             return $my_parent;
@@ -155,18 +155,18 @@ function FakeElement(selector, opts) {
                 return properties.get(name);
             }
             properties.set(name, val);
-            return $self;
+            return this;
         },
         removeAttr(name) {
             attrs.delete(name);
-            return $self;
+            return this;
         },
         removeClass(class_names) {
             class_names = class_names.split(" ");
             for (const class_name of class_names) {
                 classes.delete(class_name);
             }
-            return $self;
+            return this;
         },
         /* istanbul ignore next */
         remove() {
@@ -199,14 +199,14 @@ function FakeElement(selector, opts) {
         },
         show() {
             shown = true;
-            return $self;
+            return this;
         },
         text(...args) {
             if (args.length > 0) {
                 if (args[0] !== undefined) {
                     text = args[0].toString();
                 }
-                return $self;
+                return this;
             }
             return text;
         },
@@ -217,7 +217,7 @@ function FakeElement(selector, opts) {
         toggle(show) {
             assert.ok([true, false].includes(show));
             shown = show;
-            return $self;
+            return this;
         },
         toggleClass(class_name, add) {
             if (add) {
@@ -225,18 +225,18 @@ function FakeElement(selector, opts) {
             } else {
                 classes.delete(class_name);
             }
-            return $self;
+            return this;
         },
         trigger(ev) {
-            event_store.trigger($self, ev);
-            return $self;
+            event_store.trigger(this, ev);
+            return this;
         },
         val(...args) {
             if (args.length === 0) {
                 return value || "";
             }
             [value] = args;
-            return $self;
+            return this;
         },
         visible() {
             return shown;
