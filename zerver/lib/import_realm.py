@@ -1204,7 +1204,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # We don't import Huddle yet, since we don't have the data to
         # compute huddle hashes until we've imported some of the
         # tables below.
-        # TODO: double-check this.
+        # We can't get huddle hashes without processing subscriptions
+        # first, during which get_huddles_from_subscription is called.
 
     re_map_foreign_keys(
         data,
