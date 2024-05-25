@@ -45,15 +45,15 @@ export function toggle_starred_and_update_server(message: Message): void {
 
 // This updates the state of the starred flag in local data
 // structures, and triggers a UI rerender.
-export function update_starred_flag(message_id: number, new_value: boolean): void {
+export function update_starred_flag(message_id: number, updated_starred_flag: boolean): void {
     const message = message_store.get(message_id);
     if (message === undefined) {
         // If we don't have the message locally, do nothing; if later
         // we fetch it, it'll come with the correct `starred` state.
         return;
     }
-    message.starred = new_value;
-    message_live_update.update_starred_view(message_id, new_value);
+    message.starred = updated_starred_flag;
+    message_live_update.update_starred_view(message_id, updated_starred_flag);
 }
 
 export function rerender_ui(): void {
