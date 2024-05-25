@@ -122,6 +122,7 @@ function clear_box(): void {
     compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
 
     compose_state.set_recipient_edited_manually(false);
+    compose_state.set_is_content_unedited_restored_draft(false);
     clear_textarea();
     compose_validate.check_overflow_text();
     drafts.set_compose_draft_id(undefined);
@@ -305,6 +306,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
 
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
+    let restoring_last_draft = false;
     if (
         compose_state.can_restore_drafts() &&
         !opts.content &&
@@ -314,6 +316,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     ) {
         const possible_last_draft = drafts.get_last_restorable_draft_based_on_compose_state();
         if (possible_last_draft !== undefined) {
+            restoring_last_draft = true;
             opts.draft_id = possible_last_draft.id;
             // Add a space at the end so that if the user starts typing
             // as soon as the composebox opens, they have a bit of separation
@@ -330,6 +333,11 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         // If we were provided with message content, we might need to
         // display that it's too long.
         compose_validate.check_overflow_text();
+    }
+    // This has to happen after we insert the content, so that the next "input" event
+    // is from user input.
+    if (restoring_last_draft) {
+        compose_state.set_is_content_unedited_restored_draft(true);
     }
 
     compose_state.set_message_type(opts.message_type);
@@ -405,7 +413,7 @@ export function on_show_navigation_view(): void {
     }
 
     // Leave the compose box open if there is content or if the recipient was edited.
-    if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
+    if (compose_state.has_novel_message_content() || compose_state.is_recipient_edited_manually()) {
         return;
     }
 
@@ -425,7 +433,10 @@ export function on_topic_narrow(): void {
     if (compose_state.stream_name() !== narrow_state.stream_name()) {
         // If we changed streams, then we only leave the
         // compose box open if there is content or if the recipient was edited.
-        if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
+        if (
+            compose_state.has_novel_message_content() ||
+            compose_state.is_recipient_edited_manually()
+        ) {
             compose_fade.update_message_list();
             return;
         }
@@ -436,7 +447,7 @@ export function on_topic_narrow(): void {
     }
 
     if (
-        (compose_state.topic() && compose_state.has_message_content()) ||
+        (compose_state.topic() && compose_state.has_novel_message_content()) ||
         compose_state.is_recipient_edited_manually()
     ) {
         // If the user has written something to a different topic or edited it,
@@ -491,7 +502,7 @@ export function on_narrow(opts: NarrowActivateOpts): void {
         return;
     }
 
-    if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
+    if (compose_state.has_novel_message_content() || compose_state.is_recipient_edited_manually()) {
         compose_fade.update_message_list();
         return;
     }

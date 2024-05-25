@@ -7,6 +7,7 @@ import * as sub_store from "./sub_store";
 
 let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
+let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
@@ -23,6 +24,14 @@ export function set_recipient_edited_manually(flag: boolean): void {
 
 export function is_recipient_edited_manually(): boolean {
     return recipient_edited_manually;
+}
+
+export function set_is_content_unedited_restored_draft(flag: boolean): void {
+    is_content_unedited_restored_draft = flag;
+}
+
+export function get_is_content_unedited_restored_draft(): boolean {
+    return is_content_unedited_restored_draft;
 }
 
 export function set_last_focused_compose_type_input(element: HTMLTextAreaElement): void {
@@ -188,6 +197,10 @@ export function private_message_recipient(value?: string): string | undefined {
 
 export function has_message_content(): boolean {
     return message_content() !== "";
+}
+
+export function has_novel_message_content(): boolean {
+    return message_content() !== "" && !get_is_content_unedited_restored_draft();
 }
 
 const MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT = 2;

@@ -89,6 +89,10 @@ export function initialize() {
         } else {
             $(".add-poll").parent().removeClass("disabled-on-hover");
         }
+
+        if (compose_state.get_is_content_unedited_restored_draft()) {
+            compose_state.set_is_content_unedited_restored_draft(false);
+        }
     });
 
     $("#compose form").on("submit", (e) => {
