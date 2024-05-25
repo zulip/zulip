@@ -11,7 +11,7 @@ def change_realm_audit_log_event_type_tense(
         event_type="user_password_changed"
     )
     RealmAuditLog.objects.filter(event_type="user_change_avatar_source").update(
-        event_type="user_avatar_source_changed"
+        event_type="user_avatar_source_changed_new_value"
     )
     RealmAuditLog.objects.filter(event_type="bot_owner_changed").update(
         event_type="user_bot_owner_changed"

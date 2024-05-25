@@ -280,7 +280,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_change_user_delivery_email(user, new_email)
         self.assertEqual(
             RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.USER_EMAIL_CHANGED, event_time__gte=now
+                event_type=RealmAuditLog.USER_EMAIL_CHANGED_NEW_VALUE, event_time__gte=now
             ).count(),
             1,
         )
@@ -288,11 +288,11 @@ class TestRealmAuditLog(ZulipTestCase):
 
         # Test the RealmAuditLog stringification
         audit_entry = RealmAuditLog.objects.get(
-            event_type=RealmAuditLog.USER_EMAIL_CHANGED, event_time__gte=now
+            event_type=RealmAuditLog.USER_EMAIL_CHANGED_NEW_VALUE, event_time__gte=now
         )
         self.assertTrue(
             repr(audit_entry).startswith(
-                f"<RealmAuditLog: <UserProfile: {user.email} {user.realm!r}> {RealmAuditLog.USER_EMAIL_CHANGED} "
+                f"<RealmAuditLog: <UserProfile: {user.email} {user.realm!r}> {RealmAuditLog.USER_EMAIL_CHANGED_NEW_VALUE} "
             )
         )
 
@@ -303,7 +303,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_change_avatar_fields(user, avatar_source, acting_user=user)
         self.assertEqual(
             RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
+                event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED_NEW_VALUE,
                 modified_user=user,
                 acting_user=user,
                 event_time__gte=now,
@@ -320,7 +320,7 @@ class TestRealmAuditLog(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assertTrue(result.status_code == 200)
         query = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.USER_FULL_NAME_CHANGED, event_time__gte=start
+            event_type=RealmAuditLog.USER_FULL_NAME_CHANGED_NEW_VALUE, event_time__gte=start
         )
         self.assertEqual(query.count(), 1)
 
@@ -345,7 +345,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_change_bot_owner(bot, bot_owner, admin)
         self.assertEqual(
             RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED, event_time__gte=now
+                event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED_NEW_VALUE, event_time__gte=now
             ).count(),
             1,
         )

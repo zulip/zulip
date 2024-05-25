@@ -21,12 +21,12 @@ def report_csp_violations(
 
     logging.warning(
         "CSP violation in document('%s'). "
-        "blocked URI('%s'), original policy('%s'), "
+        "blocked URL('%s'), original policy('%s'), "
         "violated directive('%s'), effective directive('%s'), "
         "disposition('%s'), referrer('%s'), "
         "status code('%s'), script sample('%s')",
-        get_attr("document-uri"),
-        get_attr("blocked-uri"),
+        get_attr("document-l"),
+        get_attr("blocked-url"),
         get_attr("original-policy"),
         get_attr("violated-directive"),
         get_attr("effective-directive"),

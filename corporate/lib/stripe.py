@@ -607,7 +607,7 @@ class SupportViewRequest(TypedDict, total=False):
 
 
 class AuditLogEventType(Enum):
-    STRIPE_CUSTOMER_CREATED = 1
+    STRIPE_CUSTOMER_CREATED_NEW_VALUE = 1
     STRIPE_CARD_CHANGED = 2
     CUSTOMER_PLAN_CREATED = 3
     DISCOUNT_CHANGED = 4

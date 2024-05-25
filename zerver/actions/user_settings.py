@@ -141,7 +141,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_EMAIL_CHANGED,
+        event_type=RealmAuditLog.USER_EMAIL_CHANGED_NEW_VALUE,
         event_time=event_time,
     )
 
@@ -386,7 +386,7 @@ def do_change_avatar_fields(
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
+        event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED_NEW_VALUE,
         extra_data={"avatar_source": avatar_source},
         event_time=event_time,
         acting_user=acting_user,
