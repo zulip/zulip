@@ -1432,26 +1432,6 @@ ul.popover-menu-list {
     }
 }
 
-ul.popover-menu-outer-list {
-    list-style: none;
-    margin: 0;
-
-    li.popover-menu-outer-list-item {
-        border-bottom: solid 1px var(--color-border-popover-menu-separator);
-
-        &:last-child {
-            border-bottom: none;
-        }
-
-        ul.popover-menu-inner-list {
-            margin: 0;
-            padding: 4px 0;
-            list-style: none;
-            background: none !important;
-        }
-    }
-}
-
 .spectator-view {
     #gear-menu-dropdown .gear-menu-select-dark-theme {
         display: block;
