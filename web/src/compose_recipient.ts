@@ -246,6 +246,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void
         recipient_id = Number.parseInt(recipient_id, 10);
     }
     compose_state.set_selected_recipient_id(recipient_id);
+    compose_state.set_recipient_edited_manually(true);
     on_compose_select_recipient_update();
     dropdown.hide();
     event.preventDefault();
