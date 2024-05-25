@@ -171,6 +171,7 @@ export function send_message_success(request, data) {
 
 export function send_message(request = create_message_object()) {
     compose_state.set_recipient_edited_manually(false);
+    compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
     } else {
