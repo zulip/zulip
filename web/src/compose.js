@@ -140,6 +140,7 @@ export function clear_compose_box() {
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
     $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
+    $(".compose_control_button_container:has(.add-todo)").removeClass("disabled-on-hover");
 }
 
 export function send_message_success(request, data) {

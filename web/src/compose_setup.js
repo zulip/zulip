@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import {unresolve_name} from "../shared/src/resolved_topic";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
+import render_add_todo_modal from "../templates/add_todo_modal.hbs";
 
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
@@ -30,6 +31,7 @@ import * as stream_settings_components from "./stream_settings_components";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import {get_timestamp_for_flatpickr} from "./timerender";
+import * as todo_modal from "./todo_modal";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as user_topics from "./user_topics";
@@ -83,11 +85,13 @@ export function initialize() {
             $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
         }
 
-        // The poll widget requires an empty compose box.
+        // The poll & todo widget require an empty compose box.
         if (compose_text_length > 0) {
             $(".add-poll").parent().addClass("disabled-on-hover");
+            $(".add-todo").parent().addClass("disabled-on-hover");
         } else {
             $(".add-poll").parent().removeClass("disabled-on-hover");
+            $(".add-todo").parent().removeClass("disabled-on-hover");
         }
     });
 
@@ -403,6 +407,29 @@ export function initialize() {
             id: "add-poll-modal",
             post_render: poll_modal.poll_options_setup,
             help_link: "https://zulip.com/help/create-a-poll",
+        });
+    });
+
+    $("body").on("click", ".compose_control_button_container:not(.disabled) .add-todo", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Create a collaborative to-do list"}),
+            html_body: render_add_todo_modal(),
+            html_submit_button: $t_html({defaultMessage: "Add to-do list"}),
+            close_on_submit: true,
+            on_click(e) {
+                // frame a message using data input in modal, then populate the compose textarea with it
+                e.preventDefault();
+                e.stopPropagation();
+                const todo_message_content = todo_modal.frame_todo_message_content();
+                compose_ui.insert_syntax_and_focus(todo_message_content);
+            },
+            form_id: "add-todo-form",
+            id: "add-todo-modal",
+            post_render: todo_modal.todo_options_setup,
+            help_link: "https://zulip.com/help/collaborative-to-do-lists",
         });
     });
 
