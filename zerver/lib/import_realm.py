@@ -81,6 +81,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_huddle_hash
 from zerver.models.users import get_system_bot, get_user_profile_by_id
@@ -116,6 +117,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "subscription": {},
     "defaultstream": {},
     "onboardingstep": {},
+    "presencesequence": {},
     "reaction": {},
     "realmauthenticationmethod": {},
     "realmemoji": {},
@@ -1063,6 +1065,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     update_model_ids(UserProfile, data, "user_profile")
     if "zerver_usergroup" in data:
         update_model_ids(UserGroup, data, "usergroup")
+    if "zerver_presencesequence" in data:
+        update_model_ids(PresenceSequence, data, "presencesequence")
 
     # Now we prepare to import the Realm table
     re_map_foreign_keys(
@@ -1098,6 +1102,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
                 setattr(realm, permission_configuration.id_field_name, -1)
 
         realm.save()
+
+        if "zerver_presencesequence" in data:
+            re_map_foreign_keys(data, "zerver_presencesequence", "realm", related_table="realm")
+            bulk_import_model(data, PresenceSequence)
+        else:
+            # We need to enforce the invariant that every realm must have a PresenceSequence.
+            PresenceSequence.objects.create(realm=realm, last_update_id=0)
 
         if "zerver_usergroup" in data:
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")

@@ -88,6 +88,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_huddle_hash
 from zerver.models.streams import get_active_streams, get_stream
@@ -863,6 +864,12 @@ class RealmImportExportTest(ExportFile):
         do_update_user_presence(
             sample_user, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT
         )
+        user_presence_last_update_ids = set(
+            UserPresence.objects.filter(realm=original_realm)
+            .values_list("last_update_id", flat=True)
+            .distinct("last_update_id")
+        )
+        presence_sequence = PresenceSequence.objects.get(realm=original_realm)
 
         # Set up scheduled messages.
         ScheduledMessage.objects.filter(realm=original_realm).delete()
@@ -1080,6 +1087,19 @@ class RealmImportExportTest(ExportFile):
         # As explained above when setting up the RealmAuditLog row, the .acting_user should have been
         # set to None due to being unexportable.
         self.assertEqual(realmauditlog.acting_user, None)
+
+        # Verify the PresenceSequence for the realm got imported correctly.
+        imported_presence_sequence = PresenceSequence.objects.get(realm=imported_realm)
+        self.assertEqual(
+            presence_sequence.last_update_id, imported_presence_sequence.last_update_id
+        )
+        imported_last_update_ids = set(
+            UserPresence.objects.filter(realm=imported_realm)
+            .values_list("last_update_id", flat=True)
+            .distinct("last_update_id")
+        )
+        self.assertEqual(user_presence_last_update_ids, imported_last_update_ids)
+        self.assertEqual(imported_presence_sequence.last_update_id, max(imported_last_update_ids))
 
         self.assertEqual(
             Message.objects.filter(realm=original_realm).count(),

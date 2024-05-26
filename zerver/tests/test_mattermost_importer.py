@@ -29,6 +29,7 @@ from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Reaction, Recipient, UserProfile
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -743,6 +744,9 @@ class MatterMostImporter(ZulipTestCase):
             )
 
         realm = get_realm("gryffindor")
+
+        presence_sequence = PresenceSequence.objects.get(realm=realm)
+        self.assertEqual(presence_sequence.last_update_id, 0)
 
         self.assertFalse(get_user("harry@zulip.com", realm).is_mirror_dummy)
         self.assertFalse(get_user("ron@zulip.com", realm).is_mirror_dummy)
