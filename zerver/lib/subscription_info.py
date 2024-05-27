@@ -56,6 +56,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         rendered_description = stream.rendered_description
         stream_id = stream.id
         stream_post_policy = stream.stream_post_policy
+        can_access_stream_topics_group_id = stream.can_access_stream_topics_group_id
 
         # Add versions of the Subscription fields based on a simulated
         # new user subscription set.
@@ -95,6 +96,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             rendered_description=rendered_description,
             stream_id=stream_id,
             stream_post_policy=stream_post_policy,
+            can_access_stream_topics_group=can_access_stream_topics_group_id,
             stream_weekly_traffic=stream_weekly_traffic,
             wildcard_mentions_notify=wildcard_mentions_notify,
         )
@@ -125,6 +127,7 @@ def build_unsubscribed_sub_from_stream_dict(
         rendered_description=stream_dict["rendered_description"],
         id=stream_dict["stream_id"],
         stream_post_policy=stream_dict["stream_post_policy"],
+        can_access_stream_topics_group_id=stream_dict["can_access_stream_topics_group"],
     )
 
     # We pass recent_traffic as None and avoid extra database query since we
@@ -157,6 +160,7 @@ def build_stream_dict_for_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
+    can_access_stream_topics_group_id = raw_stream_dict["can_access_stream_topics_group_id"]
 
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
@@ -209,6 +213,7 @@ def build_stream_dict_for_sub(
         rendered_description=rendered_description,
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
+        can_access_stream_topics_group=can_access_stream_topics_group_id,
         stream_weekly_traffic=stream_weekly_traffic,
         wildcard_mentions_notify=wildcard_mentions_notify,
     )
@@ -231,6 +236,7 @@ def build_stream_dict_for_never_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
+    can_access_stream_topics_group_id = raw_stream_dict["can_access_stream_topics_group_id"]
 
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -258,6 +264,7 @@ def build_stream_dict_for_never_sub(
         rendered_description=rendered_description,
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
+        can_access_stream_topics_group=can_access_stream_topics_group_id,
         stream_weekly_traffic=stream_weekly_traffic,
     )
 

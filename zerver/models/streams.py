@@ -135,6 +135,11 @@ class Stream(models.Model):
     # We are not using PROTECT since we want to allow deletion of user groups
     # when realm itself is deleted.
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
+    can_access_stream_topics_group = models.ForeignKey(
+        UserGroup,
+        on_delete=models.RESTRICT,
+        related_name="+",
+    )
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -150,6 +155,15 @@ class Stream(models.Model):
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="can_remove_subscribers_group_id",
+        ),
+        "can_access_stream_topics_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="can_access_stream_topics_group_id",
         ),
     }
 
@@ -193,6 +207,7 @@ class Stream(models.Model):
         "rendered_description",
         "stream_post_policy",
         "can_remove_subscribers_group_id",
+        "can_access_stream_topics_group_id",
     ]
 
     def to_dict(self) -> DefaultStreamDict:
@@ -210,6 +225,7 @@ class Stream(models.Model):
             rendered_description=self.rendered_description,
             stream_id=self.id,
             stream_post_policy=self.stream_post_policy,
+            can_access_stream_topics_group=self.can_access_stream_topics_group_id,
             is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         )
 

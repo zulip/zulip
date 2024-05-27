@@ -701,6 +701,7 @@ paths:
                                         "in_home_view": true,
                                         "stream_weekly_traffic": null,
                                         "can_remove_subscribers_group": 2,
+                                        "can_access_stream_topics_group": 11,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1335,6 +1336,7 @@ paths:
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
+                                        "can_access_stream_topics_group": 11,
                                         "stream_weekly_traffic": null,
                                       },
                                     ],
@@ -1393,6 +1395,7 @@ paths:
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
+                                        "can_access_stream_topics_group": 11,
                                         "stream_weekly_traffic": null,
                                       },
                                     ],
@@ -1984,6 +1987,7 @@ paths:
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group": 2,
+                                              "can_access_stream_topics_group": 11,
                                             },
                                             {
                                               "name": "Denmark",
@@ -2000,6 +2004,7 @@ paths:
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group": 2,
+                                              "can_access_stream_topics_group": 11,
                                             },
                                             {
                                               "name": "Verona",
@@ -2016,6 +2021,7 @@ paths:
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group": 2,
+                                              "can_access_stream_topics_group": 11,
                                             },
                                           ],
                                       },
@@ -2063,6 +2069,7 @@ paths:
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
+                                        "can_access_stream_topics_group": 11,
                                       },
                                     ],
                                   "id": 0,
@@ -9915,6 +9922,8 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroupId"
+                can_access_stream_topics_group:
+                  $ref: "#/components/schemas/CanAccessStreamTopicsGroupId"
               required:
                 - subscriptions
             encoding:
@@ -9937,6 +9946,8 @@ paths:
               stream_post_policy:
                 contentType: application/json
               can_remove_subscribers_group:
+                contentType: application/json
+              can_access_stream_topics_group:
                 contentType: application/json
       responses:
         "200":
@@ -14268,6 +14279,7 @@ paths:
                                   nullable: true
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
+                                can_access_stream_topics_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -19069,6 +19081,7 @@ paths:
                                   nullable: true
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
+                                can_access_stream_topics_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -19109,6 +19122,7 @@ paths:
                                 - first_message_id
                                 - is_announcement_only
                                 - can_remove_subscribers_group
+                                - can_access_stream_topics_group
                                 - stream_weekly_traffic
                     example:
                       {
@@ -19132,6 +19146,7 @@ paths:
                               "rendered_description": "<p>A private channel</p>",
                               "stream_id": 2,
                               "stream_post_policy": 1,
+                              "can_access_stream_topics_group": 10,
                               "stream_weekly_traffic": null,
                             },
                             {
@@ -19150,6 +19165,7 @@ paths:
                               "rendered_description": "<p>A default public channel</p>",
                               "stream_id": 1,
                               "stream_post_policy": 1,
+                              "can_access_stream_topics_group": 11,
                               "stream_weekly_traffic": null,
                             },
                           ],
@@ -19217,6 +19233,7 @@ paths:
                             "stream_id": 7,
                             "stream_post_policy": 1,
                             "can_remove_subscribers_group": 2,
+                            "can_access_stream_topics_group": 11,
                             "stream_weekly_traffic": null,
                           },
                       }
@@ -20735,6 +20752,7 @@ components:
               nullable: true
             is_announcement_only: {}
             can_remove_subscribers_group: {}
+            can_access_stream_topics_group: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -20765,6 +20783,7 @@ components:
             - first_message_id
             - is_announcement_only
             - can_remove_subscribers_group
+            - can_access_stream_topics_group
             - stream_weekly_traffic
     DefaultChannel:
       allOf:
@@ -20788,6 +20807,7 @@ components:
               nullable: true
             is_announcement_only: {}
             can_remove_subscribers_group: {}
+            can_access_stream_topics_group: {}
           required:
             - stream_id
             - name
@@ -20803,6 +20823,7 @@ components:
             - first_message_id
             - is_announcement_only
             - can_remove_subscribers_group
+            - can_access_stream_topics_group
     BasicChannelBase:
       type: object
       description: |
@@ -20932,6 +20953,13 @@ components:
             was named `can_remove_subscribers_group_id`.
 
             New in Zulip 6.0 (feature level 142).
+        can_access_stream_topics_group:
+          type: integer
+          description: |
+            ID of the user group whose members have access to different
+            topics within a stream.
+
+            **Changes**: New in Zulip 10.0 (feature level 296).
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -21852,6 +21880,13 @@ components:
             was named `can_remove_subscribers_group_id`.
 
             New in Zulip 6.0 (feature level 142).
+        can_access_stream_topics_group:
+          type: integer
+          description: |
+            ID of the user group whose members have access to different
+            topics within a stream.
+
+            **Changes**: New in Zulip 10.0 (feature level 296).
     DefaultChannelGroup:
       type: object
       description: |
@@ -23502,6 +23537,18 @@ components:
         New in Zulip 7.0 (feature level 161).
       type: integer
       example: 20
+    CanAccessStreamTopicsGroupId:
+      description: |
+        ID of the [user group](/api/get-user-groups) whose members have
+        access to different topics within stream.
+
+        This setting can be set to user groups that are
+        system groups, except for the system groups named
+        `"role:internet"`, `"role:owners"` and `"role:nobody"`.
+
+        **Changes**: New in Zulip 10.0 (feature level 296).
+      type: integer
+      example: 15
     LinkifierPattern:
       description: |
         The [Python regular
