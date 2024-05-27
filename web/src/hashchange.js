@@ -493,6 +493,8 @@ function hashchanged(from_reload, e) {
         return undefined;
     }
 
+    popovers.hide_all();
+
     if (hash_parser.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
         do_hashchange_overlay(old_hash);
@@ -503,7 +505,6 @@ function hashchanged(from_reload, e) {
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
     sidebar_ui.hide_all();
-    popovers.hide_all();
     modals.close_active_if_any();
     browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);

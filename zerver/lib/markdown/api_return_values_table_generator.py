@@ -8,7 +8,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 from zerver.openapi.openapi import check_deprecated_consistency, get_openapi_return_values
 
 from .api_arguments_table_generator import generate_data_type
@@ -22,7 +22,7 @@ class MarkdownReturnValuesTableGenerator(Extension):
         md.preprocessors.register(
             APIReturnValuesTablePreprocessor(md, self.getConfigs()),
             "generate_return_values",
-            PREPROCESSOR_PRIORITES["generate_return_values"],
+            PREPROCESSOR_PRIORITIES["generate_return_values"],
         )
 
 

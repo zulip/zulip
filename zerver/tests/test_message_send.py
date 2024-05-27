@@ -55,12 +55,13 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserMessage,
     UserProfile,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import PrivateMessagePolicyEnum, WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
@@ -1769,6 +1770,7 @@ class StreamMessagesTest(ZulipTestCase):
                 user,
                 stream_name,
                 content=content,
+                skip_capture_on_commit_callbacks=True,
             )
         users = events[0]["users"]
         user_ids = {u["id"] for u in users}
@@ -1882,7 +1884,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            WildcardMentionPolicyEnum.EVERYONE,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius")
@@ -1890,7 +1892,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            WildcardMentionPolicyEnum.MEMBERS,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius", test_fails=True)
@@ -1901,7 +1903,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            WildcardMentionPolicyEnum.FULL_MEMBERS,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
@@ -1924,7 +1926,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            WildcardMentionPolicyEnum.MODERATORS,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
@@ -1934,7 +1936,10 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.ADMINS,
+            acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on topics with less than 'Realm.WILDCARD_MENTION_THRESHOLD' participants.
@@ -1942,7 +1947,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_topic_wildcard_mention_message("iago")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.NOBODY,
+            acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_topic_wildcard_mention_message("iago", topic_participant_count=10)
@@ -1981,7 +1989,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            WildcardMentionPolicyEnum.EVERYONE,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("polonius")
@@ -1989,7 +1997,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            WildcardMentionPolicyEnum.MEMBERS,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("polonius", test_fails=True)
@@ -2000,7 +2008,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            WildcardMentionPolicyEnum.FULL_MEMBERS,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
@@ -2023,7 +2031,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            WildcardMentionPolicyEnum.MODERATORS,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
@@ -2033,7 +2041,10 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.ADMINS,
+            acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on small streams.
@@ -2041,7 +2052,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("iago")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
+            realm,
+            "wildcard_mention_policy",
+            WildcardMentionPolicyEnum.NOBODY,
+            acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
@@ -2128,7 +2142,7 @@ class StreamMessagesTest(ZulipTestCase):
         leadership.save()
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         ):
             self.send_stream_message(cordelia, "test_stream", content)
 
@@ -2155,7 +2169,7 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
@@ -2170,13 +2184,13 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support* @*leadership*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         ):
             self.send_stream_message(othello, "test_stream", content)
 
@@ -2196,7 +2210,7 @@ class StreamMessagesTest(ZulipTestCase):
         system_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{members_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
 
@@ -2210,6 +2224,43 @@ class StreamMessagesTest(ZulipTestCase):
             system_bot, "test_stream", content, recipient_realm=iago.realm
         )
         result = self.api_get(shiva, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        # Test all the cases when can_mention_group is not a named user group.
+        content = "Test mentioning user group @*leadership*"
+        user_group = UserGroup.objects.create(realm=iago.realm)
+        user_group.direct_members.set([othello])
+        user_group.direct_subgroups.set([moderators_system_group])
+        leadership.can_mention_group = user_group
+        leadership.save()
+
+        msg_id = self.send_stream_message(othello, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(iago, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{leadership.name}'.",
+        ):
+            self.send_stream_message(cordelia, "test_stream", content)
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{leadership.name}'.",
+        ):
+            self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
+
+        content = "Test mentioning user group @_*leadership*"
+        msg_id = self.send_stream_message(shiva, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
         self.assert_json_success(result)
 
     def test_stream_message_mirroring(self) -> None:
@@ -2364,14 +2415,14 @@ class PersonalMessageSendTest(ZulipTestCase):
 
     def test_private_message_policy(self) -> None:
         """
-        Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
+        Tests that PrivateMessagePolicyEnum.DISABLED works correctly.
         """
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         do_set_realm_property(
             user_profile.realm,
             "private_message_policy",
-            Realm.PRIVATE_MESSAGE_POLICY_DISABLED,
+            PrivateMessagePolicyEnum.DISABLED,
             acting_user=None,
         )
         with self.assertRaises(JsonableError):
@@ -2628,7 +2679,7 @@ class InternalPrepTest(ZulipTestCase):
         Test that a user can send a direct message to themselves and to a bot in a DM disabled organization
         """
         sender = self.example_user("hamlet")
-        sender.realm.private_message_policy = Realm.PRIVATE_MESSAGE_POLICY_DISABLED
+        sender.realm.private_message_policy = PrivateMessagePolicyEnum.DISABLED
         sender.realm.save()
 
         #  Create a non-bot user

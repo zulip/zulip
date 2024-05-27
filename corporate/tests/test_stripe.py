@@ -4318,7 +4318,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(last_ledger_entry.licenses, 20)
         self.assertEqual(last_ledger_entry.licenses_at_next_renewal, 20)
 
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(
+            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+        )
 
         plan.refresh_from_db()
         self.assertTrue(get_realm("zulip").deactivated)
@@ -4352,7 +4354,9 @@ class StripeTest(StripeTestCase):
                 self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
             )
 
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(
+            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+        )
         self.assertTrue(get_realm("zulip").deactivated)
         do_reactivate_realm(get_realm("zulip"))
 
@@ -7742,7 +7746,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         )
         self.assert_in_success_response(
             [
-                f"New plan for {billing_entity} can not be scheduled until all the invoices of the current plan are processed."
+                f"New plan for {billing_entity} cannot be scheduled until all the invoices of the current plan are processed."
             ],
             result,
         )

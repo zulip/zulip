@@ -111,6 +111,9 @@ let dropdown_filters = new Set<string>();
 const recent_conversation_key_prefix = "recent_conversation:";
 
 let is_initial_message_fetch_pending = true;
+// We wait for rows to render and restore focus before processing
+// any new events.
+let is_waiting_for_revive_current_focus = true;
 
 export function set_initial_message_fetch_status(value: boolean): void {
     is_initial_message_fetch_pending = value;
@@ -175,9 +178,22 @@ let oldest_message_timestamp = Number.POSITIVE_INFINITY;
 function set_oldest_message_date(msg_list_data: MessageListData): void {
     const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
     const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+    const oldest_message_in_data = msg_list_data.first_including_muted();
+    if (oldest_message_in_data) {
+        oldest_message_timestamp = Math.min(
+            oldest_message_in_data.timestamp,
+            oldest_message_timestamp,
+        );
+    }
 
-    const first_message_timestamp = msg_list_data.first()?.timestamp ?? Number.POSITIVE_INFINITY;
-    oldest_message_timestamp = Math.min(first_message_timestamp, oldest_message_timestamp);
+    if (oldest_message_timestamp === Number.POSITIVE_INFINITY && !has_found_oldest) {
+        // This should only happen either very early in loading the
+        // message list, since it requires the msg_list_data object
+        // being empty, without having server confirmation that's the
+        // case. Wait for server data to do anything in that
+        // situation.
+        return;
+    }
 
     if (has_found_oldest) {
         loading_state = ALL_MESSAGES_LOADED;
@@ -1098,6 +1114,10 @@ function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
 }
 
 function recenter_focus_if_off_screen(): void {
+    if (is_waiting_for_revive_current_focus) {
+        return;
+    }
+
     const table_wrapper_element = $("#recent_view_table .table_fix_head")[0];
     const $topic_rows = $("#recent_view_table table tbody tr");
 
@@ -1120,8 +1140,21 @@ function recenter_focus_if_off_screen(): void {
         const topic_center_y = (position.top + position.bottom) / 2;
 
         const topic_element = document.elementFromPoint(topic_center_x, topic_center_y);
-        assert(topic_element !== null);
-        row_focus = $topic_rows.index($(topic_element).closest("tr")[0]);
+        if (topic_element === null) {
+            // There are two theoretical reasons that the center
+            // element might be null. One is that we haven't rendered
+            // the view yet; but in that case, we should have returned
+            // early checking is_waiting_for_revive_current_focus:
+            //
+            // The other possibility is that the table is too short
+            // for there to be an topic row element at the center of
+            // the table region; in that case, we just select the last
+            // element.
+            row_focus = $topic_rows.length - 1;
+        } else {
+            row_focus = $topic_rows.index($(topic_element).closest("tr")[0]);
+        }
+
         set_table_focus(row_focus, col_focus);
     }
 }
@@ -1140,7 +1173,10 @@ function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
 
 function callback_after_render(): void {
     update_load_more_banner();
-    setTimeout(revive_current_focus, 0);
+    setTimeout(() => {
+        revive_current_focus();
+        is_waiting_for_revive_current_focus = false;
+    }, 0);
 }
 
 function filter_click_handler(
@@ -1268,6 +1304,7 @@ function filter_buttons(): JQuery {
 }
 
 export function hide(): void {
+    is_waiting_for_revive_current_focus = true;
     views_util.hide({
         $view: $("#recent_view"),
         set_visible: recent_view_util.set_visible,
@@ -1619,7 +1656,7 @@ export function initialize({
     on_click_participant: (avatar_element: Element, participant_user_id: number) => void;
     on_mark_pm_as_read: (user_ids_string: string) => void;
     on_mark_topic_as_read: (stream_id: number, topic: string) => void;
-    maybe_load_older_messages: () => void;
+    maybe_load_older_messages: (first_unread_unmuted_message_id: number) => void;
 }): void {
     load_filters();
 
@@ -1800,7 +1837,7 @@ export function initialize({
             $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
             {width: 20},
         );
-        maybe_load_older_messages();
+        maybe_load_older_messages(unread.first_unread_unmuted_message_id);
     });
 
     $(document).on("compose_canceled.zulip", () => {

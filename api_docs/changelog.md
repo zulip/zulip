@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 262**:
+
+* [`GET /users/{user_id}/status`](/api/get-user-status): Added a new
+  endpoint to fetch an individual user's currently set
+  [status](/help/status-and-availability).
+
 **Feature level 261**
 
 * [`POST /invites`](/api/send-invites),

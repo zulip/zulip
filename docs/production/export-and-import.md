@@ -59,7 +59,7 @@ service (or back):
 - Zulip also has an [HTML archive
   tool](https://github.com/zulip/zulip-archive), which is primarily
   intended for public archives, but can also be useful to
-  inexpensively preserve public stream conversations when
+  inexpensively preserve public channel conversations when
   decommissioning a Zulip organization.
 
 - It's possible to set up [PostgreSQL streaming
@@ -245,10 +245,8 @@ To restore from a manual backup, the process is basically the reverse of the abo
 This restoration process can also be used to migrate a Zulip
 installation from one server to another.
 
-We recommend running a disaster recovery test after setting up your
-backups to confirm that your backups are working. You may also want to
-monitor that they are up to date using the Nagios plugin at:
-`puppet/zulip/files/nagios_plugins/zulip_postgresql_backups/check_postgresql_backup`.
+We recommend running a disaster recovery test after setting up your backups to
+confirm that your backups are working.
 
 ## Data export
 
@@ -264,7 +262,7 @@ a few downsides in comparison:
 - All users will have their passwords randomized and be logged out of
   their accounts, both on web and mobile clients.
 - All bots and integrations will need to be updated with new API keys.
-- Users, streams, and messages are usually renumbered, which will
+- Users, channels, and messages are usually renumbered, which will
   break most links from external programs referencing these objects.
 
 ### Consider upgrading
@@ -528,9 +526,9 @@ it may be minutes before the backup is saved into S3 -- see
 If you need always-current backup availability, Zulip also has
 [built-in database replication support](postgresql.md#postgresql-warm-standby).
 
-You can (and should) monitor that backups are running regularly via
-the Nagios plugin installed into
-`/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
+You can (and should) monitor that backups are running regularly, for instance
+via the Prometheus exporter found in
+`puppet/zulip/files/postgresql/wal-g-exporter`
 
 ### Streaming backups to S3
 

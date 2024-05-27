@@ -74,7 +74,6 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_sub(), undefined);
 
@@ -83,7 +82,6 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(narrow_state.narrowed_by_stream_reply());
 
     set_filter([["dm", "steve@zulip.com"]]);
@@ -91,7 +89,6 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_by_reply());
     assert.ok(narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([
@@ -102,7 +99,6 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(narrow_state.narrowed_by_topic_reply());
-    assert.ok(narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([["search", "grail"]]);
@@ -110,7 +106,6 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([["is", "starred"]]);
@@ -118,7 +113,6 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 });
 

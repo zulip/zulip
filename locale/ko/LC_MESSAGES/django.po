@@ -12,6 +12,7 @@
 # Ki Heo <reo119@marunet.co.kr>, 2017-2018
 # Kwoun younggil <zelord.kwoun@gmail.com>, 2018
 # Leonardo YongUk Kim <dalinaum@gmail.com>, 2021
+# Rohitt Vashishtha <aero31aero@gmail.com>, 2024
 # sung yong kim <hikimsy@gmail.com>, 2021
 # Wonha Ryu <wonha.ryu@gmail.com>, 2015
 # Yeonjeong Noh <nyj2800@hanmail.net>, 2018
@@ -22,7 +23,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-05-02 16:53+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: sung yong kim <hikimsy@gmail.com>, 2021\n"
+"Last-Translator: Rohitt Vashishtha <aero31aero@gmail.com>, 2024\n"
 "Language-Team: Korean (http://app.transifex.com/zulip/zulip/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -68,7 +69,7 @@ msgstr ""
 #: analytics/views/stats.py:357
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr "시작시간이 종료 시간 보다 늦습니다. 시작시간: {start}, 종료시간: {end}"
+msgstr "시작시간이 종료시간 보다 늦습니다. 시작시간: {start}, 종료시간: {end}"
 
 #: analytics/views/stats.py:379 analytics/views/stats.py:416
 msgid "No analytics data available. Please contact your server administrator."
@@ -165,20 +166,20 @@ msgstr "{last4}로 끝나는 {brand}  "
 #: corporate/lib/stripe.py:386
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr "알수없는 지불 방법입니다. {email}로 연락 주세요."
+msgstr "알수없는 지불 방법입니다. {email}로 연락해주세요."
 
 #: corporate/lib/stripe.py:419
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr "문제가 발생했습니다. {email}로 연락 주세요."
+msgstr "문제가 발생했습니다. {email}로 연락해주세요."
 
 #: corporate/lib/stripe.py:420
 msgid "Something went wrong. Please reload the page."
-msgstr "무언가 잘못 되었습니다. 페이지를 새로고침해 주십시오."
+msgstr "무언가 잘못 되었습니다. 페이지를 새로고침하세요."
 
 #: corporate/lib/stripe.py:516
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "무언가 잘못 되었습니다. 몇 초간 기다린 후 다시 시도 해주세요."
+msgstr "무언가 잘못 되었습니다. 몇 초간 기다린 후 다시 시도 해보세요."
 
 #: corporate/lib/stripe.py:1783
 msgid "Please add a credit card before starting your free trial."

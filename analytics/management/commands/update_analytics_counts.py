@@ -5,19 +5,18 @@ from datetime import timezone
 from typing import Any, Dict
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.lib.counts import ALL_COUNT_STATS, logger, process_count_stat
-from zerver.lib.management import abort_unless_locked
+from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Fills Analytics tables.
 
     Run as a cron job that runs every hour."""

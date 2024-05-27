@@ -1,18 +1,18 @@
 # Construct a narrow
 
 A **narrow** is a set of filters for Zulip messages, that can be based
-on many different factors (like sender, stream, topic, search
-keywords, etc.). Narrows are used in various places in the the Zulip
+on many different factors (like sender, channel, topic, search
+keywords, etc.). Narrows are used in various places in the Zulip
 API (most importantly, in the API for fetching messages).
 
 It is simplest to explain the algorithm for encoding a search as a
 narrow using a single example. Consider the following search query
 (written as it would be entered in the Zulip web app's search box).
-It filters for messages sent to stream `announce`, not sent by
+It filters for messages sent to channel `announce`, not sent by
 `iago@zulip.com`, and containing the words `cool` and `sunglasses`:
 
 ```
-stream:announce -sender:iago@zulip.com cool sunglasses
+channel:announce -sender:iago@zulip.com cool sunglasses
 ```
 
 This query would be JSON-encoded for use in the Zulip API using JSON
@@ -21,7 +21,7 @@ as a list of simple objects, as follows:
 ```json
 [
     {
-        "operator": "stream",
+        "operator": "channel",
         "operand": "announce"
     },
     {
@@ -40,7 +40,7 @@ The Zulip help center article on [searching for messages](/help/search-for-messa
 documents the majority of the search/narrow options supported by the
 Zulip API.
 
-Note that many narrows, including all that lack a `stream` or `streams`
+Note that many narrows, including all that lack a `channel` or `channels`
 operator, search the current user's personal message history. See
 [searching shared history](/help/search-for-messages#searching-shared-history)
 for details.
@@ -52,7 +52,7 @@ when [adding the `read` flag to a user's personal
 messages](/api/update-message-flags-for-narrow)).
 
 **Changes**: In Zulip 9.0 (feature level 250), support was added for
-two filters related to stream messages: `channel` and `channels`. The
+two filters related to channel messages: `channel` and `channels`. The
 `channel` operator is an alias for the `stream` operator. The `channels`
 operator is an alias for the `streams` operator. Both `channel` and
 `channels` return the same exact results as `stream` and `streams`
@@ -107,13 +107,13 @@ operand for the `id` operator needed to be encoded as a string.
 ]
 ```
 
-### Stream and user IDs
+### Channel and user IDs
 
 There are a few additional narrow/search options (new in Zulip 2.1)
-that use either stream IDs or user IDs that are not documented in the
+that use either channel IDs or user IDs that are not documented in the
 help center because they are primarily useful to API clients:
 
-* `stream:1234`: Search messages sent to the stream with ID `1234`.
+* `channel:1234`: Search messages sent to the channel with ID `1234`.
 * `sender:1234`: Search messages sent by user ID `1234`.
 * `dm:1234`: Search the direct message conversation between
   you and user ID `1234`.
@@ -125,8 +125,8 @@ help center because they are primarily useful to API clients:
 !!! tip ""
 
     A user ID can be found by [viewing a user's profile][view-profile]
-    in the web or desktop apps. A stream ID can be found when [browsing
-    streams][browse-streams] in the web or desktop apps.
+    in the web or desktop apps. A channel ID can be found when [browsing
+    channels][browse-channels] in the web or desktop apps.
 
 The operands for these search options must be encoded either as an
 integer ID or a JSON list of integer IDs. For example, to query
@@ -147,4 +147,4 @@ user 1234, and user 5678, the correct JSON-encoded query is:
 ```
 
 [view-profile]: /help/view-someones-profile
-[browse-streams]: /help/introduction-to-channels#browse-and-subscribe-to-channels
+[browse-channels]: /help/introduction-to-channels#browse-and-subscribe-to-channels

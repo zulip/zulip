@@ -168,7 +168,6 @@ class ExportFile(ZulipTestCase):
         )
         attachment_path_id = url.replace("/user_uploads/", "")
         claim_attachment(
-            user_profile=user_profile,
             path_id=attachment_path_id,
             message=message,
             is_message_realm_public=True,
@@ -388,7 +387,6 @@ class RealmImportExportTest(ExportFile):
         )
         attachment_path_id = url.replace("/user_uploads/", "")
         attachment = claim_attachment(
-            user_profile=user_profile,
             path_id=attachment_path_id,
             message=Message.objects.get(id=personal_message_id),
             is_message_realm_public=True,

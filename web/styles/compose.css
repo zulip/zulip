@@ -284,6 +284,10 @@
        expands or contracts. */
     display: flex;
     flex-direction: column;
+    /* With a columnar flex, this ensures that
+       send controls occupy the same space as
+       the adjacent textbox. */
+    justify-content: space-between;
     /* We add 6px of margin to the grid-gap of
        6px, for 12px of space between the Send
        button and the textarea. */
@@ -298,13 +302,17 @@
     grid-area: message-formatting-controls-container;
 }
 
-#compose-limit-indicator {
+#compose-limit-indicator:not(:empty) {
     font-size: 12px;
     color: var(--color-limit-indicator);
     width: max-content;
 
     /* Keep the limit indicator just above
-       and aligned with the send button */
+       and aligned with the send button.
+       `:not(:empty)` prevents the padding
+       and margin-top from affecting layout
+       in the controls area when no indicator
+       is present. */
     margin-top: auto;
     padding: 3px 3px 3px 0;
 
@@ -1003,6 +1011,10 @@ textarea.new_message_textarea,
     }
 
     .compose_control_menu_wrapper {
+        /* Since `compose_control_menu_wrapper` is the reference for the tippy popover, it is
+           important to set it's display correctly so that tippy knows when to hide / show popover
+           on window resize. */
+        display: none;
         opacity: 0.7;
         padding: 0;
         margin: 0;
@@ -1014,13 +1026,16 @@ textarea.new_message_textarea,
         .compose_control_menu {
             opacity: 1;
             display: none;
+        }
 
-            /* The media query below handles the hiding and showing of the
-            vdot menu icon, so that it is hidden when all compose buttons fit
-            in the main row below the compose box. So, this is the same as
-            the media query for .show_popover_buttons. */
+        /* The media query below handles the hiding and showing of the
+        vdot menu icon, so that it is hidden when all compose buttons fit
+        in the main row below the compose box. So, this is the same as
+        the media query for .show_popover_buttons. */
+        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+            display: block;
 
-            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+            .compose_control_menu {
                 display: flex;
             }
         }
@@ -1276,6 +1291,14 @@ textarea.new_message_textarea,
     @media (width < $sm_min) {
         /* Drop to a square, rounded button. */
         width: 30px;
+        /* This reduces the vdots button so that
+           it and the send button fit within the
+           54px height the compose textarea occupies.
+           TODO: Should formatting buttons become part
+           of the textarea, the height here and its
+           participation in the columnar flexbox
+           should get a rewrite. */
+        height: 26px;
         margin-left: 0;
         border-radius: 4px;
     }
@@ -1284,6 +1307,12 @@ textarea.new_message_textarea,
         padding: 5px 0 5px 4px;
         font-size: 17px;
         flex-grow: 1;
+
+        @media (width < $sm_min) {
+            /* Keep vdots centered above the
+               Send button at smallest sizes. */
+            padding-left: 0;
+        }
     }
 }
 

@@ -111,6 +111,11 @@ export function is_subscribers_section_opened_for_stream(): boolean {
     return hash_components[3] === "subscribers";
 }
 
+export function is_in_specified_hash_category(hash_categories: string[]): boolean {
+    const main_hash = get_hash_category(window.location.hash);
+    return hash_categories.includes(main_hash);
+}
+
 export const allowed_web_public_narrows = [
     "channels",
     "channel",

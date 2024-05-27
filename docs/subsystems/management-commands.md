@@ -38,13 +38,15 @@ command to write a new one. Some good examples are
 is good, but we have a few pieces advice specific to the Zulip
 project.
 
-- If you need to access a realm or user, use the `ZulipBaseCommand`
-  class in `zerver/lib/management.py` so you don't need to write the
-  tedious code of looking those objects up. This is especially
-  important for users, since the library handles the issues around
-  looking up users by email well (if there's a unique user with that
-  email, just modify it without requiring the user to specify the
-  realm as well, but if there's a collision, throw a nice error).
+- Inherit from the `ZulipBaseCommand` class in
+  `zerver/lib/management.py`; this will add some helpful general
+  flags, as well as tools for adding and parsing `--realm` and
+  `--user` flags, so you don't need to write the tedious code of
+  looking those objects up. This is especially important for users,
+  since the library handles the issues around looking up users by
+  email well (if there's a unique user with that email, just modify it
+  without requiring the user to specify the realm as well, but if
+  there's a collision, throw a nice error).
 - Avoid writing a lot of code in management commands; management
   commands are annoying to unit test, and thus easier to maintain if
   all the interesting logic is in a nice function that is unit tested
@@ -62,4 +64,4 @@ to do anything special like restart the server when iteratively
 testing one, even if testing in a Zulip production environment where
 the server doesn't normally restart whenever a file is edited.
 
-[django-docs]: https://docs.djangoproject.com/en/3.2/howto/custom-management-commands/
+[django-docs]: https://docs.djangoproject.com/en/5.0/howto/custom-management-commands/

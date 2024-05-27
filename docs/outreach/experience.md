@@ -53,7 +53,7 @@ mentorship program will:
 - Receive lots of feedback and mentorship from others in the Zulip development
   community, in code reviews on pull requests, and by posting
   [questions](../contributing/asking-great-questions.md) and ideas in public
-  streams.
+  channels.
 
 Mentors and contributors should stay in close contact. We recommend setting up a
 weekly check-in call to make sure you stay on track and have a regular
@@ -80,9 +80,9 @@ to get a feel for what they are working on and share ideas!
 ### Getting feedback and advice
 
 We strongly encourage all Zulip contributors to post their questions and ideas
-in public streams in the [Zulip development
+in public channels in the [Zulip development
 community](https://zulip.com/development-community/). When you post in a public
-stream, you give everyone the opportunity to help you out, and to learn from
+channel, you give everyone the opportunity to help you out, and to learn from
 reading the discussion.
 
 Examples of topics you might ask about include:
@@ -104,7 +104,7 @@ to ask your questions effectively.
 A check-in is a regular update that you post in the Zulip development community.
 You can find many examples in the
 [#checkins](https://chat.zulip.org/#narrow/stream/65-checkins) and
-[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) streams.
+[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) channels.
 
 - **Frequency**: _Regular check-ins are a required for all program
   participants._ If you are working 20+ hours per week, post a check-in at least
@@ -112,7 +112,7 @@ You can find many examples in the
   per week, post a check-in at least once a week.
 
 - **Where to post**: Unless your mentor or program administrator requests
-  otherwise, post your check-ins in the stream for your program
+  otherwise, post your check-ins in the channel for your program
   (e.g., [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
   [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)), using your
   name as the topic.
@@ -136,9 +136,9 @@ You can find many examples in the
     separate message to make it convenient to quote-and-reply to address it.
     Note that discussions about your work will happen in all the usual places
     (#**frontend**, #**backend**, #**design**, etc.), and those are the
-    streams where you should be _starting_ conversations. Your check-ins are a
+    channels where you should be _starting_ conversations. Your check-ins are a
     place to point out where you're feeling stuck, e.g., there was some
-    discussion in a stream or on GitHub, but it seems to have petered out
+    discussion in a channel or on GitHub, but it seems to have petered out
     without getting to a decision, and you aren't sure what to do.
 
   - What you've been **actively working** on since your last check-in.

@@ -481,7 +481,12 @@ class NormalActionsTest(BaseAction):
         for i in range(3):
             content = "mentioning... @**" + user.full_name + "** hello " + str(i)
             with self.verify_action():
-                self.send_stream_message(self.example_user("cordelia"), "Verona", content)
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
 
     def test_automatically_follow_topic_where_mentioned(self) -> None:
         user = self.example_user("hamlet")
@@ -509,24 +514,42 @@ class NormalActionsTest(BaseAction):
         for i in range(3):
             content = "mentioning... @**" + user.full_name + "** hello " + str(i)
             with self.verify_action(num_events=get_num_events()):
-                self.send_stream_message(self.example_user("cordelia"), "Verona", content)
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
 
     def test_topic_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**topic** hello " + str(i)
             with self.verify_action():
-                self.send_stream_message(self.example_user("cordelia"), "Verona", content)
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
 
     def test_stream_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**all** hello " + str(i)
             with self.verify_action():
-                self.send_stream_message(self.example_user("cordelia"), "Verona", content)
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
 
     def test_pm_send_message_events(self) -> None:
         with self.verify_action():
             self.send_personal_message(
-                self.example_user("cordelia"), self.example_user("hamlet"), "hola"
+                self.example_user("cordelia"),
+                self.example_user("hamlet"),
+                "hola",
+                skip_capture_on_commit_callbacks=True,
             )
 
         # Verify direct message editing - content only edit
@@ -571,7 +594,9 @@ class NormalActionsTest(BaseAction):
             self.example_user("othello"),
         ]
         with self.verify_action():
-            self.send_huddle_message(self.example_user("cordelia"), huddle, "hola")
+            self.send_huddle_message(
+                self.example_user("cordelia"), huddle, "hola", skip_capture_on_commit_callbacks=True
+            )
 
     def test_user_creation_events_on_sending_messages(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -584,24 +609,28 @@ class NormalActionsTest(BaseAction):
         # for bots as they can access all the bots.
         bot = self.create_test_bot("test2", cordelia, full_name="Test bot")
         with self.verify_action(num_events=1) as events:
-            self.send_personal_message(bot, polonius, "hola")
+            self.send_personal_message(bot, polonius, "hola", skip_capture_on_commit_callbacks=True)
         check_direct_message("events[0]", events[0])
 
         with self.verify_action(num_events=2) as events:
-            self.send_personal_message(cordelia, polonius, "hola")
-        check_direct_message("events[0]", events[0])
-        check_realm_user_add("events[1]", events[1])
-        self.assertEqual(events[1]["person"]["user_id"], cordelia.id)
+            self.send_personal_message(
+                cordelia, polonius, "hola", skip_capture_on_commit_callbacks=True
+            )
+        check_realm_user_add("events[0]", events[0])
+        check_direct_message("events[1]", events[1])
+        self.assertEqual(events[0]["person"]["user_id"], cordelia.id)
 
         othello = self.example_user("othello")
         desdemona = self.example_user("desdemona")
 
         with self.verify_action(num_events=3) as events:
-            self.send_huddle_message(othello, [polonius, desdemona, bot], "hola")
-        check_direct_message("events[0]", events[0])
+            self.send_huddle_message(
+                othello, [polonius, desdemona, bot], "hola", skip_capture_on_commit_callbacks=True
+            )
+        check_realm_user_add("events[0]", events[0])
         check_realm_user_add("events[1]", events[1])
-        check_realm_user_add("events[2]", events[2])
-        user_creation_user_ids = {events[1]["person"]["user_id"], events[2]["person"]["user_id"]}
+        check_direct_message("events[2]", events[2])
+        user_creation_user_ids = {events[0]["person"]["user_id"], events[1]["person"]["user_id"]}
         self.assertEqual(user_creation_user_ids, {othello.id, desdemona.id})
 
     def test_stream_send_message_events(self) -> None:
@@ -687,7 +716,9 @@ class NormalActionsTest(BaseAction):
             # Three events are generated:
             # 2 for following the topic and 1 for the message sent.
             with self.verify_action(client_gravatar=False, num_events=3) as events:
-                self.send_stream_message(hamlet, "Verona", "hello", "topic")
+                self.send_stream_message(
+                    hamlet, "Verona", "hello", "topic", skip_capture_on_commit_callbacks=True
+                )
             verify_events_generated_and_reset_visibility_policy(events, "Verona", "topic")
 
         # action: initiation
@@ -714,7 +745,13 @@ class NormalActionsTest(BaseAction):
             # Three events are generated:
             # 2 for following the topic and 1 for the message sent.
             with self.verify_action(client_gravatar=False, num_events=3) as events:
-                self.send_stream_message(hamlet, "Denmark", "hello", f"new topic {index}")
+                self.send_stream_message(
+                    hamlet,
+                    "Denmark",
+                    "hello",
+                    f"new topic {index}",
+                    skip_capture_on_commit_callbacks=True,
+                )
             verify_events_generated_and_reset_visibility_policy(
                 events, "Denmark", f"new topic {index}"
             )
@@ -744,7 +781,9 @@ class NormalActionsTest(BaseAction):
             # Three events are generated:
             # 2 for unmuting the topic and 1 for the message sent.
             with self.verify_action(client_gravatar=False, num_events=3) as events:
-                self.send_stream_message(hamlet, "core team", "hello", "topic")
+                self.send_stream_message(
+                    hamlet, "core team", "hello", "topic", skip_capture_on_commit_callbacks=True
+                )
             verify_events_generated_and_reset_visibility_policy(events, "core team", "topic")
 
         # If current_visibility_policy is already set to the value the policies would set.
@@ -762,7 +801,9 @@ class NormalActionsTest(BaseAction):
         )
         # 1 event for the message sent
         with self.verify_action(client_gravatar=False, num_events=1) as events:
-            self.send_stream_message(hamlet, "core team", "hello", "new Topic")
+            self.send_stream_message(
+                hamlet, "core team", "hello", "new Topic", skip_capture_on_commit_callbacks=True
+            )
 
         do_change_user_setting(
             user_profile=hamlet,
@@ -772,7 +813,9 @@ class NormalActionsTest(BaseAction):
         )
         # Only one message event is generated
         with self.verify_action(client_gravatar=True) as events:
-            self.send_stream_message(hamlet, "core team", "hello")
+            self.send_stream_message(
+                hamlet, "core team", "hello", skip_capture_on_commit_callbacks=True
+            )
         # event-type: message
         check_message("events[0]", events[0])
         assert isinstance(events[0]["message"]["avatar_url"], str)
@@ -785,7 +828,9 @@ class NormalActionsTest(BaseAction):
         )
 
         with self.verify_action(client_gravatar=True) as events:
-            self.send_stream_message(hamlet, "core team", "hello")
+            self.send_stream_message(
+                hamlet, "core team", "hello", skip_capture_on_commit_callbacks=True
+            )
         check_message("events[0]", events[0])
         assert events[0]["message"]["avatar_url"] is None
 
@@ -800,7 +845,9 @@ class NormalActionsTest(BaseAction):
             visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
         with self.verify_action(state_change_expected=True):
-            self.send_stream_message(self.example_user("aaron"), "Verona", "hello")
+            self.send_stream_message(
+                self.example_user("aaron"), "Verona", "hello", skip_capture_on_commit_callbacks=True
+            )
 
     def test_stream_update_message_events(self) -> None:
         iago = self.example_user("iago")
@@ -1032,7 +1079,9 @@ class NormalActionsTest(BaseAction):
             "hello 1",
         )
         with self.verify_action(state_change_expected=True):
-            self.send_stream_message(sender, "Verona", "hello 2")
+            self.send_stream_message(
+                sender, "Verona", "hello 2", skip_capture_on_commit_callbacks=True
+            )
 
     def test_events_for_message_from_inaccessible_sender(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -1042,7 +1091,11 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action() as events:
             self.send_stream_message(
-                othello, "test_stream1", "hello 2", allow_unsubscribed_sender=True
+                othello,
+                "test_stream1",
+                "hello 2",
+                allow_unsubscribed_sender=True,
+                skip_capture_on_commit_callbacks=True,
             )
         check_message("events[0]", events[0])
         message_obj = events[0]["message"]
@@ -1053,7 +1106,11 @@ class NormalActionsTest(BaseAction):
         iago = self.example_user("iago")
         with self.verify_action() as events:
             self.send_stream_message(
-                iago, "test_stream1", "hello 2", allow_unsubscribed_sender=True
+                iago,
+                "test_stream1",
+                "hello 2",
+                allow_unsubscribed_sender=True,
+                skip_capture_on_commit_callbacks=True,
             )
         check_message("events[0]", events[0])
         message_obj = events[0]["message"]
@@ -1483,20 +1540,20 @@ class NormalActionsTest(BaseAction):
             self.register("test1@zulip.com", "test1")
         self.assert_length(events, 5)
 
-        check_realm_user_add("events[1]", events[1])
+        check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
-        check_subscription_peer_add("events[4]", events[4])
+        check_subscription_peer_add("events[3]", events[3])
 
-        check_message("events[0]", events[0])
+        check_message("events[4]", events[4])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> joined this organization.',
-            events[0]["message"]["content"],
+            events[4]["message"]["content"],
         )
 
+        check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_add_members("events[3]", events[3])
 
     def test_register_events_email_address_visibility(self) -> None:
         realm_user_default = RealmUserDefault.objects.get(realm=self.user_profile.realm)
@@ -1513,20 +1570,20 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(num_events=5) as events:
             self.register("test1@zulip.com", "test1")
         self.assert_length(events, 5)
-        check_realm_user_add("events[1]", events[1])
+        check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
-        check_subscription_peer_add("events[4]", events[4])
+        check_subscription_peer_add("events[3]", events[3])
 
-        check_message("events[0]", events[0])
+        check_message("events[4]", events[4])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> joined this organization',
-            events[0]["message"]["content"],
+            events[4]["message"]["content"],
         )
 
+        check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_add_members("events[3]", events[3])
 
     def test_register_events_for_restricted_users(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -2932,7 +2989,7 @@ class NormalActionsTest(BaseAction):
         # correct because were one to somehow compute page_params (as
         # this test does), but that's not actually possible.
         with self.verify_action(state_change_expected=False) as events:
-            do_deactivate_realm(realm, acting_user=None)
+            do_deactivate_realm(realm, acting_user=None, deactivation_reason="owner_request")
         check_realm_deactivated("events[0]", events[0])
 
     def test_do_mark_onboarding_step_as_read(self) -> None:
@@ -3146,7 +3203,13 @@ class NormalActionsTest(BaseAction):
         assert url is not None
         body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + url + ")"
         with self.verify_action(num_events=2) as events:
-            self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+            self.send_stream_message(
+                self.example_user("hamlet"),
+                "Denmark",
+                body,
+                "test",
+                skip_capture_on_commit_callbacks=True,
+            )
 
         check_attachment_update("events[0]", events[0])
         self.assertEqual(events[0]["upload_space_used"], 6)

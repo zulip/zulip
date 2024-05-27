@@ -1,13 +1,14 @@
 import * as activity_ui from "./activity_ui";
 import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
+import type {RawMutedUser} from "./muted_users";
 import * as overlays from "./overlays";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_muted_users from "./settings_muted_users";
 
-export function rerender_for_muted_user() {
+export function rerender_for_muted_user(): void {
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.update_muting_and_rerender();
     }
@@ -28,8 +29,8 @@ export function rerender_for_muted_user() {
     // mechanism.
 }
 
-export function handle_user_updates(muted_user_ids) {
+export function handle_user_updates(raw_muted_users: RawMutedUser[]): void {
     popovers.hide_all();
-    muted_users.set_muted_users(muted_user_ids);
+    muted_users.set_muted_users(raw_muted_users);
     rerender_for_muted_user();
 }

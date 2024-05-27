@@ -84,6 +84,7 @@ class PlanData:
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
     is_current_plan_billable: bool = False
+    stripe_customer_url: Optional[str] = None
     warning: Optional[str] = None
     annual_recurring_revenue: Optional[int] = None
     estimated_next_plan_revenue: Optional[int] = None
@@ -112,6 +113,10 @@ class RemoteSupportData:
 class CloudSupportData:
     plan_data: PlanData
     sponsorship_data: SponsorshipData
+
+
+def get_stripe_customer_url(stripe_id: str) -> str:
+    return f"https://dashboard.stripe.com/customers/{stripe_id}"  # nocoverage
 
 
 def get_realm_support_url(realm: Realm) -> str:
@@ -181,7 +186,7 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
 def get_annual_invoice_count(billing_schedule: int) -> int:
     if billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
         return 12
-    else:
+    else:  # nocoverage
         return 1
 
 
@@ -278,13 +283,11 @@ def get_plan_data_for_support_view(
         plan_data.is_current_plan_billable = billing_session.check_plan_tier_is_billable(
             plan_tier=plan_data.current_plan.tier
         )
-        annual_invoice_count = get_annual_invoice_count(plan_data.current_plan.billing_schedule)
         if last_ledger_entry is not None:
             plan_data.annual_recurring_revenue = (
-                billing_session.get_customer_plan_renewal_amount(
+                billing_session.get_annual_recurring_revenue_for_support_data(
                     plan_data.current_plan, last_ledger_entry
                 )
-                * annual_invoice_count
             )
         else:
             plan_data.annual_recurring_revenue = 0  # nocoverage
@@ -294,6 +297,12 @@ def get_plan_data_for_support_view(
         next_plan_data = get_next_plan_data(billing_session, customer, plan_data.current_plan)
         plan_data.next_plan = next_plan_data.plan
         plan_data.estimated_next_plan_revenue = next_plan_data.estimated_revenue
+
+    # If customer has a stripe ID, add link to stripe customer dashboard
+    if customer is not None and customer.stripe_customer_id is not None:
+        plan_data.stripe_customer_url = get_stripe_customer_url(
+            customer.stripe_customer_id
+        )  # nocoverage
 
     return plan_data
 

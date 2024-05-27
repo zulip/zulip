@@ -369,13 +369,13 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([[ui_util, "blur_active_element"]]);
 });
 
-run_test("save_narrow", ({override, override_rewire}) => {
+run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
     const helper = test_helper({override, override_rewire});
 
     let terms = [{operator: "is", operand: "dm"}];
 
     blueslip.expect("error", "browser does not support pushState");
-    narrow.save_narrow(terms);
+    narrow.update_hash_to_match_filter(new Filter(terms));
 
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(window.location.hash, "#narrow/is/dm");
@@ -388,7 +388,7 @@ run_test("save_narrow", ({override, override_rewire}) => {
     terms = [{operator: "is", operand: "starred"}];
 
     helper.clear_events();
-    narrow.save_narrow(terms);
+    narrow.update_hash_to_match_filter(new Filter(terms));
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
 });

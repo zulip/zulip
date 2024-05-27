@@ -39,11 +39,11 @@ msgstr "Geçersiz organizasyon"
 
 #: analytics/views/stats.py:313
 msgid "Public channels"
-msgstr ""
+msgstr "Açık kanallar"
 
 #: analytics/views/stats.py:314
 msgid "Private channels"
-msgstr ""
+msgstr "Özel kanallar"
 
 #: analytics/views/stats.py:315
 msgid "Direct messages"
@@ -56,7 +56,7 @@ msgstr "Grup direkt iletileri"
 #: analytics/views/stats.py:339
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "{chart_name}: grafiği için kanal yok"
 
 #: analytics/views/stats.py:347
 #, python-brace-format
@@ -742,11 +742,11 @@ msgstr "Yükseltmeden önce demo organizasyonu çevirin."
 
 #: templates/corporate/billing/upgrade.html:350
 msgid "Send invoice and start free trial"
-msgstr ""
+msgstr "Faturayı gönder ve ücretsiz denemeyi başlat"
 
 #: templates/corporate/billing/upgrade.html:352
 msgid "Send invoice"
-msgstr ""
+msgstr "Fatura gönder"
 
 #: templates/corporate/communities.html:28
 msgid "Open communities directory"
@@ -1199,7 +1199,7 @@ msgstr "En fazla 10 kullanıcısı olan kuruluşlar için"
 
 #: templates/corporate/comparison_table_integrated.html:1002
 msgid "25 users minimum"
-msgstr ""
+msgstr "Minimum 25 kullanıcı"
 
 #: templates/corporate/comparison_table_integrated.html:1290
 #: templates/corporate/comparison_table_integrated.html:1509
@@ -2035,7 +2035,7 @@ msgstr "\n%(realm_uri)s üzerindeki Zulip hesabınız devre dışı bırakıldı
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
 msgid "New channels"
-msgstr ""
+msgstr "Yeni kanallar"
 
 #: templates/zerver/emails/digest.html:34
 msgid "Click here to log in to Zulip and catch up."
@@ -2079,7 +2079,7 @@ msgstr "Talebiniz için teşekkürler!"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip Cloud "
 "organizations:"
-msgstr ""
+msgstr "E-posta adresiniz %(email)s, aşağıdaki Zulip Cloud organizasyonlarında hesapları bulunmaktadır."
 
 #: templates/zerver/emails/find_team.html:14
 #: templates/zerver/emails/find_team.txt:7
@@ -2136,11 +2136,11 @@ msgstr "Zulip hesaplarınız"
 
 #: templates/zerver/emails/find_team.subject.txt:4
 msgid "No Zulip accounts found"
-msgstr ""
+msgstr "Zulip hesabı bulunamadı"
 
 #: templates/zerver/emails/find_team.txt:15
 msgid "If you have trouble logging in, you can reset your password."
-msgstr ""
+msgstr "Giriş yapmakta sorun yaşıyorsanız, şifrenizi sıfırlayabilirsiniz."
 
 #: templates/zerver/emails/find_team.txt:23
 #: templates/zerver/emails/find_team.txt:31
@@ -2698,7 +2698,7 @@ msgstr "Konuları kullanarak, Zulip'i her seferinde bir konuşma okuyabilirsiniz
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:16
 msgid "Channels and topics in the Zulip app"
-msgstr ""
+msgstr "Zulip uygulamasındaki kanallar ve konular"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:19
 #: templates/zerver/emails/onboarding_zulip_topics.txt:5
@@ -3574,7 +3574,7 @@ msgstr "Var olan Zulip hesabından ayarları içeri aktar"
 
 #: templates/zerver/register.html:119
 msgid "Your full name"
-msgstr ""
+msgstr "Tam adınız"
 
 #: templates/zerver/register.html:120
 msgid "Name"
@@ -3582,7 +3582,7 @@ msgstr "İsim"
 
 #: templates/zerver/register.html:127
 msgid "This is how your account is displayed in Zulip."
-msgstr ""
+msgstr "Hesabınızın Zulip'te nasıl görüntüleneceğidir."
 
 #: templates/zerver/register.html:141
 msgid "Enter your LDAP/Active Directory password."
@@ -3614,19 +3614,19 @@ msgstr ""
 
 #: templates/zerver/register.html:208
 msgid "Select an option"
-msgstr ""
+msgstr "Bir seçenek seçin"
 
 #: templates/zerver/register.html:213
 msgid "Please describe"
-msgstr ""
+msgstr "Lütfen açıklayın"
 
 #: templates/zerver/register.html:214
 msgid "Where did you see the ad?"
-msgstr ""
+msgstr "Reklamı nerede gördünüz?"
 
 #: templates/zerver/register.html:215
 msgid "Which organization?"
-msgstr ""
+msgstr "Hangi organizasyon?"
 
 #: templates/zerver/register.html:249
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
@@ -4032,11 +4032,11 @@ msgstr "İleti gönderime hazırlanamadı"
 
 #: zerver/actions/message_send.py:1263
 msgid "Expected exactly one channel"
-msgstr ""
+msgstr "Tam olarak 1 kanal bekleniyordu"
 
 #: zerver/actions/message_send.py:1274
 msgid "Invalid data type for channel"
-msgstr ""
+msgstr "Kanal için geçersiz veri tipi"
 
 #: zerver/actions/message_send.py:1290 zerver/actions/message_send.py:1300
 #: zerver/lib/recipient_parsing.py:25
@@ -4146,11 +4146,11 @@ msgstr "[Zamanlanmış mesajları gör](#scheduled)"
 
 #: zerver/actions/streams.py:117
 msgid "Channel is already deactivated"
-msgstr ""
+msgstr "Kanal zaten devre dışı"
 
 #: zerver/actions/streams.py:241
 msgid "Channel is not currently deactivated"
-msgstr ""
+msgstr "Kanal şu an da devre dışı değil"
 
 #: zerver/actions/streams.py:244
 #, python-brace-format
@@ -4403,11 +4403,11 @@ msgstr "Konu eksik"
 
 #: zerver/lib/addressee.py:111
 msgid "Cannot send to multiple channels"
-msgstr ""
+msgstr "Birden fazla kanala gönderilemedi"
 
 #: zerver/lib/addressee.py:123
 msgid "Missing channel"
-msgstr ""
+msgstr "Kayıp kanal"
 
 #: zerver/lib/addressee.py:134
 msgid "Message must have recipients"
@@ -4750,7 +4750,7 @@ msgstr "Geçersiz dış hesap tipi"
 
 #: zerver/lib/hotspots.py:34
 msgid "Catch up on a channel"
-msgstr ""
+msgstr "Bir kanalı yakala"
 
 #: zerver/lib/hotspots.py:36
 msgid ""

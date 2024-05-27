@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import internal_send_stream_message
@@ -34,7 +35,13 @@ from zerver.models import (
     Stream,
     UserProfile,
 )
-from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.realms import (
+    CommonPolicyEnum,
+    InviteToRealmPolicyEnum,
+    MoveMessagesBetweenStreamsPolicyEnum,
+    get_org_type_display_name,
+    get_realm,
+)
 from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
 
@@ -88,7 +95,9 @@ def do_change_realm_subdomain(
     # the realm has been moved to a new subdomain.
     if add_deactivated_redirect:
         placeholder_realm = do_create_realm(old_subdomain, realm.name)
-        do_deactivate_realm(placeholder_realm, acting_user=None)
+        do_deactivate_realm(
+            placeholder_realm, acting_user=None, deactivation_reason="subdomain_change"
+        )
         do_add_deactivated_redirect(placeholder_realm, realm.url)
 
 
@@ -109,16 +118,18 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         Realm.ORG_TYPES["education"]["id"],
     ):
         # Limit user creation to administrators.
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
+        realm.invite_to_realm_policy = InviteToRealmPolicyEnum.ADMINS_ONLY
         # Restrict public stream creation to staff, but allow private
         # streams (useful for study groups, etc.).
-        realm.create_public_stream_policy = Realm.POLICY_ADMINS_ONLY
+        realm.create_public_stream_policy = CommonPolicyEnum.ADMINS_ONLY
         # Don't allow members (students) to manage user groups or
         # stream subscriptions.
-        realm.user_group_edit_policy = Realm.POLICY_MODERATORS_ONLY
-        realm.invite_to_stream_policy = Realm.POLICY_MODERATORS_ONLY
+        realm.user_group_edit_policy = CommonPolicyEnum.MODERATORS_ONLY
+        realm.invite_to_stream_policy = CommonPolicyEnum.MODERATORS_ONLY
         # Allow moderators (TAs?) to move topics between streams.
-        realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
+        realm.move_messages_between_streams_policy = (
+            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY
+        )
 
 
 @transaction.atomic(savepoint=False)
@@ -279,24 +290,26 @@ def do_create_realm(
         maybe_enqueue_audit_log_upload(realm)
 
     # Create channels once Realm object has been saved
-    zulip_discussion_channel = ensure_stream(
-        realm,
-        str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-        stream_description=_("Questions and discussion about using Zulip."),
-        acting_user=None,
-    )
-    zulip_sandbox_channel = ensure_stream(
-        realm,
-        str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
-        stream_description=_("Experiment with Zulip here. :test_tube:"),
-        acting_user=None,
-    )
-    new_stream_announcements_stream = ensure_stream(
-        realm,
-        str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
-        stream_description=_("For team-wide conversations"),
-        acting_user=None,
-    )
+    with override_language(realm.default_language):
+        zulip_discussion_channel = ensure_stream(
+            realm,
+            str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            stream_description=_("Questions and discussion about using Zulip."),
+            acting_user=None,
+        )
+        zulip_sandbox_channel = ensure_stream(
+            realm,
+            str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            stream_description=_("Experiment with Zulip here. :test_tube:"),
+            acting_user=None,
+        )
+        new_stream_announcements_stream = ensure_stream(
+            realm,
+            str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
+            stream_description=_("For team-wide conversations"),
+            acting_user=None,
+        )
+
     # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
     realm.new_stream_announcements_stream = new_stream_announcements_stream
     realm.zulip_update_announcements_stream = new_stream_announcements_stream

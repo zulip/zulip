@@ -20,15 +20,13 @@ exports.intl = createIntl(
     cache,
 );
 
-exports.$t = (descriptor, values) =>
-    "translated: " +
-    exports.intl.formatMessage(
-        {
-            ...descriptor,
-            id: `${descriptor.defaultMessage}#${descriptor.description}`,
-        },
-        values,
-    );
+exports.$t = (descriptor, values) => {
+    descriptor = {
+        id: `${descriptor.defaultMessage}#${descriptor.description}`,
+        ...descriptor,
+    };
+    return "translated: " + exports.intl.formatMessage(descriptor, values);
+};
 
 const default_html_elements = Object.fromEntries(
     ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
@@ -37,14 +35,14 @@ const default_html_elements = Object.fromEntries(
     ]),
 );
 
-exports.$t_html = (descriptor, values) =>
-    "translated HTML: " +
-    exports.intl.formatMessage(
-        {
-            ...descriptor,
-            id: `${descriptor.defaultMessage}#${descriptor.description}`,
-        },
-        {
+exports.$t_html = (descriptor, values) => {
+    descriptor = {
+        id: `${descriptor.defaultMessage}#${descriptor.description}`,
+        ...descriptor,
+    };
+    return (
+        "translated HTML: " +
+        exports.intl.formatMessage(descriptor, {
             ...default_html_elements,
             ...Object.fromEntries(
                 Object.entries(values ?? {}).map(([key, value]) => [
@@ -52,5 +50,6 @@ exports.$t_html = (descriptor, values) =>
                     typeof value === "function" ? value : _.escape(value),
                 ]),
             ),
-        },
+        })
     );
+};

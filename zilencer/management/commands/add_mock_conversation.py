@@ -1,6 +1,5 @@
 from typing import Any, Dict, List
 
-from django.core.management.base import BaseCommand
 from typing_extensions import override
 
 from zerver.actions.create_user import do_create_user
@@ -9,13 +8,14 @@ from zerver.actions.reactions import do_add_reaction
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.emoji import get_emoji_data
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.streams import ensure_stream
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import Message, UserProfile
 from zerver.models.realms import get_realm
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Add a mock conversation to the development environment.
 
 Usage: ./manage.py add_mock_conversation

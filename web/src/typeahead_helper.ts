@@ -311,11 +311,9 @@ export function sort_people_for_relevance<UserType extends UserOrMentionPillData
     current_topic?: string,
 ): UserType[] {
     // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
-    let current_stream = null;
-    if (current_stream_id) {
-        current_stream = stream_data.get_sub_by_id(current_stream_id);
-    }
-    if (!current_stream) {
+    const current_stream =
+        current_stream_id !== undefined ? stream_data.get_sub_by_id(current_stream_id) : undefined;
+    if (current_stream === undefined) {
         objs.sort((person_a, person_b) => compare_people_for_relevance(person_a, person_b));
     } else {
         assert(current_stream_id !== undefined);

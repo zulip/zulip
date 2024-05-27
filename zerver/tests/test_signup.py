@@ -556,7 +556,9 @@ class PasswordResetTest(ZulipTestCase):
     def test_password_reset_with_deactivated_realm(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        do_deactivate_realm(user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+        )
 
         # start the password reset process by supplying an email address
         with self.assertLogs(level="INFO") as m:
@@ -1149,7 +1151,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Enqueue a fake digest email.
         context = {
             "name": "",
-            "realm_uri": "",
+            "realm_url": "",
             "unread_pms": [],
             "hot_conversations": [],
             "new_users": [],
@@ -4350,7 +4352,9 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_deactivated_realm(self) -> None:
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(
+            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+        )
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 200)

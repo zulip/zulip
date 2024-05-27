@@ -2,7 +2,7 @@
 
 Below, we explain each part of a simple incoming webhook integration,
 called **Hello World**.  This integration sends a "hello" message to the `test`
-stream and includes a link to the Wikipedia article of the day, which
+channel and includes a link to the Wikipedia article of the day, which
 it formats from json data it receives in the http request.
 
 Use this walkthrough to learn how to write your first webhook
@@ -144,14 +144,14 @@ You should name your webhook function as such
 integration and is always lower-case.
 
 At minimum, the webhook function must accept `request` (Django
-[HttpRequest](https://docs.djangoproject.com/en/3.2/ref/request-response/#django.http.HttpRequest)
+[HttpRequest](https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest)
 object), and `user_profile` (Zulip's user object). You may also want to
 define additional parameters using the `REQ` object.
 
 In the example above, we have defined `payload` which is populated
 from the body of the http request, `stream` with a default of `test`
 (available by default in the Zulip development environment), and
-`topic` with a default of `Hello World`. If your webhook uses a custom stream,
+`topic` with a default of `Hello World`. If your webhook uses a custom channel,
 it must exist before a message can be created in it. (See
 [Step 4: Create automated tests](#step-5-create-automated-tests) for how to handle this in tests.)
 
@@ -170,7 +170,7 @@ link to the Wikipedia article of the day as provided by the json payload.
 Then we send a message with `check_send_webhook_message`, which will
 validate the message and do the following:
 
-* Send a public (stream) message if the `stream` query parameter is
+* Send a public (channel) message if the `stream` query parameter is
   specified in the webhook URL.
 * If the `stream` query parameter isn't specified, it will send a direct
   message to the owner of the webhook bot.
@@ -350,12 +350,12 @@ class HelloWorldHookTests(WebhookTestCase):
 In the above example, `CHANNEL_NAME`, `URL_TEMPLATE`, and `WEBHOOK_DIR_NAME` refer
 to class attributes from the base class, `WebhookTestCase`. These are needed by
 the helper function `check_webhook` to determine how to execute
-your test. `CHANNEL_NAME` should be set to your default stream. If it doesn't exist,
+your test. `CHANNEL_NAME` should be set to your default channel. If it doesn't exist,
 `check_webhook` will create it while executing your test.
 
-If your test expects a stream name from a test fixture, the value in the fixture
+If your test expects a channel name from a test fixture, the value in the fixture
 and the value you set for `CHANNEL_NAME` must match. The test helpers use `CHANNEL_NAME`
-to create the destination stream, and then create the message to send using the
+to create the destination channel, and then create the message to send using the
 value from the fixture. If these don't match, the test will fail.
 
 `URL_TEMPLATE` defines how the test runner will call your incoming webhook, in the same way
@@ -438,9 +438,9 @@ Second, you need to write the actual documentation content in
 ```md
 Learn how Zulip integrations work with this simple Hello World example!
 
-1.  The Hello World webhook will use the `test` stream, which is created
+1.  The Hello World webhook will use the `test` channel, which is created
     by default in the Zulip development environment. If you are running
-    Zulip in production, you should make sure that this stream exists.
+    Zulip in production, you should make sure that this channel exists.
 
 1. {!create-an-incoming-webhook.md!}
 
@@ -531,7 +531,7 @@ def test_unknown_action_no_data(self) -> None:
     # we are testing. The value of result is the error message the webhook should
     # return if no params are sent. The fixture for this test is an empty file.
 
-    # subscribe to the target stream
+    # subscribe to the target channel
     self.subscribe(self.test_user, self.CHANNEL_NAME)
 
     # post to the webhook url
@@ -550,7 +550,7 @@ setup it would have done, and check the result yourself.
 
 Here, `subscribe_to_stream` is a test helper that uses `TEST_USER_EMAIL` and
 `CHANNEL_NAME` (attributes from the base class) to register the user to receive
-messages in the given stream. If the stream doesn't exist, it creates it.
+messages in the given channel. If the channel doesn't exist, it creates it.
 
 `client_post`, another helper, performs the HTTP POST that calls the incoming
 webhook. As long as `self.url` is correct, you don't need to construct the webhook

@@ -6,7 +6,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from markdown.extensions import Extension
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 
 
 class MarkdownStaticImagesGenerator(Extension):
@@ -15,7 +15,7 @@ class MarkdownStaticImagesGenerator(Extension):
         md.treeprocessors.register(
             StaticImageProcessor(md),
             "static_images",
-            PREPROCESSOR_PRIORITES["static_images"],
+            PREPROCESSOR_PRIORITIES["static_images"],
         )
 
 

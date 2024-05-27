@@ -77,12 +77,12 @@ run_test("t_tag", ({mock_template}) => {
             "http://zulip.zulipdev.com/#narrow/stream/101-devel/topic/testing/near/99",
     };
 
-    mock_template("popovers/actions_popover.hbs", true, (data, html) => {
+    mock_template("popovers/message_actions_popover.hbs", true, (data, html) => {
         assert.equal(data, args);
         assert.ok(html.includes("Citer et répondre"));
     });
 
-    require("../templates/popovers/actions_popover.hbs")(args);
+    require("../templates/popovers/message_actions_popover.hbs")(args);
 });
 
 run_test("tr_tag", ({mock_template}) => {

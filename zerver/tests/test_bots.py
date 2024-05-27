@@ -17,9 +17,9 @@ from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
-from zerver.models import Realm, RealmUserDefault, Service, Subscription, UserProfile
+from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
 from zerver.models.bots import get_bot_services
-from zerver.models.realms import get_realm
+from zerver.models.realms import BotCreationPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user, is_cross_realm_bot_email
 
@@ -785,7 +785,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         bot_email = "hambot-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         # A regular user cannot create a generic bot
@@ -807,7 +807,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.create_bot(bot_type=UserProfile.DEFAULT_BOT)
 
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         bot_email = "hambot-bot@zulip.testserver"
@@ -823,7 +823,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_no_generic_bots_allowed_for_admins(self) -> None:
         bot_email = "hambot-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         # An administrator can create any type of bot
@@ -841,7 +841,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": 1,
         }
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_ADMINS_ONLY
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.ADMINS_ONLY
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         # A regular user cannot create a generic bot
@@ -862,7 +862,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_no_bots_allowed_for_admins(self) -> None:
         bot_email = "hambot-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_ADMINS_ONLY
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.ADMINS_ONLY
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         # An administrator can create any type of bot

@@ -19,6 +19,8 @@ export type InputPillItem<T> = {
     deactivated?: boolean;
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
+    user_id?: number;
+    group_id?: number;
 } & T;
 
 export type InputPillConfig = {
@@ -63,6 +65,8 @@ type InputPillRenderingDetails = {
     has_status?: boolean;
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined;
     should_add_guest_user_indicator: boolean | undefined;
+    user_id?: number | undefined;
+    group_id?: number | undefined;
 };
 
 // These are the functions that are exposed to other modules.
@@ -158,6 +162,13 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 should_add_guest_user_indicator: item.should_add_guest_user_indicator,
             };
 
+            if (item.user_id) {
+                opts.user_id = item.user_id;
+            }
+            if (item.group_id) {
+                opts.group_id = item.group_id;
+            }
+
             if (has_image) {
                 opts.img_src = item.img_src;
             }
@@ -211,14 +222,9 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
         removePill(element: HTMLElement) {
-            let idx: number | undefined;
-            for (let x = 0; x < store.pills.length; x += 1) {
-                if (store.pills[x].$element[0] === element) {
-                    idx = x;
-                }
-            }
+            const idx = store.pills.findIndex((pill) => pill.$element[0] === element);
 
-            if (idx !== undefined) {
+            if (idx !== -1) {
                 store.pills[idx].$element.remove();
                 const pill = store.pills.splice(idx, 1);
                 if (store.onPillRemove !== undefined) {

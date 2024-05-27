@@ -76,7 +76,6 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
     NamedUserGroup,
-    Realm,
     RealmAuditLog,
     RealmPlayground,
     Recipient,
@@ -88,7 +87,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
-from zerver.models.realms import RealmDomainDict, get_realm, get_realm_domains
+from zerver.models.realms import EditTopicPolicyEnum, RealmDomainDict, get_realm, get_realm_domains
 from zerver.models.streams import get_stream
 
 
@@ -421,11 +420,15 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_realm_activation(self) -> None:
         realm = get_realm("zulip")
         user = self.example_user("desdemona")
-        do_deactivate_realm(realm, acting_user=user)
+        do_deactivate_realm(realm, acting_user=user, deactivation_reason="owner_request")
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
         )
         extra_data = log_entry.extra_data
+
+        deactivation_reason = extra_data["deactivation_reason"]
+        self.assertEqual(deactivation_reason, "owner_request")
+
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
         do_reactivate_realm(realm)
@@ -539,13 +542,13 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
         value_expected = {
-            RealmAuditLog.OLD_VALUE: Realm.POLICY_EVERYONE,
-            RealmAuditLog.NEW_VALUE: Realm.POLICY_ADMINS_ONLY,
+            RealmAuditLog.OLD_VALUE: EditTopicPolicyEnum.EVERYONE,
+            RealmAuditLog.NEW_VALUE: EditTopicPolicyEnum.ADMINS_ONLY,
             "property": "edit_topic_policy",
         }
 
         do_set_realm_property(
-            realm, "edit_topic_policy", Realm.POLICY_ADMINS_ONLY, acting_user=user
+            realm, "edit_topic_policy", EditTopicPolicyEnum.ADMINS_ONLY, acting_user=user
         )
         self.assertEqual(
             RealmAuditLog.objects.filter(

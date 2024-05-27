@@ -168,7 +168,7 @@ def do_update_user_presence(
     if force_send_update or (
         not user_profile.realm.presence_disabled and (created or became_online)
     ):
-        # We do a the transaction.on_commit here, rather than inside
+        # We do the transaction.on_commit here, rather than inside
         # send_presence_changed, to help keep presence transactions
         # brief; the active_user_ids call there is more expensive than
         # this whole function.

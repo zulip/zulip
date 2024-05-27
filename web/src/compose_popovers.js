@@ -40,7 +40,7 @@ export function initialize() {
             const $popper = $(instance.popper);
             $popper.one("click", ".compose_mobile_stream_button", (e) => {
                 compose_actions.start({
-                    mesage_type: "stream",
+                    message_type: "stream",
                     trigger: "clear topic button",
                 });
                 e.stopPropagation();

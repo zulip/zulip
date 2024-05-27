@@ -13,6 +13,7 @@ import {$t} from "./i18n";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import type {CustomProfileField} from "./state_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
@@ -376,8 +377,8 @@ function get_message_retention_setting_value(
     return check_valid_number_input(custom_input_val);
 }
 
-const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
-type SelectFieldData = z.output<typeof select_field_data_schema>;
+export const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
+export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
 function read_select_field_data_from_form(
     $profile_field_form: JQuery,
@@ -416,7 +417,12 @@ function read_select_field_data_from_form(
     return field_data;
 }
 
-type ExternalAccountFieldData = {subtype: string; url_pattern?: string};
+export const external_account_field_schema = z.object({
+    subtype: z.string(),
+    url_pattern: z.optional(z.string()),
+});
+
+export type ExternalAccountFieldData = z.output<typeof external_account_field_schema>;
 
 function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
     const field_data: ExternalAccountFieldData = {
@@ -432,7 +438,7 @@ function read_external_account_field_data($profile_field_form: JQuery): External
     return field_data;
 }
 
-type FieldData = SelectFieldData | ExternalAccountFieldData;
+export type FieldData = SelectFieldData | ExternalAccountFieldData;
 
 export function read_field_data_from_form(
     field_type_id: number,
@@ -720,6 +726,8 @@ export function get_input_element_value(
             return get_dropdown_list_widget_setting_value($input_elem);
         case "field-data-setting":
             return get_field_data_input_value($input_elem);
+        case "language-setting":
+            return $input_elem.find(".language_selection_button span").attr("data-language-code");
         default:
             return undefined;
     }
@@ -891,6 +899,113 @@ export function check_property_changed(
             }
     }
     return current_val !== proposed_val;
+}
+
+function get_request_data_for_org_join_restrictions(selected_val: string): {
+    disallow_disposable_email_addresses: boolean;
+    emails_restricted_to_domains: boolean;
+} {
+    switch (selected_val) {
+        case "only_selected_domain": {
+            return {
+                emails_restricted_to_domains: true,
+                disallow_disposable_email_addresses: false,
+            };
+        }
+        case "no_disposable_email": {
+            return {
+                emails_restricted_to_domains: false,
+                disallow_disposable_email_addresses: true,
+            };
+        }
+        default: {
+            return {
+                disallow_disposable_email_addresses: false,
+                emails_restricted_to_domains: false,
+            };
+        }
+    }
+}
+
+export function populate_data_for_request(
+    $subsection_elem: JQuery,
+    for_realm_default_settings: boolean,
+    sub: StreamSubscription | undefined,
+    group: UserGroup | undefined,
+    custom_profile_field?: CustomProfileField | undefined,
+): Record<string, string | boolean | number> {
+    let data: Record<string, string | boolean | number> = {};
+    const properties_elements = get_subsection_property_elements($subsection_elem);
+    for (const input_elem of properties_elements) {
+        const $input_elem = $(input_elem);
+        if (
+            check_property_changed(
+                input_elem,
+                for_realm_default_settings,
+                sub,
+                group,
+                custom_profile_field,
+            )
+        ) {
+            const input_value = get_input_element_value(input_elem);
+            if (input_value !== undefined && input_value !== null) {
+                let property_name: string;
+                if (
+                    for_realm_default_settings ||
+                    sub !== undefined ||
+                    group !== undefined ||
+                    custom_profile_field !== undefined
+                ) {
+                    property_name = extract_property_name($input_elem, for_realm_default_settings);
+                } else if ($input_elem.attr("id")!.startsWith("id_authmethod")) {
+                    // Authentication Method component IDs include authentication method name
+                    // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
+                    // We need to strip that whole construct down to extract the actual property name.
+                    // The [\da-z]+ part of the regexp covers the auth method name itself.
+                    // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
+                    // this is ensured by a respective allowlist-based filter in populate_auth_methods().
+                    const match_array = /^id_authmethod[\da-z]+_(.*)$/.exec(
+                        $input_elem.attr("id")!,
+                    );
+                    assert(match_array !== null);
+                    property_name = match_array[1];
+                } else {
+                    const match_array = /^id_realm_(.*)$/.exec($input_elem.attr("id")!);
+                    assert(match_array !== null);
+                    property_name = match_array[1];
+                }
+
+                if (property_name === "stream_privacy") {
+                    data = {
+                        ...data,
+                        ...settings_data.get_request_data_for_stream_privacy(
+                            input_value.toString(),
+                        ),
+                    };
+                    continue;
+                }
+
+                if (property_name === "can_mention_group") {
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: group!.can_mention_group,
+                    });
+                    continue;
+                }
+
+                if (property_name === "org_join_restrictions") {
+                    data = {
+                        ...data,
+                        ...get_request_data_for_org_join_restrictions(input_value.toString()),
+                    };
+                    continue;
+                }
+                data[property_name] = input_value;
+            }
+        }
+    }
+
+    return data;
 }
 
 function switching_to_private(

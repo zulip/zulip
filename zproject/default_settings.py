@@ -484,7 +484,7 @@ TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 # Configuration for JWT auth (sign in and API key fetch)
 JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {}
 
-# https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SERVER_EMAIL
+# https://docs.djangoproject.com/en/5.0/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
 SERVER_EMAIL = ZULIP_ADMINISTRATOR
 # Django setting for who receives error emails.
@@ -575,7 +575,7 @@ GOOGLE_ANALYTICS_ID: Optional[str] = None
 # This is overridden by dev_settings.py for droplets.
 IS_DEV_DROPLET = False
 
-# Used by puppet/kandra/files/cron.d/check_send_receive_time.
+# Used by the `check_send_receive_time` monitoring tool.
 NAGIOS_BOT_HOST = SYSTEM_BOT_REALM + "." + EXTERNAL_HOST
 
 # Use half of the available CPUs for data import purposes.

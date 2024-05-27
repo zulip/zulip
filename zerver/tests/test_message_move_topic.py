@@ -17,8 +17,9 @@ from zerver.lib.user_topics import (
     topic_has_visibility_policy,
 )
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Realm, UserMessage, UserProfile, UserTopic
+from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.realms import CommonMessagePolicyEnum
 from zerver.models.streams import Stream
 
 
@@ -110,7 +111,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid character in topic, at position 8!")
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -192,8 +193,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
-    @mock.patch("zerver.actions.user_topics.send_event")
-    def test_edit_muted_topic(self, mock_send_event: mock.MagicMock) -> None:
+    @mock.patch("zerver.actions.user_topics.send_event_on_commit")
+    def test_edit_muted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
         hamlet = self.example_user("hamlet")
@@ -273,7 +274,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # Here we assert that the expected users are notified properly.
         users_notified_via_muted_topics_event: List[int] = []
         users_notified_via_user_topic_event: List[int] = []
-        for call_args in mock_send_event.call_args_list:
+        for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
@@ -459,8 +460,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert_is_topic_muted(cordelia, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(aaron, new_public_stream.id, "final topic name", muted=False)
 
-    @mock.patch("zerver.actions.user_topics.send_event")
-    def test_edit_unmuted_topic(self, mock_send_event: mock.MagicMock) -> None:
+    @mock.patch("zerver.actions.user_topics.send_event_on_commit")
+    def test_edit_unmuted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
 
@@ -535,7 +536,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # Here we assert that the expected users are notified properly.
         users_notified_via_muted_topics_event: List[int] = []
         users_notified_via_user_topic_event: List[int] = []
-        for call_args in mock_send_event.call_args_list:
+        for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
@@ -882,7 +883,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             do_set_realm_property(
                 hamlet.realm,
                 "delete_own_message_policy",
-                Realm.POLICY_MEMBERS_ONLY,
+                CommonMessagePolicyEnum.MEMBERS_ONLY,
                 acting_user=None,
             )
             self.client_delete(f"/json/messages/{target_message_id}")

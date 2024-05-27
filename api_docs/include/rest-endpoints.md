@@ -15,7 +15,7 @@
 * [Update personal message flags](/api/update-message-flags)
 * [Update personal message flags for narrow](/api/update-message-flags-for-narrow)
 * [Mark all messages as read](/api/mark-all-as-read)
-* [Mark messages in a stream as read](/api/mark-stream-as-read)
+* [Mark messages in a channel as read](/api/mark-stream-as-read)
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
 
@@ -33,27 +33,27 @@
 * [Edit a draft](/api/edit-draft)
 * [Delete a draft](/api/delete-draft)
 
-#### Streams
+#### Channels
 
-* [Get subscribed streams](/api/get-subscriptions)
-* [Subscribe to a stream](/api/subscribe)
-* [Unsubscribe from a stream](/api/unsubscribe)
+* [Get subscribed channels](/api/get-subscriptions)
+* [Subscribe to a channel](/api/subscribe)
+* [Unsubscribe from a channel](/api/unsubscribe)
 * [Get subscription status](/api/get-subscription-status)
 * [Get all subscribers](/api/get-subscribers)
 * [Update subscription settings](/api/update-subscription-settings)
-* [Get all streams](/api/get-streams)
-* [Get a stream by ID](/api/get-stream-by-id)
-* [Get stream ID](/api/get-stream-id)
-* [Create a stream](/api/create-stream)
-* [Update a stream](/api/update-stream)
-* [Archive a stream](/api/archive-stream)
-* [Get stream's email address](/api/get-stream-email-address)
-* [Get topics in a stream](/api/get-stream-topics)
+* [Get all channels](/api/get-streams)
+* [Get a channel by ID](/api/get-stream-by-id)
+* [Get channel ID](/api/get-stream-id)
+* [Create a channel](/api/create-stream)
+* [Update a channel](/api/update-stream)
+* [Archive a channel](/api/archive-stream)
+* [Get channel's email address](/api/get-stream-email-address)
+* [Get topics in a channel](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
 * [Update personal preferences for a topic](/api/update-user-topic)
 * [Delete a topic](/api/delete-topic)
-* [Add a default stream](/api/add-default-stream)
-* [Remove a default stream](/api/remove-default-stream)
+* [Add a default channel](/api/add-default-stream)
+* [Remove a default channel](/api/remove-default-stream)
 
 #### Users
 
@@ -69,6 +69,7 @@
 * [Deactivate own user](/api/deactivate-own-user)
 * [Set "typing" status](/api/set-typing-status)
 * [Get user presence](/api/get-user-presence)
+* [Get a user's status](/api/get-user-status)
 * [Get presence of all users](/api/get-presence)
 * [Get attachments](/api/get-attachments)
 * [Delete an attachment](/api/remove-attachment)

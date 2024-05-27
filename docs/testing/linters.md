@@ -209,7 +209,7 @@ option of Puppet.
 
 Zulip uses two HTML templating systems:
 
-- [Django templates](https://docs.djangoproject.com/en/3.2/topics/templates/)
+- [Django templates](https://docs.djangoproject.com/en/5.0/topics/templates/)
 - [handlebars](https://handlebarsjs.com/)
 
 Zulip has an internal tool that validates both types of templates for

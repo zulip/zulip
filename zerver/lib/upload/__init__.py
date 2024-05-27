@@ -85,7 +85,6 @@ def upload_message_attachment(
 
 
 def claim_attachment(
-    user_profile: UserProfile,
     path_id: str,
     message: Union[Message, ScheduledMessage],
     is_message_realm_public: bool,

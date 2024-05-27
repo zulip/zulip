@@ -353,7 +353,7 @@ def json_change_settings(
 
         do_change_password(user_profile, new_password)
         # Password changes invalidates sessions, see
-        # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
+        # https://docs.djangoproject.com/en/5.0/topics/auth/default/#session-invalidation-on-password-change
         # for details. To avoid this logging the user out of their own
         # session (which would provide a confusing UX at best), we
         # update the session hash here.

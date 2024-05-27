@@ -742,7 +742,7 @@ def ratelimit_rule(
     num_requests: int,
     domain: str = "api_by_user",
 ) -> Iterator[None]:
-    """Temporarily add a rate-limiting rule to the ratelimiter"""
+    """Temporarily add a rate-limiting rule to the rate limiter"""
     RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
 
     domain_rules = rules.get(domain, []).copy()

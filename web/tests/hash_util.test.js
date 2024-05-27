@@ -178,6 +178,26 @@ run_test("test_is_subscribers_section_opened_for_stream", () => {
     assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), false);
 });
 
+run_test("test_is_in_specified_hash_category", () => {
+    window.location.hash = "#channels/1/Design/subscribers";
+    assert.equal(hash_parser.is_in_specified_hash_category(["channels", "channel"]), true);
+
+    window.location.hash = "#channels/99/.EC.A1.B0.EB.A6.AC.EB.B2.95.20.F0.9F.98.8E/subscribers";
+    assert.equal(hash_parser.is_in_specified_hash_category(["channels", "channel"]), true);
+
+    window.location.hash = "#gro/channels/channel";
+    assert.equal(hash_parser.is_in_specified_hash_category(["stream", "channel", "group"]), false);
+
+    window.location.hash = "#some/stream/channel/group";
+    assert.equal(hash_parser.is_in_specified_hash_category(["stream", "channel", "group"]), false);
+
+    window.location.hash = "#some/stream/channel/group";
+    assert.equal(hash_parser.is_in_specified_hash_category([""]), false);
+
+    window.location.hash = "#some/stream/channel/group";
+    assert.equal(hash_parser.is_in_specified_hash_category([]), false);
+});
+
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
         {negated: false, operator: "stream", operand: "frontend"},

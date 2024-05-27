@@ -60,7 +60,7 @@ from zerver.lib.user_groups import (
     get_server_supported_permission_settings,
     user_groups_in_realm_serialized,
 )
-from zerver.lib.user_status import get_user_status_dict
+from zerver.lib.user_status import get_all_users_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
@@ -88,7 +88,7 @@ from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
-from zerver.models.realms import get_realm_domains
+from zerver.models.realms import CommonMessagePolicyEnum, EditTopicPolicyEnum, get_realm_domains
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
@@ -286,10 +286,12 @@ def fetch_initial_state_data(
             False if user_profile is None else realm.allow_message_editing
         )
         state["realm_edit_topic_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
+            EditTopicPolicyEnum.ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
         state["realm_delete_own_message_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
+            CommonMessagePolicyEnum.ADMINS_ONLY
+            if user_profile is None
+            else realm.delete_own_message_policy
         )
 
         # This setting determines whether to send presence and also
@@ -679,7 +681,7 @@ def fetch_initial_state_data(
         state["user_status"] = (
             {}
             if user_profile is None
-            else get_user_status_dict(realm=realm, user_profile=user_profile)
+            else get_all_users_status_dict(realm=realm, user_profile=user_profile)
         )
 
     if want("user_topic"):

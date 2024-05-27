@@ -56,7 +56,7 @@ async function test_restore_stream_message_draft_by_opening_compose_box(page: Pa
     await page.waitForSelector("#send_message_form", {visible: true});
 
     await common.check_compose_state(page, {
-        stream: "Denmark",
+        stream_name: "Denmark",
         topic: "tests",
         content: "Test stream message. ",
     });

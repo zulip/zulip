@@ -67,6 +67,6 @@ export type UserSettings = (StreamNotificationSettings &
 
 export let user_settings: UserSettings;
 
-export function initialize_user_settings(params: Record<string, UserSettings>): void {
+export function initialize_user_settings(params: {user_settings: UserSettings}): void {
     user_settings = params.user_settings;
 }

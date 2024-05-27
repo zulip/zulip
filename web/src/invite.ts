@@ -104,7 +104,7 @@ function get_common_invitation_data(): {
 
 function beforeSend(): void {
     reset_error_messages();
-    // TODO: You could alternatively parse the textarea here, and return errors to
+    // TODO: You could alternatively parse the emails here, and return errors to
     // the user if they don't match certain constraints (i.e. not real email addresses,
     // aren't in the right domain, etc.)
     //
@@ -206,7 +206,6 @@ function submit_invitation_form(): void {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            $<HTMLTextAreaElement>("textarea#invitee_emails").trigger("focus");
             $invite_status[0].scrollIntoView();
         },
     });
@@ -306,9 +305,11 @@ function set_custom_time_inputs_visibility(): void {
 }
 
 function set_streams_to_join_list_visibility(): void {
-    const default_streams_selected = $<HTMLInputElement>("input#invite_select_default_streams")[0]
-        .checked;
-    if (default_streams_selected) {
+    const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
+    const hide_streams_list =
+        realm_has_default_streams &&
+        $<HTMLInputElement>("input#invite_select_default_streams")[0].checked;
+    if (hide_streams_list) {
         $("#streams_to_add .invite-stream-controls").hide();
         $("#invite-stream-checkboxes").hide();
     } else {
@@ -356,7 +357,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             create_item_from_text: email_pill.create_item_from_email,
             get_text_from_item: email_pill.get_email_from_item,
         });
-        const $pill_input = $("#invitee_emails_container .pill-container .input");
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
@@ -378,15 +378,20 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $(e.target).parent().remove();
         });
 
-        function toggle_invite_submit_button(): void {
+        function toggle_invite_submit_button(selected_tab?: string): void {
+            if (selected_tab === undefined) {
+                selected_tab = $(".invite_users_option_tabs")
+                    .find(".selected")
+                    .attr("data-tab-key");
+            }
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
-                $pill_input.is(":visible") &&
+                selected_tab === "invite-email-tab" &&
                     pills.items().length === 0 &&
                     email_pill.get_current_email(pills) === null,
             );
-            if ($("#invitee_emails_container").is(":visible")) {
+            if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
                 $button.attr("data-loading-text", $t({defaultMessage: "Inviting..."}));
             } else {
@@ -396,12 +401,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         }
 
         pills.onPillCreate(toggle_invite_submit_button);
-        pills.onPillRemove(toggle_invite_submit_button);
-        pills.onTextInputHook(toggle_invite_submit_button);
-
-        $("#invite-user-modal").on("input", "input, textarea, select", () => {
+        pills.onPillRemove(() => {
             toggle_invite_submit_button();
         });
+        pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
             set_custom_time_inputs_visibility();
@@ -429,7 +432,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_check_all_button").on("click", () => {
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
-            toggle_invite_submit_button();
         });
 
         $("#invite_uncheck_all_button").on("click", () => {
@@ -471,7 +473,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                         $("#invitee_emails_container").hide();
                         break;
                 }
-                toggle_invite_submit_button();
+                toggle_invite_submit_button(key);
                 reset_error_messages();
             },
         });

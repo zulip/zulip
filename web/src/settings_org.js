@@ -826,70 +826,6 @@ export function init_dropdown_widgets() {
     can_access_all_users_group_widget.setup();
 }
 
-export function populate_data_for_request(
-    subsection,
-    for_realm_default_settings,
-    sub,
-    group,
-    custom_profile_field = undefined,
-) {
-    let data = {};
-    const properties_elements = settings_components.get_subsection_property_elements(subsection);
-
-    for (const input_elem of properties_elements) {
-        const $input_elem = $(input_elem);
-        if (
-            settings_components.check_property_changed(
-                input_elem,
-                for_realm_default_settings,
-                sub,
-                group,
-                custom_profile_field,
-            )
-        ) {
-            const input_value = settings_components.get_input_element_value(input_elem);
-            if (input_value !== undefined) {
-                let property_name;
-                if (for_realm_default_settings || sub || group || custom_profile_field) {
-                    property_name = settings_components.extract_property_name(
-                        $input_elem,
-                        for_realm_default_settings,
-                    );
-                } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
-                    // Authentication Method component IDs include authentication method name
-                    // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
-                    // We need to strip that whole construct down to extract the actual property name.
-                    // The [\da-z]+ part of the regexp covers the auth method name itself.
-                    // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
-                    // this is ensured by a respective allowlist-based filter in populate_auth_methods().
-                    [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec($input_elem.attr("id"));
-                } else {
-                    [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
-                }
-
-                if (property_name === "stream_privacy") {
-                    data = {
-                        ...data,
-                        ...settings_data.get_request_data_for_stream_privacy(input_value),
-                    };
-                    continue;
-                }
-
-                if (property_name === "can_mention_group") {
-                    data[property_name] = JSON.stringify({
-                        new: input_value,
-                        old: group.can_mention_group,
-                    });
-                    continue;
-                }
-                data[property_name] = input_value;
-            }
-        }
-    }
-
-    return data;
-}
-
 export function register_save_discard_widget_handlers(
     $container,
     patch_url,
@@ -944,29 +880,6 @@ export function register_save_discard_widget_handlers(
         let data = {};
 
         switch (subsection) {
-            case "notifications":
-                data.default_language = $(
-                    "#org-notifications .language_selection_widget .language_selection_button span",
-                ).attr("data-language-code");
-                break;
-            case "join_settings": {
-                const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
-                switch (org_join_restrictions) {
-                    case "only_selected_domain":
-                        data.emails_restricted_to_domains = true;
-                        data.disallow_disposable_email_addresses = false;
-                        break;
-                    case "no_disposable_email":
-                        data.emails_restricted_to_domains = false;
-                        data.disallow_disposable_email_addresses = true;
-                        break;
-                    case "no_restriction":
-                        data.disallow_disposable_email_addresses = false;
-                        data.emails_restricted_to_domains = false;
-                        break;
-                }
-                break;
-            }
             case "auth_settings":
                 data = {};
                 data.authentication_methods = JSON.stringify(
@@ -994,7 +907,10 @@ export function register_save_discard_widget_handlers(
         }
 
         const data = {
-            ...populate_data_for_request($subsection_elem, for_realm_default_settings),
+            ...settings_components.populate_data_for_request(
+                $subsection_elem,
+                for_realm_default_settings,
+            ),
             ...extra_data,
         };
         save_organization_settings(data, $save_button, patch_url);

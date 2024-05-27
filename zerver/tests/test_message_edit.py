@@ -17,9 +17,9 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, NamedUserGroup, Realm, UserProfile, UserTopic
+from zerver.models import Message, NamedUserGroup, Realm, UserGroup, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import EditTopicPolicyEnum, WildcardMentionPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
 
@@ -897,7 +897,7 @@ class EditMessageTest(ZulipTestCase):
                     "message_content_edit_limit_seconds": orjson.dumps(
                         message_content_edit_limit_seconds
                     ).decode(),
-                    "edit_topic_policy": edit_topic_policy,
+                    "edit_topic_policy": orjson.dumps(edit_topic_policy).decode(),
                 },
             )
             self.assert_json_success(result)
@@ -947,29 +947,29 @@ class EditMessageTest(ZulipTestCase):
 
         # test the various possible message editing settings
         # high enough time limit, all edits allowed
-        set_message_editing_params(True, 240, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(True, 240, EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_success(id_, "A")
 
         # out of time, only topic editing allowed
-        set_message_editing_params(True, 120, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(True, 120, EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_success(id_, "B", True)
         do_edit_message_assert_error(id_, "C", "The time limit for editing this message has passed")
 
         # infinite time, all edits allowed
-        set_message_editing_params(True, "unlimited", Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_success(id_, "D")
 
         # without allow_message_editing, editing content is not allowed but
         # editing topic is allowed if topic-edit time limit has not passed
         # irrespective of content-edit time limit.
-        set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(False, 240, EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_success(id_, "B", True)
 
-        set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(False, 240, EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_success(id_, "E", True)
-        set_message_editing_params(False, 120, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(False, 120, EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_success(id_, "F", True)
-        set_message_editing_params(False, "unlimited", Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(False, "unlimited", EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_success(id_, "G", True)
 
     def test_edit_topic_policy(self) -> None:
@@ -986,7 +986,7 @@ class EditMessageTest(ZulipTestCase):
                     "message_content_edit_limit_seconds": orjson.dumps(
                         message_content_edit_limit_seconds
                     ).decode(),
-                    "edit_topic_policy": edit_topic_policy,
+                    "edit_topic_policy": orjson.dumps(edit_topic_policy).decode(),
                 },
             )
             self.assert_json_success(result)
@@ -1028,18 +1028,18 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(polonius, "Denmark")
 
         # any user can edit the topic of a message
-        set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
+        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.EVERYONE)
         do_edit_message_assert_success(id_, "A", "polonius")
 
         # only members can edit topic of a message
-        set_message_editing_params(True, "unlimited", Realm.POLICY_MEMBERS_ONLY)
+        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.MEMBERS_ONLY)
         do_edit_message_assert_error(
             id_, "B", "You don't have permission to edit this message", "polonius"
         )
         do_edit_message_assert_success(id_, "B", "cordelia")
 
         # only full members can edit topic of a message
-        set_message_editing_params(True, "unlimited", Realm.POLICY_FULL_MEMBERS_ONLY)
+        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.FULL_MEMBERS_ONLY)
 
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
@@ -1066,7 +1066,7 @@ class EditMessageTest(ZulipTestCase):
         do_edit_message_assert_success(id_, "CD", "hamlet")
 
         # only moderators can edit topic of a message
-        set_message_editing_params(True, "unlimited", Realm.POLICY_MODERATORS_ONLY)
+        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.MODERATORS_ONLY)
         do_edit_message_assert_error(
             id_, "D", "You don't have permission to edit this message", "cordelia"
         )
@@ -1077,14 +1077,14 @@ class EditMessageTest(ZulipTestCase):
         do_edit_message_assert_success(id_, "D", "shiva")
 
         # only admins can edit the topics of messages
-        set_message_editing_params(True, "unlimited", Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_error(
             id_, "E", "You don't have permission to edit this message", "shiva"
         )
         do_edit_message_assert_success(id_, "E", "iago")
 
         # even owners and admins cannot edit the topics of messages
-        set_message_editing_params(True, "unlimited", Realm.POLICY_NOBODY)
+        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.NOBODY)
         do_edit_message_assert_error(
             id_, "H", "You don't have permission to edit this message", "desdemona"
         )
@@ -1093,14 +1093,14 @@ class EditMessageTest(ZulipTestCase):
         )
 
         # users can edit topics even if allow_message_editing is False
-        set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
+        set_message_editing_params(False, "unlimited", EditTopicPolicyEnum.EVERYONE)
         do_edit_message_assert_success(id_, "D", "cordelia")
 
         # non-admin users cannot edit topics sent > 1 week ago including
         # sender of the message.
         message.date_sent = message.date_sent - timedelta(seconds=604900)
         message.save()
-        set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
+        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.EVERYONE)
         do_edit_message_assert_success(id_, "E", "iago")
         do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(
@@ -1127,7 +1127,7 @@ class EditMessageTest(ZulipTestCase):
         do_edit_message_assert_success(id_, "G", "cordelia")
         do_edit_message_assert_success(id_, "H", "hamlet")
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_topic_wildcard_mention_in_followed_topic(
         self, mock_send_event: mock.MagicMock
     ) -> None:
@@ -1185,7 +1185,7 @@ class EditMessageTest(ZulipTestCase):
                 called = True
         self.assertTrue(called)
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_stream_wildcard_mention_in_followed_topic(
         self, mock_send_event: mock.MagicMock
     ) -> None:
@@ -1243,7 +1243,7 @@ class EditMessageTest(ZulipTestCase):
                 called = True
         self.assertTrue(called)
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_topic_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -1303,7 +1303,7 @@ class EditMessageTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            WildcardMentionPolicyEnum.MODERATORS,
             acting_user=None,
         )
 
@@ -1349,7 +1349,7 @@ class EditMessageTest(ZulipTestCase):
             )
         self.assert_json_success(result)
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_stream_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -1411,7 +1411,7 @@ class EditMessageTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            WildcardMentionPolicyEnum.MODERATORS,
             acting_user=None,
         )
 
@@ -1487,7 +1487,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         )
 
         # The restriction does not apply on silent mention.
@@ -1536,7 +1536,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         )
 
         msg_id = self.send_stream_message(othello, "test_stream", "Test message")
@@ -1571,7 +1571,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         )
 
         msg_id = self.send_stream_message(othello, "test_stream", "Test message")
@@ -1584,11 +1584,70 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         )
 
         msg_id = self.send_stream_message(shiva, "test_stream", "Test message")
         self.login("shiva")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        # Test all the cases when can_mention_group is not a named user group.
+        content = "Test mentioning user group @*leadership*"
+        user_group = UserGroup.objects.create(realm=iago.realm)
+        user_group.direct_members.set([othello])
+        user_group.direct_subgroups.set([moderators_system_group])
+        leadership.can_mention_group = user_group
+        leadership.save()
+
+        msg_id = self.send_stream_message(othello, "test_stream", "Test message")
+        self.login("othello")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(shiva, "test_stream", "Test message")
+        self.login("shiva")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(iago, "test_stream", "Test message")
+        self.login("iago")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(cordelia, "test_stream", "Test message")
+        self.login("cordelia")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "content": content,
+            },
+        )
+        self.assert_json_error(
+            result, f"You are not allowed to mention user group '{leadership.name}'."
+        )
+
+        content = "Test mentioning user group @_*leadership*"
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {

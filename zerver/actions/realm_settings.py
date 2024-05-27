@@ -455,7 +455,23 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+RealmDeactivationReasonType = Literal[
+    "owner_request",
+    "tos_violation",
+    "inactivity",
+    "self_hosting_migration",
+    # When we change the subdomain of a realm, we leave
+    # behind a deactivated gravestone realm.
+    "subdomain_change",
+]
+
+
+def do_deactivate_realm(
+    realm: Realm,
+    *,
+    acting_user: Optional[UserProfile],
+    deactivation_reason: RealmDeactivationReasonType,
+) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -481,6 +497,7 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             acting_user=acting_user,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "deactivation_reason": deactivation_reason,
             },
         )
 
@@ -740,7 +757,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
     )
     context = {
         "confirmation_url": url,
-        "realm_uri": realm.url,
+        "realm_url": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
     }

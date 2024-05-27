@@ -545,7 +545,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     #
     # In Django, the convention is to use an empty string instead of NULL/None
     # for text-based fields. For more information, see
-    # https://docs.djangoproject.com/en/3.2/ref/models/fields/#django.db.models.Field.null.
+    # https://docs.djangoproject.com/en/5.0/ref/models/fields/#django.db.models.Field.null.
     timezone = models.CharField(max_length=40, default="")
 
     AVATAR_FROM_GRAVATAR = "G"
@@ -725,12 +725,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def allowed_bot_types(self) -> List[int]:
-        from zerver.models import Realm
+        from zerver.models.realms import BotCreationPolicyEnum
 
         allowed_bot_types = []
         if (
             self.is_realm_admin
-            or self.realm.bot_creation_policy != Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+            or self.realm.bot_creation_policy != BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         ):
             allowed_bot_types.append(UserProfile.DEFAULT_BOT)
         allowed_bot_types += [

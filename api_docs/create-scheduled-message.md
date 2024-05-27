@@ -11,7 +11,7 @@
 {tab|curl}
 
 ``` curl
-# Create a scheduled stream message
+# Create a scheduled channel message
 curl -X POST {{ api_url }}/v1/scheduled_messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     --data-urlencode type=stream \

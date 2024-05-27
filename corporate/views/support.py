@@ -447,7 +447,11 @@ def support(
                     f"Realm reactivation email sent to admins of {realm.string_id}."
                 )
             elif status == "deactivated":
-                do_deactivate_realm(realm, acting_user=acting_user)
+                # TODO: Add support for deactivation reason in the support UI that'll be passed
+                # here.
+                do_deactivate_realm(
+                    realm, acting_user=acting_user, deactivation_reason="owner_request"
+                )
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif scrub_realm:
             do_scrub_realm(realm, acting_user=acting_user)

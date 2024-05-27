@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type {ReferenceElement} from "tippy.js";
 
-import render_left_sidebar_stream_setting_popover from "../templates/popovers/left_sidebar_stream_setting_popover.hbs";
+import render_left_sidebar_stream_setting_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_setting_popover.hbs";
 
 import * as popover_menus from "./popover_menus";
 import * as settings_data from "./settings_data";

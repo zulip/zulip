@@ -54,6 +54,6 @@ export type RealmDefaultSettings = {
 
 export let realm_user_settings_defaults: RealmDefaultSettings;
 
-export function initialize(params: Record<string, RealmDefaultSettings>): void {
+export function initialize(params: {realm_user_settings_defaults: RealmDefaultSettings}): void {
     realm_user_settings_defaults = params.realm_user_settings_defaults;
 }

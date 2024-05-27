@@ -38,7 +38,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_fake_email_domain, require_unique_names
+from zerver.models.realms import BotCreationPolicyEnum, get_fake_email_domain, require_unique_names
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
@@ -186,12 +186,12 @@ def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
     if user_profile.is_realm_admin:
         return
 
-    if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_EVERYONE:
+    if user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.EVERYONE:
         return
-    if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_ADMINS_ONLY:
+    if user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.ADMINS_ONLY:
         raise OrganizationAdministratorRequiredError
     if (
-        user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+        user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         and bot_type == UserProfile.DEFAULT_BOT
     ):
         raise OrganizationAdministratorRequiredError
