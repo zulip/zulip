@@ -152,6 +152,11 @@ class Stream(models.Model):
     can_resolve_topics_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_access_stream_topics_group = models.ForeignKey(
+        UserGroup,
+        on_delete=models.RESTRICT,
+        related_name="+",
+    )
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -221,6 +226,11 @@ class Stream(models.Model):
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
         ),
+        "can_access_stream_topics_group": GroupPermissionSetting(
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+        ),
     }
 
     stream_permission_group_settings_requiring_content_access = [
@@ -258,6 +268,11 @@ class Stream(models.Model):
     def is_history_public_to_subscribers(self) -> bool:
         return self.history_public_to_subscribers
 
+    def is_support_stream(self) -> bool:
+        if not hasattr(self.can_access_stream_topics_group, "named_user_group"):
+            return True
+        return self.can_access_stream_topics_group.named_user_group.name != SystemGroups.EVERYONE
+
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
@@ -291,6 +306,7 @@ class Stream(models.Model):
         "can_resolve_topics_group_id",
         "is_recently_active",
         "topics_policy",
+        "can_access_stream_topics_group_id",
     ]
 
 

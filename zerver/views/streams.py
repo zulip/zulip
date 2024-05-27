@@ -98,11 +98,17 @@ from zerver.lib.topic import (
 )
 from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
-from zerver.lib.typed_endpoint_validators import check_color, parse_enum_from_string_value
+from zerver.lib.typed_endpoint_validators import (
+    check_color,
+    check_int_in_validator,
+    parse_enum_from_string_value,
+)
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
+    access_user_group_for_setting,
     access_user_group_api_value_for_setting,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
@@ -824,6 +830,7 @@ def add_subscriptions_backend(
     can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
+    can_access_stream_topics_group: Json[int | UserGroupMembersData] | None = None,
     folder_id: Json[int] | None = None,
     history_public_to_subscribers: Json[bool] | None = None,
     invite_only: Json[bool] = False,
