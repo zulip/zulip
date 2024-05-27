@@ -102,6 +102,7 @@ class StreamDict(TypedDict, total=False):
     can_remove_subscribers_group: UserGroup | None
     can_resolve_topics_group: UserGroup | None
     can_subscribe_group: UserGroup | None
+    can_access_stream_topics_group: UserGroup | None
     folder: ChannelFolder | None
 
 
@@ -385,6 +386,7 @@ def create_stream_if_needed(
     can_remove_subscribers_group: UserGroup | None = None,
     can_resolve_topics_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
+    can_access_stream_topics_group: UserGroup | None = None,
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
@@ -519,6 +521,7 @@ def create_streams_if_needed(
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             can_resolve_topics_group=stream_dict.get("can_resolve_topics_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
+            can_access_stream_topics_group=stream_dict.get("can_access_stream_topics_group", None),
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
@@ -1731,6 +1734,9 @@ def list_to_streams(
             ]
             stream_dict["can_resolve_topics_group"] = group_settings_map["can_resolve_topics_group"]
             stream_dict["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
+            stream_dict["can_access_stream_topics_group"] = group_settings_map[
+                "can_access_stream_topics_group"
+            ]
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
@@ -1850,6 +1856,9 @@ def stream_to_dict(
     can_subscribe_group = get_group_setting_value_for_register_api(
         stream.can_subscribe_group_id, anonymous_group_membership
     )
+    can_access_stream_topics_group = get_group_setting_value_for_register_api(  # ← INSERT HERE
+        stream.can_access_stream_topics_group_id, anonymous_group_membership
+    )
 
     stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
         stream.can_send_message_group
@@ -1882,6 +1891,7 @@ def stream_to_dict(
         rendered_description=stream.rendered_description,
         stream_id=stream.id,
         stream_post_policy=stream_post_policy,
+        can_access_stream_topics_group=can_access_stream_topics_group,
         is_announcement_only=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=stream.subscriber_count,
