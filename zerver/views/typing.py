@@ -49,6 +49,7 @@ def send_notification_backend(
         # Verify that the user has access to the stream and has
         # permission to send messages to it.
         stream = access_stream_by_id(user_profile, stream_id)[0]
+        print(f"TOPIC_NAME: {topic}")
         access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
         do_send_stream_typing_notification(user_profile, operator, stream, topic)
     else:

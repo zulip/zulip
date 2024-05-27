@@ -12240,6 +12240,18 @@ paths:
                   items:
                     type: integer
                   example: [1, 10]
+                user_group_ids:
+                  description: |
+                    A list containing the [IDs of the user groups](/api/get-user-groups) that
+                    the newly created user will be automatically added to if the invitation
+                    is accepted. If the list is empty, then the new user will not be
+                    added to any user groups.
+
+                    **Changes**: New in Zulip 9.0 (feature level 2\_\_).
+                  type: array
+                  items:
+                    type: integer
+                  example: []
                 include_realm_default_subscriptions:
                   description: |
                     Boolean indicating whether the newly created user should be subscribed
@@ -12267,6 +12279,8 @@ paths:
               invite_expires_in_minutes:
                 contentType: application/json
               stream_ids:
+                contentType: application/json
+              user_group_ids:
                 contentType: application/json
       responses:
         "200":
@@ -12406,6 +12420,19 @@ paths:
                     type: integer
                   default: []
                   example: [1, 10]
+                user_group_ids:
+                  description: |
+                    A list containing the [IDs of the user groups](/api/get-user-groups) that
+                    the newly created user will be automatically added to if the invitation
+                    is accepted. If the list is empty, then the new user will not be
+                    added to any user groups.
+
+                    **Changes**: New in Zulip 9.0 (feature level 2\_\_).
+                  type: array
+                  items:
+                    type: integer
+                  default: []
+                  example: []
                 include_realm_default_subscriptions:
                   description: |
                     Boolean indicating whether the newly created user should be subscribed
@@ -12430,6 +12457,8 @@ paths:
               invite_expires_in_minutes:
                 contentType: application/json
               stream_ids:
+                contentType: application/json
+              user_group_ids:
                 contentType: application/json
       responses:
         "200":
