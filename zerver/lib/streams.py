@@ -69,6 +69,7 @@ class StreamDict(TypedDict, total=False):
     history_public_to_subscribers: bool | None
     message_retention_days: int | None
     can_remove_subscribers_group: UserGroup | None
+    can_access_stream_topics_group: UserGroup | None
 
 
 def get_stream_permission_policy_name(
@@ -139,6 +140,7 @@ def create_stream_if_needed(
     stream_description: str = "",
     message_retention_days: int | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
+    can_access_stream_topics_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
@@ -150,9 +152,15 @@ def create_stream_if_needed(
             name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
         )
 
+    if can_access_stream_topics_group is None:
+        can_access_stream_topics_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, is_system_group=True, realm=realm
+        )
+
     stream_name = stream_name.strip()
 
     assert can_remove_subscribers_group is not None
+    assert can_access_stream_topics_group is not None
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,
@@ -167,6 +175,7 @@ def create_stream_if_needed(
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             can_remove_subscribers_group=can_remove_subscribers_group,
+            can_access_stream_topics_group=can_access_stream_topics_group,
         ),
     )
 
@@ -220,6 +229,7 @@ def create_streams_if_needed(
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            can_access_stream_topics_group=stream_dict.get("can_access_stream_topics_group", None),
             acting_user=acting_user,
         )
 
@@ -880,6 +890,7 @@ def stream_to_dict(stream: Stream, recent_traffic: dict[int, int] | None = None)
         rendered_description=stream.rendered_description,
         stream_id=stream.id,
         stream_post_policy=stream.stream_post_policy,
+        can_access_stream_topics_group=stream.can_access_stream_topics_group_id,
         is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
     )

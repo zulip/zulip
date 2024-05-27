@@ -238,8 +238,12 @@ class TestMiscStuff(ZulipTestCase):
         in `APIStreamDict` and `APISubscriptionDict`, respectively.
         """
         expected_fields = set(Stream.API_FIELDS) | {"stream_id"}
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {
+            "id",
+            "can_remove_subscribers_group_id",
+            "can_access_stream_topics_group_id",
+        }
+        expected_fields |= {"can_remove_subscribers_group", "can_access_stream_topics_group"}
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
         computed_fields = {"is_announcement_only", "is_default", "stream_weekly_traffic"}
@@ -291,6 +295,9 @@ class TestCreateStreams(ZulipTestCase):
         moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
+        admins_system_group = NamedUserGroup.objects.get(
+            name="role:administrators", realm=realm, is_system_group=True
+        )
         new_streams, existing_streams = create_streams_if_needed(
             realm,
             [
@@ -301,6 +308,7 @@ class TestCreateStreams(ZulipTestCase):
                     "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     "message_retention_days": -1,
                     "can_remove_subscribers_group": moderators_system_group,
+                    "can_access_stream_topics_group": admins_system_group,
                 }
                 for (stream_name, stream_description) in zip(
                     stream_names, stream_descriptions, strict=False
@@ -320,6 +328,7 @@ class TestCreateStreams(ZulipTestCase):
             self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
             self.assertTrue(stream.message_retention_days == -1)
             self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
+            self.assertEqual(stream.can_access_stream_topics_group.id, admins_system_group.id)
             # Streams created where acting_user is None have no creator
             self.assertIsNone(stream.creator_id)
 
@@ -616,6 +625,95 @@ class TestCreateStreams(ZulipTestCase):
         self.assert_json_error(
             result,
             "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
+        )
+
+    def test_stream_topic_access_on_stream_creation(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self.login_user(user)
+        moderators_system_group = NamedUserGroup.objects.get(
+            name="role:moderators", realm=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name="role:everyone", realm=realm, is_system_group=True
+        )
+        subscriptions = [{"name": "new_stream1", "description": "First new stream"}]
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            {"can_access_stream_topics_group": orjson.dumps(moderators_system_group.id).decode()},
+            subdomain="zulip",
+        )
+        self.assert_json_success(result)
+        stream = get_stream("new_stream1", realm)
+        self.assertEqual(stream.can_access_stream_topics_group.id, moderators_system_group.id)
+
+        subscriptions = [{"name": "new_stream2", "description": "Second new stream"}]
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            subdomain="zulip",
+        )
+        self.assert_json_success(result)
+        stream = get_stream("new_stream2", realm)
+        self.assertEqual(stream.can_access_stream_topics_group.id, everyone_system_group.id)
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        subscriptions = [{"name": "new_stream3", "description": "Third new stream"}]
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            {"can_access_stream_topics_group": orjson.dumps(hamletcharacters_group.id).decode()},
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        self.assert_json_error(
+            result, "'can_access_stream_topics_group' must be a system user group."
+        )
+
+        internet_group = NamedUserGroup.objects.get(
+            name="role:internet", is_system_group=True, realm=realm
+        )
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            {"can_access_stream_topics_group": orjson.dumps(internet_group.id).decode()},
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        self.assert_json_error(
+            result,
+            "'can_access_stream_topics_group' setting cannot be set to 'role:internet' group.",
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name="role:owners", is_system_group=True, realm=realm
+        )
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            {"can_access_stream_topics_group": orjson.dumps(owners_group.id).decode()},
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        self.assert_json_error(
+            result,
+            "'can_access_stream_topics_group' setting cannot be set to 'role:owners' group.",
+        )
+
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            {"can_access_stream_topics_group": orjson.dumps(nobody_group.id).decode()},
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        self.assert_json_error(
+            result,
+            "'can_access_stream_topics_group' setting cannot be set to 'role:nobody' group.",
         )
 
     def test_acting_user_is_creator(self) -> None:
@@ -2376,6 +2474,94 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name2", realm)
         self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
 
+    def test_change_can_access_stream_topics_group(self) -> None:
+        user_profile = self.example_user("iago")
+        realm = user_profile.realm
+        stream = self.subscribe(user_profile, "stream_name1")
+
+        moderators_system_group = NamedUserGroup.objects.get(
+            name="role:moderators", realm=realm, is_system_group=True
+        )
+        self.login("shiva")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_access_stream_topics_group": orjson.dumps(moderators_system_group.id).decode()},
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_access_stream_topics_group": orjson.dumps(moderators_system_group.id).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.can_access_stream_topics_group.id, moderators_system_group.id)
+
+        # This setting can only be set to system groups.
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_access_stream_topics_group": orjson.dumps(hamletcharacters_group.id).decode()},
+        )
+        self.assert_json_error(
+            result, "'can_access_stream_topics_group' must be a system user group."
+        )
+
+        internet_group = NamedUserGroup.objects.get(
+            name="role:internet", is_system_group=True, realm=realm
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_access_stream_topics_group": orjson.dumps(internet_group.id).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "'can_access_stream_topics_group' setting cannot be set to 'role:internet' group.",
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name="role:owners", is_system_group=True, realm=realm
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_access_stream_topics_group": orjson.dumps(owners_group.id).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "'can_access_stream_topics_group' setting cannot be set to 'role:owners' group.",
+        )
+
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_access_stream_topics_group": orjson.dumps(nobody_group.id).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "'can_access_stream_topics_group' setting cannot be set to 'role:nobody' group.",
+        )
+
+        # For private streams, even admins must be subscribed to the stream to change
+        # can_access_stream_topics_group setting.
+        stream = self.make_stream("stream_name2", invite_only=True)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_access_stream_topics_group": orjson.dumps(moderators_system_group.id).decode()},
+        )
+        self.assert_json_error(result, "Invalid channel ID")
+
+        self.subscribe(user_profile, "stream_name2")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_access_stream_topics_group": orjson.dumps(moderators_system_group.id).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name2", realm)
+        self.assertEqual(stream.can_access_stream_topics_group.id, moderators_system_group.id)
+
     def test_stream_message_retention_days_on_stream_creation(self) -> None:
         """
         Only admins can create streams with message_retention_days
@@ -2934,7 +3120,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertEqual({dct["stream_id"] for dct in default_streams}, new_stream_ids)
 
         # Make sure our query isn't some bloated select_related query.
-        self.assertLess(len(queries[0].sql), 800)
+        self.assertLess(len(queries[0].sql), 1365)
 
         with queries_captured() as queries:
             default_stream_ids = get_default_stream_ids_for_realm(realm.id)
@@ -4686,7 +4872,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(38),
+            self.assert_database_query_count(39),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5077,7 +5263,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 11):
+        with self.assert_database_query_count(num_streams + 12):
             with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.common_subscribe_to_streams(
                     mit_user,
@@ -5517,7 +5703,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(38):
+        with self.assert_database_query_count(39):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5525,7 +5711,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(40):
+        with self.assert_database_query_count(41):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5537,7 +5723,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(49):
+        with self.assert_database_query_count(50):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -5919,8 +6105,12 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | set(Subscription.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {
+            "id",
+            "can_remove_subscribers_group_id",
+            "can_access_stream_topics_group_id",
+        }
+        expected_fields |= {"can_remove_subscribers_group", "can_access_stream_topics_group"}
 
         for lst in [sub_data.subscriptions, sub_data.unsubscribed]:
             for sub in lst:
@@ -5934,8 +6124,12 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {
+            "id",
+            "can_remove_subscribers_group_id",
+            "can_access_stream_topics_group_id",
+        }
+        expected_fields |= {"can_remove_subscribers_group", "can_access_stream_topics_group"}
 
         for never_sub in sub_data.never_subscribed:
             self.assertEqual(set(never_sub), expected_fields)

@@ -4241,6 +4241,15 @@ class SubscribeActionTest(BaseAction):
             )
         check_stream_update("events[0]", events[0])
 
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_group_based_setting(
+                stream,
+                "can_access_stream_topics_group",
+                moderators_group,
+                acting_user=self.example_user("hamlet"),
+            )
+        check_stream_update("events[0]", events[0])
+
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
         stream.message_retention_days = 10

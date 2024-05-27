@@ -235,6 +235,9 @@ def update_stream_backend(
     can_remove_subscribers_group_id: Annotated[
         Json[int | None], ApiParamConfig("can_remove_subscribers_group")
     ] = None,
+    can_access_stream_topics_group_id: Annotated[
+        Json[int | None], ApiParamConfig("can_access_stream_topics_group")
+    ] = None,
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -544,6 +547,9 @@ def add_subscriptions_backend(
     can_remove_subscribers_group_id: Annotated[
         Json[int | None], ApiParamConfig("can_remove_subscribers_group")
     ] = None,
+    can_access_stream_topics_group_id: Annotated[
+        Json[int | None], ApiParamConfig("can_access_stream_topics_group")
+    ] = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
@@ -574,6 +580,26 @@ def add_subscriptions_backend(
             is_system_group=True,
         )
 
+    if can_access_stream_topics_group_id is not None:
+        permission_configuration = Stream.stream_permission_group_settings[
+            "can_access_stream_topics_group"
+        ]
+        can_access_stream_topics_group = access_user_group_for_setting(
+            can_access_stream_topics_group_id,
+            user_profile,
+            setting_name="can_access_stream_topics_group",
+            permission_configuration=permission_configuration,
+        )
+    else:
+        can_access_stream_topics_group_default_name = Stream.stream_permission_group_settings[
+            "can_access_stream_topics_group"
+        ].default_group_name
+        can_access_stream_topics_group = NamedUserGroup.objects.get(
+            name=can_access_stream_topics_group_default_name,
+            realm=user_profile.realm,
+            is_system_group=True,
+        )
+
     for stream_obj in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -595,6 +621,7 @@ def add_subscriptions_backend(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
         stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
+        stream_dict_copy["can_access_stream_topics_group"] = can_access_stream_topics_group
 
         stream_dicts.append(stream_dict_copy)
 

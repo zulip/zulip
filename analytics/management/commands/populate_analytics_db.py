@@ -117,11 +117,15 @@ class Command(ZulipBaseCommand):
         administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
+        everyone_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
         stream = Stream.objects.create(
             name="all",
             realm=realm,
             date_created=installation_time,
             can_remove_subscribers_group=administrators_user_group,
+            can_access_stream_topics_group=everyone_user_group,
         )
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         stream.recipient = recipient
