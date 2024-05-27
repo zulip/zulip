@@ -48,6 +48,7 @@ from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
     BEFORE_MENTION_ALLOWED_REGEX,
+    ChannelTopicInfo,
     FullNameInfo,
     MentionBackend,
     MentionData,
@@ -129,6 +130,7 @@ class DbData:
     active_realm_emoji: dict[str, EmojiInfo]
     sent_by_bot: bool
     stream_names: dict[str, int]
+    topic_info: dict[ChannelTopicInfo, int]
     translate_emoticons: bool
     user_upload_previews: dict[str, MarkdownImageMetadata]
 
@@ -2022,6 +2024,13 @@ class StreamTopicPattern(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+    def get_with_operand(self, channel_topic: ChannelTopicInfo) -> int | None:
+        db_data: DbData | None = self.zmd.zulip_db_data
+        if db_data is None:
+            return None
+        with_operand = db_data.topic_info.get(channel_topic)
+        return with_operand
+
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
@@ -2037,7 +2046,13 @@ class StreamTopicPattern(CompiledInlineProcessor):
         el.set("data-stream-id", str(stream_id))
         stream_url = encode_stream(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
-        link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
+        channel_topic_object = ChannelTopicInfo(stream_name, topic_name)
+        with_operand = self.get_with_operand(channel_topic_object)
+        if with_operand is not None:
+            link = f"/#narrow/stream/{stream_url}/topic/{topic_url}/with/{with_operand}"
+        else:
+            link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
+
         el.set("href", link)
         text = f"#{stream_name} > {topic_name}"
         el.text = markdown.util.AtomicString(text)
@@ -2051,6 +2066,13 @@ def possible_linked_stream_names(content: str) -> set[str]:
             match.group("stream_name")
             for match in re.finditer(STREAM_TOPIC_LINK_REGEX, content, re.VERBOSE)
         ),
+    }
+
+
+def possible_linked_topics(content: str) -> set[ChannelTopicInfo]:
+    return {
+        ChannelTopicInfo(match.group("stream_name"), match.group("topic_name"))
+        for match in re.finditer(STREAM_TOPIC_LINK_REGEX, content, re.VERBOSE)
     }
 
 
@@ -2668,6 +2690,9 @@ def do_convert(
         stream_names = possible_linked_stream_names(content)
         stream_name_info = mention_data.get_stream_name_map(stream_names)
 
+        linked_stream_topic_data = possible_linked_topics(content)
+        topic_info = mention_data.get_topic_info_map(linked_stream_topic_data)
+
         if content_has_emoji_syntax(content):
             active_realm_emoji = get_name_keyed_dict_for_active_realm_emoji(message_realm.id)
         else:
@@ -2681,6 +2706,7 @@ def do_convert(
             realm_url=message_realm.url,
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
+            topic_info=topic_info,
             translate_emoticons=translate_emoticons,
             user_upload_previews=user_upload_previews,
         )
