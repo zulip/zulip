@@ -1401,7 +1401,14 @@ paths:
                             - type: object
                               description: |
                                 Event sent to all users who can see that a channel exists
-                                when a property of that channel changes.
+                                when a property of that channel changes. See
+                                [GET /streams](/api/get-streams#response) response
+                                for details on the various properties of a channel.
+
+                                **Changes**: Before Zulip 9.0 (feature level 256), this event
+                                was never sent when the `first_message_id` property of a channel
+                                was updated because the oldest message that had been sent to it
+                                changed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1426,8 +1433,8 @@ paths:
                                   type: string
                                   description: |
                                     The property of the channel which has changed. See
-                                    [GET /stream](/api/get-streams) for details on the various
-                                    properties of a channel.
+                                    [GET /streams](/api/get-streams#response) response for details
+                                    on the various properties of a channel.
 
                                     Clients should handle an "unknown" property received here without
                                     crashing, since that can happen when connecting to a server running a
@@ -18421,8 +18428,9 @@ paths:
         response will return `"complete": true`.
 
         **Changes**: Before Zulip 9.0 (feature level 256), the server never sent
-        events updating the `first_message_id` for a channel when the oldest
-        message that had been sent to it changed.
+        [`stream` op: `update`](/api/get-events#stream-update) events with an
+        updated `first_message_id` for a channel when the oldest message that
+        had been sent to it changed.
 
         Before Zulip 8.0 (feature level 211), if the server's
         processing was interrupted by a timeout, but some messages in the topic
