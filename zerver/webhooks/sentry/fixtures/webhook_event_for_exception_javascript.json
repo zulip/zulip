@@ -96,7 +96,7 @@
       ],
       [
         "url",
-        "file:///tmp/raven-js-test.html"
+        "/tmp/raven-js-test.html"
       ]
     ],
     "user": {
@@ -162,7 +162,7 @@
       }
     },
     "request": {
-      "url": "file:///tmp/raven-js-test.html",
+      "url": "/tmp/raven-js-test.html",
       "headers": [
         [
           "User-Agent",
