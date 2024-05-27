@@ -32,7 +32,15 @@ from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_future_email
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, MultiuseInvite, PreregistrationUser, Realm, Stream, UserProfile
+from zerver.models import (
+    Message,
+    MultiuseInvite,
+    NamedUserGroup,
+    PreregistrationUser,
+    Realm,
+    Stream,
+    UserProfile,
+)
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 
 
@@ -179,6 +187,7 @@ def do_invite_users(
     invitee_emails: Collection[str],
     streams: Collection[Stream],
     notify_referrer_on_join: bool = True,
+    user_groups: Collection[NamedUserGroup] = [],
     *,
     invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
@@ -274,6 +283,8 @@ def do_invite_users(
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
+        groups_ids = [user_group.id for user_group in user_groups]
+        prereg_user.groups.set(groups_ids)
 
         confirmation = create_confirmation_object(
             prereg_user, Confirmation.INVITATION, validity_in_minutes=invite_expires_in_minutes
@@ -369,6 +380,7 @@ def do_create_multiuse_invite_link(
     invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
     streams: Sequence[Stream] = [],
+    user_groups: Sequence[NamedUserGroup] = [],
 ) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(
@@ -378,6 +390,8 @@ def do_create_multiuse_invite_link(
     )
     if streams:
         invite.streams.set(streams)
+    if user_groups:
+        invite.groups.set(user_groups)
     invite.invited_as = invited_as
     invite.save()
     notify_invites_changed(referred_by.realm, changed_invite_referrer=referred_by)

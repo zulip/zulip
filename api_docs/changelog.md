@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 322**
+
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Added a new parameter
+  `group_ids` which allows users to be added to user groups through
+  invitations.
+
 **Feature level 321**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events),

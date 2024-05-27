@@ -152,6 +152,15 @@ export function register_click_handlers(): void {
         },
     );
 
+    // Show the user_group_popover in user invite section.
+    $("body").on(
+        "click",
+        "#invite-user-group-container .pill-container .pill",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            toggle_user_group_info_popover(this, undefined);
+        },
+    );
     // Note: Message feeds and drafts have their own direct event listeners
     // that run before this one and call stopPropagation.
     $("body").on("click", ".messagebox .user-group-mention", function (this: HTMLElement, e) {

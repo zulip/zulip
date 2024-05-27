@@ -69,7 +69,7 @@
         </select>
     </div>
     {{#if can_subscribe_other_users}}
-    <div>
+    <div class="input-group">
         <label>{{t "Channels they should join" }}</label>
         <div id="streams_to_add">
             {{#if show_select_default_streams_option}}
@@ -93,5 +93,20 @@
     </div>
     <div id="guest_visible_users_container" class="input-group" style="display: none;">
     </div>
+    {{/if}}
+    {{#if show_group_pill_container}}
+        <div class="input-group">
+            <label class="modal-field-label">{{t "User groups they should join" }} {{> help_link_widget link="/help/user-groups"}}</label>
+            <div id="user-groups-to-add">
+                <div id="invite-user-group-container" class="add-user-group-container">
+                    <div class="pill-container">
+                        <div class="input" contenteditable="true"
+                          data-placeholder="{{t 'User groups' }}">
+                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     {{/if}}
 </form>

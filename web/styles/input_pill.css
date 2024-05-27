@@ -208,6 +208,7 @@
 
 .add_subscribers_container .pill-container,
 .add_streams_container .pill-container,
+.add-user-group-container .pill-container,
 .add_members_container .pill-container {
     width: 100%;
     background-color: hsl(0deg 0% 100%);
@@ -218,7 +219,8 @@
     }
 }
 
-.add_streams_container .input {
+.add_streams_container .input,
+.add-user-group-container .input {
     flex-grow: 1;
 }
 

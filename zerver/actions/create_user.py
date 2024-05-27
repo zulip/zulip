@@ -17,7 +17,10 @@ from zerver.actions.message_send import (
     internal_send_stream_message,
 )
 from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
-from zerver.actions.user_groups import do_send_user_group_members_update_event
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_groups,
+    do_send_user_group_members_update_event,
+)
 from zerver.actions.users import (
     change_user_is_active,
     get_service_dicts_for_bot,
@@ -119,7 +122,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
                 send_group_direct_message_to_admins(sender, user_profile.realm, message)
 
 
-def set_up_streams_for_new_human_user(
+def set_up_streams_and_groups_for_new_human_user(
     *,
     user_profile: UserProfile,
     prereg_user: PreregistrationUser | None = None,
@@ -131,12 +134,14 @@ def set_up_streams_for_new_human_user(
 
     if prereg_user is not None:
         streams: list[Stream] = list(prereg_user.streams.all())
+        user_groups: list[NamedUserGroup] = list(prereg_user.groups.all())
         acting_user: UserProfile | None = prereg_user.referred_by
 
         # A PregistrationUser should not be used for another UserProfile
         assert prereg_user.created_user is None, "PregistrationUser should not be reused"
     else:
         streams = []
+        user_groups = []
         acting_user = None
 
     if add_initial_stream_subscriptions:
@@ -162,6 +167,12 @@ def set_up_streams_for_new_human_user(
         streams,
         [user_profile],
         from_user_creation=True,
+        acting_user=acting_user,
+    )
+
+    bulk_add_members_to_user_groups(
+        user_groups,
+        [user_profile.id],
         acting_user=acting_user,
     )
 
@@ -269,7 +280,7 @@ def process_new_human_user(
 ) -> None:
     # subscribe to default/invitation streams and
     # fill in some recent historical messages
-    set_up_streams_for_new_human_user(
+    set_up_streams_and_groups_for_new_human_user(
         user_profile=user_profile,
         prereg_user=prereg_user,
         default_stream_groups=default_stream_groups,

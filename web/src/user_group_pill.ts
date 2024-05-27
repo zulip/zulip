@@ -17,7 +17,7 @@ export type UserGroupPill = {
     group_name: string;
 };
 
-type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
+export type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
 
 export type UserGroupPillData = UserGroup & {
     type: "user_group";
@@ -83,7 +83,7 @@ function get_group_members(user_group: UserGroup): number[] {
 
 export function append_user_group(
     group: UserGroup,
-    pill_widget: CombinedPillContainer | GroupSettingPillContainer,
+    pill_widget: CombinedPillContainer | GroupSettingPillContainer | UserGroupPillWidget,
 ): void {
     pill_widget.appendValidatedData({
         type: "user_group",
@@ -94,7 +94,7 @@ export function append_user_group(
 }
 
 export function get_group_ids(
-    pill_widget: CombinedPillContainer | GroupSettingPillContainer,
+    pill_widget: CombinedPillContainer | GroupSettingPillContainer | UserGroupPillWidget,
 ): number[] {
     const items = pill_widget.items();
     return items.flatMap((item) => (item.type === "user_group" ? item.group_id : []));
@@ -102,7 +102,7 @@ export function get_group_ids(
 
 export function filter_taken_groups(
     items: UserGroup[],
-    pill_widget: CombinedPillContainer | GroupSettingPillContainer,
+    pill_widget: CombinedPillContainer | GroupSettingPillContainer | UserGroupPillWidget,
 ): UserGroup[] {
     const taken_group_ids = get_group_ids(pill_widget);
     items = items.filter((item) => !taken_group_ids.includes(item.id));
@@ -110,7 +110,7 @@ export function filter_taken_groups(
 }
 
 export function typeahead_source(
-    pill_widget: CombinedPillContainer | GroupSettingPillContainer,
+    pill_widget: CombinedPillContainer | GroupSettingPillContainer | UserGroupPillWidget,
     setting_name?: string,
     setting_type?: "realm" | "stream" | "group",
 ): UserGroupPillData[] {
