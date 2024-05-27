@@ -79,8 +79,10 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 256**
 
-* [`GET /events`](/api/get-events): Stream update events with a new
-  `first_message_id` may now be sent when messages are deleted.
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic),
+  [`GET /events`](/api/get-events): When messages are deleted, a
+  [`stream` op: `update`](/api/get-events#stream-update) event with
+  an updated value for `first_message_id` may now be sent to clients.
 
 **Feature level 255**
 
