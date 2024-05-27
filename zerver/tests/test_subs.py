@@ -237,8 +237,8 @@ class TestMiscStuff(ZulipTestCase):
         in `APIStreamDict` and `APISubscriptionDict`, respectively.
         """
         expected_fields = set(Stream.API_FIELDS) | {"stream_id"}
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "stream_topic_access_group_id"}
+        expected_fields |= {"can_remove_subscribers_group", "stream_topic_access_group"}
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
         computed_fields = {"is_announcement_only", "is_default", "stream_weekly_traffic"}
@@ -2927,7 +2927,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertEqual({dct["stream_id"] for dct in default_streams}, new_stream_ids)
 
         # Make sure our query isn't some bloated select_related query.
-        self.assertLess(len(queries[0].sql), 800)
+        self.assertLess(len(queries[0].sql), 835)
 
         with queries_captured() as queries:
             default_stream_ids = get_default_stream_ids_for_realm(realm.id)
@@ -5993,8 +5993,8 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | set(Subscription.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "stream_topic_access_group_id"}
+        expected_fields |= {"can_remove_subscribers_group", "stream_topic_access_group"}
 
         for lst in [sub_data.subscriptions, sub_data.unsubscribed]:
             for sub in lst:
@@ -6008,8 +6008,8 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "stream_topic_access_group_id"}
+        expected_fields |= {"can_remove_subscribers_group", "stream_topic_access_group"}
 
         for never_sub in sub_data.never_subscribed:
             self.assertEqual(set(never_sub), expected_fields)

@@ -68,6 +68,7 @@ class StreamDict(TypedDict, total=False):
     history_public_to_subscribers: Optional[bool]
     message_retention_days: Optional[int]
     can_remove_subscribers_group: Optional[UserGroup]
+    stream_topic_access_group: Optional[UserGroup]
 
 
 def get_stream_permission_policy_name(
@@ -149,9 +150,15 @@ def create_stream_if_needed(
             name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
         )
 
+    if stream_topic_access_group is None:
+        stream_topic_access_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, is_system_group=True, realm=realm
+        )
+
     stream_name = stream_name.strip()
 
     assert can_remove_subscribers_group is not None
+    assert stream_topic_access_group is not None
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,
@@ -881,6 +888,7 @@ def stream_to_dict(
         rendered_description=stream.rendered_description,
         stream_id=stream.id,
         stream_post_policy=stream.stream_post_policy,
+        stream_topic_access_group=stream.stream_topic_access_group_id,
         is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
     )
