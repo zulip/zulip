@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.files.base import File
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from django.core.validators import validate_email
 from django.db import connection
 from django.db.models import F
@@ -36,6 +36,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
@@ -201,7 +202,7 @@ def create_alert_words(realm_id: int) -> None:
     AlertWord.objects.bulk_create(recs)
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = "Populate a test database"
 
     @override

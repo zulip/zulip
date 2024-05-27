@@ -1716,7 +1716,10 @@ export function my_custom_profile_data(field_id: number): ProfileData | null | u
     return get_custom_profile_data(my_user_id, field_id);
 }
 
-export function get_custom_profile_data(user_id: number, field_id: number): ProfileData | null {
+export function get_custom_profile_data(
+    user_id: number,
+    field_id: number,
+): ProfileData | null | undefined {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {

@@ -57,7 +57,7 @@ def do_bulk_backfill_extra_data(
         # OLD_VALUE and NEW_VALUE is mapped from the value of the extra_data
         # field (which is just a old full name string) and None, respectively.
         # Documentation for JSONObject:
-        # https://docs.djangoproject.com/en/4.2/ref/models/database-functions/#jsonobject
+        # https://docs.djangoproject.com/en/5.0/ref/models/database-functions/#jsonobject
     ).update(extra_data_json=JSONObject(**{OLD_VALUE: "extra_data", NEW_VALUE: None}))
 
     inconsistent_extra_data_json: List[Tuple[int, str, object, object]] = []

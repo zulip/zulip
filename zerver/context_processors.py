@@ -42,7 +42,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
     have a request.
     """
     return {
-        "realm_uri": user.realm.url,
+        "realm_url": user.realm.url,
         "realm_name": user.realm.name,
         "root_domain_url": settings.ROOT_DOMAIN_URI,
         "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
@@ -118,11 +118,11 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     realm = get_realm_from_request(request)
 
     if realm is None:
-        realm_uri = settings.ROOT_DOMAIN_URI
+        realm_url = settings.ROOT_DOMAIN_URI
         realm_name = None
         realm_icon = None
     else:
-        realm_uri = realm.url
+        realm_url = realm.url
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
 
@@ -190,8 +190,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "only_sso": settings.ONLY_SSO,
         "external_host": settings.EXTERNAL_HOST,
         "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
-        "realm_uri": realm_uri,
-        "realm_url": realm_uri,
+        "realm_url": realm_url,
         "realm_name": realm_name,
         "realm_icon": realm_icon,
         "root_domain_url": settings.ROOT_DOMAIN_URI,
@@ -218,9 +217,9 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "corporate_enabled": corporate_enabled,
     }
 
-    context["PAGE_METADATA_URL"] = f"{realm_uri}{request.path}"
+    context["PAGE_METADATA_URL"] = f"{realm_url}{request.path}"
     if realm is not None and realm.icon_source == realm.ICON_UPLOADED:
-        context["PAGE_METADATA_IMAGE"] = urljoin(realm_uri, realm_icon)
+        context["PAGE_METADATA_IMAGE"] = urljoin(realm_url, realm_icon)
 
     return context
 

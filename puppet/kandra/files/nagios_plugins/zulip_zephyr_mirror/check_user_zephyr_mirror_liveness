@@ -10,15 +10,14 @@ Django ORM.
 import os
 import sys
 from datetime import timedelta
-from typing import NoReturn, Optional
 
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
+from scripts.lib.zulip_tools import atomic_nagios_write
 
 setup_path()
 
 import django
-from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
@@ -27,49 +26,11 @@ sys.path.append("/home/zulip/deployments/current/zerver")
 
 django.setup()
 
-from typing import Dict
 
 from zerver.models import UserActivity
 from zerver.models.clients import get_client
 
-states: Dict[str, int] = {
-    "OK": 0,
-    "WARNING": 1,
-    "CRITICAL": 2,
-    "UNKNOWN": 3,
-}
-
-state_file_path = "/var/lib/nagios_state/check_user_zephyr_mirror_liveness"
 now = timezone_now()
-
-
-def report(
-    state: str, short_msg: str, all_users: Optional[QuerySet[UserActivity]] = None
-) -> NoReturn:
-    too_old_data = ""
-    if all_users is not None:
-        recently_inactive_users = (
-            all_users.filter(last_visit__lt=now - timedelta(minutes=10))
-            .distinct("user_profile_id")
-            .difference(
-                all_users.filter(last_visit__lt=now - timedelta(minutes=60)).distinct(
-                    "user_profile_id"
-                )
-            )
-        )
-        too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(
-            "{:>16}: {}".format(
-                user.user_profile.email,
-                user.last_visit.strftime("%Y-%m-%d %H:%M %Z"),
-            )
-            for user in recently_inactive_users
-        )
-
-    with open(state_file_path + ".tmp", "w") as f:
-        f.write(f"{int(now.timestamp())}|{states[state]}|{state}|{short_msg}{too_old_data}")
-    os.rename(state_file_path + ".tmp", state_file_path)
-    print(f"{state}: {short_msg}{too_old_data}")
-    sys.exit(states[state])
 
 
 zephyr_client = get_client("zephyr_mirror")
@@ -84,23 +45,51 @@ all_users = UserActivity.objects.filter(
     query__in=["get_events", "/api/v1/events"],
     client_id=zephyr_client.id,
 )
-new_inactive_users = (
+new_inactive_user_count = (
     all_users.filter(last_visit__lt=now - timedelta(minutes=10))
     .values("user_profile_id")
     .distinct("user_profile_id")
     .count()
 )
 
-old_inactive_users = (
+old_inactive_user_count = (
     all_users.filter(last_visit__lt=now - timedelta(minutes=60))
     .values("user_profile_id")
     .distinct("user_profile_id")
     .count()
 )
 
-recently_inactive_users = new_inactive_users - old_inactive_users
+recently_inactive_user_count = new_inactive_user_count - old_inactive_user_count
 
-if recently_inactive_users / float(old_inactive_users) > 0.25:
-    report("CRITICAL", "Many mirrors recently became inactive", all_users)
+if recently_inactive_user_count / float(old_inactive_user_count) > 0.25:
+    recently_inactive_users = (
+        all_users.filter(last_visit__lt=now - timedelta(minutes=10))
+        .distinct("user_profile_id")
+        .difference(
+            all_users.filter(last_visit__lt=now - timedelta(minutes=60)).distinct("user_profile_id")
+        )
+    )
+    too_old_data = (
+        "Many mirrors recently became inactive\n"
+        "Last call to get_message for recently out of date mirrors:\n"
+        + "\n".join(
+            "{:>16}: {}".format(
+                user.user_profile.email,
+                user.last_visit.strftime("%Y-%m-%d %H:%M %Z"),
+            )
+            for user in recently_inactive_users
+        )
+    )
+
+    sys.exit(
+        atomic_nagios_write(
+            "check_user_zephyr_mirror_liveness", "critical", too_old_data, int(now.timestamp())
+        )
+    )
 else:
-    report("OK", "Most mirrors that were recently active continue to be active")
+    atomic_nagios_write(
+        "check_user_zephyr_mirror_liveness",
+        "ok",
+        "Most mirrors that were recently active continue to be active",
+        int(now.timestamp()),
+    )

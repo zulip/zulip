@@ -757,7 +757,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
     )
     context = {
         "confirmation_url": url,
-        "realm_uri": realm.url,
+        "realm_url": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
     }

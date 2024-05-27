@@ -568,7 +568,7 @@ export function filter_and_sort_mentions(
     query: string,
     opts: {
         stream_id: number | undefined;
-        topic: string;
+        topic: string | undefined;
     },
 ): (UserGroupPillData | UserOrMentionPillData)[] {
     return get_person_suggestions(query, {
@@ -613,7 +613,7 @@ type PersonSuggestionOpts = {
     want_broadcast: boolean;
     filter_pills: boolean;
     stream_id: number | undefined;
-    topic: string;
+    topic: string | undefined;
     filter_groups_for_guests?: boolean;
     filter_groups_for_mention?: boolean;
 };
@@ -723,7 +723,7 @@ export function get_person_suggestions(
 
 function get_stream_topic_data(input_element: TypeaheadInputElement): {
     stream_id: number | undefined;
-    topic: string;
+    topic: string | undefined;
 } {
     let stream_id;
     let topic;
@@ -740,7 +740,6 @@ function get_stream_topic_data(input_element: TypeaheadInputElement): {
         stream_id = compose_state.stream_id();
         topic = compose_state.topic();
     }
-    assert(topic !== undefined);
     return {
         stream_id,
         topic,

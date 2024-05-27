@@ -1555,40 +1555,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-textarea.invitee_emails {
-    min-height: 40px;
-    max-height: 300px;
-    width: 96%;
-    max-width: 96%;
-    resize: vertical !important;
-
-    color: hsl(0deg 0% 33%);
-    background-color: hsl(0deg 0% 100%);
-    border-radius: 4px;
-    vertical-align: middle;
-    border: 1px solid hsl(0deg 0% 80%);
-    padding: 4px 6px;
-
-    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-    transition:
-        border linear 0.2s,
-        box-shadow linear 0.2s;
-
-    &:focus {
-        border-color: hsl(206.5deg 80% 62% / 80%);
-        outline: 0;
-
-        box-shadow:
-            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-            0 0 8px hsl(206.5deg 80% 62% / 60%);
-    }
-
-    &:disabled {
-        cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
-    }
-}
-
 #custom-expiration-time-input,
 #invite-user-form {
     margin: 0;
@@ -1632,27 +1598,6 @@ select.invite-as {
 #invite-stream-checkboxes {
     & i.zulip-icon-globe {
         font-size: 80%;
-    }
-}
-
-.invite_type_radio_section {
-    margin: 2px 2px 2px 5px;
-
-    & div {
-        width: fit-content;
-    }
-
-    & input[type="radio"] {
-        cursor: pointer;
-
-        &:disabled {
-            cursor: not-allowed;
-        }
-    }
-
-    .control-label-disabled label {
-        pointer-events: none;
-        cursor: not-allowed;
     }
 }
 

@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 262
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (270, 3)  # last bumped 2024-05-15 for patching @types/plotly.js
+PROVISION_VERSION = (272, 2)  # last bumped 2024-05-26 for upgrading Transifex CLI

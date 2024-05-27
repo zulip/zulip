@@ -40,7 +40,7 @@ from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
-from zerver.lib.zulip_update_announcements import send_zulip_update_announcements
+from zerver.lib.zulip_update_announcements import send_zulip_update_announcements_to_realm
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -1204,7 +1204,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # We don't import Huddle yet, since we don't have the data to
         # compute huddle hashes until we've imported some of the
         # tables below.
-        # TODO: double-check this.
+        # We can't get huddle hashes without processing subscriptions
+        # first, during which get_huddles_from_subscription is called.
 
     re_map_foreign_keys(
         data,
@@ -1559,7 +1560,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         realm=realm, event_type=RealmAuditLog.REALM_EXPORTED, acting_user=None
     ).exists()
     if not is_realm_imported_from_other_zulip_server:
-        send_zulip_update_announcements(skip_delay=False, realm_imported_from_other_product=realm)
+        send_zulip_update_announcements_to_realm(
+            realm, skip_delay=False, realm_imported_from_other_product=True
+        )
 
     return realm
 

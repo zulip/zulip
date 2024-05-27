@@ -8,7 +8,7 @@
 
 
 {{ _("Go to Zulip") }}:
-<{{ realm_uri }}>
+<{{ realm_url }}>
 
 ----
 {% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}:
