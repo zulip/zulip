@@ -130,7 +130,6 @@ import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_popover from "./topic_popover";
 import * as transmit from "./transmit";
-import * as tutorial from "./tutorial";
 import * as typeahead_helper from "./typeahead_helper";
 import * as typing from "./typing";
 import * as unread from "./unread";
@@ -852,9 +851,6 @@ export function initialize_everything(state_data) {
             narrow.by("dm", email, {trigger: "sidebar"});
         },
     });
-    // This needs to happen after activity_ui.initialize, so that user_filter
-    // is defined.
-    tutorial.initialize();
 
     // All overlays, and also activity_ui, must be initialized before hashchange.js
     hashchange.initialize();
