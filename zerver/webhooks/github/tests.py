@@ -479,6 +479,10 @@ A temporary team so that I can get some webhook fixtures!
             payload = orjson.dumps(data).decode()
             self.verify_post_is_ignored(payload, "pull_request")
 
+    def test_pull_request_review_edited_empty_changes_ignore(self) -> None:
+        payload = self.get_body("pull_request_review__edited_empty_changes")
+        self.verify_post_is_ignored(payload, "pull_request_review")
+
     def test_ignored_team_actions(self) -> None:
         ignored_actions = [
             "added_to_repository",
