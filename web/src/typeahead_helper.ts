@@ -22,6 +22,7 @@ import * as stream_list_sort from "./stream_list_sort";
 import type {StreamPill, StreamPillData} from "./stream_pill";
 import type {StreamSubscription} from "./sub_store";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill";
+import type {UserGroup} from "./user_groups";
 import type {UserPill, UserPillData} from "./user_pill";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
@@ -627,6 +628,10 @@ function compare_by_name(stream_a: StreamSubscription, stream_b: StreamSubscript
     return util.strcmp(stream_a.name, stream_b.name);
 }
 
+function compare_by_user_group_name(group_a: UserGroup, group_b: UserGroup): number {
+    return util.strcmp(group_a.name, group_b.name);
+}
+
 export function sort_streams(matches: StreamPillData[], query: string): StreamPillData[] {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
@@ -641,6 +646,16 @@ export function sort_streams(matches: StreamPillData[], query: string): StreamPi
 
 export function sort_streams_by_name(matches: StreamPillData[], query: string): StreamPillData[] {
     const results = typeahead.triage(query, matches, (x) => x.name, compare_by_name);
+    return [...results.matches, ...results.rest];
+}
+
+export function sort_user_groups(matches: UserGroupPillData[], query: string): UserGroupPillData[] {
+    const results = typeahead.triage<UserGroupPillData>(
+        query,
+        matches,
+        (x) => x.name,
+        compare_by_user_group_name,
+    );
     return [...results.matches, ...results.rest];
 }
 

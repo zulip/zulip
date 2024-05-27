@@ -1,6 +1,11 @@
+import assert from "minimalistic-assert";
+
+import render_input_pill from "../templates/input_pill.hbs";
+
 import {$t_html} from "./i18n";
 import type {InputPillContainer} from "./input_pill";
 import * as people from "./people";
+import {current_user} from "./state_data";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 import type {UserGroup} from "./user_groups";
 import * as user_groups from "./user_groups";
@@ -11,7 +16,7 @@ export type UserGroupPill = {
     group_name: string;
 };
 
-type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
+export type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
 
 export type UserGroupPillData = UserGroup & {
     type: "user_group";
@@ -47,6 +52,23 @@ export function create_item_from_group_name(
     };
 }
 
+export function get_display_value_from_item(item: UserGroupPill): string {
+    const user_group = user_groups.get_user_group_from_id(item.group_id);
+    assert(user_group !== undefined);
+    return user_group.name;
+}
+
+export function generate_pill_html(item: UserGroupPill): string {
+    const user_group = user_groups.get_user_group_from_id(item.group_id);
+    assert(user_group !== undefined);
+    return render_input_pill({
+        user_group,
+        group_id: user_group.id,
+        group_size: user_group.members.size,
+        display_value: get_display_value_from_item(item),
+    });
+}
+
 export function get_group_name_from_item(item: UserGroupPill): string {
     return item.group_name;
 }
@@ -72,7 +94,10 @@ function get_group_members(user_group: UserGroup): number[] {
     return user_ids.filter((user_id) => people.is_person_active(user_id));
 }
 
-export function append_user_group(group: UserGroup, pill_widget: CombinedPillContainer): void {
+export function append_user_group(
+    group: UserGroup,
+    pill_widget: CombinedPillContainer | UserGroupPillWidget,
+): void {
     pill_widget.appendValidatedData({
         type: "user_group",
         group_id: group.id,
@@ -81,22 +106,27 @@ export function append_user_group(group: UserGroup, pill_widget: CombinedPillCon
     pill_widget.clear_text();
 }
 
-export function get_group_ids(pill_widget: CombinedPillContainer): number[] {
+export function get_group_ids(pill_widget: CombinedPillContainer | UserGroupPillWidget): number[] {
     const items = pill_widget.items();
     return items.flatMap((item) => (item.type === "user_group" ? item.group_id : []));
 }
 
 export function filter_taken_groups(
     items: UserGroup[],
-    pill_widget: CombinedPillContainer,
+    pill_widget: CombinedPillContainer | UserGroupPillWidget,
 ): UserGroup[] {
     const taken_group_ids = get_group_ids(pill_widget);
     items = items.filter((item) => !taken_group_ids.includes(item.id));
     return items;
 }
 
-export function typeahead_source(pill_widget: CombinedPillContainer): UserGroupPillData[] {
-    const groups = user_groups.get_realm_user_groups();
+export function typeahead_source(
+    pill_widget: CombinedPillContainer | UserGroupPillWidget,
+): UserGroupPillData[] {
+    let groups = user_groups.get_realm_user_groups();
+    if (!current_user.is_admin) {
+        groups = user_groups.get_user_groups_allowed_to_manage();
+    }
     return filter_taken_groups(groups, pill_widget).map((user_group) => ({
         ...user_group,
         type: "user_group",

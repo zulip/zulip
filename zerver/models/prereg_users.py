@@ -71,6 +71,7 @@ class PreregistrationUser(models.Model):
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)
     notify_referrer_on_join = models.BooleanField(default=True)
     streams = models.ManyToManyField("zerver.Stream")
+    groups = models.ManyToManyField("zerver.NamedUserGroup")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)
     # Indicates whether the user needs a password.  Users who were
@@ -131,6 +132,7 @@ def filter_to_valid_prereg_users(
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
     streams = models.ManyToManyField("zerver.Stream")
+    groups = models.ManyToManyField("zerver.NamedUserGroup")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
     include_realm_default_subscriptions = models.BooleanField(default=True)

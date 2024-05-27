@@ -141,6 +141,14 @@ export function get_user_groups_allowed_to_mention(): UserGroup[] {
     });
 }
 
+export function get_user_groups_allowed_to_manage(): UserGroup[] {
+    const user_groups = get_realm_user_groups();
+    return user_groups.filter((group) => {
+        const can_manage_group_id = group.can_manage_group;
+        return is_user_in_group(can_manage_group_id, current_user.user_id);
+    });
+}
+
 export function is_direct_member_of(user_id: number, user_group_id: number): boolean {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
