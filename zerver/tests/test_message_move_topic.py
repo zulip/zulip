@@ -111,7 +111,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid character in topic, at position 8!")
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")

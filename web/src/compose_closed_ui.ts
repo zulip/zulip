@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import * as compose_actions from "./compose_actions";
 import {$t} from "./i18n";
@@ -28,7 +27,6 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
     // actual message objects with fake objects containing just a
     // couple fields, both those constructed here and potentially
     // passed in.
-
     if (message_lists.current === undefined) {
         return "";
     }
@@ -38,12 +36,9 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
             // For empty narrows where there's a clear reply target,
             // i.e. stream+topic or a single direct message conversation,
             // we label the button as replying to the thread.
-            if (narrow_state.narrowed_to_topic()) {
-                const stream = narrow_state.stream_sub();
-                assert(stream !== undefined);
-                const stream_id = stream.stream_id;
-                const topic = narrow_state.topic();
-                assert(topic !== undefined);
+            const stream_id = narrow_state.stream_sub()?.stream_id;
+            const topic = narrow_state.topic();
+            if (stream_id !== undefined && topic !== undefined) {
                 return format_stream_recipient_label(stream_id, topic);
             } else if (narrow_state.pm_ids_string()) {
                 const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string()!);

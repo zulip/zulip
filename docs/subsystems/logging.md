@@ -267,5 +267,5 @@ a new view:
   (intended to catch issues where we generate a lot of deferred work).
 
 [python-logging]: https://docs.python.org/3/library/logging.html
-[django-logging]: https://docs.djangoproject.com/en/3.2/topics/logging/
+[django-logging]: https://docs.djangoproject.com/en/5.0/topics/logging/
 [sentry]: https://sentry.io

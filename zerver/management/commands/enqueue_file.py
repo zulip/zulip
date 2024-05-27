@@ -3,9 +3,9 @@ from argparse import ArgumentParser
 from typing import IO, Any
 
 import orjson
-from django.core.management.base import BaseCommand
 from typing_extensions import override
 
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.queue import queue_json_publish
 
 
@@ -31,7 +31,7 @@ def enqueue_file(queue_name: str, f: IO[str]) -> None:
         queue_json_publish(queue_name, data, error)
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Read JSON lines from a file and enqueue them to a worker queue.
 
 Each line in the file should either be a JSON payload or two tab-separated

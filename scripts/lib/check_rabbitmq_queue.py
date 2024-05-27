@@ -10,7 +10,7 @@ from typing import Any, DefaultDict, Dict, List
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import get_config, get_config_file
+from scripts.lib.zulip_tools import atomic_nagios_write, get_config, get_config_file
 
 normal_queues = [
     "deferred_work",
@@ -190,8 +190,6 @@ def check_rabbitmq_queues() -> None:
 
     status = max(result["status"] for result in results)
 
-    now = int(time.time())
-
     if status > 0:
         queue_error_template = "queue {} problem: {}:{}"
         error_message = "; ".join(
@@ -199,6 +197,12 @@ def check_rabbitmq_queues() -> None:
             for result in results
             if result["status"] > 0
         )
-        print(f"{now}|{status}|{states[status]}|{error_message}")
+        sys.exit(
+            atomic_nagios_write(
+                "check-rabbitmq-results",
+                "critical" if status == CRITICAL else "warning",
+                error_message,
+            )
+        )
     else:
-        print(f"{now}|{status}|{states[status]}|queues normal")
+        atomic_nagios_write("check-rabbitmq-results", "ok", "queues normal")

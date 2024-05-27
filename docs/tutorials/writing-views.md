@@ -35,7 +35,7 @@ or JSON (data for Zulip clients on all platforms, custom bots, and
 integrations).
 
 The format of the URL patterns in Django is [documented
-here](https://docs.djangoproject.com/en/3.2/topics/http/urls/), and
+here](https://docs.djangoproject.com/en/5.0/topics/http/urls/), and
 the Zulip specific details for these are discussed in detail in the
 [life of a request doc](life-of-a-request.md#options).
 
@@ -93,7 +93,7 @@ specific to Zulip.
 def home(request: HttpRequest) -> HttpResponse:
 ```
 
-[login-required-link]: https://docs.djangoproject.com/en/3.2/topics/auth/default/#django.contrib.auth.decorators.login_required
+[login-required-link]: https://docs.djangoproject.com/en/5.0/topics/auth/default/#django.contrib.auth.decorators.login_required
 
 ### Writing a template
 

@@ -84,11 +84,11 @@ export class MessageListData {
         return this._items.length === 0;
     }
 
-    first(): Message {
+    first(): Message | undefined {
         return this._items[0];
     }
 
-    first_including_muted(): Message {
+    first_including_muted(): Message | undefined {
         return this._all_items[0];
     }
 
@@ -100,19 +100,12 @@ export class MessageListData {
         return this._all_items.at(-1);
     }
 
-    ids_greater_or_equal_than(my_id: number): number[] {
-        const result = [];
-
-        for (let i = this._items.length - 1; i >= 0; i -= 1) {
-            const message_id = this._items[i].id;
-            if (message_id >= my_id) {
-                result.push(message_id);
-            } else {
-                continue;
-            }
+    msg_id_in_fetched_range(msg_id: number): boolean {
+        if (this.empty()) {
+            return false;
         }
 
-        return result;
+        return this.first()!.id <= msg_id && msg_id <= this.last()!.id;
     }
 
     select_idx(): number | undefined {
@@ -170,14 +163,6 @@ export class MessageListData {
         const last_msg = this._items[n - 1];
 
         return last_msg.id === this._selected_id;
-    }
-
-    nth_most_recent_id(n: number): number {
-        const i = this._items.length - n;
-        if (i < 0) {
-            return -1;
-        }
-        return this._items[i].id;
     }
 
     clear(): void {
@@ -284,13 +269,20 @@ export class MessageListData {
     }
 
     first_unread_message_id(): number | undefined {
+        // NOTE: This function returns the first unread that was fetched and is not
+        // necessarily the first unread for the narrow. There could be more unread messages.
+        // See https://github.com/zulip/zulip/pull/30008#discussion_r1597279862 for how
+        // ideas on how to possibly improve this.
+        // before `first_unread` calculated below that we haven't fetched yet.
         const first_unread = this._items.find((message) => unread.message_unread(message));
 
         if (first_unread) {
             return first_unread.id;
         }
 
-        // if no unread, return the bottom message
+        // If no unread, return the bottom message
+        // NOTE: This is only valid if we have found the latest message for the narrow as
+        // there could be more message that we haven't fetched yet.
         return this.last()?.id;
     }
 
@@ -320,7 +312,7 @@ export class MessageListData {
             const last = this.last_including_muted();
             if (last === undefined || msg.id > last.id) {
                 bottom_messages.push(msg);
-            } else if (msg.id < this.first_including_muted().id) {
+            } else if (msg.id < this.first_including_muted()!.id) {
                 top_messages.push(msg);
             } else {
                 interior_messages.push(msg);
@@ -543,12 +535,14 @@ export class MessageListData {
         item_list: Message[],
         start_index: number,
         op: (idx: number) => number,
-    ): Message {
+    ): Message | undefined {
         let cur_idx = start_index;
+        let message;
         do {
             cur_idx = op(cur_idx);
-        } while (item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
-        return item_list[cur_idx];
+            message = item_list[cur_idx];
+        } while (message !== undefined && this._is_localonly_id(message.id));
+        return message;
     }
 
     change_message_id(old_id: number, new_id: number): boolean {

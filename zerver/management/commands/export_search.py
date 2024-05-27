@@ -16,7 +16,7 @@ from typing_extensions import override
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
-from zerver.models import Attachment, Message, Recipient, Stream, UserProfile
+from zerver.models import AbstractUserMessage, Attachment, Message, Recipient, Stream, UserProfile
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.users import get_user_by_delivery_email
 
@@ -94,7 +94,7 @@ This is most often used for legal compliance.
             "--dm",
             action="append",
             metavar="<email>",
-            help="Limit to messages in a DM between all of the users provided.  This option must be given two or more times.",
+            help="Limit to messages in a DM between all of the users provided.",
         )
 
     @override
@@ -162,10 +162,15 @@ This is most often used for legal compliance.
                 [Q(sender__delivery_email__iexact=e) for e in options["sender"]],
             )
         elif options["dm"]:
-            if len(options["dm"]) == 1:
-                raise CommandError("Must pass two or more --dm arguments, not just one")
             user_profiles = [get_user_by_delivery_email(e, realm) for e in options["dm"]]
-            if len(user_profiles) == 2:
+            for user_profile in user_profiles:
+                reactivate_user_if_soft_deactivated(user_profile)
+            if len(user_profiles) == 1:
+                limits &= Q(
+                    usermessage__user_profile_id=user_profiles[0].id,
+                    usermessage__flags__andnz=AbstractUserMessage.flags.is_private.mask,
+                )
+            elif len(user_profiles) == 2:
                 user_a, user_b = user_profiles
                 limits &= Q(recipient=user_a.recipient, sender=user_b) | Q(
                     recipient=user_b.recipient, sender=user_a

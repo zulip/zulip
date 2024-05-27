@@ -111,6 +111,9 @@ let dropdown_filters = new Set<string>();
 const recent_conversation_key_prefix = "recent_conversation:";
 
 let is_initial_message_fetch_pending = true;
+// We wait for rows to render and restore focus before processing
+// any new events.
+let is_waiting_for_revive_current_focus = true;
 
 export function set_initial_message_fetch_status(value: boolean): void {
     is_initial_message_fetch_pending = value;
@@ -1111,6 +1114,10 @@ function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
 }
 
 function recenter_focus_if_off_screen(): void {
+    if (is_waiting_for_revive_current_focus) {
+        return;
+    }
+
     const table_wrapper_element = $("#recent_view_table .table_fix_head")[0];
     const $topic_rows = $("#recent_view_table table tbody tr");
 
@@ -1133,8 +1140,21 @@ function recenter_focus_if_off_screen(): void {
         const topic_center_y = (position.top + position.bottom) / 2;
 
         const topic_element = document.elementFromPoint(topic_center_x, topic_center_y);
-        assert(topic_element !== null);
-        row_focus = $topic_rows.index($(topic_element).closest("tr")[0]);
+        if (topic_element === null) {
+            // There are two theoretical reasons that the center
+            // element might be null. One is that we haven't rendered
+            // the view yet; but in that case, we should have returned
+            // early checking is_waiting_for_revive_current_focus:
+            //
+            // The other possibility is that the table is too short
+            // for there to be an topic row element at the center of
+            // the table region; in that case, we just select the last
+            // element.
+            row_focus = $topic_rows.length - 1;
+        } else {
+            row_focus = $topic_rows.index($(topic_element).closest("tr")[0]);
+        }
+
         set_table_focus(row_focus, col_focus);
     }
 }
@@ -1153,7 +1173,10 @@ function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
 
 function callback_after_render(): void {
     update_load_more_banner();
-    setTimeout(revive_current_focus, 0);
+    setTimeout(() => {
+        revive_current_focus();
+        is_waiting_for_revive_current_focus = false;
+    }, 0);
 }
 
 function filter_click_handler(
@@ -1281,6 +1304,7 @@ function filter_buttons(): JQuery {
 }
 
 export function hide(): void {
+    is_waiting_for_revive_current_focus = true;
     views_util.hide({
         $view: $("#recent_view"),
         set_visible: recent_view_util.set_visible,

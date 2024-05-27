@@ -81,7 +81,7 @@ from zerver.models import (
 )
 from zerver.models.streams import get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
@@ -363,7 +363,7 @@ def do_update_embedded_data(
             "flags": um.flags_list(),
         }
 
-    send_event(user_profile.realm, event, list(map(user_info, ums)))
+    send_event_on_commit(user_profile.realm, event, list(map(user_info, ums)))
 
 
 def get_visibility_policy_after_merge(
@@ -730,7 +730,9 @@ def do_update_message(
             "stream_id": stream_being_edited.id,
             "topic": orig_topic_name,
         }
-        send_event(user_profile.realm, delete_event, [user.id for user in users_losing_access])
+        send_event_on_commit(
+            user_profile.realm, delete_event, [user.id for user in users_losing_access]
+        )
 
         # Reset the Attachment.is_*_public caches for all messages
         # moved to another stream with different access permissions.
@@ -1003,7 +1005,7 @@ def do_update_message(
                     visibility_policy=new_visibility_policy,
                 )
 
-    send_event(user_profile.realm, event, users_to_be_notified)
+    send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
     resolved_topic_message_id = None
     if topic_name is not None and content is None:

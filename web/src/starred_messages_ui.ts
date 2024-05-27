@@ -7,13 +7,14 @@ import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_flags from "./message_flags";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
+import type {Message} from "./message_store";
 import * as popover_menus from "./popover_menus";
 import * as starred_messages from "./starred_messages";
 import * as sub_store from "./sub_store";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
-export function toggle_starred_and_update_server(message) {
+export function toggle_starred_and_update_server(message: Message): void {
     if (message.locally_echoed) {
         // This is defensive code for when you hit the "*" key
         // before we get a server ack.  It's rare that somebody
@@ -44,18 +45,18 @@ export function toggle_starred_and_update_server(message) {
 
 // This updates the state of the starred flag in local data
 // structures, and triggers a UI rerender.
-export function update_starred_flag(message_id, new_value) {
+export function update_starred_flag(message_id: number, updated_starred_flag: boolean): void {
     const message = message_store.get(message_id);
     if (message === undefined) {
         // If we don't have the message locally, do nothing; if later
         // we fetch it, it'll come with the correct `starred` state.
         return;
     }
-    message.starred = new_value;
-    message_live_update.update_starred_view(message_id, new_value);
+    message.starred = updated_starred_flag;
+    message_live_update.update_starred_view(message_id, updated_starred_flag);
 }
 
-export function rerender_ui() {
+export function rerender_ui(): void {
     let count = starred_messages.get_count();
 
     if (!user_settings.starred_message_counts) {
@@ -68,7 +69,7 @@ export function rerender_ui() {
     left_sidebar_navigation_area.update_starred_count(count);
 }
 
-export function confirm_unstar_all_messages() {
+export function confirm_unstar_all_messages(): void {
     const html_body = render_confirm_unstar_all_messages();
 
     confirm_dialog.launch({
@@ -78,8 +79,8 @@ export function confirm_unstar_all_messages() {
     });
 }
 
-export function confirm_unstar_all_messages_in_topic(stream_id, topic) {
-    function on_click() {
+export function confirm_unstar_all_messages_in_topic(stream_id: number, topic: string): void {
+    function on_click(): void {
         message_flags.unstar_all_messages_in_topic(stream_id, topic);
     }
 
@@ -100,6 +101,6 @@ export function confirm_unstar_all_messages_in_topic(stream_id, topic) {
     });
 }
 
-export function initialize() {
+export function initialize(): void {
     rerender_ui();
 }

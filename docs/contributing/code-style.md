@@ -254,7 +254,7 @@ for bar in bars:
 ...which makes a database query for every `Bar`. While this may be fast
 locally in development, it may be quite slow in production! Instead,
 tell Django's [QuerySet
-API](https://docs.djangoproject.com/en/dev/ref/models/querysets/) to
+API](https://docs.djangoproject.com/en/5.0/ref/models/querysets/) to
 _prefetch_ the data in the initial query:
 
 ```python
