@@ -21,6 +21,7 @@ import * as email_pill from "./email_pill";
 import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
+import * as invite_user_group_picker_pill from "./invite_user_group_picker_pill";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -30,12 +31,15 @@ import * as stream_pill from "./stream_pill";
 import * as timerender from "./timerender";
 import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
+import * as user_group_pill from "./user_group_pill";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let pills: email_pill.EmailPillWidget;
 let stream_pill_widget: stream_pill.StreamPillWidget;
+let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -80,6 +84,10 @@ function get_common_invitation_data(): {
     } else {
         stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
     }
+    let user_group_ids: number[] = [];
+    if (user_groups.get_user_groups_allowed_to_manage().length > 0 || current_user.is_admin) {
+        user_group_ids = user_group_pill.get_group_ids(user_group_pill_widget);
+    }
 
     assert(csrf_token !== undefined);
     const data = {
@@ -88,6 +96,7 @@ function get_common_invitation_data(): {
         notify_referrer_on_join,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
+        user_group_ids: JSON.stringify(user_group_ids),
         invitee_emails: pills
             .items()
             .map((pill) => email_pill.get_email_from_item(pill))
@@ -331,10 +340,13 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     const html_body = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
+        user_can_manage_groups: user_groups.get_user_groups_allowed_to_manage().length > 0,
+        is_group_present: user_groups.get_realm_user_groups().length > 0,
         development_environment: page_params.development_environment,
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: time_unit_choices,
+        link: "/help/user-groups",
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
         can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
@@ -361,6 +373,13 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             set_streams_to_join_list_visibility();
             const $stream_pill_container = $("#invite_streams_container .pill-container");
             stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
+        }
+
+        if (user_groups.get_user_groups_allowed_to_manage().length > 0 || current_user.is_admin) {
+            const $user_group_pill_container = $("#invite-user-group-container .pill-container");
+            user_group_pill_widget = invite_user_group_picker_pill.create(
+                $user_group_pill_container,
+            );
         }
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {

@@ -20,6 +20,9 @@
         {{~#if has_status~}}
             {{~> status_emoji status_emoji_info~}}
         {{~/if~}}
+        {{~#if group_size~}}
+        : {{group_size}} {{t 'Users'}}
+        {{~/if~}}
     </span>
     <div class="exit">
         <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>
