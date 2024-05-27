@@ -312,6 +312,25 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
         expected_output = "- This is a bullet.\n- This is another bullet.\n\n1. This is a list\n1. This is more list."
         self.assertEqual(remove_single_newlines(input_text), expected_output)
 
+        # Asterisks after newline for bold.
+        input_text = "* This is a bullet.\n**word in bold** on the same line.\n* Another bullet."
+        expected_output = (
+            "* This is a bullet. **word in bold** on the same line.\n* Another bullet."
+        )
+        self.assertEqual(remove_single_newlines(input_text), expected_output)
+
+        # Digit after newline.
+        input_text = "1. This is a numbered list.\n2. Second list element.\n3.5 is a decimal.\n3. Third list element."
+        expected_output = "1. This is a numbered list.\n2. Second list element. 3.5 is a decimal.\n3. Third list element."
+        self.assertEqual(remove_single_newlines(input_text), expected_output)
+
+        # Hyphen after newline.
+        input_text = "- This is a list.\n-C-C- organic molecule structure.\n- Another list element."
+        expected_output = (
+            "- This is a list. -C-C- organic molecule structure.\n- Another list element."
+        )
+        self.assertEqual(remove_single_newlines(input_text), expected_output)
+
     def test_zulip_updates_for_realm_imported_from_other_product(self) -> None:
         with mock.patch(
             "zerver.lib.zulip_update_announcements.zulip_update_announcements",
