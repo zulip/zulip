@@ -225,6 +225,15 @@ def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Real
         stream["can_remove_subscribers_group"] = admins_group
 
 
+def fix_streams_stream_topic_access_group_column(data: TableData, realm: Realm) -> None:
+    table = get_db_table(Stream)
+    everyone_group = NamedUserGroup.objects.get(
+        name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+    )
+    for stream in data[table]:
+        stream["stream_topic_access_group"] = everyone_group
+
+
 def create_subscription_events(data: TableData, realm_id: int) -> None:
     """
     When the export data doesn't contain the table `zerver_realmauditlog`,
@@ -1157,9 +1166,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             # the defaults for can_remove_subscribers_group for all the
             # streams.
             fix_streams_can_remove_subscribers_group_column(data, realm)
+            fix_streams_stream_topic_access_group_column(data, realm)
         else:
             re_map_foreign_keys(
                 data, "zerver_stream", "can_remove_subscribers_group", related_table="usergroup"
+            )
+            re_map_foreign_keys(
+                data, "zerver_stream", "stream_topic_access_group", related_table="usergroup"
             )
         # Handle rendering of stream descriptions for import from non-Zulip
         for stream in data["zerver_stream"]:
