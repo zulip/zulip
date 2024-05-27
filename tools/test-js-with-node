@@ -125,6 +125,7 @@ EXEMPT_FILES = make_set(
         "web/src/integration_url_modal.ts",
         "web/src/invite.ts",
         "web/src/invite_stream_picker_pill.ts",
+        "web/src/invite_user_group_picker_pill.ts",
         "web/src/left_sidebar_navigation_area.ts",
         "web/src/left_sidebar_navigation_area_popovers.ts",
         "web/src/lightbox.ts",

@@ -17,11 +17,13 @@ const input_pill = zrequire("input_pill");
 const pill_typeahead = zrequire("pill_typeahead");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 const typeahead_helper = zrequire("typeahead_helper");
 
+const current_user = {};
+set_current_user(current_user);
 const realm = {};
 set_realm(realm);
 
@@ -92,7 +94,7 @@ const admins = {
     name: "Admins",
     description: "foo",
     id: 1,
-    members: [jill.user_id, mark.user_id],
+    members: [jill.user_id, mark.user_id, me.user_id],
 };
 const admins_item = user_group_item(admins);
 const testers = {
@@ -313,6 +315,94 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
     });
 
     pill_typeahead.set_up_stream($fake_input, $pill_widget, {update_func});
+    assert.ok(input_pill_typeahead_called);
+});
+
+run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
+    current_user.user_id = me.user_id;
+    current_user.full_name = me.full_name;
+    current_user.email = me.email;
+    let sort_user_groups_called = false;
+
+    override_rewire(typeahead_helper, "render_user_group", () => $fake_rendered_group);
+    override_rewire(typeahead_helper, "sort_user_groups", ({user_groups}) => {
+        sort_user_groups_called = true;
+        return user_groups;
+    });
+
+    mock_template("input_pill.hbs", true, (_data, html) => html);
+
+    let input_pill_typeahead_called = false;
+    const $fake_input = $.create(".input");
+    $fake_input.before = noop;
+
+    const $container = $.create(".pill-container");
+    $container.find = () => $fake_input;
+
+    const $pill_widget = input_pill.create({
+        $container,
+        create_item_from_text: noop,
+        get_text_from_item: noop,
+        get_display_value_from_item: noop,
+    });
+
+    const user_group_source = () => [admins_item, testers_item];
+
+    override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
+        current_user.user_id = me.user_id;
+        current_user.full_name = me.full_name;
+        current_user.email = me.email;
+        assert.equal(input_element.$element, $fake_input);
+        assert.ok(config.dropup);
+        assert.ok(config.stopAdvance);
+
+        assert.equal(typeof config.source, "function");
+        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.matcher, "function");
+        assert.equal(typeof config.sorter, "function");
+        assert.equal(typeof config.updater, "function");
+
+        const group_query = "testers";
+
+        (function test_highlighter() {
+            assert.equal(config.highlighter_html(testers_item, group_query), $fake_rendered_group);
+        })();
+
+        (function test_matcher() {
+            let result;
+            result = config.matcher(testers_item, group_query);
+            assert.ok(result);
+            result = config.matcher(admins_item, group_query);
+            assert.ok(!result);
+        })();
+
+        (function test_sorter() {
+            sort_user_groups_called = false;
+            config.sorter([testers_item], group_query);
+            assert.ok(sort_user_groups_called);
+        })();
+
+        (function test_source() {
+            const result = config.source(group_query);
+            const group_names = result.map((group) => group.name);
+            const expected_group_names = ["Admins", "Testers"];
+            assert.deepEqual(group_names, expected_group_names);
+        })();
+
+        (function test_updater() {
+            function number_of_pills() {
+                const pills = $pill_widget.items();
+                return pills.length;
+            }
+            assert.equal(number_of_pills(), 0);
+            config.updater(testers_item, $fake_rendered_group);
+            assert.equal(number_of_pills(), 1);
+        })();
+
+        input_pill_typeahead_called = true;
+    });
+
+    pill_typeahead.set_up_user_group($fake_input, $pill_widget, {user_group_source});
     assert.ok(input_pill_typeahead_called);
 });
 

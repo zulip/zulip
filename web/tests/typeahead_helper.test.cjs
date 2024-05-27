@@ -420,6 +420,55 @@ test("sort_languages on actual data", () => {
     assert.deepEqual(test_langs, language_items(["js", "java"]));
 });
 
+test("sort_user_groups", () => {
+    const test_user_groups = [
+        {
+            id: 1,
+            name: "Developers",
+            description: "Group of developers",
+        },
+        {
+            id: 2,
+            name: "Designers",
+            description: "Group of designers",
+        },
+        {
+            id: 3,
+            name: "DevOps",
+            description: "Group of DevOps engineers",
+        },
+        {
+            id: 4,
+            name: "Docs",
+            description: "Group of documentation writers",
+        },
+        {
+            id: 5,
+            name: "Devs",
+            description: "Another group of developers",
+        },
+    ];
+
+    // Test sorting by user group name
+    let sorted_user_groups = th.sort_user_groups(test_user_groups, "De");
+
+    // Assert that the groups are sorted correctly by name
+    assert.deepEqual(sorted_user_groups[0].name, "Designers"); // Exact match with query
+    assert.deepEqual(sorted_user_groups[1].name, "Developers");
+    assert.deepEqual(sorted_user_groups[2].name, "DevOps");
+    assert.deepEqual(sorted_user_groups[3].name, "Devs");
+    assert.deepEqual(sorted_user_groups[4].name, "Docs");
+
+    // Test sorting with a different query
+    sorted_user_groups = th.sort_user_groups(test_user_groups, "Do");
+
+    assert.deepEqual(sorted_user_groups[0].name, "Docs"); // Exact match with query
+    assert.deepEqual(sorted_user_groups[1].name, "Designers");
+    assert.deepEqual(sorted_user_groups[2].name, "Developers");
+    assert.deepEqual(sorted_user_groups[3].name, "DevOps");
+    assert.deepEqual(sorted_user_groups[4].name, "Devs");
+});
+
 function get_typeahead_result(query, current_stream_id, current_topic) {
     const users = people.get_realm_users().map((user) => ({type: "user", user}));
     const result = th.sort_recipients({
