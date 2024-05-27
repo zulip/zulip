@@ -573,11 +573,11 @@ class MarkdownTest(ZulipTestCase):
             self.assertEqual(match, converted)
 
     def test_inline_file(self) -> None:
-        msg = "Check out this file file:///Volumes/myserver/Users/Shared/pi.py"
+        msg = "Check out this file /Volumes/myserver/Users/Shared/pi.py"
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
-            '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>',
+            '<p>Check out this file <a href="/Volumes/myserver/Users/Shared/pi.py">/Volumes/myserver/Users/Shared/pi.py</a></p>',
         )
 
         clear_state_for_testing()
@@ -586,7 +586,7 @@ class MarkdownTest(ZulipTestCase):
             maybe_update_markdown_engines(realm.id, False)
             self.assertEqual(
                 markdown_convert(msg, message_realm=realm).rendered_content,
-                "<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>",
+                "<p>Check out this file /Volumes/myserver/Users/Shared/pi.py</p>",
             )
 
     def test_inline_bitcoin(self) -> None:
