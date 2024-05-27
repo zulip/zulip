@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@9.0.6+sha256.0624e30eff866cdeb363b15061bdb7fd9425b17bc1bb42c22f5f4efdea21f6b3",
+  "packageManager": "pnpm@9.1.2+sha256.19c17528f9ca20bd442e4ca42f00f1b9808a9cb419383cd04ba32ef19322aba7",
   "dependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
@@ -27,7 +27,7 @@
     "colord": "^2.9.3",
     "core-js": "^3.37.0",
     "css-loader": "^7.1.1",
-    "css-minimizer-webpack-plugin": "^6.0.0",
+    "css-minimizer-webpack-plugin": "^7.0.0",
     "date-fns": "^3.3.1",
     "email-addresses": "^5.0.0",
     "emoji-datasource-google": "^15.0.1",
@@ -127,7 +127,7 @@
     "eslint-plugin-formatjs": "^4.0.2",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-no-jquery": "^2.7.0",
-    "eslint-plugin-unicorn": "^52.0.0",
+    "eslint-plugin-unicorn": "^53.0.0",
     "jsdom": "^24.0.0",
     "minimist": "^1.2.6",
     "mkdirp": "^3.0.1",
@@ -155,8 +155,8 @@
       "source-map@^0.6": "npm:source-map-js@1.0.1"
     },
     "patchedDependencies": {
-      "@types/plotly.js@2.29.2": "patches/@types__plotly.js@2.29.2.patch",
-      "@uppy/core@3.10.1": "patches/@uppy__core@3.10.1.patch",
+      "@types/plotly.js@2.29.4": "patches/@types__plotly.js@2.29.2.patch",
+      "@uppy/core@3.11.3": "patches/@uppy__core@3.10.1.patch",
       "eslint-plugin-no-jquery@2.7.0": "patches/eslint-plugin-no-jquery@2.7.0.patch",
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch"
     }
