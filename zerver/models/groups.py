@@ -4,6 +4,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
 
 from zerver.lib.cache import cache_with_key, get_realm_system_groups_cache_key
+from zerver.lib.per_request_cache import cache_for_current_request
 from zerver.lib.types import GroupPermissionSetting
 from zerver.models.users import UserProfile
 
@@ -183,6 +184,7 @@ class GroupGroupMembership(models.Model):
         ]
 
 
+@cache_for_current_request
 @cache_with_key(get_realm_system_groups_cache_key, timeout=3600 * 24 * 7)
 def get_realm_system_groups_name_dict(realm_id: int) -> dict[int, str]:
     system_groups = NamedUserGroup.objects.filter(

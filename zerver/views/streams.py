@@ -101,6 +101,7 @@ from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color, parse_enum_from_string_value
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
     access_user_group_api_value_for_setting,
@@ -291,6 +292,7 @@ def update_stream_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    can_access_stream_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_topic_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
@@ -688,6 +690,7 @@ def create_channel(
     user_profile: UserProfile,
     *,
     announce: Json[bool] = False,
+    can_access_stream_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_create_topic_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
@@ -780,6 +783,7 @@ def create_channel(
         can_remove_subscribers_group=group_settings_map["can_remove_subscribers_group"],
         can_subscribe_group=group_settings_map["can_subscribe_group"],
         can_resolve_topics_group=group_settings_map["can_resolve_topics_group"],
+        can_access_stream_topics_group=group_settings_map["can_access_stream_topics_group"],
         folder=folder,
         topics_policy=topics_policy_value,
     )
@@ -826,6 +830,7 @@ def add_subscriptions_backend(
     *,
     announce: Json[bool] = False,
     authorization_errors_fatal: Json[bool] = True,
+    can_access_stream_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_own_message_group: Json[int | UserGroupMembersData] | None = None,
