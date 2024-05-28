@@ -122,7 +122,6 @@ export type Message = (
     reply_to: string;
 
     // These properties are used in `message_list_view.js`.
-    starred_status: string;
     message_reactions: MessageCleanReaction[];
     url: string;
 
