@@ -247,11 +247,11 @@
             padding: 8px 5px;
             font-weight: bold;
 
-            > p {
+            > :not(.spoiler-button) {
                 /* Disallow margin from ordinary rendered-markdown
-                   paragraphs. The header's vertical space is handled
+                   elements. The header's vertical space is handled
                    independently by padding on .spoiler-header. */
-                margin: 0;
+                margin-bottom: 0;
                 /* Message grows to push the arrow to the right,
                    but shrinks so as to allow long multi-line
                    spoiler messages to wrap. */
