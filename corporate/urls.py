@@ -6,9 +6,13 @@ from django.views.generic import RedirectView, TemplateView
 
 from corporate.views.billing_page import (
     billing_page,
+    confirm_customer_stripe_email_change,
     remote_realm_billing_page,
     remote_server_billing_page,
     remote_server_deactivate_page,
+    update_customer,
+    update_customer_for_remote_realm,
+    update_customer_for_remote_server,
     update_plan,
     update_plan_for_remote_realm,
     update_plan_for_remote_server,
@@ -111,6 +115,7 @@ v1_api_and_json_patterns = [
     rest_path("billing/upgrade", POST=upgrade),
     rest_path("billing/sponsorship", POST=sponsorship),
     rest_path("billing/plan", PATCH=update_plan),
+    rest_path("billing/customer", PATCH=update_customer),
     rest_path("billing/session/start_card_update_session", POST=start_card_update_stripe_session),
     rest_path(
         "upgrade/session/start_card_update_session",
@@ -315,6 +320,11 @@ urlpatterns += [
         remote_server_customer_portal,
         name="remote_server_customer_portal_page",
     ),
+    path(
+        "customer/confirm_new_stripe_email/<confirmation_key>",
+        confirm_customer_stripe_email_change,
+        name="confirm_customer_stripe_email_change",
+    ),
     # Remote variants of above API endpoints.
     path("json/realm/<realm_uuid>/billing/sponsorship", remote_realm_sponsorship),
     path("json/server/<server_uuid>/billing/sponsorship", remote_server_sponsorship),
@@ -340,6 +350,8 @@ urlpatterns += [
     path("json/server/<server_uuid>/billing/upgrade", remote_server_upgrade),
     path("json/realm/<realm_uuid>/billing/plan", update_plan_for_remote_realm),
     path("json/server/<server_uuid>/billing/plan", update_plan_for_remote_server),
+    path("json/realm/<realm_uuid>/billing/customer", update_customer_for_remote_realm),
+    path("json/server/<server_uuid>/billing/customer", update_customer_for_remote_server),
 ]
 
 urlpatterns += [

@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 import logging
 import math
 import os
@@ -31,16 +32,27 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.html import escape
+from django.utils.safestring import SafeString
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from typing_extensions import ParamSpec, override
 
+from confirmation import settings as confirmation_settings
+from confirmation.models import (
+    Confirmation,
+    ConfirmationKeyError,
+    create_confirmation_link,
+    get_object_from_key,
+    render_confirmation_key_error,
+)
 from corporate.models import (
     Customer,
     CustomerPlan,
     CustomerPlanOffer,
+    CustomerStripeEmailChangeStatus,
     Invoice,
     LicenseLedger,
     Session,
@@ -771,6 +783,93 @@ class BillingSession(ABC):
     @abstractmethod
     def org_name(self) -> str:
         pass
+
+    @staticmethod
+    def confirm_customer_stripe_email_change(
+        request: HttpRequest, confirmation_key: str
+    ) -> HttpResponse:
+        try:
+            email_change_data: EmailChangeStatus = get_object_from_key(
+                confirmation_key,
+                [Confirmation.CUSTOMER_STRIPE_EMAIL_CHANGE],
+                mark_object_used=False,
+            )
+        except ConfirmationKeyError as exception:
+            return render_confirmation_key_error(request, exception)
+
+        if email_change_data.status == confirmation_settings.STATUS_USED:
+            return render(request, "confirmation/confirm_email_change.html")
+
+        customer = email_change_data.customer
+        new_email = email_change_data.new_email
+        old_email = email_change_data.old_email
+        assert customer.stripe_customer_id is not None
+        stripe.Customer.modify(
+            customer.stripe_customer_id,
+            email=new_email,
+        )
+        email_change_data.status = confirmation_settings.STATUS_USED
+        email_change_data.save(update_fields=["status"])
+
+        send_email(
+            "zerver/emails/notify_change_in_email",
+            to_emails=[old_email],
+            from_name="Zulip billing email change request",
+            from_address=FromAddress.tokenized_no_reply_address(),
+            context={
+                "new_email": new_email,
+                "support_email": "sales@zulip.com",
+            },
+        )
+        old_email_address = Address(addr_spec=old_email)
+        new_email_address = Address(addr_spec=new_email)
+
+        context = {
+            "new_email_html_tag": SafeString(
+                f'<a href="mailto:{escape(new_email)}">{escape(new_email_address.username)}@<wbr>{escape(new_email_address.domain)}</wbr></a>'
+            ),
+            "old_email_html_tag": SafeString(
+                f'<a href="mailto:{escape(old_email)}">{escape(old_email_address.username)}@<wbr>{escape(old_email_address.domain)}</wbr></a>'
+            ),
+            "is_stripe_email_change": True,
+        }
+        return render(request, "confirmation/confirm_email_change.html", context=context)
+
+    def send_confirmation_for_stripe_email_change(self, new_email: str) -> None:
+        customer = self.get_customer()
+        if customer is None:
+            raise BillingError("No customer was found in a request to update stripe email.")
+
+        if customer.stripe_customer_id is None:
+            raise BillingError("stripe_customer_id is not set for the customer.")
+
+        # Create confirmation and send.
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+        email_change_content = CustomerStripeEmailChangeStatus.objects.create(
+            old_email=stripe_customer.email,
+            new_email=new_email,
+            customer=customer,
+        )
+
+        confirmation_link = create_confirmation_link(
+            email_change_content,
+            Confirmation.CUSTOMER_STRIPE_EMAIL_CHANGE,
+            no_associated_realm_object=True,
+        )
+
+        send_email(
+            "zerver/emails/confirm_new_stripe_email",
+            to_emails=[new_email],
+            # Sent to the server's support team, so this email is not user-facing.
+            from_name="Zulip billing email change request",
+            from_address=FromAddress.tokenized_no_reply_address(),
+            context={
+                "activate_url": confirmation_link,
+                "old_email": stripe_customer.email,
+                "new_email": new_email,
+                "organization_name": self.billing_entity_display_name,
+            },
+        )
 
     def customer_plan_exists(self) -> bool:
         # Checks if the realm / server had a plan anytime in the past.

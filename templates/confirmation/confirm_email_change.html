@@ -13,10 +13,18 @@
         </div>
 
         <div class="app-main white-box">
+            {% if is_stripe_email_change %}
+            {% trans %}
+            This confirms that the email address for your Zulip billing account has changed
+            from {{ old_email_html_tag }} to {{ new_email_html_tag }}. Note this different from
+            your billing login account.
+            {% endtrans %}
+            {% else %}
             {% trans %}
             This confirms that the email address for your Zulip account has changed
             from {{ old_email_html_tag }} to {{ new_email_html_tag }}
             {% endtrans %}
+            {% endif %}
         </div>
     </div>
 </div>

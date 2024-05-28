@@ -772,3 +772,17 @@ input[name="licenses"] {
 .flat-discount-separator {
     border-bottom: 1px solid hsl(0deg 0% 0%);
 }
+
+#billing-page-details #update-email-button-wrapper {
+    cursor: pointer;
+    margin-left: 5px;
+    padding: 0 5px;
+}
+
+#billing-change-email-form {
+    margin-bottom: 0;
+
+    .input-box input[type="email"] {
+        padding: 5px 10px;
+    }
+}

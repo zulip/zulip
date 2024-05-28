@@ -178,6 +178,34 @@ export function initialize(): void {
         portico_modals.open("confirm-cancel-legacy-server-upgrade-modal");
     });
 
+    $("#update-email-button-wrapper").on("click", (e) => {
+        e.preventDefault();
+        portico_modals.open("billing-change-email-modal");
+    });
+
+    $("#billing-change-email-modal .dialog_submit_button").on("click", (e) => {
+        helpers.create_ajax_request(
+            `/json${billing_base_url}/billing/customer`,
+            "billing-change-email",
+            [],
+            "PATCH",
+            (response) => {
+                const new_email = z
+                    .object({
+                        email: z.string(),
+                    })
+                    .parse(response).email;
+                window.location.replace(
+                    `${billing_base_url}/billing/?success_message=` +
+                        encodeURIComponent(
+                            `A confirmation email has been sent to ${new_email}. Please confirm your change by clicking the link in the email.`,
+                        ),
+                );
+            },
+        );
+        e.preventDefault();
+    });
+
     $("#confirm-cancel-legacy-server-upgrade-modal .dialog_submit_button").on("click", (e) => {
         helpers.create_ajax_request(
             `/json${billing_base_url}/billing/plan`,

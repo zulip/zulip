@@ -569,3 +569,14 @@ class ZulipSponsorshipRequest(models.Model):
         choices=[(plan.value, plan.name) for plan in SponsoredPlanTypes],
         default=SponsoredPlanTypes.UNSPECIFIED.value,
     )
+
+
+class CustomerStripeEmailChangeStatus(models.Model):
+    new_email = models.EmailField()
+    old_email = models.EmailField()
+    updated_at = models.DateTimeField(auto_now=True)
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)
+
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_USED
+    status = models.IntegerField(default=0)

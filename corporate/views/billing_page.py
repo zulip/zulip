@@ -11,6 +11,7 @@ from corporate.lib.decorator import (
     authenticated_remote_server_management_endpoint,
 )
 from corporate.lib.stripe import (
+    BillingSession,
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
@@ -23,7 +24,7 @@ from zerver.decorator import process_as_post, require_billing_access, zulip_logi
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.validator import check_int, check_int_in
 from zerver.models import UserProfile
 from zilencer.lib.remote_counts import MissingDataError
@@ -352,3 +353,51 @@ def remote_server_deactivate_page(
         "corporate/billing/remote_billing_server_deactivated_success.html",
         context={"server_hostname": remote_server.hostname},
     )
+
+
+@require_billing_access
+@has_request_variables
+def update_customer(
+    request: HttpRequest,
+    user: UserProfile,
+    email: str = REQ("email"),
+) -> HttpResponse:
+    billing_session = RealmBillingSession(user=user)
+    billing_session.send_confirmation_for_stripe_email_change(email)
+    return json_success(request, {"email": email})
+
+
+@authenticated_remote_realm_management_endpoint
+@process_as_post
+@has_request_variables
+def update_customer_for_remote_realm(
+    request: HttpRequest,
+    billing_session: RemoteRealmBillingSession,
+    email: str = REQ("email"),
+) -> HttpResponse:
+    billing_session.send_confirmation_for_stripe_email_change(email)
+    return json_success(request, {"email": email})
+
+
+@authenticated_remote_server_management_endpoint
+@process_as_post
+@has_request_variables
+def update_customer_for_remote_server(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    email: str = REQ("email"),
+) -> HttpResponse:
+    billing_session.send_confirmation_for_stripe_email_change(email)
+    return json_success(request, {"email": email})
+
+
+@typed_endpoint
+def confirm_customer_stripe_email_change(
+    request: HttpRequest,
+    *,
+    confirmation_key: PathOnly[str],
+) -> HttpResponse:
+    """
+    The user comes here via the confirmation link they received via email.
+    """
+    return BillingSession.confirm_customer_stripe_email_change(request, confirmation_key)

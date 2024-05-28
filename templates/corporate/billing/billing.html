@@ -180,6 +180,9 @@
                     <label for="billing-contact" class="inline-block label-title">Billing contact</label>
                     <div id="billing-contact" class="not-editable-realm-field">
                         <a href="mailto:{{ stripe_email }}">{{ stripe_email }}</a>
+                        <span id="update-email-button-wrapper">
+                            <i class="fa fa-pencil-square-o" aria-hidden="true" data-tippy-content="Update email"></i>
+                        </span>
                     </div>
                 </div>
                 <div id="cardchange-error" class="alert alert-danger"></div>
@@ -560,6 +563,32 @@
                 <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
                 <button class="modal__btn dialog_submit_button">
                     <span>{{ _('Cancel upgrade') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+<div id="billing-change-email-modal" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Change email
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <form id="billing-change-email-form" class="new-style">
+                    <div class="input-box">
+                        <label>New email</label>
+                        <input type="email" name="email" spellcheck="false" autofocus />
+                    </div>
+                </form>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Change') }}</span>
                 </button>
             </footer>
         </div>

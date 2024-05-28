@@ -34,6 +34,8 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import (
         PreregistrationRemoteRealmBillingUser,
         PreregistrationRemoteServerBillingUser,
+        RemoteRealmBillingUser,
+        RemoteServerBillingUser,
     )
 
 
@@ -74,6 +76,8 @@ ZilencerConfirmationObjT: TypeAlias = Union[
     NoZilencerConfirmationObjT,
     "PreregistrationRemoteServerBillingUser",
     "PreregistrationRemoteRealmBillingUser",
+    "RemoteServerBillingUser",
+    "RemoteRealmBillingUser",
 ]
 
 ConfirmationObjT: TypeAlias = Union[NoZilencerConfirmationObjT, ZilencerConfirmationObjT]
@@ -226,6 +230,7 @@ class Confirmation(models.Model):
     REALM_REACTIVATION = 8
     REMOTE_SERVER_BILLING_LEGACY_LOGIN = 9
     REMOTE_REALM_BILLING_LEGACY_LOGIN = 10
+    CUSTOMER_STRIPE_EMAIL_CHANGE = 11
     type = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -268,6 +273,9 @@ if settings.ZILENCER_ENABLED:
     )
     _properties[Confirmation.REMOTE_REALM_BILLING_LEGACY_LOGIN] = ConfirmationType(
         "remote_realm_billing_from_login_confirmation_link"
+    )
+    _properties[Confirmation.CUSTOMER_STRIPE_EMAIL_CHANGE] = ConfirmationType(
+        "confirm_customer_stripe_email_change"
     )
 
 
