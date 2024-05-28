@@ -17,7 +17,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, NamedUserGroup, Realm, UserGroup, UserProfile, UserTopic
+from zerver.models import Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import EditTopicPolicyEnum, WildcardMentionPolicyEnum, get_realm
 from zerver.models.streams import get_stream
@@ -1599,9 +1599,9 @@ class EditMessageTest(ZulipTestCase):
 
         # Test all the cases when can_mention_group is not a named user group.
         content = "Test mentioning user group @*leadership*"
-        user_group = UserGroup.objects.create(realm=iago.realm)
-        user_group.direct_members.set([othello])
-        user_group.direct_subgroups.set([moderators_system_group])
+        user_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [moderators_system_group]
+        )
         leadership.can_mention_group = user_group
         leadership.save()
 

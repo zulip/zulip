@@ -81,7 +81,6 @@ from zerver.models import (
     RealmPlayground,
     Recipient,
     Subscription,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
@@ -1347,9 +1346,7 @@ class TestRealmAuditLog(ZulipTestCase):
             name=SystemGroups.MODERATORS, realm=user_group.realm, is_system_group=True
         )
         old_group = user_group.can_mention_group
-        new_group = UserGroup.objects.create(realm=user_group.realm)
-        new_group.direct_members.set([hamlet.id])
-        new_group.direct_subgroups.set([moderators_group.id])
+        new_group = self.create_or_update_anonymous_group_for_setting([hamlet], [moderators_group])
 
         now = timezone_now()
         do_change_user_group_permission_setting(
@@ -1382,9 +1379,9 @@ class TestRealmAuditLog(ZulipTestCase):
         # Since the old setting value was a anonymous group, we just update the
         # members and subgroups of the already existing UserGroup instead of creating
         # a new UserGroup object to keep this consistent with the actual code.
-        new_group = user_group.can_mention_group
-        new_group.direct_members.set([othello.id])
-        new_group.direct_subgroups.set([moderators_group.id])
+        new_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [moderators_group], existing_setting_group=user_group.can_mention_group
+        )
 
         now = timezone_now()
         do_change_user_group_permission_setting(

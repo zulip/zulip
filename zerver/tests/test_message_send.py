@@ -55,7 +55,6 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -2228,9 +2227,9 @@ class StreamMessagesTest(ZulipTestCase):
 
         # Test all the cases when can_mention_group is not a named user group.
         content = "Test mentioning user group @*leadership*"
-        user_group = UserGroup.objects.create(realm=iago.realm)
-        user_group.direct_members.set([othello])
-        user_group.direct_subgroups.set([moderators_system_group])
+        user_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [moderators_system_group]
+        )
         leadership.can_mention_group = user_group
         leadership.save()
 
