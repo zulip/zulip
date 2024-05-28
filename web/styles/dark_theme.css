@@ -693,7 +693,7 @@
         background-color: var(--color-background);
 
         &:hover {
-            background-color: var(--color-background-active-narrow-filter);
+            background-color: hsl(208deg 26% 11% / 60%);
         }
     }
 
@@ -701,7 +701,7 @@
         background-color: hsl(212deg 30% 22% / 40%);
 
         &:hover {
-            background-color: var(--color-background-active-narrow-filter);
+            background-color: hsl(212deg 30% 22% / 60%);
         }
     }
 
