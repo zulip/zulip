@@ -70,8 +70,7 @@ run_test("message_store", () => {
     assert.equal(message_store.get(in_message.id), undefined);
     message_helper.process_new_message(in_message);
     const message = message_store.get(in_message.id);
-    assert.equal(in_message.alerted, true);
-    assert.equal(message, in_message);
+    assert.equal(message.alerted, true);
 
     // There are more side effects.
     const topic_names = stream_topic_history.get_recent_topic_names(denmark_stream.stream_id);
@@ -91,8 +90,8 @@ run_test("unread", () => {
 
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 0);
 
-    const in_message = {...messages.isaac_to_denmark_stream};
-    message_store.set_message_booleans(in_message);
+    let in_message = {...messages.isaac_to_denmark_stream};
+    in_message = message_store.set_message_booleans(in_message);
 
     unread.process_loaded_messages([in_message]);
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 1);

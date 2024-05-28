@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import * as blueslip from "./blueslip";
 import * as people from "./people";
 import type {RawReaction} from "./reactions";
@@ -193,30 +195,44 @@ export function get_pm_full_names(user_ids: number[]): string {
     return names.join(", ");
 }
 
-export function set_message_booleans(message: Message): void {
+export function set_message_booleans(message: RawMessage): MessageWithBooleans {
     const flags = message.flags ?? [];
 
     function convert_flag(flag_name: string): boolean {
         return flags.includes(flag_name);
     }
 
-    message.unread = !convert_flag("read");
-    message.historical = convert_flag("historical");
-    message.starred = convert_flag("starred");
-    message.mentioned =
-        convert_flag("mentioned") ||
-        convert_flag("stream_wildcard_mentioned") ||
-        convert_flag("topic_wildcard_mentioned");
-    message.mentioned_me_directly = convert_flag("mentioned");
-    message.stream_wildcard_mentioned = convert_flag("stream_wildcard_mentioned");
-    message.topic_wildcard_mentioned = convert_flag("topic_wildcard_mentioned");
-    message.collapsed = convert_flag("collapsed");
-    message.alerted = convert_flag("has_alert_word");
+    const converted_flags = {
+        unread: !convert_flag("read"),
+        historical: convert_flag("historical"),
+        starred: convert_flag("starred"),
+        mentioned:
+            convert_flag("mentioned") ||
+            convert_flag("stream_wildcard_mentioned") ||
+            convert_flag("topic_wildcard_mentioned"),
+        mentioned_me_directly: convert_flag("mentioned"),
+        stream_wildcard_mentioned: convert_flag("stream_wildcard_mentioned"),
+        topic_wildcard_mentioned: convert_flag("topic_wildcard_mentioned"),
+        collapsed: convert_flag("collapsed"),
+        alerted: convert_flag("has_alert_word"),
+    };
 
     // Once we have set boolean flags here, the `flags` attribute is
     // just a distraction, so we delete it.  (All the downstream code
     // uses booleans.)
-    delete message.flags;
+
+    // We have to return these separately because of how the `MessageWithBooleans`
+    // type is set up.
+    if (message.type === "private") {
+        return {
+            ..._.omit(message, "flags"),
+            ...converted_flags,
+        };
+    }
+    return {
+        ..._.omit(message, "flags"),
+        ...converted_flags,
+    };
 }
 
 export function update_booleans(message: Message, flags: string[]): void {
