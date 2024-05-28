@@ -1393,7 +1393,17 @@ function move_focus_to_visible_area(): void {
     // We are aiming to get the first row if it is completely visible or the second row.
     const inbox_row_below_filters = position.bottom + INBOX_ROW_HEIGHT;
     const element_in_row = document.elementFromPoint(inbox_center_x, inbox_row_below_filters);
-    assert(element_in_row !== null);
+    if (!element_in_row) {
+        // `element_in_row` can be `null` according to MDN if:
+        // "If the specified point is outside the visible bounds of the document or
+        // either coordinate is negative, the result is null."
+        // https://developer.mozilla.org/en-US/docs/Web/API/Document/elementFromPoint
+        // This means by the time we reached here user has already scrolled past the
+        // row and it is no longer visible. So, we just return and let the next call
+        // to `move_focus_to_visible_area` handle it.
+        return;
+    }
+
     const $element_in_row = $(element_in_row);
 
     let $inbox_row = $element_in_row.closest(".inbox-row");
