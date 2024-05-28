@@ -61,7 +61,7 @@ function current_dialog_widget_selector(): string {
 export type DialogWidgetConfig = {
     html_heading: string;
     html_body: string;
-    on_click: (e: unknown) => void;
+    on_click: (e: JQuery.ClickEvent) => void;
     html_submit_button?: string;
     html_exit_button?: string;
     close_on_submit?: boolean;
