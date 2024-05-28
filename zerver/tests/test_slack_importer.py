@@ -1439,6 +1439,16 @@ class SlackImporter(ZulipTestCase):
                 "thread_ts": "1434139200.000002",
                 "channel_name": "random",
             },
+            {
+                "text": "broadcasted reply in the third thread",
+                "user": "U061A1R2R",
+                "ts": "1439869300.000008",
+                "subtype": "thread_broadcast",
+                # A broadcasted thread reply in thread 3!
+                "root": {"user": "U061A5N1G"},
+                "thread_ts": "1434139200.000002",
+                "channel_name": "random",
+            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1474,7 +1484,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 8)
+        self.assert_length(zerver_message, 10)
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
@@ -1544,14 +1554,35 @@ replying to the second thread :)
         # Test thread topic name collision
         thread3_topic_name = "2015-06-12 message body text (2)"
         original_thread3_message = (
-            f"message body text\n\n*2 replies in #**random>{thread3_topic_name}***"
+            f"message body text\n\n*3 replies in #**random>{thread3_topic_name}***"
         )
+
         self.assertEqual(zerver_message[5]["content"], original_thread3_message)
         self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], main_import_topic)
         # The second reply in thread doesn't have any formatting like the first one.
         thread3_reply_2 = "second reply to the third thread"
         self.assertEqual(zerver_message[7]["content"], thread3_reply_2)
         self.assertEqual(zerver_message[7][EXPORT_TOPIC_NAME], thread3_topic_name)
+        # Slack thread broadcast should be sent to the main import topic
+        thread3_reply_3_content = "broadcasted reply in the third thread"
+        self.assertEqual(zerver_message[8]["content"], thread3_reply_3_content)
+        self.assertEqual(zerver_message[8][EXPORT_TOPIC_NAME], thread3_topic_name)
+        thread3_reply3_message_id = zerver_message[8]["id"]
+        thread3_reply3_channel_id = zerver_message[8]["recipient"]
+        thread3_reply3_message_link_syntax = get_message_link_syntax(
+            thread3_reply3_channel_id,
+            "random",
+            thread3_topic_name,
+            thread3_reply3_message_id,
+        )
+        thread3_broadcasted_reply = f"""
+*replied to a Slack thread: {thread3_reply3_message_link_syntax}*
+
+{thread3_reply_3_content}
+"""
+        self.assertEqual(zerver_message[9]["content"], thread3_broadcasted_reply)
+        self.assertEqual(zerver_message[9][EXPORT_TOPIC_NAME], main_import_topic)
+        self.assertIn(thread3_reply_3_content, zerver_message[9]["content"])
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
