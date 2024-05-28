@@ -890,6 +890,8 @@ def channel_message_to_zerver_message(
     thread_counter: Dict[str, int] = defaultdict(int)
     thread_map: Dict[str, Dict[str, Any]] = {}
     for message in all_messages:
+        # insert_message is used to append an artificial message to the zerver_message list
+        insert_message: Optional[ZerverFieldsT] = None
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
             # Ignore messages without slack_user_id
@@ -998,6 +1000,27 @@ def channel_message_to_zerver_message(
             topic_name = f"{thread_date} Slack thread {count}"
             thread_topic_link_str = f"#**{import_channel_name}>{topic_name}**"
 
+            # Send thread messages mark as "Also send to #channel" to main import topic
+            if subtype == "thread_broadcast":
+                broadcasted_content = f"""
+                *replied to a Slack thread: {thread_topic_link_str}*"
+
+                "{content}
+                """.strip()
+                insert_message = build_message(
+                    topic_name=topic_name,
+                    date_sent=get_timestamp_from_message(message),
+                    message_id=message_id,
+                    content=broadcasted_content,
+                    rendered_content=rendered_content,
+                    user_id=slack_user_id_to_zulip_user_id[slack_user_id],
+                    recipient_id=recipient_id,
+                    realm_id=realm_id,
+                    has_image=has_image,
+                    has_link=has_link,
+                    has_attachment=has_attachment,
+                )
+
             # If the message is at the start of a thread, send it to the
             # main import channel and append a cross-linking notification
             # message to it.
@@ -1047,6 +1070,9 @@ def channel_message_to_zerver_message(
             has_attachment=has_attachment,
         )
         zerver_message.append(zulip_message)
+
+        if insert_message:
+            zerver_message.append(insert_message)
 
         (num_created, num_skipped) = build_usermessages(
             zerver_usermessage=zerver_usermessage,
