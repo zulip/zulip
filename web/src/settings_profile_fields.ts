@@ -23,6 +23,7 @@ import {current_user, realm} from "./state_data";
 import type {HTMLSelectOneElement, UserExternalAccountData} from "./types";
 import * as ui_report from "./ui_report";
 import {place_caret_at_end} from "./ui_util";
+import * as util from "./util";
 
 type FieldChoice = {
     value: string;
@@ -402,6 +403,36 @@ function disable_submit_btn_if_no_property_changed(
     );
 }
 
+function alphabetize_profile_field_choices($sortable_element: JQuery): void {
+    assert($sortable_element[0] !== undefined);
+    const sortable_instance = SortableJS.get($sortable_element[0]);
+    assert(sortable_instance !== undefined);
+
+    const choices_array: [string, string][] = [];
+    const empty_choices_array: [string, string][] = [];
+
+    const choices_id_array = sortable_instance.toArray();
+    for (const choice_id of choices_id_array) {
+        const choice_value = $(sortable_instance.el)
+            .find<HTMLInputElement>(`div[data-value="${choice_id}"] input`)
+            .val()!;
+
+        // Remove empty choices from the array that we will sort. After sorting, we append these
+        // to the sorted array.;
+        if (choice_value.length === 0) {
+            empty_choices_array.push(["", choice_id]);
+            continue;
+        }
+
+        choices_array.push([choice_value, choice_id]);
+    }
+
+    choices_array.sort((a, b) => util.strcmp(a[0], b[0]));
+    choices_array.push(...empty_choices_array);
+
+    sortable_instance.sort(choices_array.map((v) => v[1]));
+}
+
 function set_up_select_field_edit_form(
     $profile_field_form: JQuery,
     field: CustomProfileField,
@@ -433,6 +464,7 @@ function set_up_select_field_edit_form(
         },
         filter: "input",
         preventOnFilter: false,
+        dataIdAttr: "data-value",
         onSort() {
             disable_submit_btn_if_no_property_changed($profile_field_form, field);
         },
@@ -514,6 +546,15 @@ function open_edit_form_modal(this: HTMLElement): void {
             "button.delete-choice",
             function (this: HTMLElement) {
                 delete_choice_row_for_edit(this, $profile_field_form, field);
+            },
+        );
+        $profile_field_form.on(
+            "click",
+            ".profile-field-choices-wrapper > button.alphabetize-choices-button",
+            function (this: HTMLElement) {
+                assert(this instanceof HTMLButtonElement);
+                alphabetize_profile_field_choices($edit_profile_field_choices_container);
+                disable_submit_btn_if_no_property_changed($profile_field_form, field);
             },
         );
 
@@ -741,6 +782,7 @@ function set_up_select_field(): void {
             },
             filter: "input",
             preventOnFilter: false,
+            dataIdAttr: "data-value",
         });
     }
 
@@ -767,6 +809,14 @@ function set_up_select_field(): void {
     $profile_field_choices.on("click", "button.delete-choice", function (this: HTMLElement) {
         delete_choice_row(this);
     });
+    $("#profile_field_choices_row").on(
+        "click",
+        "button.alphabetize-choices-button",
+        function (this: HTMLElement) {
+            assert(this instanceof HTMLButtonElement);
+            alphabetize_profile_field_choices($profile_field_choices);
+        },
+    );
 }
 
 function set_up_external_account_field(): void {

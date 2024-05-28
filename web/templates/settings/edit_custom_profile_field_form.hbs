@@ -9,7 +9,7 @@
         <input type="text" name="hint" id="id-custom-profile-field-hint" class="modal_text_input prop-element" value="{{ hint }}" maxlength="80" data-setting-widget-type="string" />
     </div>
     {{#if is_select_field }}
-    <div class="input-group prop-element" id="id-custom-profile-field-field-data" data-setting-widget-type="field-data-setting">
+    <div class="input-group prop-element profile-field-choices-wrapper" id="id-custom-profile-field-field-data" data-setting-widget-type="field-data-setting">
         <label for="profile_field_choices_edit" class="modal-field-label">{{t "Field choices" }}</label>
         <div class="profile-field-choices" name="profile_field_choices_edit">
             <div class="edit_profile_field_choices_container">
@@ -18,6 +18,7 @@
                 {{/each}}
             </div>
         </div>
+        <button type="button" class="button white rounded alphabetize-choices-button">{{t "Alphabetize choices" }}</button>
     </div>
     {{else if is_external_account_field}}
     <div class="prop-element" id="id-custom-profile-field-field-data" data-setting-widget-type="field-data-setting">
