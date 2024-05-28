@@ -164,6 +164,10 @@ export function get_property_value(
         return "no_restriction";
     }
 
+    if (property_name === "realm_authentication_methods") {
+        return JSON.stringify(realm_authentication_methods_to_boolean_dict());
+    }
+
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return realm[property_name as keyof RealmSetting] as valueof<RealmSetting>;
 }
@@ -728,6 +732,8 @@ export function get_input_element_value(
             return get_field_data_input_value($input_elem);
         case "language-setting":
             return $input_elem.find(".language_selection_button span").attr("data-language-code");
+        case "auth-methods":
+            return JSON.stringify(get_auth_method_list_data());
         default:
             return undefined;
     }
@@ -834,7 +840,7 @@ export function check_property_changed(
         $elem,
         for_realm_default_settings,
     ) as setting_property_type;
-    let current_val = get_property_value(
+    const current_val = get_property_value(
         property_name,
         for_realm_default_settings,
         sub,
@@ -846,9 +852,7 @@ export function check_property_changed(
 
     switch (property_name) {
         case "realm_authentication_methods":
-            current_val = JSON.stringify(realm_authentication_methods_to_boolean_dict());
-            proposed_val = get_auth_method_list_data();
-            proposed_val = JSON.stringify(proposed_val);
+            proposed_val = get_input_element_value(elem, "auth-methods");
             break;
         case "realm_new_stream_announcements_stream_id":
         case "realm_signup_announcements_stream_id":
