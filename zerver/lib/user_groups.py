@@ -742,12 +742,10 @@ def are_both_group_setting_values_equal(
 
 
 def validate_group_setting_value_change(
-    current_value: UserGroup,
+    current_setting_api_value: Union[int, AnonymousSettingGroupDict],
     new_setting_value: Union[int, AnonymousSettingGroupDict],
     expected_current_setting_value: Optional[Union[int, AnonymousSettingGroupDict]],
 ) -> bool:
-    current_setting_api_value = get_group_setting_value_for_api(current_value)
-
     if expected_current_setting_value is not None and not are_both_group_setting_values_equal(
         expected_current_setting_value,
         current_setting_api_value,

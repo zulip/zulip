@@ -1812,7 +1812,11 @@ class NormalActionsTest(BaseAction):
         # Test can_mention_group setting update
         with self.verify_action() as events:
             do_change_user_group_permission_setting(
-                backend, "can_mention_group", moderators_group, acting_user=None
+                backend,
+                "can_mention_group",
+                moderators_group,
+                old_setting_api_value=everyone_group.id,
+                acting_user=None,
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
         self.assertEqual(events[0]["data"]["can_mention_group"], moderators_group.id)
@@ -1822,7 +1826,11 @@ class NormalActionsTest(BaseAction):
         setting_group.direct_subgroups.set([moderators_group.id])
         with self.verify_action() as events:
             do_change_user_group_permission_setting(
-                backend, "can_mention_group", setting_group, acting_user=None
+                backend,
+                "can_mention_group",
+                setting_group,
+                old_setting_api_value=moderators_group.id,
+                acting_user=None,
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
         self.assertEqual(
