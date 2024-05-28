@@ -3,6 +3,7 @@ import * as message_store from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import * as reactions from "./reactions";
 import * as recent_senders from "./recent_senders";
 import * as stream_topic_history from "./stream_topic_history";
 import * as user_status from "./user_status";
@@ -35,6 +36,16 @@ export function process_new_message(message) {
         message.sender_email = sender.email;
         message.status_emoji_info = user_status.get_status_emoji(message.sender_id);
     }
+
+    if (!message.reactions) {
+        message.reactions = [];
+    }
+    // TODO: Rather than adding this field to the message object, it
+    // might be cleaner to create an independent map from message_id
+    // => clean_reactions data for the message, with care being taken
+    // to make sure reify_message_id moves the data structure
+    // properly.
+    message.clean_reactions = reactions.generate_clean_reactions(message);
 
     switch (message.type) {
         case "stream":
