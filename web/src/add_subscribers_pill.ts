@@ -56,6 +56,7 @@ function set_up_pill_typeahead({
         user_group: true,
         user: true,
         help_on_empty_strings: false,
+        only_show_user_groups_editable_by_user: false,
     };
     pill_typeahead.set_up($pill_container.find(".input"), pill_widget, opts);
 }

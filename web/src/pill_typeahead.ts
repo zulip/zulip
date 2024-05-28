@@ -37,6 +37,7 @@ export function set_up(
         exclude_bots?: boolean;
         update_func?: () => void;
         help_on_empty_strings: boolean;
+        only_show_user_groups_editable_by_user?: boolean;
     },
 ): void {
     if (!opts.user && !opts.user_group && !opts.stream) {
@@ -67,7 +68,14 @@ export function set_up(
             }
 
             if (include_user_groups) {
-                source = [...source, ...user_group_pill.typeahead_source(pills)];
+                assert(opts.only_show_user_groups_editable_by_user !== undefined);
+                source = [
+                    ...source,
+                    ...user_group_pill.typeahead_source(
+                        pills,
+                        opts.only_show_user_groups_editable_by_user,
+                    ),
+                ];
             }
 
             if (include_users) {

@@ -98,6 +98,15 @@ const testers = {
 };
 const testers_item = user_group_item(testers);
 
+mock_esm("../src/settings_data", {
+    can_edit_user_group(group_id) {
+        if (group_id === admins.id) {
+            return true;
+        }
+        return false;
+    },
+});
+
 const groups = [admins, testers];
 for (const group of groups) {
     user_groups.add(group);
@@ -286,7 +295,11 @@ run_test("set_up", ({mock_template, override, override_rewire}) => {
                 })
                 .filter(Boolean);
             if (opts.user_group) {
-                expected_result = [...expected_result, ...group_items];
+                if (opts.only_show_user_groups_editable_by_user) {
+                    expected_result = [...expected_result, admins];
+                } else {
+                    expected_result = [...expected_result, ...group_items];
+                }
             }
             if (opts.user) {
                 if (opts.user_source) {
@@ -350,11 +363,18 @@ run_test("set_up", ({mock_template, override, override_rewire}) => {
         // user and custom user source.
         {user: true, user_source: () => [fred_item, mark_item]},
         {stream: true},
-        {user_group: true},
-        {user_group: true, stream: true},
-        {user_group: true, user: true},
+        {user_group: true, only_show_user_groups_editable_by_user: false},
+        {user_group: true, only_show_user_groups_editable_by_user: true},
+        {user_group: true, stream: true, only_show_user_groups_editable_by_user: false},
+        {user_group: true, user: true, only_show_user_groups_editable_by_user: false},
         {user: true, stream: true},
-        {user_group: true, stream: true, user: true, update_func},
+        {
+            user_group: true,
+            stream: true,
+            user: true,
+            only_show_user_groups_editable_by_user: false,
+            update_func,
+        },
     ];
 
     for (const config of all_possible_opts) {

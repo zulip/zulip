@@ -1,4 +1,5 @@
 import type {InputPillContainer, InputPillItem} from "./input_pill";
+import * as settings_data from "./settings_data";
 import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import type {UserGroup} from "./user_groups";
 import * as user_groups from "./user_groups";
@@ -88,8 +89,14 @@ export function filter_taken_groups(
     return items;
 }
 
-export function typeahead_source(pill_widget: CombinedPillContainer): UserGroupPillData[] {
-    const groups = user_groups.get_realm_user_groups();
+export function typeahead_source(
+    pill_widget: CombinedPillContainer,
+    only_show_user_groups_editable_by_user: boolean,
+): UserGroupPillData[] {
+    let groups = user_groups.get_realm_user_groups();
+    if (only_show_user_groups_editable_by_user) {
+        groups = groups.filter((group) => settings_data.can_edit_user_group(group.id));
+    }
     return filter_taken_groups(groups, pill_widget).map((user_group) => ({
         ...user_group,
         type: "user_group",
