@@ -2,7 +2,7 @@
     <li>
         <div class="enter_sends_choices grey-box">
             <label class="enter_sends_choice">
-                <input type="radio" name="enter_sends_choice" class="prop-element" value="true"{{#if enter_sends_true }} checked{{/if}} />
+                <input type="radio" name="enter_sends_choice" value="true"{{#if enter_sends_true }} checked{{/if}} />
                 <div class="enter_sends_choice_text">
                     <span>
                         {{#tr}}
@@ -19,7 +19,7 @@
                 </div>
             </label>
             <label class="enter_sends_choice">
-                <input type="radio" name="enter_sends_choice" class="prop-element" value="false"{{#unless enter_sends_true }} checked{{/unless}} />
+                <input type="radio" name="enter_sends_choice" value="false"{{#unless enter_sends_true }} checked{{/unless}} />
                 <div class="enter_sends_choice_text">
                     <span>
                         {{#tr}}
