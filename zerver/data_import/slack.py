@@ -82,6 +82,12 @@ FIRST_THREAD_REPLY_TEMPLATE = """
 {first_thread_reply}
 """
 
+BROADCASTED_THREAD_REPLY_TEMPLATE = """
+*replied to a Slack thread: [{thread_topic_name}]({thread_reply_near_link})*
+
+{thread_message}
+"""
+
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
 # are derived from https://github.com/iamcal/emoji-data; this seems
@@ -912,6 +918,8 @@ def channel_message_to_zerver_message(
     realm_model = Realm(**realm_properties)
 
     for message in all_messages:
+        # insert_message is used to append artificial messages to the zerver_message list
+        insert_message: ZerverFieldsT | None = None
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
             # Ignore messages without slack_user_id
@@ -1054,6 +1062,44 @@ def channel_message_to_zerver_message(
                     thread_metadata.update({"first_thread_reply": content})
                     content = FIRST_THREAD_REPLY_TEMPLATE.format(**thread_metadata)
                 thread_metadata["thread_length"] += 1
+
+                if subtype == "thread_broadcast":
+                    # Send a copy of thread messages mark as "Also send to #channel" to main
+                    # import topic.
+                    message_dict = {
+                        "type": "stream" if is_private else "",
+                        "id": message_id,
+                        "stream_id": recipient_id,
+                        "topic": thread_metadata["thread_topic_name"],
+                        "display_recipient": import_channel_name,
+                    }
+                    thread_reply_message = content
+                    if thread_metadata["thread_length"] == 1:
+                        # The first thread reply has been formatted, so we use its original
+                        # content.
+                        thread_reply_message = thread_metadata["first_thread_reply"]
+                    thread_reply_near_link = near_stream_message_url(realm_model, message_dict)
+                    broadcasted_message = BROADCASTED_THREAD_REPLY_TEMPLATE.format(
+                        thread_reply_near_link=thread_reply_near_link,
+                        thread_message=thread_reply_message,
+                        **thread_metadata,
+                    )
+                    broadcasted_message_id = NEXT_ID(
+                        "message"
+                    )  # Increment message_id for the broadcasted message
+                    insert_message = build_message(
+                        topic_name=MAIN_IMPORT_TOPIC,
+                        date_sent=get_timestamp_from_message(message),
+                        message_id=broadcasted_message_id,
+                        content=broadcasted_message,
+                        rendered_content=rendered_content,
+                        user_id=slack_user_id_to_zulip_user_id[slack_user_id],
+                        recipient_id=recipient_id,
+                        realm_id=realm_id,
+                        has_image=has_image,
+                        has_link=has_link,
+                        has_attachment=has_attachment,
+                    )
             else:
                 # This occurs when the original thread message isn't imported,
                 # such as when only a slice of the chat history is imported.
@@ -1073,6 +1119,9 @@ def channel_message_to_zerver_message(
             has_attachment=has_attachment,
         )
         zerver_message.append(zulip_message)
+
+        if insert_message:
+            zerver_message.append(insert_message)
 
         (num_created, num_skipped) = build_usermessages(
             zerver_usermessage=zerver_usermessage,
