@@ -121,9 +121,11 @@ export type Message = (
     sent_by_me: boolean;
     reply_to: string;
 
-    // These properties are used in `message_list_view.js`.
-    message_reactions: MessageCleanReaction[];
-    url: string;
+    // These properties are set and used in `message_list_view.js`.
+    // TODO: It would be nice if we could not store these on the message
+    // object and only reference them within `message_list_view`.
+    message_reactions?: MessageCleanReaction[];
+    url?: string;
 
     // Used in `markdown.js`, `server_events.js`, and `set_message_booleans`
     flags?: string[];
