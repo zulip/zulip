@@ -9,18 +9,18 @@
         <li role="none" class="popover-menu-list-item hidden-for-spectators">
             <div role="group" class="tabs-container" aria-label="{{t 'Topic visibility' }}">
                 <div role="menuitemradio" class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
-                    <i class="zulip-icon zulip-icon-mute-new"></i>
+                    <i class="zulip-icon zulip-icon-mute-new" aria-hidden="true"></i>
                 </div>
                 <div role="menuitemradio" class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.INHERIT}}" data-tippy-content="{{t 'Default' }}" aria-label="{{t 'Default' }}">
-                    <i class="zulip-icon zulip-icon-inherit"></i>
+                    <i class="zulip-icon zulip-icon-inherit" aria-hidden="true"></i>
                 </div>
                 {{#if (or stream_muted topic_unmuted)}}
                     <div role="menuitemradio" class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}">
-                        <i class="zulip-icon zulip-icon-unmute-new"></i>
+                        <i class="zulip-icon zulip-icon-unmute-new" aria-hidden="true"></i>
                     </div>
                 {{/if}}
                 <div role="menuitemradio" class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow' }}" aria-label="{{t 'Follow' }}">
-                    <i class="zulip-icon zulip-icon-follow"></i>
+                    <i class="zulip-icon zulip-icon-follow" aria-hidden="true"></i>
                 </div>
             </div>
         </li>
