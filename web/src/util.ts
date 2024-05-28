@@ -247,7 +247,7 @@ export function set_match_data(target: Message, source: MatchedMessage): void {
     target.match_content = source.match_content;
 }
 
-export function get_match_topic(obj: Message): string | undefined {
+export function get_match_topic(obj: Message | RawMessage): string | undefined {
     return obj.match_subject;
 }
 

@@ -480,7 +480,7 @@ export function get_recipients(user_ids_string: string): string {
     return names.join(", ");
 }
 
-export function pm_reply_user_string(message: Message): string | undefined {
+export function pm_reply_user_string(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
@@ -578,9 +578,7 @@ export function all_user_ids_in_pm(message: Message): number[] | undefined {
     return user_ids;
 }
 
-export function pm_with_user_ids(
-    message: Message & {reply_to?: string; url?: string},
-): number[] | undefined {
+export function pm_with_user_ids(message: Message | MessageWithBooleans): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
     }
@@ -620,7 +618,7 @@ export function pm_perma_link(message: Message): string | undefined {
     return url;
 }
 
-export function pm_with_url(message: Message): string | undefined {
+export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
