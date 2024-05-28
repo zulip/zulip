@@ -19,6 +19,7 @@ export type InputPillItem<T> = {
     deactivated?: boolean;
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
+    group_size?: number;
     user_id?: number;
     group_id?: number;
 } & T;
@@ -26,6 +27,7 @@ export type InputPillItem<T> = {
 export type InputPillConfig = {
     show_user_status_emoji?: boolean;
     exclude_inaccessible_users?: boolean;
+    show_user_group_size?: boolean;
 };
 
 type InputPillCreateOptions<T> = {
@@ -67,6 +69,7 @@ type InputPillRenderingDetails = {
     should_add_guest_user_indicator: boolean | undefined;
     user_id?: number | undefined;
     group_id?: number | undefined;
+    group_size?: number;
 };
 
 // These are the functions that are exposed to other modules.
@@ -179,6 +182,11 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     opts.status_emoji_info = item.status_emoji_info;
                 }
                 opts.has_status = has_status;
+            }
+            const show_user_group_size = store.pill_config?.show_user_group_size ?? false;
+
+            if (show_user_group_size) {
+                opts.group_size = item.group_size ?? 0; // Or handle undefined differently if needed
             }
 
             const pill_html = render_input_pill(opts);

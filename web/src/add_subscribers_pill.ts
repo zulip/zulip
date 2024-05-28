@@ -66,10 +66,14 @@ export function create({
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
 }): input_pill.InputPillContainer<CombinedPillItem> {
+    const pill_config = {
+        show_user_group_size: true,
+    };
     const pill_widget = input_pill.create<CombinedPillItem>({
         $container: $pill_container,
         create_item_from_text,
         get_text_from_item,
+        pill_config,
     });
     function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
