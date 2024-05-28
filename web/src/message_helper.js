@@ -23,7 +23,7 @@ export function process_new_message(message) {
         return cached_msg;
     }
 
-    message_store.set_message_booleans(message);
+    message = message_store.set_message_booleans(message);
     message.sent_by_me = people.is_current_user(message.sender_email);
 
     people.extract_people_from_message(message);
