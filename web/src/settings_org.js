@@ -876,43 +876,16 @@ export function register_save_discard_widget_handlers(
         settings_components.change_save_button_state($save_btn_controls, "discarded");
     });
 
-    function get_complete_data_for_subsection(subsection) {
-        let data = {};
-
-        switch (subsection) {
-            case "auth_settings":
-                data = {};
-                data.authentication_methods = JSON.stringify(
-                    settings_components.get_auth_method_list_data(),
-                );
-                break;
-        }
-        return data;
-    }
-
     $container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const $save_button = $(e.currentTarget);
         const $subsection_elem = $save_button.closest(".settings-subsection-parent");
-        let extra_data = {};
 
-        if (!for_realm_default_settings) {
-            // The organization settings system has some coupled
-            // fields that must be submitted together, which is
-            // managed by the get_complete_data_for_subsection function.
-            const [, subsection_id] = /^org-(.*)$/.exec($subsection_elem.attr("id"));
-            const subsection = subsection_id.replaceAll("-", "_");
-            extra_data = get_complete_data_for_subsection(subsection);
-        }
-
-        const data = {
-            ...settings_components.populate_data_for_request(
-                $subsection_elem,
-                for_realm_default_settings,
-            ),
-            ...extra_data,
-        };
+        const data = settings_components.populate_data_for_request(
+            $subsection_elem,
+            for_realm_default_settings,
+        );
         save_organization_settings(data, $save_button, patch_url);
     });
 }
