@@ -122,6 +122,7 @@ run_test("update_messages", () => {
     assert.deepEqual(rendered_mgs, [
         {
             alerted: false,
+            clean_reactions: new Map(),
             collapsed: false,
             content: "<b>new content</b>",
             display_recipient: denmark.name,

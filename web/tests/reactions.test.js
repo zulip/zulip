@@ -113,9 +113,20 @@ function test(label, f) {
     });
 }
 
-test("basics", () => {
+function sample_message_with_clean_reactions() {
     const message = {...sample_message};
+    convert_reactions_to_clean_reactions(message);
+    return message;
+}
+
+function convert_reactions_to_clean_reactions(message) {
+    message.clean_reactions = reactions.generate_clean_reactions(message);
+    delete message.reactions;
+}
+
+test("basics", () => {
     settings_data.user_can_access_all_other_users = () => true;
+    const message = sample_message_with_clean_reactions();
     const result = reactions.get_message_reactions(message);
     assert.ok(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
     assert.ok(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
@@ -222,6 +233,7 @@ test("reactions from unknown users", () => {
         ],
     };
 
+    convert_reactions_to_clean_reactions(message);
     const result = reactions.get_message_reactions(message);
     result.sort((a, b) => a.count - b.count);
 
@@ -308,7 +320,7 @@ test("unknown realm emojis (insert)", () => {
 });
 
 test("sending", ({override, override_rewire}) => {
-    const message = {...sample_message};
+    const message = sample_message_with_clean_reactions();
     assert.equal(message.id, 1001);
     override(message_store, "get", (message_id) => {
         assert.equal(message_id, message.id);
@@ -400,7 +412,7 @@ test("sending", ({override, override_rewire}) => {
 });
 
 test("prevent_simultaneous_requests_updating_reaction", ({override_rewire}) => {
-    const message = {...sample_message};
+    const message = sample_message_with_clean_reactions();
     override_rewire(reactions, "add_reaction", noop);
     const stub = make_stub();
     channel.post = stub.f;
@@ -486,6 +498,7 @@ test("update_vote_text_on_message", ({override_rewire}) => {
             },
         ],
     };
+    convert_reactions_to_clean_reactions(message);
 
     user_settings.display_emoji_reaction_users = true;
 
@@ -550,7 +563,7 @@ test("get_reaction_sections", () => {
 });
 
 test("emoji_reaction_title", ({override}) => {
-    const message = {...sample_message};
+    const message = sample_message_with_clean_reactions();
     override(message_store, "get", () => message);
     const local_id = "unicode_emoji,1f642";
 
@@ -565,6 +578,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
         id: 2001,
         reactions: [],
     };
+    convert_reactions_to_clean_reactions(message);
 
     user_settings.display_emoji_reaction_users = true;
 
@@ -869,21 +883,20 @@ test("insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
         insert_called = true;
     };
 
-    reactions.insert_new_reaction(
-        clean_reaction_object,
-        {
-            id: message_id,
-            reactions: [
-                {
-                    emoji_name: "8ball",
-                    user_id: alice.user_id,
-                    reaction_type: "unicode_emoji",
-                    emoji_code: "1f3b1",
-                },
-            ],
-        },
-        alice.user_id,
-    );
+    const message = {
+        id: message_id,
+        reactions: [
+            {
+                emoji_name: "8ball",
+                user_id: alice.user_id,
+                reaction_type: "unicode_emoji",
+                emoji_code: "1f3b1",
+            },
+        ],
+    };
+    convert_reactions_to_clean_reactions(message);
+
+    reactions.insert_new_reaction(clean_reaction_object, message, alice.user_id);
     assert.ok(insert_called);
 });
 
@@ -935,21 +948,19 @@ test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
         insert_called = true;
     };
 
-    reactions.insert_new_reaction(
-        clean_reaction_object,
-        {
-            id: message_id,
-            reactions: [
-                {
-                    emoji_name: "8ball",
-                    user_id: bob.user_id,
-                    reaction_type: "unicode_emoji",
-                    emoji_code: "1f3b1",
-                },
-            ],
-        },
-        bob.user_id,
-    );
+    const message = {
+        id: message_id,
+        reactions: [
+            {
+                emoji_name: "8ball",
+                user_id: bob.user_id,
+                reaction_type: "unicode_emoji",
+                emoji_code: "1f3b1",
+            },
+        ],
+    };
+    convert_reactions_to_clean_reactions(message);
+    reactions.insert_new_reaction(clean_reaction_object, message, bob.user_id);
     assert.ok(insert_called);
 });
 
@@ -971,27 +982,25 @@ test("update_existing_reaction (me)", () => {
     const $reaction_count = $.create("reaction-count-stub");
     $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
-    reactions.update_existing_reaction(
-        clean_reaction_object,
-        {
-            id: message_id,
-            reactions: [
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: alice.user_id,
-                },
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: bob.user_id,
-                },
-            ],
-        },
-        alice.user_id,
-    );
+    const message = {
+        id: message_id,
+        reactions: [
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: alice.user_id,
+            },
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: bob.user_id,
+            },
+        ],
+    };
+    convert_reactions_to_clean_reactions(message);
+    reactions.update_existing_reaction(clean_reaction_object, message, alice.user_id);
 
     assert.ok($our_reaction.hasClass("reacted"));
     assert.equal(
@@ -1018,39 +1027,38 @@ test("update_existing_reaction (them)", () => {
     const $reaction_count = $.create("reaction-count-stub");
     $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
-    reactions.update_existing_reaction(
-        clean_reaction_object,
-        {
-            id: message_id,
-            reactions: [
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: alice.user_id,
-                },
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: bob.user_id,
-                },
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: cali.user_id,
-                },
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: alexus.user_id,
-                },
-            ],
-        },
-        alexus.user_id,
-    );
+    const message = {
+        id: message_id,
+        reactions: [
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: alice.user_id,
+            },
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: bob.user_id,
+            },
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: cali.user_id,
+            },
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: alexus.user_id,
+            },
+        ],
+    };
+    convert_reactions_to_clean_reactions(message);
+
+    reactions.update_existing_reaction(clean_reaction_object, message, alexus.user_id);
 
     assert.ok(!$our_reaction.hasClass("reacted"));
     assert.equal(
@@ -1078,27 +1086,26 @@ test("remove_reaction_from_view (me)", () => {
     const $reaction_button = $.create("reaction-button-stub");
     $message_reactions.find = () => $reaction_button;
 
-    reactions.remove_reaction_from_view(
-        clean_reaction_object,
-        {
-            id: message_id,
-            reactions: [
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: bob.user_id,
-                },
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: cali.user_id,
-                },
-            ],
-        },
-        alice.user_id,
-    );
+    const message = {
+        id: message_id,
+        reactions: [
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: bob.user_id,
+            },
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: cali.user_id,
+            },
+        ],
+    };
+    convert_reactions_to_clean_reactions(message);
+
+    reactions.remove_reaction_from_view(clean_reaction_object, message, alice.user_id);
 
     assert.ok(!$message_reactions.hasClass("reacted"));
     assert.equal(
@@ -1126,21 +1133,20 @@ test("remove_reaction_from_view (them)", () => {
     const $reaction_button = $.create("reaction-button-stub");
     $message_reactions.find = () => $reaction_button;
 
-    reactions.remove_reaction_from_view(
-        clean_reaction_object,
-        {
-            id: message_id,
-            reactions: [
-                {
-                    emoji_code: "1f3b1",
-                    emoji_name: "8ball",
-                    reaction_type: "unicode_emoji",
-                    user_id: alice.user_id,
-                },
-            ],
-        },
-        bob.user_id,
-    );
+    const message = {
+        id: message_id,
+        reactions: [
+            {
+                emoji_code: "1f3b1",
+                emoji_name: "8ball",
+                reaction_type: "unicode_emoji",
+                user_id: alice.user_id,
+            },
+        ],
+    };
+    convert_reactions_to_clean_reactions(message);
+
+    reactions.remove_reaction_from_view(clean_reaction_object, message, bob.user_id);
 
     assert.ok($message_reactions.hasClass("reacted"));
     assert.equal(
@@ -1169,11 +1175,10 @@ test("remove_reaction_from_view (last person)", () => {
     $our_reaction.remove = () => {
         removed = true;
     };
-    reactions.remove_reaction_from_view(
-        clean_reaction_object,
-        {id: message_id, reactions: []},
-        bob.user_id,
-    );
+
+    const message = {id: message_id, reactions: []};
+    convert_reactions_to_clean_reactions(message);
+    reactions.remove_reaction_from_view(clean_reaction_object, message, bob.user_id);
     assert.ok(removed);
 });
 
@@ -1196,8 +1201,7 @@ test("bogus_event", ({override}) => {
 test("remove spurious user", ({override}) => {
     // get coverage for removing non-user (it should just
     // silently fail)
-
-    const message = {...sample_message};
+    const message = sample_message_with_clean_reactions();
     override(message_store, "get", () => message);
 
     const event = {
@@ -1212,7 +1216,7 @@ test("remove spurious user", ({override}) => {
 });
 
 test("remove last user", ({override, override_rewire}) => {
-    const message = {...sample_message};
+    const message = sample_message_with_clean_reactions();
 
     override(message_store, "get", () => message);
     override_rewire(reactions, "remove_reaction_from_view", noop);
@@ -1250,7 +1254,7 @@ test("local_reaction_id", () => {
 test("process_reaction_click", ({override, override_rewire}) => {
     override_rewire(reactions, "remove_reaction_from_view", noop);
 
-    const message = {...sample_message};
+    const message = sample_message_with_clean_reactions();
     override(message_store, "get", () => message);
 
     const expected_reaction_info = {
@@ -1290,7 +1294,7 @@ test("code coverage", ({override}) => {
     override(message_store, "get", (id) => {
         assert.equal(id, 42);
         return {
-            reactions: [],
+            clean_reactions: new Map(),
         };
     });
 
@@ -1309,7 +1313,7 @@ test("duplicates", () => {
     };
 
     blueslip.expect("error", "server sent duplicate reactions");
-    reactions.set_clean_reactions(dup_reaction_message);
+    convert_reactions_to_clean_reactions(dup_reaction_message);
 });
 
 test("process_reaction_click undefined", ({override}) => {
@@ -1320,7 +1324,7 @@ test("process_reaction_click undefined", ({override}) => {
 });
 
 test("process_reaction_click bad local id", ({override}) => {
-    const stub_message = {id: 4001, reactions: []};
+    const stub_message = {id: 4001, clean_reactions: new Map()};
     override(message_store, "get", () => stub_message);
     blueslip.expect("error", "Data integrity problem for reaction");
     reactions.process_reaction_click("some-msg-id", "bad-local-id");

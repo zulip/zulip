@@ -2,9 +2,9 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 import * as people from "./people";
-import type {RawReaction} from "./reactions";
 import type {Submessage, TopicLink} from "./types";
 import type {UserStatusEmojiInfo} from "./user_status";
+import { RawReaction } from "./reactions";
 
 const stored_messages = new Map<number, Message>();
 
