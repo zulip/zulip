@@ -105,10 +105,9 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
 
         othello = self.example_user("othello")
-        setting_group = UserGroup.objects.create(realm=realm)
-        setting_group.direct_members.set([othello])
-        setting_group.direct_subgroups.set([admins_system_group])
-
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [admins_system_group]
+        )
         new_user_group = check_add_user_group(
             realm,
             "newgroup2",

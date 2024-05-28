@@ -107,6 +107,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -1976,6 +1977,23 @@ Output:
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
+
+    def create_or_update_anonymous_group_for_setting(
+        self,
+        direct_members: List[UserProfile],
+        direct_subgroups: List[NamedUserGroup],
+        existing_setting_group: Optional[UserGroup] = None,
+    ) -> UserGroup:
+        realm = get_realm("zulip")
+        if existing_setting_group is not None:
+            existing_setting_group.direct_members.set(direct_members)
+            existing_setting_group.direct_subgroups.set(direct_subgroups)
+            return existing_setting_group
+
+        user_group = UserGroup.objects.create(realm=realm)
+        user_group.direct_members.set(direct_members)
+        user_group.direct_subgroups.set(direct_subgroups)
+        return user_group
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):

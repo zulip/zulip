@@ -232,7 +232,6 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
-    UserGroup,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -1776,9 +1775,9 @@ class NormalActionsTest(BaseAction):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=self.user_profile.realm, is_system_group=True
         )
-        user_group = UserGroup.objects.create(realm=self.user_profile.realm)
-        user_group.direct_members.set([othello])
-        user_group.direct_subgroups.set([moderators_group])
+        user_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [moderators_group]
+        )
 
         with self.verify_action() as events:
             check_add_user_group(
@@ -1821,9 +1820,9 @@ class NormalActionsTest(BaseAction):
         check_user_group_update("events[0]", events[0], "can_mention_group")
         self.assertEqual(events[0]["data"]["can_mention_group"], moderators_group.id)
 
-        setting_group = UserGroup.objects.create(realm=self.user_profile.realm)
-        setting_group.direct_members.set([othello.id])
-        setting_group.direct_subgroups.set([moderators_group.id])
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [moderators_group]
+        )
         with self.verify_action() as events:
             do_change_user_group_permission_setting(
                 backend,
