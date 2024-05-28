@@ -51,6 +51,7 @@ export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
 export const current_user_schema = z.object({
     avatar_source: z.string(),
     delivery_email: z.string(),
+    has_zoom_token: z.boolean(),
     is_admin: z.boolean(),
     is_billing_admin: z.boolean(),
     is_guest: z.boolean(),
