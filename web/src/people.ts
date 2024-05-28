@@ -1533,30 +1533,23 @@ export function get_user_by_id_assert_valid(
 }
 
 function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser[] {
-    let involved_people: DisplayRecipientUser[];
+    let involved_people: DisplayRecipientUser[] = [];
 
-    switch (message.type) {
-        case "stream":
-            involved_people = [
-                {
-                    full_name: message.sender_full_name,
-                    id: message.sender_id,
-                    email: message.sender_email,
-                    is_mirror_dummy: false,
-                },
-            ];
-            break;
-
-        case "private":
-            assert(
-                typeof message.display_recipient !== "string",
-                "Private messages should have list of recipients",
-            );
-            involved_people = message.display_recipient;
-            break;
-
-        default:
-            involved_people = [];
+    if (message.type === "stream") {
+        involved_people = [
+            {
+                full_name: message.sender_full_name,
+                id: message.sender_id,
+                email: message.sender_email,
+                is_mirror_dummy: false,
+            },
+        ];
+    } else if (message.type === "private") {
+        assert(
+            typeof message.display_recipient !== "string",
+            "Private messages should have list of recipients",
+        );
+        involved_people = message.display_recipient;
     }
 
     return involved_people;
