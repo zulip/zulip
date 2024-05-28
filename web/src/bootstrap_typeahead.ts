@@ -379,11 +379,6 @@ export class Typeahead<ItemType extends string | object> {
             // We have event handlers to hide the typeahead, so we
             // don't want tippy to hide it for us.
             hideOnClick: false,
-            onHidden: () => {
-                assert(this.instance !== undefined);
-                this.instance.destroy();
-                this.instance = undefined;
-            },
         });
 
         return this;
@@ -394,7 +389,8 @@ export class Typeahead<ItemType extends string | object> {
         if (this.parentElement) {
             this.$container.hide();
         } else {
-            this.instance?.hide();
+            this.instance?.destroy();
+            this.instance = undefined;
         }
 
         if (this.closeInputFieldOnHide !== undefined) {
