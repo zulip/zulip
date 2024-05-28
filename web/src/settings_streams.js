@@ -28,8 +28,11 @@ function add_choice_row($widget) {
 function get_chosen_default_streams() {
     // Return the set of stream id's of streams chosen in the default stream modal.
     return new Set(
-        $("#default-stream-choices .choice-row .dropdown_widget_value")
-            .map((_i, elem) => Number($(elem).attr("data-stream-id")).toString())
+        // Note: We selectively map through the dropdown elements that contain the
+        // `data-stream-id` attribute to avoid adding an element with undefined value
+        //  into the returned `Set`.
+        $("#default-stream-choices .choice-row .dropdown_widget_value[data-stream-id]")
+            .map((_i, elem) => Number($(elem).attr("data-stream-id")))
             .get(),
     );
 }

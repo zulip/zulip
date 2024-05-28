@@ -296,12 +296,12 @@ export function delete_sub(stream_id: number): void {
     stream_info.delete(stream_id);
 }
 
-export function get_non_default_stream_names(): {name: string; unique_id: string}[] {
+export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
     let subs = [...stream_info.values()];
     subs = subs.filter((sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only);
     const names = subs.map((sub) => ({
         name: sub.name,
-        unique_id: sub.stream_id.toString(),
+        unique_id: sub.stream_id,
     }));
     return names;
 }
