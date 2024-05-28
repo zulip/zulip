@@ -55,6 +55,7 @@ function set_up_pill_typeahead({
         stream: true,
         user_group: true,
         user: true,
+        help_on_empty_strings: false,
     };
     pill_typeahead.set_up($pill_container.find(".input"), pill_widget, opts);
 }

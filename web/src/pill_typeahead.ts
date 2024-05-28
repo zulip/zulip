@@ -36,6 +36,7 @@ export function set_up(
         user_source?: () => User[];
         exclude_bots?: boolean;
         update_func?: () => void;
+        help_on_empty_strings: boolean;
     },
 ): void {
     if (!opts.user && !opts.user_group && !opts.stream) {
@@ -55,6 +56,7 @@ export function set_up(
     new Typeahead(bootstrap_typeahead_input, {
         items: 5,
         dropup: true,
+        helpOnEmptyStrings: opts.help_on_empty_strings,
         source(query: string): TypeaheadItem[] {
             let source: TypeaheadItem[] = [];
             if (include_streams(query)) {
