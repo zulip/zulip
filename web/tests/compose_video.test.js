@@ -180,7 +180,11 @@ test("videos", ({override}) => {
 
         channel.post = (payload) => {
             assert.equal(payload.url, "/json/calls/zoom/create");
-            payload.success({url: "example.zoom.com"});
+            payload.success({
+                result: "success",
+                msg: "",
+                url: "example.zoom.com",
+            });
             return {abort() {}};
         };
 
@@ -230,6 +234,8 @@ test("videos", ({override}) => {
             assert.equal(options.url, "/json/calls/bigbluebutton/create");
             assert.equal(options.data.meeting_name, "a meeting");
             options.success({
+                result: "success",
+                msg: "",
                 url: "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22",
             });
         };
