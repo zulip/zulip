@@ -12,10 +12,12 @@ class kandra::app_frontend_monitoring {
   }
   zulip::cron { 'check-rabbitmq-queue':
     minute  => '*',
+    user    => 'root',
     command => '/home/zulip/deployments/current/scripts/nagios/check-rabbitmq-queue',
   }
   zulip::cron { 'check-rabbitmq-consumers':
     minute  => '*',
+    user    => 'root',
     command => '/home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers',
   }
 }
