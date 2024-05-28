@@ -269,12 +269,6 @@ export function is_topic_synonym(operator: string): boolean {
     return operator === "subject";
 }
 
-export function convert_message_topic(message: Message): void {
-    if (message.type === "stream" && message.topic === undefined) {
-        message.topic = message.subject;
-    }
-}
-
 // TODO: When "stream" is renamed to "channel", update these stream
 // synonym helper functions for the reverse logic.
 export function is_stream_synonym(text: string): boolean {

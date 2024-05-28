@@ -42,7 +42,7 @@ const messages = {
         stream_id: denmark_stream.stream_id,
         type: "stream",
         flags: ["has_alert_word"],
-        topic: "copenhagen",
+        subject: "copenhagen",
         // note we don't have every field that a "real" message
         // would have, and that can be fine
     },
@@ -91,7 +91,7 @@ run_test("unread", () => {
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 0);
 
     let in_message = {...messages.isaac_to_denmark_stream};
-    in_message = message_store.set_message_booleans(in_message);
+    in_message = message_helper.process_new_message(in_message);
 
     unread.process_loaded_messages([in_message]);
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 1);

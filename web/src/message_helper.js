@@ -38,7 +38,10 @@ export function process_new_message(message) {
 
     switch (message.type) {
         case "stream":
-            util.convert_message_topic(message);
+            if (message.topic === undefined) {
+                message.topic = message.subject;
+            }
+            delete message.subject;
             message.is_stream = true;
             message.reply_to = message.sender_email;
 
