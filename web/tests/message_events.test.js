@@ -57,7 +57,7 @@ function test_helper(side_effects) {
 }
 
 run_test("update_messages", () => {
-    const original_message = {
+    const raw_message = {
         id: 111,
         display_recipient: denmark.name,
         flags: ["mentioned"],
@@ -67,7 +67,7 @@ run_test("update_messages", () => {
         type: "stream",
     };
 
-    message_helper.process_new_message(original_message);
+    const original_message = message_helper.process_new_message(raw_message);
 
     assert.equal(original_message.mentioned, true);
     assert.equal(original_message.unread, true);
