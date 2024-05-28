@@ -491,7 +491,7 @@ test("default_stream_names", () => {
     stream_data.add_sub(general);
 
     const names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names.sort(), [{name: "public", unique_id: "102"}]);
+    assert.deepEqual(names.sort(), [{name: "public", unique_id: 102}]);
 
     const default_stream_ids = stream_data.get_default_stream_ids();
     assert.deepEqual(default_stream_ids.sort(), [announce.stream_id, general.stream_id]);
