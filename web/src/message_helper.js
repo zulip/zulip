@@ -36,12 +36,9 @@ export function process_new_message(message) {
         message.status_emoji_info = user_status.get_status_emoji(message.sender_id);
     }
 
-    // Convert topic even for direct messages, as legacy code
-    // wants the empty field.
-    util.convert_message_topic(message);
-
     switch (message.type) {
         case "stream":
+            util.convert_message_topic(message);
             message.is_stream = true;
             message.reply_to = message.sender_email;
 
