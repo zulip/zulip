@@ -123,7 +123,6 @@ realm.realm_description = "already set description";
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
 const emoji = zrequire("emoji");
-const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
@@ -146,7 +145,7 @@ people.add_active_user(me);
 people.add_active_user(test_user);
 people.initialize_current_user(me.user_id);
 
-message_helper.process_new_message(test_message);
+message_store.update_message_cache(test_message);
 
 const realm_emoji = {};
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");

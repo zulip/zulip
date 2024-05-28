@@ -4,7 +4,6 @@ import * as blueslip from "./blueslip";
 import * as people from "./people";
 import type {Submessage, TopicLink} from "./types";
 import type {UserStatusEmojiInfo} from "./user_status";
-import { RawReaction } from "./reactions";
 
 const stored_messages = new Map<number, Message>();
 
@@ -70,7 +69,10 @@ export type RawMessage = {
     | {
           type: "stream";
           stream_id: number;
-          subject: string;
+          // Messages that come from the server use `subject`.
+          // Messages that come from `send_message` use `topic`.
+          subject?: string;
+          topic?: string;
           topic_links: TopicLink[];
       }
 ) &
@@ -109,11 +111,8 @@ export type MessageCleanReaction = {
 
 export type Message = (
     | Omit<MessageWithBooleans & {type: "private"}, "reactions">
-    | Omit<MessageWithBooleans & {type: "stream"}, "reactions">
+    | Omit<MessageWithBooleans & {type: "stream"}, "reactions" | "subject">
 ) & {
-    // Replaced by `clean_reactions` in `reactions.set_clean_reactions`.
-    reactions?: RawReaction[];
-    // Added in `reactions.set_clean_reactions`.
     clean_reactions: Map<string, MessageCleanReaction>;
 
     locally_echoed?: boolean;
@@ -172,7 +171,7 @@ export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id);
 }
 
-export function get_pm_emails(message: Message): string {
+export function get_pm_emails(message: Message | MessageWithBooleans): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
     const emails = user_ids
         .map((user_id) => {

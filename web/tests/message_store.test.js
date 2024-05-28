@@ -314,6 +314,7 @@ test("update_property", () => {
         sender_id: alice.user_id,
         small_avatar_url: "alice_url",
         stream_id: devel.stream_id,
+        topic: "",
         display_recipient: devel.name,
         id: 100,
     };
@@ -323,6 +324,7 @@ test("update_property", () => {
         sender_id: bob.user_id,
         small_avatar_url: "bob_url",
         stream_id: denmark.stream_id,
+        topic: "",
         display_recipient: denmark.name,
         id: 101,
     };
