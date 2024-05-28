@@ -72,6 +72,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
+from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -1318,10 +1319,14 @@ class TestRealmAuditLog(ZulipTestCase):
         old_group = user_group.can_mention_group
         new_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
-        )
+        ).usergroup_ptr
         self.assertNotEqual(old_group.id, new_group.id)
         do_change_user_group_permission_setting(
-            user_group, "can_mention_group", new_group, acting_user=None
+            user_group,
+            "can_mention_group",
+            new_group,
+            old_setting_api_value=old_group.id,
+            acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
@@ -1348,7 +1353,11 @@ class TestRealmAuditLog(ZulipTestCase):
 
         now = timezone_now()
         do_change_user_group_permission_setting(
-            user_group, "can_mention_group", new_group, acting_user=None
+            user_group,
+            "can_mention_group",
+            new_group,
+            old_setting_api_value=old_group.id,
+            acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
@@ -1369,13 +1378,21 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
         othello = self.example_user("othello")
-        new_group = UserGroup.objects.create(realm=user_group.realm)
+        old_setting_api_value = get_group_setting_value_for_api(user_group.can_mention_group)
+        # Since the old setting value was a anonymous group, we just update the
+        # members and subgroups of the already existing UserGroup instead of creating
+        # a new UserGroup object to keep this consistent with the actual code.
+        new_group = user_group.can_mention_group
         new_group.direct_members.set([othello.id])
         new_group.direct_subgroups.set([moderators_group.id])
 
         now = timezone_now()
         do_change_user_group_permission_setting(
-            user_group, "can_mention_group", new_group, acting_user=None
+            user_group,
+            "can_mention_group",
+            new_group,
+            old_setting_api_value=old_setting_api_value,
+            acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
@@ -1398,12 +1415,17 @@ class TestRealmAuditLog(ZulipTestCase):
             },
         )
 
+        old_setting_api_value = get_group_setting_value_for_api(user_group.can_mention_group)
         new_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=user_group.realm, is_system_group=True
         )
         now = timezone_now()
         do_change_user_group_permission_setting(
-            user_group, "can_mention_group", new_group, acting_user=None
+            user_group,
+            "can_mention_group",
+            new_group,
+            old_setting_api_value=old_setting_api_value,
+            acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
