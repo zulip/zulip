@@ -104,7 +104,7 @@ test("process_new_message", () => {
         is_me_message: false,
         id: 2067,
     };
-    message_helper.process_new_message(message);
+    message = message_helper.process_new_message(message);
 
     assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
 
@@ -142,7 +142,7 @@ test("process_new_message", () => {
         id: 2068,
     };
 
-    message_helper.process_new_message(message);
+    message = message_helper.process_new_message(message);
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
@@ -308,7 +308,7 @@ test("update_booleans", () => {
 });
 
 test("update_property", () => {
-    const message1 = {
+    let message1 = {
         type: "stream",
         sender_full_name: alice.full_name,
         sender_id: alice.user_id,
@@ -317,7 +317,7 @@ test("update_property", () => {
         display_recipient: devel.name,
         id: 100,
     };
-    const message2 = {
+    let message2 = {
         type: "stream",
         sender_full_name: bob.full_name,
         sender_id: bob.user_id,
@@ -326,9 +326,8 @@ test("update_property", () => {
         display_recipient: denmark.name,
         id: 101,
     };
-    for (const message of [message1, message2]) {
-        message_helper.process_new_message(message);
-    }
+    message1 = message_helper.process_new_message(message1);
+    message2 = message_helper.process_new_message(message2);
 
     assert.equal(message1.sender_full_name, alice.full_name);
     assert.equal(message2.sender_full_name, bob.full_name);
