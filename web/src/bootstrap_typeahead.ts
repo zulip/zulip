@@ -100,7 +100,7 @@
  *
  * 10. Allow typeahead to be located next to its input field in the DOM
  *
- *   We add a new `parentElement` option which the typeahead can
+ *   We add a new `non_tippy_parent_element` option which the typeahead can
  *   append to, where before it could only be appended to `body`.
  *   Since it's in the right part of the DOM, we don't need to do
  *   the manual positioning in the show() function.
@@ -126,12 +126,13 @@
  *   turned off so that tab only does one thing while focus is in the
  *   typeahead -- move focus to the next element.
  *
- * 14. Don't act on blurs that change focus within the `parentElement`:
+ * 14. Don't act on blurs that change focus within the `non_tippy_parent_element`:
  *
  *   This allows us to have things like a close button, and be able
  *   to move focus there without the typeahead closing.
  *
- * 15. To position typeaheads, we use Tippyjs.
+ * 15. To position typeaheads, we use Tippyjs except for typeaheads that are
+ *    appended to a `non_tippy_parent_element`.
  * ============================================================ */
 
 import $ from "jquery";
@@ -231,7 +232,7 @@ export class Typeahead<ItemType extends string | object> {
     naturalSearch: boolean;
     stopAdvance: boolean;
     advanceKeyCodes: number[];
-    parentElement: string | undefined;
+    non_tippy_parent_element: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
     instance: Instance | undefined;
 
@@ -248,8 +249,8 @@ export class Typeahead<ItemType extends string | object> {
         this.highlighter_html = options.highlighter_html;
         this.updater = options.updater ?? ((items) => this.defaultUpdater(items));
         this.$container = $(CONTAINER_HTML);
-        if (options.parentElement) {
-            $(options.parentElement).append(this.$container);
+        if (options.non_tippy_parent_element) {
+            $(options.non_tippy_parent_element).append(this.$container);
         }
         this.$menu = $(MENU_HTML).appendTo(this.$container);
         this.$header = $(HEADER_ELEMENT_HTML).appendTo(this.$container);
@@ -269,7 +270,7 @@ export class Typeahead<ItemType extends string | object> {
         this.tabIsEnter = options.tabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
         this.naturalSearch = options.naturalSearch ?? false;
-        this.parentElement = options.parentElement;
+        this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
 
         // The naturalSearch option causes arrow keys to immediately
@@ -335,7 +336,7 @@ export class Typeahead<ItemType extends string | object> {
         }
         this.mouse_moved_since_typeahead = false;
 
-        if (this.parentElement) {
+        if (this.non_tippy_parent_element) {
             this.$container.show();
             // We don't need tippy to position typeaheads which already know where they should be.
             return this;
@@ -386,7 +387,7 @@ export class Typeahead<ItemType extends string | object> {
 
     hide(): this {
         this.shown = false;
-        if (this.parentElement) {
+        if (this.non_tippy_parent_element) {
             this.$container.hide();
         } else {
             this.instance?.destroy();
@@ -676,9 +677,9 @@ export class Typeahead<ItemType extends string | object> {
         // Blurs that move focus to elsewhere within the parent element shouldn't
         // hide the typeahead.
         if (
-            this.parentElement !== undefined &&
+            this.non_tippy_parent_element !== undefined &&
             e.relatedTarget &&
-            $(e.relatedTarget).parents(this.parentElement).length > 0
+            $(e.relatedTarget).parents(this.non_tippy_parent_element).length > 0
         ) {
             return;
         }
@@ -754,7 +755,7 @@ type TypeaheadOptions<ItemType> = {
     on_escape?: () => void;
     openInputFieldOnKeyUp?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
-    parentElement?: string;
+    non_tippy_parent_element?: string;
     sorter: (items: ItemType[], query: string) => ItemType[];
     stopAdvance?: boolean;
     tabIsEnter?: boolean;
