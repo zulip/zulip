@@ -275,6 +275,8 @@ export function update_status_emoji_info(
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
     const message = stored_messages.get(old_id);
     if (message !== undefined) {
+        message.id = new_id;
+        message.locally_echoed = false;
         stored_messages.set(new_id, message);
         stored_messages.delete(old_id);
     }
