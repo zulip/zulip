@@ -327,8 +327,7 @@ def fix_message_rendered_content(
     realm: Realm, sender_map: Dict[int, Record], messages: List[Record]
 ) -> None:
     """
-    This function sets the rendered_content of all the messages
-    after the messages have been imported from a non-Zulip platform.
+    This function sets the rendered_content of the messages we're importing.
     """
     for message in messages:
         if message["rendered_content"] is not None:
