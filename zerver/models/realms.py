@@ -192,6 +192,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
 
+    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
+
     # User-visible display name and description used on e.g. the organization homepage
     name = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description = models.TextField(default="")

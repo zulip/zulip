@@ -26,6 +26,7 @@ from zerver.models.users import UserProfile
 
 
 class AbstractMessage(models.Model):
+    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
     # The target of the message is signified by the Recipient object.

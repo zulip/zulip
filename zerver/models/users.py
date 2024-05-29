@@ -408,6 +408,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         EMBEDDED_BOT,
     ]
 
+    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
+
     # For historical reasons, Zulip has two email fields.  The
     # `delivery_email` field is the user's email address, where all
     # email notifications will be sent, and is used for all

@@ -38,9 +38,6 @@ class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
-    id = models.BigAutoField(
-        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-    )
     property = models.CharField(max_length=32)
     subgroup = models.CharField(max_length=16, null=True)
     end_time = models.DateTimeField()
