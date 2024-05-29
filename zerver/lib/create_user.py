@@ -2,7 +2,6 @@ from datetime import datetime
 from email.headerregistry import Address
 from typing import Optional, Union
 
-import orjson
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
@@ -125,7 +124,6 @@ def create_user_profile(
         tos_version=tos_version,
         timezone=timezone,
         tutorial_status=tutorial_status,
-        onboarding_steps=orjson.dumps([]).decode(),
         default_language=default_language,
         delivery_email=email,
         email_address_visibility=email_address_visibility,
