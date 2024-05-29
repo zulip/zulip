@@ -83,7 +83,7 @@ function process_result(data, opts) {
     if (
         message_lists.current !== undefined &&
         opts.msg_list === message_lists.current &&
-        opts.msg_list.narrowed &&
+        !opts.msg_list.is_combined_feed_view &&
         opts.msg_list.visibly_empty()
     ) {
         // The view appears to be empty. However, because in stream
@@ -137,7 +137,11 @@ function get_messages_success(data, opts) {
         });
     }
 
-    if (opts.msg_list && opts.msg_list.narrowed && opts.msg_list !== message_lists.current) {
+    if (
+        opts.msg_list &&
+        !opts.msg_list.is_combined_feed_view &&
+        opts.msg_list !== message_lists.current
+    ) {
         // We unnarrowed before receiving new messages so
         // don't bother processing the newly arrived messages.
         return;
@@ -309,7 +313,7 @@ export function load_messages(opts, attempt = 1) {
             if (
                 opts.msg_list !== undefined &&
                 opts.msg_list !== message_lists.current &&
-                opts.msg_list.narrowed
+                !opts.msg_list.is_combined_feed_view
             ) {
                 // This fetch was for a narrow, and we unnarrowed
                 // before getting an error, so don't bother trying
@@ -330,7 +334,7 @@ export function load_messages(opts, attempt = 1) {
                 if (
                     message_lists.current !== undefined &&
                     opts.msg_list === message_lists.current &&
-                    opts.msg_list.narrowed &&
+                    !opts.msg_list.is_combined_feed_view &&
                     opts.msg_list.visibly_empty()
                 ) {
                     narrow_banner.show_empty_narrow_message();
