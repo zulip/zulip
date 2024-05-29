@@ -66,7 +66,10 @@ export function should_show_server_upgrade_notification(ls) {
 
     const last_notification_dismissal_time = ls.get("lastUpgradeNagDismissalTime");
 
-    const upgrade_nag_dismissal_duration = addDays(new Date(last_notification_dismissal_time), 7);
+    const upgrade_nag_dismissal_duration = addDays(
+        new Date(last_notification_dismissal_time),
+        7,
+    ).getTime();
 
     // show the notification only if the time duration is completed.
     return Date.now() > upgrade_nag_dismissal_duration;
@@ -134,8 +137,8 @@ export function show_profile_incomplete(is_profile_incomplete) {
 }
 
 export function get_demo_organization_deadline_days_remaining() {
-    const now = new Date(Date.now());
-    const deadline = new Date(realm.demo_organization_scheduled_deletion_date * 1000);
+    const now = Date.now();
+    const deadline = realm.demo_organization_scheduled_deletion_date * 1000;
     const day = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
     const days_remaining = Math.round(Math.abs(deadline - now) / day);
     return days_remaining;
