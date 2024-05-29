@@ -182,6 +182,39 @@ function create_and_update_message_list(filter, id_info, opts) {
     return {msg_list, restore_rendered_list};
 }
 
+function handle_post_message_list_change(
+    id_info,
+    msg_list,
+    opts,
+    select_immediately,
+    select_opts,
+    then_select_offset,
+) {
+    // Important: We need to consider opening the compose box
+    // before calling render_message_list_with_selected_message, so that the logic in
+    // recenter_view for positioning the currently selected
+    // message can take into account the space consumed by the
+    // open compose box.
+    compose_actions.on_narrow(opts);
+
+    if (select_immediately) {
+        render_message_list_with_selected_message({
+            id_info,
+            select_offset: then_select_offset,
+            msg_list: message_lists.current,
+            select_opts,
+        });
+    }
+
+    handle_post_view_change(msg_list, opts);
+
+    unread_ui.update_unread_banner();
+
+    // It is important to call this after other important updates
+    // like narrow filter and compose recipients happen.
+    compose_recipient.handle_middle_pane_transition();
+}
+
 export function activate(raw_terms, opts) {
     /* Main entry point for switching to a new view / message list.
 
@@ -596,29 +629,14 @@ export function activate(raw_terms, opts) {
         assert(select_opts !== undefined);
         assert(select_immediately !== undefined);
 
-        // Important: We need to consider opening the compose box
-        // before calling render_message_list_with_selected_message, so that the logic in
-        // recenter_view for positioning the currently selected
-        // message can take into account the space consumed by the
-        // open compose box.
-        compose_actions.on_narrow(opts);
-
-        if (select_immediately) {
-            render_message_list_with_selected_message({
-                id_info,
-                select_offset: then_select_offset,
-                msg_list: message_lists.current,
-                select_opts,
-            });
-        }
-
-        handle_post_view_change(msg_list, opts);
-
-        unread_ui.update_unread_banner();
-
-        // It is important to call this after other important updates
-        // like narrow filter and compose recipients happen.
-        compose_recipient.handle_middle_pane_transition();
+        handle_post_message_list_change(
+            id_info,
+            msg_list,
+            opts,
+            select_immediately,
+            select_opts,
+            then_select_offset,
+        );
 
         const post_span = span.startChild({
             op: "function",
