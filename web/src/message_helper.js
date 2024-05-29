@@ -8,7 +8,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
-export function process_new_message(message) {
+export function process_new_message(message, is_data_reliable_for_stream_history = false) {
     // Call this function when processing a new message.  After
     // a message is processed and inserted into the message store
     // cache, most modules use message_store.get to look at
@@ -49,6 +49,7 @@ export function process_new_message(message) {
                 stream_id: message.stream_id,
                 topic_name: message.topic,
                 message_id: message.id,
+                is_data_reliable: is_data_reliable_for_stream_history,
             });
 
             recent_senders.process_stream_message(message);

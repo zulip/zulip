@@ -612,6 +612,8 @@ test("filter_with_new_params_topic", () => {
     assert.ok(filter.has_topic("foo", "old topic"));
     assert.ok(!filter.has_topic("wrong", "old topic"));
     assert.ok(!filter.has_topic("foo", "wrong"));
+    assert.ok(filter.has_stream("foo"));
+    assert.ok(!filter.has_stream("wrong"));
 
     const new_filter = filter.filter_with_new_params({
         operator: "topic",
@@ -632,6 +634,8 @@ test("filter_with_new_params_channel", () => {
     assert.ok(filter.has_topic("foo", "old topic"));
     assert.ok(!filter.has_topic("wrong", "old topic"));
     assert.ok(!filter.has_topic("foo", "wrong"));
+    assert.ok(filter.has_stream("foo"));
+    assert.ok(!filter.has_stream("wrong"));
 
     const new_filter = filter.filter_with_new_params({
         operator: "channel",

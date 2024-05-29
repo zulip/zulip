@@ -1,10 +1,14 @@
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import {all_messages_data} from "./all_messages_data";
+import * as channel from "./channel";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
+import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 
 // stream_id -> PerStreamHistory object
@@ -78,18 +82,11 @@ export function stream_has_topics(stream_id: number): boolean {
     return history.has_topics();
 }
 
-export type TopicHistoryEntry =
-    | {
-          historical: true;
-          message_id: number;
-          pretty_name: string;
-      }
-    | {
-          historical: false;
-          count: number;
-          message_id: number;
-          pretty_name: string;
-      };
+export type TopicHistoryEntry = {
+    is_data_reliable: boolean;
+    message_id: number;
+    pretty_name: string;
+};
 
 type ServerTopicHistoryEntry = {
     name: string;
@@ -119,11 +116,8 @@ export class PerStreamHistory {
           topic would likely suffice, though we need to think about
           private stream corner cases).
         * pretty_name: The topic_name, with original case.
-        * historical: Whether the user actually received any messages in
-          the topic (has UserMessage rows) or is just viewing the stream.
-        * count: Number of known messages in the topic.  Used to detect
-          when the last messages in a topic were moved to other topics or
-          deleted.
+        * is_data_reliable: Whether the message_id field is absolutely
+          correct and is set to the latest message_id.
     */
 
     topics = new FoldDict<TopicHistoryEntry>();
@@ -145,7 +139,7 @@ export class PerStreamHistory {
         }
     }
 
-    add_or_update(topic_name: string, message_id: number): void {
+    add_or_update(topic_name: string, message_id: number, is_data_reliable: boolean): void {
         this.update_stream_max_message_id(message_id);
 
         const existing = this.topics.get(topic_name);
@@ -154,42 +148,19 @@ export class PerStreamHistory {
             this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
-                historical: false,
-                count: 1,
+                is_data_reliable,
             });
             return;
         }
 
-        if (!existing.historical) {
-            existing.count += 1;
+        if (!existing.is_data_reliable && is_data_reliable) {
+            existing.is_data_reliable = true;
         }
 
         if (message_id > existing.message_id) {
             existing.message_id = message_id;
             existing.pretty_name = topic_name;
         }
-    }
-
-    maybe_remove(topic_name: string, num_messages: number): void {
-        const existing = this.topics.get(topic_name);
-
-        if (!existing) {
-            return;
-        }
-
-        if (existing.historical) {
-            // We can't trust that a topic rename applied to
-            // the entire history of historical topic, so we
-            // will always leave it in the sidebar.
-            return;
-        }
-
-        if (existing.count <= num_messages) {
-            this.topics.delete(topic_name);
-            return;
-        }
-
-        existing.count -= num_messages;
     }
 
     add_history(server_history: ServerTopicHistoryEntry[]): void {
@@ -203,9 +174,8 @@ export class PerStreamHistory {
 
             const existing = this.topics.get(topic_name);
 
-            if (existing && !existing.historical) {
-                // Trust out local data more, since it
-                // maintains counts.
+            if (existing && existing.is_data_reliable) {
+                // Trust out local data more.
                 continue;
             }
 
@@ -216,7 +186,7 @@ export class PerStreamHistory {
             this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
-                historical: true,
+                is_data_reliable: true,
             });
             this.update_stream_max_message_id(message_id);
         }
@@ -246,15 +216,51 @@ export class PerStreamHistory {
     }
 }
 
+const message_response_schema = z.object({
+    messages: z.array(
+        z.object({
+            id: z.number(),
+        }),
+    ),
+});
+
+function get_latest_message_in_topic(
+    stream_id: number,
+    topic_name: string,
+    success_cb: (max_message_id: number | undefined) => void,
+): void {
+    const data = {
+        anchor: "newest",
+        num_before: 1,
+        num_after: 0,
+        narrow: JSON.stringify([
+            {operator: "stream", operand: stream_id},
+            {operator: "topic", operand: topic_name},
+        ]),
+    };
+
+    void channel.get({
+        url: "/json/messages",
+        data,
+        success(response_data) {
+            const data = message_response_schema.parse(response_data);
+            let latest_message_id;
+            if (data.messages.length !== 0) {
+                latest_message_id = data.messages[0].id;
+            }
+            success_cb(latest_message_id);
+        },
+    });
+}
+
 export function remove_messages(opts: {
     stream_id: number;
     topic_name: string;
-    num_messages: number;
     max_removed_msg_id: number;
+    topic_deleted: boolean;
 }): void {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
-    const num_messages = opts.num_messages;
     const max_removed_msg_id = opts.max_removed_msg_id;
     const history = stream_dict.get(stream_id);
 
@@ -265,17 +271,48 @@ export function remove_messages(opts: {
         return;
     }
 
-    // This is the normal case of an incoming message.
-    history.maybe_remove(topic_name, num_messages);
-
     const existing_topic = history.topics.get(topic_name);
     if (!existing_topic) {
+        return;
+    }
+
+    if (opts.topic_deleted) {
+        // topic_deleted is true only when propagate_mode is
+        // set to change_all and here we can be sure that the
+        // topic will no longer exist, so we will remove the
+        // topic completely.
+        history.topics.delete(topic_name);
         return;
     }
 
     // Update max_message_id in topic
     if (existing_topic.message_id <= max_removed_msg_id) {
         const msgs_in_topic = message_util.get_messages_in_topic(stream_id, topic_name);
+
+        if (!msgs_in_topic.length) {
+            get_latest_message_in_topic(stream_id, topic_name, (latest_message_id) => {
+                if (!latest_message_id) {
+                    history.topics.delete(topic_name);
+                } else {
+                    existing_topic.message_id = latest_message_id;
+                    existing_topic.is_data_reliable = true;
+                }
+                // We already call stream_list.update_streams_sidebar()
+                // towards the end of message_events.update_messages
+                // to rebuild the topic list, but we might not have
+                // got the correct data from the server by the time
+                // update_streams_sidebar gets called. So, this call
+                // to rebuild the topic list ensures that the order
+                // of topics is updated as per the latest data.
+                if (topic_list.active_stream_id() === stream_id) {
+                    const $stream_li = topic_list.get_stream_li();
+                    assert($stream_li !== undefined);
+                    topic_list.rebuild($stream_li, stream_id);
+                }
+            });
+            return;
+        }
+
         let max_message_id = 0;
         for (const msg of msgs_in_topic) {
             if (msg.id > max_message_id) {
@@ -306,14 +343,145 @@ export function add_message(opts: {
     stream_id: number;
     message_id: number;
     topic_name: string;
+    is_data_reliable: boolean;
 }): void {
     const stream_id = opts.stream_id;
     const message_id = opts.message_id;
     const topic_name = opts.topic_name;
+    const is_data_reliable = opts.is_data_reliable;
 
     const history = find_or_create(stream_id);
 
-    history.add_or_update(topic_name, message_id);
+    history.add_or_update(topic_name, message_id, is_data_reliable);
+}
+
+export function add_moved_message(opts: {
+    stream_id: number;
+    max_moved_message_id: number;
+    topic_name: string;
+    can_latest_message_be_inaccessible: boolean;
+}): void {
+    const stream_id = opts.stream_id;
+    const history = find_or_create(stream_id);
+
+    const topic_name = opts.topic_name;
+    const existing_topic = history.topics.get(topic_name);
+    const max_moved_message_id = opts.max_moved_message_id;
+
+    if (existing_topic && existing_topic.message_id > max_moved_message_id) {
+        // In this case, the topic order will not change irrespective
+        // of whether there can be a case where message_id is inaccessible
+        // or the data we already have is reliable or not. So we just
+        // skip.
+        return;
+    }
+
+    if (!opts.can_latest_message_be_inaccessible) {
+        // We are certain that the value of message_id field
+        // is reliable, i.e. we can access the message.
+        // We would update the data in two cases -
+        // 1. Topic with same name exists already.
+        // 2. We are sure that there is no existing topic with
+        // same name in this stream.
+        if (existing_topic !== undefined || is_complete_for_stream_id(stream_id)) {
+            const is_data_reliable = existing_topic ? existing_topic.is_data_reliable : true;
+            history.add_or_update(topic_name, max_moved_message_id, is_data_reliable);
+            return;
+        }
+
+        // The data we have from moved message event is reliable but
+        // we do not know whether there already exists a topic with
+        // same name in the stream. So, here we need to go to the
+        // server to get the correct data. But we only go to the
+        // server if we show the topic list in sidebar or else
+        // we just skip it.
+        if (topic_list.active_stream_id() !== stream_id) {
+            // The stream is not opened in sidebar and we do not need
+            // to update topic list.
+            return;
+        }
+
+        // We would fetch the complete topic history of the stream because
+        // we do not want to show the current topic in incorrect order as
+        // we have not fetched all the topics data till now.
+        stream_topic_history_util.get_server_history(stream_id, () => {
+            // We already call stream_list.update_streams_sidebar()
+            // towards the end of message_events.update_messages
+            // to rebuild the topic list, but we might not have
+            // got the correct data from the server by the time
+            // update_streams_sidebar gets called. So, this call
+            // to rebuild the topic list ensures that the order
+            // of topics is updated as per the latest data.
+            const $stream_li = topic_list.get_stream_li();
+            assert($stream_li !== undefined);
+            topic_list.rebuild($stream_li, stream_id);
+        });
+        return;
+    }
+
+    // If the code reaches this point there are two cases -
+    // 1. None of the moved messages are available locally with the client.
+    // 2. The latest message among the moved messages is not available locally.
+
+    if (topic_list.active_stream_id() !== stream_id) {
+        // The stream is not opened in sidebar and we do not need
+        // to update topic list.
+        // But we would need to handle cases where the data would
+        // not be updated correctly in future -
+        // 1. We have no data for this topic and the client has already fetched
+        // full history for the stream.
+        // 2. The topic already exists for the stream and is_data_reliable is
+        // set to true.
+        if (!existing_topic && fetched_stream_ids.has(stream_id)) {
+            fetched_stream_ids.delete(stream_id);
+        } else if (existing_topic && existing_topic.is_data_reliable) {
+            existing_topic.is_data_reliable = false;
+        }
+        return;
+    }
+
+    const $stream_li = topic_list.get_stream_li();
+    assert($stream_li !== undefined);
+
+    if (existing_topic) {
+        // Since there already exists a topic with same name, we just need to
+        // get the data for this topic from the server.
+        // Even if the client does not have complete topic data for the stream
+        // the order of the topics will not be affected since the topic will
+        // only move towards top if needed.
+        get_latest_message_in_topic(stream_id, topic_name, (latest_message_id) => {
+            assert(latest_message_id !== undefined);
+            history.add_or_update(topic_name, latest_message_id, true);
+
+            // We already call stream_list.update_streams_sidebar()
+            // towards the end of message_events.update_messages
+            // to rebuild the topic list, but we might not have
+            // got the correct data from the server by the time
+            // update_streams_sidebar gets called. So, this call
+            // to rebuild the topic list ensures that the order
+            // of topics is updated as per the latest data.
+            topic_list.rebuild($stream_li, stream_id);
+        });
+        return;
+    }
+
+    // If there is no existing topic with same name, we fetch the complete
+    // history in case we know that we do not have all topics of the stream
+    // yet to make sure we do not show incorrect order of topics. If we have
+    // other topics of the stream, we just fetch the data for current topic
+    // to make sure we do not set the message_id field to some inaccessible
+    // message ID.
+    if (is_complete_for_stream_id(stream_id)) {
+        get_latest_message_in_topic(stream_id, topic_name, (latest_message_id) => {
+            assert(latest_message_id !== undefined);
+            history.add_or_update(topic_name, latest_message_id, true);
+            topic_list.rebuild($stream_li, stream_id);
+        });
+    } else {
+        stream_topic_history_util.get_server_history(stream_id, () => {
+            topic_list.rebuild($stream_li, stream_id);
+        });
+    }
 }
 
 export function add_history(stream_id: number, server_history: ServerTopicHistoryEntry[]): void {
