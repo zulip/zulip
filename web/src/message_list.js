@@ -57,8 +57,8 @@ export class MessageList {
         // DOM.
         this.view = new MessageListView(this, collapse_messages, opts.is_node_test);
 
-        // If this message list is not for the global feed.
-        this.narrowed = !this.data.filter.is_in_home();
+        // If this message list is for the combined feed view.
+        this.is_combined_feed_view = this.data.filter.is_in_home();
 
         // Keeps track of whether the user has done a UI interaction,
         // such as "Mark as unread", that should disable marking
@@ -81,7 +81,7 @@ export class MessageList {
         // This is intentionally not live-updated when web_home_view
         // changes, since it's easier to reason about if this
         // optimization is active or not for an entire session.
-        if (user_settings.web_home_view !== "all_messages" || this.narrowed) {
+        if (user_settings.web_home_view !== "all_messages" || !this.is_combined_feed_view) {
             return false;
         }
 
@@ -375,7 +375,7 @@ export class MessageList {
     // message list.
     update_trailing_bookend() {
         this.view.clear_trailing_bookend();
-        if (!this.narrowed) {
+        if (this.is_combined_feed_view) {
             return;
         }
         const stream_name = narrow_state.stream_name();
@@ -499,7 +499,7 @@ export class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (this.narrowed) {
+        if (!this.is_combined_feed_view) {
             if (
                 this.visibly_empty() &&
                 this.data.fetch_status.has_found_oldest() &&

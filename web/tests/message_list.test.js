@@ -320,7 +320,7 @@ run_test("bookend", ({override}) => {
     });
 
     list.view.clear_trailing_bookend = noop;
-    list.narrowed = true;
+    list.is_combined_feed_view = false;
 
     override(narrow_state, "stream_name", () => "IceCream");
 
