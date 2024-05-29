@@ -36,18 +36,18 @@ export function update_audio_chat_button_display(): void {
 
 function insert_video_call_url(
     url: string,
-    target_textarea: JQuery<HTMLTextAreaElement> | undefined,
+    $target_textarea: JQuery<HTMLTextAreaElement> | undefined,
 ): void {
     const link_text = $t({defaultMessage: "Join video call."});
-    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
+    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, $target_textarea, "block", 1);
 }
 
 function insert_audio_call_url(
     url: string,
-    target_textarea: JQuery<HTMLTextAreaElement> | undefined,
+    $target_textarea: JQuery<HTMLTextAreaElement> | undefined,
 ): void {
     const link_text = $t({defaultMessage: "Join voice call."});
-    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
+    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, $target_textarea, "block", 1);
 }
 
 export function generate_and_insert_audio_or_video_call_link(
