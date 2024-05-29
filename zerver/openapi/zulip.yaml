@@ -6207,23 +6207,7 @@ paths:
             subscribed to appropriate channels or use a shared history
             search narrow with this endpoint.
 
-            **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
-            for two new filters related to channel messages: `channel` and `channels`;
-            which are aliases for (and return the same results as) the `stream` and
-            `streams` filters respectively.
-
-            In Zulip 9.0 (feature level 249), narrows gained support for a new
-            filter, `has:reaction`, which returns messages with at least one
-            [emoji reaction](/help/emoji-reactions).
-
-            In Zulip 7.0 (feature level 177), narrows gained support
-            for three new filters related to direct messages: `is:dm`, `dm` and
-            `dm-including`; replacing and deprecating `is:private`, `pm-with` and
-            `group-pm-with` respectively.
-
-            In Zulip 2.1.0, added support for using user/channel IDs when
-            constructing narrows for a message's sender, its channel and/or
-            its recipient(s).
+            **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
           content:
             application/json:
               schema:
@@ -7086,19 +7070,7 @@ paths:
                     optimization. Including that filter takes advantage of the fact that
                     the server has a database index for unread messages.
 
-                    **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
-                    for two new filters related to channel messages: `channel` and `channels`;
-                    which are aliases for (and return the same results as) the `stream` and
-                    `streams` filters respectively.
-
-                    In Zulip 9.0 (feature level 249), narrows gained support for a new
-                    filter, `has:reaction`, which returns messages with at least one
-                    [emoji reaction](/help/emoji-reactions).
-
-                    In Zulip 7.0 (feature level 177), narrows gained support
-                    for three new filters related to direct messages: `is:dm`, `dm` and
-                    `dm-including`; replacing and deprecating `is:private`, `pm-with` and
-                    `group-pm-with` respectively.
+                    **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
                   type: array
                   items:
                     oneOf:
@@ -7519,19 +7491,7 @@ paths:
             A structure defining the narrow to check against. See how to
             [construct a narrow](/api/construct-narrow).
 
-            **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
-            for two new filters related to channel messages: `channel` and `channels`;
-            which are aliases for (and return the same results as) the `stream` and
-            `streams` filters respectively.
-
-            In Zulip 9.0 (feature level 249), narrows gained support for a new
-            filter, `has:reaction`, which returns messages with at least one
-            [emoji reaction](/help/emoji-reactions).
-
-            In Zulip 7.0 (feature level 177), narrows gained support
-            for three new filters related to direct messages: `is:dm`, `dm` and
-            `dm-including`; replacing and deprecating `is:private`, `pm-with` and
-            `group-pm-with` respectively.
+            **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
           content:
             application/json:
               schema:
@@ -22033,19 +21993,7 @@ components:
         See the `all_public_streams` parameter for how to process all
         public channel messages in an organization.
 
-        **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
-        for two new filters related to channel messages: `channel` and `channels`;
-        which are aliases for (and return the same results as) the `stream` and
-        `streams` filters respectively.
-
-        In Zulip 9.0 (feature level 249), narrows gained support for a new
-        filter, `has:reaction`, which returns messages with at least one
-        [emoji reaction](/help/emoji-reactions).
-
-        In Zulip 7.0 (feature level 177), narrows gained support
-        for three new filters related to direct messages: `is:dm`, `dm` and
-        `dm-including`; replacing and deprecating `is:private`, `pm-with` and
-        `group-pm-with` respectively.
+        **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
       type: array
       items:
         type: array
