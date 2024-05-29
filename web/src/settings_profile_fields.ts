@@ -288,13 +288,16 @@ function open_custom_profile_field_form_modal(): void {
 }
 
 function add_choice_row(this: HTMLElement, e: JQuery.TriggeredEvent): void {
-    const $curr_choice_row = $(this).parent();
-    if ($curr_choice_row.next().hasClass("choice-row")) {
+    const $delete_choice_button = $(this).parent().find("button.delete-choice");
+
+    // We use delete button to determine if this was a new empty choice.
+    if ($delete_choice_button.is(":visible")) {
         return;
     }
     // Display delete buttons for all existing choices before creating the new row,
     // which will not have the delete button so that there is at least one option present.
-    $curr_choice_row.find("button.delete-choice").show();
+    $delete_choice_button.show();
+
     assert(e.delegateTarget instanceof HTMLElement);
     const choices_div = e.delegateTarget;
     create_choice_row($(choices_div));
