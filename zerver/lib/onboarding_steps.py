@@ -69,8 +69,7 @@ def copy_onboarding_steps(source_profile: UserProfile, target_profile: UserProfi
             timestamp=onboarding_step.timestamp,
         )
 
-    # TODO: The 'tutorial_status' and 'onboarding_steps' fields
-    # of 'UserProfile' model are no longer used. Remove them.
+    # TODO: The 'tutorial_status' field of 'UserProfile' model
+    # is no longer used. Remove it.
     target_profile.tutorial_status = source_profile.tutorial_status
-    target_profile.onboarding_steps = source_profile.onboarding_steps
-    target_profile.save(update_fields=["tutorial_status", "onboarding_steps"])
+    target_profile.save(update_fields=["tutorial_status"])

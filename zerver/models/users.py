@@ -576,12 +576,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1
     )
 
-    # Contains serialized JSON of the form:
-    #    [("step 1", true), ("step 2", false)]
-    # where the second element of each tuple is if the step has been
-    # completed.
-    onboarding_steps = models.TextField(default="[]")
-
     zoom_token = models.JSONField(default=None, null=True)
 
     objects = UserManager()
