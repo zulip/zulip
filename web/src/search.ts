@@ -85,7 +85,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
             search_map = suggestions.lookup_table;
             return suggestions.strings;
         },
-        parentElement: "#searchbox_form",
+        non_tippy_parent_element: "#searchbox_form",
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
