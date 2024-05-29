@@ -315,7 +315,7 @@ elif (
     )
 POSTGRESQL_MISSING_DICTIONARIES = get_config("postgresql", "missing_dictionaries", False)
 
-DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ########################################################################
 # RABBITMQ CONFIGURATION

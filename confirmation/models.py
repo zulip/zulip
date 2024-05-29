@@ -207,9 +207,6 @@ def confirmation_url(
 
 
 class Confirmation(models.Model):
-    id = models.BigAutoField(
-        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-    )
     content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
     object_id = models.PositiveIntegerField(db_index=True)
     content_object = GenericForeignKey("content_type", "object_id")

@@ -19,9 +19,6 @@ class UserActivity(models.Model):
     and database migration purposes.
     """
 
-    id = models.BigAutoField(
-        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-    )
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     client = models.ForeignKey(Client, on_delete=CASCADE)
     query = models.CharField(max_length=50, db_index=True)
@@ -36,9 +33,6 @@ class UserActivity(models.Model):
 class UserActivityInterval(models.Model):
     MIN_INTERVAL_LENGTH = timedelta(minutes=15)
 
-    id = models.BigAutoField(
-        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-    )
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     start = models.DateTimeField("start time", db_index=True)
     end = models.DateTimeField("end time", db_index=True)
