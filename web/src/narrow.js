@@ -239,9 +239,6 @@ export function activate(raw_terms, opts) {
         return;
     }
 
-    // Use to determine if user read any unread messages outside the combined feed.
-    const was_narrowed_already = message_lists.current?.narrowed;
-
     // Since narrow.activate is called directly from various
     // places in our code without passing through hashchange,
     // we need to check if the narrow is allowed for spectator here too.
@@ -276,7 +273,7 @@ export function activate(raw_terms, opts) {
     const span_data = {
         op: "function",
         description: "narrow",
-        data: {was_narrowed_already, raw_terms, trigger: opts.trigger},
+        data: {raw_terms, trigger: opts.trigger},
     };
     let span;
     if (!existing_span) {
