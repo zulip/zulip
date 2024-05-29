@@ -757,7 +757,7 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks
     # that 'user_profile' is user-controlled
-    return HttpResponseRedirect(mark_sanitized(user_profile.realm.uri) + reverse("home"))
+    return HttpResponseRedirect(mark_sanitized(user_profile.realm.url) + reverse("home"))
 
 
 def prepare_activation_url(
@@ -767,6 +767,7 @@ def prepare_activation_url(
     realm: Optional[Realm],
     streams: Optional[Iterable[Stream]] = None,
     invited_as: Optional[int] = None,
+    include_realm_default_subscriptions: Optional[bool] = None,
     multiuse_invite: Optional[MultiuseInvite] = None,
 ) -> str:
     """
@@ -780,6 +781,11 @@ def prepare_activation_url(
 
     if invited_as is not None:
         prereg_user.invited_as = invited_as
+
+    if include_realm_default_subscriptions is not None:
+        prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
+
+    if invited_as is not None or include_realm_default_subscriptions is not None:
         prereg_user.save()
 
     confirmation_type = Confirmation.USER_REGISTRATION
@@ -1016,6 +1022,7 @@ def accounts_home(
     from_multiuse_invite = False
     streams_to_subscribe = None
     invited_as = None
+    include_realm_default_subscriptions = None
 
     if multiuse_object:
         # multiuse_object's realm should have been validated by the caller,
@@ -1026,6 +1033,7 @@ def accounts_home(
         streams_to_subscribe = multiuse_object.streams.all()
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
+        include_realm_default_subscriptions = multiuse_object.include_realm_default_subscriptions
 
     if request.method == "POST":
         form = HomepageForm(
@@ -1059,6 +1067,7 @@ def accounts_home(
                 realm=realm,
                 streams=streams_to_subscribe,
                 invited_as=invited_as,
+                include_realm_default_subscriptions=include_realm_default_subscriptions,
                 multiuse_invite=multiuse_object,
             )
             try:
@@ -1216,7 +1225,7 @@ def realm_redirect(request: HttpRequest, next: str = REQ(default="")) -> HttpRes
         if form.is_valid():
             subdomain = form.cleaned_data["subdomain"]
             realm = get_realm(subdomain)
-            redirect_to = urljoin(realm.uri, settings.HOME_NOT_LOGGED_IN)
+            redirect_to = urljoin(realm.url, settings.HOME_NOT_LOGGED_IN)
 
             if next:
                 redirect_to = append_url_query_string(

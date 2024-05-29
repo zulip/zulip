@@ -131,7 +131,7 @@ may be useful:
 * The Zulip server comes with a [command-line tool][management-commands],
   `manage.py export_single_user`, which is a variant of the main server
   [export tool][export-and-import-tool], that exports a single Zulip
-  user's account details, preferences, stream subscriptions, and message
+  user's account details, preferences, channel subscriptions, and message
   history in a structured JSON format.
 * The Django management shell (`manage.py shell`) and database shell
   (`manage.py dbshell`) allows you to query, access, edit, and delete

@@ -45,6 +45,8 @@ mock_esm("../src/reload_state", {
 mock_esm("../src/drafts", {
     update_draft: noop,
     update_compose_draft_count: noop,
+    get_last_restorable_draft_based_on_compose_state: noop,
+    set_compose_draft_id: noop,
 });
 mock_esm("../src/unread_ops", {
     notify_server_message_read: noop,
@@ -124,6 +126,10 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
+    override(compose_ui, "insert_and_scroll_into_view", (content, $textarea, replace_all) => {
+        $textarea.val(content);
+        assert.ok(replace_all);
+    });
 
     // Start stream message
     compose_defaults = {
@@ -131,8 +137,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         topic: "topic1",
     };
 
-    let opts = {};
-    start("stream", opts);
+    let opts = {
+        message_type: "stream",
+    };
+    start(opts);
 
     assert_visible("#compose_recipient_box");
     assert_hidden("#compose-direct-recipient");
@@ -155,8 +163,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         trigger: "clear topic button",
     };
 
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(compose_state.topic(), "");
 
@@ -164,8 +174,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         trigger: "compose_hotkey",
     };
 
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(compose_state.topic(), "");
 
@@ -179,8 +191,10 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     compose_state.set_stream_id("");
     // More than 1 subscription, do not autofill
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "");
     assert.equal(compose_state.topic(), "");
     stream_data.clear_subscriptions();
@@ -191,10 +205,11 @@ test("start", ({override, override_rewire, mock_template}) => {
     };
 
     opts = {
+        message_type: "private",
         content: "hello",
     };
 
-    start("private", opts);
+    start(opts);
 
     assert_hidden("input#stream_message_recipient_topic");
     assert_visible("#compose-direct-recipient");
@@ -206,10 +221,11 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     // Triggered by new direct message
     opts = {
+        message_type: "private",
         trigger: "new direct message",
     };
 
-    start("private", opts);
+    start(opts);
 
     assert.equal(compose_state.private_message_recipient(), "");
     assert.equal(compose_state.get_message_type(), "private");
@@ -314,7 +330,6 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
         sender_full_name: "Bob Roberts",
         sender_id: 40,
     };
-    override(message_lists.current, "get", (_id) => undefined);
     override(message_lists.current, "selected_message", () => msg);
 
     let syntax_to_insert;

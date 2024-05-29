@@ -1,16 +1,16 @@
 {{#if exactly_one_unsubscribed_stream}}
-    <a href="#streams/all">
+    <a href="#channels/all">
         <i class="fa fa-plus-circle" aria-hidden="true"></i>
-        {{~t "Browse 1 more stream" ~}}
+        {{~t "Browse 1 more channel" ~}}
     </a>
 {{else if can_subscribe_stream_count}}
-    <a href="#streams/all">
+    <a href="#channels/all">
         <i class="fa fa-plus-circle" aria-hidden="true"></i>
-        {{~t "Browse {can_subscribe_stream_count} more streams" ~}}
+        {{~t "Browse {can_subscribe_stream_count} more channels" ~}}
     </a>
 {{else if can_create_streams}}
-    <a href="#streams/new">
+    <a href="#channels/new">
         <i class="fa fa-plus-circle" aria-hidden="true"></i>
-        {{~t "Create a stream" ~}}
+        {{~t "Create a channel" ~}}
     </a>
 {{/if}}

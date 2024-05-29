@@ -3,7 +3,6 @@ from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Type, Union
 
 from django.core.files.uploadedfile import UploadedFile
-from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from typing_extensions import TypeAlias, override
 
@@ -21,24 +20,25 @@ from analytics.models import (
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.users import do_change_user_role
 from zerver.lib.create_user import create_user
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import floor_to_day
 from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.models import (
     Client,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Populates analytics tables with randomly generated data."""
 
     DAYS_OF_DATA = 100
@@ -114,7 +114,7 @@ class Command(BaseCommand):
             force_date_joined=installation_time,
         )
 
-        administrators_user_group = UserGroup.objects.get(
+        administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
         stream = Stream.objects.create(
@@ -285,6 +285,7 @@ class Command(BaseCommand):
         android, created = Client.objects.get_or_create(name="ZulipAndroid")
         iOS, created = Client.objects.get_or_create(name="ZulipiOS")
         react_native, created = Client.objects.get_or_create(name="ZulipMobile")
+        flutter, created = Client.objects.get_or_create(name="ZulipFlutter")
         API, created = Client.objects.get_or_create(name="API: Python")
         zephyr_mirror, created = Client.objects.get_or_create(name="zephyr_mirror")
         unused, created = Client.objects.get_or_create(name="unused")
@@ -302,6 +303,7 @@ class Command(BaseCommand):
             android.id: self.generate_fixture_data(stat, 5, 5, 2, 0.6, 3),
             iOS.id: self.generate_fixture_data(stat, 5, 5, 2, 0.6, 3),
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
+            flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 5, 5, 5, 0.6, 3),
             zephyr_mirror.id: self.generate_fixture_data(stat, 1, 1, 3, 0.6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
@@ -313,6 +315,7 @@ class Command(BaseCommand):
             old_desktop.id: self.generate_fixture_data(stat, 50, 30, 8, 0.6, 3),
             android.id: self.generate_fixture_data(stat, 50, 50, 2, 0.6, 3),
             iOS.id: self.generate_fixture_data(stat, 50, 50, 2, 0.6, 3),
+            flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 50, 50, 5, 0.6, 3),
             zephyr_mirror.id: self.generate_fixture_data(stat, 10, 10, 3, 0.6, 3),

@@ -7,7 +7,7 @@ Get Zulip notifications from your Trello boards!
 
 [1]: ./zapier
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

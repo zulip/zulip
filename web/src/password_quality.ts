@@ -24,8 +24,8 @@ export function password_quality(
     $bar: JQuery | undefined,
     $password_field: JQuery,
 ): boolean {
-    const min_length = $password_field.data("minLength");
-    const min_guesses = $password_field.data("minGuesses");
+    const min_length = Number($password_field.attr("data-min-length"));
+    const min_guesses = Number($password_field.attr("data-min-guesses"));
 
     const result = zxcvbn(password);
     const acceptable = password.length >= min_length && result.guesses >= min_guesses;
@@ -51,7 +51,7 @@ export function password_quality(
 }
 
 export function password_warning(password: string, $password_field: JQuery): string {
-    const min_length = $password_field.data("minLength");
+    const min_length = Number($password_field.attr("data-min-length"));
 
     if (password.length < min_length) {
         return $t(

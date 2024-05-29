@@ -120,10 +120,28 @@ Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
 Handlebars.registerHelper("tooltip_hotkey_hints", (...hotkeys) => {
     hotkeys.pop(); // Handlebars options
     let hotkey_hints = "";
-    common.adjust_mac_tooltip_keys(hotkeys);
+    common.adjust_mac_hotkey_hints(hotkeys);
     for (const hotkey of hotkeys) {
         hotkey_hints += `<span class="tooltip-hotkey-hint">${hotkey}</span>`;
     }
     const result = `<span class="tooltip-hotkey-hints">${hotkey_hints}</span>`;
     return new Handlebars.SafeString(result);
+});
+
+Handlebars.registerHelper("popover_hotkey_hints", (...hotkeys) => {
+    hotkeys.pop(); // Handlebars options
+    let hotkey_hints = "";
+    common.adjust_mac_hotkey_hints(hotkeys);
+    const shift_hotkey_exists = common.adjust_shift_hotkey(hotkeys);
+    for (const hotkey of hotkeys) {
+        hotkey_hints += `<span class="popover-menu-hotkey-hint">${hotkey}</span>`;
+    }
+    if (shift_hotkey_exists) {
+        return new Handlebars.SafeString(
+            `<span class="popover-menu-hotkey-hints popover-contains-shift-hotkey" data-hotkey-hints="${hotkeys}">${hotkey_hints}</span>`,
+        );
+    }
+    return new Handlebars.SafeString(
+        `<span class="popover-menu-hotkey-hints">${hotkey_hints}</span>`,
+    );
 });

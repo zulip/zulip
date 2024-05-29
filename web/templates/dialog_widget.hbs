@@ -1,4 +1,4 @@
-<div class="micromodal" id="dialog_widget_modal" aria-hidden="true">
+<div class="micromodal" id="{{modal_unique_id}}" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div {{#if id}}id="{{id}}" {{/if}}class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
@@ -10,7 +10,7 @@
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </header>
-            <main class="modal__content" data-simplebar>
+            <main class="modal__content" data-simplebar {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
                 <div class="alert" id="dialog_error"></div>
                 {{{ html_body }}}
             </main>

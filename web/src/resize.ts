@@ -54,6 +54,10 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
         return undefined;
     }
 
+    return watch_manual_resize_for_element(box);
+}
+
+export function watch_manual_resize_for_element(box: Element): (() => void)[] {
     let height: number;
     let mousedown = false;
 
@@ -71,7 +75,7 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
             mousedown = false;
             if (height !== box.clientHeight) {
                 height = box.clientHeight;
-                autosize.destroy($(element)).height(height + "px");
+                autosize.destroy($(box)).height(height + "px");
             }
         }
     };
@@ -80,7 +84,7 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
     return [box_handler, body_handler];
 }
 
-export function reset_compose_message_max_height(bottom_whitespace_height: number): void {
+export function reset_compose_message_max_height(bottom_whitespace_height?: number): void {
     // If the compose-box is open, we set the `max-height` property of
     // `compose-textarea` and `preview-textarea`, so that the
     // compose-box's maximum extent does not overlap the last message

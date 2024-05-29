@@ -3,7 +3,6 @@ class kandra::app_frontend {
   include zulip::profile::memcached
   include zulip::profile::rabbitmq
   include zulip::postfix_localmail
-  include zulip::static_asset_compiler
   include zulip::hooks::sentry
   include kandra::app_frontend_monitoring
 
@@ -63,11 +62,9 @@ class kandra::app_frontend {
 
   # Each server does its own fetching of contributor data, since
   # we don't have a way to synchronize that among several servers.
-  file { '/etc/cron.d/fetch-contributor-data':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/kandra/cron.d/fetch-contributor-data',
+  zulip::cron { 'fetch-contributor-data':
+    hour    => '8',
+    minute  => '0',
+    command => '/home/zulip/deployments/current/tools/fetch-contributor-data',
   }
 }

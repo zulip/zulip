@@ -199,7 +199,7 @@ class Realm(models.Model):
     ...
     ...
 
-    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy('stream events')
+    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy("channel events")
 ```
 
 To ensure we always internationalize our JSON error messages, the

@@ -20,7 +20,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.users import get_api_key
-from zerver.models import Client, Message, UserGroup, UserPresence
+from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 from zerver.openapi.openapi import Parameter
@@ -262,8 +262,11 @@ def create_user_group_data() -> Dict[str, object]:
     ["/user_groups/{user_group_id}:patch", "/user_groups/{user_group_id}:delete"]
 )
 def get_temp_user_group_id() -> Dict[str, object]:
-    user_group, _ = UserGroup.objects.get_or_create(
-        name="temp", realm=get_realm("zulip"), can_mention_group_id=11
+    user_group, _ = NamedUserGroup.objects.get_or_create(
+        name="temp",
+        realm=get_realm("zulip"),
+        can_mention_group_id=11,
+        realm_for_sharding=get_realm("zulip"),
     )
     return {
         "user_group_id": user_group.id,

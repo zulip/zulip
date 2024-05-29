@@ -85,7 +85,7 @@ two and continue from there.
 
 When new team members join the company, the onboarding process welcomes them to
 Zulip and the company’s communication culture. An internal Wiki introduces
-Zulip’s [topic-based threading](/help/streams-and-topics), [search
+Zulip’s [topic-based threading](/help/introduction-to-topics), [search
 tools](/help/search-for-messages), and some handy [keyboard
 shortcuts](/help/keyboard-shortcuts), with pointers to [Zulip’s help
 center](/help/) for more information. Gareth hasn’t seen much difference between
@@ -99,9 +99,9 @@ Slack before, they need onboarding too.”
 ## Easy to integrate
 
 To make Zulip a central hub for updates about what’s happening, Atolio has
-integrated Zulip with its engineering tools. In a #tickets stream, a topic is
+integrated Zulip with its engineering tools. In a #tickets channel, a topic is
 created automatically for each ticket, so there is a dedicated space to discuss
-the issue at hand. There are topics in other Zulip streams for automated
+the issue at hand. There are topics in other Zulip channels for automated
 deployment announcements, and for bot posts when pull requests are opened or
 merged.
 

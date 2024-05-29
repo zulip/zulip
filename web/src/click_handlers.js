@@ -25,6 +25,7 @@ import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
+import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as rows from "./rows";
@@ -184,7 +185,7 @@ export function initialize() {
         assert(message_lists.current !== undefined);
         message_lists.current.select_id(id);
 
-        if (message_edit.is_editing(id)) {
+        if (message_edit.currently_editing_messages.has(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
             return;
         }
@@ -288,9 +289,14 @@ export function initialize() {
         navigate.to_end();
     });
 
+    $("body").on("click", ".message_row", function () {
+        $(".selected_msg_for_touchscreen").removeClass("selected_msg_for_touchscreen");
+        $(this).addClass("selected_msg_for_touchscreen");
+    });
+
     // MESSAGE EDITING
 
-    $("body").on("click", ".edit_content_button, .view_source_button", function (e) {
+    $("body").on("click", ".edit_content_button", function (e) {
         assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         message_lists.current.select_id(rows.id($row));
@@ -463,7 +469,7 @@ export function initialize() {
     }
 
     $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
@@ -472,7 +478,7 @@ export function initialize() {
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
@@ -482,6 +488,10 @@ export function initialize() {
 
     // SIDEBARS
     $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         const $li = $(e.target).parents("li");
 
         activity_ui.narrow_for_user({$li});
@@ -542,7 +552,7 @@ export function initialize() {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
                         if (check_reference_removed(mutation, instance)) {
-                            instance.hide();
+                            popover_menus.hide_current_popover_if_visible(instance);
                         }
                     }
                 };
@@ -702,11 +712,17 @@ export function initialize() {
     // COMPOSE
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {
-        compose_actions.start("stream", {trigger: "empty feed message"});
+        compose_actions.start({
+            message_type: "stream",
+            trigger: "empty feed message",
+        });
         e.preventDefault();
     });
     $("body").on("click", ".empty_feed_compose_private", (e) => {
-        compose_actions.start("private", {trigger: "empty feed message"});
+        compose_actions.start({
+            message_type: "private",
+            trigger: "empty feed message",
+        });
         e.preventDefault();
     });
 
@@ -766,7 +782,7 @@ export function initialize() {
         ".direct-messages-container.zoom-out #private_messages_section_header",
         (e) => {
             if ($(e.target).closest("#show_all_private_messages").length === 1) {
-                // Let the browser handle the "all direct messages" widget.
+                // Let the browser handle the "direct message feed" widget.
                 return;
             }
 
@@ -834,6 +850,10 @@ export function initialize() {
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 

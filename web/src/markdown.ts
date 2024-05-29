@@ -191,7 +191,12 @@ function parse_with_options(
     const marked_options = {
         ...options,
         userMentionHandler(mention: string, silently: boolean): string | undefined {
-            if (mention === "all" || mention === "everyone" || mention === "stream") {
+            if (
+                mention === "all" ||
+                mention === "everyone" ||
+                mention === "stream" ||
+                mention === "channel"
+            ) {
                 let classes;
                 let display_text;
                 if (silently) {

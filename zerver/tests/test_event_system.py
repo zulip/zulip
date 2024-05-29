@@ -171,6 +171,7 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post("/json/register")
         result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["queue_id"], None)
+        self.assertEqual(result_dict["realm_url"], "http://zulip.testserver")
         self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
 
         result = self.client_post("/json/register")
@@ -340,16 +341,17 @@ class GetEventsTest(ZulipTestCase):
         self.assert_length(events, 0)
 
         local_id = "10.01"
-        check_send_message(
-            sender=user_profile,
-            client=get_client("whatever"),
-            recipient_type_name="private",
-            message_to=[recipient_email],
-            topic_name=None,
-            message_content="hello",
-            local_id=local_id,
-            sender_queue_id=queue_id,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            check_send_message(
+                sender=user_profile,
+                client=get_client("whatever"),
+                recipient_type_name="private",
+                message_to=[recipient_email],
+                topic_name=None,
+                message_content="hello",
+                local_id=local_id,
+                sender_queue_id=queue_id,
+            )
 
         result = self.tornado_call(
             get_events,
@@ -373,16 +375,17 @@ class GetEventsTest(ZulipTestCase):
         last_event_id = events[0]["id"]
         local_id = "10.02"
 
-        check_send_message(
-            sender=user_profile,
-            client=get_client("whatever"),
-            recipient_type_name="private",
-            message_to=[recipient_email],
-            topic_name=None,
-            message_content="hello",
-            local_id=local_id,
-            sender_queue_id=queue_id,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            check_send_message(
+                sender=user_profile,
+                client=get_client("whatever"),
+                recipient_type_name="private",
+                message_to=[recipient_email],
+                topic_name=None,
+                message_content="hello",
+                local_id=local_id,
+                sender_queue_id=queue_id,
+            )
 
         result = self.tornado_call(
             get_events,
@@ -1154,7 +1157,7 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        with self.assert_database_query_count(41):
+        with self.assert_database_query_count(42):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
@@ -1179,7 +1182,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_linkifiers=0,
             realm_playgrounds=1,
             realm_user=3,
-            realm_user_groups=3,
+            realm_user_groups=5,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
             scheduled_messages=1,

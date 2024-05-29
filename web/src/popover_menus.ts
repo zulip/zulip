@@ -149,6 +149,15 @@ function get_popover_items_for_instance(instance: PopoverInstance): JQuery | und
     return $current_elem.find("a, [tabindex='0']").filter(":visible");
 }
 
+export function hide_current_popover_if_visible(instance: PopoverInstance | null): void {
+    // Call this function instead of `instance.hide` to avoid tippy
+    // logging about the possibility of already hidden instances,
+    // which can occur when a click handler does a hide_all().
+    if (instance?.state.isVisible) {
+        instance.hide();
+    }
+}
+
 export const default_popover_props: Partial<PopoverProps> = {
     delay: 0,
     appendTo: () => document.body,
@@ -191,7 +200,7 @@ export const default_popover_props: Partial<PopoverProps> = {
                         "referenceHidden",
                     );
                     if (is_reference_outside_window) {
-                        instance.hide();
+                        hide_current_popover_if_visible(instance);
                         return;
                     }
 
@@ -250,7 +259,7 @@ export const default_popover_props: Partial<PopoverProps> = {
                                 element.classList.contains("sticky_header"),
                         )
                     ) {
-                        instance.hide();
+                        hide_current_popover_if_visible(instance);
                     }
                 },
             },
@@ -283,7 +292,7 @@ export function on_show_prep(instance: PopoverInstance): void {
     $(instance.popper).one("click", ".navigate_and_close_popover", (e) => {
         // Handler for links inside popover which don't need a special click handler.
         e.stopPropagation();
-        instance.hide();
+        hide_current_popover_if_visible(instance);
     });
 }
 
@@ -361,7 +370,7 @@ export function toggle_popover_menu(
 ): PopoverInstance {
     const instance = target._tippy;
     if (instance) {
-        instance.hide();
+        hide_current_popover_if_visible(instance);
         return instance;
     }
 
@@ -405,17 +414,17 @@ export function register_popover_menu(target: string, popover_props: Partial<Pop
     //
     // TODO: Should we instead we wrap the caller's `onHidden` hook,
     // if any, to add `instance.destroy()`?
-    $("body").on("click", target, (e) => {
+    $("body").on("click", target, function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
 
         // Hide popovers when user clicks on an element which navigates user to a link.
         // We don't explicitly handle these clicks per element and let browser handle them but in doing so,
         // we are not able to hide the popover which we would do otherwise.
-        const instance = toggle_popover_menu(e.currentTarget, popover_props);
+        const instance = toggle_popover_menu(this, popover_props);
         const $popper = $(instance.popper);
         $popper.on("click", "a[href]", () => {
-            instance.hide();
+            hide_current_popover_if_visible(instance);
         });
     });
 }

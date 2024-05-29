@@ -78,10 +78,9 @@ async function test_reply_by_click_prepopulates_private_message_recipient(
     assert.ok(private_message !== null);
     await private_message.click();
     await page.waitForSelector("#private_message_recipient", {visible: true});
-    await common.pm_recipient.expect(
-        page,
-        await common.get_internal_email_from_name(page, "cordelia"),
-    );
+    const email = await common.get_internal_email_from_name(page, "cordelia");
+    assert(email !== undefined);
+    await common.pm_recipient.expect(page, email);
     await close_compose_box(page);
 }
 
@@ -135,7 +134,7 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
         content: multiple_recipients_pm,
     });
 
-    // Go back to all messages view and make sure all messages are loaded.
+    // Go back to the combined feed view and make sure all messages are loaded.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
 
     await page.waitForSelector(".message-list .message_row", {visible: true});

@@ -2,7 +2,7 @@ See your Thinkst Canarytoken alerts in Zulip! This integration works with Canary
 [canarytokens.org][canarytokens], not Thinkst's paid product - see the
 [Thinkst](/integrations/doc/thinkst) integration for those!
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

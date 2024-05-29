@@ -1,7 +1,7 @@
 import $ from "jquery";
 import tippy from "tippy.js";
 
-import render_personal_menu from "../templates/personal_menu.hbs";
+import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
 import * as channel from "./channel";
 import * as narrow from "./narrow";
@@ -16,7 +16,7 @@ import * as user_status from "./user_status";
 
 export function initialize() {
     popover_menus.register_popover_menu("#personal-menu", {
-        theme: "navbar-dropdown-menu",
+        theme: "popover-menu",
         placement: "bottom",
         offset: [-50, 0],
         // The strategy: "fixed"; and eventlisteners modifier option
@@ -71,7 +71,7 @@ export function initialize() {
                     emoji_name: "",
                     emoji_code: "",
                     success() {
-                        instance.hide();
+                        popover_menus.hide_current_popover_if_visible(instance);
                     },
                 });
             });
@@ -101,7 +101,7 @@ export function initialize() {
         },
         onShow(instance) {
             const args = popover_menus_data.get_personal_menu_content_context();
-            instance.setContent(parse_html(render_personal_menu(args)));
+            instance.setContent(parse_html(render_navbar_personal_menu_popover(args)));
         },
         onHidden(instance) {
             instance.destroy();

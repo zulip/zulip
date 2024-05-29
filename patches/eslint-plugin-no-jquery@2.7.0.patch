@@ -1,0 +1,13 @@
+diff --git a/src/rules/no-append-html.js b/src/rules/no-append-html.js
+index 4dd1499f140d307433664b4aadec589473cd41fa..bcca359faf7d5a196bc58ad2fbda39992b012ec2 100644
+--- a/src/rules/no-append-html.js
++++ b/src/rules/no-append-html.js
+@@ -1,7 +1,7 @@
+ 'use strict';
+ 
+ const utils = require( '../utils.js' );
+-const methods = [ 'append', 'prepend', 'before', 'after', 'replaceWith' ];
++const methods = [ 'append', 'prepend', 'before', 'after', 'replaceWith', 'add', 'appendTo', 'prependTo' ];
+ 
+ function alljQueryOrEmpty( context, node ) {
+ 	if ( node.type === 'ConditionalExpression' ) {

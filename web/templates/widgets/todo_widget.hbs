@@ -1,11 +1,17 @@
 <div class="todo-widget">
-    <h4>{{t "Task list" }}</h4>
+    <h4 class="todo-task-list-title-header">{{t "Task list" }}</h4>
+    <i class="fa fa-pencil todo-edit-task-list-title"></i>
+    <div class="todo-task-list-title-bar">
+        <input type="text" class="todo-task-list-title" placeholder="{{t 'Add todo task list title'}}" />
+        <button class="todo-task-list-title-remove"><i class="fa fa-remove"></i></button>
+        <button class="todo-task-list-title-check"><i class="fa fa-check"></i></button>
+    </div>
+    <ul class="todo-widget new-style">
+    </ul>
     <div class="add-task-bar">
         <input type="text" class="add-task" placeholder="{{t 'New task'}}" />
         <input type="text" class="add-desc" placeholder="{{t 'Description'}}" />
         <button class="add-task">{{t "Add task" }}</button>
         <div class="widget-error"></div>
     </div>
-    <ul class="todo-widget new-style">
-    </ul>
 </div>

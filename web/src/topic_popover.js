@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
-import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
+import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
@@ -20,6 +20,7 @@ export function initialize() {
     popover_menus.register_popover_menu(
         "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
         {
+            theme: "popover-menu",
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
                 popover_menus.popover_instances.topics_menu = instance;
@@ -40,7 +41,7 @@ export function initialize() {
                         .expectOne();
                     const $stream_li = $elt.closest(".narrow-filter").expectOne();
                     topic_name = $elt.closest("li").expectOne().attr("data-topic-name");
-                    url = $elt.closest("li").find(".topic-name").expectOne().prop("href");
+                    url = $elt.closest("li").find(".sidebar-topic-name").expectOne().prop("href");
                     stream_id = stream_popover.elem_to_stream_id($stream_li);
                 }
 
@@ -50,7 +51,7 @@ export function initialize() {
                     url,
                 });
                 instance.setContent(
-                    ui_util.parse_html(render_topic_sidebar_actions(instance.context)),
+                    ui_util.parse_html(render_left_sidebar_topic_actions_popover(instance.context)),
                 );
             },
             onMount(instance) {
@@ -58,7 +59,7 @@ export function initialize() {
                 const {stream_id, topic_name} = instance.context;
 
                 if (!stream_id) {
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                     return;
                 }
 
@@ -80,7 +81,7 @@ export function initialize() {
                         topic_name,
                         user_topics.all_visibility_policies.UNMUTED,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-remove-unmute", () => {
@@ -89,7 +90,7 @@ export function initialize() {
                         topic_name,
                         user_topics.all_visibility_policies.INHERIT,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-mute-topic", () => {
@@ -98,7 +99,7 @@ export function initialize() {
                         topic_name,
                         user_topics.all_visibility_policies.MUTED,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-remove-mute", () => {
@@ -107,7 +108,7 @@ export function initialize() {
                         topic_name,
                         user_topics.all_visibility_policies.INHERIT,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
@@ -115,17 +116,17 @@ export function initialize() {
                         Number.parseInt(stream_id, 10),
                         topic_name,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-mark-topic-read", () => {
                     unread_ops.mark_topic_as_read(stream_id, topic_name);
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-mark-topic-unread", () => {
                     unread_ops.mark_topic_as_unread(stream_id, topic_name);
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
@@ -140,7 +141,7 @@ export function initialize() {
                         },
                     });
 
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
@@ -148,23 +149,23 @@ export function initialize() {
                         message_edit.toggle_resolve_topic(message_id, topic_name, true);
                     });
 
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
                     stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
                     stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 new ClipboardJS($popper.find(".sidebar-popover-copy-link-to-topic")[0]).on(
                     "success",
                     () => {
-                        instance.hide();
+                        popover_menus.hide_current_popover_if_visible(instance);
                     },
                 );
             },

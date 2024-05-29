@@ -40,7 +40,7 @@
                                 <li><span>File storage up to 5 GB total</span></li>
                                 <li><span><a href="{{ billing_base_url }}/plans/#cloud-plan-comparison">Complete</a> team chat solution</span></li>
                                 <li><span><a href="/integrations/">Hundreds of integrations</a></span></li>
-                                <li><span>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></span></li>
+                                <li><span>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/channel-permissions">permissions</a></span></li>
                                 <li><span><a href="/help/guest-users">Guest</a>
                                 accounts</span></li>
                                 <li><span>Many organizations are eligible for a <a href="{{ billing_base_url }}/plans/#cloud-sponsorships">free Standard plan</a></span></li>
@@ -67,7 +67,7 @@
                             <h2>Standard</h2>
                             <ul class="feature-list">
                                 <li><span>Unlimited search history</span></li>
-                                <li><span>File storage up to 10 GB per user</span></li>
+                                <li><span>File storage up to 5 GB per user</span></li>
                                 <li><span><a href="/help/message-retention-policy">Message retention policies</a></span></li>
                                 <li><span>Brand Zulip with your logo</span></li>
                                 <li><span>Priority commercial support</span></li>
@@ -108,7 +108,7 @@
                                     Sponsorship requested
                                 </a>
                                 {% else %}
-                                <a href="/upgrade/" class="button upgrade-button">
+                                <a href="/upgrade/?tier={{ tier_cloud_standard }}" class="button upgrade-button">
                                     {% if free_trial_days %}
                                     Start {{ free_trial_days }}-day free trial
                                     {% else %}
@@ -126,7 +126,7 @@
                                 <li><span>All Standard plan features</span></li>
                                 <li><span><a href="/help/saml-authentication">SSO with SAML</a> (Okta, OneLogIn, etc.)</span></li>
                                 <li><span><a href="/help/scim">SCIM user sync</a></span></li>
-                                <li><span>Custom domain</span></li>
+                                <li><span><a href="/help/change-organization-url">Custom domain</a></span></li>
                                 <li><span>Limit user list access for <a href="/help/guest-users">guests</a></span></li>
                                 <li><span>Priority commercial support</span></li>
                             </ul>
@@ -134,17 +134,25 @@
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    <div class="price"><span class="currency-symbol">$</span>13.34</div>
+                                    <div class="price"><span class="currency-symbol">$</span>10</div>
                                     <div class="details">
                                         <p>
                                             /user/month billed annually
-                                            or&nbsp;<b>$16</b>&nbsp;billed monthly
+                                            <br />
+                                            or&nbsp;<b>$12</b>&nbsp;billed monthly
                                         </p>
                                     </div>
                                 </div>
-                                <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
-                                    Contact sales
+                                {% if customer_plan and customer_plan.tier == customer_plan.TIER_CLOUD_PLUS %}
+                                <a href='/billing' class="button current-plan-button" type="button">
+                                    <i class="icon current-plan-icon"></i>
+                                    Current plan
                                 </a>
+                                {% else %}
+                                <a href="/upgrade/?tier={{ tier_cloud_plus }}" class="button upgrade-button">
+                                    Upgrade to Plus
+                                </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

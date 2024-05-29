@@ -1,7 +1,7 @@
 Receive notifications in Zulip whenever a new version of an app
 is pushed to Heroku using the Zulip Heroku plugin!
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

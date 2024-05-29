@@ -68,7 +68,7 @@ from zerver.lib.notification_data import (
     user_allows_notifications_in_StreamTopic,
 )
 from zerver.lib.query_helpers import query_for_ids
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.stream_subscription import (
     get_subscriptions_for_send_message,
@@ -104,11 +104,12 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.realms import PrivateMessagePolicyEnum
 from zerver.models.recipients import get_huddle_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -238,8 +239,8 @@ def get_recipient_info(
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
-        message_to_user_ids: Collection[int] = list({recipient.type_id, sender_id})
-        assert len(message_to_user_ids) in [1, 2]
+        message_to_user_id_set = {recipient.type_id, sender_id}
+        assert len(message_to_user_id_set) in [1, 2]
 
     elif recipient.type == Recipient.STREAM:
         # Anybody calling us w/r/t a stream message needs to supply
@@ -302,9 +303,9 @@ def get_recipient_info(
             .order_by("user_profile_id")
         )
 
-        message_to_user_ids = list()
+        message_to_user_id_set = set()
         for row in subscription_rows:
-            message_to_user_ids.append(row["user_profile_id"])
+            message_to_user_id_set.add(row["user_profile_id"])
             # We store the 'sender_muted_stream' information here to avoid db query at
             # a later stage when we perform automatically unmute topic in muted stream operation.
             if row["user_profile_id"] == sender_id:
@@ -373,21 +374,18 @@ def get_recipient_info(
             )
 
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        message_to_user_ids = get_huddle_user_ids(recipient)
+        message_to_user_id_set = set(get_huddle_user_ids(recipient))
 
     else:
         raise ValueError("Bad recipient type")
 
-    message_to_user_id_set = set(message_to_user_ids)
-
-    user_ids = set(message_to_user_id_set)
     # Important note: Because we haven't rendered Markdown yet, we
     # don't yet know which of these possibly-mentioned users was
     # actually mentioned in the message (in other words, the
     # mention syntax might have been in a code block or otherwise
     # escaped).  `get_ids_for` will filter these extra user rows
     # for our data structures not related to bots
-    user_ids |= possibly_mentioned_user_ids
+    user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
     if user_ids:
         query: ValuesQuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
@@ -846,6 +844,7 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
+@transaction.atomic(savepoint=False)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
@@ -865,65 +864,65 @@ def do_send_messages(
 
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
-    with transaction.atomic(savepoint=False):
-        Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
-        # Claim attachments in message
-        for send_request in send_message_requests:
-            if do_claim_attachments(
-                send_request.message, send_request.rendering_result.potential_attachment_path_ids
-            ):
-                send_request.message.has_attachment = True
-                send_request.message.save(update_fields=["has_attachment"])
+    Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
-        ums: List[UserMessageLite] = []
-        for send_request in send_message_requests:
-            # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
-            # they will be processed later.
-            mentioned_user_ids = send_request.rendering_result.mentions_user_ids
+    # Claim attachments in message
+    for send_request in send_message_requests:
+        if do_claim_attachments(
+            send_request.message, send_request.rendering_result.potential_attachment_path_ids
+        ):
+            send_request.message.has_attachment = True
+            send_request.message.save(update_fields=["has_attachment"])
 
-            # Extend the set with users who have muted the sender.
-            mark_as_read_user_ids = send_request.muted_sender_user_ids
-            mark_as_read_user_ids.update(mark_as_read)
+    ums: List[UserMessageLite] = []
+    for send_request in send_message_requests:
+        # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
+        # they will be processed later.
+        mentioned_user_ids = send_request.rendering_result.mentions_user_ids
 
-            user_messages = create_user_messages(
-                message=send_request.message,
-                rendering_result=send_request.rendering_result,
-                um_eligible_user_ids=send_request.um_eligible_user_ids,
-                long_term_idle_user_ids=send_request.long_term_idle_user_ids,
-                stream_push_user_ids=send_request.stream_push_user_ids,
-                stream_email_user_ids=send_request.stream_email_user_ids,
-                mentioned_user_ids=mentioned_user_ids,
-                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
-                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
-                mark_as_read_user_ids=mark_as_read_user_ids,
-                limit_unread_user_ids=send_request.limit_unread_user_ids,
-                topic_participant_user_ids=send_request.topic_participant_user_ids,
-            )
+        # Extend the set with users who have muted the sender.
+        mark_as_read_user_ids = send_request.muted_sender_user_ids
+        mark_as_read_user_ids.update(mark_as_read)
 
-            for um in user_messages:
-                user_message_flags[send_request.message.id][um.user_profile_id] = um.flags_list()
+        user_messages = create_user_messages(
+            message=send_request.message,
+            rendering_result=send_request.rendering_result,
+            um_eligible_user_ids=send_request.um_eligible_user_ids,
+            long_term_idle_user_ids=send_request.long_term_idle_user_ids,
+            stream_push_user_ids=send_request.stream_push_user_ids,
+            stream_email_user_ids=send_request.stream_email_user_ids,
+            mentioned_user_ids=mentioned_user_ids,
+            followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
+            followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+            mark_as_read_user_ids=mark_as_read_user_ids,
+            limit_unread_user_ids=send_request.limit_unread_user_ids,
+            topic_participant_user_ids=send_request.topic_participant_user_ids,
+        )
 
-            ums.extend(user_messages)
+        for um in user_messages:
+            user_message_flags[send_request.message.id][um.user_profile_id] = um.flags_list()
 
-            send_request.service_queue_events = get_service_bot_events(
-                sender=send_request.message.sender,
-                service_bot_tuples=send_request.service_bot_tuples,
-                mentioned_user_ids=mentioned_user_ids,
-                active_user_ids=send_request.active_user_ids,
-                recipient_type=send_request.message.recipient.type,
-            )
+        ums.extend(user_messages)
 
-        bulk_insert_ums(ums)
+        send_request.service_queue_events = get_service_bot_events(
+            sender=send_request.message.sender,
+            service_bot_tuples=send_request.service_bot_tuples,
+            mentioned_user_ids=mentioned_user_ids,
+            active_user_ids=send_request.active_user_ids,
+            recipient_type=send_request.message.recipient.type,
+        )
 
-        for send_request in send_message_requests:
-            do_widget_post_save_actions(send_request)
+    bulk_insert_ums(ums)
+
+    for send_request in send_message_requests:
+        do_widget_post_save_actions(send_request)
 
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
     # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
     #   and 'automatically_unmute_topics_in_muted_streams_policy' user settings.
-    # * Notifying clients via send_event
+    # * Notifying clients via send_event_on_commit
     # * Triggering outgoing webhooks via the service event queue.
     # * Updating the `first_message_id` field for streams without any message history.
     # * Implementing the Welcome Bot reply hack
@@ -1178,7 +1177,7 @@ def do_send_messages(
             event["local_id"] = send_request.local_id
         if send_request.sender_queue_id is not None:
             event["sender_queue_id"] = send_request.sender_queue_id
-        send_event(send_request.realm, event, users)
+        send_event_on_commit(send_request.realm, event, users)
 
         if send_request.links_for_embed:
             event_data = {
@@ -1187,7 +1186,7 @@ def do_send_messages(
                 "message_realm_id": send_request.realm.id,
                 "urls": list(send_request.links_for_embed),
             }
-            queue_json_publish("embed_links", event_data)
+            queue_event_on_commit("embed_links", event_data)
 
         if send_request.message.recipient.type == Recipient.PERSONAL:
             welcome_bot_id = get_system_bot(settings.WELCOME_BOT, send_request.realm.id).id
@@ -1202,7 +1201,7 @@ def do_send_messages(
         assert send_request.service_queue_events is not None
         for queue_name, events in send_request.service_queue_events.items():
             for event in events:
-                queue_json_publish(
+                queue_event_on_commit(
                     queue_name,
                     {
                         "message": wide_message_dict,
@@ -1263,7 +1262,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
     # once we improve our documentation.
     if isinstance(data, list):
         if len(data) != 1:  # nocoverage
-            raise JsonableError(_("Expected exactly one stream"))
+            raise JsonableError(_("Expected exactly one channel"))
         data = data[0]
 
     if isinstance(data, str):
@@ -1274,7 +1273,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
         # We had a stream id.
         return data
 
-    raise JsonableError(_("Invalid data type for stream"))
+    raise JsonableError(_("Invalid data type for channel"))
 
 
 def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
@@ -1463,34 +1462,34 @@ def send_pm_if_empty_stream(
                 if stream_id is not None:
                     arg_dict = {
                         **arg_dict,
-                        "stream_id": stream_id,
+                        "channel_id": stream_id,
                     }
                     content = _(
-                        "Your bot {bot_identity} tried to send a message to stream ID "
-                        "{stream_id}, but there is no stream with that ID."
+                        "Your bot {bot_identity} tried to send a message to channel ID "
+                        "{channel_id}, but there is no channel with that ID."
                     ).format(**arg_dict)
                 else:
                     assert stream_name is not None
                     arg_dict = {
                         **arg_dict,
-                        "stream_name": f"#**{stream_name}**",
-                        "new_stream_link": "#streams/new",
+                        "channel_name": f"#**{stream_name}**",
+                        "new_channel_link": "#channels/new",
                     }
                     content = _(
-                        "Your bot {bot_identity} tried to send a message to stream "
-                        "{stream_name}, but that stream does not exist. "
-                        "Click [here]({new_stream_link}) to create it."
+                        "Your bot {bot_identity} tried to send a message to channel "
+                        "{channel_name}, but that channel does not exist. "
+                        "Click [here]({new_channel_link}) to create it."
                     ).format(**arg_dict)
             else:
                 if num_subscribers_for_stream_id(stream.id) > 0:
                     return
                 arg_dict = {
                     **arg_dict,
-                    "stream_name": f"#**{stream.name}**",
+                    "channel_name": f"#**{stream.name}**",
                 }
                 content = _(
                     "Your bot {bot_identity} tried to send a message to "
-                    "stream {stream_name}. The stream exists but "
+                    "channel {channel_name}. The channel exists but "
                     "does not have any subscribers."
                 ).format(**arg_dict)
 
@@ -1529,7 +1528,7 @@ def validate_stream_id_with_pm_notification(
 def check_private_message_policy(
     realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
 ) -> None:
-    if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
+    if realm.private_message_policy == PrivateMessagePolicyEnum.DISABLED:
         if sender.is_bot or (
             len(user_profiles) == 1 and (user_profiles[0].is_bot or user_profiles[0] == sender)
         ):
@@ -1570,7 +1569,7 @@ def get_recipients_for_user_creation_events(
     if len(guest_recipients) == 0:
         return recipients_for_user_creation_events
 
-    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name == SystemGroups.EVERYONE:
         return recipients_for_user_creation_events
 
     if len(user_profiles) == 1:
@@ -1797,6 +1796,8 @@ def _internal_prep_message(
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
+    forged: bool = False,
+    forged_timestamp: Optional[float] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -1825,6 +1826,8 @@ def _internal_prep_message(
             mention_backend=mention_backend,
             limit_unread_user_ids=limit_unread_user_ids,
             disable_external_notifications=disable_external_notifications,
+            forged=forged,
+            forged_timestamp=forged_timestamp,
         )
     except JsonableError as e:
         logging.exception(
@@ -1845,6 +1848,8 @@ def internal_prep_stream_message(
     *,
     email_gateway: bool = False,
     limit_unread_user_ids: Optional[Set[int]] = None,
+    forged: bool = False,
+    forged_timestamp: Optional[float] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -1859,6 +1864,8 @@ def internal_prep_stream_message(
         content=content,
         email_gateway=email_gateway,
         limit_unread_user_ids=limit_unread_user_ids,
+        forged=forged,
+        forged_timestamp=forged_timestamp,
     )
 
 

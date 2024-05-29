@@ -3,7 +3,7 @@ Jira provided by Atlassian, we recommend using the
 [web-hook method](./jira) above instead. This plugin supports older
 versions of Jira.*
 
-{!create-stream.md!}
+{!create-channel.md!}
 
 ### Plugin mechanism
 
@@ -48,7 +48,7 @@ tell Jira about the certificate.
 ``` Python
 String zulipEmail = "jira-notifications-bot@example.com"
 String zulipAPIKey = "0123456789abcdef0123456789abcdef"
-String zulipStream = "{{ recommended_stream_name }}"
+String zulipStream = "{{ recommended_channel_name }}"
 String issueBaseUrl = "https://jira.COMPANY.com/browse/"
 ```
 

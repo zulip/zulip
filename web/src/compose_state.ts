@@ -7,7 +7,7 @@ import * as sub_store from "./sub_store";
 
 let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
-let last_focused_compose_type_input: HTMLInputElement | undefined;
+let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -25,11 +25,11 @@ export function is_recipient_edited_manually(): boolean {
     return recipient_edited_manually;
 }
 
-export function set_last_focused_compose_type_input(element: HTMLInputElement): void {
+export function set_last_focused_compose_type_input(element: HTMLTextAreaElement): void {
     last_focused_compose_type_input = element;
 }
 
-export function get_last_focused_compose_type_input(): HTMLInputElement | undefined {
+export function get_last_focused_compose_type_input(): HTMLTextAreaElement | undefined {
     return last_focused_compose_type_input;
 }
 
@@ -190,6 +190,11 @@ export function has_message_content(): boolean {
     return message_content() !== "";
 }
 
+const MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT = 2;
+export function has_savable_message_content(): boolean {
+    return message_content().length > MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT;
+}
+
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
         return stream_id() !== undefined && topic() !== "";
@@ -207,4 +212,17 @@ export function update_email(user_id: number, new_email: string): void {
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
     private_message_recipient(reply_to);
+}
+
+let _can_restore_drafts = true;
+export function prevent_draft_restoring(): void {
+    _can_restore_drafts = false;
+}
+
+export function allow_draft_restoring(): void {
+    _can_restore_drafts = true;
+}
+
+export function can_restore_drafts(): boolean {
+    return _can_restore_drafts;
 }

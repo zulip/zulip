@@ -12,7 +12,7 @@ from zerver.lib.validator import check_int, check_list, check_string_in
 from zerver.models import UserProfile
 
 VALID_OPERATOR_TYPES = ["start", "stop"]
-VALID_RECIPIENT_TYPES = ["direct", "stream"]
+VALID_RECIPIENT_TYPES = ["direct", "stream", "channel"]
 
 
 @has_request_variables
@@ -30,15 +30,21 @@ def send_notification_backend(
     topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
     recipient_type_name = req_type
+    if recipient_type_name == "channel":
+        # For now, use "stream" from Message.API_RECIPIENT_TYPES.
+        # TODO: Use "channel" here, as well as in events and
+        # message (created, schdeduled, drafts) objects/dicts.
+        recipient_type_name = "stream"
+
     if recipient_type_name == "stream":
         if stream_id is None:
-            raise JsonableError(_("Missing stream_id"))
+            raise JsonableError(_("Missing '{var_name}' argument").format(var_name="stream_id"))
 
         if topic is None:
             raise JsonableError(_("Missing topic"))
 
         if not user_profile.send_stream_typing_notifications:
-            raise JsonableError(_("User has disabled typing notifications for stream messages"))
+            raise JsonableError(_("User has disabled typing notifications for channel messages"))
 
         # Verify that the user has access to the stream and has
         # permission to send messages to it.

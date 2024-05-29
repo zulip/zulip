@@ -22,6 +22,8 @@ process.env.NODE_ENV = "test";
 
 const dom = new JSDOM("", {url: "http://zulip.zulipdev.com/"});
 global.DOMParser = dom.window.DOMParser;
+global.HTMLAnchorElement = dom.window.HTMLAnchorElement;
+global.HTMLElement = dom.window.HTMLElement;
 global.navigator = {
     userAgent: "node.js",
 };

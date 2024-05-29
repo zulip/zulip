@@ -14,7 +14,7 @@ TOPIC_BRANCH_EVENTS = "Repository name / master"
 
 
 class Bitbucket2HookTests(WebhookTestCase):
-    STREAM_NAME = "bitbucket2"
+    CHANNEL_NAME = "bitbucket2"
     URL_TEMPLATE = "/api/v1/external/bitbucket2?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "bitbucket2"
 
@@ -278,7 +278,7 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_push_more_than_one_tag_event(self) -> None:
         expected_message = "Tomasz pushed tag [{name}](https://bitbucket.org/kolaszek/repository-name/commits/tag/{name})."
 
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
         payload = self.get_body("push_more_than_one_tag")
 
         msg = self.send_webhook_payload(
@@ -290,23 +290,23 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
         msg = self.get_second_to_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC,
             content=expected_message.format(name="a"),
         )
 
         msg = self.get_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC,
             content=expected_message.format(name="b"),
         )
 
     def test_bitbucket2_on_more_than_one_push_event(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
         payload = self.get_body("more_than_one_push_event")
 
         msg = self.send_webhook_payload(
@@ -318,17 +318,17 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
         msg = self.get_second_to_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC_BRANCH_EVENTS,
             content="Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))",
         )
 
         msg = self.get_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC,
             content="Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a).",
         )
@@ -336,7 +336,7 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches="master,development")
 
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
         payload = self.get_body("more_than_one_push_event")
 
         msg = self.send_webhook_payload(
@@ -348,17 +348,17 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
         msg = self.get_second_to_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC_BRANCH_EVENTS,
             content="Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))",
         )
 
         msg = self.get_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC,
             content="Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a).",
         )

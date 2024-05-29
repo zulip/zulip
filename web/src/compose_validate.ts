@@ -66,7 +66,10 @@ function update_send_button_status(): void {
 
 export function get_disabled_send_tooltip(): string {
     if (message_too_long) {
-        return $t({defaultMessage: "Message length shouldn't be greater than 10000 characters."});
+        return $t(
+            {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
+            {max_length: realm.max_message_length},
+        );
     } else if (upload_in_progress) {
         return $t({defaultMessage: "Cannot send message while files are being uploaded."});
     }
@@ -180,14 +183,14 @@ export function warn_if_private_stream_is_linked(
     );
 
     const existing_stream_warnings = [...$existing_stream_warnings_area].map((stream_row) =>
-        Number.parseInt($(stream_row).data("stream-id"), 10),
+        Number($(stream_row).attr("data-stream-id")),
     );
 
     if (!existing_stream_warnings.includes(linked_stream.stream_id)) {
         const new_row_html = render_private_stream_warning({
             stream_id: linked_stream.stream_id,
             banner_type: compose_banner.WARNING,
-            stream_name: linked_stream.name,
+            channel_name: linked_stream.name,
             classname: compose_banner.CLASSNAMES.private_stream_warning,
         });
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
@@ -220,7 +223,7 @@ export function warn_if_mentioning_unsubscribed_user(
         );
 
         const existing_invites = [...$existing_invites_area].map((user_row) =>
-            Number.parseInt($(user_row).data("user-id"), 10),
+            Number($(user_row).attr("data-user-id")),
         );
 
         const can_subscribe_other_users = settings_data.user_can_subscribe_other_users();
@@ -343,8 +346,8 @@ function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
     const stream_wildcard_html = render_stream_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
-        stream_name,
-        stream_wildcard_mention: opts.stream_wildcard_mention,
+        channel_name: stream_name,
+        wildcard_mention: opts.stream_wildcard_mention,
         button_text,
         hide_close_button: true,
         classname,
@@ -514,7 +517,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
             const new_row_html = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
-                stream_wildcard_mention: opts.stream_wildcard_mention,
+                wildcard_mention_string: opts.stream_wildcard_mention,
             });
             compose_banner.append_compose_banner_to_banner_list(
                 $(new_row_html),
@@ -553,7 +556,7 @@ function validate_stream_message(scheduling_message: boolean): boolean {
     const $banner_container = $("#compose_banners");
     if (stream_id === undefined) {
         compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify a stream."}),
+            $t({defaultMessage: "Please specify a channel."}),
             compose_banner.CLASSNAMES.missing_stream,
             $banner_container,
             $("#compose_select_recipient_widget_wrapper"),
@@ -585,7 +588,7 @@ function validate_stream_message(scheduling_message: boolean): boolean {
     if (!stream_data.can_post_messages_in_stream(sub)) {
         compose_banner.show_error_message(
             $t({
-                defaultMessage: "You do not have permission to post in this stream.",
+                defaultMessage: "You do not have permission to post in this channel.",
             }),
             compose_banner.CLASSNAMES.no_post_permissions,
             $banner_container,
@@ -689,6 +692,7 @@ export function check_overflow_text(): number {
     // expensive.
     const text = compose_state.message_content();
     const max_length = realm.max_message_length;
+    const remaining_characters = max_length - text.length;
     const $indicator = $("#compose-limit-indicator");
 
     if (text.length > max_length) {
@@ -696,39 +700,24 @@ export function check_overflow_text(): number {
         $("textarea#compose-textarea").addClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
-                text_length: text.length,
-                max_length,
+                remaining_characters,
             }),
         );
-        compose_banner.show_error_message(
-            $t(
-                {
-                    defaultMessage:
-                        "Message length shouldn't be greater than {max_length} characters.",
-                },
-                {max_length},
-            ),
-            compose_banner.CLASSNAMES.message_too_long,
-            $("#compose_banners"),
-        );
         set_message_too_long(true);
-    } else if (text.length > 0.9 * max_length) {
+    } else if (remaining_characters <= 900) {
         $indicator.removeClass("over_limit");
         $("textarea#compose-textarea").removeClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
-                text_length: text.length,
-                max_length,
+                remaining_characters,
             }),
         );
         set_message_too_long(false);
-        $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     } else {
         $indicator.text("");
         $("textarea#compose-textarea").removeClass("over_limit");
 
         set_message_too_long(false);
-        $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     }
 
     return text.length;

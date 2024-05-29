@@ -25,9 +25,7 @@ export function populate_realm_domains_table(realm_domains: RealmDomain[]): void
 
     for (const realm_domain of realm_domains) {
         $realm_domains_table_body.append(
-            render_settings_admin_realm_domains_list({
-                realm_domain,
-            }),
+            $(render_settings_admin_realm_domains_list({realm_domain})),
         );
     }
 }
@@ -60,57 +58,63 @@ export function setup_realm_domains_modal_handlers(): void {
         });
     });
 
-    $("#realm_domains_table").on("change", ".allow-subdomains", function (e) {
-        e.stopPropagation();
-        const $realm_domains_info = $(".realm_domains_info");
-        const domain = $(this).parents("tr").find(".domain").text();
-        const allow_subdomains = $(this).prop("checked");
-        const url = "/json/realm/domains/" + domain;
-        const data = {
-            allow_subdomains: JSON.stringify(allow_subdomains),
-        };
+    $("#realm_domains_table").on(
+        "change",
+        "input.allow-subdomains",
+        function (this: HTMLInputElement, e) {
+            e.stopPropagation();
+            const $realm_domains_info = $(".realm_domains_info");
+            const domain = $(this).parents("tr").find(".domain").text();
+            const allow_subdomains = this.checked;
+            const url = "/json/realm/domains/" + domain;
+            const data = {
+                allow_subdomains: JSON.stringify(allow_subdomains),
+            };
 
-        void channel.patch({
-            url,
-            data,
-            success() {
-                if (allow_subdomains) {
-                    ui_report.success(
-                        $t_html(
-                            {
-                                defaultMessage:
-                                    "Update successful: Subdomains allowed for {domain}",
-                            },
-                            {domain},
-                        ),
-                        $realm_domains_info,
-                    );
-                } else {
-                    ui_report.success(
-                        $t_html(
-                            {
-                                defaultMessage:
-                                    "Update successful: Subdomains no longer allowed for {domain}",
-                            },
-                            {domain},
-                        ),
-                        $realm_domains_info,
-                    );
-                }
-                fade_status_element($realm_domains_info);
-            },
-            error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $realm_domains_info);
-                fade_status_element($realm_domains_info);
-            },
-        });
-    });
+            void channel.patch({
+                url,
+                data,
+                success() {
+                    if (allow_subdomains) {
+                        ui_report.success(
+                            $t_html(
+                                {
+                                    defaultMessage:
+                                        "Update successful: Subdomains allowed for {domain}",
+                                },
+                                {domain},
+                            ),
+                            $realm_domains_info,
+                        );
+                    } else {
+                        ui_report.success(
+                            $t_html(
+                                {
+                                    defaultMessage:
+                                        "Update successful: Subdomains no longer allowed for {domain}",
+                                },
+                                {domain},
+                            ),
+                            $realm_domains_info,
+                        );
+                    }
+                    fade_status_element($realm_domains_info);
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $realm_domains_info);
+                    fade_status_element($realm_domains_info);
+                },
+            });
+        },
+    );
 
     $("#submit-add-realm-domain").on("click", () => {
         const $realm_domains_info = $(".realm_domains_info");
         const $widget = $("#add-realm-domain-widget");
         const domain = $widget.find(".new-realm-domain").val();
-        const allow_subdomains = $widget.find(".new-realm-domain-allow-subdomains").prop("checked");
+        const allow_subdomains = $widget.find<HTMLInputElement>(
+            "input.new-realm-domain-allow-subdomains",
+        )[0].checked;
         const data = {
             domain,
             allow_subdomains: JSON.stringify(allow_subdomains),

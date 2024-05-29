@@ -31,7 +31,6 @@ for any particular type of object.
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from decimal import Decimal
 from typing import (
     Any,
     Callable,
@@ -547,7 +546,7 @@ def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
     raise ValidationError(f"Unknown type for poll data: {poll_data['type']}")
 
 
-def validate_todo_data(todo_data: object) -> None:
+def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
     check_dict([("type", check_string)])("todo data", todo_data)
 
     assert isinstance(todo_data, dict)
@@ -575,6 +574,19 @@ def validate_todo_data(todo_data: object) -> None:
         checker("todo data", todo_data)
         return
 
+    if todo_data["type"] == "new_task_list_title":
+        if not is_widget_author:
+            raise ValidationError("You can't edit the task list title unless you are the author.")
+
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("title", check_string),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
 
 
@@ -590,10 +602,6 @@ def to_non_negative_int(var_name: str, s: str, max_int_size: int = 2**32 - 1) ->
 
 def to_float(var_name: str, s: str) -> float:
     return float(s)
-
-
-def to_decimal(var_name: str, s: str) -> Decimal:
-    return Decimal(s)
 
 
 def to_timezone_or_empty(var_name: str, s: str) -> str:

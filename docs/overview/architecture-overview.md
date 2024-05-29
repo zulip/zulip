@@ -50,7 +50,7 @@ numerous dedicated [Zulip API](https://zulip.com/api/) clients
 A server can host multiple Zulip _realms_ (organizations), each on its
 own (sub)domain. While most installations host only one organization, some
 host thousands, such as zulip.com. Each organization is a private
-chamber with its own users, streams, customizations, and so on. This
+chamber with its own users, channels, customizations, and so on. This
 means that one person might be a user of multiple Zulip realms. The
 administrators of an organization have a great deal of control over
 who can register an account, what permissions new users have, etc. For
@@ -220,7 +220,7 @@ Two simple wrappers around `pika` (the Python RabbitMQ client) are in
 Tornado and a more general client for use elsewhere. Most of the
 processes started by Supervisor are queue processors that continually
 pull things out of a RabbitMQ queue and handle them; they are defined
-in `zerver/worker/queue_processors.py`.
+in `zerver/worker/`.
 
 Also see [the queuing guide](../subsystems/queuing.md).
 
@@ -280,8 +280,8 @@ self-explanatory names.
 
 - **ellipsis**: A small vertical three dot icon (technically called
   as ellipsis-v), present in sidebars as a menu icon.
-  It offers contextual options for global filters (All messages
-  and Starred messages), stream filters and topics in left
+  It offers contextual options for global filters (Combined feed
+  and Starred messages), channel filters and topics in left
   sidebar and users in right sidebar. To avoid visual clutter
   ellipsis only appears in the web UI upon hover.
 
@@ -296,7 +296,7 @@ self-explanatory names.
 - **realm**: What the codebase calls an "organization" in the UI.
 
 - **recipient bar**: A visual indication of the context of a message
-  or group of messages, displaying the stream and topic or direct
+  or group of messages, displaying the channel and topic or direct
   message recipient list, at the top of a group of messages. A
   typical 1-line message to a new recipient shows to the user as
   three lines of content: first the recipient bar, second the

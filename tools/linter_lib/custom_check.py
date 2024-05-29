@@ -13,6 +13,7 @@ from zulint.custom_rules import Rule, RuleList
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     "zerver/lib/topic.py",
+    "zerver/lib/topic_sqlalchemy.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.
@@ -161,6 +162,12 @@ js_rules = RuleList(
             "exclude": {
                 "web/tests/",
                 "web/src/billing/",
+            },
+            "exclude_line": {
+                (
+                    "web/src/common.ts",
+                    '$(this).before($("<kbd>").text("Fn"), $("<span>").text(" + ").contents());',
+                ),
             },
         },
         {
@@ -364,11 +371,8 @@ python_rules = RuleList(
             "pattern": "[^a-z]Message.objects.get",
             "exclude": {
                 "zerver/tests",
-                "zerver/lib/onboarding.py",
                 "zilencer/management/commands/add_mock_conversation.py",
-                "zerver/worker/queue_processors.py",
                 "zerver/management/commands/export.py",
-                "zerver/lib/export.py",
             },
             "description": "Please use access_message() to fetch Message objects",
         },
@@ -728,6 +732,9 @@ html_rules: List["Rule"] = [
     {
         "pattern": r"(?i:data-tippy-allowHTML)",
         "description": "Never use data-tippy-allowHTML; for an HTML tooltip, set data-tooltip-template-id to the id of a <template> containing the tooltip content.",
+        "exclude": {
+            "templates/corporate/support/sponsorship_discount_forms.html",
+        },
     },
 ]
 

@@ -77,7 +77,8 @@ export function message_viewport_info(): MessageViewportInfo {
 // the server are not considered.
 export function at_rendered_bottom(): boolean {
     const bottom = scrollTop() + height();
-    const full_height = $scroll_container.prop("scrollHeight");
+    // This also includes bottom whitespace.
+    const full_height = $scroll_container[0].scrollHeight;
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
@@ -358,8 +359,11 @@ export function stop_auto_scrolling(): void {
     }
 }
 
-export function system_initiated_animate_scroll(scroll_amount: number): void {
-    message_scroll_state.set_update_selection_on_next_scroll(false);
+export function system_initiated_animate_scroll(
+    scroll_amount: number,
+    update_selection_on_scroll = false,
+): void {
+    message_scroll_state.set_update_selection_on_next_scroll(update_selection_on_scroll);
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
     $scroll_container.animate({

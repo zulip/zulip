@@ -18,7 +18,7 @@
     {{t 'Reply to selected conversation' }}
     {{tooltip_hotkey_hints "R"}}
 </template>
-<template id="compose_reply_button_disabled_tooltip_template">
+<template id="compose_reply_direct_disabled_button_tooltip_template">
     {{t 'You are not allowed to send direct messages in this organization.' }}
 </template>
 <template id="left_bar_compose_mobile_button_tooltip_template">
@@ -30,7 +30,7 @@
     {{tooltip_hotkey_hints "C"}}
 </template>
 <template id="new_stream_message_button_tooltip_template">
-    {{t 'New stream message' }}
+    {{t 'New channel message' }}
     {{tooltip_hotkey_hints "C"}}
 </template>
 <template id="new_direct_message_button_tooltip_template">
@@ -53,6 +53,10 @@
     {{t 'Send' }}
     {{tooltip_hotkey_hints "Ctrl" "Enter"}}
 </template>
+<template id="preview-tooltip">
+    {{t 'Preview' }}
+    {{tooltip_hotkey_hints "Alt" "P"}}
+</template>
 <template id="add-global-time-tooltip">
     <div>
         <div>{{t "Add global time" }}</div>
@@ -64,6 +68,18 @@
         <span>{{t "Add poll" }}</span><br/>
         <span class="tooltip-inner-content italic">{{t "A poll must be an entire message." }}</span>
     </div>
+</template>
+<template id="link-tooltip">
+    {{t 'Link' }}
+    {{tooltip_hotkey_hints "Ctrl" "Shift" "L"}}
+</template>
+<template id="bold-tooltip">
+    {{t 'Bold' }}
+    {{tooltip_hotkey_hints "Ctrl" "B"}}
+</template>
+<template id="italic-tooltip">
+    {{t 'Italic' }}
+    {{tooltip_hotkey_hints "Ctrl" "I"}}
 </template>
 <template id="delete-draft-tooltip-template">
     {{t 'Delete draft' }}
@@ -93,7 +109,7 @@
 </template>
 <template id="all-message-tooltip-template">
     <div class="views-tooltip-container" data-view-code="all_messages">
-        <div>{{t 'All messages' }}</div>
+        <div>{{t 'Combined feed' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "A"}}
@@ -117,7 +133,7 @@
     {{tooltip_hotkey_hints "D"}}
 </template>
 <template id="show-all-pms-template">
-    {{t 'All direct messages' }}
+    {{t 'Direct message feed' }}
     {{tooltip_hotkey_hints "Shift" "P"}}
 </template>
 <template id="mentions-tooltip-template">
@@ -127,7 +143,7 @@
     {{t 'Starred messages' }}
 </template>
 <template id="filter-streams-tooltip-template">
-    {{t 'Filter streams' }}
+    {{t 'Filter channels' }}
     {{tooltip_hotkey_hints "Q"}}
 </template>
 <template id="message-expander-tooltip-template">
@@ -146,10 +162,6 @@
     {{t "Move message" }}
     {{tooltip_hotkey_hints "M"}}
 </template>
-<template id="view-source-tooltip-template">
-    {{t "View message source" }}
-    {{tooltip_hotkey_hints "E"}}
-</template>
 <template id="add-emoji-tooltip-template">
     {{t "Add emoji reaction" }}
     {{tooltip_hotkey_hints ":"}}
@@ -157,6 +169,22 @@
 <template id="message-actions-tooltip-template">
     {{t "Message actions" }}
     {{tooltip_hotkey_hints "I"}}
+</template>
+<template id="dismiss-failed-send-button-tooltip-template">
+    <div>
+        <div>{{t "Dismiss failed message" }}</div>
+        <div class="italic tooltip-inner-content">
+            {{t "This content remains saved in your drafts." }}
+        </div>
+    </div>
+</template>
+<template id="slow-send-spinner-tooltip-template">
+    <div>
+        <div>{{t "Sending…" }}</div>
+        <div class="italic">
+            {{t "This message will remain saved in your drafts until it is successfully sent." }}
+        </div>
+    </div>
 </template>
 <template id="star-message-tooltip-template">
     <div class="starred-status">{{t "Star this message" }}</div>
@@ -171,7 +199,7 @@
     {{tooltip_hotkey_hints "/"}}
 </template>
 <template id="streamlist-toggle-tooltip-template" >
-    {{t 'View streams' }}
+    {{t 'View channels' }}
     {{tooltip_hotkey_hints "Q"}}
 </template>
 <template id="show-userlist-tooltip-template">
@@ -198,7 +226,7 @@
     {{tooltip_hotkey_hints "Backspace"}}
 </template>
 <template id="create-new-stream-tooltip-template">
-    {{t 'Create new stream' }}
+    {{t 'Create new channel' }}
     {{tooltip_hotkey_hints "N"}}
 </template>
 <template id="toggle-subscription-tooltip-template">
@@ -206,7 +234,7 @@
     {{tooltip_hotkey_hints "Shift" "S"}}
 </template>
 <template id="view-stream-tooltip-template">
-    {{t 'View stream' }}
+    {{t 'View channel' }}
     {{tooltip_hotkey_hints "Shift" "V"}}
 </template>
 <template id="mobile-push-notification-tooltip-template">

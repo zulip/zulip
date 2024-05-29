@@ -28,6 +28,7 @@ const user_topics = mock_esm("../src/user_topics", {
 });
 const narrow_state = mock_esm("../src/narrow_state", {
     topic() {},
+    stream_id() {},
 });
 
 const stream_data = zrequire("stream_data");
@@ -85,6 +86,28 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         }
         add_topic_message(topic_name + i, 1000 + i);
     }
+
+    override(narrow_state, "topic", () => "topic 11");
+    override(narrow_state, "stream_id", () => 556);
+
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 8);
+    assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
+    assert.equal(list_info.num_possible_topics, 11);
+    assert.deepEqual(list_info.items[0], {
+        topic_name: "topic 11",
+        topic_resolved_prefix: "",
+        topic_display_name: "topic 11",
+        unread: 0,
+        is_zero: true,
+        is_muted: false,
+        is_followed: false,
+        is_unmuted_or_followed: false,
+        is_active_topic: true,
+        url: "#narrow/stream/556-general/topic/topic.2011",
+        contains_unread_mention: false,
+    });
 
     override(narrow_state, "topic", () => "topic 6");
 

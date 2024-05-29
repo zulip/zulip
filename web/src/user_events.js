@@ -24,6 +24,7 @@ import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
 import * as stream_events from "./stream_events";
+import * as user_profile from "./user_profile";
 
 export const update_person = function update(person) {
     const person_obj = people.maybe_get_user_by_id(person.user_id);
@@ -50,6 +51,7 @@ export const update_person = function update(person) {
     if (Object.hasOwn(person, "delivery_email")) {
         const delivery_email = person.delivery_email;
         person_obj.delivery_email = delivery_email;
+        user_profile.update_profile_modal_ui(person_obj, person);
         if (people.is_my_user_id(person.user_id)) {
             settings_account.update_email(delivery_email);
             current_user.delivery_email = delivery_email;
@@ -64,6 +66,7 @@ export const update_person = function update(person) {
         activity_ui.redraw();
         message_live_update.update_user_full_name(person.user_id, person.full_name);
         pm_list.update_private_messages();
+        user_profile.update_profile_modal_ui(person_obj, person);
         if (people.is_my_user_id(person.user_id)) {
             current_user.full_name = person.full_name;
             settings_account.update_full_name(person.full_name);
@@ -78,6 +81,7 @@ export const update_person = function update(person) {
         person_obj.is_guest = person.role === settings_config.user_role_values.guest.code;
         person_obj.is_moderator = person.role === settings_config.user_role_values.moderator.code;
         settings_users.update_user_data(person.user_id, person);
+        user_profile.update_profile_modal_ui(person_obj, person);
 
         if (people.is_my_user_id(person.user_id) && current_user.is_owner !== person_obj.is_owner) {
             current_user.is_owner = person_obj.is_owner;
@@ -125,10 +129,12 @@ export const update_person = function update(person) {
         }
 
         message_live_update.update_avatar(person_obj.user_id, person.avatar_url);
+        user_profile.update_profile_modal_ui(person_obj, person);
     }
 
     if (Object.hasOwn(person, "custom_profile_field")) {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
+        user_profile.update_user_custom_profile_fields(person_obj);
         if (person.user_id === people.my_current_user_id()) {
             navbar_alerts.maybe_show_empty_required_profile_fields_alert();
 
@@ -164,6 +170,7 @@ export const update_person = function update(person) {
 
     if (Object.hasOwn(person, "bot_owner_id")) {
         person_obj.bot_owner_id = person.bot_owner_id;
+        user_profile.update_profile_modal_ui(person_obj, person);
     }
 
     if (Object.hasOwn(person, "is_active")) {

@@ -7,9 +7,11 @@ from urllib.parse import SplitResult
 
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import CommandError, CommandParser
 from tornado.platform.asyncio import AsyncIOMainLoop
 from typing_extensions import override
+
+from zerver.lib.management import ZulipBaseCommand
 
 settings.RUNNING_INSIDE_TORNADO = True
 if settings.PRODUCTION:
@@ -34,7 +36,7 @@ if settings.USING_RABBITMQ:
 asyncio.set_event_loop_policy(NoAutoCreateEventLoopPolicy())
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
 
     @override
@@ -107,7 +109,8 @@ class Command(BaseCommand):
 
                 # We pass display_num_errors=False, since Django will
                 # likely display similar output anyway.
-                self.check(display_num_errors=False)
+                if not options["skip_checks"]:
+                    self.check(display_num_errors=False)
                 print(f"Tornado server (re)started on port {port}")
 
                 if settings.USING_RABBITMQ:

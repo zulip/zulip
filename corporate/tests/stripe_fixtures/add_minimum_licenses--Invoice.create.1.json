@@ -59,15 +59,15 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000001",
+        "id": "il_NORMALIZED00000000000003",
         "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000005",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -76,13 +76,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000001",
+          "id": "price_NORMALIZED00000000000005",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0001",
+          "product": "prod_NORMALIZED0005",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -113,6 +113,7 @@
     "billing_schedule": "1",
     "license_management": "automatic",
     "licenses": "25",
+    "on_free_trial": "False",
     "plan_tier": "1",
     "user_id": "10"
   },
@@ -165,5 +166,5 @@
   "total_excluding_tax": 100000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

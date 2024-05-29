@@ -22,6 +22,7 @@
 
         /* Strict type-checking */
         "strict": true,
+        "exactOptionalPropertyTypes": true,
         "forceConsistentCasingInFileNames": true,
         "isolatedModules": true,
         "noImplicitOverride": true,

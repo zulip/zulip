@@ -13,6 +13,8 @@ class kandra::profile::grafana inherits kandra::profile::base {
     version        => $version,
     url            => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => "grafana-v${version}",
+    bin            => [$bin],
+    cleanup_after  => [Service[supervisor]],
   }
 
   group { 'grafana':
@@ -45,7 +47,7 @@ class kandra::profile::grafana inherits kandra::profile::base {
     ensure  => file,
     require => [
       Package[supervisor],
-      Zulip::External_Dep['grafana'],
+      File[$bin],
       File[$data_dir],
       File['/var/log/grafana'],
     ],

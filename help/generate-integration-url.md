@@ -18,7 +18,7 @@ integration URL.
 
 1. Select the desired integration from the **Integration** dropdown.
 
-1. _(optional)_ Select the destination stream from the
+1. _(optional)_ Select the destination channel from the
    **Where to send notifications** dropdown.
 
 1. _(optional)_ Select **Send all notifications to a single topic**, and
@@ -47,7 +47,7 @@ integration URL.
 
 1. Select the desired integration from the **Integration** dropdown.
 
-1. _(optional)_ Select the destination stream from the
+1. _(optional)_ Select the destination channel from the
    **Where to send notifications** dropdown.
 
 1. _(optional)_ Select **Send all notifications to a single topic**, and

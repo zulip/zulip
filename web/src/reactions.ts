@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import render_message_reaction from "../templates/message_reaction.hbs";
 
@@ -23,7 +24,7 @@ type ReactionEvent = {
     message_id: number;
     user_id: number;
     local_id: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_name: string;
     emoji_code: string;
 };
@@ -52,7 +53,7 @@ function get_message(message_id: number): Message | undefined {
 
 export type RawReaction = {
     emoji_name: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_code: string;
     user_id: number;
 };
@@ -110,9 +111,11 @@ function update_ui_and_send_reaction_ajax(
         error(xhr: JQuery.jqXHR) {
             waiting_for_server_request_ids.delete(reaction_request_id);
             if (xhr.readyState !== 0) {
+                const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
                 if (
-                    xhr.responseJSON?.code === "REACTION_ALREADY_EXISTS" ||
-                    xhr.responseJSON?.code === "REACTION_DOES_NOT_EXIST"
+                    parsed.success &&
+                    (parsed.data.code === "REACTION_ALREADY_EXISTS" ||
+                        parsed.data.code === "REACTION_DOES_NOT_EXIST")
                 ) {
                     // Don't send error report for simple precondition failures caused by race
                     // conditions; the user already got what they wanted
@@ -563,7 +566,7 @@ function make_clean_reaction({
     user_ids: number[];
     emoji_name: string;
     emoji_code: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     should_display_reactors: boolean;
 }): MessageCleanReaction {
     const emoji_details = emoji.get_emoji_details_for_rendering({

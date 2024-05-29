@@ -18,8 +18,11 @@ from users:
     specification internally as dataclasses.
 """
 
+import os
 from dataclasses import dataclass
-from typing import Collection, Sequence
+from typing import Collection, List, Optional, Sequence
+
+from django.conf import settings
 
 
 @dataclass
@@ -35,3 +38,18 @@ def narrow_dataclasses_from_tuples(tups: Collection[Sequence[str]]) -> Collectio
     therefore as of summer 2023, they do not yet support the "negated" flag.
     """
     return [NarrowTerm(operator=tup[0], operand=tup[1]) for tup in tups]
+
+
+stop_words_list: Optional[List[str]] = None
+
+
+def read_stop_words() -> List[str]:
+    global stop_words_list
+    if stop_words_list is None:
+        file_path = os.path.join(
+            settings.DEPLOY_ROOT, "puppet/zulip/files/postgresql/zulip_english.stop"
+        )
+        with open(file_path) as f:
+            stop_words_list = f.read().splitlines()
+
+    return stop_words_list

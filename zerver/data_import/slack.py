@@ -189,7 +189,7 @@ def slack_workspace_to_realm(
     zerver_realmemoji, emoji_url_map = build_realmemoji(custom_emoji_list, realm_id)
     realm["zerver_realmemoji"] = zerver_realmemoji
 
-    # See https://zulip.com/help/set-default-streams-for-new-users
+    # See https://zulip.com/help/set-default-channels-for-new-users
     # for documentation on zerver_defaultstream
     realm["zerver_userprofile"] = zerver_userprofile
 
@@ -824,7 +824,7 @@ def get_messages_iterator(
             messages = []
             for message in get_data_file(message_dir):
                 if message.get("user") == "U00":
-                    # Skip messages involving the the "U00" user,
+                    # Skip messages involving the "U00" user,
                     # which is apparently used in some channel rename
                     # messages.  It's likely just the result of some
                     # bug in Slack's export system.  Arguably we could

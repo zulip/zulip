@@ -8,15 +8,9 @@ import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
 
-export let has_shown_message_list_view = false;
-
 export function filter(): Filter | undefined {
-    // `All messages`, `Recent Conversations` and `Inbox` return undefined;
-    if (message_lists.current === undefined || message_lists.current.data.filter.is_in_home()) {
-        return undefined;
-    }
-
-    return message_lists.current.data.filter;
+    // `Recent Conversations` and `Inbox` return undefined;
+    return message_lists.current?.data.filter;
 }
 
 export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
@@ -61,11 +55,11 @@ export function search_string(filter?: Filter): string {
     return Filter.unparse(search_terms(filter));
 }
 
-// Collect terms which appear only once into an object,
+// Collect terms which appear only once into a map,
 // and discard those which appear more than once.
 function collect_single(terms: NarrowTerm[]): Map<string, string> {
-    const seen = new Map();
-    const result = new Map();
+    const seen = new Set<string>();
+    const result = new Map<string, string>();
 
     for (const term of terms) {
         const key = term.operator;
@@ -73,7 +67,7 @@ function collect_single(terms: NarrowTerm[]): Map<string, string> {
             result.delete(key);
         } else {
             result.set(key, term.operand);
-            seen.set(key, true);
+            seen.add(key);
         }
     }
 
@@ -97,7 +91,7 @@ export function set_compose_defaults(): {
     // Set the stream, topic, and/or direct message recipient
     // if they are uniquely specified in the narrow view.
 
-    if (single.has("stream")) {
+    if (single.has("channel")) {
         // The raw stream name from collect_single may be an arbitrary
         // unvalidated string from the URL fragment and thus not be valid.
         // So we look up the resolved stream and return that if appropriate.
@@ -107,8 +101,9 @@ export function set_compose_defaults(): {
         }
     }
 
-    if (single.has("topic")) {
-        opts.topic = single.get("topic");
+    const topic = single.get("topic");
+    if (topic !== undefined) {
+        opts.topic = topic;
     }
 
     const private_message_recipient = single.get("dm");
@@ -125,7 +120,7 @@ export function stream_name(current_filter: Filter | undefined = filter()): stri
     if (current_filter === undefined) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("stream");
+    const stream_operands = current_filter.operands("channel");
     if (stream_operands.length === 1) {
         const name = stream_operands[0];
 
@@ -142,7 +137,8 @@ export function stream_sub(
     if (current_filter === undefined) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("stream");
+    const stream_operands = current_filter.operands("channel");
+
     if (stream_operands.length !== 1) {
         return undefined;
     }
@@ -247,7 +243,7 @@ export function get_first_unread_info(
 
     return {
         flavor: "found",
-        msg_id: unread_ids[0],
+        msg_id,
     };
 }
 
@@ -269,7 +265,7 @@ export function _possible_unread_message_ids(
     let topic_name;
     let current_filter_pm_string;
 
-    if (current_filter.can_bucket_by("stream", "topic")) {
+    if (current_filter.can_bucket_by("channel", "topic")) {
         sub = stream_sub(current_filter);
         topic_name = topic(current_filter);
         if (sub === undefined || topic_name === undefined) {
@@ -278,7 +274,7 @@ export function _possible_unread_message_ids(
         return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
     }
 
-    if (current_filter.can_bucket_by("stream")) {
+    if (current_filter.can_bucket_by("channel")) {
         sub = stream_sub(current_filter);
         if (sub === undefined) {
             return [];
@@ -318,8 +314,8 @@ export function _possible_unread_message_ids(
     return undefined;
 }
 
-// Are we narrowed to direct messages: all direct messages
-// or direct messages with particular people.
+// Are we narrowed to direct messages: the direct message feed or a
+// specific direct message conversation.
 export function narrowed_to_pms(current_filter: Filter | undefined = filter()): boolean {
     if (current_filter === undefined) {
         return false;
@@ -342,7 +338,7 @@ export function narrowed_by_topic_reply(current_filter: Filter | undefined = fil
     const terms = current_filter.terms();
     return (
         terms.length === 2 &&
-        current_filter.operands("stream").length === 1 &&
+        current_filter.operands("channel").length === 1 &&
         current_filter.operands("topic").length === 1
     );
 }
@@ -359,14 +355,7 @@ export function narrowed_by_stream_reply(current_filter: Filter | undefined = fi
         return false;
     }
     const terms = current_filter.terms();
-    return terms.length === 1 && current_filter.operands("stream").length === 1;
-}
-
-export function narrowed_to_topic(current_filter: Filter | undefined = filter()): boolean {
-    if (current_filter === undefined) {
-        return false;
-    }
-    return current_filter.has_operator("stream") && current_filter.has_operator("topic");
+    return terms.length === 1 && current_filter.operands("channel").length === 1;
 }
 
 export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
@@ -380,8 +369,4 @@ export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
     }
 
     return stream_id === narrow_sub.stream_id;
-}
-
-export function set_has_shown_message_list_view(): void {
-    has_shown_message_list_view = true;
 }

@@ -12,7 +12,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import type {ComposePlaceholderOptions, ComposeTriggeredOptions} from "./compose_ui";
+import type {ComposeTriggeredOptions} from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as dropdown_widget from "./dropdown_widget";
@@ -131,7 +131,7 @@ export function get_posting_policy_error_message(): string {
     const stream = sub_store.get(compose_state.selected_recipient_id);
     if (stream && !stream_data.can_post_messages_in_stream(stream)) {
         return $t({
-            defaultMessage: "You do not have permission to post in this stream.",
+            defaultMessage: "You do not have permission to post in this channel.",
         });
     }
     return "";
@@ -170,11 +170,11 @@ function switch_message_type(message_type: MessageType): void {
     compose_ui.set_focus(opts);
 }
 
-function update_recipient_label(stream_id: number): void {
-    const stream = stream_data.get_sub_by_id(stream_id);
+function update_recipient_label(stream_id?: number): void {
+    const stream = stream_id !== undefined ? stream_data.get_sub_by_id(stream_id) : undefined;
     if (stream === undefined) {
         $("#compose_select_recipient_widget .dropdown_widget_value").text(
-            $t({defaultMessage: "Select a stream"}),
+            $t({defaultMessage: "Select a channel"}),
         );
     } else {
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
@@ -226,7 +226,6 @@ export function on_compose_select_recipient_update(): void {
     if (curr_message_type === "stream") {
         // Update stream name in the recipient box.
         const stream_id = compose_state.stream_id();
-        assert(stream_id !== undefined);
         update_recipient_label(stream_id);
     }
 
@@ -363,22 +362,21 @@ export function update_placeholder_text(): void {
         return;
     }
     const message_type = compose_state.get_message_type();
-    assert(message_type !== undefined);
 
-    let opts: ComposePlaceholderOptions;
+    let placeholder = compose_ui.DEFAULT_COMPOSE_PLACEHOLDER;
     if (message_type === "stream") {
         const stream_id = compose_state.stream_id();
-        opts = {
+        placeholder = compose_ui.compute_placeholder_text({
             message_type,
             stream_id,
             topic: compose_state.topic(),
-        };
-    } else {
-        opts = {
+        });
+    } else if (message_type === "private") {
+        placeholder = compose_ui.compute_placeholder_text({
             message_type,
             direct_message_user_ids: compose_pm_pill.get_user_ids(),
-        };
+        });
     }
 
-    $("textarea#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
+    $("textarea#compose-textarea").attr("placeholder", placeholder);
 }

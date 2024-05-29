@@ -6,14 +6,14 @@
   "description": "$20.00/month new customer discount",
   "discountable": false,
   "discounts": [],
-  "id": "ii_NORMALIZED00000000000003",
+  "id": "ii_NORMALIZED00000000000005",
   "invoice": null,
   "livemode": false,
   "metadata": {},
   "object": "invoiceitem",
   "period": {
-    "end": 1000000000,
-    "start": 1000000000
+    "end": 1330657445,
+    "start": 1328151845
   },
   "plan": null,
   "price": {

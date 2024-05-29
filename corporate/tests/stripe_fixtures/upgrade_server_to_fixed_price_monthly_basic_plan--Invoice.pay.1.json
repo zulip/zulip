@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9XQ1NMS0FUMUpkblROUGxFMUIxZHFyR0hFa1BVLDEwMDA2NjM1Ng0200frHCG83R?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBRVEdBZkFjYWFoS3hEUHA4VjA4NVpzYkFybnR3LDEwMzI5ODcwNQ02004pxjIIKM?s=ap",
   "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9XQ1NMS0FUMUpkblROUGxFMUIxZHFyR0hFa1BVLDEwMDA2NjM1Ng0200frHCG83R/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBRVEdBZkFjYWFoS3hEUHA4VjA4NVpzYkFybnR3LDEwMzI5ODcwNQ02004pxjIIKM/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -61,13 +61,13 @@
         "discounts": [],
         "id": "il_NORMALIZED00000000000001",
         "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -76,13 +76,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000001",
+          "id": "price_NORMALIZED00000000000002",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0001",
+          "product": "prod_NORMALIZED0002",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -113,6 +113,7 @@
     "billing_schedule": "2",
     "license_management": "automatic",
     "licenses": "18",
+    "on_free_trial": "False",
     "plan_tier": "103"
   },
   "next_payment_attempt": null,

@@ -101,21 +101,34 @@ def remove_custom_profile_field_value_if_required(
 def try_update_realm_custom_profile_field(
     realm: Realm,
     field: CustomProfileField,
-    name: str,
-    hint: str = "",
+    name: Optional[str] = None,
+    hint: Optional[str] = None,
     field_data: Optional[ProfileFieldData] = None,
-    display_in_profile_summary: bool = False,
-    required: bool = False,
+    display_in_profile_summary: Optional[bool] = None,
+    required: Optional[bool] = None,
 ) -> None:
-    field.name = name
-    field.hint = hint
-    field.display_in_profile_summary = display_in_profile_summary
-    field.required = required
-    if field.field_type in (CustomProfileField.SELECT, CustomProfileField.EXTERNAL_ACCOUNT):
-        if field.field_type == CustomProfileField.SELECT:
-            assert field_data is not None
+    if name is not None:
+        field.name = name
+    if hint is not None:
+        field.hint = hint
+    if required is not None:
+        field.required = required
+    if display_in_profile_summary is not None:
+        field.display_in_profile_summary = display_in_profile_summary
+
+    if field.field_type in (
+        CustomProfileField.SELECT,
+        CustomProfileField.EXTERNAL_ACCOUNT,
+    ):
+        # If field_data is None, field_data is unchanged and there is no need for
+        # comparing field_data values.
+        if field_data is not None and field.field_type == CustomProfileField.SELECT:
             remove_custom_profile_field_value_if_required(field, field_data)
-        field.field_data = orjson.dumps(field_data or {}).decode()
+
+        # If field.field_data is the default empty string, we will set field_data
+        # to an empty dict.
+        if field_data is not None or field.field_data == "":
+            field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
     notify_realm_custom_profile_fields(realm)
 

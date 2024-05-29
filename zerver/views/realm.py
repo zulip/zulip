@@ -5,6 +5,9 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
+from pydantic import Json, NonNegativeInt, StringConstraints
+from pydantic.functional_validators import AfterValidator
+from typing_extensions import Annotated
 
 from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.actions.create_realm import do_change_realm_subdomain
@@ -31,20 +34,30 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.user_groups import access_user_group_for_setting
 from zerver.lib.validator import (
     check_bool,
-    check_capped_string,
     check_capped_url,
-    check_dict,
     check_int,
     check_int_in,
+    check_string,
     check_string_in,
-    check_string_or_int,
-    check_union,
-    to_non_negative_int,
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
+from zerver.models.realms import (
+    BotCreationPolicyEnum,
+    CommonMessagePolicyEnum,
+    CommonPolicyEnum,
+    CreateWebPublicStreamPolicyEnum,
+    DigestWeekdayEnum,
+    EditTopicPolicyEnum,
+    InviteToRealmPolicyEnum,
+    MoveMessagesBetweenStreamsPolicyEnum,
+    OrgTypeEnum,
+    PrivateMessagePolicyEnum,
+    WildcardMentionPolicyEnum,
+)
 from zerver.views.user_settings import check_settings_values
 
 
@@ -60,139 +73,111 @@ def parse_jitsi_server_url(
 JITSI_SERVER_URL_MAX_LENGTH = 200
 
 
+def check_jitsi_url(value: str) -> str:
+    var_name = "jitsi_server_url"
+    value = check_string(var_name, value)
+
+    if value in list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys()):
+        return value
+
+    validator = check_capped_url(JITSI_SERVER_URL_MAX_LENGTH)
+    try:
+        return validator(var_name, value)
+    except ValidationError:
+        raise JsonableError(_("{var_name} is not an allowed_type").format(var_name=var_name))
+
+
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def update_realm(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: Optional[str] = REQ(
-        str_validator=check_capped_string(Realm.MAX_REALM_NAME_LENGTH), default=None
-    ),
-    description: Optional[str] = REQ(
-        str_validator=check_capped_string(Realm.MAX_REALM_DESCRIPTION_LENGTH), default=None
-    ),
-    emails_restricted_to_domains: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    disallow_disposable_email_addresses: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    invite_required: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    invite_to_realm_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.INVITE_TO_REALM_POLICY_TYPES), default=None
-    ),
-    create_multiuse_invite_group_id: Optional[int] = REQ(
-        "create_multiuse_invite_group", json_validator=check_int, default=None
-    ),
-    require_unique_names: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    avatar_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    inline_image_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    inline_url_embed_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    add_custom_emoji_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
-    ),
-    delete_own_message_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.COMMON_MESSAGE_POLICY_TYPES), default=None
-    ),
-    message_content_delete_limit_seconds_raw: Optional[Union[int, str]] = REQ(
-        "message_content_delete_limit_seconds", json_validator=check_string_or_int, default=None
-    ),
-    allow_message_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    edit_topic_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.EDIT_TOPIC_POLICY_TYPES), default=None
-    ),
-    mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    message_content_edit_limit_seconds_raw: Optional[Union[int, str]] = REQ(
-        "message_content_edit_limit_seconds", json_validator=check_string_or_int, default=None
-    ),
-    allow_edit_history: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    default_language: Optional[str] = REQ(default=None),
-    waiting_period_threshold: Optional[int] = REQ(converter=to_non_negative_int, default=None),
-    authentication_methods: Optional[Dict[str, Any]] = REQ(
-        json_validator=check_dict([]), default=None
-    ),
+    *,
+    name: Annotated[
+        Optional[str], StringConstraints(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    ] = None,
+    description: Annotated[
+        Optional[str], StringConstraints(max_length=Realm.MAX_REALM_DESCRIPTION_LENGTH)
+    ] = None,
+    emails_restricted_to_domains: Optional[Json[bool]] = None,
+    disallow_disposable_email_addresses: Optional[Json[bool]] = None,
+    invite_required: Optional[Json[bool]] = None,
+    invite_to_realm_policy: Optional[Json[InviteToRealmPolicyEnum]] = None,
+    create_multiuse_invite_group_id: Annotated[
+        Optional[Json[int]], ApiParamConfig(whence="create_multiuse_invite_group")
+    ] = None,
+    require_unique_names: Optional[Json[bool]] = None,
+    name_changes_disabled: Optional[Json[bool]] = None,
+    email_changes_disabled: Optional[Json[bool]] = None,
+    avatar_changes_disabled: Optional[Json[bool]] = None,
+    inline_image_preview: Optional[Json[bool]] = None,
+    inline_url_embed_preview: Optional[Json[bool]] = None,
+    add_custom_emoji_policy: Optional[Json[CommonPolicyEnum]] = None,
+    delete_own_message_policy: Optional[Json[CommonMessagePolicyEnum]] = None,
+    message_content_delete_limit_seconds_raw: Annotated[
+        Optional[Json[Union[int, str]]],
+        ApiParamConfig("message_content_delete_limit_seconds"),
+    ] = None,
+    allow_message_editing: Optional[Json[bool]] = None,
+    edit_topic_policy: Optional[Json[EditTopicPolicyEnum]] = None,
+    mandatory_topics: Optional[Json[bool]] = None,
+    message_content_edit_limit_seconds_raw: Annotated[
+        Optional[Json[Union[int, str]]], ApiParamConfig("message_content_edit_limit_seconds")
+    ] = None,
+    allow_edit_history: Optional[Json[bool]] = None,
+    default_language: Optional[str] = None,
+    waiting_period_threshold: Optional[Json[NonNegativeInt]] = None,
+    authentication_methods: Optional[Json[Dict[str, Any]]] = None,
     # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
     # are not offered here as it is maintained by the server, not via the API.
-    new_stream_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    signup_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    zulip_update_announcements_stream_id: Optional[int] = REQ(
-        json_validator=check_int, default=None
-    ),
-    message_retention_days_raw: Optional[Union[int, str]] = REQ(
-        "message_retention_days", json_validator=check_string_or_int, default=None
-    ),
-    send_welcome_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    digest_emails_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    message_content_allowed_in_email_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    bot_creation_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.BOT_CREATION_POLICY_TYPES), default=None
-    ),
-    create_public_stream_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
-    ),
-    create_private_stream_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
-    ),
-    create_web_public_stream_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES), default=None
-    ),
-    invite_to_stream_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
-    ),
-    move_messages_between_streams_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES), default=None
-    ),
-    user_group_edit_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
-    ),
-    private_message_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None
-    ),
-    wildcard_mention_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
-    ),
-    video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
-    jitsi_server_url_raw: Optional[str] = REQ(
-        "jitsi_server_url",
-        json_validator=check_union(
-            [
-                check_string_in(list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys())),
-                check_capped_url(JITSI_SERVER_URL_MAX_LENGTH),
-            ]
-        ),
-        default=None,
-    ),
-    giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
-    default_code_block_language: Optional[str] = REQ(default=None),
-    digest_weekday: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
-    ),
-    string_id: Optional[str] = REQ(
-        str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
-        default=None,
-    ),
-    org_type: Optional[int] = REQ(json_validator=check_int_in(Realm.ORG_TYPE_IDS), default=None),
-    enable_spectator_access: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    want_advertise_in_communities_directory: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    move_messages_within_stream_limit_seconds_raw: Optional[Union[int, str]] = REQ(
-        "move_messages_within_stream_limit_seconds",
-        json_validator=check_string_or_int,
-        default=None,
-    ),
-    move_messages_between_streams_limit_seconds_raw: Optional[Union[int, str]] = REQ(
-        "move_messages_between_streams_limit_seconds",
-        json_validator=check_string_or_int,
-        default=None,
-    ),
-    enable_guest_user_indicator: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    can_access_all_users_group_id: Optional[int] = REQ(
-        "can_access_all_users_group", json_validator=check_int, default=None
-    ),
+    new_stream_announcements_stream_id: Optional[Json[int]] = None,
+    signup_announcements_stream_id: Optional[Json[int]] = None,
+    zulip_update_announcements_stream_id: Optional[Json[int]] = None,
+    message_retention_days_raw: Annotated[
+        Optional[Json[Union[int, str]]], ApiParamConfig("message_retention_days")
+    ] = None,
+    send_welcome_emails: Optional[Json[bool]] = None,
+    digest_emails_enabled: Optional[Json[bool]] = None,
+    message_content_allowed_in_email_notifications: Optional[Json[bool]] = None,
+    bot_creation_policy: Optional[Json[BotCreationPolicyEnum]] = None,
+    create_public_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
+    create_private_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
+    create_web_public_stream_policy: Optional[Json[CreateWebPublicStreamPolicyEnum]] = None,
+    invite_to_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
+    move_messages_between_streams_policy: Optional[
+        Json[MoveMessagesBetweenStreamsPolicyEnum]
+    ] = None,
+    user_group_edit_policy: Optional[Json[CommonPolicyEnum]] = None,
+    private_message_policy: Optional[Json[PrivateMessagePolicyEnum]] = None,
+    wildcard_mention_policy: Optional[Json[WildcardMentionPolicyEnum]] = None,
+    video_chat_provider: Optional[Json[int]] = None,
+    jitsi_server_url_raw: Annotated[
+        Optional[Json[str]],
+        AfterValidator(lambda val: check_jitsi_url(val)),
+        ApiParamConfig("jitsi_server_url"),
+    ] = None,
+    giphy_rating: Optional[Json[int]] = None,
+    default_code_block_language: Optional[str] = None,
+    digest_weekday: Optional[Json[DigestWeekdayEnum]] = None,
+    string_id: Annotated[
+        Optional[str], StringConstraints(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+    ] = None,
+    org_type: Optional[Json[OrgTypeEnum]] = None,
+    enable_spectator_access: Optional[Json[bool]] = None,
+    want_advertise_in_communities_directory: Optional[Json[bool]] = None,
+    enable_read_receipts: Optional[Json[bool]] = None,
+    move_messages_within_stream_limit_seconds_raw: Annotated[
+        Optional[Json[Union[int, str]]],
+        ApiParamConfig("move_messages_within_stream_limit_seconds"),
+    ] = None,
+    move_messages_between_streams_limit_seconds_raw: Annotated[
+        Optional[Json[Union[int, str]]],
+        ApiParamConfig("move_messages_between_streams_limit_seconds"),
+    ] = None,
+    enable_guest_user_indicator: Optional[Json[bool]] = None,
+    can_access_all_users_group_id: Annotated[
+        Optional[Json[int]], ApiParamConfig("can_access_all_users_group")
+    ] = None,
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -463,7 +448,8 @@ def update_realm(
             raise JsonableError(str(err.message))
 
         do_change_realm_subdomain(realm, string_id, acting_user=user_profile)
-        data["realm_uri"] = realm.uri
+        data["realm_uri"] = realm.url
+        data["realm_url"] = realm.url
 
     if org_type is not None:
         do_change_realm_org_type(realm, org_type, acting_user=user_profile)
@@ -476,7 +462,7 @@ def update_realm(
 @has_request_variables
 def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm = user.realm
-    do_deactivate_realm(realm, acting_user=user)
+    do_deactivate_realm(realm, acting_user=user, deactivation_reason="owner_request")
     return json_success(request)
 
 
@@ -521,6 +507,7 @@ def update_realm_user_settings_defaults(
         default=None,
     ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    receives_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     web_stream_unreads_count_display_policy: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
         default=None,

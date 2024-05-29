@@ -8,8 +8,8 @@ import render_message_edit_notice_tooltip from "../templates/message_edit_notice
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
-import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
+import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import {realm} from "./state_data";
@@ -83,7 +83,7 @@ function hide_tooltip_if_reference_removed(
         // We have to be smart about hiding the instance, so we hide it as soon
         // as it is displayed.
         setTimeout(() => {
-            instance.hide();
+            popover_menus.hide_current_popover_if_visible(instance);
         }, 0);
         return;
     }
@@ -92,11 +92,11 @@ function hide_tooltip_if_reference_removed(
             for (const node of nodes_to_check_for_removal) {
                 // Hide instance if reference's class changes.
                 if (mutation.type === "attributes" && mutation.attributeName === "class") {
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 }
                 // Hide instance if reference is in the removed node list.
                 if (Array.prototype.includes.call(mutation.removedNodes, node)) {
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 }
             }
         }
@@ -220,12 +220,6 @@ export function initialize(): void {
 
     message_list_tooltip(".slow-send-spinner", {
         onShow(instance) {
-            instance.setContent(
-                $t({
-                    defaultMessage:
-                        "Your message is taking longer than expected to be sent. Sending…",
-                }),
-            );
             const $elem = $(instance.reference);
 
             // We need to check for removal of local class from message_row since
@@ -320,7 +314,7 @@ export function initialize(): void {
     message_list_tooltip(".view_user_card_tooltip", {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
-            const is_bot = $(instance.reference).data("is-bot");
+            const is_bot = $(instance.reference).attr("data-is-bot") === "true";
             if (is_bot) {
                 instance.setContent(parse_html($("#view-bot-card-tooltip-template").html()));
             } else {

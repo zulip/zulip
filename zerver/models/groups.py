@@ -18,26 +18,47 @@ class SystemGroups:
 
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
-    MAX_NAME_LENGTH = 100
-    INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
-
     objects: CTEManager = CTEManager()
-    name = models.CharField(max_length=MAX_NAME_LENGTH)
     direct_members = models.ManyToManyField(
         UserProfile, through="zerver.UserGroupMembership", related_name="direct_groups"
     )
     direct_subgroups = models.ManyToManyField(
-        "self",
+        "zerver.NamedUserGroup",
         symmetrical=False,
         through="zerver.GroupGroupMembership",
         through_fields=("supergroup", "subgroup"),
         related_name="direct_supergroups",
     )
     realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
-    description = models.TextField(default="")
-    is_system_group = models.BooleanField(default=False)
 
-    can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
+
+class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+    MAX_NAME_LENGTH = 100
+    INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
+
+    # This field is automatically created by django, but we still need
+    # to add this here to keep mypy happy when accessing usergroup_ptr.
+    usergroup_ptr = models.OneToOneField(
+        auto_created=True,
+        on_delete=CASCADE,
+        parent_link=True,
+        primary_key=True,
+        serialize=False,
+        to=UserGroup,
+        # We are not using the auto-generated name here to avoid
+        # duplicate backward relation name because "can_mention_group"
+        # setting also points to a UserGroup object.
+        related_name="named_user_group",
+    )
+    name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
+    description = models.TextField(default="", db_column="description")
+    is_system_group = models.BooleanField(default=False, db_column="is_system_group")
+
+    can_mention_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, db_column="can_mention_group_id"
+    )
+
+    realm_for_sharding = models.ForeignKey("zerver.Realm", on_delete=CASCADE, db_column="realm_id")
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -79,7 +100,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     }
 
     class Meta:
-        unique_together = (("realm", "name"),)
+        unique_together = (("realm_for_sharding", "name"),)
 
 
 class UserGroupMembership(models.Model):
@@ -92,7 +113,7 @@ class UserGroupMembership(models.Model):
 
 class GroupGroupMembership(models.Model):
     supergroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
-    subgroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    subgroup = models.ForeignKey(NamedUserGroup, on_delete=CASCADE, related_name="+")
 
     class Meta:
         constraints = [

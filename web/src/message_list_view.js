@@ -1,3 +1,4 @@
+import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -204,6 +205,67 @@ function get_users_for_recipient_row(message) {
     return users.sort(compare_by_name);
 }
 
+let message_id_to_focus_after_processing_message_events = {
+    id: undefined,
+    selectionStart: undefined,
+    selectionEnd: undefined,
+};
+
+function reset_restore_message_edit_focus_state() {
+    message_id_to_focus_after_processing_message_events = {
+        id: undefined,
+        selectionStart: undefined,
+        selectionEnd: undefined,
+    };
+}
+
+function capture_user_message_editing_state() {
+    if (document.activeElement?.classList.contains("message_edit_content")) {
+        message_id_to_focus_after_processing_message_events = {
+            id: rows.get_message_id(document.activeElement),
+            selectionStart: document.activeElement.selectionStart,
+            selectionEnd: document.activeElement.selectionEnd,
+        };
+    } else {
+        reset_restore_message_edit_focus_state();
+    }
+}
+
+function maybe_restore_focus_to_message_edit_form() {
+    if (
+        // It is possible that selected message might not be the one
+        // user was editing but is less likely the case. It makes
+        // things complicated to think about with selected message being different
+        // from the message edit form we are trying to restore focus to.
+        // So, we simply only restore focus if the selected message is the
+        // one user was editing.
+        message_lists.current?.data.selected_id() !==
+        message_id_to_focus_after_processing_message_events.id
+    ) {
+        // If user has navigated away from the message they were editing,
+        // we don't want to restore focus to the message edit form since
+        // we don't want to capture hotkey inside the message edit form
+        // when they navigate back to the message they were editing.
+        reset_restore_message_edit_focus_state();
+    }
+
+    setTimeout(() => {
+        const $message_edit_content = message_lists.current
+            ?.selected_row()
+            .find(".message_edit_content");
+        if (!$message_edit_content || $message_edit_content.length === 0) {
+            return;
+        }
+
+        $message_edit_content.trigger("focus");
+        $message_edit_content[0].setSelectionRange(
+            message_id_to_focus_after_processing_message_events.selectionStart,
+            message_id_to_focus_after_processing_message_events.selectionEnd,
+        );
+        reset_restore_message_edit_focus_state();
+    }, 0);
+}
+
 function populate_group_from_message_container(group, message_container) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
@@ -243,7 +305,9 @@ function populate_group_from_message_container(group, message_container) {
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
         group.recipient_users = get_users_for_recipient_row(message_container.msg);
-        group.display_reply_to_for_tooltip = message_store.get_pm_full_names(message_container.msg);
+        group.display_reply_to_for_tooltip = message_store.get_pm_full_names(
+            people.pm_with_user_ids(message_container.msg),
+        );
     }
     group.display_recipient = message_container.msg.display_recipient;
     group.topic_links = message_container.msg.topic_links;
@@ -313,7 +377,9 @@ export class MessageListView {
     _RENDER_THRESHOLD = 50;
 
     _add_message_list_to_DOM() {
-        $("#message-lists-container").append(render_message_list({message_list_id: this.list.id}));
+        $("#message-lists-container").append(
+            $(render_message_list({message_list_id: this.list.id})),
+        );
     }
 
     _get_msg_timestring(message_container) {
@@ -376,6 +442,10 @@ export class MessageListView {
         message_container.last_edit_timestr = last_edit_timestr;
         message_container.moved = edit_history_details.moved && !edit_history_details.edited;
         message_container.modified = true;
+    }
+
+    is_current_message_list() {
+        return this.list === message_lists.current;
     }
 
     set_calculated_message_container_variables(message_container, is_revealed) {
@@ -471,7 +541,7 @@ export class MessageListView {
         // we can infer that whenever the historical flag flips
         // between adjacent messages, the current user must have
         // (un)subscribed in between those messages.
-        if (!this.list.data.filter.has_operator("stream")) {
+        if (!this.list.data.filter.has_operator("channel")) {
             return;
         }
         if (last_msg_container === undefined) {
@@ -745,7 +815,7 @@ export class MessageListView {
             $message_rows.find(".message_inline_image img").on("error", (e) => {
                 $(e.target)
                     .closest(".message_inline_image")
-                    .replaceWith(render_login_to_view_image_button());
+                    .replaceWith($(render_login_to_view_image_button()));
             });
         }
     }
@@ -818,6 +888,8 @@ export class MessageListView {
             return undefined;
         }
 
+        capture_user_message_editing_state();
+
         const list = this.list; // for convenience
         let orig_scrolltop_offset;
 
@@ -829,7 +901,7 @@ export class MessageListView {
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
-        // each others' data we will make a new message object to add data to
+        // each other's data we will make a new message object to add data to
         // for rendering.
         const message_containers = messages.map((message) => {
             if (message.starred) {
@@ -971,6 +1043,10 @@ export class MessageListView {
             condense.condense_and_collapse($dom_messages);
         }
 
+        // After all the messages are rendered, resize any message edit textarea if required.
+        autosize.update(this.$list.find(".message_edit_content"));
+        maybe_restore_focus_to_message_edit_form();
+
         restore_scroll_position();
 
         const last_message_group = this._message_groups.at(-1);
@@ -1005,13 +1081,17 @@ export class MessageListView {
         }
 
         if (list === message_lists.current && messages_are_new) {
+            let sent_by_me = false;
+            if (messages.some((message) => message.sent_by_me)) {
+                sent_by_me = true;
+            }
             if (started_scrolled_up) {
                 return {
                     need_user_to_scroll: true,
                 };
             }
             const new_messages_height = this._new_messages_height(new_dom_elements);
-            const need_user_to_scroll = this._maybe_autoscroll(new_messages_height);
+            const need_user_to_scroll = this._maybe_autoscroll(new_messages_height, sent_by_me);
 
             if (need_user_to_scroll) {
                 return {
@@ -1055,10 +1135,11 @@ export class MessageListView {
         return scroll_limit;
     }
 
-    _maybe_autoscroll(new_messages_height) {
+    _maybe_autoscroll(new_messages_height, sent_by_me) {
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
-        // up to the amount taken up by the new message.
+        // up to the amount taken up by the new message. For messages sent by
+        // the current user, we scroll it into view.
         //
         // returns `true` if we need the user to scroll
 
@@ -1090,6 +1171,13 @@ export class MessageListView {
             // If a popover is active, then we are pretty sure the
             // incoming message is not from the user themselves, so
             // we don't need to tell users to scroll down.
+            return false;
+        }
+
+        if (sent_by_me) {
+            // For messages sent by the current user we always autoscroll,
+            // updating the selected row if needed.
+            message_viewport.system_initiated_animate_scroll(new_messages_height, true);
             return false;
         }
 
@@ -1173,6 +1261,30 @@ export class MessageListView {
         return true;
     }
 
+    should_fetch_older_messages() {
+        const selected_idx = this.list.selected_idx();
+        // We fetch older messages when the user is near the top of the
+        // rendered message feed and there are older messages to fetch.
+        return (
+            // Make sure we have no cached message left to render.
+            this._render_win_start === 0 &&
+            selected_idx - this._render_win_start < this._RENDER_THRESHOLD &&
+            !this.list.data.fetch_status.has_found_oldest()
+        );
+    }
+
+    should_fetch_newer_messages() {
+        const selected_idx = this.list.selected_idx();
+        // We fetch new messages when the user is near the bottom of the
+        // rendered message feed and there are newer messages to fetch.
+        return (
+            // Make sure we have no cached message left to render.
+            this._render_win_end === this.list.num_items() &&
+            this._render_win_end - selected_idx <= this._RENDER_THRESHOLD &&
+            !this.list.data.fetch_status.has_found_newest()
+        );
+    }
+
     maybe_rerender() {
         const selected_idx = this.list.selected_idx();
 
@@ -1251,12 +1363,11 @@ export class MessageListView {
     }
 
     _find_message_group(message_group_id) {
-        // Ideally, we'd maintain this data structure with a hash
-        // table or at least a pointer from the message containers (in
-        // either case, updating the data structure when message
-        // groups are merged etc.), but we only call this from flows
-        // like message editing, so it's not a big performance
-        // problem.
+        // Finds the message group with a given message group ID.
+        //
+        // This function does a linear search, so be careful to avoid
+        // calling it in a loop. If you need that, we'll need to add a
+        // hash table to make this O(1) runtime.
         return this._message_groups.find(
             // Since we don't have a way to get a message group from
             // the containing message container, we just do a search
@@ -1322,7 +1433,7 @@ export class MessageListView {
 
         // If this list not currently displayed, we don't need to select the message.
         if (was_selected && this.list === message_lists.current) {
-            this.list.reselect_selected_id(message_container.msg.id);
+            this.list.reselect_selected_id();
         }
     }
 
@@ -1343,6 +1454,11 @@ export class MessageListView {
     }
 
     rerender_messages(messages, message_content_edited) {
+        // this.render is never called in this code path, we use
+        // `_rerender_message` instead which is optimized for this use
+        // case.
+        capture_user_message_editing_state();
+
         // We need to destroy all the tippy instances from the DOM before re-rendering to
         // prevent the appearance of tooltips whose reference has been removed.
         message_list_tooltips.destroy_all_message_list_tooltips();
@@ -1379,6 +1495,7 @@ export class MessageListView {
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
             this.update_sticky_recipient_headers();
+            maybe_restore_focus_to_message_edit_form();
         }
     }
 
@@ -1438,6 +1555,7 @@ export class MessageListView {
     }
 
     clear_table() {
+        capture_user_message_editing_state();
         // We do not want to call .empty() because that also clears
         // jQuery data.  This does mean, however, that we need to be
         // mindful of memory leaks.
@@ -1580,8 +1698,22 @@ export class MessageListView {
             /* No headers are present */
             return;
         }
-        /* Intentionally remove sticky headers class here to make calculations simpler. */
-        $(".sticky_header").removeClass("sticky_header");
+
+        const $current_sticky_header = $(".sticky_header");
+        if ($current_sticky_header.length === 1) {
+            // Reset the date on the header in case we changed it.
+            const message_group_id = rows
+                .get_message_recipient_row($current_sticky_header)
+                .attr("id");
+            const group = this._find_message_group(message_group_id);
+            if (group !== undefined) {
+                const rendered_date = group.date;
+                $current_sticky_header.find(".recipient_row_date").html(rendered_date);
+                /* Intentionally remove sticky headers class here to make calculations simpler. */
+            }
+            $current_sticky_header.removeClass("sticky_header");
+        }
+
         /* visible_top is navbar top position + height for us. */
         const visible_top = message_viewport.message_viewport_info().visible_top;
         /* We need date to be properly visible on the header, so partially visible headers

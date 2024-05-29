@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class CircleCiHookTests(WebhookTestCase):
-    STREAM_NAME = "circleci"
+    CHANNEL_NAME = "circleci"
     URL_TEMPLATE = "/api/v1/external/circleci?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "circleci"
 

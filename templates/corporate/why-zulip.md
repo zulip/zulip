@@ -31,16 +31,16 @@ productivity of your team**.
 
 ## Zulip’s unique topic-based threading model makes efficient communication possible. Here’s how.
 
-In Zulip, **streams** determine who gets a message. Each conversation within a
-stream is labeled with a **topic**, which keeps everything organized.
+In Zulip, **channels** determine who gets a message. Each conversation within a
+channel is labeled with a **topic**, which keeps everything organized.
 
 You can read Zulip one conversation at a time, seeing each message in context,
 no matter how many other conversations are going on.
 
 If anything is out of place, it’s easy to move messages, rename and split
-topics, or even move a topic to a different stream.
+topics, or even move a topic to a different channel.
 
-![Streams and topics](/static/images/help/streams-and-topics.png)
+![Channels and topics](/static/images/help/channels-and-topics.png)
 
 <br />
 
@@ -74,9 +74,9 @@ channels for places where their input is needed.
 - **Never miss an important message.**
 New messages will pop a long-running thread to the top, rather than languishing
 in a forgotten sidebar. You’ll never create a new channel (and later forget to
-check it) because your team’s main channel is busy — a busy stream
+check it) because your team’s main channel is busy — a busy channel
 works just fine in Zulip! For timely messages, Zulip alerts you with [fully
-customizable](/help/stream-notifications) mobile, email and desktop
+customizable](/help/channel-notifications) mobile, email and desktop
 notifications.
 
 >  “With Zulip, I can manage hundreds of participants across two communities
@@ -162,7 +162,7 @@ With conversations organized by topic, you can review prior discussions to
 understand past work, explanations, and decisions — your chat history becomes a
 knowledge base. If a conversation shifts to a new topic, it’s easy to reorganize
 by moving messages to a different [topic](/help/move-content-to-another-topic)
-or [stream](/help/move-content-to-another-stream). There is no more rifling
+or [channel](/help/move-content-to-another-channel). There is no more rifling
 through unrelated chatter to find the context you need.  You can even [link to a
 Zulip
 conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)

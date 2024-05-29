@@ -2,9 +2,9 @@
   "account_country": "US",
   "account_name": "Kandra Labs, Inc.",
   "account_tax_ids": null,
-  "amount_due": 92927,
+  "amount_due": 69364,
   "amount_paid": 0,
-  "amount_remaining": 92927,
+  "amount_remaining": 69364,
   "amount_shipping": 0,
   "application": null,
   "application_fee_amount": null,
@@ -52,8 +52,8 @@
   "lines": {
     "data": [
       {
-        "amount": 96000,
-        "amount_excluding_tax": 96000,
+        "amount": 72000,
+        "amount_excluding_tax": 72000,
         "currency": "usd",
         "description": "Zulip Cloud Plus - renewal",
         "discount_amounts": [],
@@ -88,8 +88,8 @@
           "tiers_mode": null,
           "transform_quantity": null,
           "type": "one_time",
-          "unit_amount": 16000,
-          "unit_amount_decimal": "16000"
+          "unit_amount": 12000,
+          "unit_amount_decimal": "12000"
         },
         "proration": false,
         "proration_details": {
@@ -100,7 +100,7 @@
         "tax_amounts": [],
         "tax_rates": [],
         "type": "invoiceitem",
-        "unit_amount_excluding_tax": "16000"
+        "unit_amount_excluding_tax": "12000"
       }
     ],
     "has_more": false,
@@ -137,7 +137,7 @@
   "rendering_options": null,
   "shipping_cost": null,
   "shipping_details": null,
-  "starting_balance": -3073,
+  "starting_balance": -2636,
   "statement_descriptor": "Zulip Cloud Plus",
   "status": "draft",
   "status_transitions": {
@@ -150,14 +150,14 @@
   "subscription_details": {
     "metadata": null
   },
-  "subtotal": 96000,
-  "subtotal_excluding_tax": 96000,
+  "subtotal": 72000,
+  "subtotal_excluding_tax": 72000,
   "tax": null,
   "test_clock": null,
-  "total": 96000,
+  "total": 72000,
   "total_discount_amounts": [],
-  "total_excluding_tax": 96000,
+  "total_excluding_tax": 72000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

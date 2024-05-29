@@ -4,13 +4,14 @@ import tempfile
 from typing import Any
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
 from zerver.data_import.slack import do_convert_data
+from zerver.lib.management import ZulipBaseCommand
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Convert the Slack data into Zulip data format."""
 
     @override
@@ -62,7 +63,7 @@ class Command(BaseCommand):
 
         for path in options["slack_data_path"]:
             if not os.path.exists(path):
-                raise CommandError(f"Slack data directory not found: '{path}'")
+                raise CommandError(f"Slack data file or directory not found: '{path}'")
 
             print("Converting data ...")
             convert_slack_threads = not options["no_convert_slack_threads"]

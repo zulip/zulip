@@ -8,11 +8,11 @@
 You can mute any user you do not wish to interact with. Muting someone will
 have the following effects:
 
-* All messages sent by a muted user will automatically be [marked as
+* Combined feed sent by a muted user will automatically be [marked as
   read](/help/marking-messages-as-read) for you, and will never
   generate any desktop, email, or mobile push notifications.
 
-* All messages sent by muted users, including the name, profile
+* Combined feed sent by muted users, including the name, profile
   picture, and message content, are hidden behind a **Click here to
   reveal** banner. A revealed message can later be [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
 
@@ -37,7 +37,7 @@ have the following effects:
 * **Recent conversations** and other features that display avatars will
   show a generic user symbol in place of a muted user's profile picture.
 
-* To avoid interfering with administration tasks, stream and
+* To avoid interfering with administration tasks, channel and
   organization settings display muted users' names and other details.
 
 !!! tip ""
@@ -89,5 +89,5 @@ From there, you can also search for and **unmute** users.
 
 * [Deactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Moderating open organizations](/help/moderating-open-organizations)
-* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a channel](/help/mute-a-channel)
 * [Mute or unmute a topic](/help/mute-a-topic)

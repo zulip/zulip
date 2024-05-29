@@ -5,7 +5,7 @@ from zerver.webhooks.freshstatus.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 
 class FreshstatusHookTests(WebhookTestCase):
-    STREAM_NAME = "freshstatus"
+    CHANNEL_NAME = "freshstatus"
     URL_TEMPLATE = "/api/v1/external/freshstatus?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "freshstatus"
 

@@ -20,7 +20,7 @@ import * as util from "./util";
 
 export type ProfileData = {
     value: string;
-    rendered_value?: string;
+    rendered_value?: string | undefined;
 };
 
 export type User = {
@@ -29,7 +29,7 @@ export type User = {
     email: string;
     full_name: string;
     // used for caching result of remove_diacritics.
-    name_with_diacritics_removed?: string;
+    name_with_diacritics_removed?: string | undefined;
     date_joined: string;
     is_active: boolean;
     is_owner: boolean;
@@ -263,10 +263,6 @@ export function is_known_user_id(user_id: number): boolean {
         return false;
     }
     return true;
-}
-
-export function is_known_user(user: User): boolean {
-    return user && is_known_user_id(user.user_id);
 }
 
 function sort_numerically(user_ids: number[]): number[] {
@@ -517,7 +513,7 @@ export function pm_reply_to(message: Message): string | undefined {
     return reply_to;
 }
 
-function sorted_other_user_ids(user_ids: number[]): number[] {
+export function sorted_other_user_ids(user_ids: number[]): number[] {
     // This excludes your own user id unless you're the only user
     // (i.e. you sent a message to yourself).
 
@@ -1228,11 +1224,11 @@ export function build_person_matcher(query: string): (user: User) => boolean {
     };
 }
 
-export function filter_people_by_search_terms(
-    users: User[],
-    search_terms: string[],
-): Map<number, User> {
-    const filtered_users = new Map();
+export function filter_people_by_search_terms(users: User[], search_string: string): Set<number> {
+    let search_terms = search_string.toLowerCase().split(/[,|]+/);
+    search_terms = search_terms.map((s) => s.trim());
+
+    const filtered_users = new Set<number>();
 
     // Build our matchers outside the loop to avoid some
     // search overhead that is not user-specific.
@@ -1245,7 +1241,7 @@ export function filter_people_by_search_terms(
         const match = matchers.some((matcher) => matcher(user));
 
         if (match) {
-            filtered_users.set(user.user_id, true);
+            filtered_users.add(user.user_id);
         }
     }
 
@@ -1360,8 +1356,16 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     } else {
         mention += "@**";
     }
-    mention += full_name;
     const wildcard_match = full_name_matches_wildcard_mention(full_name);
+    // TODO: Eventually remove "stream" wildcard from typeahead suggestions
+    // once the rename of stream to channel has settled for users.
+    // Until then, when selected, replace with "channel" wildcard.
+    if (wildcard_match && user_id === undefined && full_name === "stream") {
+        mention += "channel";
+    } else {
+        mention += full_name;
+    }
+
     if (user_id === undefined && !wildcard_match) {
         blueslip.warn("get_mention_syntax called without user_id.");
     }
@@ -1373,7 +1377,7 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
 }
 
 function full_name_matches_wildcard_mention(full_name: string): boolean {
-    return ["all", "everyone", "stream", "topic"].includes(full_name);
+    return ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
 }
 
 export function _add_user(person: User): void {
@@ -1488,7 +1492,6 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         // We explicitly don't set `avatar_url` for fake person objects so that fallback code
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.
-        avatar_url: undefined,
         avatar_version: 0,
         timezone: "",
         date_joined: "",
@@ -1590,9 +1593,25 @@ export function matches_user_settings_search(person: User, value: string): boole
     return safe_lower(person.full_name).includes(value) || safe_lower(email).includes(value);
 }
 
-export function filter_for_user_settings_search(persons: User[], query: string): User[] {
+function matches_user_settings_role(person: User, role_code: number): boolean {
+    if (role_code === 0 || role_code === person.role) {
+        return true;
+    }
+    return false;
+}
+
+type SettingsUsersFilterQuery = {
+    text_search: string;
+    role_code: number;
+};
+
+export function predicate_for_user_settings_filters(
+    person: User,
+    query: SettingsUsersFilterQuery,
+): boolean {
     /*
-        TODO: For large realms, we can optimize this a couple
+        TODO: For text_search:
+              For large realms, we can optimize this a couple
               different ways.  For realms that don't show
               emails, we can make a simpler filter predicate
               that works solely with full names.  And we can
@@ -1602,7 +1621,10 @@ export function filter_for_user_settings_search(persons: User[], query: string):
 
               See #13554 for more context.
     */
-    return persons.filter((person) => matches_user_settings_search(person, query));
+    return (
+        matches_user_settings_search(person, query.text_search) &&
+        matches_user_settings_role(person, query.role_code)
+    );
 }
 
 export function maybe_incr_recipient_count(
@@ -1694,7 +1716,10 @@ export function my_custom_profile_data(field_id: number): ProfileData | null | u
     return get_custom_profile_data(my_user_id, field_id);
 }
 
-export function get_custom_profile_data(user_id: number, field_id: number): ProfileData | null {
+export function get_custom_profile_data(
+    user_id: number,
+    field_id: number,
+): ProfileData | null | undefined {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {

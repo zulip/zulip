@@ -67,11 +67,6 @@ ul {
 }
 
 .portico-hello-page {
-    ._full-height-no-scroll {
-        height: 100%;
-        overflow: hidden;
-    }
-
     & details summary::marker,
     & details summary::-webkit-details-marker {
         display: none;
@@ -437,13 +432,13 @@ ul {
         );
     }
 
-    .screen-4__desc a {
+    .screen-description a {
         font-weight: 550;
         border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
         transition: border 0.4s ease-out;
     }
 
-    .screen-4__desc a:hover {
+    .screen-description a:hover {
         border-bottom: 2px solid hsl(0deg 0% 100%);
         transition: none;
     }

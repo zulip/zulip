@@ -15,7 +15,7 @@
     <span class='typeahead-image fa fa-bullhorn no-presence-circle'></span>
     {{/if}}
 {{else if is_user_group}}
-    <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>
+    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>
 {{/if}}
 <strong>
     {{~#if stream}}
@@ -41,6 +41,6 @@
 {{#if is_unsubscribed}}
 &nbsp;
 <span class="fa fa-exclamation-triangle unsubscribed_icon"
-  title="{{t 'You are not currently subscribed to this stream.' }}"></span>
+  title="{{t 'You are not currently subscribed to this channel.' }}"></span>
 {{/if}}
 {{~/if}}

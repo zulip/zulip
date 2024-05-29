@@ -1,6 +1,6 @@
 See your Splunk Search alerts in Zulip!
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
@@ -21,8 +21,8 @@ See your Splunk Search alerts in Zulip!
 !!! tip ""
 
     You can create as many search alerts as you like, with whatever
-    stream and topic you choose. Just update your webhook URL as
-    appropriate for each one, and make sure the stream exists.
+    channel and topic you choose. Just update your webhook URL as
+    appropriate for each one, and make sure the channel exists.
 
 {!congrats.md!}
 

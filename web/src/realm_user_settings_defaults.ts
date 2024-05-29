@@ -36,6 +36,7 @@ export type RealmDefaultSettings = {
     pm_content_in_desktop_notifications: boolean;
     presence_enabled: boolean;
     realm_name_in_email_notifications_policy: number;
+    receives_typing_notifications: boolean;
     send_private_typing_notifications: boolean;
     send_stream_typing_notifications: boolean;
     starred_message_counts: boolean;
@@ -53,6 +54,6 @@ export type RealmDefaultSettings = {
 
 export let realm_user_settings_defaults: RealmDefaultSettings;
 
-export function initialize(params: Record<string, RealmDefaultSettings>): void {
+export function initialize(params: {realm_user_settings_defaults: RealmDefaultSettings}): void {
     realm_user_settings_defaults = params.realm_user_settings_defaults;
 }

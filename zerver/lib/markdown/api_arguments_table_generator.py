@@ -8,7 +8,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 from zerver.openapi.openapi import (
     Parameter,
     check_deprecated_consistency,
@@ -56,7 +56,7 @@ class MarkdownArgumentsTableGenerator(Extension):
         md.preprocessors.register(
             APIArgumentsTablePreprocessor(md, self.getConfigs()),
             "generate_api_arguments",
-            PREPROCESSOR_PRIORITES["generate_api_arguments"],
+            PREPROCESSOR_PRIORITIES["generate_api_arguments"],
         )
 
 

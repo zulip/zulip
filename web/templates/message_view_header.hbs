@@ -4,10 +4,10 @@
 </a>
 <template id="stream-details-tooltip-template">
     <div>
-        <div>{{t "Go to stream settings" }}</div>
+        <div>{{t "Go to channel settings" }}</div>
         {{#unless is_spectator}}
         <div class="tooltip-inner-content italic">
-            {{t "This stream has {sub_count, plural, =0 {no subscribers} one {# subscriber} other {# subscribers}}." }}
+            {{t "This channel has {sub_count, plural, =0 {no subscribers} one {# subscriber} other {# subscribers}}." }}
         </div>
         {{/unless}}
     </div>

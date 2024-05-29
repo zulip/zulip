@@ -51,9 +51,10 @@ export function confirm_deactivation(
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
-            function set_email_field_visibility(): void {
-                const $send_email_checkbox = $("#dialog_widget_modal").find(".send_email");
-                const $email_field = $("#dialog_widget_modal").find(".email_field");
+            function set_email_field_visibility(dialog_widget_id: string): void {
+                const $modal = $(`#${dialog_widget_id}`);
+                const $send_email_checkbox = $modal.find(".send_email");
+                const $email_field = $modal.find(".email_field");
 
                 $email_field.hide();
                 $send_email_checkbox.on("change", () => {

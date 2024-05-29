@@ -5,4 +5,4 @@ You can send emails to Zulip! This is useful:
   * For integrating a third-party app that can send emails, but which does not
     easily lend itself to more direct integration
 
-Instructions are available [here](/help/message-a-stream-by-email).
+Instructions are available [here](/help/message-a-channel-by-email).

@@ -4,13 +4,13 @@
 
 Zulip can be configured to send message notification emails for [DMs
 and mentions](/help/dm-mention-alert-notifications), as well as
-[stream messages](/help/stream-notifications).
+[channel messages](/help/channel-notifications).
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Streams** and **DMs, mentions, and alerts**
+1. Toggle the checkboxes for **Channels** and **DMs, mentions, and alerts**
    in the **Email** column of the **Notification triggers** table.
 
 {end_tabs}
@@ -75,7 +75,7 @@ Zulip messages from your email. Organization admins can do this at an
 [organization-wide level](/help/hide-message-content-in-emails), but you can
 also do this just for the messages you receive.
 
-This setting also blocks message topics, stream names, and user names from
+This setting also blocks message topics, channel names, and user names from
 being sent through your email.
 
 {start_tabs}
@@ -134,6 +134,6 @@ to Zulip Cloud users announcing major changes in Zulip.
 ## Related articles
 
 * [Using Zulip via email](/help/using-zulip-via-email)
-* [Message a stream by email](/help/message-a-stream-by-email)
-* [Stream notifications](/help/stream-notifications)
+* [Message a channel by email](/help/message-a-channel-by-email)
+* [Channel notifications](/help/channel-notifications)
 * [Hide message content in emails (for organizations)](/help/hide-message-content-in-emails)

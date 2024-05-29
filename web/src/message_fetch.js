@@ -3,12 +3,10 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
-import * as message_list_data from "./message_list_data";
 import * as message_lists from "./message_lists";
 import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
@@ -19,28 +17,42 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
 
-export let initial_pointer;
-export let initial_offset;
+let first_messages_fetch = true;
 export let initial_narrow_pointer;
 export let initial_narrow_offset;
 
-let is_all_messages_data_loaded = false;
-
 const consts = {
-    backfill_idle_time: 10 * 1000,
-    backfill_batch_size: 1000,
-    narrow_before: 50,
-    narrow_after: 50,
-    num_before_home_anchor: 200,
-    num_after_home_anchor: 200,
-    recent_view_initial_fetch_size: 400,
+    // Because most views are centered on the first unread message,
+    // the user has a higher probability of wanting to scroll down
+    // than, so extra fetched history after the cursor is more likely
+    // to be used and thus worth more to fetch.
+    //
+    // It's rare to have hundreds of unreads after the cursor, asking
+    // for a larger number of messages after the cursor is cheap.
+    narrow_before: 60,
+    narrow_after: 150,
+
+    // Batch sizes when at the top/bottom of a narrowed view.
     narrowed_view_backward_batch_size: 100,
     narrowed_view_forward_batch_size: 100,
-    recent_view_fetch_more_batch_size: 1000,
-    catch_up_batch_size: 1000,
+
+    // Initial backfill parameters to populate message history.
+    initial_backfill_fetch_size: 1000,
+    catch_up_batch_size: 2000,
+    // We fetch at least minimum_initial_backfill_size messages of
+    // history, but after that will stop fetching at either
+    // maximum_initial_backfill_size messages or
+    // target_days_of_history days, whichever comes first.
+    minimum_initial_backfill_size: 9000,
+    maximum_initial_backfill_size: 25000,
+    target_days_of_history: 180,
     // Delay in milliseconds after processing a catch-up request
     // before sending the next one.
     catch_up_backfill_delay: 150,
+
+    // Parameters for asking for more history in the recent view.
+    recent_view_fetch_more_batch_size: 2000,
+    recent_view_minimum_load_more_fetch_size: 50000,
 };
 
 function process_result(data, opts) {
@@ -54,13 +66,6 @@ function process_result(data, opts) {
     // messages not tracked in unread.ts during this fetching process.
     message_util.do_unread_count_updates(messages, true);
 
-    // If we're loading more messages into the home view, save them to
-    // the all_messages_data as well, as the message_lists.home is
-    // reconstructed from all_messages_data.
-    if (opts.msg_list === message_lists.home) {
-        all_messages_data.add_messages(messages);
-    }
-
     if (messages.length !== 0) {
         if (opts.msg_list) {
             // Since this adds messages to the MessageList and renders MessageListView,
@@ -68,21 +73,6 @@ function process_result(data, opts) {
             message_util.add_old_messages(messages, opts.msg_list);
         } else {
             opts.msg_list_data.add_messages(messages);
-        }
-
-        // To avoid non-contiguous blocks of data in recent view from
-        // message_lists.home and recent_view_message_list_data, we
-        // only process data from message_lists.home if we have found
-        // the newest message in message_lists.home. We check this via
-        // is_all_messages_data_loaded, to avoid unnecessary
-        // double-processing of the last batch of messages;
-        // is_all_messages_data_loaded is set via opts.cont, below.
-        if (
-            opts.is_recent_view_data ||
-            (opts.msg_list === message_lists.home && is_all_messages_data_loaded)
-        ) {
-            const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
-            recent_view_ui.process_messages(messages, msg_list_data);
         }
     }
 
@@ -125,37 +115,26 @@ function get_messages_success(data, opts) {
     const update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
     const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
-    if (opts.num_before > 0) {
+    const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+    const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
+
+    const current_fetch_found_oldest = !has_found_oldest && data.found_oldest;
+    const current_fetch_found_newest = !has_found_newest && data.found_newest;
+
+    if (opts.num_before > 0 || current_fetch_found_oldest) {
         msg_list_data.fetch_status.finish_older_batch({
             update_loading_indicator,
             found_oldest: data.found_oldest,
             history_limited: data.history_limited,
         });
-        if (opts.msg_list === message_lists.home) {
-            // When we update message_lists.home, we need to also update
-            // the fetch_status data structure for all_messages_data.
-            all_messages_data.fetch_status.finish_older_batch({
-                update_loading_indicator: false,
-                found_oldest: data.found_oldest,
-                history_limited: data.history_limited,
-            });
-        }
         message_feed_top_notices.update_top_of_narrow_notices(opts.msg_list);
     }
 
-    if (opts.num_after > 0) {
+    if (opts.num_after > 0 || current_fetch_found_newest) {
         opts.fetch_again = msg_list_data.fetch_status.finish_newer_batch(data.messages, {
             update_loading_indicator,
             found_newest: data.found_newest,
         });
-        if (opts.msg_list === message_lists.home) {
-            // When we update message_lists.home, we need to also update
-            // the fetch_status data structure for all_messages_data.
-            opts.fetch_again = all_messages_data.fetch_status.finish_newer_batch(data.messages, {
-                update_loading_indicator: false,
-                found_newest: data.found_newest,
-            });
-        }
     }
 
     if (opts.msg_list && opts.msg_list.narrowed && opts.msg_list !== message_lists.current) {
@@ -249,16 +228,16 @@ export function load_messages(opts, attempt = 1) {
     //   data.narrow = opts.msg_list.data.filter.public_terms()
     //
     // But support for the all_messages_data sharing of data with
-    // message_lists.home and the (hacky) page_params.narrow feature
+    // the combined feed view and the (hacky) page_params.narrow feature
     // requires a somewhat ugly bundle of conditionals.
     if (msg_list_data.filter.is_in_home()) {
         if (page_params.narrow_stream !== undefined) {
             data.narrow = JSON.stringify(page_params.narrow);
         }
-        // Otherwise, we don't pass narrow for message_lists.home; this is
-        // required because it shares its data with all_msg_list, and
-        // so we need the server to send us message history from muted
-        // streams and topics even though message_lists.home's in:home
+        // Otherwise, we don't pass narrow for the combined feed view; this is
+        // required to display messages if their muted status changes without a new
+        // network request, and so we need the server to send us message history from muted
+        // streams and topics even though the combined feed view's in:home
         // operators will filter those.
     } else {
         let terms = msg_list_data.filter.public_terms();
@@ -274,11 +253,6 @@ export function load_messages(opts, attempt = 1) {
         msg_list_data.fetch_status.start_older_batch({
             update_loading_indicator,
         });
-        if (opts.msg_list === message_lists.home) {
-            all_messages_data.fetch_status.start_older_batch({
-                update_loading_indicator,
-            });
-        }
     }
 
     if (opts.num_after > 0) {
@@ -287,11 +261,6 @@ export function load_messages(opts, attempt = 1) {
         msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });
-        if (opts.msg_list === message_lists.home) {
-            all_messages_data.fetch_status.start_newer_batch({
-                update_loading_indicator,
-            });
-        }
     }
 
     data.client_gravatar = true;
@@ -301,10 +270,10 @@ export function load_messages(opts, attempt = 1) {
         // This is a bit of a hack; ideally we'd unify this logic in
         // some way with the above logic, and not need to do JSON
         // parsing/stringifying here.
-        const web_public_narrow = {negated: false, operator: "streams", operand: "web-public"};
+        const web_public_narrow = {negated: false, operator: "channels", operand: "web-public"};
 
         if (!data.narrow) {
-            /* For the "All messages" feed, this will be the only operator. */
+            /* For the combined feed, this will be the only operator. */
             data.narrow = JSON.stringify([web_public_narrow]);
         } else {
             // Otherwise, we append the operator.  This logic is not
@@ -410,12 +379,8 @@ export function load_messages_for_narrow(opts) {
     });
 }
 
-export function get_backfill_anchor(msg_list) {
-    const oldest_msg =
-        msg_list === message_lists.home
-            ? all_messages_data.first_including_muted()
-            : msg_list.data.first_including_muted();
-
+export function get_backfill_anchor(msg_list_data) {
+    const oldest_msg = msg_list_data.first_including_muted();
     if (oldest_msg) {
         return oldest_msg.id;
     }
@@ -424,10 +389,7 @@ export function get_backfill_anchor(msg_list) {
 }
 
 export function get_frontfill_anchor(msg_list) {
-    const last_msg =
-        msg_list === message_lists.home
-            ? all_messages_data.last_including_muted()
-            : msg_list.data.last_including_muted();
+    const last_msg = msg_list.data.last_including_muted();
 
     if (last_msg) {
         return last_msg.id;
@@ -463,15 +425,47 @@ export function maybe_load_older_messages(opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
     // than what the browsers originally fetched.
-    const msg_list = opts.msg_list;
-    if (!msg_list.data.fetch_status.can_load_older_messages()) {
+    const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+    if (!msg_list_data.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
         // got the oldest one.
+        if (opts.recent_view) {
+            recent_view_ui.set_backfill_in_progress(false);
+        }
         return;
     }
 
+    if (opts.recent_view && recent_view_ui.is_backfill_in_progress) {
+        // The recent view "load more" button does a tail-recursive
+        // backfill, so that one doesn't have to click dozens of times
+        // to get a large amount of history.
+        //
+        // We can afford to do this in our server load budget, because
+        // this is a rare operation; prior to May 2024, Zulip fetched
+        // all history since the oldest unread unconditionally.
+
+        let fetched_substantial_history = false;
+        if (msg_list_data.num_items() >= consts.recent_view_minimum_load_more_fetch_size) {
+            fetched_substantial_history = true;
+        }
+
+        let found_first_unread = opts.first_unread_message_id === undefined;
+        // This is a soft check because `first_unread_message_id` can be deleted.
+        if (!found_first_unread && msg_list_data.first() <= opts.first_unread_message_id) {
+            found_first_unread = true;
+        }
+
+        if (fetched_substantial_history && found_first_unread) {
+            recent_view_ui.set_backfill_in_progress(false);
+            return;
+        }
+
+        opts.cont = () =>
+            setTimeout(() => maybe_load_older_messages(opts), consts.catch_up_backfill_delay);
+    }
+
     do_backfill({
-        msg_list,
+        ...opts,
         num_before: opts.recent_view
             ? consts.recent_view_fetch_more_batch_size
             : consts.narrowed_view_backward_batch_size,
@@ -479,14 +473,18 @@ export function maybe_load_older_messages(opts) {
 }
 
 export function do_backfill(opts) {
-    const msg_list = opts.msg_list;
-    const anchor = get_backfill_anchor(msg_list);
+    const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+    const anchor = get_backfill_anchor(msg_list_data);
 
+    // `load_messages` behaves differently for `msg_list` and `msg_list_data` as
+    // parameters as which one is passed affects the behavior of the function.
+    // So, we need to need them as they were provided to us.
     load_messages({
         anchor,
         num_before: opts.num_before,
         num_after: 0,
-        msg_list,
+        msg_list: opts.msg_list,
+        msg_list_data: opts.msg_list_data,
         cont() {
             if (opts.cont) {
                 opts.cont();
@@ -528,60 +526,40 @@ export function maybe_load_newer_messages(opts) {
     });
 }
 
-export function start_backfilling_messages() {
-    // backfill more messages after the user is idle
-    $(document).idle({
-        idle: consts.backfill_idle_time,
-        onIdle() {
-            do_backfill({
-                num_before: consts.backfill_batch_size,
-                msg_list: message_lists.home,
-            });
-        },
-    });
-}
-
-export function set_initial_pointer_and_offset({pointer, offset, narrow_pointer, narrow_offset}) {
-    initial_pointer = pointer;
-    initial_offset = offset;
+export function set_initial_pointer_and_offset({narrow_pointer, narrow_offset}) {
     initial_narrow_pointer = narrow_pointer;
     initial_narrow_offset = narrow_offset;
 }
 
-export function initialize(home_view_loaded) {
+export function initialize(finished_initial_fetch) {
+    const fetch_target_day_timestamp =
+        Date.now() / 1000 - consts.target_days_of_history * 24 * 60 * 60;
     // get the initial message list
     function load_more(data) {
-        // If we haven't selected a message in the home view yet, and
-        // the home view isn't empty, we select the anchor message here.
-        if (message_lists.home.selected_id() === -1 && !message_lists.home.visibly_empty()) {
-            // We fall back to the closest selected id, as the user
-            // may have removed a stream from the home view while we
-            // were loading data.
-            message_lists.home.select_id(data.anchor, {
-                then_scroll: true,
-                use_closest: true,
-                target_scroll_offset: initial_offset,
-            });
+        if (first_messages_fetch) {
+            // See server_events.js for this callback.
+            // Start processing server events.
+            finished_initial_fetch();
+            recent_view_ui.hide_loading_indicator();
+            first_messages_fetch = false;
         }
 
-        if (data.found_newest) {
-            // Mark that we've finishing loading all the way to the
-            // present in the all_messages_data data set. At this
-            // time, it's safe to call recent_view_ui.process_messages
-            // with all the messages in our cache.
-            is_all_messages_data_loaded = true;
-            recent_view_ui.process_messages(all_messages_data.all_messages(), all_messages_data);
+        if (data.found_oldest) {
+            return;
+        }
 
-            if (page_params.is_spectator) {
-                // Since for spectators, this is the main fetch, we
-                // hide the Recent Conversations loading indicator here.
-                recent_view_ui.hide_loading_indicator();
-            }
+        // Stop once we've hit the minimum backfill quantity of
+        // messages if we've received a message older than
+        // `target_days_of_history`.
+        const latest_message = all_messages_data.first();
+        if (
+            all_messages_data.num_items() >= consts.minimum_initial_backfill_size &&
+            latest_message.timestamp < fetch_target_day_timestamp
+        ) {
+            return;
+        }
 
-            // See server_events.js for this callback.
-            home_view_loaded();
-
-            start_backfilling_messages();
+        if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
             return;
         }
 
@@ -590,72 +568,25 @@ export function initialize(home_view_loaded) {
         //
         // But we do it with a bit of delay, to reduce risk that we
         // hit rate limits with these backfills.
-        const latest_id = data.messages.at(-1).id;
+        const oldest_id = data.messages.at(0).id;
         setTimeout(() => {
             load_messages({
-                anchor: latest_id,
-                num_before: 0,
-                num_after: consts.catch_up_batch_size,
-                msg_list: message_lists.home,
+                anchor: oldest_id,
+                num_before: consts.catch_up_batch_size,
+                num_after: 0,
+                msg_list_data: all_messages_data,
                 cont: load_more,
             });
         }, consts.catch_up_backfill_delay);
     }
 
-    let anchor;
-    if (initial_pointer !== undefined) {
-        // If we're doing a server-initiated reload, similar to a
-        // near: narrow query, we want to select a specific message.
-        anchor = initial_pointer;
-    } else {
-        // Otherwise, we should just use the first unread message in
-        // the user's unmuted history as our anchor.
-        anchor = "first_unread";
-    }
-    load_messages({
-        anchor,
-        num_before: consts.num_before_home_anchor,
-        num_after: consts.num_after_home_anchor,
-        msg_list: message_lists.home,
-        cont: load_more,
+    // Since `all_messages_data` contains continuous message history
+    // which always contains the latest message, it makes sense for
+    // Recent view to display the same data and be in sync.
+    all_messages_data.set_add_messages_callback((messages) => {
+        recent_view_ui.process_messages(messages, all_messages_data);
     });
 
-    if (page_params.is_spectator) {
-        // Since spectators never have old unreads, we can skip the
-        // hacky fetch below for them (which would just waste resources).
-
-        // This optimization requires a bit of duplicated loading
-        // indicator code, here and hiding logic in hide_more.
-        recent_view_ui.show_loading_indicator();
-        return;
-    }
-
-    // In addition to the algorithm above, which is designed to ensure
-    // that we fetch all message history eventually starting with the
-    // first unread message, we also need to ensure that the Recent
-    // Topics page contains the very most recent threads on page load.
-    //
-    // Long term, we'll want to replace this with something that's
-    // more performant (i.e. avoids this unnecessary extra fetch the
-    // results of which are basically discarded) and better represents
-    // more than a few hundred messages' history, but this strategy
-    // allows "Recent Conversations" to always show current data (with gaps)
-    // on page load; the data will be complete once the algorithm
-    // above catches up to present.
-    //
-    // (Users will see a weird artifact where Recent Conversations has a gap
-    // between E.g. 6 days ago and 37 days ago while the catchup
-    // process runs, so this strategy still results in problematic
-    // visual artifacts shortly after page load; just more forgivable
-    // ones).
-    //
-    // We only initialize MessageListData here, since we don't
-    // want update the UI and confuse the functions in MessageList.
-    // Recent view can handle the UI updates itself.
-    const recent_view_message_list_data = new message_list_data.MessageListData({
-        filter: new Filter([{operator: "in", operand: "home"}]),
-        excludes_muted_topics: true,
-    });
     // TODO: Ideally we'd have loading indicators for Recent Conversations
     // at both top and bottom be managed by load_messages, but that
     // likely depends on other reorganizations of the early loading
@@ -663,10 +594,9 @@ export function initialize(home_view_loaded) {
     recent_view_ui.show_loading_indicator();
     load_messages({
         anchor: "newest",
-        num_before: consts.recent_view_initial_fetch_size,
+        num_before: consts.initial_backfill_fetch_size,
         num_after: 0,
-        msg_list_data: recent_view_message_list_data,
-        is_recent_view_data: true,
-        cont: recent_view_ui.hide_loading_indicator,
+        msg_list_data: all_messages_data,
+        cont: load_more,
     });
 }

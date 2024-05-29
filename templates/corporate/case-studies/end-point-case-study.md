@@ -52,7 +52,7 @@ explored all the leading open-source team chat products. They found that while
 Mattermost and Rocket.Chat were similar to Slack (but felt less polished), Zulip
 stood out. “Zulip had all the modern features we were looking for, like
 reliable, flexible notifications. At the same time, the [extensive keyboard
-shortcuts](/help/keyboard-shortcuts) and the ‘All messages’
+shortcuts](/help/keyboard-shortcuts) and the ‘Combined feed’
 view offered a UI that the IRC fans loved.”
 
 When End Point moved to Zulip, it was an immediate improvement over the
@@ -66,16 +66,16 @@ busy topics,” Jon says.
 
 For the past six years, the Zulip chat has been a virtual office for End Point’s
 distributed team, a place to show up and be present at work. Discussing projects
-in Zulip [streams](/help/streams-and-topics) (similar to channels in other chat
+in Zulip [channels](/help/introduction-to-channels) (similar to channels in other chat
 tools) keeps everyone informed.
 
 “Zulip is my lifeline,” says [Joanne
 Tipton](https://www.endpointdev.com/team/joanne-tipton/), a senior team manager
 at End Point. “I’m on it all day. I need to have an idea of all the things that
 are going on, so the [desktop notifications](/help/desktop-notifications) are
-invaluable.” There are 130 streams in the organization, and managers are
-subscribed to most of them. Joanne takes advantage of per-stream flexibility for
-notifications, turning on notification sounds just for low-traffic streams where
+invaluable.” There are 130 channels in the organization, and managers are
+subscribed to most of them. Joanne takes advantage of per-channel flexibility for
+notifications, turning on notification sounds just for low-traffic channels where
 every message is important.
 
 > “Zulip is my lifeline.”
@@ -97,7 +97,7 @@ times per week.”
 > Director of Immersive & Geospatial division at End Point
 
 Zulip also enables real-time system monitoring, with error alerts sent into a
-dedicated stream for each system. Alejandro relies on Zulip’s clear record of
+dedicated channel for each system. Alejandro relies on Zulip’s clear record of
 what’s been happening with each installation, which combines automated alerts
 with discussion by the team. “I use [search](/help/search-for-messages) quite a
 bit,” Alejandro says. “Being able to filter by user and search term, and look at
@@ -118,7 +118,7 @@ Jensen](https://www.endpointdev.com/team/jon-jensen/) has experienced them all.
 “It is amazing that companies would use Teams in its current state,” Jon says, a
 bit exasperated. “The UI is slow and inconsistent, and you have to do so much
 clicking to get anywhere. Compared to Zulip, it’s missing key features like the
-‘All messages’ view and topics.”
+‘Combined feed’ view and topics.”
 
 > “It is amazing that companies would use Teams in its current state. The UI is
 > slow and inconsistent, and compared to Zulip, it’s missing key features.”

@@ -3,10 +3,10 @@ from datetime import datetime, timezone
 from typing import Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
-from returns.curry import partial
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
@@ -251,7 +251,7 @@ def get_change_deployment_status_body(helper: Helper) -> str:
     )
 
 
-def get_create_or_delete_body(helper: Helper, action: str) -> str:
+def get_create_or_delete_body(action: str, helper: Helper) -> str:
     payload = helper.payload
     ref_type = payload["ref_type"].tame(check_string)
     return "{} {} {} {}.".format(
@@ -814,9 +814,9 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
 EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "commit_comment": get_commit_comment_body,
     "closed_pull_request": get_closed_pull_request_body,
-    "create": partial(get_create_or_delete_body, action="created"),
+    "create": partial(get_create_or_delete_body, "created"),
     "check_run": get_check_run_body,
-    "delete": partial(get_create_or_delete_body, action="deleted"),
+    "delete": partial(get_create_or_delete_body, "deleted"),
     "deployment": get_deployment_body,
     "deployment_status": get_change_deployment_status_body,
     "discussion": get_discussion_body,
@@ -829,7 +829,8 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "issues": get_issue_body,
     "member": get_member_body,
     "membership": get_membership_body,
-    "opened_or_update_pull_request": get_opened_or_update_pull_request_body,
+    "opened_pull_request": get_opened_or_update_pull_request_body,
+    "updated_pull_request": get_opened_or_update_pull_request_body,
     "assigned_or_unassigned_pull_request": get_assigned_or_unassigned_pull_request_body,
     "page_build": get_page_build_body,
     "ping": get_ping_body,
@@ -951,8 +952,10 @@ def get_zulip_event_name(
     """
     if header_event == "pull_request":
         action = payload["action"].tame(check_string)
-        if action in ("opened", "synchronize", "reopened", "edited"):
-            return "opened_or_update_pull_request"
+        if action in ("opened", "reopened"):
+            return "opened_pull_request"
+        elif action in ("synchronize", "edited"):
+            return "updated_pull_request"
         if action in ("assigned", "unassigned"):
             return "assigned_or_unassigned_pull_request"
         if action == "closed":

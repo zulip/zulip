@@ -39,15 +39,17 @@ function rerender_ui() {
 
     for (const stream of unmatched_streams) {
         $unmatched_streams_table.append(
-            render_stream_specific_notification_row({
-                stream,
-                stream_specific_notification_settings:
-                    settings_config.stream_specific_notification_settings,
-                is_disabled:
-                    settings_config.all_notifications(user_settings)
-                        .show_push_notifications_tooltip,
-                muted: muted_stream_ids.includes(stream.stream_id),
-            }),
+            $(
+                render_stream_specific_notification_row({
+                    stream,
+                    stream_specific_notification_settings:
+                        settings_config.stream_specific_notification_settings,
+                    is_disabled:
+                        settings_config.all_notifications(user_settings)
+                            .show_push_notifications_tooltip,
+                    muted: muted_stream_ids.includes(stream.stream_id),
+                }),
+            ),
         );
     }
 
@@ -221,11 +223,22 @@ export function set_up(settings_panel) {
             stream_notification_setting_changed(e);
             return;
         }
-        let setting_name = $input_elem.attr("name");
-        let setting_value = settings_components.get_input_element_value(this);
+        const setting_name = $input_elem.attr("name");
 
-        if (setting_name === "email_notifications_batching_period_seconds") {
-            if ($input_elem.val() === "custom_period") {
+        if ($input_elem.attr("data-setting-widget-type") === "time-limit") {
+            // For time-limit settings we should always pass the select element
+            // to get_input_element_value and not the custom input element.
+            const select_elem = $input_elem
+                .closest(".time-limit-setting")
+                .find("select.settings_select")[0];
+            const setting_value = settings_components.get_input_element_value(select_elem);
+
+            // Currently only notification batching setting is the time-limit
+            // settings on this page.
+            if (
+                setting_name === "email_notifications_batching_period_seconds" &&
+                $input_elem.val() === "custom_period"
+            ) {
                 set_notification_batching_ui(
                     $container,
                     settings_object.email_notifications_batching_period_seconds,
@@ -234,12 +247,15 @@ export function set_up(settings_panel) {
                 return;
             }
             set_notification_batching_ui($container, setting_value);
-        } else if (setting_name === "email_notification_batching_period_edit_minutes") {
-            // This field is in minutes, but the actual setting is seconds
-            setting_value = setting_value * 60;
-            set_notification_batching_ui($container, setting_value);
-            setting_name = "email_notifications_batching_period_seconds";
+            change_notification_setting(
+                "email_notifications_batching_period_seconds",
+                setting_value,
+                $input_elem.closest(".subsection-parent").find(".alert-notification"),
+            );
+            return;
         }
+
+        const setting_value = settings_components.get_input_element_value(this);
 
         if (
             settings_config.pm_mention_notification_settings.includes(setting_name) &&

@@ -9,6 +9,21 @@ import * as loading from "./loading";
 import * as modals from "./modals";
 import * as ui_report from "./ui_report";
 
+// Since only one dialog widget can be active at a time
+// and we don't support reopening already closed dialog widgets,
+// this is also the id of the current / last open dialog widget.
+// We will use this as id for current dialog widget assuming
+// the caller has already checked that the dialog widget is open.
+let widget_id_counter = 0;
+
+function current_dialog_widget_id(): string {
+    return `dialog_widget_modal_${widget_id_counter}`;
+}
+
+function current_dialog_widget_selector(): string {
+    return `#${current_dialog_widget_id()}`;
+}
+
 /*
  *  Look for confirm_dialog in settings_user_groups
  *  to see an example of how to use this widget.  It's
@@ -60,9 +75,10 @@ export type DialogWidgetConfig = {
     on_shown?: () => void;
     on_hide?: () => void;
     on_hidden?: () => void;
-    post_render?: () => void;
+    post_render?: (modal_unique_id: string) => void;
     loading_spinner?: boolean;
     update_submit_disabled_state_on_change?: boolean;
+    always_visible_scrollbar?: boolean;
 };
 
 type RequestOpts = {
@@ -73,17 +89,19 @@ type RequestOpts = {
 
 export function hide_dialog_spinner(): void {
     $(".dialog_submit_button span").show();
-    $("#dialog_widget_modal .modal__btn").prop("disabled", false);
+    const dialog_widget_selector = current_dialog_widget_selector();
+    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", false);
 
-    const $spinner = $("#dialog_widget_modal .modal__spinner");
+    const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
     loading.destroy_indicator($spinner);
 }
 
 export function show_dialog_spinner(): void {
+    const dialog_widget_selector = current_dialog_widget_selector();
     // Disable both the buttons.
-    $("#dialog_widget_modal .modal__btn").prop("disabled", true);
+    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", true);
 
-    const $spinner = $("#dialog_widget_modal .modal__spinner");
+    const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
     const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
     const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
 
@@ -99,10 +117,33 @@ export function show_dialog_spinner(): void {
 
 // Supports a callback to be called once the modal finishes closing.
 export function close(on_hidden_callback?: () => void): void {
-    modals.close("dialog_widget_modal", {on_hidden: on_hidden_callback});
+    modals.close(current_dialog_widget_id(), {on_hidden: on_hidden_callback});
 }
 
-export function launch(conf: DialogWidgetConfig): void {
+export function get_current_values($inputs: JQuery): Record<string, unknown> {
+    const current_values: Record<string, unknown> = {};
+    $inputs.each(function () {
+        const property_name = $(this).attr("name")!;
+        if (property_name) {
+            if (this instanceof HTMLInputElement && this.type === "file" && this.files?.length) {
+                // If the input is a file input and a file has been selected, set value to file object
+                current_values[property_name] = this.files[0];
+            } else if (property_name === "edit_bot_owner") {
+                current_values[property_name] = $(this).find(".dropdown_widget_value").text();
+            } else if ($(this).hasClass("pill-container")) {
+                // Notably, this just concatenates the pill labels;
+                // good enough for checking if something has changed,
+                // but not appropriate for many other potential uses.
+                current_values[property_name] = $(this).find(".pill-value").text();
+            } else {
+                current_values[property_name] = $(this).val();
+            }
+        }
+    });
+    return current_values;
+}
+
+export function launch(conf: DialogWidgetConfig): string {
     // Mandatory fields:
     // * html_heading
     // * html_body
@@ -130,10 +171,16 @@ export function launch(conf: DialogWidgetConfig): void {
     //   submit button when clicked.
     // * update_submit_disabled_state_on_change: If true, updates state of submit button
     //   on valid input change in modal.
+    // * always_visible_scrollbar: Whether the scrollbar is always visible if modal body
+    //   has scrollable content. Default behaviour is to hide the scrollbar when it is
+    //   not in use.
 
+    widget_id_counter += 1;
+    const modal_unique_id = current_dialog_widget_id();
     const html_submit_button = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
     const html_exit_button = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
     const html = render_dialog_widget({
+        modal_unique_id,
         heading_text: conf.html_heading,
         link: conf.help_link,
         html_submit_button,
@@ -141,33 +188,16 @@ export function launch(conf: DialogWidgetConfig): void {
         html_body: conf.html_body,
         id: conf.id,
         single_footer_button: conf.single_footer_button,
+        always_visible_scrollbar: conf.always_visible_scrollbar,
     });
     const $dialog = $(html);
     $("body").append($dialog);
 
     if (conf.post_render !== undefined) {
-        conf.post_render();
+        conf.post_render(modal_unique_id);
     }
 
     const $submit_button = $dialog.find(".dialog_submit_button");
-
-    function get_current_values($inputs: JQuery): Record<string, unknown> {
-        const current_values: Record<string, unknown> = {};
-        $inputs.each(function () {
-            const property_name = $(this).attr("name")!;
-            if (property_name) {
-                if ($(this).is("input[type='file']") && $(this).prop("files")?.length) {
-                    // If the input is a file input and a file has been selected, set value to file object
-                    current_values[property_name] = $(this).prop("files")[0];
-                } else if (property_name === "edit_bot_owner") {
-                    current_values[property_name] = $(this).find(".dropdown_widget_value").text();
-                } else {
-                    current_values[property_name] = $(this).val();
-                }
-            }
-        });
-        return current_values;
-    }
 
     if (conf.update_submit_disabled_state_on_change) {
         const $inputs = $dialog.find(".modal__content").find("input,select,textarea,button");
@@ -210,7 +240,7 @@ export function launch(conf: DialogWidgetConfig): void {
         conf.on_click(e);
     });
 
-    modals.open("dialog_widget_modal", {
+    modals.open(modal_unique_id, {
         autoremove: true,
         on_show() {
             if (conf.focus_submit_on_open) {
@@ -224,12 +254,13 @@ export function launch(conf: DialogWidgetConfig): void {
         on_shown: conf?.on_shown,
         on_hidden: conf?.on_hidden,
     });
+    return modal_unique_id;
 }
 
 export function submit_api_request(
     request_method: AjaxRequestHandler,
     url: string,
-    data: Parameters<AjaxRequestHandler>[0]["data"] = {},
+    data: Omit<Parameters<AjaxRequestHandler>[0]["data"], "undefined">,
     {
         failure_msg_html = $t_html({defaultMessage: "Failed"}),
         success_continuation,

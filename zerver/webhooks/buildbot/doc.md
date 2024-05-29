@@ -4,7 +4,7 @@ Get Zulip notifications for your Buildbot builds!
 
     This integration requires Buildbot version 2.2.0 or higher.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
@@ -15,11 +15,11 @@ Get Zulip notifications for your Buildbot builds!
 
         zs = reporters.ZulipStatusPush('{{ zulip_url }}',
                                        token='api_key',
-                                       stream='{{ recommended_stream_name }}')
+                                       stream='{{ recommended_channel_name }}')
         c['services'].append(zs)
 
     When adding the new reporter, modify the code above such that `api_key`
-    is the API key of your Zulip bot, and `stream` is set to the stream name
+    is the API key of your Zulip bot, and `stream` is set to the channel name
     you want the notifications sent to.
 
 [1]: https://docs.buildbot.net/latest/manual/configuration/reporters/zulip_status.html

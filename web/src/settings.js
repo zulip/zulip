@@ -33,7 +33,7 @@ function setup_settings_label() {
         }),
         presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
         send_stream_typing_notifications: $t({
-            defaultMessage: "Let recipients see when I'm typing messages in streams",
+            defaultMessage: "Let recipients see when I'm typing messages in channels",
         }),
         send_private_typing_notifications: $t({
             defaultMessage: "Let recipients see when I'm typing direct messages",
@@ -174,7 +174,7 @@ export function initialize() {
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
     });
-    $("#settings_overlay_container").append(rendered_settings_overlay);
+    $("#settings_overlay_container").append($(rendered_settings_overlay));
 
     $("#settings_overlay_container").on("click", (e) => {
         if (!modals.any_active()) {

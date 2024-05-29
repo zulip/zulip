@@ -46,6 +46,7 @@ const home_params_schema = default_params_schema
         login_page: z.string(),
         narrow: z.optional(z.array(narrow_term_schema)),
         narrow_stream: z.optional(z.string()),
+        narrow_topic: z.optional(z.string()),
         needs_tutorial: z.boolean(),
         promote_sponsoring_zulip: z.boolean(),
         // `realm_rendered_description` is only sent for spectators, because
@@ -92,6 +93,8 @@ const upgrade_params_schema = default_params_schema.extend({
     fixed_price: z.number().nullable(),
     setup_payment_by_invoice: z.boolean(),
     free_trial_days: z.nullable(z.number()),
+    percent_off_annual_price: z.string().nullable(),
+    percent_off_monthly_price: z.string().nullable(),
 });
 
 const page_params_schema = z.discriminatedUnion("page_type", [

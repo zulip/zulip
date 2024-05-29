@@ -1,5 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-USER=zulip
-
-* * * * * zulip /usr/lib/nagios/plugins/zulip_zephyr_mirror/check_user_zephyr_mirror_liveness >/dev/null

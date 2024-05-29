@@ -37,7 +37,7 @@ import magic
 import orjson
 from decorator import decorator
 from django.conf import settings
-from django.contrib.auth import authenticate, get_backends
+from django.contrib.auth import authenticate, get_backends, logout
 from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ValidationError
@@ -103,10 +103,10 @@ from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
+    NamedUserGroup,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
-    UserGroup,
     UserGroupMembership,
     UserProfile,
 )
@@ -986,11 +986,11 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             existing_group_name_set_for_user = set(
                 UserGroupMembership.objects.filter(
                     user_group__realm=user_profile.realm,
-                    user_group__name__in=set(
+                    user_group__named_user_group__name__in=set(
                         settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
                     ),
                     user_profile=user_profile,
-                ).values_list("user_group__name", flat=True)
+                ).values_list("user_group__named_user_group__name", flat=True)
             )
 
             ldap_logger.debug(
@@ -999,7 +999,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 repr(existing_group_name_set_for_user),
             )
 
-            new_groups = UserGroup.objects.filter(
+            new_groups = NamedUserGroup.objects.filter(
                 name__in=intended_group_name_set_for_user.difference(
                     existing_group_name_set_for_user
                 ),
@@ -1014,7 +1014,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             group_names_for_membership_deletion = existing_group_name_set_for_user.difference(
                 intended_group_name_set_for_user
             )
-            groups_for_membership_deletion = UserGroup.objects.filter(
+            groups_for_membership_deletion = NamedUserGroup.objects.filter(
                 name__in=group_names_for_membership_deletion, realm=user_profile.realm
             )
 
@@ -1620,13 +1620,13 @@ class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMeth
 
 def redirect_to_signup(realm: Realm) -> HttpResponseRedirect:
     signup_url = reverse("register")
-    redirect_url = realm.uri + signup_url
+    redirect_url = realm.url + signup_url
     return HttpResponseRedirect(redirect_url)
 
 
 def redirect_to_login(realm: Realm) -> HttpResponseRedirect:
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = realm.uri + login_url
+    redirect_url = realm.url + login_url
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1635,7 +1635,7 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
     redirect_url = append_url_query_string(
-        realm.uri + login_url, urlencode({"is_deactivated": email})
+        realm.url + login_url, urlencode({"is_deactivated": email})
     )
     return HttpResponseRedirect(redirect_url)
 
@@ -3160,8 +3160,6 @@ class SAMLSPInitiatedLogout:
         Validates the LogoutResponse and logs out the user if successful,
         finishing the SP-initiated logout flow.
         """
-        from django.contrib.auth.views import logout_then_login as django_logout_then_login
-
         idp = logout_response.backend.get_idp(idp_name)
         auth = logout_response.backend._create_saml_auth(idp)
         auth.process_slo(keep_local_session=True)
@@ -3172,8 +3170,8 @@ class SAMLSPInitiatedLogout:
             # They're informative but generic enough to not leak any sensitive information.
             raise JsonableError(f"LogoutResponse error: {errors}")
 
-        # We call Django's version of logout_then_login so that POST isn't required.
-        return django_logout_then_login(logout_response.backend.strategy.request)
+        logout(logout_response.backend.strategy.request)
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
 
 def get_external_method_dicts(realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:

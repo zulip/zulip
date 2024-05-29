@@ -4,8 +4,8 @@
        other "Nah, forget it" actions. */
     --color-exit-button-text: hsl(0deg 0% 0%);
     --color-exit-button-border: hsl(300deg 2% 11% / 30%);
-    --color-exit-button-background: hsl(0deg 0% 100%);
-    --color-exit-button-background-interactive: hsl(0deg 0% 97%);
+    --color-exit-button-background: hsl(226deg 1% 42% / 20%);
+    --color-exit-button-background-interactive: hsl(226deg 1% 42% / 27%);
 }
 
 .modal__overlay {
@@ -57,21 +57,24 @@
     }
 }
 
-.user_profile_name_heading {
+.user-profile-name-heading {
     padding-right: 1rem;
     max-width: 80%;
     display: flex;
     align-items: center;
+    gap: 10px;
+    /* This line-height is to increase the vertical clickable areas on the icons. */
+    line-height: 28px;
 
-    .user_profile_name {
+    .user-profile-name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .user_profile_manage_own_edit_button,
-    .user_profile_manage_others_edit_button,
-    .user_profile_manage_own_copy_link_button {
+    .user-profile-manage-own-edit-button,
+    .user-profile-manage-others-edit-button,
+    .user-profile-manage-own-copy-link-button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 
@@ -129,6 +132,7 @@
 
     &:disabled {
         cursor: not-allowed;
+        opacity: 0.5;
     }
 }
 
@@ -151,9 +155,19 @@
     margin-left: 12px;
     background-color: hsl(240deg 96% 68%);
     color: hsl(0deg 0% 100%) !important;
+}
 
-    &:disabled {
-        background-color: hsl(0deg 0% 65%);
+#user-profile-modal .save-success {
+    vertical-align: top;
+    background-color: transparent;
+    border-radius: 4px;
+    margin-right: 10px;
+    color: hsl(156deg 30% 50%);
+    padding: 0.5rem 1rem;
+    line-height: 1.15;
+
+    &:not(:empty) {
+        border: 1px solid hsl(156deg 30% 50%);
     }
 }
 
@@ -363,6 +377,10 @@
     }
 }
 
+.modal-field-label {
+    margin-bottom: var(--margin-bottom-field-description);
+}
+
 .dropdown-widget-button {
     width: 206px;
 }
@@ -501,4 +519,8 @@
             }
         }
     }
+}
+
+#invite_users_option_tabs_container {
+    margin-bottom: 20px;
 }

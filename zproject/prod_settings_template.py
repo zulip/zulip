@@ -44,7 +44,7 @@ EXTERNAL_HOST = "zulip.example.com"
 ## representing the host/domain names that your users can enter in
 ## their browsers to access Zulip.  This is a security measure; for
 ## details, see the Django documentation:
-## https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts
+## https://docs.djangoproject.com/en/5.0/ref/settings/#allowed-hosts
 ##
 ## Zulip automatically adds to this list "localhost", "127.0.0.1", and
 ## patterns representing EXTERNAL_HOST and subdomains of it.  If you are
@@ -824,7 +824,9 @@ ENABLE_GRAVATAR = True
 ## to "" will disable the Camo integration.
 CAMO_URI = "/external_content/"
 
-## Controls the tutorial popups for new users.
+## Controls various features explaining Zulip to new users. Disabling
+## this is only recommended for installations that are using a limited
+## subset of the Zulip UI, such as embedding it in a larger app.
 # TUTORIAL_ENABLED = True
 
 ## Controls whether Zulip will rate-limit user requests.

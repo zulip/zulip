@@ -3,15 +3,15 @@
     {
       "billing_details": {
         "address": {
-          "city": null,
-          "country": null,
-          "line1": null,
+          "city": "San Francisco",
+          "country": "US",
+          "line1": "123 Main St",
           "line2": null,
-          "postal_code": null,
-          "state": null
+          "postal_code": "94105",
+          "state": "CA"
         },
         "email": null,
-        "name": null,
+        "name": "John Doe",
         "phone": null
       },
       "card": {
@@ -23,7 +23,7 @@
         },
         "country": "US",
         "display_brand": "mastercard",
-        "exp_month": 3,
+        "exp_month": 4,
         "exp_year": 2025,
         "fingerprint": "NORMALIZED000003",
         "funding": "credit",
@@ -42,7 +42,7 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OqSlXDEQaroqDjssN4QCZOF",
+      "id": "pm_1P41mPDEQaroqDjsscqiWRm6",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",

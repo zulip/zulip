@@ -9,12 +9,15 @@ const ExampleValidator = require("openapi-examples-validator");
 const Prettier = require("prettier");
 const SwaggerParser = require("swagger-parser");
 const {Composer, CST, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} = require("yaml");
-const yargs = require("yargs");
+const {hideBin} = require("yargs/helpers");
+const yargs = require("yargs/yargs");
 
-const {argv} = yargs.option("fix", {
-    type: "boolean",
-    description: "Automatically fix some problems",
-});
+const argv = yargs(hideBin(process.argv))
+    .option("fix", {
+        type: "boolean",
+        description: "Automatically fix some problems",
+    })
+    .parse();
 
 async function checkFile(file) {
     const yaml = await fs.promises.readFile(file, "utf8");

@@ -25,18 +25,6 @@ export function phrase_match(query: string, phrase: string): boolean {
     return false;
 }
 
-export function copy_data_attribute_value($elem: JQuery, key: string): void {
-    // function to copy the value of data-key
-    // attribute of the element to clipboard
-    const $temp = $(document.createElement("input"));
-    $("body").append($temp);
-    $temp.val($elem.data(key)).trigger("select");
-    document.execCommand("copy");
-    $temp.remove();
-    $elem.fadeOut(250);
-    $elem.fadeIn(1000);
-}
-
 const keys_map = new Map([
     ["Backspace", "Delete"],
     ["Enter", "Return"],
@@ -65,7 +53,7 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
         let key_text = $(this).text();
 
         if (fn_shortcuts.has(key_text)) {
-            $(this).before("<kbd>Fn</kbd> + ");
+            $(this).before($("<kbd>").text("Fn"), $("<span>").text(" + ").contents());
             $(this).addClass("arrow-key");
         }
 
@@ -88,14 +76,14 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
         const following_key = $(this).attr("data-mac-following-key");
         if (following_key !== undefined) {
             const $kbd_elem = $("<kbd>").text(following_key);
-            $(this).after(" + ", $kbd_elem);
+            $(this).after($("<span>").text(" + ").contents(), $kbd_elem);
         }
     });
 }
 
 // We convert the hotkey hints used in the tooltips to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
-export function adjust_mac_tooltip_keys(hotkeys: string[]): void {
+export function adjust_mac_hotkey_hints(hotkeys: string[]): void {
     if (!has_mac_keyboard()) {
         return;
     }
@@ -111,6 +99,19 @@ export function adjust_mac_tooltip_keys(hotkeys: string[]): void {
             hotkeys.unshift("Fn");
         }
     }
+}
+
+// We convert the Shift key with ⇧ (Level 2 Select Symbol) in the
+// popover menu hotkey hints. This helps us reduce the width of
+// the popover menus.
+export function adjust_shift_hotkey(hotkeys: string[]): boolean {
+    for (const [index, hotkey] of hotkeys.entries()) {
+        if (hotkey === "Shift") {
+            hotkeys[index] = "⇧";
+            return true;
+        }
+    }
+    return false;
 }
 
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation

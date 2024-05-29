@@ -22,7 +22,9 @@ async function await_user_hidden(page: Page, name: string): Promise<void> {
 
 async function add_user_to_stream(page: Page, name: string): Promise<void> {
     const user_id = await common.get_user_id_from_name(page, name);
-    await page.evaluate((user_id) => zulip_test.add_user_id_to_new_stream(user_id), user_id);
+    await page.evaluate((user_id) => {
+        zulip_test.add_user_id_to_new_stream(user_id);
+    }, user_id);
     await await_user_visible(page, name);
 }
 
@@ -75,12 +77,19 @@ async function test_user_filter_ui(page: Page): Promise<void> {
 }
 
 async function create_stream(page: Page): Promise<void> {
-    await page.waitForSelector('xpath///*[text()="Create stream"]', {visible: true});
+    await page.waitForSelector('xpath///*[text()="Create channel"]', {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {
         stream_name: "Puppeteer",
         stream_description: "Everything Puppeteer",
     });
     await page.click("form#stream_creation_form .finalize_create_stream");
+    // an explanatory modal is shown for the first stream created
+    await common.wait_for_micromodal_to_open(page);
+    await page.click(".dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
+    await page.waitForSelector(".message-header-stream-settings-button");
+    await page.click(".message-header-stream-settings-button");
+    await page.waitForSelector(".stream_section");
     await page.waitForSelector(
         `xpath///*[${common.has_class_x("stream-name")} and text()="Puppeteer"]`,
     );
@@ -108,13 +117,13 @@ async function test_streams_with_empty_names_cannot_be_created(page: Page): Prom
     await page.waitForSelector("form#stream_creation_form", {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "  "});
     await page.click("form#stream_creation_form button.finalize_create_stream");
-    assert.strictEqual(await stream_name_error(page), "Choose a name for the new stream.");
+    assert.strictEqual(await stream_name_error(page), "Choose a name for the new channel.");
 }
 
 async function test_streams_with_duplicate_names_cannot_be_created(page: Page): Promise<void> {
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "Puppeteer"});
     await page.click("form#stream_creation_form button.finalize_create_stream");
-    assert.strictEqual(await stream_name_error(page), "A stream with this name already exists.");
+    assert.strictEqual(await stream_name_error(page), "A channel with this name already exists.");
 
     const cancel_button_selector = "form#stream_creation_form button.button.white";
     await page.click(cancel_button_selector);

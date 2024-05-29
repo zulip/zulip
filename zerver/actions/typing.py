@@ -28,7 +28,11 @@ def do_send_typing_notification(
     )
 
     # Only deliver the notification to active user recipients
-    user_ids_to_notify = [user.id for user in recipient_user_profiles if user.is_active]
+    user_ids_to_notify = [
+        user.id
+        for user in recipient_user_profiles
+        if user.is_active and user.receives_typing_notifications
+    ]
 
     send_event(realm, event, user_ids_to_notify)
 
@@ -91,9 +95,9 @@ def do_send_stream_typing_notification(
         return
 
     user_ids_to_notify = set(
-        subscriptions_query.exclude(user_profile__long_term_idle=True).values_list(
-            "user_profile_id", flat=True
-        )
+        subscriptions_query.exclude(user_profile__long_term_idle=True)
+        .exclude(user_profile__receives_typing_notifications=False)
+        .values_list("user_profile_id", flat=True)
     )
 
     send_event(sender.realm, event, user_ids_to_notify)

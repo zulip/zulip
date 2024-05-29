@@ -3,21 +3,21 @@
         <div class="alert" id="edit-user-form-error"></div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group name_change_container">
-            <label for="edit_user_full_name">{{t "Name" }}</label>
+            <label for="edit_user_full_name" class="modal-field-label">{{t "Name" }}</label>
             <input type="text" autocomplete="off" name="full_name" id="edit_user_full_name" class="modal_text_input" value="{{ full_name }}" />
         </div>
         {{#if email}}
         <div class="input-group email_change_container">
-            <label for="email">{{t "Email" }}</label>
+            <label for="email" class="modal-field-label">{{t "Email" }}</label>
             <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
         </div>
         {{/if}}
         <div class="input-group user_id_container">
-            <label for="user_id">{{t "User ID" }}</label>
+            <label for="user_id" class="modal-field-label">{{t "User ID" }}</label>
             <input type="text" autocomplete="off" name="user_id" class="modal_text_input" value="{{ user_id }}" readonly/>
         </div>
         <div class="input-group">
-            <label class="input-label" for="user-role-select">{{t 'User role' }}
+            <label for="user-role-select" class="modal-field-label">{{t 'User role' }}
                 {{> ../help_link_widget link="/help/roles-and-permissions" }}
             </label>
             <select name="user-role-select" class="bootstrap-focus-style modal_select" id="user-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>

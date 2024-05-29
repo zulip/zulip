@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ZapierHookTests(WebhookTestCase):
-    STREAM_NAME = "zapier"
+    CHANNEL_NAME = "zapier"
     URL_TEMPLATE = "/api/v1/external/zapier?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "zapier"
 
@@ -25,7 +25,7 @@ class ZapierHookTests(WebhookTestCase):
 
 
 class ZapierZulipAppTests(WebhookTestCase):
-    STREAM_NAME = "zapier"
+    CHANNEL_NAME = "zapier"
     URL_TEMPLATE = "/api/v1/external/zapier?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "zapier"
 

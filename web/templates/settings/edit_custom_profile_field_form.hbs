@@ -1,18 +1,17 @@
 {{#with profile_field_info}}
-<form class="name-setting profile-field-form new-style" id="edit-custom-profile-field-form-{{id}}">
+<form class="name-setting profile-field-form new-style" id="edit-custom-profile-field-form-{{id}}" data-profile-field-id="{{id}}">
     <div class="input-group">
-        <label for="name">{{t "Label" }}</label>
-        <input type="text" name="name" class="modal_text_input" value="{{ name }}" maxlength="40" />
+        <label for="name" class="modal-field-label">{{t "Label" }}</label>
+        <input type="text" name="name" id="id-custom-profile-field-name" class="modal_text_input prop-element" value="{{ name }}" maxlength="40" data-setting-widget-type="string" />
     </div>
     <div class="input-group hint_change_container">
-        <label for="hint">{{t "Hint" }}</label>
-        <input type="text" name="hint" class="modal_text_input" value="{{ hint }}" maxlength="80" />
+        <label for="hint" class="modal-field-label">{{t "Hint" }}</label>
+        <input type="text" name="hint" id="id-custom-profile-field-hint" class="modal_text_input prop-element" value="{{ hint }}" maxlength="80" data-setting-widget-type="string" />
     </div>
     {{#if is_select_field }}
-    <div class="input-group">
-        <label for="profile_field_choices_edit">{{t "Field choices" }}</label>
+    <div class="input-group prop-element" id="id-custom-profile-field-field-data" data-setting-widget-type="field-data-setting">
+        <label for="profile_field_choices_edit" class="modal-field-label">{{t "Field choices" }}</label>
         <div class="profile-field-choices" name="profile_field_choices_edit">
-            <hr />
             <div class="edit_profile_field_choices_container">
                 {{#each choices}}
                     {{> profile_field_choice }}
@@ -20,34 +19,35 @@
             </div>
         </div>
     </div>
-    {{/if}}
-    {{#if is_external_account_field}}
-    <div class="input-group profile_field_external_accounts_edit">
-        <label for="external_acc_field_type">{{t "External account type" }}</label>
-        <select name="external_acc_field_type" class="modal_select" disabled>
-            {{#each ../realm_default_external_accounts}}
-                <option value='{{@key}}'>{{this.text}}</option>
-            {{/each}}
-            <option value="custom">{{t 'Custom' }}</option>
-        </select>
-    </div>
-    <div class="input-group custom_external_account_detail">
-        <label for="url_pattern">{{t "URL pattern" }}</label>
-        <input type="url" class="modal_url_input" name="url_pattern" autocomplete="off" maxlength="80" />
+    {{else if is_external_account_field}}
+    <div class="prop-element" id="id-custom-profile-field-field-data" data-setting-widget-type="field-data-setting">
+        <div class="input-group profile_field_external_accounts_edit" >
+            <label for="external_acc_field_type" class="modal-field-label">{{t "External account type" }}</label>
+            <select name="external_acc_field_type" class="modal_select" disabled>
+                {{#each ../realm_default_external_accounts}}
+                    <option value='{{@key}}'>{{this.text}}</option>
+                {{/each}}
+                <option value="custom">{{t 'Custom' }}</option>
+            </select>
+        </div>
+        <div class="input-group custom_external_account_detail">
+            <label for="url_pattern" class="modal-field-label">{{t "URL pattern" }}</label>
+            <input type="url" class="modal_url_input" name="url_pattern" autocomplete="off" maxlength="80" />
+        </div>
     </div>
     {{/if}}
     {{#if valid_to_display_in_summary}}
         <div class="input-group">
-            <label class="checkbox edit_profile_field_display_label" for="edit_display_in_profile_summary_{{id}}">
-                <input class="edit_display_in_profile_summary" type="checkbox" id="edit_display_in_profile_summary_{{id}}" name="display_in_profile_summary" {{#if display_in_profile_summary}} checked="checked" {{/if}}/>
+            <label class="checkbox edit_profile_field_display_label" for="id-custom-profile-field-display-in-profile-summary">
+                <input class="edit_display_in_profile_summary prop-element" data-setting-widget-type="boolean" type="checkbox" id="id-custom-profile-field-display-in-profile-summary" name="display_in_profile_summary" data-setting-widget-type="boolean" {{#if display_in_profile_summary}} checked="checked" {{/if}}/>
                 <span></span>
                 {{t 'Display on user card' }}
             </label>
         </div>
     {{/if}}
     <div class="input-group">
-        <label class="checkbox" for="edit-required-{{id}}">
-            <input class="edit-required" type="checkbox" id="edit-required-{{id}}" name="required" {{#if required}} checked="checked" {{/if}}/>
+        <label class="checkbox" for="id-custom-profile-field-required">
+            <input class="edit-required prop-element" type="checkbox" id="id-custom-profile-field-required" name="required" data-setting-widget-type="boolean" {{#if required}} checked="checked" {{/if}}/>
             <span></span>
             {{t 'Required field' }}
         </label>

@@ -1,5 +1,138 @@
 {
-  "data": [],
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "billing_details": {
+            "address": {
+              "city": "San Francisco",
+              "country": "US",
+              "line1": "123 Main St",
+              "line2": null,
+              "postal_code": "94105",
+              "state": "CA"
+            },
+            "email": null,
+            "name": "John Doe",
+            "phone": null
+          },
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": null,
+              "address_postal_code_check": null,
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "display_brand": "visa",
+            "exp_month": 4,
+            "exp_year": 2025,
+            "fingerprint": "NORMALIZED000001",
+            "funding": "credit",
+            "generated_from": null,
+            "last4": "4242",
+            "networks": {
+              "available": [
+                "visa"
+              ],
+              "preferred": null
+            },
+            "three_d_secure_usage": {
+              "supported": true
+            },
+            "wallet": null
+          },
+          "created": 1000000000,
+          "customer": null,
+          "id": "pm_1P41m2DEQaroqDjspSh2kAXh",
+          "livemode": false,
+          "metadata": {},
+          "object": "payment_method",
+          "type": "card"
+        },
+        "previous_attributes": {
+          "customer": "cus_NORMALIZED0003"
+        }
+      },
+      "id": "evt_1P41mODEQaroqDjsnOUdfaw8",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0010",
+        "idempotency_key": "b1c6a4c9-74d9-4971-8c5b-b5d4fe54fa73"
+      },
+      "type": "payment_method.detached"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "billing_details": {
+            "address": {
+              "city": "San Francisco",
+              "country": "US",
+              "line1": "123 Main St",
+              "line2": null,
+              "postal_code": "94105",
+              "state": "CA"
+            },
+            "email": null,
+            "name": "John Doe",
+            "phone": null
+          },
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": null,
+              "address_postal_code_check": null,
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "display_brand": "visa",
+            "exp_month": 4,
+            "exp_year": 2025,
+            "fingerprint": "NORMALIZED000002",
+            "funding": "credit",
+            "generated_from": null,
+            "last4": "0341",
+            "networks": {
+              "available": [
+                "visa"
+              ],
+              "preferred": null
+            },
+            "three_d_secure_usage": {
+              "supported": true
+            },
+            "wallet": null
+          },
+          "created": 1000000000,
+          "customer": null,
+          "id": "pm_1P41mIDEQaroqDjsZiKi7fzH",
+          "livemode": false,
+          "metadata": {},
+          "object": "payment_method",
+          "type": "card"
+        },
+        "previous_attributes": {
+          "customer": "cus_NORMALIZED0003"
+        }
+      },
+      "id": "evt_1P41mNDEQaroqDjsWMXo3PIi",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0007",
+        "idempotency_key": "53ca8ff0-d551-4c5b-9387-8500b61fde24"
+      },
+      "type": "payment_method.detached"
+    }
+  ],
   "has_more": false,
   "object": "list",
   "url": "/v1/events"

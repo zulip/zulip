@@ -9,6 +9,7 @@ from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.scim import ZulipSCIMUser
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
@@ -388,6 +389,39 @@ class TestSCIMUser(SCIMTestCase):
 
         expected_response_schema = self.generate_user_schema(new_user)
         self.assertEqual(output_data, expected_response_schema)
+
+    def test_post_create_guest_user_without_streams(self) -> None:
+        @contextmanager
+        def mock_create_guests_without_streams() -> Iterator[None]:
+            config_dict = copy.deepcopy(settings.SCIM_CONFIG)
+            config_dict["zulip"]["create_guests_without_streams"] = True
+            with self.settings(SCIM_CONFIG=config_dict):
+                yield
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "userName": "newuser@zulip.com",
+            "name": {"formatted": "New User", "givenName": "New", "familyName": "User"},
+            "active": True,
+            "role": "guest",
+        }
+        with mock_create_guests_without_streams():
+            result = self.client_post(
+                "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
+            )
+
+        self.assertEqual(result.status_code, 201)
+        output_data = orjson.loads(result.content)
+
+        new_user = UserProfile.objects.last()
+        assert new_user is not None
+        self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
+        self.assertEqual(new_user.role, UserProfile.ROLE_GUEST)
+
+        expected_response_schema = self.generate_user_schema(new_user)
+        self.assertEqual(output_data, expected_response_schema)
+
+        self.assertEqual(list(get_subscribed_stream_ids_for_user(new_user)), [])
 
     def test_post_with_no_name_formatted_included_config(self) -> None:
         # A payload for creating a new user with the specified account details.

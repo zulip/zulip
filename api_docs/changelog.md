@@ -20,6 +20,142 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 262**:
+
+* [`GET /users/{user_id}/status`](/api/get-user-status): Added a new
+  endpoint to fetch an individual user's currently set
+  [status](/help/status-and-availability).
+
+**Feature level 261**
+
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Added
+  `include_realm_default_subscriptions` parameter to indicate whether
+  the newly created user will be automatically subscribed to [default
+  channels](/help/set-default-channels-for-new-users) in the
+  organization. Previously, the default channel IDs needed to be included
+  in the `stream_ids` parameter. This also allows a newly created user
+  to be automatically subscribed to the default channels in an
+  organization when the user creating the invitation does not generally
+  have permission to [subscribe other users to
+  channels](/help/configure-who-can-invite-to-channels).
+
+**Feature level 260**:
+
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):
+  Updating `can_mention_group` now uses a race-resistant format where
+  the client sends the expected `old` value and desired `new` value.
+
+**Feature level 259**:
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  For the `onboarding_steps` event type, an array of onboarding steps
+  to be displayed to clients is sent. Onboarding step now has one-time
+  notices as the only valid type. Prior to this, both hotspots and
+  one-time notices were valid types of onboarding steps. There is no compatibility
+  support, as we expect that only official Zulip clients will interact with
+  this data. Currently, no client other than the Zulip web app uses this.
+
+**Feature level 258**:
+
+* [`GET /user_groups`](/api/get-user-groups), [`POST
+  /register`](/api/register-queue): `can_mention_group` field can now
+  either be an ID of a named user group with the permission, or an
+  object describing the set of users and groups with the permission.
+* [`POST /user_groups/create`](/api/create-user-group), [`PATCH
+  /user_groups/{user_group_id}`](/api/update-user-group): The
+  `can_mention_group` parameter can now either be an ID of a named
+  user group or an object describing a set of users and groups.
+
+**Feature level 257**:
+
+* [`POST /register`](/api/register-queue),
+  [`POST /server_settings`](/api/get-server-settings), `PATCH /realm`:
+  `realm_uri` was renamed to `realm_url`, but remains available as a
+  deprecated alias for backwards-compatibility.
+* Mobile push notification payloads, similarly, have a new `realm_url`,
+  replacing `realm_uri`, which remains available as a deprecated alias
+  for backwards-compatibility.
+
+**Feature level 256**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic),
+  [`GET /events`](/api/get-events): When messages are deleted, a
+  [`stream` op: `update`](/api/get-events#stream-update) event with
+  an updated value for `first_message_id` may now be sent to clients.
+
+**Feature level 255**
+
+* "Stream" was renamed to "Channel" across strings in the Zulip API
+  and UI. Clients supporting a range of server versions are encouraged
+  to use different strings based on the server's API feature level for
+  consistency. Note that feature level marks the strings transition
+  only: Actual API changes related to this transition have their own
+  API changelog entries.
+
+**Feature level 254**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions): Added a new
+  field `creator_id` to stream and subscription objects, which contains the
+  user ID of the stream's creator.
+
+**Feature level 253**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new `receives_typing_notifications` option to allow users to decide whether
+  to receive typing notification events from other users.
+
+**Feature level 252**
+
+* `PATCH /realm/profile_fields/{field_id}`: `name`, `hint`, `display_in_profile_summary`,
+  `required` and `field_data` fields are now optional during an update. Previously we
+  required the clients to populate the fields in the PATCH request even if there was
+  no change to those fields' values.
+
+**Feature level 251**
+
+* [`POST /register`](/api/register-queue): Fixed `realm_upload_quota_mib`
+  value to actually be in MiB. Until now the value was in bytes.
+
+**Feature level 250**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for two [search/narrow filters](/api/construct-narrow)
+  related to stream messages: `channel` and `channels`. The `channel`
+  operator is an alias for the `stream` operator. The `channels`
+  operator is an alias for the `streams` operator.
+
+**Feature level 249**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for a new [search/narrow filter](/api/construct-narrow),
+  `has:reaction`, which returns messages with at least one [emoji
+  reaction](/help/emoji-reactions).
+
+**Feature level 248**
+
+* [`POST /typing`](/api/set-typing-status), [`POST /messages`](/api/send-message),
+  [`POST /scheduled_messages`](/api/create-scheduled-message),
+  [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):
+  Added `"channel"` as an additional value for the `type` parameter to
+  indicate a stream message.
+
+**Feature level 247**
+
+* [Markdown message formatting](/api/message-formatting#mentions):
+  Added `channel` to the supported options for [wildcard
+  mentions](/help/mention-a-user-or-group#mention-everyone-on-a-stream).
+
 **Feature level 246**
 
 * [`POST /register`](/api/register-queue), [`POST
@@ -112,20 +248,22 @@ No changes; feature level used for Zulip 8.0 release.
 **Feature level 233**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
-  Renamed the event type `hotspots` and the `hotspots` array field in it
-  to `onboarding_steps` as this event is sent to clients with remaining
-  onboarding steps data that includes hotspots and one-time notices to display.
-  Earlier, we had hotspots only. Added a `type` field to the objects in
-  the renamed `onboarding_steps` array to distinguish between the two type
-  of onboarding steps.
+  Renamed the `hotspots` event type and the related `hotspots` object array
+  to `onboarding_steps`. These are sent to clients if there are onboarding
+  steps to display to the user. Onboarding steps now include
+  both hotspots and one-time notices. Prior to this, hotspots were the only
+  type of onboarding step. Also, added a `type` field to the objects
+  returned in the renamed `onboarding_steps` array to distinguish between
+  the two types of onboarding steps.
 
-* `POST /users/me/onboarding_steps`: Added a new endpoint that
-  deprecates the `/users/me/hotspots` endpoint. Added support for
-  displaying one-time notices in addition to existing hotspots.
-  This is now used as a common endpoint to mark both types of
-  onboarding steps, i.e., 'hotspot' and 'one_time_notice'.
-  There is no compatibility support for `/users/me/hotspots` as
-  no client other than web app has this feature currently.
+* `POST /users/me/onboarding_steps`: Added a new endpoint, which
+  deprecates the `/users/me/hotspots` endpoint, in order to support
+  displaying both one-time notices (which highlight new features for
+  existing users) and hotspots (which are used in new user tutorials).
+  This endpoint marks both types of onboarding steps, i.e. `hotspot`
+  and `one_time_notice`, as read by the user. There is no compatibility
+  support for `/users/me/hotspots` as no client other than the Zulip
+  web app used the endpoint prior to these changes.
 
 **Feature level 232**
 
@@ -159,9 +297,10 @@ No changes; feature level used for Zulip 8.0 release.
 
 **Feature level 230**
 
-* [`GET /events`](/api/get-events): Added `has_trigger` field in
-  hotspots events to identify if a hotspot will activate only when
-  some specific event occurs.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Added `has_trigger` field to objects returned in the `hotspots` array to
+  identify if the hotspot will activate only when some specific event
+  occurs.
 
 **Feature level 229**
 
@@ -238,7 +377,7 @@ No changes; feature level used for Zulip 8.0 release.
 
 **Feature level 223**
 
-* `POST /users/me/apns_device_token`:
+* [`POST /users/me/apns_device_token`](/api/add-apns-token):
   The `appid` parameter is now required.
   Previously it defaulted to the server setting `ZULIP_IOS_APP_ID`,
   defaulting to "org.zulip.Zulip".
@@ -380,9 +519,9 @@ No changes; feature level used for Zulip 8.0 release.
   to an organization. Previously, only admin users could create these
   links.
 
-* `POST /invites/multiuse`: Non-admin users can now use this endpoint
-  to create reusable invitation links. Previously, this endpoint was
-  restricted to admin users only.
+* [`POST /invites/multiuse`](/api/create-invite-link): Non-admin users can
+  now use this endpoint to create reusable invitation links. Previously,
+  this endpoint was restricted to admin users only.
 
 * [`GET /invites`](/api/get-invites): Endpoint response for non-admin users now
   includes both email invitations and reusable invitation links that they have
@@ -390,9 +529,9 @@ No changes; feature level used for Zulip 8.0 release.
   therefore the response did not include reusable invitation links for these
   users.
 
-* `DELETE /invites/multiuse/{invite_id}`: Non-admin users can now revoke
-  reusable invitation links they have created. Previously, only admin users could
-  create and revoke reusable invitation links.
+* [`DELETE /invites/multiuse/{invite_id}`](/api/revoke-invite-link): Non-admin
+  users can now revoke reusable invitation links they have created. Previously,
+  only admin users could create and revoke reusable invitation links.
 
 * [`GET /events`](/api/get-events): When the set of invitations in an
   organization changes, an `invites_changed` event is now sent to the
@@ -1114,7 +1253,8 @@ user's profile.
 
 **Feature level 126**
 
-* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Replaced
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Replaced
   `invite_expires_in_days` parameter with `invite_expires_in_minutes`.
 
 **Feature level 125**
@@ -1174,9 +1314,10 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 117**
 
-* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
-  support for passing `null` as the `invite_expires_in_days` parameter
-  to request an invitation that never expires.
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Added support
+  for passing `null` as the `invite_expires_in_days` parameter to
+  request an invitation that never expires.
 
 **Feature level 116**
 
@@ -1334,7 +1475,8 @@ No changes; feature level used for Zulip 5.0 release.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new endpoint to update default values of user settings in a realm.
-* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Added
   `invite_expires_in_days` parameter encoding the number days before
   the invitation should expire.
 
@@ -1595,8 +1737,9 @@ No changes; feature level used for Zulip 4.0 release.
 
 **Feature level 61**
 
-* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
-  support for inviting users as moderators.
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Added support
+  for inviting users as moderators.
 
 **Feature level 60**
 
@@ -1795,10 +1938,10 @@ field with an integer field `invite_to_realm_policy`.
 
 **Feature level 33**
 
-* Markdown code blocks now have a `data-code-language` attribute
-  attached to the outer `div` element, recording the programming
-  language that was selecting for syntax highlighting.  This field
-  supports the upcoming "view in playground" feature for code blocks.
+* [Markdown message formatting](/api/message-formatting#code-blocks):
+  [Code blocks](/help/code-blocks) now have a `data-code-language`
+  attribute attached to the outer HTML `div` element, recording the
+  programming language that was selected for syntax highlighting.
 
 **Feature level 32**
 
@@ -1854,9 +1997,9 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 24**
 
-* The `!avatar()` and `!gravatar()` Markdown syntax, which was never
-  documented, had inconsistent syntax, and was rarely used, was
-  removed.
+* [Markdown message formatting](/api/message-formatting#removed-features):
+  The rarely used `!avatar()` and `!gravatar()` markup syntax, which
+  was never documented and had inconsistent syntax, was removed.
 
 **Feature level 23**
 
@@ -1921,8 +2064,8 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 15**
 
-* Added [spoilers](/help/format-your-message-using-markdown#spoilers)
-  to supported Markdown features.
+* [Markdown message formatting](/api/message-formatting#spoilers): Added
+  [spoilers](/help/spoilers) to supported message formatting features.
 
 **Feature level 14**
 
@@ -1984,8 +2127,9 @@ No changes; feature level used for Zulip 3.0 release.
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user)
   and [`GET /users/me`](/api/get-own-user): User objects now contain the
   `is_owner` field as well.
-* Added [time mentions](/help/format-your-message-using-markdown#mention-a-time)
-  to supported Markdown features.
+* [Markdown message formatting](/api/message-formatting#global-times):
+  Added [global times](/help/global-times) to supported message
+  formatting features.
 
 **Feature level 7**
 

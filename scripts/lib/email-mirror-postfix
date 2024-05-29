@@ -68,7 +68,7 @@ parser.add_argument(
     dest="host",
     default="127.0.0.1",
     help="Destination server address for uploading email from email mirror. "
-    "Address must contain a HTTP protocol. Otherwise, default value is assumed "
+    "Address must contain an HTTP protocol. Otherwise, default value is assumed "
     "based on the http_only setting.",
 )
 

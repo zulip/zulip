@@ -53,3 +53,26 @@ run_test("tooltip_hotkey_hints", () => {
     const expected_html = `<span class="tooltip-hotkey-hints"><span class="tooltip-hotkey-hint">${args.hotkey_one}</span><span class="tooltip-hotkey-hint">${args.hotkey_two}</span></span>\n`;
     assert.equal(html, expected_html);
 });
+
+run_test("popover_hotkey_hints", () => {
+    const args = {
+        hotkey_one: "Ctrl",
+        hotkey_two: "[",
+    };
+
+    const html = require("./templates/popover_hotkey_hints.hbs")(args);
+    const expected_html = `<span class="popover-menu-hotkey-hints"><span class="popover-menu-hotkey-hint">${args.hotkey_one}</span><span class="popover-menu-hotkey-hint">${args.hotkey_two}</span></span>\n`;
+    assert.equal(html, expected_html);
+});
+
+run_test("popover_hotkey_hints_shift_hotkey", () => {
+    const args = {
+        hotkey_one: "Shift",
+        hotkey_two: "V",
+    };
+
+    const html = require("./templates/popover_hotkey_hints.hbs")(args);
+    args.hotkey_one = "⇧"; // adjust_shift_hotkey
+    const expected_html = `<span class="popover-menu-hotkey-hints popover-contains-shift-hotkey" data-hotkey-hints="${args.hotkey_one},${args.hotkey_two}"><span class="popover-menu-hotkey-hint">${args.hotkey_one}</span><span class="popover-menu-hotkey-hint">${args.hotkey_two}</span></span>\n`;
+    assert.equal(html, expected_html);
+});

@@ -1,0 +1,67 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% set PAGE_TITLE = "Request a demo | Zulip" %}
+
+{% block portico_content %}
+<div class="register-account flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1>Request a demo</h1>
+        </div>
+
+        <form method="post" class="white-box" id="registration">
+            {{ csrf_input }}
+
+            <fieldset class="support-request">
+                <div class="input-box support-form-field">
+                    <label for="request_demo_form_full_name" class="inline-block label-title">Full name</label>
+                    <input id="request_demo_form_full_name" class="required" type="text" name="full_name" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="request_demo_form_email" class="inline-block label-title">Email</label>
+                    <input id="request_demo_form_email" class="required" type="email" name="email" required />
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="request_demo_form_role" class="inline-block label-title">Your role</label>
+                    <input id="request_demo_form_role" class="required" type="text" name="role" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="request_demo_form_organization_name" class="inline-block label-title">Organization name</label>
+                    <input id="request_demo_form_organization_name" class="required" type="text" name="organization_name" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="request_demo_form_organization_type" class="inline-block label-title">Organization type</label>
+                    <select id="request_demo_form_organization_type" name="organization_type" class="required">
+                        {% for org_type in SORTED_ORG_TYPE_NAMES %}
+                            <option
+                              value="{{ org_type }}">
+                                {{ org_type }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="request_demo_form_organization_website" class="inline-block label-title">Organization website</label>
+                    <input id="request_demo_form_organization_website" class="required" type="url" name="organization_website" required />
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="request_demo_form_expected_user_count" class="inline-block label-title">Expected number of users (approximate range)</label>
+                    <input id="request_demo_form_expected_user_count" class="required" type="text" name="expected_user_count" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="request_demo_form_message" class="inline-block label-title">How can we help?</label>
+                    <textarea id="request_demo_form_message" name="message" cols="100" rows="5" required></textarea>
+                </div>
+
+                <div class="register-button-box">
+                    <button class="register-button support-submit-button" type="submit">
+                        <span>Submit</span>
+                        <object class="loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                    </button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

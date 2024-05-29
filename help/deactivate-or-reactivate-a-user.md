@@ -68,7 +68,7 @@ When you deactivate a user:
 
 {!admin-only.md!}
 
-A reactivated user will have the same role, stream subscriptions, user group
+A reactivated user will have the same role, channel subscriptions, user group
 memberships, and other settings and permissions as they did prior to
 deactivation. They will also have the same API key and bot API keys, but their
 bots will be deactivated until the user manually
@@ -104,8 +104,8 @@ bots will be deactivated until the user manually
 
 !!! tip ""
 
-    You may want to [review and adjust](/help/manage-user-stream-subscriptions)
-    the reactivated user's stream subscriptions.
+    You may want to [review and adjust](/help/manage-user-channel-subscriptions)
+    the reactivated user's channel subscriptions.
 
 ## Related articles
 

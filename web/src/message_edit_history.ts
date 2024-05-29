@@ -8,6 +8,7 @@ import render_message_history_overlay from "../templates/message_history_overlay
 import {exit_overlay} from "./browser_history";
 import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
+import * as loading from "./loading";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as messages_overlay_ui from "./messages_overlay_ui";
@@ -29,15 +30,15 @@ type EditHistoryEntry = {
     edited_by_notice: string;
     timestamp: number; // require to set data-message-id for overlay message row
     is_stream: boolean;
-    recipient_bar_color?: string;
-    body_to_render?: string;
-    topic_edited?: boolean;
-    prev_topic?: string;
-    new_topic?: string;
-    stream_changed?: boolean;
-    prev_stream?: string;
-    prev_stream_id?: number;
-    new_stream?: string;
+    recipient_bar_color: string | undefined;
+    body_to_render: string | undefined;
+    topic_edited: boolean | undefined;
+    prev_topic: string | undefined;
+    new_topic: string | undefined;
+    stream_changed: boolean | undefined;
+    prev_stream: string | undefined;
+    prev_stream_id: number | undefined;
+    new_stream: string | undefined;
 };
 
 const server_message_history_schema = z.object({
@@ -88,15 +89,29 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
 function get_display_stream_name(stream_id: number): string {
     const stream_name = sub_store.maybe_get_stream_name(stream_id);
     if (stream_name === undefined) {
-        return $t({defaultMessage: "Unknown stream"});
+        return $t({defaultMessage: "Unknown channel"});
     }
     return stream_name;
 }
 
+function show_loading_indicator(): void {
+    loading.make_indicator($(".message-edit-history-container .loading_indicator"));
+    $(".message-edit-history-container .loading_indicator").addClass(
+        "overlay_loading_indicator_style",
+    );
+}
+
+function hide_loading_indicator(): void {
+    loading.destroy_indicator($(".message-edit-history-container .loading_indicator"));
+    $(".message-edit-history-container .loading_indicator").removeClass(
+        "overlay_loading_indicator_style",
+    );
+}
+
 export function fetch_and_render_message_history(message: Message): void {
-    $("#message-edit-history-overlay-container").empty();
-    $("#message-edit-history-overlay-container").append(render_message_history_overlay());
+    $("#message-edit-history-overlay-container").html(render_message_history_overlay());
     open_overlay();
+    show_loading_indicator();
     void channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
@@ -211,11 +226,12 @@ export function fetch_and_render_message_history(message: Message): void {
                     }
                 }
             }
-            const rendered_list: string = render_message_edit_history({
+            const rendered_list_html = render_message_edit_history({
                 edited_messages: content_edit_history,
             });
             $("#message-history-overlay").attr("data-message-id", message.id);
-            $("#message-history-overlay .overlay-messages-list").append(rendered_list);
+            hide_loading_indicator();
+            $("#message-history-overlay .overlay-messages-list").append($(rendered_list_html));
 
             // Pass the history through rendered_markdown.ts
             // to update dynamic_elements in the content.
@@ -236,6 +252,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 xhr,
                 $("#message-history-overlay #message-history-error"),
             );
+            hide_loading_indicator();
             $("#message-history-error").show();
         },
     });
@@ -272,11 +289,11 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("click", ".message_edit_notice", (e) => {
+    $("body").on("click", ".message_edit_notice", function (this: HTMLElement, e) {
         e.stopPropagation();
         e.preventDefault();
 
-        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
+        const message_id = rows.id($(this).closest(".message_row"));
         assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(message_id);
         const row_id = rows.id($row);
@@ -294,7 +311,11 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("focus", "#message-history-overlay .overlay-message-info-box", (e) => {
-        messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
-    });
+    $("body").on(
+        "focus",
+        "#message-history-overlay .overlay-message-info-box",
+        function (this: HTMLElement) {
+            messages_overlay_ui.activate_element(this, keyboard_handling_context);
+        },
+    );
 }

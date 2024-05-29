@@ -8,7 +8,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 
 import * as blueslip from "./blueslip";
 import {show_copied_confirmation} from "./copied_tooltip";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import * as people from "./people";
@@ -148,7 +148,7 @@ export const update_elements = ($content: JQuery): void => {
                 //
                 // In these cases, the best we can do is leave the
                 // existing name in the existing mention pill
-                // HTML. Clicking on the pill will show the the
+                // HTML. Clicking on the pill will show the
                 // "Unknown user" popover.
                 if (person === undefined) {
                     people.add_inaccessible_user(user_id);
@@ -264,21 +264,21 @@ export const update_elements = ($content: JQuery): void => {
         // If a spoiler block has no header content, it should have a default header.
         // We do this client side to allow for i18n by the client.
         if ($(this).html().trim().length === 0) {
-            $(this).append(`<p>${$t_html({defaultMessage: "Spoiler"})}</p>`);
+            $(this).append($("<p>").text($t({defaultMessage: "Spoiler"})));
         }
 
         // Add the expand/collapse button to spoiler blocks
         const toggle_button_html =
             '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
-        $(this).prepend(toggle_button_html);
+        $(this).append($(toggle_button_html));
     });
 
     // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,
-    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.js`.
+    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.ts`.
     $content.find("div.codehilite").each(function (): void {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
-        const fenced_code_lang = $codehilite.data("code-language");
+        const fenced_code_lang = $codehilite.attr("data-code-language");
         let playground_info;
         if (fenced_code_lang !== undefined) {
             playground_info = realm_playground.get_playground_info_for_languages(fenced_code_lang);
@@ -307,14 +307,15 @@ export const update_elements = ($content: JQuery): void => {
             $view_in_playground_button.attr("data-tippy-content", title);
             $view_in_playground_button.attr("aria-label", title);
         }
-
-        const clipboard = new ClipboardJS($buttonContainer[0], {
+        const $copy_button = $buttonContainer.find(".copy_codeblock");
+        const clipboard = new ClipboardJS($copy_button[0], {
             text(copy_element) {
-                return $(copy_element).siblings("code").text();
+                const $code = $(copy_element).parent().siblings("code");
+                return $code.text();
             },
         });
+
         clipboard.on("success", () => {
-            const $copy_button = $buttonContainer.find(".copy_codeblock");
             show_copied_confirmation($copy_button[0]);
         });
         $codehilite.addClass("zulip-code-block");

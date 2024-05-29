@@ -19,8 +19,7 @@ website (e.g., **Sponsors** or **Acknowledgements**).
 
 2. If appropriate, add a brief description:
 
-   > Zulip is an open-source modern team chat app designed to keep both live and
-     asynchronous conversations organized.
+   > Zulip is an organized team chat app designed for efficient communication.
 
 {end_tabs}
 

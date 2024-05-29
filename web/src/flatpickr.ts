@@ -43,7 +43,7 @@ export function show_flatpickr(
         disableMobile: true,
         time_24hr: user_settings.twenty_four_hour_time,
         minuteIncrement: 1,
-        onKeyDown(_selectedDates, _dateStr, instance, event) {
+        onKeyDown(_selectedDates, _dateStr, instance, event: KeyboardEvent) {
             // See also the keydown handler below.
             //
             // TODO: Add a clear explanation of exactly how key
@@ -64,6 +64,7 @@ export function show_flatpickr(
                     ...(user_settings.twenty_four_hour_time ? [] : [instance.amPM]),
                     $(".flatpickr-confirm")[0],
                 ];
+                assert(event.target instanceof HTMLElement);
                 const i = elems.indexOf(event.target);
                 const n = elems.length;
                 const remain = (i + (event.shiftKey ? -1 : 1)) % n;

@@ -45,8 +45,9 @@ that include:
 - **`zulip::profile::app_frontend`**
 - **`zulip::profile::memcached`**
 - **`zulip::profile::postgresql`**
-- **`zulip::profile::redis`**
 - **`zulip::profile::rabbitmq`**
+- **`zulip::profile::redis`**
+- **`zulip::profile::smokescreen`**
 
 If you are using a [Apache as a single-sign-on
 authenticator](authentication-methods.md#apache-based-sso-with-remote_user),
@@ -229,13 +230,13 @@ setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-R
 
 #### `replication_primary`
 
-On the [warm standby replicas](deployment.md#postgresql-warm-standby), set to the
+On the [warm standby replicas](postgresql.md#postgresql-warm-standby), set to the
 hostname of the primary PostgreSQL server that streaming replication
 should be done from.
 
 #### `replication_user`
 
-On the [warm standby replicas](deployment.md#postgresql-warm-standby), set to the
+On the [warm standby replicas](postgresql.md#postgresql-warm-standby), set to the
 username that the host should authenticate to the primary PostgreSQL
 server as, for streaming replication. Authentication will be done
 based on the `pg_hba.conf` file; if you are using password
@@ -246,7 +247,7 @@ for authentication.
 
 If set to as true value, inhibits the nightly [`wal-g` backups][wal-g] which
 would be taken on all non-replicated hosts and [all warm standby
-replicas](deployment.md#postgresql-warm-standby). This is generally only set if you have
+replicas](postgresql.md#postgresql-warm-standby). This is generally only set if you have
 multiple warm standby replicas, in order to avoid taking multiple backups, one
 per replica.
 

@@ -141,7 +141,7 @@ export function spinner_li(): ListInfoNode {
 }
 
 export class TopicListWidget {
-    prior_dom?: vdom.Tag<ListInfoNodeOptions> = undefined;
+    prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
     $parent_elem: JQuery;
     my_stream_id: number;
 
@@ -208,7 +208,7 @@ export class TopicListWidget {
 
         const replace_content = (html: string): void => {
             this.remove();
-            this.$parent_elem.append(html);
+            this.$parent_elem.append($(html));
         };
 
         const find = (): JQuery => this.$parent_elem.find(".topic-list");
@@ -337,9 +337,9 @@ export function initialize({
 }): void {
     $("#stream_filters").on(
         "click",
-        ".sidebar-topic-check, .topic-name, .topic-markers-and-controls",
+        ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-controls",
         (e) => {
-            if (e.metaKey || e.ctrlKey) {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) {
                 return;
             }
             if ($(e.target).closest(".show-more-topics").length > 0) {

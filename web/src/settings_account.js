@@ -360,7 +360,7 @@ export function set_up() {
     };
 
     $("#api_key_button").on("click", (e) => {
-        $("body").append(render_settings_api_key_modal());
+        $("body").append($(render_settings_api_key_modal()));
         setup_api_key_modal();
         $("#api_key_status").hide();
         modals.open("api_key_modal", {

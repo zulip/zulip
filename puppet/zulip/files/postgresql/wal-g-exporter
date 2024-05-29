@@ -3,12 +3,14 @@ import configparser
 import contextlib
 import json
 import logging
+import os
 import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Dict, List, Mapping, Optional, Protocol
+from urllib.parse import parse_qs, urlsplit
 
 
 class GaugeMetric(Protocol):
@@ -54,7 +56,7 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
         self.wfile.write("\n".join(lines).encode())
 
     def do_GET(self) -> None:
-        if self.path != "/metrics":
+        if urlsplit(self.path).path != "/metrics":
             self.send_response(404)
             self.end_headers()
             sys.stderr.flush()
@@ -89,13 +91,20 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
 
         now = datetime.now(tz=timezone.utc)
         try:
-            config_file = configparser.RawConfigParser()
-            config_file.read("/etc/zulip/zulip-secrets.conf")
-            bucket = config_file["secrets"]["s3_backups_bucket"]
+            query = parse_qs(urlsplit(self.path).query)
+            modified_env = os.environ.copy()
+            if query.get("bucket") and len(query["bucket"]) == 1:
+                bucket = query["bucket"][0]
+                modified_env["WALG_S3_PREFIX"] = f"s3://{bucket}"
+            else:
+                config_file = configparser.RawConfigParser()
+                config_file.read("/etc/zulip/zulip-secrets.conf")
+                bucket = config_file["secrets"]["s3_backups_bucket"]
 
             backup_list_output = subprocess.check_output(
                 ["env-wal-g", "backup-list", "--detail", "--json"],
                 text=True,
+                env=modified_env,
             )
             data = json.loads(backup_list_output)
             backup_count(len(data), {"bucket": bucket})

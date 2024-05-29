@@ -6,6 +6,7 @@ import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
+import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -13,6 +14,7 @@ import * as people from "./people";
 import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user} from "./state_data";
 import * as timerender from "./timerender";
@@ -20,9 +22,26 @@ import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
 import * as user_sort from "./user_sort";
 
+export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
+export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
+
 const section = {
-    active: {},
-    deactivated: {},
+    active: {
+        dropdown_widget_name: active_user_list_dropdown_widget_name,
+        filters: {
+            text_search: "",
+            // 0 role_code signifies All roles for our filter.
+            role_code: 0,
+        },
+    },
+    deactivated: {
+        dropdown_widget_name: deactivated_user_list_dropdown_widget_name,
+        filters: {
+            text_search: "",
+            // 0 role_code signifies All roles for our filter.
+            role_code: 0,
+        },
+    },
     bots: {},
 };
 
@@ -94,6 +113,54 @@ function failed_listing_users() {
     blueslip.error("Error while listing users for user_id", {user_id});
 }
 
+function add_value_to_filters(section, key, value) {
+    section.filters[key] = value;
+    // This hard_redraw will rerun the relevant predicate function
+    // and in turn apply the new filters.
+    section.list_widget.hard_redraw();
+}
+
+function role_selected_handler(event, dropdown, widget) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const role_code = Number($(event.currentTarget).attr("data-unique-id"));
+    if (widget.widget_name === section.active.dropdown_widget_name) {
+        add_value_to_filters(section.active, "role_code", role_code);
+    } else if (widget.widget_name === section.deactivated.dropdown_widget_name) {
+        add_value_to_filters(section.deactivated, "role_code", role_code);
+    }
+
+    dropdown.hide();
+    widget.render();
+}
+
+function get_roles() {
+    return [
+        {unique_id: "0", name: $t({defaultMessage: "All roles"})},
+        ...Object.values(settings_config.user_role_values)
+            .map((user_role_value) => ({
+                unique_id: user_role_value.code.toString(),
+                name: user_role_value.description,
+            }))
+            .reverse(),
+    ];
+}
+
+function create_role_filter_dropdown($events_container, widget_name) {
+    new dropdown_widget.DropdownWidget({
+        widget_name,
+        get_options: get_roles,
+        $events_container,
+        item_click_callback: role_selected_handler,
+        default_id: "0",
+        tippy_props: {
+            placement: "bottom-start",
+            offset: [0, 0],
+        },
+    }).setup();
+}
+
 function populate_users() {
     const active_user_ids = people.get_realm_active_human_user_ids();
     const deactivated_user_ids = people.get_non_active_human_ids();
@@ -104,6 +171,11 @@ function populate_users() {
 
     section.active.create_table(active_user_ids);
     section.deactivated.create_table(deactivated_user_ids);
+    create_role_filter_dropdown($("#admin-user-list"), section.active.dropdown_widget_name);
+    create_role_filter_dropdown(
+        $("#admin-deactivated-users-list"),
+        section.deactivated.dropdown_widget_name,
+    );
 }
 
 function reset_scrollbar($sel) {
@@ -244,7 +316,7 @@ section.bots.create_table = () => {
 
 section.active.create_table = (active_users) => {
     const $users_table = $("#admin_users_table");
-    ListWidget.create($users_table, active_users, {
+    section.active.list_widget = ListWidget.create($users_table, active_users, {
         name: "users_table_list",
         get_item: people.get_by_user_id,
         modifier_html(item) {
@@ -252,8 +324,9 @@ section.active.create_table = (active_users) => {
             return render_admin_user_list(info);
         },
         filter: {
-            $element: $users_table.closest(".settings-section").find(".search"),
-            filterer: people.filter_for_user_settings_search,
+            predicate(person) {
+                return people.predicate_for_user_settings_filters(person, section.active.filters);
+            },
             onupdate: reset_scrollbar($users_table),
         },
         $parent_container: $("#admin-user-list").expectOne(),
@@ -274,28 +347,36 @@ section.active.create_table = (active_users) => {
 
 section.deactivated.create_table = (deactivated_users) => {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
-    ListWidget.create($deactivated_users_table, deactivated_users, {
-        name: "deactivated_users_table_list",
-        get_item: people.get_by_user_id,
-        modifier_html(item) {
-            const info = human_info(item);
-            return render_admin_user_list(info);
+    section.deactivated.list_widget = ListWidget.create(
+        $deactivated_users_table,
+        deactivated_users,
+        {
+            name: "deactivated_users_table_list",
+            get_item: people.get_by_user_id,
+            modifier_html(item) {
+                const info = human_info(item);
+                return render_admin_user_list(info);
+            },
+            filter: {
+                predicate(person) {
+                    return people.predicate_for_user_settings_filters(
+                        person,
+                        section.deactivated.filters,
+                    );
+                },
+                onupdate: reset_scrollbar($deactivated_users_table),
+            },
+            $parent_container: $("#admin-deactivated-users-list").expectOne(),
+            init_sort: "full_name_alphabetic",
+            sort_fields: {
+                email: user_sort.sort_email,
+                role: user_sort.sort_role,
+                id: user_sort.sort_user_id,
+                ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
+            },
+            $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
         },
-        filter: {
-            $element: $deactivated_users_table.closest(".settings-section").find(".search"),
-            filterer: people.filter_for_user_settings_search,
-            onupdate: reset_scrollbar($deactivated_users_table),
-        },
-        $parent_container: $("#admin-deactivated-users-list").expectOne(),
-        init_sort: "full_name_alphabetic",
-        sort_fields: {
-            email: user_sort.sort_email,
-            role: user_sort.sort_role,
-            id: user_sort.sort_user_id,
-            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
-        },
-        $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
-    });
+    );
 
     loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
     $("#admin_deactivated_users_table").show();
@@ -360,7 +441,7 @@ function handle_deactivation($tbody) {
         e.stopPropagation();
 
         const $row = $(e.target).closest(".user_row");
-        const user_id = $row.data("user-id");
+        const user_id = Number($row.attr("data-user-id"));
 
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
@@ -389,7 +470,7 @@ function handle_bot_deactivation($tbody) {
 
         function handle_confirm() {
             const url = "/json/bots/" + encodeURIComponent(bot_id);
-            dialog_widget.submit_api_request(channel.del, url);
+            dialog_widget.submit_api_request(channel.del, url, {});
         }
 
         user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
@@ -437,9 +518,23 @@ function handle_edit_form($tbody) {
     });
 }
 
+function handle_filter_change($tbody, section) {
+    // This duplicates the built-in search filter live-update logic in
+    // ListWidget for the input.list_widget_filter event type, but we
+    // can't use that, because we're also filtering on Role with our
+    // custom predicate.
+    $tbody
+        .closest(".settings-section")
+        .find(".search")
+        .on("input.list_widget_filter", function () {
+            add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
+        });
+}
+
 section.active.handle_events = () => {
     const $tbody = $("#admin_users_table").expectOne();
 
+    handle_filter_change($tbody, section.active);
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
@@ -448,6 +543,7 @@ section.active.handle_events = () => {
 section.deactivated.handle_events = () => {
     const $tbody = $("#admin_deactivated_users_table").expectOne();
 
+    handle_filter_change($tbody, section.deactivated);
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);

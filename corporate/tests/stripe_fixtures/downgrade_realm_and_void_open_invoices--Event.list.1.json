@@ -12,7 +12,7 @@
           "default_currency": null,
           "default_source": null,
           "delinquent": false,
-          "description": "zulip (Zulip Dev)",
+          "description": "zulip.testserver f27ccad7-fd5",
           "discount": null,
           "email": "hamlet@zulip.com",
           "id": "cus_NORMALIZED0002",
@@ -25,8 +25,8 @@
           },
           "livemode": false,
           "metadata": {
-            "realm_id": "1",
-            "realm_str": "zulip"
+            "remote_realm_host": "zulip.testserver",
+            "remote_realm_uuid": "f27ccad7-fd5b-42cf-947a-3763c39673b7"
           },
           "name": null,
           "next_invoice_sequence": 1,
@@ -38,13 +38,13 @@
           "test_clock": null
         }
       },
-      "id": "evt_1OqUpaDEQaroqDjsJhakIUDE",
+      "id": "evt_1P41kIDEQaroqDjseGfr1IyQ",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "d323e362-e463-4a2d-8895-0232ca6f9529"
+        "idempotency_key": "73fa4143-fccf-412f-b0c6-39d51bdc09a9"
       },
       "type": "customer.created"
     }

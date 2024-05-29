@@ -56,7 +56,7 @@ Here are some ways to find the URL for your Zulip organization.
 * On [Zulip Cloud](https://zulip.com/plans/) and other Zulip servers updated to
   [Zulip 6.0 or
   higher](https://zulip.readthedocs.io/en/stable/overview/changelog.html#zulip-6-x-series),
-  click the **gear** (<i class="fa fa-cog"></i>) icon in the upper right
+  click the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in the upper right
   corner of the web or desktop app. Your organization's log in URL is shown in the top
   section of the menu.
 

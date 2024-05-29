@@ -71,13 +71,8 @@ git clone "$REPO_URL" zulip -b "$BRANCH"
 git -C zulip checkout "$BRANCH"
 
 (
-    VIRTUALENV_NEEDED=$(if echo "$FULL_ROLES" | grep -q app_frontend; then echo -n yes; else echo -n no; fi)
-    export VIRTUALENV_NEEDED
-    export PUPPET_CLASSES="$FULL_ROLES"
     export APT_OPTIONS="-o Dpkg::Options::=--force-confnew"
-    /root/zulip/scripts/setup/install \
-        --self-signed-cert \
-        --no-init-db
+    /root/zulip/scripts/setup/install --puppet-classes "$FULL_ROLES" --postgresql-version=14
 )
 
 # Delete the ubuntu user

@@ -66,7 +66,7 @@ You can use followed topics for a variety of workflows:
 You can configure custom notifications for followed topics. You can also
 [configure the unread count
 badge](/help/desktop-notifications#unread-count-badge) to include unread
-messages just in followed topics, without counting other stream messages.
+messages just in followed topics, without counting other channel messages.
 
 {!configure-notifications-for-followed-topics.md!}
 
@@ -88,6 +88,6 @@ messages just in followed topics, without counting other stream messages.
 
 * [Reading strategies](/help/reading-strategies)
 * [Topic notifications](/help/topic-notifications)
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [Mute or unmute a topic](/help/mute-a-topic)
-* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a channel](/help/mute-a-channel)

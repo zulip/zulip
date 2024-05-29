@@ -2,7 +2,7 @@ Get Insping notifications in Zulip! Insping (stylized as !nsping) is a
 simple uptime and performance monitoring tool, which notifies you when
 a website or service is up and running or down.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

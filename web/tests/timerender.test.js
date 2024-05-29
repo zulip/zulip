@@ -350,7 +350,7 @@ run_test("render_date_renders_time_html", () => {
     MockDate.set(today.getTime());
 
     const message_time = today;
-    const expected_html = $t({defaultMessage: "Today"});
+    const expected_text = $t({defaultMessage: "Today"});
 
     const attrs = {};
     const $span_stub = $("<span>");
@@ -360,15 +360,10 @@ run_test("render_date_renders_time_html", () => {
         return $span_stub;
     };
 
-    $span_stub.append = (str) => {
-        $span_stub.html(str);
-        return $span_stub;
-    };
-
     const $actual = timerender.render_date(message_time);
-    assert.equal($actual.html(), expected_html);
+    assert.equal($actual.text(), expected_text);
     assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
-    assert.equal(attrs.class, "timerender0");
+    assert.equal(attrs.class, "timerender-content timerender0");
 
     MockDate.reset();
 });

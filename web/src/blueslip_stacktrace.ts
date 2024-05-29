@@ -28,11 +28,11 @@ type NumberedLine = {
 };
 
 type CleanStackFrame = {
-    full_path?: string;
-    show_path?: string;
-    function_name?: FunctionName;
-    line_number?: number;
-    context?: NumberedLine[];
+    full_path: string | undefined;
+    show_path: string | undefined;
+    function_name: FunctionName | undefined;
+    line_number: number | undefined;
+    context: NumberedLine[] | undefined;
 };
 
 export function exception_msg(

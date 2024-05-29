@@ -1,4 +1,4 @@
-If your preferred editor is Virtual Studio Code, the [Visual Studio
+If your preferred editor is Visual Studio Code, the [Visual Studio
 Code Remote - SSH](https://code.visualstudio.com/docs/remote/ssh)
 extension is recommended for editing files when developing with
 Vagrant. When you have it installed, you can run:

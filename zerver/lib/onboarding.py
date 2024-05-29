@@ -52,14 +52,14 @@ def send_initial_direct_message(user: UserProfile) -> None:
     # request and thus may not have the user's language context yet.
     with override_language(user.default_language):
         if education_organization:
-            getting_started_help = user.realm.uri + "/help/using-zulip-for-a-class"
+            getting_started_help = user.realm.url + "/help/using-zulip-for-a-class"
             getting_started_string = (
                 _(
                     "If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!"
                 )
             ).format(getting_started_url=getting_started_help)
         else:
-            getting_started_help = user.realm.uri + "/help/getting-started-with-zulip"
+            getting_started_help = user.realm.url + "/help/getting-started-with-zulip"
             getting_started_string = (
                 _(
                     "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
@@ -70,7 +70,7 @@ def send_initial_direct_message(user: UserProfile) -> None:
         # Add extra content on setting up a new organization for administrators.
         if user.is_realm_admin:
             if education_organization:
-                organization_setup_help = user.realm.uri + "/help/setting-up-zulip-for-a-class"
+                organization_setup_help = user.realm.url + "/help/setting-up-zulip-for-a-class"
                 organization_setup_string = (
                     " "
                     + _(
@@ -79,7 +79,7 @@ def send_initial_direct_message(user: UserProfile) -> None:
                 ).format(organization_setup_url=organization_setup_help)
             else:
                 organization_setup_help = (
-                    user.realm.uri + "/help/getting-your-organization-started-with-zulip"
+                    user.realm.url + "/help/getting-your-organization-started-with-zulip"
                 )
                 organization_setup_string = (
                     " "
@@ -91,7 +91,7 @@ def send_initial_direct_message(user: UserProfile) -> None:
         demo_organization_warning_string = ""
         # Add extra content about automatic deletion for demo organization owners.
         if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
-            demo_organization_help = user.realm.uri + "/help/demo-organizations"
+            demo_organization_help = user.realm.url + "/help/demo-organizations"
             demo_organization_warning_string = (
                 _(
                     "Note that this is a [demo organization]({demo_organization_help_url}) and will be "
@@ -137,7 +137,7 @@ def bot_commands(no_help_command: bool = False) -> str:
         "apps",
         "profile",
         "theme",
-        "streams",
+        "channels",
         "topics",
         "message formatting",
         "keyboard shortcuts",
@@ -172,19 +172,20 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
     elif human_response_lower in ["stream", "streams", "channel", "channels"]:
         return "".join(
             [
-                _(
-                    "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
-                    "They are similar to channels in other chat apps."
+                _("In Zulip, channels [determine who gets a message]({help_link}).").format(
+                    help_link="/help/introduction-to-channels"
                 )
                 + "\n\n",
-                _("[Browse and subscribe to streams](#streams/all)."),
+                _("[Browse and subscribe to channels]({settings_link}).").format(
+                    settings_link="#channels/all"
+                ),
             ]
         )
     elif human_response_lower in ["topic", "topics"]:
         return "".join(
             [
                 _(
-                    "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
+                    "In Zulip, topics [tell you what a message is about](/help/introduction-to-topics). "
                     "They are light-weight subjects, very similar to the subject line of an email."
                 )
                 + "\n\n",
@@ -262,110 +263,182 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
 
 @transaction.atomic
 def send_initial_realm_messages(realm: Realm) -> None:
+    # Sends the initial messages for a new organization.
+    #
+    # Technical note: Each stream created in the realm creation
+    # process should have at least one message declared in this
+    # function, to enforce the pseudo-invariant that every stream has
+    # at least one message.
     welcome_bot = get_system_bot(settings.WELCOME_BOT, realm.id)
-    # Make sure each stream created in the realm creation process has at least one message below
-    # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
-    # view slightly less overwhelming
-    with override_language(realm.default_language):
-        content_of_private_streams_topic_name = (
-            _("This is a private stream, as indicated by the lock icon next to the stream name.")
-            + " "
-            + _("Private streams are only visible to stream members.")
-            + "\n"
-            "\n"
-            + _(
-                "To manage this stream, go to [Stream settings]({stream_settings_url}) "
-                "and click on `{initial_private_stream_name}`."
-            )
-        ).format(
-            stream_settings_url="#streams/subscribed",
-            initial_private_stream_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
-        )
 
-        content1_of_topic_demonstration_topic_name = (
-            _(
-                "This is a message on stream #**{default_notification_stream_name}** with the "
-                "topic `topic demonstration`."
-            )
-        ).format(default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+    # Content is declared here to apply translation properly.
+    #
+    # remove_single_newlines needs to be called on any multiline
+    # strings for them to render properly.
+    content1_of_moving_messages_topic_name = (
+        _("""
+If anything is out of place, it’s easy to [move messages]({move_content_another_topic_help_url}),
+[rename]({rename_topic_help_url}) and [split]({move_content_another_topic_help_url}) topics,
+or even move a topic [to a different channel]({move_content_another_channel_help_url}).
+""")
+    ).format(
+        move_content_another_topic_help_url="/help/move-content-to-another-topic",
+        rename_topic_help_url="/help/rename-a-topic",
+        move_content_another_channel_help_url="/help/move-content-to-another-channel",
+    )
 
-        content2_of_topic_demonstration_topic_name = (
-            _("Topics are a lightweight tool to keep conversations organized.")
-            + " "
-            + _("You can learn more about topics at [Streams and topics]({about_topics_help_url}).")
-        ).format(about_topics_help_url="/help/streams-and-topics")
+    content2_of_moving_messages_topic_name = _("""
+:point_right: Try moving this message to another topic and back.
+""")
 
-        content_of_swimming_turtles_topic_name = (
-            _(
-                "This is a message on stream #**{default_notification_stream_name}** with the "
-                "topic `swimming turtles`."
-            )
-            + "\n"
-            "\n"
-            "[](/static/images/cute/turtle.png)"
-            "\n"
-            "\n"
-            + _(
-                "[Start a new topic]({start_topic_help_url}) any time you're not replying to a \
-            previous message."
-            )
-        ).format(
-            default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            start_topic_help_url="/help/starting-a-new-topic",
-        )
+    content1_of_welcome_to_zulip_topic_name = _("""
+Zulip is organized to help you communicate more efficiently. Conversations are
+labeled with topics, which summarize what the conversation is about.
 
-        content_of_zulip_update_announcements_topic_name = remove_single_newlines(
-            (
-                _("""
-Welcome! To help you learn about new features and configuration options,
-this topic will receive messages about important changes in Zulip.
+For example, this message is in the “{topic_name}” topic in the
+#**{zulip_discussion_channel_name}** channel, as you can see in the left sidebar
+and above.
+""").format(
+        zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        topic_name=_("welcome to Zulip!"),
+    )
 
-You can read these update messages whenever it's convenient, or
-[mute]({mute_topic_help_url}) this topic if you are not interested.
-If your organization does not want to receive these announcements,
-they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
-            """)
-            ).format(
-                zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
-                mute_topic_help_url="/help/mute-a-topic",
-            )
-        )
+    content2_of_welcome_to_zulip_topic_name = _("""
+You can read Zulip one conversation at a time, seeing each message in context,
+no matter how many other conversations are going on.
+""")
 
-    welcome_messages: List[Dict[str, str]] = [
+    content3_of_welcome_to_zulip_topic_name = _("""
+:point_right: When you're ready, check out your [Inbox](/#inbox) for other
+conversations with unread messages.
+""")
+
+    content1_of_start_conversation_topic_name = _("""
+To kick off a new conversation, click **Start new conversation** below.
+The new conversation thread will be labeled with its own topic.
+""")
+
+    content2_of_start_conversation_topic_name = _("""
+For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”
+""")
+
+    content3_of_start_conversation_topic_name = _("""
+:point_right: Try starting a new conversation in this channel.
+""")
+
+    content1_of_experiments_topic_name = (
+        _("""
+:point_right:  Use this topic to try out [Zulip's messaging features]({format_message_help_url}).
+""")
+    ).format(format_message_help_url="/help/format-your-message-using-markdown")
+
+    content2_of_experiments_topic_name = (
+        _("""
+```spoiler Want to see some examples?
+
+````python
+print("code blocks")
+````
+
+- bulleted
+- lists
+
+Link to a conversation: #**{zulip_discussion_channel_name}>{topic_name}**
+```
+""")
+    ).format(
+        zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        topic_name=_("welcome to Zulip!"),
+    )
+
+    content1_of_greetings_topic_name = _("""
+This **greetings** topic is a great place to say “hi” :wave: to your teammates.
+""")
+
+    content2_of_greetings_topic_name = _("""
+:point_right: Click on this message to start a new message in the same conversation.
+""")
+
+    welcome_messages: List[Dict[str, str]] = []
+
+    # Messages added to the "welcome messages" list last will be most
+    # visible to users, since welcome messages will likely be browsed
+    # via the right sidebar or recent conversations view, both of
+    # which are sorted newest-first.
+    #
+    # Initial messages are configured below.
+
+    # Advertising moving messages.
+    welcome_messages += [
         {
-            "stream": Realm.INITIAL_PRIVATE_STREAM_NAME,
-            "topic_name": "private streams",
-            "content": content_of_private_streams_topic_name,
-        },
-        {
-            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic_name": "topic demonstration",
-            "content": content1_of_topic_demonstration_topic_name,
-        },
-        {
-            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic_name": "topic demonstration",
-            "content": content2_of_topic_demonstration_topic_name,
-        },
-        {
-            "stream": realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic_name": "swimming turtles",
-            "content": content_of_swimming_turtles_topic_name,
-        },
-        {
-            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic_name": str(Realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME),
-            "content": content_of_zulip_update_announcements_topic_name,
-        },
+            "channel_name": str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            "topic_name": _("moving messages"),
+            "content": content,
+        }
+        for content in [
+            content1_of_moving_messages_topic_name,
+            content2_of_moving_messages_topic_name,
+        ]
     ]
+
+    # Suggestion to test messaging features.
+    # Dependency on knowing how to send messages.
+    welcome_messages += [
+        {
+            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            "topic_name": _("experiments"),
+            "content": content,
+        }
+        for content in [content1_of_experiments_topic_name, content2_of_experiments_topic_name]
+    ]
+
+    # Suggestion to start your first new conversation.
+    welcome_messages += [
+        {
+            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            "topic_name": _("start a conversation"),
+            "content": content,
+        }
+        for content in [
+            content1_of_start_conversation_topic_name,
+            content2_of_start_conversation_topic_name,
+            content3_of_start_conversation_topic_name,
+        ]
+    ]
+
+    # Suggestion to send first message as a hi to your team.
+    welcome_messages += [
+        {
+            "channel_name": str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
+            "topic_name": _("greetings"),
+            "content": content,
+        }
+        for content in [content1_of_greetings_topic_name, content2_of_greetings_topic_name]
+    ]
+
+    # Main welcome message, this should be last.
+    welcome_messages += [
+        {
+            "channel_name": str(realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            "topic_name": _("welcome to Zulip!"),
+            "content": content,
+        }
+        for content in [
+            content1_of_welcome_to_zulip_topic_name,
+            content2_of_welcome_to_zulip_topic_name,
+            content3_of_welcome_to_zulip_topic_name,
+        ]
+    ]
+
+    # End of message declarations; now we actually send them.
 
     messages = [
         internal_prep_stream_message_by_name(
             realm,
             welcome_bot,
-            message["stream"],
+            message["channel_name"],
             message["topic_name"],
-            message["content"],
+            remove_single_newlines(message["content"]),
         )
         for message in welcome_messages
     ]
@@ -373,13 +446,17 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
         sent_message_result.message_id for sent_message_result in do_send_messages(messages)
     ]
 
-    # We find the one of our just-sent messages with turtle.png in it,
-    # and react to it.  This is a bit hacky, but works and is kinda a
-    # 1-off thing.
-    turtle_message = Message.objects.select_for_update().get(
-        id__in=message_ids, content__icontains="cute/turtle.png"
+    # We find the one of our just-sent greetings messages, and react to it.
+    # This is a bit hacky, but works and is kinda a 1-off thing.
+    greetings_message = (
+        Message.objects.select_for_update()
+        .filter(
+            id__in=message_ids, content=remove_single_newlines(content1_of_greetings_topic_name)
+        )
+        .first()
     )
-    emoji_data = get_emoji_data(realm.id, "turtle")
+    assert greetings_message is not None
+    emoji_data = get_emoji_data(realm.id, "wave")
     do_add_reaction(
-        welcome_bot, turtle_message, "turtle", emoji_data.emoji_code, emoji_data.reaction_type
+        welcome_bot, greetings_message, "wave", emoji_data.emoji_code, emoji_data.reaction_type
     )

@@ -6,72 +6,6 @@ maintainable codebase. This page describes the stages of review your pull
 request may go through, and offers guidance on how you can help keep your pull
 request moving along.
 
-## Prepare your pull request
-
-Beyond writing the code, you will need to prepare your work to make it as easy
-as possible for others to review. When you believe your code is ready, follow the [guide on how to review
-code](../contributing/code-reviewing.md#how-to-review-code)
-to review your own work. You can often find things you missed by taking a step
-back to look over your work before asking others to do so. Catching mistakes
-yourself will help your PRs be merged faster, and folks will appreciate the
-quality and professionalism of your work.
-
-Be sure to take a careful look at your commit structure and commit messages, and
-do your best to follow Zulip's [commit
-guidelines](../contributing/commit-discipline.md). This makes it much easier for
-code reviewers to spot bugs, so if your PR does not follow the guidelines,
-reviewers will ask you to restructure it prior to going through the code.
-
-## Submit your pull request for review
-
-If you are new to Git, see our guide on [making a pull
-request][git-guide-make-pr] for detailed technical instructions on how to submit
-a pull request. When submitting your PR, you will need to:
-
-- Clearly describe the work you are submitting. Make sure the pull request
-  template is filled out correctly, and that all the relevant points on the
-  self-review checklist (if the repository has one) have been addressed. See the
-  [reviewable pull requests](../contributing/reviewable-prs.md) guide for
-  advice.
-
-- If you have a question that you expect to be resolved during the review
-  process, put it in a PR comment attached to a relevant part of the changes.
-  The review process will go a lot more smoothly if points of uncertainty
-  are explicitly laid out.
-
-- Make sure that the pull request passes all CI tests. You can sometimes
-  request initial feedback if there are open questions that will impact how
-  you update the tests. But in general, maintainers will wait for your PR to
-  pass tests before reviewing your work.
-
-If any part of your contribution is from someone else (code
-snippets, images, sounds, or any other copyrightable work, modified or
-unmodified), be sure to review the instructions on how to [properly
-attribute][licensing] the work.
-
-If your PR was not ready for review when
-you first posted it (e.g., because it was failing tests, or you
-weren't done working through the self-review checklist), notify maintainers when
-you'd like them to take a look by posting a quick "Ready for review!" comment on
-the main GitHub thread for your PR.
-
-[git-guide-make-pr]: ../git/pull-requests.md
-[licensing]: ../contributing/licensing.md
-
-### Draft pull requests
-
-If it helps your workflow, you can submit your pull request marked as
-a [draft][github-help-draft-pr] while you're still working on it. When ready for
-review:
-
-1. Make sure your PR is no longer marked as a [draft][github-help-draft-pr], and
-   doesn't have "WIP" in the title.
-
-1. Post a quick "Ready for review!" comment on the main GitHub thread for your
-   PR.
-
-[github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
-
 ## Labels for managing the stages of pull request review
 
 In the Zulip server/web app repository
@@ -167,10 +101,12 @@ feedback on your PR as best you can, post a comment asking reviewers to take
 another look. Your comment should make it easy to understand what has been done
 and what remains by:
 
-- Summarizing the changes made since the last review you received.
+- Summarizing the changes made since the last review you received. Be clear
+  about which issues you've resolved (and how!).
 - Highlighting remaining questions or decisions, with links to any relevant
   threads in the [Zulip development
-  community](https://zulip.com/development-community/).
+  community](https://zulip.com/development-community/). It should be clear which
+  feedback you _haven't_ addressed yet.
 - Providing updated screenshots and information on manual testing if
   appropriate.
 

@@ -12,8 +12,6 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.upload.base import ZulipUploadBackend
-from zerver.lib.upload.local import LocalUploadBackend
-from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 
 
@@ -53,9 +51,13 @@ def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:
+    from zerver.lib.upload.local import LocalUploadBackend
+
     upload_backend: ZulipUploadBackend = LocalUploadBackend()
-else:
-    upload_backend = S3UploadBackend()  # nocoverage
+else:  # nocoverage
+    from zerver.lib.upload.s3 import S3UploadBackend
+
+    upload_backend = S3UploadBackend()
 
 # Message attachment uploads
 
@@ -83,7 +85,6 @@ def upload_message_attachment(
 
 
 def claim_attachment(
-    user_profile: UserProfile,
     path_id: str,
     message: Union[Message, ScheduledMessage],
     is_message_realm_public: bool,
@@ -211,7 +212,7 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
         assert emoji_filename is not None
         emoji_url = get_emoji_url(emoji_filename, realm_emoji.realm_id)
         if emoji_url.startswith("/"):
-            emoji_url = urljoin(realm_emoji.realm.uri, emoji_url)
+            emoji_url = urljoin(realm_emoji.realm.url, emoji_url)
 
         emoji_file_content = get_emoji_file_content(session, emoji_url, realm_emoji.id, logger)
 

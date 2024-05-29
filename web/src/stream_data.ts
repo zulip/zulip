@@ -3,6 +3,7 @@ import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import type {User} from "./people";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -183,10 +184,15 @@ export function get_sub(stream_name: string): StreamSubscription | undefined {
 }
 
 export function get_sub_by_id(stream_id: number): StreamSubscription | undefined {
-    if (!stream_id) {
+    return stream_info.get(stream_id);
+}
+
+export function maybe_get_creator_details(creator_id: number | null): User | undefined {
+    if (creator_id === null) {
         return undefined;
     }
-    return stream_info.get(stream_id);
+
+    return people.get_user_by_id_assert_valid(creator_id);
 }
 
 export function get_stream_id(name: string): number | undefined {

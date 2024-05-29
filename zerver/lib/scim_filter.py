@@ -50,7 +50,7 @@ class ZulipUserFilterQuery(UserFilterQuery):
         Return extra SQL and params to be attached to end of current Query's
         SQL and params. The return format matches the format that should be used
         for providing raw SQL with params to Django's .raw():
-        https://docs.djangoproject.com/en/3.2/topics/db/sql/#passing-parameters-into-raw
+        https://docs.djangoproject.com/en/5.0/topics/db/sql/#passing-parameters-into-raw
 
         Here we ensure that results are limited to the subdomain of the request
         and also exclude bots, as we currently don't want them to be managed by SCIM2.

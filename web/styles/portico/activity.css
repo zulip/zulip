@@ -501,3 +501,14 @@ tr.admin td:first-child {
 .current-plan-container {
     background-color: hsl(31deg 100% 83%);
 }
+
+.discounted-price-form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+
+    .support-submit-button {
+        margin-top: 5px;
+    }
+}

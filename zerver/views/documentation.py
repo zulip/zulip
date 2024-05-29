@@ -3,11 +3,12 @@ import random
 import re
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
+from django.template.response import TemplateResponse
 from django.views.generic import TemplateView
 from lxml import html
 from lxml.etree import Element, SubElement, XPath, _Element
@@ -16,6 +17,7 @@ from typing_extensions import override
 
 from zerver.context_processors import zulip_default_context
 from zerver.decorator import add_google_analytics_context
+from zerver.lib.html_to_text import get_content_description
 from zerver.lib.integrations import (
     CATEGORIES,
     INTEGRATIONS,
@@ -24,7 +26,7 @@ from zerver.lib.integrations import (
     WebhookIntegration,
     get_all_event_types_for_integration,
 )
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.templates import render_markdown_path
 from zerver.models import Realm
@@ -81,6 +83,15 @@ class MarkdownDirectoryView(ApiURLView):
     help_view = False
     api_doc_view = False
 
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._post_render_callbacks: List[Callable[[HttpResponse], Optional[HttpResponse]]] = []
+
+    def add_post_render_callback(
+        self, callback: Callable[[HttpResponse], Optional[HttpResponse]]
+    ) -> None:
+        self._post_render_callbacks.append(callback)
+
     def get_path(self, article: str) -> DocumentationArticle:
         http_status = 200
         if article == "":
@@ -94,7 +105,7 @@ class MarkdownDirectoryView(ApiURLView):
         elif "/" in article:
             article = "missing"
             http_status = 404
-        elif len(article) > 100 or not re.match("^[0-9a-zA-Z_-]+$", article):
+        elif len(article) > 100 or not re.match(r"^[0-9a-zA-Z_-]+$", article):
             article = "missing"
             http_status = 404
 
@@ -223,11 +234,22 @@ class MarkdownDirectoryView(ApiURLView):
                 context["PAGE_TITLE"] = f"{article_title} | {title_base}"
             else:
                 context["PAGE_TITLE"] = title_base
-            request_notes = RequestNotes.get_notes(self.request)
-            request_notes.placeholder_open_graph_description = (
+            placeholder_open_graph_description = (
                 f"REPLACEMENT_PAGE_DESCRIPTION_{int(2**24 * random.random())}"
             )
-            context["PAGE_DESCRIPTION"] = request_notes.placeholder_open_graph_description
+            context["PAGE_DESCRIPTION"] = placeholder_open_graph_description
+
+            def update_description(response: HttpResponse) -> None:
+                if placeholder_open_graph_description.encode() in response.content:
+                    first_paragraph_text = get_content_description(
+                        response.content, context["PAGE_METADATA_URL"]
+                    )
+                    response.content = response.content.replace(
+                        placeholder_open_graph_description.encode(),
+                        first_paragraph_text.encode(),
+                    )
+
+            self.add_post_render_callback(update_description)
 
         # An "article" might require the api_url_context to be rendered
         api_url_context: Dict[str, Any] = {}
@@ -283,6 +305,9 @@ class MarkdownDirectoryView(ApiURLView):
         documentation_article = self.get_path(article)
         http_status = documentation_article.article_http_status
         result = super().get(request, article=article)
+        assert isinstance(result, TemplateResponse)
+        for callback in self._post_render_callbacks:
+            result.add_post_render_callback(callback)
         if http_status != 200:
             result.status_code = http_status
         return result
@@ -354,7 +379,7 @@ def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> Http
 
     context["integration_name"] = integration.name
     context["integration_display_name"] = integration.display_name
-    context["recommended_stream_name"] = integration.stream_name
+    context["recommended_channel_name"] = integration.stream_name
     if isinstance(integration, WebhookIntegration):
         context["integration_url"] = integration.url[3:]
         all_event_types = get_all_event_types_for_integration(integration)

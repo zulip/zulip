@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class StatuspageHookTests(WebhookTestCase):
-    STREAM_NAME = "statuspage-test"
+    CHANNEL_NAME = "statuspage-test"
     URL_TEMPLATE = "/api/v1/external/statuspage?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "statuspage"
 

@@ -169,7 +169,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
-        self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
+        self.assertIn("This organization has been deactivated.", result.content.decode())
         self.assertNotIn("It has moved to", result.content.decode())
 
     def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set(self) -> None:
@@ -180,7 +180,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assertIn(
-            'It has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.',
+            'This organization has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.',
             result.content.decode(),
         )
 
@@ -190,7 +190,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assertIn(
-            'It has moved to <a href="http://new-subdomain-name.testserver">http://new-subdomain-name.testserver</a>.',
+            'This organization has moved to <a href="http://new-subdomain-name.testserver">http://new-subdomain-name.testserver</a>.',
             result.content.decode(),
         )
 
@@ -215,7 +215,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assertIn(
-            'It has moved to <a href="http://new-name-1.testserver">http://new-name-1.testserver</a>.',
+            'This organization has moved to <a href="http://new-name-1.testserver">http://new-name-1.testserver</a>.',
             result.content.decode(),
         )
 
@@ -223,7 +223,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/login/", follow=True)
         self.assertIn(
-            'It has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
+            'This organization has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
             result.content.decode(),
         )
 
@@ -556,7 +556,9 @@ class PasswordResetTest(ZulipTestCase):
     def test_password_reset_with_deactivated_realm(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        do_deactivate_realm(user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            user_profile.realm, acting_user=None, deactivation_reason="owner_request"
+        )
 
         # start the password reset process by supplying an email address
         with self.assertLogs(level="INFO") as m:
@@ -660,7 +662,8 @@ class PasswordResetTest(ZulipTestCase):
 
         # check the redirect link telling you to check mail for password reset link
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
+        self.assert_in_response("There is no Zulip organization at", result)
+        self.assert_in_response("Please try a different URL", result)
 
         from django.core.mail import outbox
 
@@ -795,7 +798,7 @@ class LoginTest(ZulipTestCase):
         realm = user_profile.realm
         self.assertTrue(email_auth_enabled(realm))
 
-        url = f"{realm.uri}/login/?" + urlencode({"is_deactivated": user_profile.delivery_email})
+        url = f"{realm.url}/login/?" + urlencode({"is_deactivated": user_profile.delivery_email})
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response(
@@ -899,7 +902,8 @@ class LoginTest(ZulipTestCase):
     def test_login_invalid_subdomain(self) -> None:
         result = self.login_with_return(self.example_email("hamlet"), "xxx", subdomain="invalid")
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
+        self.assert_in_response("There is no Zulip organization at", result)
+        self.assert_in_response("Please try a different URL", result)
         self.assert_logged_in_user_id(None)
 
     def test_register(self) -> None:
@@ -932,7 +936,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(104), self.assert_memcached_count(18):
+        with self.assert_database_query_count(91), self.assert_memcached_count(14):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -1147,7 +1151,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Enqueue a fake digest email.
         context = {
             "name": "",
-            "realm_uri": "",
+            "realm_url": "",
             "unread_pms": [],
             "hot_conversations": [],
             "new_users": [],
@@ -1303,8 +1307,8 @@ class RealmCreationTest(ZulipTestCase):
 
         # Check welcome messages
         for stream_name, text, message_count in [
-            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, "with the topic", 4),
-            (Realm.INITIAL_PRIVATE_STREAM_NAME, "private stream", 1),
+            (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), "a great place to say “hi”", 2),
+            (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), "Use this topic to try out", 5),
         ]:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
@@ -1737,21 +1741,23 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(realm.string_id, string_id)
         self.assertEqual(realm.default_language, realm_language)
 
-        # Check welcome messages
-        with_the_topic_in_italian = "con l'argomento"
-        private_stream_in_italian = "canale privato"
+        # TODO: When Italian translated strings are updated for changes
+        # that are part of the stream -> channel rename, uncomment below.
+        # # Check welcome messages
+        # learn_about_new_features_in_italian = "conoscere le nuove funzionalità"
+        # new_conversation_thread_in_italian = "nuovo thread di conversazione"
 
-        for stream_name, text, message_count in [
-            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, with_the_topic_in_italian, 4),
-            (Realm.INITIAL_PRIVATE_STREAM_NAME, private_stream_in_italian, 1),
-        ]:
-            stream = get_stream(stream_name, realm)
-            recipient = stream.recipient
-            messages = Message.objects.filter(realm_id=realm.id, recipient=recipient).order_by(
-                "date_sent"
-            )
-            self.assert_length(messages, message_count)
-            self.assertIn(text, messages[0].content)
+        # for stream_name, text, message_count in [
+        #     (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), learn_about_new_features_in_italian, 3),
+        #     (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), new_conversation_thread_in_italian, 5),
+        # ]:
+        #     stream = get_stream(stream_name, realm)
+        #     recipient = stream.recipient
+        #     messages = Message.objects.filter(realm_id=realm.id, recipient=recipient).order_by(
+        #         "date_sent"
+        #     )
+        #     self.assert_length(messages, message_count)
+        #     self.assertIn(text, messages[0].content)
 
     @override_settings(OPEN_REALM_CREATION=True, CLOUD_FREE_TRIAL_DAYS=30)
     def test_create_realm_during_free_trial(self) -> None:
@@ -2141,7 +2147,7 @@ class UserSignUpTest(ZulipTestCase):
 
         # Verify that we were served a redirect to the app.
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"{realm.uri}/")
+        self.assertEqual(result["Location"], f"{realm.url}/")
 
         # Verify that we successfully logged in.
         user_profile = get_user_by_delivery_email(email, realm)
@@ -2561,9 +2567,11 @@ class UserSignUpTest(ZulipTestCase):
         default_streams = []
 
         existing_default_streams = DefaultStream.objects.filter(realm=realm)
-        self.assert_length(existing_default_streams, 1)
-        self.assertEqual(existing_default_streams[0].stream.name, "Verona")
-        default_streams.append(existing_default_streams[0].stream)
+        self.assert_length(existing_default_streams, 3)
+        expected_default_streams = ["Zulip", "sandbox", "Verona"]
+        for i, expected_default_stream in enumerate(expected_default_streams):
+            self.assertEqual(existing_default_streams[i].stream.name, expected_default_stream)
+            default_streams.append(existing_default_streams[i].stream)
 
         for stream_name in ["venice", "rome"]:
             stream = get_stream(stream_name, realm)
@@ -3751,17 +3759,17 @@ class UserSignUpTest(ZulipTestCase):
                 ],
             )
             stream_ids = [self.get_stream_id(stream_name) for stream_name in streams]
-            response = self.client_post(
-                "/json/invites",
-                {
-                    "invitee_emails": email,
-                    "stream_ids": orjson.dumps(stream_ids).decode(),
-                    "invite_as": invite_as,
-                },
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client_post(
+                    "/json/invites",
+                    {
+                        "invitee_emails": email,
+                        "stream_ids": orjson.dumps(stream_ids).decode(),
+                        "invite_as": invite_as,
+                    },
+                )
             self.assert_json_success(response)
             self.logout()
-
             result = self.submit_reg_form_for_user(
                 email,
                 password,
@@ -4206,7 +4214,7 @@ class TestLoginPage(ZulipTestCase):
 
         result = self.client_get("/login/", {"next": "/upgrade/"})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"{hamlet.realm.uri}/upgrade/")
+        self.assertEqual(result["Location"], f"{hamlet.realm.url}/upgrade/")
 
     @patch("django.http.HttpRequest.get_host")
     def test_login_page_works_without_subdomains(self, mock_get_host: MagicMock) -> None:
@@ -4248,7 +4256,7 @@ class TestLoginPage(ZulipTestCase):
         session.save()
         result = self.client_get("http://auth.testserver/login/")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], zulip_realm.uri)
+        self.assertEqual(result["Location"], zulip_realm.url)
 
         session = self.client.session
         session["subdomain"] = "invalid"
@@ -4344,7 +4352,9 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_deactivated_realm(self) -> None:
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(
+            get_realm("zulip"), acting_user=None, deactivation_reason="owner_request"
+        )
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 200)

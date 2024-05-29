@@ -5,7 +5,6 @@ from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Type, TypedDict, TypeVar, Union
 from uuid import UUID
 
-import DNS
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -18,7 +17,11 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
-from pydantic import BaseModel, ConfigDict, Json
+from dns import resolver as dns_resolver
+from dns.exception import DNSException
+from pydantic import BaseModel, ConfigDict, Json, StringConstraints
+from pydantic.functional_validators import AfterValidator
+from typing_extensions import Annotated
 
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
@@ -60,15 +63,20 @@ from zerver.lib.remote_server import (
     RealmCountDataForAnalytics,
     RealmDataForAnalytics,
 )
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.typed_endpoint import (
+    ApnsAppId,
+    JsonBodyPayload,
+    RequiredStringConstraint,
+    typed_endpoint,
+)
+from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
-from zerver.lib.validator import check_capped_string, check_int, check_string_fixed_length
 from zerver.models.realms import DisposableEmailError
-from zerver.views.push_notifications import check_app_id, validate_token
+from zerver.views.push_notifications import validate_token
 from zilencer.auth import InvalidZulipServerKeyError
 from zilencer.models import (
     RemoteInstallationCount,
@@ -116,20 +124,29 @@ def deactivate_remote_server(
 
 @csrf_exempt
 @require_post
-@has_request_variables
+@typed_endpoint
 def register_remote_server(
     request: HttpRequest,
-    zulip_org_id: str = REQ(str_validator=check_string_fixed_length(RemoteZulipServer.UUID_LENGTH)),
-    zulip_org_key: str = REQ(
-        str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH)
-    ),
-    hostname: str = REQ(str_validator=check_capped_string(RemoteZulipServer.HOSTNAME_MAX_LENGTH)),
-    contact_email: str = REQ(),
-    new_org_key: Optional[str] = REQ(
-        str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH), default=None
-    ),
+    *,
+    zulip_org_id: Annotated[
+        str,
+        RequiredStringConstraint,
+        AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.UUID_LENGTH)),
+    ],
+    zulip_org_key: Annotated[
+        str,
+        RequiredStringConstraint,
+        AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.API_KEY_LENGTH)),
+    ],
+    hostname: Annotated[str, StringConstraints(max_length=RemoteZulipServer.HOSTNAME_MAX_LENGTH)],
+    contact_email: str,
+    new_org_key: Annotated[
+        Optional[str],
+        RequiredStringConstraint,
+        AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.API_KEY_LENGTH)),
+    ] = None,
 ) -> HttpResponse:
-    # REQ validated the the field lengths, but we still need to
+    # StringConstraints validated the field lengths, but we still need to
     # validate the format of these fields.
     try:
         # TODO: Ideally we'd not abuse the URL validator this way
@@ -151,22 +168,28 @@ def register_remote_server(
 
     contact_email_domain = Address(addr_spec=contact_email).domain.lower()
     if contact_email_domain == "example.com":
-        raise JsonableError(_("Invalid address."))
+        raise JsonableError(_("Invalid email address."))
 
     # Check if the domain has an MX record
+    resolver = dns_resolver.Resolver()
+    resolver.timeout = 3
+    dns_mx_check_successful = False
     try:
-        records = DNS.mxlookup(contact_email_domain)
-        dns_ms_check_successful = True
-        if not records:
-            dns_ms_check_successful = False
-    except DNS.Base.ServerError:
-        dns_ms_check_successful = False
-    if not dns_ms_check_successful:
-        raise JsonableError(
-            _("{domain} does not exist or is not configured to accept email.").format(
-                domain=contact_email_domain
+        if resolver.resolve(contact_email_domain, "MX"):
+            dns_mx_check_successful = True
+    except DNSException:
+        pass
+    if not dns_mx_check_successful:
+        # Check if the A/AAAA exist, for better error reporting
+        try:
+            resolver.resolve_name(contact_email_domain)
+            raise JsonableError(
+                _("{domain} is invalid because it does not have any MX records").format(
+                    domain=contact_email_domain
+                )
             )
-        )
+        except DNSException:
+            raise JsonableError(_("{domain} does not exist").format(domain=contact_email_domain))
 
     try:
         validate_uuid(zulip_org_id)
@@ -218,16 +241,17 @@ def register_remote_server(
     return json_success(request, data={"created": created})
 
 
-@has_request_variables
+@typed_endpoint
 def register_remote_push_device(
     request: HttpRequest,
     server: RemoteZulipServer,
-    user_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    user_uuid: Optional[str] = REQ(default=None),
-    realm_uuid: Optional[str] = REQ(default=None),
-    token: str = REQ(),
-    token_kind: int = REQ(json_validator=check_int),
-    ios_app_id: Optional[str] = REQ(str_validator=check_app_id, default=None),
+    *,
+    user_id: Optional[Json[int]] = None,
+    user_uuid: Optional[str] = None,
+    realm_uuid: Optional[str] = None,
+    token: Annotated[str, RequiredStringConstraint],
+    token_kind: Json[int],
+    ios_app_id: Optional[ApnsAppId] = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     if token_kind == RemotePushDeviceToken.APNS and ios_app_id is None:
@@ -260,9 +284,9 @@ def register_remote_push_device(
             remote_realm.last_request_datetime = timezone_now()
             remote_realm.save(update_fields=["last_request_datetime"])
 
-    try:
-        with transaction.atomic():
-            RemotePushDeviceToken.objects.create(
+    RemotePushDeviceToken.objects.bulk_create(
+        [
+            RemotePushDeviceToken(
                 server=server,
                 kind=token_kind,
                 token=token,
@@ -270,22 +294,24 @@ def register_remote_push_device(
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone_now(),
                 **kwargs,
-            )
-    except IntegrityError:
-        pass
+            ),
+        ],
+        ignore_conflicts=True,
+    )
 
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def unregister_remote_push_device(
     request: HttpRequest,
     server: RemoteZulipServer,
-    token: str = REQ(),
-    token_kind: int = REQ(json_validator=check_int),
-    user_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    user_uuid: Optional[str] = REQ(default=None),
-    realm_uuid: Optional[str] = REQ(default=None),
+    *,
+    token: Annotated[str, RequiredStringConstraint],
+    token_kind: Json[int],
+    user_id: Optional[Json[int]] = None,
+    user_uuid: Optional[str] = None,
+    realm_uuid: Optional[str] = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
@@ -301,13 +327,14 @@ def unregister_remote_push_device(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def unregister_all_remote_push_devices(
     request: HttpRequest,
     server: RemoteZulipServer,
-    user_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    user_uuid: Optional[str] = REQ(default=None),
-    realm_uuid: Optional[str] = REQ(default=None),
+    *,
+    user_id: Optional[Json[int]] = None,
+    user_uuid: Optional[str] = None,
+    realm_uuid: Optional[str] = None,
 ) -> HttpResponse:
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
 
@@ -489,21 +516,34 @@ class PushNotificationsDisallowedError(JsonableError):
         super().__init__(msg)
 
 
-@has_request_variables
+class RemoteServerNotificationPayload(BaseModel):
+    user_id: Optional[int] = None
+    user_uuid: Optional[str] = None
+    realm_uuid: Optional[str] = None
+    gcm_payload: Dict[str, Any] = {}
+    apns_payload: Dict[str, Any] = {}
+    gcm_options: Dict[str, Any] = {}
+
+    android_devices: List[str] = []
+    apple_devices: List[str] = []
+
+
+@typed_endpoint
 def remote_server_notify_push(
     request: HttpRequest,
     server: RemoteZulipServer,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    *,
+    payload: JsonBodyPayload[RemoteServerNotificationPayload],
 ) -> HttpResponse:
-    user_id = payload.get("user_id")
-    user_uuid = payload.get("user_uuid")
+    user_id = payload.user_id
+    user_uuid = payload.user_uuid
     user_identity = UserPushIdentityCompat(user_id, user_uuid)
 
-    gcm_payload = payload["gcm_payload"]
-    apns_payload = payload["apns_payload"]
-    gcm_options = payload.get("gcm_options", {})
+    gcm_payload = payload.gcm_payload
+    apns_payload = payload.apns_payload
+    gcm_options = payload.gcm_options
 
-    realm_uuid = payload.get("realm_uuid")
+    realm_uuid = payload.realm_uuid
     remote_realm = None
     if realm_uuid is not None:
         assert isinstance(
@@ -653,8 +693,8 @@ def remote_server_notify_push(
     deleted_devices = get_deleted_devices(
         user_identity,
         server,
-        android_devices=payload.get("android_devices", []),
-        apple_devices=payload.get("apple_devices", []),
+        android_devices=payload.android_devices,
+        apple_devices=payload.apple_devices,
     )
 
     return json_success(
@@ -745,7 +785,7 @@ def batch_create_table_data(
     row_objects: List[ModelT],
 ) -> None:
     # We ignore previously-existing data, in case it was truncated and
-    # re-created on the remote server.  `ignore_concflicts=True`
+    # re-created on the remote server.  `ignore_conflicts=True`
     # cannot return the ids, or count thereof, of the new inserts,
     # (see https://code.djangoproject.com/ticket/0138) so we rely on
     # having a lock to accurately count them before and after.  This

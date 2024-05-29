@@ -25,12 +25,11 @@ class zulip::postgresql_backups {
     ],
   }
 
-  file { '/etc/cron.d/pg_backup_and_purge':
-    ensure  => present,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/cron.d/pg-backup-and-purge',
+  zulip::cron { 'pg_backup_and_purge':
+    hour    => '2',
+    minute  => '0',
+    command => '/usr/local/bin/pg_backup_and_purge >/var/log/pg_backup_and_purge.log 2>&1',
+    user    => 'postgres',
     require => [
       File['/var/log/pg_backup_and_purge.log'],
       File['/usr/local/bin/pg_backup_and_purge'],
@@ -45,15 +44,5 @@ class zulip::postgresql_backups {
       group  => 'postgres',
       mode   => '0600',
     }
-  }
-
-  file { "${zulip::common::nagios_plugins_dir}/zulip_postgresql_backups":
-    require => Package[$zulip::common::nagios_plugins],
-    recurse => true,
-    purge   => true,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgresql_backups',
   }
 }

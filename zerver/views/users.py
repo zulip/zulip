@@ -168,7 +168,7 @@ def _deactivate_user_profile_backend(
             from_address=FromAddress.NOREPLY,
             context={
                 "deactivation_notification_comment": deactivation_notification_comment,
-                "realm_uri": target.realm.uri,
+                "realm_url": target.realm.url,
                 "realm_name": target.realm.name,
             },
         )
@@ -184,6 +184,7 @@ def reactivate_user_backend(
     if target.is_bot:
         assert target.bot_type is not None
         check_bot_creation_policy(user_profile, target.bot_type)
+        check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success(request)
 
@@ -526,6 +527,7 @@ def add_bot_backend(
     check_bot_name_available(
         realm_id=user_profile.realm_id,
         full_name=full_name,
+        is_activation=False,
     )
 
     check_bot_creation_policy(user_profile, bot_type)

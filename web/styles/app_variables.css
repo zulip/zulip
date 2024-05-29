@@ -59,16 +59,46 @@
     --left-sidebar-header-icon-width: 15px;
 
     /* Tippy popover related values */
-    --popover-menu-min-width: 230px;
+    --navbar-popover-menu-min-width: 230px;
+    --message-actions-popover-min-width: 230px;
+    --topic-actions-popover-min-width: 200px;
+
+    /* Information density and typography values */
+    /* The legacy values here are updated via JavaScript */
+    --base-font-size-px: 14px;
+    --base-line-height-unitless: 1.214;
+    --markdown-interelement-space-px: 5px;
+    --markdown-interelement-doubled-space-px: calc(
+        var(--markdown-interelement-space-px) * 2
+    );
+
+    .more-dense-mode {
+        /* The legacy values here are not altered by JavaScript */
+        --base-font-size-px: 14px;
+        --base-line-height-unitless: 1.214;
+        --markdown-interelement-space-px: 5px;
+        --markdown-interelement-doubled-space-px: 10px;
+        --message-box-markdown-aligned-vertical-space: 5px;
+    }
 
     /*
     Message box elements and values.
     */
     --message-box-avatar-width: 35px;
     --message-box-avatar-height: var(--message-box-avatar-width);
-    --message-box-line-height: 1.214;
+    --message-box-avatar-column-width: 46px;
+    /* 6px appears to provide 5px of space between the avatar
+       and the selected-message outline, which is offset by -1px. */
+    --message-box-vertical-margin: 6px;
+    --message-box-markdown-aligned-vertical-space: var(
+        --markdown-interelement-space-px
+    );
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
+    /* The line-height on the sender line should coordinate with the
+       height of the hover icons. The sender line never wraps, so this
+       just keeps the two in line with the grid definition. */
+    --message-box-sender-line-height: var(--message-box-icon-height);
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
@@ -143,14 +173,28 @@
     */
     --stream-subscriber-list-max-height: 100%;
 
+    /*
+      Reusable dimensions and offsets.
+    */
+    --margin-bottom-field-description: 3px;
     /* Gap between tabs in the tab picker */
     --grid-gap-tab-picker: 2px;
+
+    /*
+    The tippy arrow which matches the color of the popover's border,
+    is formed by stacking two arrows on top of each other, via the
+    use of `::before` and `::after` pseudo-elements. This value overrides
+    the offset of the `::before` pseudo element to create a thicker border,
+    visually consistent with that of it's parent popover.
+    */
+    --popover-tippy-arrow-before-offset: -6.5px;
 
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
     --color-background-stream-message-content: hsl(0deg 0% 100%);
+    --color-selected-message-outline: hsl(217deg 64% 59% / 60%);
     --color-message-list-border: hsl(0deg 0% 0% / 16%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 10%);
     --color-private-message-header-border: hsl(0deg 0% 0% / 10%);
@@ -178,14 +222,17 @@
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
     --color-background-image-loader: hsl(0deg 0% 0% / 10%);
     --color-icon-purple: hsl(240deg 35% 60%);
-    --color-background-dropdown-menu: hsl(0deg 0% 100%);
-    --color-border-popover-menu: hsl(0deg 0% 0% / 10%);
+    --color-background-popover-menu: hsl(0deg 0% 100%);
+    --color-border-popover-menu-separator: hsl(0deg 0% 0% / 10%);
     --color-hotkey-hint: hsl(227deg 78% 59%);
-    --color-background-hover-dropdown-menu: hsl(220deg 12% 5% / 5%);
-    --color-background-active-dropdown-menu: hsl(220deg 12% 5% / 7%);
-    --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
+    --color-popover-hotkey-hint: hsl(0deg 0% 40%);
+    --color-border-popover-hotkey-hint: hsl(0deg 0% 40% / 50%);
+    --color-background-hover-popover-menu: hsl(220deg 12% 5% / 5%);
+    --color-background-active-popover-menu: hsl(220deg 12% 5% / 7%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
     /* There's no alpha channel here, but this keeps
        the variable names in line. */
     --color-background-unread-counter-no-alpha: var(
@@ -194,7 +241,6 @@
     --color-background-unread-counter-dot: var(
         --color-background-unread-counter
     );
-    --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
@@ -237,12 +283,17 @@
         231deg 100% 90% / 50%
     );
     --color-compose-chevron-arrow: hsl(0deg 0% 58%);
+    --color-limit-indicator: hsl(38deg 100% 36%);
+    --color-limit-indicator-over-limit: hsl(3deg 80% 40%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-default: hsl(0deg 0% 15%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
+    /* Light and dark mode both use the same hover color on
+       sender names. */
+    --color-text-sender-name-hover: hsl(200deg 100% 40%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
@@ -250,7 +301,7 @@
     --color-text-search: hsl(0deg 0% 35%);
     --color-text-search-hover: hsl(0deg 0% 0%);
     --color-text-search-placeholder: hsl(0deg 0% 50%);
-    --color-text-dropdown-menu: hsl(0deg 0% 15%);
+    --color-text-popover-menu: hsl(0deg 0% 15%);
     --color-text-full-name: hsl(0deg 0% 15%);
     --color-text-item: hsl(0deg 0% 40%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
@@ -361,7 +412,7 @@
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
 
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+    --box-shadow-popover-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
         0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
@@ -450,6 +501,12 @@
 }
 
 %dark-theme {
+    /* There is no lefthand border to cover in dark mode, so
+       don't apply negative margin that would otherwise pull
+       the unread marker to the left. */
+    --unread-marker-left: 0;
+
+    /* Colors used across the app */
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-background-private-message-content: hsl(46deg 7% 16%);
@@ -460,6 +517,7 @@
     --color-private-message-header-border: hsl(0deg 0% 0% / 48%);
     --color-message-header-contents-border-bottom: hsl(0deg 0% 0% / 50%);
     --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 37%);
+    --color-selected-message-outline: hsl(217deg 64% 59% / 70%);
     --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
     --color-background-widget-input: hsl(225deg 6% 10%);
@@ -477,12 +535,14 @@
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
     --color-background-image-loader: hsl(0deg 0% 100% / 10%);
-    --color-background-dropdown-menu: hsl(0deg 0% 17%);
-    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
+    --color-background-popover-menu: hsl(0deg 0% 17%);
+    --color-border-popover-menu-separator: hsl(0deg 0% 0% / 40%);
     --color-hotkey-hint: hsl(225deg 100% 84%);
-    --color-background-hover-dropdown-menu: hsl(220deg 12% 95% / 5%);
-    --color-background-active-dropdown-menu: hsl(220deg 12% 95% / 7%);
-    --color-border-dropdown-menu: hsl(0deg 0% 0%);
+    --color-popover-hotkey-hint: hsl(0deg 0% 65%);
+    --color-border-popover-hotkey-hint: hsl(0deg 0% 65% / 50%);
+    --color-background-hover-popover-menu: hsl(220deg 12% 95% / 5%);
+    --color-background-active-popover-menu: hsl(220deg 12% 95% / 7%);
+    --color-border-popover-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     /* When unreads are hovered on the condensed
@@ -498,7 +558,6 @@
         hsl(0deg 0% 11%)
     );
     --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
-    --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
     --color-border-unread-counter-popover-menu: var(
         --color-border-unread-counter
@@ -542,6 +601,8 @@
         235deg 100% 70% / 11%
     );
     --color-background-popover: hsl(212deg 32% 14%);
+    --color-limit-indicator: hsl(38deg 100% 70%);
+    --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -560,7 +621,7 @@
     --color-text-search-hover: hsl(0deg 0% 100%);
     --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
     --color-text-empty-list-message: hsl(0deg 0% 67%);
-    --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
+    --color-text-popover-menu: hsl(0deg 0% 100% / 80%);
     --color-text-full-name: hsl(0deg 0% 100%);
     --color-text-item: hsl(0deg 0% 50%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
@@ -673,7 +734,7 @@
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
 
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+    --box-shadow-popover-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
         0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
@@ -725,9 +786,8 @@
 
     /* Button colors on modals and message editing. */
     --color-exit-button-text: hsl(0deg 0% 100%);
-    --color-exit-button-border: hsl(0deg 0% 0% / 60%);
-    --color-exit-button-background: hsl(211deg 29% 14%);
-    --color-exit-button-background-interactive: hsl(211deg 29% 17%);
+    --color-exit-button-background: hsl(226deg 1% 30% / 50%);
+    --color-exit-button-background-interactive: hsl(226deg 1% 30% / 65%);
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 0% / 20%);
@@ -739,6 +799,7 @@
     --color-background-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 50%);
     --color-border-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 90%);
     --color-background-emoji-picker-emoji-reacted-focus: hsl(0deg 0% 20% / 70%);
+    --color-border-add-subscription-button-focus: hsl(0deg 0% 67%);
 }
 
 @media screen {

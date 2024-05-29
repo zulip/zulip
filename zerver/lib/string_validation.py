@@ -38,11 +38,11 @@ def check_string_is_printable(var: str) -> Optional[int]:
 
 def check_stream_name(stream_name: str) -> None:
     if stream_name.strip() == "":
-        raise JsonableError(_("Stream name can't be empty!"))
+        raise JsonableError(_("Channel name can't be empty."))
 
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
         raise JsonableError(
-            _("Stream name too long (limit: {max_length} characters).").format(
+            _("Channel name too long (limit: {max_length} characters).").format(
                 max_length=Stream.MAX_NAME_LENGTH
             )
         )
@@ -50,7 +50,7 @@ def check_stream_name(stream_name: str) -> None:
     invalid_character_pos = check_string_is_printable(stream_name)
     if invalid_character_pos is not None:
         raise JsonableError(
-            _("Invalid character in stream name, at position {position}!").format(
+            _("Invalid character in channel name, at position {position}.").format(
                 position=invalid_character_pos
             )
         )

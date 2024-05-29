@@ -72,22 +72,22 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
+from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
-    Realm,
+    NamedUserGroup,
     RealmAuditLog,
     RealmPlayground,
     Recipient,
     Subscription,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
-from zerver.models.realms import RealmDomainDict, get_realm, get_realm_domains
+from zerver.models.realms import EditTopicPolicyEnum, RealmDomainDict, get_realm, get_realm_domains
 from zerver.models.streams import get_stream
 
 
@@ -112,7 +112,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_activate_mirror_dummy_user(user, acting_user=user)
         do_deactivate_user(user, acting_user=user)
         do_reactivate_user(user, acting_user=user)
-        self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 8)
+        self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 10)
         event_types = list(
             RealmAuditLog.objects.filter(
                 realm=realm,
@@ -420,11 +420,15 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_realm_activation(self) -> None:
         realm = get_realm("zulip")
         user = self.example_user("desdemona")
-        do_deactivate_realm(realm, acting_user=user)
+        do_deactivate_realm(realm, acting_user=user, deactivation_reason="owner_request")
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
         )
         extra_data = log_entry.extra_data
+
+        deactivation_reason = extra_data["deactivation_reason"]
+        self.assertEqual(deactivation_reason, "owner_request")
+
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
         do_reactivate_realm(realm)
@@ -538,13 +542,13 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
         value_expected = {
-            RealmAuditLog.OLD_VALUE: Realm.POLICY_EVERYONE,
-            RealmAuditLog.NEW_VALUE: Realm.POLICY_ADMINS_ONLY,
+            RealmAuditLog.OLD_VALUE: EditTopicPolicyEnum.EVERYONE,
+            RealmAuditLog.NEW_VALUE: EditTopicPolicyEnum.ADMINS_ONLY,
             "property": "edit_topic_policy",
         }
 
         do_set_realm_property(
-            realm, "edit_topic_policy", Realm.POLICY_ADMINS_ONLY, acting_user=user
+            realm, "edit_topic_policy", EditTopicPolicyEnum.ADMINS_ONLY, acting_user=user
         )
         self.assertEqual(
             RealmAuditLog.objects.filter(
@@ -1085,13 +1089,13 @@ class TestRealmAuditLog(ZulipTestCase):
         realm = do_create_realm(string_id="test", name="foo")
 
         # The expected number of system user group is the total number of roles
-        # from UserGroup.SYSTEM_USER_GROUP_ROLE_MAP in addition to
+        # from NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP in addition to
         # full_members_system_group, everyone_on_internet_system_group and
         # nobody_system_group.
-        expected_system_user_group_count = len(UserGroup.SYSTEM_USER_GROUP_ROLE_MAP) + 3
+        expected_system_user_group_count = len(NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP) + 3
 
         system_user_group_ids = sorted(
-            UserGroup.objects.filter(
+            NamedUserGroup.objects.filter(
                 realm=realm,
                 is_system_group=True,
             ).values_list("id", flat=True)
@@ -1143,33 +1147,11 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(supergroup_id, expected_supergroup_id)
             self.assertEqual(subgroup_id, expected_subgroup_id)
 
-        audit_log_entries = sorted(
-            RealmAuditLog.objects.filter(
-                realm=realm,
-                event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-                event_time__gte=now,
-                acting_user=None,
-            ).values_list("modified_user_group_id", "extra_data")
-        )
-        nobody_group = UserGroup.objects.get(name=SystemGroups.NOBODY, realm=realm)
-        for (user_group_id, extra_data), expected_user_group_id in zip(
-            audit_log_entries, logged_system_group_ids
-        ):
-            self.assertEqual(user_group_id, expected_user_group_id)
-            self.assertDictEqual(
-                extra_data,
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: nobody_group.id,
-                    "property": "can_mention_group",
-                },
-            )
-
     def test_user_group_creation(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         now = timezone_now()
-        public_group = UserGroup.objects.get(
+        public_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=hamlet.realm
         )
         user_group = check_add_user_group(
@@ -1200,24 +1182,6 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 2)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
-
-        audit_log_entries = RealmAuditLog.objects.filter(
-            acting_user=hamlet,
-            realm=hamlet.realm,
-            event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-        )
-        self.assert_length(audit_log_entries, len(UserGroup.GROUP_PERMISSION_SETTINGS))
-        self.assertListEqual(
-            [audit_log.extra_data for audit_log in audit_log_entries],
-            [
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: public_group.id,
-                    "property": "can_mention_group",
-                }
-            ],
-        )
 
     def test_change_user_group_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1352,12 +1316,16 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
         old_group = user_group.can_mention_group
-        new_group = UserGroup.objects.get(
+        new_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
-        )
+        ).usergroup_ptr
         self.assertNotEqual(old_group.id, new_group.id)
         do_change_user_group_permission_setting(
-            user_group, "can_mention_group", new_group, acting_user=None
+            user_group,
+            "can_mention_group",
+            new_group,
+            old_setting_api_value=old_group.id,
+            acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
@@ -1369,6 +1337,106 @@ class TestRealmAuditLog(ZulipTestCase):
             audit_log_entries[0].extra_data,
             {
                 RealmAuditLog.OLD_VALUE: old_group.id,
+                RealmAuditLog.NEW_VALUE: new_group.id,
+                "property": "can_mention_group",
+            },
+        )
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=user_group.realm, is_system_group=True
+        )
+        old_group = user_group.can_mention_group
+        new_group = self.create_or_update_anonymous_group_for_setting([hamlet], [moderators_group])
+
+        now = timezone_now()
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_mention_group",
+            new_group,
+            old_setting_api_value=old_group.id,
+            acting_user=None,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].acting_user)
+        self.assertDictEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: old_group.id,
+                RealmAuditLog.NEW_VALUE: {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [moderators_group.id],
+                },
+                "property": "can_mention_group",
+            },
+        )
+
+        othello = self.example_user("othello")
+        old_setting_api_value = get_group_setting_value_for_api(user_group.can_mention_group)
+        # Since the old setting value was a anonymous group, we just update the
+        # members and subgroups of the already existing UserGroup instead of creating
+        # a new UserGroup object to keep this consistent with the actual code.
+        new_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [moderators_group], existing_setting_group=user_group.can_mention_group
+        )
+
+        now = timezone_now()
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_mention_group",
+            new_group,
+            old_setting_api_value=old_setting_api_value,
+            acting_user=None,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].acting_user)
+        self.assertDictEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [moderators_group.id],
+                },
+                RealmAuditLog.NEW_VALUE: {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [moderators_group.id],
+                },
+                "property": "can_mention_group",
+            },
+        )
+
+        old_setting_api_value = get_group_setting_value_for_api(user_group.can_mention_group)
+        new_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=user_group.realm, is_system_group=True
+        )
+        now = timezone_now()
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_mention_group",
+            new_group,
+            old_setting_api_value=old_setting_api_value,
+            acting_user=None,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].acting_user)
+        self.assertDictEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [moderators_group.id],
+                },
                 RealmAuditLog.NEW_VALUE: new_group.id,
                 "property": "can_mention_group",
             },

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from decimal import Decimal
 from typing import Optional, TypedDict, Union
 from urllib.parse import urlencode, urljoin, urlunsplit
 
@@ -16,6 +15,7 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
+    get_price_per_license,
     get_push_status_for_remote_request,
     start_of_next_billing_cycle,
 )
@@ -58,7 +58,10 @@ class SponsorshipRequestDict(TypedDict):
 @dataclass
 class SponsorshipData:
     sponsorship_pending: bool = False
-    default_discount: Optional[Decimal] = None
+    monthly_discounted_price: Optional[int] = None
+    annual_discounted_price: Optional[int] = None
+    original_monthly_plan_price: Optional[int] = None
+    original_annual_plan_price: Optional[int] = None
     minimum_licenses: Optional[int] = None
     required_plan_tier: Optional[int] = None
     latest_sponsorship_request: Optional[SponsorshipRequestDict] = None
@@ -81,6 +84,7 @@ class PlanData:
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
     is_current_plan_billable: bool = False
+    stripe_customer_url: Optional[str] = None
     warning: Optional[str] = None
     annual_recurring_revenue: Optional[int] = None
     estimated_next_plan_revenue: Optional[int] = None
@@ -111,10 +115,14 @@ class CloudSupportData:
     sponsorship_data: SponsorshipData
 
 
+def get_stripe_customer_url(stripe_id: str) -> str:
+    return f"https://dashboard.stripe.com/customers/{stripe_id}"  # nocoverage
+
+
 def get_realm_support_url(realm: Realm) -> str:
-    support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
+    support_realm_url = get_realm(settings.STAFF_SUBDOMAIN).url
     support_url = urljoin(
-        support_realm_uri,
+        support_realm_url,
         urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
     )
     return support_url
@@ -122,10 +130,24 @@ def get_realm_support_url(realm: Realm) -> str:
 
 def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
     pending = customer.sponsorship_pending
-    discount = customer.default_discount
     licenses = customer.minimum_licenses
     plan_tier = customer.required_plan_tier
     sponsorship_request = None
+    monthly_discounted_price = None
+    annual_discounted_price = None
+    original_monthly_plan_price = None
+    original_annual_plan_price = None
+    if customer.monthly_discounted_price:
+        monthly_discounted_price = customer.monthly_discounted_price
+    if customer.annual_discounted_price:
+        annual_discounted_price = customer.annual_discounted_price
+    if plan_tier is not None:
+        original_monthly_plan_price = get_price_per_license(
+            plan_tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+        )
+        original_annual_plan_price = get_price_per_license(
+            plan_tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL
+        )
     if pending:
         last_sponsorship_request = (
             ZulipSponsorshipRequest.objects.filter(customer=customer).order_by("id").last()
@@ -151,7 +173,10 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
 
     return SponsorshipData(
         sponsorship_pending=pending,
-        default_discount=discount,
+        monthly_discounted_price=monthly_discounted_price,
+        annual_discounted_price=annual_discounted_price,
+        original_monthly_plan_price=original_monthly_plan_price,
+        original_annual_plan_price=original_annual_plan_price,
         minimum_licenses=licenses,
         required_plan_tier=plan_tier,
         latest_sponsorship_request=sponsorship_request,
@@ -161,7 +186,7 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
 def get_annual_invoice_count(billing_schedule: int) -> int:
     if billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
         return 12
-    else:
+    else:  # nocoverage
         return 1
 
 
@@ -258,13 +283,11 @@ def get_plan_data_for_support_view(
         plan_data.is_current_plan_billable = billing_session.check_plan_tier_is_billable(
             plan_tier=plan_data.current_plan.tier
         )
-        annual_invoice_count = get_annual_invoice_count(plan_data.current_plan.billing_schedule)
         if last_ledger_entry is not None:
             plan_data.annual_recurring_revenue = (
-                billing_session.get_customer_plan_renewal_amount(
+                billing_session.get_annual_recurring_revenue_for_support_data(
                     plan_data.current_plan, last_ledger_entry
                 )
-                * annual_invoice_count
             )
         else:
             plan_data.annual_recurring_revenue = 0  # nocoverage
@@ -274,6 +297,12 @@ def get_plan_data_for_support_view(
         next_plan_data = get_next_plan_data(billing_session, customer, plan_data.current_plan)
         plan_data.next_plan = next_plan_data.plan
         plan_data.estimated_next_plan_revenue = next_plan_data.estimated_revenue
+
+    # If customer has a stripe ID, add link to stripe customer dashboard
+    if customer is not None and customer.stripe_customer_id is not None:
+        plan_data.stripe_customer_url = get_stripe_customer_url(
+            customer.stripe_customer_id
+        )  # nocoverage
 
     return plan_data
 

@@ -16,12 +16,13 @@ Test out the realm:
     go to browser and use your dev url
 """
 
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import CommandError, CommandParser
 
 from zerver.data_import.mattermost import do_convert_data
+from zerver.lib.management import ZulipBaseCommand
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Convert the mattermost data into Zulip data format."""
 
     @override

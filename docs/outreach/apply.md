@@ -66,7 +66,7 @@ We recommend taking the following steps before diving into the issue tracker:
 
 - Join the [Zulip development
   community](https://zulip.com/development-community/), and introduce yourself
-  in the stream for the program you are participating in
+  in the channel for the program you are participating in
   ([#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
   [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)). Before you
   jump in, be sure to review the [Zulip community
@@ -181,7 +181,7 @@ give you feedback and help you improve your proposal.
   context.
 
 - Please post a link to your draft in the Zulip development community
-  stream dedicated to your program (e.g.,
+  channel dedicated to your program (e.g.,
   [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
   [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)). Use
   `Your name - project proposal` as the topic.

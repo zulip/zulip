@@ -7,6 +7,13 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {realm} = require("./lib/zpage_params");
 
+class ClipboardEvent {
+    constructor({clipboardData}) {
+        this.clipboardData = clipboardData;
+    }
+}
+set_global("ClipboardEvent", ClipboardEvent);
+
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
@@ -40,58 +47,51 @@ function test(label, f) {
 }
 
 test("feature_check", ({override}) => {
-    const $upload_button = $.create("upload-button-stub");
-    $upload_button.addClass("notdisplayed");
-    upload.feature_check($upload_button);
-    assert.ok($upload_button.hasClass("notdisplayed"));
+    assert.ok(!upload.feature_check());
 
     override(window, "XMLHttpRequest", () => ({upload: true}));
-    upload.feature_check($upload_button);
-    assert.ok(!$upload_button.hasClass("notdisplayed"));
+    assert.ok(upload.feature_check());
 });
 
-test("get_item", () => {
-    assert.equal(upload.get_item("textarea", {mode: "compose"}), $("textarea#compose-textarea"));
+test("config", () => {
+    assert.equal(upload.compose_config.textarea(), $("textarea#compose-textarea"));
     assert.equal(
-        upload.get_item("upload_banner_message", {mode: "compose"}, "id_1"),
+        upload.compose_config.upload_banner_message("id_1"),
         $("#compose_banners .upload_banner.file_id_1 .upload_msg"),
     );
     assert.equal(
-        upload.get_item("upload_banner_cancel_button", {mode: "compose"}, "id_2"),
+        upload.compose_config.upload_banner_cancel_button("id_2"),
         $("#compose_banners .upload_banner.file_id_2 .upload_banner_cancel_button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_hide_button", {mode: "compose"}, "id_2"),
+        upload.compose_config.upload_banner_hide_button("id_2"),
         $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
     );
+    assert.equal(upload.compose_config.file_input_identifier(), "#compose input.file_input");
+    assert.equal(upload.compose_config.source(), "compose-file-input");
+    assert.equal(upload.compose_config.drag_drop_container(), $("#compose"));
     assert.equal(
-        upload.get_item("file_input_identifier", {mode: "compose"}),
-        "#compose .file_input",
-    );
-    assert.equal(upload.get_item("source", {mode: "compose"}), "compose-file-input");
-    assert.equal(upload.get_item("drag_drop_container", {mode: "compose"}), $("#compose"));
-    assert.equal(
-        upload.get_item("markdown_preview_hide_button", {mode: "compose"}),
+        upload.compose_config.markdown_preview_hide_button(),
         $("#compose .undo_markdown_preview"),
     );
 
     assert.equal(
-        upload.get_item("textarea", {mode: "edit", row: 1}),
-        $(`#edit_form_${CSS.escape(1)} .message_edit_content`),
+        upload.edit_config(1).textarea(),
+        $(`#edit_form_${CSS.escape(1)} textarea.message_edit_content`),
     );
 
     $(`#edit_form_${CSS.escape(2)}`).set_find_results(
         ".message_edit_save",
         $(".message_edit_save"),
     );
-    assert.equal(upload.get_item("send_button", {mode: "edit", row: 2}), $(".message_edit_save"));
+    assert.equal(upload.edit_config(2).send_button(), $(".message_edit_save"));
 
     assert.equal(
-        upload.get_item("upload_banner_identifier", {mode: "edit", row: 11}, "id_3"),
+        upload.edit_config(11).upload_banner_identifier("id_3"),
         `#edit_form_${CSS.escape(11)} .upload_banner.file_id_3`,
     );
     assert.equal(
-        upload.get_item("upload_banner", {mode: "edit", row: 75}, "id_60"),
+        upload.edit_config(75).upload_banner("id_60"),
         $(`#edit_form_${CSS.escape(75)} .upload_banner.file_id_60`),
     );
 
@@ -100,7 +100,7 @@ test("get_item", () => {
         $(".upload_banner_cancel_button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_cancel_button", {mode: "edit", row: 2}, "id_34"),
+        upload.edit_config(2).upload_banner_cancel_button("id_34"),
         $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .upload_banner_cancel_button`),
     );
 
@@ -109,7 +109,7 @@ test("get_item", () => {
         $(".main-view-banner-close-button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_hide_button", {mode: "edit", row: 2}, "id_34"),
+        upload.edit_config(2).upload_banner_hide_button("id_34"),
         $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`),
     );
 
@@ -118,68 +118,22 @@ test("get_item", () => {
         $(".upload_msg"),
     );
     assert.equal(
-        upload.get_item("upload_banner_message", {mode: "edit", row: 22}, "id_234"),
+        upload.edit_config(22).upload_banner_message("id_234"),
         $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234 .upload_msg`),
     );
 
     assert.equal(
-        upload.get_item("file_input_identifier", {mode: "edit", row: 123}),
-        `#edit_form_${CSS.escape(123)} .file_input`,
+        upload.edit_config(123).file_input_identifier(),
+        `#edit_form_${CSS.escape(123)} input.file_input`,
     );
-    assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
+    assert.equal(upload.edit_config(123).source(), "message-edit-file-input");
     assert.equal(
-        upload.get_item("drag_drop_container", {mode: "edit", row: 1}),
+        upload.edit_config(1).drag_drop_container(),
         $(`#message-row-1-${CSS.escape(1)} .message_edit_form`),
     );
     assert.equal(
-        upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),
+        upload.edit_config(65).markdown_preview_hide_button(),
         $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`),
-    );
-
-    assert.throws(
-        () => {
-            upload.get_item("textarea");
-        },
-        {
-            name: "Error",
-            message: "Missing config",
-        },
-    );
-    assert.throws(
-        () => {
-            upload.get_item("textarea", {mode: "edit"});
-        },
-        {
-            name: "Error",
-            message: "Missing row in config",
-        },
-    );
-    assert.throws(
-        () => {
-            upload.get_item("textarea", {mode: "blah"});
-        },
-        {
-            name: "Error",
-            message: "Invalid upload mode!",
-        },
-    );
-    assert.throws(
-        () => {
-            upload.get_item("invalid", {mode: "compose"});
-        },
-        {
-            name: "Error",
-            message: 'Invalid key name for mode "compose"',
-        },
-    );
-    assert.throws(
-        () => {
-            upload.get_item("invalid", {mode: "edit", row: 20});
-        },
-        {
-            name: "Error",
-            message: 'Invalid key name for mode "edit"',
-        },
     );
 });
 
@@ -197,7 +151,7 @@ test("show_error_message", ({mock_template}) => {
 
     $("#compose-send-button").prop("disabled", true);
 
-    upload.show_error_message({mode: "compose"}, "Error message");
+    upload.show_error_message(upload.compose_config, "Error message");
     assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
 
@@ -207,7 +161,7 @@ test("show_error_message", ({mock_template}) => {
         banner_shown = true;
         return "<banner-stub>";
     });
-    upload.show_error_message({mode: "compose"});
+    upload.show_error_message(upload.compose_config);
 });
 
 test("upload_files", async ({mock_template, override_rewire}) => {
@@ -241,7 +195,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         hide_upload_banner_called = true;
         assert.equal(config.mode, "compose");
     });
-    const config = {mode: "compose"};
+    const config = upload.compose_config;
     $(".message-send-controls").removeClass("disabled-message-send-controls");
     await upload.upload_files(uppy, config, []);
     assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
@@ -377,7 +331,7 @@ test("uppy_config", () => {
                     assert.equal(params.fieldName, "file");
                     assert.equal(params.limit, 5);
                     assert.equal(Object.keys(params.locale.strings).length, 1);
-                    assert.ok("timedOut" in params.locale.strings);
+                    assert.ok("uploadStalled" in params.locale.strings);
                 } else {
                     /* istanbul ignore next */
                     assert.fail(`Missing tests for ${func_name}`);
@@ -386,7 +340,7 @@ test("uppy_config", () => {
             on() {},
         };
     };
-    upload.setup_upload({mode: "compose"});
+    upload.setup_upload(upload.compose_config);
 
     assert.equal(uppy_stub_called, true);
     assert.equal(uppy_set_meta_called, true);
@@ -394,9 +348,9 @@ test("uppy_config", () => {
 });
 
 test("file_input", ({override_rewire}) => {
-    upload.setup_upload({mode: "compose"});
+    upload.setup_upload(upload.compose_config);
 
-    const change_handler = $("#compose .file_input").get_on_handler("change");
+    const change_handler = $("#compose input.file_input").get_on_handler("change");
     const files = ["file1", "file2"];
     const event = {
         target: {
@@ -416,7 +370,7 @@ test("file_input", ({override_rewire}) => {
 
 test("file_drop", ({override, override_rewire}) => {
     override(compose_state, "composing", () => false);
-    upload.setup_upload({mode: "compose"});
+    upload.setup_upload(upload.compose_config);
 
     let prevent_default_counter = 0;
     const drag_event = {
@@ -465,12 +419,12 @@ test("file_drop", ({override, override_rewire}) => {
 
 test("copy_paste", ({override, override_rewire}) => {
     override(compose_state, "composing", () => false);
-    upload.setup_upload({mode: "compose"});
+    upload.setup_upload(upload.compose_config);
 
     const paste_handler = $("#compose").get_on_handler("paste");
     let get_as_file_called = false;
     let event = {
-        originalEvent: {
+        originalEvent: new ClipboardEvent({
             clipboardData: {
                 items: [
                     {
@@ -481,10 +435,11 @@ test("copy_paste", ({override, override_rewire}) => {
                     },
                     {
                         kind: "notfile",
+                        getAsFile: () => null,
                     },
                 ],
             },
-        },
+        }),
         preventDefault() {},
     };
     let upload_files_called = false;
@@ -502,7 +457,7 @@ test("copy_paste", ({override, override_rewire}) => {
     assert.ok(compose_actions_start_called);
     upload_files_called = false;
     event = {
-        originalEvent: {},
+        originalEvent: new ClipboardEvent({}),
     };
     paste_handler(event);
     assert.equal(upload_files_called, false);
@@ -535,7 +490,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
             }),
         };
     };
-    upload.setup_upload({mode: "compose"});
+    upload.setup_upload(upload.compose_config);
     assert.equal(Object.keys(callbacks).length, 5);
 
     const on_upload_success_callback = callbacks["upload-success"];
@@ -638,7 +593,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     assert.ok(compose_ui_replace_syntax_called);
 
     compose_ui_replace_syntax_called = false;
-    on_upload_error_callback(file, null, null);
+    on_upload_error_callback(file, null, undefined);
     assert.ok(compose_ui_replace_syntax_called);
 
     $("#compose_banners .upload_banner .upload_msg").text("");
@@ -760,7 +715,7 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
         };
     };
 
-    upload.setup_upload({mode: "edit", row: 40});
+    upload.setup_upload(upload.edit_config(40));
     upload.initialize();
     override(compose_state, "composing", () => false);
     let prevent_default_counter = 0;

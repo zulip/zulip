@@ -2,12 +2,13 @@ import * as blueslip from "./blueslip";
 import * as people from "./people";
 import type {RawReaction} from "./reactions";
 import type {Submessage, TopicLink} from "./types";
+import type {UserStatusEmojiInfo} from "./user_status";
 
-const stored_messages = new Map();
+const stored_messages = new Map<number, Message>();
 
 export type MatchedMessage = {
-    match_content?: string;
-    match_subject?: string;
+    match_content?: string | undefined;
+    match_subject?: string | undefined;
 };
 
 export type MessageReactionType = "unicode_emoji" | "realm_emoji" | "zulip_extra_emoji";
@@ -99,7 +100,7 @@ export type MessageCleanReaction = {
     is_realm_emoji: boolean;
     label: string;
     local_id: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     user_ids: number[];
     vote_text: string;
 };
@@ -114,11 +115,11 @@ export type Message = (
     clean_reactions: Map<string, MessageCleanReaction>;
 
     locally_echoed?: boolean;
+    raw_content?: string;
 
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;
     reply_to: string;
-    display_reply_to?: string;
 
     // These properties are used in `message_list_view.js`.
     starred_status: string;
@@ -127,6 +128,9 @@ export type Message = (
 
     // Used in `markdown.js`, `server_events.js`, and `set_message_booleans`
     flags?: string[];
+
+    small_avatar_url?: string; // Used in `message_avatar.hbs`
+    status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
 } & (
         | {
               type: "private";
@@ -134,6 +138,7 @@ export type Message = (
               is_stream: false;
               pm_with_url: string;
               to_user_ids: string;
+              display_reply_to: string;
           }
         | {
               type: "stream";
@@ -141,6 +146,7 @@ export type Message = (
               is_stream: true;
               stream: string;
               topic: string;
+              display_reply_to: undefined;
           }
     );
 
@@ -149,7 +155,7 @@ export function update_message_cache(message: Message): void {
     stored_messages.set(message.id, message);
 }
 
-export function get_cached_message(message_id: number): Message {
+export function get_cached_message(message_id: number): Message | undefined {
     // You should only call this from message_helper.
     // Use the get() wrapper below for most other use cases.
     return stored_messages.get(message_id);
@@ -179,8 +185,8 @@ export function get_pm_emails(message: Message): string {
     return emails.join(", ");
 }
 
-export function get_pm_full_names(message: Message): string {
-    const user_ids = people.pm_with_user_ids(message) ?? [];
+export function get_pm_full_names(user_ids: number[]): string {
+    user_ids = people.sorted_other_user_ids(user_ids);
     const names = people.get_display_full_names(user_ids).sort();
 
     return names.join(", ");
@@ -248,13 +254,16 @@ export function update_small_avatar_url(user_id: number, new_url: string): void 
 
 export function update_stream_name(stream_id: number, new_name: string): void {
     for (const msg of stored_messages.values()) {
-        if (msg.stream_id && msg.stream_id === stream_id) {
+        if (msg.type === "stream" && msg.stream_id === stream_id) {
             msg.display_recipient = new_name;
         }
     }
 }
 
-export function update_status_emoji_info(user_id: number, new_info: string): void {
+export function update_status_emoji_info(
+    user_id: number,
+    new_info: UserStatusEmojiInfo | undefined,
+): void {
     for (const msg of stored_messages.values()) {
         if (msg.sender_id && msg.sender_id === user_id) {
             msg.status_emoji_info = new_info;
@@ -263,8 +272,9 @@ export function update_status_emoji_info(user_id: number, new_info: string): voi
 }
 
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
-    if (stored_messages.has(old_id)) {
-        stored_messages.set(new_id, stored_messages.get(old_id));
+    const message = stored_messages.get(old_id);
+    if (message !== undefined) {
+        stored_messages.set(new_id, message);
         stored_messages.delete(old_id);
     }
 }

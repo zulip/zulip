@@ -35,10 +35,10 @@ priority.
 ## Configurable access control policies
 
 - Zulip supports direct messages (to one or more individuals), private
-  streams with any number of subscribers, as well as public streams
+  channels with any number of subscribers, as well as public channels
   available to all organization members.  We also support guest accounts,
-  which only have access to a fixed set of streams, and announcement
-  streams, where only organization owners and administrators can post.
+  which only have access to a fixed set of channels, and announcement
+  channels, where only organization owners and administrators can post.
 - By default, users can maintain their own names and email addresses, but
   Zulip also supports
   [restricting changes](/help/restrict-name-and-email-changes) and
@@ -53,8 +53,8 @@ priority.
 - Zulip can limit the features that new users have access to until their
   accounts are older than a [configurable waiting period][waiting_period].
 - Zulip also supports customizing whether non-admins can
-  [create streams](/help/configure-who-can-create-streams),
-  [invite to streams](/help/configure-who-can-invite-to-streams),
+  [create channels](/help/configure-who-can-create-channels),
+  [invite to channels](/help/configure-who-can-invite-to-channels),
   [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
   [add integrations and bots](/help/restrict-bot-creation),
   [edit or delete messages](/help/restrict-message-editing-and-deletion),
@@ -103,7 +103,7 @@ priority.
   used for an end-to-end history of system usage.
 - Zulip stores in its database a permanent long-term audit log containing
   the history of important actions (e.g. changes to passwords, email
-  addresses, and stream subscriptions).
+  addresses, and channel subscriptions).
 - Zulip’s powerful data exports
   ([on-premise](https://zulip.readthedocs.io/en/latest/production/export-and-import.html),
   [cloud](/help/export-your-organization)) can be imported into third-party
@@ -135,7 +135,7 @@ the industry:
 - Zulip’s Python codebase is written entirely in
   [statically typed Python 3](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/),
   which automatically prevents a wide range of possible bugs.
-- All access to user data (messages, streams, uploaded files, etc.) in the
+- All access to user data (messages, channels, uploaded files, etc.) in the
   Zulip backend is through carefully-audited core libraries that validate
   that the user who is making the request has access to that data.
 - Only a small handful of people have access to production servers or

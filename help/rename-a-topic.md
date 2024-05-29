@@ -40,8 +40,8 @@ Organizations can [configure](/help/restrict-moving-messages) which
 
 1. Edit the topic name.
 
-1. _(optional)_  If using the **Move topic** menu, select the destination stream
-   for the topic from the streams dropdown list.
+1. _(optional)_  If using the **Move topic** menu, select the destination channel
+   for the topic from the channels dropdown list.
 
 1. Toggle whether automated notices should be sent.
 
@@ -52,6 +52,6 @@ Organizations can [configure](/help/restrict-moving-messages) which
 ## Related articles
 
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [Move content to another stream](/help/move-content-to-another-stream)
+* [Move content to another channel](/help/move-content-to-another-channel)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Restrict moving messages](/help/restrict-moving-messages)

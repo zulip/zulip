@@ -56,7 +56,7 @@ the messy conversation history was not worth preserving.
 
 Erik put training videos on the company’s intranet to explain the switching
 process, and to give an overview of key new features. Employees were encouraged
-to play around with Zulip, create streams, and chat with each other. After a
+to play around with Zulip, create channels, and chat with each other. After a
 month of running Zulip in parallel with Rocket.Chat, the old system was turned
 off.
 
@@ -72,15 +72,15 @@ off.
 
 GUT contact offers employees the flexibility to work from one of 10 offices
 across 3 countries, or from their home office. This makes Zulip a critical
-communication tool across all job functions. There is a stream for each
-department (IT, human resources, etc.), as well as a dedicated stream for each
+communication tool across all job functions. There is a channel for each
+department (IT, human resources, etc.), as well as a dedicated channel for each
 customer, where team leaders post daily updates.
 
-For agents, may of whom are not fully comfortable with modern software, Zulip
+For agents, many of whom are not fully comfortable with modern software, Zulip
 being easy to use is invaluable. "We checked out Microsoft Teams and Mattermost,
 and most of our users didn’t like these programs, because they didn’t know how
-to work with them,” Erik says. “In Zulip, agents love the “All messages” view,”
-which combines direct messages and stream messages into a single feed. “Unlike
+to work with them,” Erik says. “In Zulip, agents love the “Combined feed” view,”
+which combines direct messages and channel messages into a single feed. “Unlike
 other chat apps, you don’t have to click on each channel separately to see
 unreads,” Erik explains.
 

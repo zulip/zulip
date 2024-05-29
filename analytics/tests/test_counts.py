@@ -1,5 +1,6 @@
+from contextlib import AbstractContextManager, ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
 from unittest import mock
 
 import orjson
@@ -41,11 +42,7 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
-from zerver.actions.invites import (
-    do_invite_users,
-    do_resend_user_invite_email,
-    do_revoke_user_invite,
-)
+from zerver.actions.invites import do_invite_users, do_revoke_user_invite, do_send_user_invite_email
 from zerver.actions.message_flags import (
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
@@ -68,17 +65,18 @@ from zerver.models import (
     Client,
     Huddle,
     Message,
+    NamedUserGroup,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
     Recipient,
     Stream,
     UserActivityInterval,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.messages import Attachment
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user, is_cross_realm_bot_email
 from zilencer.models import (
@@ -104,7 +102,7 @@ class AnalyticsTestCase(ZulipTestCase):
         self.default_realm = do_create_realm(
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
         )
-        self.administrators_user_group = UserGroup.objects.get(
+        self.administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS,
             realm=self.default_realm,
             is_system_group=True,
@@ -192,6 +190,18 @@ class AnalyticsTestCase(ZulipTestCase):
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)
+
+    def create_attachment(
+        self, user_profile: UserProfile, filename: str, size: int, create_time: datetime
+    ) -> Attachment:
+        return Attachment.objects.create(
+            file_name=filename,
+            path_id=f"foo/bar/{filename}",
+            owner=user_profile,
+            realm=user_profile.realm,
+            size=size,
+            create_time=create_time,
+        )
 
     # kwargs should only ever be a UserProfile or Stream.
     def assert_table_count(
@@ -548,6 +558,41 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(InstallationCount, ["value", "subgroup"], [[2, "true"], [5, "false"]])
         self.assertTableState(UserCount, [], [])
         self.assertTableState(StreamCount, [], [])
+
+    def test_upload_quota_used_bytes(self) -> None:
+        stat = COUNT_STATS["upload_quota_used_bytes::day"]
+        self.current_property = stat.property
+
+        user1 = self.create_user()
+        user2 = self.create_user()
+        user_second_realm = self.create_user(realm=self.second_realm)
+
+        self.create_attachment(user1, "file1", 100, self.TIME_LAST_HOUR)
+        attachment2 = self.create_attachment(user2, "file2", 200, self.TIME_LAST_HOUR)
+        self.create_attachment(user_second_realm, "file3", 10, self.TIME_LAST_HOUR)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertTableState(
+            RealmCount,
+            ["value", "subgroup", "realm"],
+            [[300, None, self.default_realm], [10, None, self.second_realm]],
+        )
+
+        # Delete an attachment and run the CountStat job again the next day.
+        attachment2.delete()
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO + self.DAY)
+
+        self.assertTableState(
+            RealmCount,
+            ["value", "subgroup", "realm", "end_time"],
+            [
+                [300, None, self.default_realm, self.TIME_ZERO],
+                [10, None, self.second_realm, self.TIME_ZERO],
+                [100, None, self.default_realm, self.TIME_ZERO + self.DAY],
+                [10, None, self.second_realm, self.TIME_ZERO + self.DAY],
+            ],
+        )
 
     def test_active_users_by_is_bot_for_realm_constraint(self) -> None:
         # For single Realm
@@ -1327,6 +1372,11 @@ class TestDoIncrementLoggingStat(AnalyticsTestCase):
         do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO)
         self.assertTableState(RealmCount, ["value"], [[3]])
 
+    def test_do_increment_logging_start_query_count(self) -> None:
+        stat = LoggingCountStat("test", RealmCount, CountStat.DAY)
+        with self.assert_database_query_count(1):
+            do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO)
+
 
 class TestLoggingCountStats(AnalyticsTestCase):
     def test_aggregation(self) -> None:
@@ -1640,6 +1690,23 @@ class TestLoggingCountStats(AnalyticsTestCase):
     def test_invites_sent(self) -> None:
         property = "invites_sent::day"
 
+        @contextmanager
+        def invite_context(
+            too_many_recent_realm_invites: bool = False, failure: bool = False
+        ) -> Iterator[None]:
+            managers: List[AbstractContextManager[Any]] = [
+                mock.patch(
+                    "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
+                ),
+                self.captureOnCommitCallbacks(execute=True),
+            ]
+            if failure:
+                managers.append(self.assertRaises(InvitationError))
+            with ExitStack() as stack:
+                for mgr in managers:
+                    stack.enter_context(mgr)
+                yield
+
         def assertInviteCountEquals(count: int) -> None:
             self.assertEqual(
                 count,
@@ -1652,48 +1719,49 @@ class TestLoggingCountStats(AnalyticsTestCase):
         stream, _ = self.create_stream_with_recipient()
 
         invite_expires_in_minutes = 2 * 24 * 60
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+        with invite_context():
             do_invite_users(
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(2)
 
         # We currently send emails when re-inviting users that haven't
         # turned into accounts, so count them towards the total
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+        with invite_context():
             do_invite_users(
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(4)
 
         # Test mix of good and malformed invite emails
-        with self.assertRaises(InvitationError), mock.patch(
-            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
-        ):
+        with invite_context(failure=True):
             do_invite_users(
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(4)
 
         # Test inviting existing users
-        with self.assertRaises(InvitationError), mock.patch(
-            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
-        ):
-            do_invite_users(
+        with invite_context():
+            skipped = do_invite_users(
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
+            self.assert_length(skipped, 1)
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit
@@ -1703,8 +1771,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(5)
 
         # Resending invite should cost you
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
-            do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
+        with invite_context():
+            do_send_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
         assertInviteCountEquals(6)
 
     def test_messages_read_hour(self) -> None:

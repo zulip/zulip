@@ -16,7 +16,7 @@ better idea, or just leaving the topic as is. Deleting a topic can confuse
 users who come to the topic later via an email notification.
 
 Note that deleting a topic also deletes every message with that topic,
-whereas [archiving a stream](/help/archive-a-stream) does not.
+whereas [archiving a channel](/help/archive-a-channel) does not.
 
 ### Delete a topic
 
@@ -49,5 +49,5 @@ attribute of messages in Zulip.
 
 * [Edit a message](/help/edit-a-message)
 * [Delete a message](/help/delete-a-message)
-* [Archive a stream](/help/archive-a-stream)
+* [Archive a channel](/help/archive-a-channel)
 * [Message retention policy](/help/message-retention-policy)

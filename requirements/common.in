@@ -6,14 +6,11 @@
 -r pip.in
 
 # Django itself
-Django[argon2]==4.2.*
+Django[argon2]==5.0.*
 asgiref<3.8.0  # Breaks with https://github.com/django/asgiref/pull/367
 
 # needed for NotRequired, ParamSpec
 typing-extensions
-
-# For type-safe returns.curry.partial
-returns
 
 # Needed for rendering backend templates
 Jinja2
@@ -126,12 +123,14 @@ py3dns
 social-auth-app-django
 social-auth-core[azuread,openidconnect,saml]
 python3-saml
+--no-binary=xmlsec
 
 # For encrypting a login token to the desktop app
 cryptography
 
 # Needed for messages' rendered content parsing in push notifications.
 lxml
+--no-binary=lxml
 
 # Needed for 2-factor authentication
 django-two-factor-auth[call,phonenumberslite,sms]
@@ -186,14 +185,11 @@ django-cte
 # SCIM integration
 django-scim2
 
-# CSS manipulation
-soupsieve
-
 # Circuit-breaking for outgoing services
 circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
-django-stubs-ext
+django_stubs_ext
 
 # Structured data representation with parsing.
 pydantic

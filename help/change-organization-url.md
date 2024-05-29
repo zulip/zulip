@@ -1,5 +1,7 @@
 # Change organization URL
 
+{!owner-only.md!}
+
 Zulip supports changing the URL for an organization.  Changing the
 organization URL is a disruptive operation for users:
 
@@ -9,17 +11,47 @@ organization URL is a disruptive operation for users:
   to be updated to point to the new organization URL.
 
 We recommend using a [wildcard
-mention](/help/mention-a-user-or-group#mention-everyone-on-a-stream)
-in an announcement stream to notify users that they need to update
+mention](/help/mention-a-user-or-group#mention-everyone-on-a-channel)
+in an announcement channel to notify users that they need to update
 their clients.
 
-If you're using Zulip Cloud (E.g. `https://example.zulipchat.com`),
-you can request a change by emailing support@zulip.com. Custom domains
-(i.e. those that do not have the form `example.zulipchat.com`) have a
-maintenance cost for our operational team and thus are only available
-for paid plans.
+## Change your Zulip Cloud subdomain
 
-## Self-hosting
+Zulip Cloud organizations are generally hosted at `<subdomain>.zulipchat.com`,
+with the subdomain chosen when the organization was created. Organization
+[owners](/help/roles-and-permissions) can request to change the subdomain.
+
+{start_tabs}
+
+Please e-mail [support@zulip.com](mailto:support@zulip.com) with the following
+information:
+
+1. Your organization's current subdomain.
+
+1. The subdomain you would like to move your organization to.
+
+{end_tabs}
+
+## Move to a custom URL on Zulip Cloud
+
+{!cloud-plus-only.md!}
+
+Because maintaining custom URLs requires effort from our operational team,
+this feature is available only for organizations with 25+ [Zulip Cloud
+Plus](https://zulip.com/plans/#cloud) licenses.
+
+{start_tabs}
+
+Please e-mail [support@zulip.com](mailto:support@zulip.com) with the following
+information:
+
+1. Your organization's current URL.
+
+1. The URL you would like to move your organization to.
+
+{end_tabs}
+
+## Change the URL for your self-hosted server
 
 If you're self-hosting, you can change the root domain of your Zulip
 server by changing the `EXTERNAL_HOST` [setting][zulip-settings].  If

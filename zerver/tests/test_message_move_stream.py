@@ -10,8 +10,12 @@ from zerver.lib.message import has_message_access
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.url_encoding import near_stream_message_url
-from zerver.models import Message, Realm, Stream, UserMessage, UserProfile
-from zerver.models.realms import get_realm
+from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models.realms import (
+    EditTopicPolicyEnum,
+    MoveMessagesBetweenStreamsPolicyEnum,
+    get_realm,
+)
 from zerver.models.streams import get_stream
 
 
@@ -76,7 +80,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             },
         )
 
-        self.assert_json_error(result, "Direct messages cannot be moved to streams.")
+        self.assert_json_error(result, "Direct messages cannot be moved to channels.")
 
     def test_move_message_to_stream_with_content(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
@@ -91,7 +95,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 "content": "Not allowed",
             },
         )
-        self.assert_json_error(result, "Cannot change message content while changing stream")
+        self.assert_json_error(result, "Cannot change message content while changing channel")
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assert_length(messages, 3)
@@ -110,7 +114,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
 
@@ -394,7 +398,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             },
         )
 
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_move_message_realm_admin_cant_move_to_private_stream_without_subscription(
         self,
@@ -414,7 +418,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             },
         )
 
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_move_message_realm_admin_cant_move_from_private_stream_without_subscription(
         self,
@@ -809,11 +813,11 @@ class MessageMoveStreamTest(ZulipTestCase):
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
 
-        # Check sending messages when policy is Realm.POLICY_NOBODY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.NOBODY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_NOBODY,
+            MoveMessagesBetweenStreamsPolicyEnum.NOBODY,
             acting_user=None,
         )
         check_move_message_according_to_policy(UserProfile.ROLE_REALM_OWNER, expect_fail=True)
@@ -821,11 +825,11 @@ class MessageMoveStreamTest(ZulipTestCase):
             UserProfile.ROLE_REALM_ADMINISTRATOR, expect_fail=True
         )
 
-        # Check sending messages when policy is Realm.POLICY_ADMINS_ONLY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.ADMINS_ONLY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_ADMINS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.ADMINS_ONLY,
             acting_user=None,
         )
         check_move_message_according_to_policy(UserProfile.ROLE_MODERATOR, expect_fail=True)
@@ -834,11 +838,11 @@ class MessageMoveStreamTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_2", "new_stream_2", "test"
         )
-        # Check sending messages when policy is Realm.POLICY_MODERATORS_ONLY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MODERATORS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
             acting_user=None,
         )
         check_move_message_according_to_policy(UserProfile.ROLE_MEMBER, expect_fail=True)
@@ -847,11 +851,11 @@ class MessageMoveStreamTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_3", "new_stream_3", "test"
         )
-        # Check sending messages when policy is Realm.POLICY_FULL_MEMBERS_ONLY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.FULL_MEMBERS_ONLY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.FULL_MEMBERS_ONLY,
             acting_user=None,
         )
         do_set_realm_property(
@@ -865,11 +869,11 @@ class MessageMoveStreamTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_4", "new_stream_4", "test"
         )
-        # Check sending messages when policy is Realm.POLICY_MEMBERS_ONLY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
         check_move_message_according_to_policy(UserProfile.ROLE_GUEST, expect_fail=True)
@@ -900,7 +904,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_set_realm_property(
             cordelia.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
 
@@ -943,7 +947,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             cordelia,
             test_stream_1,
             test_stream_2,
-            expect_error_message="The time limit for editing this message's stream has passed",
+            expect_error_message="The time limit for editing this message's channel has passed",
         )
 
         # admins and moderators can move messages irrespective of time limit.
@@ -968,7 +972,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
 
@@ -1000,7 +1004,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_change_stream_post_policy(
             new_stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=user_profile
         )
-        error_msg = "Only organization administrators can send to this stream."
+        error_msg = "Only organization administrators can send to this channel."
         check_move_message_to_stream(UserProfile.ROLE_MODERATOR, error_msg)
         check_move_message_to_stream(UserProfile.ROLE_REALM_ADMINISTRATOR)
 
@@ -1012,7 +1016,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_change_stream_post_policy(
             new_stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=user_profile
         )
-        error_msg = "Only organization administrators and moderators can send to this stream."
+        error_msg = "Only organization administrators and moderators can send to this channel."
         check_move_message_to_stream(UserProfile.ROLE_MEMBER, error_msg)
         check_move_message_to_stream(UserProfile.ROLE_MODERATOR)
 
@@ -1024,7 +1028,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_change_stream_post_policy(
             new_stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=user_profile
         )
-        error_msg = "New members cannot send to this stream."
+        error_msg = "New members cannot send to this channel."
 
         do_set_realm_property(
             user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
@@ -1059,14 +1063,14 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
         realm = user_profile.realm
-        realm.edit_topic_policy = Realm.POLICY_ADMINS_ONLY
+        realm.edit_topic_policy = EditTopicPolicyEnum.ADMINS_ONLY
         realm.save()
         self.login("cordelia")
 
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
 

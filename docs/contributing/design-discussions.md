@@ -9,7 +9,7 @@ array of users and organizations, and discussions in the development community
 are an incredibly valuable source of insight and ideas. We welcome all
 perspectives, respectfully shared.
 
-Most design discussions take place in the [#design][design stream] stream in the
+Most design discussions take place in the [#design][design channel] channel in the
 development community. Discussions about mobile app design happen in
 [#mobile-team](https://chat.zulip.org/#narrow/stream/243-mobile-team), and
 design of the terminal app is discussed in
@@ -39,7 +39,7 @@ your ideas:
   incompatible with Zulip's security model,” is important to present
   early.
 
-Note that [#design][design stream] is a high-traffic stream, and thoughtful
+Note that [#design][design channel] is a high-traffic channel, and thoughtful
 participation takes time. Don’t let it prevent you from doing your own work. It
 can be helpful to pick particular conversations to follow, where you feel that
 you have insight to share.
@@ -67,13 +67,13 @@ discussions:
 
 When you are working on a PR that includes frontend changes, you may find it helpful
 to get interactive feedback on the design. The best way to do so is by posting a
-message in the [#design][design stream] stream in the Zulip development
+message in the [#design][design channel] channel in the Zulip development
 community.
 
 ### When to post
 
 - The issue or a comment on your PR specifically asks you to get feedback in the
-  [#design][design stream] stream.
+  [#design][design channel] channel.
 
 - The issue you’re working on is not specific about some design point, and you
   would like advice.
@@ -162,25 +162,25 @@ If a conversation is going off-track and you are not sure how to fix it, please
 ping someone on the core team to intervene and help get the conversion into a
 better state.
 
-### Moving threads to the most appropriate stream
+### Moving threads to the most appropriate channel
 
-Sometimes it helps to move (part of) a thread to a different stream, so that
+Sometimes it helps to move (part of) a thread to a different channel, so that
 it's seen by the appropriate audience.
 
 - We generally aim to discuss raw user feedback on the product’s design in
   [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback).
-  The [#design][design stream] should be reserved for design aspects that we’re
+  The [#design][design channel] should be reserved for design aspects that we’re
   actively (considering) working on. This lets the design team focus on
   discussions that are expected to result in actionable decisions.
 
-- If a discussion that started in another stream has shifted into the design
-  phase, moving the discussion to [#design][design stream] helps the design team
+- If a discussion that started in another channel has shifted into the design
+  phase, moving the discussion to [#design][design channel] helps the design team
   follow the conversation.
 
 - Discussion of implementation-related decisions should ideally happen in
   [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend). The line can
   sometimes blur (and that’s OK), but we should aim to move (parts of) the
-  thread if there is an extensive conversation that belongs in the other stream.
+  thread if there is an extensive conversation that belongs in the other channel.
 
 - We use [#mobile-team](https://chat.zulip.org/#narrow/stream/243-mobile-team)
   for discussions of mobile app design, and
@@ -268,4 +268,4 @@ to a decision:
   - If the thread has died down, and the decision makers feel that they have
     enough information to go on. (If they don’t, the thread can be bumped.)
 
-[design stream]: https://chat.zulip.org/#narrow/stream/101-design
+[design channel]: https://chat.zulip.org/#narrow/stream/101-design

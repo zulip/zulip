@@ -26,7 +26,7 @@ import gcm
 import lxml.html
 import orjson
 from django.conf import settings
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -42,9 +42,11 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message, huddle_users
+from zerver.lib.message import access_message_and_usermessage, huddle_users
+from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
+    record_push_notifications_recently_working,
     send_json_to_push_bouncer,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
@@ -61,7 +63,6 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
-    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -662,15 +663,18 @@ def send_notifications_to_bouncer(
         # The server may have updated our understanding of whether
         # push notifications will work.
         assert isinstance(remote_realm_dict, dict)
+        can_push = remote_realm_dict["can_push"]
         do_set_realm_property(
             user_profile.realm,
             "push_notifications_enabled",
-            remote_realm_dict["can_push"],
+            can_push,
             acting_user=None,
         )
         do_set_push_notifications_enabled_end_timestamp(
             user_profile.realm, remote_realm_dict["expected_end_timestamp"], acting_user=None
         )
+        if can_push:
+            record_push_notifications_recently_working()
 
     logger.info(
         "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
@@ -687,7 +691,7 @@ def send_notifications_to_bouncer(
 
 def add_push_device_token(
     user_profile: UserProfile, token_str: str, kind: int, ios_app_id: Optional[str] = None
-) -> PushDeviceToken:
+) -> None:
     logger.info(
         "Registering push device: %d %r %d %r", user_profile.id, token_str, kind, ios_app_id
     )
@@ -697,45 +701,42 @@ def add_push_device_token(
     # These can be used to discern whether the user has any mobile
     # devices configured, and is also where we will store encryption
     # keys for mobile push notifications.
-    try:
-        with transaction.atomic():
-            token = PushDeviceToken.objects.create(
+    PushDeviceToken.objects.bulk_create(
+        [
+            PushDeviceToken(
                 user_id=user_profile.id,
-                kind=kind,
                 token=token_str,
+                kind=kind,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone_now(),
-            )
-    except IntegrityError:
-        token = PushDeviceToken.objects.get(
-            user_id=user_profile.id,
-            kind=kind,
-            token=token_str,
-        )
+            ),
+        ],
+        ignore_conflicts=True,
+    )
+
+    if not uses_notification_bouncer():
+        return
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
-    if uses_notification_bouncer():
-        post_data = {
-            "server_uuid": settings.ZULIP_ORG_ID,
-            "user_uuid": str(user_profile.uuid),
-            "realm_uuid": str(user_profile.realm.uuid),
-            # user_id is sent so that the bouncer can delete any pre-existing registrations
-            # for this user+device to avoid duplication upon adding the uuid registration.
-            "user_id": str(user_profile.id),
-            "token": token_str,
-            "token_kind": kind,
-        }
+    post_data = {
+        "server_uuid": settings.ZULIP_ORG_ID,
+        "user_uuid": str(user_profile.uuid),
+        "realm_uuid": str(user_profile.realm.uuid),
+        # user_id is sent so that the bouncer can delete any pre-existing registrations
+        # for this user+device to avoid duplication upon adding the uuid registration.
+        "user_id": str(user_profile.id),
+        "token": token_str,
+        "token_kind": kind,
+    }
 
-        if kind == PushDeviceToken.APNS:
-            post_data["ios_app_id"] = ios_app_id
+    if kind == PushDeviceToken.APNS:
+        post_data["ios_app_id"] = ios_app_id
 
-        logger.info("Sending new push device to bouncer: %r", post_data)
-        # Calls zilencer.views.register_remote_push_device
-        send_to_push_bouncer("POST", "push/register", post_data)
-
-    return token
+    logger.info("Sending new push device to bouncer: %r", post_data)
+    # Calls zilencer.views.register_remote_push_device
+    send_to_push_bouncer("POST", "push/register", post_data)
 
 
 def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: int) -> None:
@@ -947,7 +948,8 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     # These will let the app support logging into multiple realms and servers.
     data["server"] = settings.EXTERNAL_HOST
     data["realm_id"] = user_profile.realm.id
-    data["realm_uri"] = user_profile.realm.uri
+    data["realm_uri"] = user_profile.realm.url
+    data["realm_url"] = user_profile.realm.url
     data["realm_name"] = user_profile.realm.name
     data["user_id"] = user_profile.id
 
@@ -1266,7 +1268,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the
-    zerver.worker.queue_processors.PushNotificationWorker.consume function.
+    zerver.worker.missedmessage_mobile_notifications.PushNotificationWorker.consume function.
     """
     if not push_notifications_configured():
         return
@@ -1292,11 +1294,8 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     with transaction.atomic(savepoint=False):
         try:
-            (message, user_message) = access_message(
-                user_profile,
-                missed_message["message_id"],
-                lock_message=True,
-                get_user_message="object",
+            (message, user_message) = access_message_and_usermessage(
+                user_profile, missed_message["message_id"], lock_message=True
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
@@ -1353,20 +1352,22 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     if trigger == "private_message":
         trigger = NotificationTriggers.DIRECT_MESSAGE  # nocoverage
 
-    mentioned_user_group_name = None
-    # mentioned_user_group_id will be None if the user is personally mentioned
+    # mentioned_user_group will be None if the user is personally mentioned
     # regardless whether they are a member of the mentioned user group in the
     # message or not.
-    mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
-
-    if mentioned_user_group_id is not None:
-        user_group = UserGroup.objects.get(
-            id=mentioned_user_group_id, realm_id=user_profile.realm_id
-        )
-        mentioned_user_group_name = user_group.name
+    mentioned_user_group_id = None
+    mentioned_user_group_name = None
+    mentioned_user_group_members_count = None
+    mentioned_user_group = get_mentioned_user_group([missed_message], user_profile)
+    if mentioned_user_group is not None:
+        mentioned_user_group_id = mentioned_user_group.id
+        mentioned_user_group_name = mentioned_user_group.name
+        mentioned_user_group_members_count = mentioned_user_group.members_count
 
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
-    soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
+    soft_reactivate_if_personal_notification(
+        user_profile, {trigger}, mentioned_user_group_members_count
+    )
 
     if message.is_stream_message():
         # This will almost always be True. The corner case where you

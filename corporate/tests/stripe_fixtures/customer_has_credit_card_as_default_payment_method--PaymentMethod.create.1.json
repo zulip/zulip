@@ -1,0 +1,48 @@
+{
+  "billing_details": {
+    "address": {
+      "city": "San Francisco",
+      "country": "US",
+      "line1": "123 Main St",
+      "line2": null,
+      "postal_code": "94105",
+      "state": "CA"
+    },
+    "email": null,
+    "name": "John Doe",
+    "phone": null
+  },
+  "card": {
+    "brand": "visa",
+    "checks": {
+      "address_line1_check": null,
+      "address_postal_code_check": null,
+      "cvc_check": "unchecked"
+    },
+    "country": "US",
+    "display_brand": "visa",
+    "exp_month": 4,
+    "exp_year": 2025,
+    "fingerprint": "NORMALIZED000001",
+    "funding": "credit",
+    "generated_from": null,
+    "last4": "4242",
+    "networks": {
+      "available": [
+        "visa"
+      ],
+      "preferred": null
+    },
+    "three_d_secure_usage": {
+      "supported": true
+    },
+    "wallet": null
+  },
+  "created": 1000000000,
+  "customer": null,
+  "id": "pm_1P41kCDEQaroqDjslhJv9aor",
+  "livemode": false,
+  "metadata": {},
+  "object": "payment_method",
+  "type": "card"
+}

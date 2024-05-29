@@ -9,7 +9,7 @@ In organizations with up to 600 users, everyone is shown. In larger organization
 only users who have been active in the last two weeks are listed. All users are
 included when you search for people.
 
-When you view a stream or a topic within a stream, subscribers to that stream
+When you view a channel or a topic within a channel, subscribers to that channel
 are shown separately from other members of your organization. To avoid
 distraction, you can hide the user list any time.
 
@@ -57,3 +57,4 @@ show it.
 - [View someone's profile](/help/view-someones-profile)
 - [Status and availability](/help/status-and-availability)
 - [Searching for messages](/help/search-for-messages)
+- [Find administrators](/help/find-administrators)

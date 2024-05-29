@@ -45,6 +45,7 @@ const ListWidget = zrequire("list_widget");
 
 function make_container() {
     const $container = {};
+    $container.attr = noop;
     $container.empty = noop;
     $container.data = noop;
 
@@ -314,15 +315,15 @@ function sort_button(opts) {
     // don't have any abstraction for the button and its
     // siblings other than direct jQuery actions.
 
-    function data(sel) {
-        switch (sel) {
-            case "sort":
+    function attr(name) {
+        switch (name) {
+            case "data-sort":
                 return opts.sort_type;
-            case "sort-prop":
+            case "data-sort-prop":
                 return opts.prop_name;
             /* istanbul ignore next */
             default:
-                throw new Error("unknown selector: " + sel);
+                throw new Error("unknown attribute: " + name);
         }
     }
 
@@ -336,7 +337,7 @@ function sort_button(opts) {
     const classList = new Set();
 
     const $button = {
-        data,
+        attr,
         closest: lookup(".progressive-table-wrapper", {
             data: lookup("list-widget", opts.list_name),
         }),
@@ -686,8 +687,8 @@ run_test("render item", () => {
             // Return a JQuery stub for the original HTML.
             // We want this to be called when we replace
             // the existing HTML with newly rendered HTML.
-            replaceWith(html) {
-                assert.equal(new_html, html);
+            replaceWith($element) {
+                assert.equal(new_html, $element.html());
                 called = true;
                 $container.$appended_data.replace(regex, new_html);
             },

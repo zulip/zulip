@@ -54,7 +54,7 @@ application.
 ## Django routes the request to a view in urls.py files
 
 There are various
-[urls.py](https://docs.djangoproject.com/en/3.2/topics/http/urls/)
+[urls.py](https://docs.djangoproject.com/en/5.0/topics/http/urls/)
 files throughout the server codebase, which are covered in more detail
 in
 [the directory structure doc](../overview/directory-structure.md).
@@ -171,7 +171,7 @@ PUT=create_user_backend
 ```
 
 are supplied as arguments to `rest_path`, along with the
-[HTTPRequest](https://docs.djangoproject.com/en/3.2/ref/request-response/).
+[HTTPRequest](https://docs.djangoproject.com/en/5.0/ref/request-response/).
 The request has the HTTP verb `PUT`, which `rest_dispatch` can use to
 find the correct view to show:
 `zerver.views.users.create_user_backend`.
@@ -190,14 +190,14 @@ Our API works on JSON requests and responses. Every API endpoint should
 ```
 
 in a [Django HttpResponse
-object](https://docs.djangoproject.com/en/3.2/ref/request-response/)
+object](https://docs.djangoproject.com/en/5.0/ref/request-response/)
 with a `Content-Type` of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of
 a successfully handled request, we use `json_success(request, data)`.
 
 The `request` argument is a [Django HttpRequest
-object](https://docs.djangoproject.com/en/3.2/ref/request-response/).
+object](https://docs.djangoproject.com/en/5.0/ref/request-response/).
 The `data` argument is a Python object which can be converted to a JSON
 string and has a default value of an empty Python dictionary.
 
@@ -212,6 +212,6 @@ This will result in a JSON string:
 {"result": "success", "msg": "", "data": {"var_name1": "var_value1", "var_name2": "var_value2"}}
 ```
 
-with a HTTP 200 status and a `Content-Type` of 'application/json'.
+with an HTTP 200 status and a `Content-Type` of 'application/json'.
 
 That's it!

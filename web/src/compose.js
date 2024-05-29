@@ -78,7 +78,7 @@ export function show_preview_area() {
     );
 }
 
-export function create_message_object() {
+export function create_message_object(message_content = compose_state.message_content()) {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
     if (topic === "") {
@@ -88,7 +88,7 @@ export function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
-        content: compose_state.message_content(),
+        content: message_content,
         sender_id: current_user.user_id,
         queue_id: server_events.queue_id,
         stream_id: undefined,
@@ -96,7 +96,7 @@ export function create_message_object() {
     message.topic = "";
 
     if (message.type === "private") {
-        // TODO: this should be collapsed with the code in composebox_typeahead.js
+        // TODO: this should be collapsed with the code in composebox_typeahead.ts
         const recipient = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient);
         message.to = emails;
@@ -130,9 +130,10 @@ export function clear_compose_box() {
         compose_ui.make_compose_box_original_size();
     }
     $("textarea#compose-textarea").val("").trigger("focus");
+    compose_ui.compose_textarea_typeahead?.hide();
     compose_validate.check_overflow_text();
     compose_validate.clear_topic_resolved_warning();
-    $("textarea#compose-textarea").removeData("draft-id");
+    drafts.set_compose_draft_id(undefined);
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
@@ -158,7 +159,6 @@ export function send_message_success(request, data) {
             // topic has been automatically unmuted or followed. No need to
             // suggest the user to unmute. Show the banner and return.
             compose_notifications.notify_automatic_new_visibility_policy(request, data);
-            onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
             return;
         }
 
@@ -179,7 +179,11 @@ export function send_message(request = create_message_object()) {
 
     // Silently save / update a draft to ensure the message is not lost in case send fails.
     // We delete the draft on successful send.
-    request.draft_id = drafts.update_draft({no_notify: true, update_count: false});
+    request.draft_id = drafts.update_draft({
+        no_notify: true,
+        update_count: false,
+        is_sending_saving: true,
+    });
 
     let local_id;
     let locally_echoed;
@@ -246,6 +250,10 @@ export function send_message(request = create_message_object()) {
         // We might not have updated the draft count because we assumed the
         // message would send. Ensure that the displayed count is correct.
         drafts.sync_count();
+
+        const draft = drafts.draft_model.getDraft(request.draft_id);
+        draft.is_sending_saving = false;
+        drafts.draft_model.editDraft(request.draft_id, draft);
     }
 
     transmit.send_message(request, success, error);
@@ -404,9 +412,15 @@ function schedule_message_to_custom_date() {
         scheduled_delivery_timestamp,
     };
 
+    const draft_id = drafts.update_draft({
+        no_notify: true,
+        update_count: false,
+        is_sending_saving: true,
+    });
+
     const $banner_container = $("#compose_banners");
     const success = function (data) {
-        drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
+        drafts.draft_model.deleteDraft(draft_id);
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
@@ -425,6 +439,9 @@ function schedule_message_to_custom_date() {
             $banner_container,
             $("textarea#compose-textarea"),
         );
+        const draft = drafts.draft_model.getDraft(draft_id);
+        draft.is_sending_saving = false;
+        drafts.draft_model.editDraft(draft_id, draft);
     };
 
     channel.post({

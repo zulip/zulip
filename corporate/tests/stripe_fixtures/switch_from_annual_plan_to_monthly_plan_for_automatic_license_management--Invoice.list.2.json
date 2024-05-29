@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9QcmpmY3R1NG5wMDFOQkd5anhZWDFKdEdWQWVJLDEwMDA2NTkyMg0200jkm5nOjb?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTWmd5UEhET3RaajRjV1l4WEhuRTRFd2tiQlFJLDEwMzI5ODc4Mw0200rxKpvoxm?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9QcmpmY3R1NG5wMDFOQkd5anhZWDFKdEdWQWVJLDEwMDA2NTkyMg0200jkm5nOjb/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTWmd5UEhET3RaajRjV1l4WEhuRTRFd2tiQlFJLDEwMzI5ODc4Mw0200rxKpvoxm/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -212,7 +212,7 @@
       "total_excluding_tax": 148610,
       "total_tax_amounts": [],
       "transfer_data": null,
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     },
     {
       "account_country": "US",
@@ -257,9 +257,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9PMkY2Q2FUU3FqYUpzeUVkamxlNTdqVzR2WUFmLDEwMDA2NTkyMg0200NtuaQgR5?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBSMVVjOHN1R0d2V2k1aTRiamd5NGRuSm5BZDJtLDEwMzI5ODc4Mw0200C9aAJzJB?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9PMkY2Q2FUU3FqYUpzeUVkamxlNTdqVzR2WUFmLDEwMDA2NTkyMg0200NtuaQgR5/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBSMVVjOHN1R0d2V2k1aTRiamd5NGRuSm5BZDJtLDEwMzI5ODc4Mw0200C9aAJzJB/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -282,8 +282,8 @@
             "metadata": {},
             "object": "line_item",
             "period": {
-              "end": 1000000000,
-              "start": 1000000000
+              "end": 1357095845,
+              "start": 1325473445
             },
             "plan": null,
             "price": {
@@ -329,6 +329,7 @@
         "billing_schedule": "1",
         "license_management": "automatic",
         "licenses": "6",
+        "on_free_trial": "False",
         "plan_tier": "1",
         "user_id": "10"
       },

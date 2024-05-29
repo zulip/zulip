@@ -4,7 +4,12 @@ class zulip::wal_g {
   $wal_g_version = $zulip::common::versions['wal-g']['version']
   $bin = "/srv/zulip-wal-g-${wal_g_version}"
 
-  $package = "wal-g-pg-ubuntu-20.04-${zulip::common::goarch}"
+  # For unfathomable reasons, the amd64 and aarch64 builds have slightly different shaped URLs
+  if $zulip::common::goarch == 'amd64' {
+    $package = "wal-g-pg-ubuntu-20.04-${zulip::common::goarch}"
+  } else {
+    $package = "wal-g-pg-ubuntu20.04-${zulip::common::goarch}"
+  }
   # This tarball contains only a single file, which is extracted as $bin
   zulip::external_dep { 'wal-g':
     version        => $wal_g_version,
@@ -14,7 +19,8 @@ class zulip::wal_g {
   file { '/usr/local/bin/wal-g':
     ensure  => link,
     target  => $bin,
-    require => Zulip::External_Dep['wal-g'],
+    require => File[$bin],
+    before  => Exec['Cleanup wal-g'],
   }
   # We used to install versions into /usr/local/bin/wal-g-VERSION,
   # until we moved to using Zulip::External_Dep which places them in

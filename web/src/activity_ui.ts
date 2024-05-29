@@ -83,14 +83,14 @@ export function searching(): boolean {
 }
 
 export function render_empty_user_list_message_if_needed($container: JQuery): void {
-    const empty_list_message = $container.data("search-results-empty");
+    const empty_list_message = $container.attr("data-search-results-empty");
 
     if (!empty_list_message || $container.children().length) {
         return;
     }
 
-    const empty_list_widget = render_empty_list_widget_for_list({empty_list_message});
-    $container.append(empty_list_widget);
+    const empty_list_widget_html = render_empty_list_widget_for_list({empty_list_message});
+    $container.append($(empty_list_widget_html));
 }
 
 export function build_user_sidebar(): number[] | undefined {

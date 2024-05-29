@@ -66,8 +66,8 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -113,6 +113,7 @@
     "billing_schedule": "2",
     "license_management": "automatic",
     "licenses": "11",
+    "on_free_trial": "False",
     "plan_tier": "103"
   },
   "next_payment_attempt": null,
@@ -164,5 +165,5 @@
   "total_excluding_tax": 10000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

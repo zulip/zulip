@@ -24,11 +24,11 @@ import orjson
 import requests
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from returns.curry import partial
 from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
@@ -311,7 +311,7 @@ def build_recipients(
 ) -> List[ZerverFieldsT]:
     """
     This function was only used HipChat import, this function may be
-    required for future conversions. The Slack and Gitter conversions do it more
+    required for future conversions. The Slack conversions do it more
     tightly integrated with creating other objects.
     """
 
@@ -583,7 +583,7 @@ def process_avatars(
     2. avatar_dir: Folder where the downloaded avatars are saved
     3. realm_id: Realm ID.
 
-    We use this for Slack and Gitter conversions, where avatars need to be
+    We use this for Slack conversions, where avatars need to be
     downloaded.  For simpler conversions see write_avatar_png.
     """
 

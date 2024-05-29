@@ -353,7 +353,7 @@ export function set_up() {
         },
     });
 
-    $("#bot-settings .tab-container").prepend(toggler.get());
+    toggler.get().prependTo($("#bot-settings .tab-container"));
     toggler.goto("active-bots");
 
     render_bots();

@@ -33,6 +33,7 @@ function MessageListView() {
         append: noop,
         prepend: noop,
         clear_rendering_state: noop,
+        is_current_message_list: () => true,
     };
 }
 mock_esm("../src/message_list_view", {
@@ -189,17 +190,6 @@ run_test("message_range", () => {
     assert.deepEqual(list.message_range(31, 1000), [{id: 40}, {id: 50}, {id: 60}]);
     blueslip.expect("error", "message_range given a start of -1");
     assert.deepEqual(list.message_range(-1, 40), [{id: 30}, {id: 40}]);
-});
-
-run_test("nth_most_recent_id", () => {
-    const list = new MessageList({
-        filter: new Filter([]),
-    });
-    list.append([{id: 10}, {id: 20}, {id: 30}]);
-    assert.equal(list.nth_most_recent_id(1), 30);
-    assert.equal(list.nth_most_recent_id(2), 20);
-    assert.equal(list.nth_most_recent_id(3), 10);
-    assert.equal(list.nth_most_recent_id(4), -1);
 });
 
 run_test("change_message_id", () => {

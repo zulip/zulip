@@ -81,12 +81,11 @@ as well as those mentioned in the
   default database user will be `zulip`. This setting can only be set
   on the first install.
 
-- `--postgresql-missing-dictionaries`: Set
-  `postgresql.missing_dictionaries` ([docs][missing-dicts]) in the
-  Zulip settings, which omits some configuration needed for full-text
-  indexing. This should be used with [cloud managed databases like
-  RDS](#using-zulip-with-amazon-rds-as-the-database). This option
-  conflicts with `--no-overwrite-settings`.
+- `--postgresql-missing-dictionaries`: Set `postgresql.missing_dictionaries`
+  ([docs][missing-dicts]) in the Zulip settings, which omits some configuration
+  needed for full-text indexing. This should be used with [cloud managed
+  databases like RDS][postgresql]. This option conflicts with
+  `--no-overwrite-settings`.
 
 - `--no-init-db`: This option instructs the installer to not do any
   database initialization. This should be used when you already have a
@@ -183,25 +182,12 @@ If you are deploying Zulip from Git, you will also need to:
 
 ## Running Zulip's service dependencies on different machines
 
-Zulip has full support for each top-level service living on its own
-machine.
+Zulip has full support for each top-level service living on its own machine.
 
-You can configure remote servers for PostgreSQL, RabbitMQ, Redis,
-in `/etc/zulip/settings.py`; just search for the service name in that
-file and you'll find inline documentation in comments for how to
-configure it.
-
-Since some of these services require some configuration on the node
-itself (e.g. installing our PostgreSQL extensions), we have designed
-the Puppet configuration that Zulip uses for installing and upgrading
-configuration to be completely modular.
-
-For example, to install a Zulip Redis server on a machine, you can run
-the following after unpacking a Zulip production release tarball:
-
-```bash
-env PUPPET_CLASSES=zulip::profile::redis ./scripts/setup/install
-```
+You can configure remote servers for Memcached, PostgreSQL, RabbitMQ, Redis, and
+Smokescreen in `/etc/zulip/settings.py`; just search for the service name in
+that file and you'll find inline documentation in comments for how to configure
+it.
 
 All puppet modules under `zulip::profile` are allowed to be configured
 stand-alone on a host. You can see most likely manifests you might
@@ -212,90 +198,20 @@ directory if you want to customize. A good example of doing this is
 in the [kandra Puppet configuration][zulipchat-puppet] that we use
 as part of managing chat.zulip.org and zulip.com.
 
+For example, to install a Zulip Redis server on a machine, you can run
+the following after unpacking a Zulip production release tarball:
+
+```bash
+./scripts/setup/install --puppet-classes zulip::profile::redis
+```
+
+To run the database on a separate server, including a cloud provider's managed
+PostgreSQL instance (e.g. AWS RDS), or with a warm-standby replica for
+reliability, see our [dedicated PostgreSQL documentation][postgresql].
+
 [standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/profile/standalone.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/kandra/manifests
-
-### Using Zulip with Amazon RDS as the database
-
-You can use DBaaS services like Amazon RDS for the Zulip database.
-The experience is slightly degraded, in that most DBaaS provides don't
-include useful dictionary files in their installations and don't
-provide a way to provide them yourself, resulting in a degraded
-[full-text search](../subsystems/full-text-search.md) experience
-around issues dictionary files are relevant (e.g. stemming).
-
-You also need to pass some extra options to the Zulip installer in
-order to avoid it throwing an error when Zulip attempts to configure
-the database's dictionary files for full-text search; the details are
-below.
-
-#### Step 1: Set up Zulip
-
-Follow the [standard instructions](install.md), with one
-change. When running the installer, pass the `--no-init-db`
-flag, e.g.:
-
-```bash
-sudo -s  # If not already root
-./zulip-server-*/scripts/setup/install --certbot \
-    --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
-    --no-init-db --postgresql-missing-dictionaries
-```
-
-The script also installs and starts PostgreSQL on the server by
-default. We don't need it, so run the following command to
-stop and disable the local PostgreSQL server.
-
-```bash
-sudo service postgresql stop
-sudo update-rc.d postgresql disable
-```
-
-This complication will be removed in a future version.
-
-#### Step 2: Create the PostgreSQL database
-
-Access an administrative `psql` shell on your PostgreSQL database, and
-run the commands in `scripts/setup/create-db.sql` to:
-
-- Create a database called `zulip`.
-- Create a user called `zulip`.
-- Now log in with the `zulip` user to create a schema called
-  `zulip` in the `zulip` database. You might have to grant `create`
-  privileges first for the `zulip` user to do this.
-
-Depending on how authentication works for your PostgreSQL installation,
-you may also need to set a password for the Zulip user, generate a
-client certificate, or similar; consult the documentation for your
-database provider for the available options.
-
-#### Step 3: Configure Zulip to use the PostgreSQL database
-
-In `/etc/zulip/settings.py` on your Zulip server, configure the
-following settings with details for how to connect to your PostgreSQL
-server. Your database provider should provide these details.
-
-- `REMOTE_POSTGRES_HOST`: Name or IP address of the PostgreSQL server.
-- `REMOTE_POSTGRES_PORT`: Port on the PostgreSQL server.
-- `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server.
-
-If you're using password authentication, you should specify the
-password of the `zulip` user in /etc/zulip/zulip-secrets.conf as
-follows:
-
-```ini
-postgres_password = abcd1234
-```
-
-Now complete the installation by running the following commands.
-
-```bash
-# Ask Zulip installer to initialize the PostgreSQL database.
-su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
-
-# And then generate a realm creation link:
-su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
-```
+[postgresql]: postgresql.md
 
 ## Using an alternate port
 
@@ -385,32 +301,3 @@ some other proxy, you can override this default by setting
 `S3_SKIP_PROXY = False` in `/etc/zulip/settings.py`.
 
 [s3]: upload-backends.md#s3-backend-configuration
-
-## PostgreSQL warm standby
-
-Zulip's configuration allows for [warm standby database
-replicas][warm-standby] as a disaster recovery solution; see the
-linked PostgreSQL documentation for details on this type of
-deployment. Zulip's configuration builds on top of `wal-g`, our
-[streaming database backup solution][wal-g], and thus requires that it
-be configured for the primary and all secondary warm standby replicas.
-
-In addition to having `wal-g` backups configured, warm standby
-replicas should configure the hostname of their primary replica, and
-username to use for replication, in `/etc/zulip/zulip.conf`:
-
-```ini
-[postgresql]
-replication_user = replicator
-replication_primary = hostname-of-primary.example.com
-```
-
-The `postgres` user on the replica will need to be able to
-authenticate as the `replication_user` user, which may require further
-configuration of `pg_hba.conf` and client certificates on the replica.
-If you are using password authentication, you can set a
-`postgresql_replication_password` secret in
-`/etc/zulip/zulip-secrets.conf`.
-
-[warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
-[wal-g]: export-and-import.md#database-only-backup-tools

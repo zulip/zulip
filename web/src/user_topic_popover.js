@@ -25,9 +25,10 @@ export function initialize() {
         onShow(instance) {
             popover_menus.popover_instances.change_visibility_policy = instance;
             popover_menus.on_show_prep(instance);
-            const elt = $(instance.reference).closest(".change_visibility_policy").expectOne()[0];
-            const stream_id = $(elt).attr("data-stream-id");
-            const topic_name = $(elt).attr("data-topic-name");
+            const $elt = $(instance.reference).closest(".change_visibility_policy").expectOne();
+            const stream_id = $elt.attr("data-stream-id");
+            const topic_name = $elt.attr("data-topic-name");
+            $elt.addClass("visibility-policy-popover-visible");
 
             instance.context =
                 popover_menus_data.get_change_visibility_policy_popover_content_context(
@@ -43,7 +44,7 @@ export function initialize() {
             const {stream_id, topic_name} = instance.context;
 
             if (!stream_id) {
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 return;
             }
 
@@ -58,10 +59,14 @@ export function initialize() {
                     topic_name,
                     visibility_policy,
                 );
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {
+            $(instance.reference)
+                .closest(".change_visibility_policy")
+                .expectOne()
+                .removeClass("visibility-policy-popover-visible");
             instance.destroy();
             popover_menus.popover_instances.change_visibility_policy = undefined;
         },

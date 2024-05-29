@@ -6,11 +6,11 @@ from zerver.lib.users import get_api_key
 
 
 class JiraHookTests(WebhookTestCase):
-    STREAM_NAME = "jira"
+    CHANNEL_NAME = "jira"
     URL_TEMPLATE = "/api/v1/external/jira?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "jira"
 
-    def test_custom_stream(self) -> None:
+    def test_custom_channel(self) -> None:
         api_key = get_api_key(self.test_user)
         self.subscribe(self.test_user, "jira_custom")
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
@@ -26,9 +26,9 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
 * **Priority**: Major
 * **Assignee**: no one
 """.strip()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name="jira_custom",
+            channel_name="jira_custom",
             topic_name="BUG-15: New bug with hook",
             content=expected_content,
         )
@@ -64,10 +64,10 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
             self.assertFalse(m.called)
             self.assert_json_success(result)
 
-    def test_created_with_stream_with_spaces_escaped(self) -> None:
-        self.STREAM_NAME = quote("jira alerts")
+    def test_created_with_channel_with_spaces_escaped(self) -> None:
+        self.CHANNEL_NAME = quote("jira alerts")
         self.url = self.build_webhook_url()
-        self.subscribe(self.test_user, unquote(self.STREAM_NAME))
+        self.subscribe(self.test_user, unquote(self.CHANNEL_NAME))
 
         payload = self.get_body("created_v1")
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -85,10 +85,10 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
         self.assertEqual(msg.content, expected_message)
         self.assertEqual(msg.topic_name(), expected_topic_name)
 
-    def test_created_with_stream_with_spaces_double_escaped(self) -> None:
-        self.STREAM_NAME = quote(quote("jira alerts"))
+    def test_created_with_channel_with_spaces_double_escaped(self) -> None:
+        self.CHANNEL_NAME = quote(quote("jira alerts"))
         self.url = self.build_webhook_url()
-        self.subscribe(self.test_user, unquote(unquote(self.STREAM_NAME)))
+        self.subscribe(self.test_user, unquote(unquote(self.CHANNEL_NAME)))
 
         payload = self.get_body("created_v1")
         result = self.client_post(self.url, payload, content_type="application/json")

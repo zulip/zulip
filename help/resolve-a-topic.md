@@ -1,6 +1,6 @@
 # Resolve a topic
 
-Zulip's [topics](/help/streams-and-topics) are very
+Zulip's [topics](/help/introduction-to-topics) are very
 helpful for customer support, answering questions, investigating
 issues and production errors, as well as other workflows.
 Resolving topics makes it easy to track the status of each question,
@@ -21,7 +21,7 @@ Marking a topic as unresolved removes the ✔ and also triggers an
 automated notice from the notification bot.
 
 It's often helpful to define a policy for when to resolve topics that
-fits how topics are used in a given stream. Here are some common
+fits how topics are used in a given channel. Here are some common
 approaches for deciding when to mark a topic as resolved:
 
 * **Support**: When the support interaction is complete. Resolving

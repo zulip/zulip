@@ -7,20 +7,20 @@
     {{else}}
         <span class="stream-status">
             {{#if deactivated}}
-                {{t "This stream has been archived." }}
+                {{t "This channel has been archived." }}
             {{else if subscribed }}
                 {{#tr}}
-                    You subscribed to stream <z-stream-name></z-stream-name>.
+                    You subscribed to channel <z-stream-name></z-stream-name>.
                     {{#*inline "z-stream-name"}}{{> stream_privacy }} {{stream_name}}{{/inline}}
                 {{/tr}}
             {{else if just_unsubscribed }}
                 {{#tr}}
-                    You unsubscribed from stream <z-stream-name></z-stream-name>.
+                    You unsubscribed from channel <z-stream-name></z-stream-name>.
                     {{#*inline "z-stream-name"}}{{> stream_privacy }} {{stream_name}}{{/inline}}
                 {{/tr}}
             {{else}}
                 {{#tr}}
-                    You are not subscribed to stream <z-stream-name></z-stream-name>.
+                    You are not subscribed to channel <z-stream-name></z-stream-name>.
                     {{#*inline "z-stream-name"}}{{> stream_privacy }} {{stream_name}}{{/inline}}
                 {{/tr}}
             {{/if}}

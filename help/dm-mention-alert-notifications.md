@@ -30,7 +30,7 @@ messages) from desktop notifications.
 
 ## Wildcard mentions
 
-By default, wildcard mentions (`@**all**`, `@**everyone**`, `@**stream**`,
+By default, wildcard mentions (`@**all**`, `@**everyone**`, `@**channel**`,
 or `@**topic**`) trigger email/push notifications as though they were
 personal @-mentions. You can toggle whether you receive notifications
 for wildcard mentions.
@@ -38,21 +38,21 @@ for wildcard mentions.
 !!! tip ""
 
     Unlike personal mentions, wildcard mentions do not trigger notifications
-    in muted streams or topics.
+    in muted channels or topics.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
 1.  In the **Notification triggers** table, toggle the **@all** checkbox for
-    **Streams** or **Followed topics**.
+    **Channels** or **Followed topics**.
 
 {end_tabs}
 
 Additionally, you can override this configuration for individual
-streams in your [Stream settings](/help/stream-notifications), and
+channels in your [Channel settings](/help/channel-notifications), and
 administrators can [restrict use of wildcard
-mentions](/help/restrict-wildcard-mentions) in large streams.
+mentions](/help/restrict-wildcard-mentions) in large channels.
 
 ## Alert words
 
@@ -82,6 +82,6 @@ case-insensitive.
 * [Email notifications](/help/email-notifications)
 * [Mobile notifications](/help/mobile-notifications)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [View your mentions](/help/view-your-mentions)
 * [Do not disturb](/help/do-not-disturb)

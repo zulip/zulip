@@ -40,8 +40,8 @@ function retrieve_search_query_data(): SearchData {
     };
 
     // Add in stream:foo and topic:bar if present
-    if (current_filter.has_operator("stream") || current_filter.has_operator("topic")) {
-        const stream = current_filter.operands("stream")[0];
+    if (current_filter.has_operator("channel") || current_filter.has_operator("topic")) {
+        const stream = current_filter.operands("channel")[0];
         const topic = current_filter.operands("topic")[0];
         if (stream) {
             search_string_result.stream_query = stream;
@@ -92,7 +92,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
 
     const current_filter = narrow_state.filter();
 
-    if (current_filter === undefined) {
+    if (current_filter === undefined || current_filter.is_in_home()) {
         return default_banner;
     }
 
@@ -103,7 +103,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
 
     if (num_terms !== 1) {
         // For invalid-multi-operator narrows, we display an invalid narrow message
-        const streams = current_filter.operands("stream");
+        const streams = current_filter.operands("channel");
         const topics = current_filter.operands("topic");
 
         // No message can have multiple streams
@@ -112,7 +112,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 title: default_banner_for_multiple_filters,
                 html: $t_html({
                     defaultMessage:
-                        "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
+                        "<p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
                 }),
             };
         }
@@ -147,7 +147,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
 
         if (
             page_params.is_spectator &&
-            first_operator === "stream" &&
+            first_operator === "channel" &&
             !stream_data.is_web_public_by_stream_name(first_operand)
         ) {
             // For non web-public streams, show `login_to_access` modal.
@@ -242,7 +242,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             }
             // fallthrough to default case if no match is found
             break;
-        case "stream":
+        case "channel":
             if (!stream_data.is_subscribed_by_name(first_operand)) {
                 // You are narrowed to a stream which does not exist or is a private stream
                 // in which you were never subscribed.
@@ -264,28 +264,11 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 }
 
                 if (can_toggle_narrowed_stream()) {
-                    return {
-                        title: $t({
-                            defaultMessage:
-                                "You aren't subscribed to this stream and nobody has talked about that yet!",
-                        }),
-                        // TODO: Consider moving the button to be its own option in the template.
-                        html: $t_html(
-                            {
-                                defaultMessage: "<z-button>Subscribe</z-button>",
-                            },
-                            {
-                                "z-button": (content_html) =>
-                                    `<button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html.join(
-                                        "",
-                                    )}</button>`,
-                            },
-                        ),
-                    };
+                    return default_banner;
                 }
 
                 return {
-                    title: $t({defaultMessage: "This stream does not exist or is private."}),
+                    title: $t({defaultMessage: "This channel does not exist or is private."}),
                 };
             }
             // else fallthrough to default case

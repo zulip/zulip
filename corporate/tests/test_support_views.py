@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Optional
 from unittest import mock
 
@@ -81,7 +80,6 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 "automanage_licenses": True,
                 "charge_automatically": False,
                 "price_per_license": 100,
-                "discount": legacy_plan.customer.default_discount,
                 "billing_cycle_anchor": legacy_plan.end_date,
                 "billing_schedule": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 "tier": CustomerPlan.TIER_SELF_HOSTED_BASIC,
@@ -275,7 +273,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         def check_legacy_plan_with_upgrade(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    "📅 Current plan information:",
+                    "Current plan information:",
                     "<b>Plan name</b>: Free (legacy plan)<br />",
                     "<b>Status</b>: New plan scheduled<br />",
                     "<b>End date</b>: 01 February 2050<br />",
@@ -294,7 +292,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         def check_legacy_plan_without_upgrade(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    "📅 Current plan information:",
+                    "Current plan information:",
                     "<b>Plan name</b>: Free (legacy plan)<br />",
                     "<b>Status</b>: Active<br />",
                     "<b>End date</b>: 01 February 2050<br />",
@@ -516,27 +514,69 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
         self.assertEqual(next_plan.status, CustomerPlan.NEVER_STARTED)
 
-        self.assertIsNone(customer.default_discount)
+        self.assertEqual(customer.monthly_discounted_price, 0)
+        self.assertEqual(customer.annual_discounted_price, 0)
         self.assertIsNone(plan.discount)
         self.assertIsNone(next_plan.discount)
 
         iago = self.example_user("iago")
         self.login_user(iago)
 
+        # A required plan tier for a customer can be set when an upgrade
+        # is scheduled which is different than the one customer is upgrading to,
+        # but won't change either pre-existing plan tiers.
+        self.assertIsNone(customer.required_plan_tier)
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{remote_realm.id}",
+                "required_plan_tier": f"{CustomerPlan.TIER_SELF_HOSTED_BUSINESS}",
+            },
+        )
+        self.assert_in_success_response(
+            ["Required plan tier for realm-name-4 set to Zulip Business."],
+            result,
+        )
+        customer.refresh_from_db()
+        next_plan.refresh_from_db()
+        self.assertEqual(customer.required_plan_tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(next_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
+
         # A default discount can be added when an upgrade is scheduled.
         result = self.client_post(
             "/activity/remote/support",
-            {"remote_realm_id": f"{remote_realm.id}", "discount": "50"},
+            {
+                "remote_realm_id": f"{remote_realm.id}",
+                "required_plan_tier": f"{CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+            },
         )
         self.assert_in_success_response(
-            ["Discount for realm-name-4 changed to 50% from 0%."], result
+            ["Required plan tier for realm-name-4 set to Zulip Basic."],
+            result,
+        )
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{remote_realm.id}",
+                "monthly_discounted_price": "50",
+                "annual_discounted_price": "500",
+            },
+        )
+        self.assert_in_success_response(
+            [
+                "Monthly price for realm-name-4 changed to 50 from 0. Annual price changed to 500 from 0."
+            ],
+            result,
         )
         customer.refresh_from_db()
         plan.refresh_from_db()
         next_plan.refresh_from_db()
-        self.assertEqual(customer.default_discount, Decimal(50))
-        self.assertEqual(plan.discount, Decimal(50))
-        self.assertEqual(next_plan.discount, Decimal(50))
+        self.assertEqual(customer.monthly_discounted_price, 50)
+        self.assertEqual(customer.annual_discounted_price, 500)
+        # Discount for current plan stays None since it is not the same as required tier for discount.
+        self.assertEqual(plan.discount, None)
+        self.assertEqual(next_plan.discount, "85.71")
         self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
         self.assertEqual(next_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
 
@@ -555,26 +595,6 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
         customer.refresh_from_db()
         self.assertIsNone(customer.minimum_licenses)
-
-        # A required plan tier for a customer can be set when an upgrade
-        # is scheduled, but won't change either pre-existing plan tiers.
-        self.assertIsNone(customer.required_plan_tier)
-        result = self.client_post(
-            "/activity/remote/support",
-            {
-                "remote_realm_id": f"{remote_realm.id}",
-                "required_plan_tier": f"{CustomerPlan.TIER_SELF_HOSTED_BUSINESS}",
-            },
-        )
-        self.assert_in_success_response(
-            ["Required plan tier for realm-name-4 set to Zulip Business."],
-            result,
-        )
-        customer.refresh_from_db()
-        next_plan.refresh_from_db()
-        self.assertEqual(customer.required_plan_tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
-        self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-        self.assertEqual(next_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
 
     def test_support_deactivate_remote_server(self) -> None:
         iago = self.example_user("iago")
@@ -696,16 +716,17 @@ class TestSupportEndpoint(ZulipTestCase):
             stream: str, invitee_email: str, realm: Optional[Realm] = None
         ) -> None:
             invite_expires_in_minutes = 10 * 24 * 60
-            self.client_post(
-                "/json/invites",
-                {
-                    "invitee_emails": [invitee_email],
-                    "stream_ids": orjson.dumps([self.get_stream_id(stream, realm)]).decode(),
-                    "invite_expires_in_minutes": invite_expires_in_minutes,
-                    "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
-                },
-                subdomain=realm.string_id if realm is not None else "zulip",
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                self.client_post(
+                    "/json/invites",
+                    {
+                        "invitee_emails": [invitee_email],
+                        "stream_ids": orjson.dumps([self.get_stream_id(stream, realm)]).decode(),
+                        "invite_expires_in_minutes": invite_expires_in_minutes,
+                        "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                    },
+                    subdomain=realm.string_id if realm is not None else "zulip",
+                )
 
         def check_hamlet_user_query_result(result: "TestHttpResponse") -> None:
             assert_user_details_in_html_response(
@@ -715,8 +736,10 @@ class TestSupportEndpoint(ZulipTestCase):
                 [
                     f"<b>Admins</b>: {self.example_email('iago')}\n",
                     f"<b>Owners</b>: {self.example_email('desdemona')}\n",
-                    'class="copy-button" data-copytext="{}">'.format(self.example_email("iago")),
-                    'class="copy-button" data-copytext="{}">'.format(
+                    'class="copy-button" data-clipboard-text="{}">'.format(
+                        self.example_email("iago")
+                    ),
+                    'class="copy-button" data-clipboard-text="{}">'.format(
                         self.example_email("desdemona")
                     ),
                 ],
@@ -749,7 +772,8 @@ class TestSupportEndpoint(ZulipTestCase):
                     "Zulip Dev</h3>",
                     '<option value="1" selected>Self-hosted</option>',
                     '<option value="2">Limited</option>',
-                    'input type="number" name="discount" value="None"',
+                    'input type="number" name="monthly_discounted_price" value="None"',
+                    'input type="number" name="annual_discounted_price" value="None"',
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
                     f'<option value="{zulip_realm.org_type}" selected>',
@@ -766,7 +790,8 @@ class TestSupportEndpoint(ZulipTestCase):
                     "Lear &amp; Co.</h3>",
                     '<option value="1" selected>Self-hosted</option>',
                     '<option value="2">Limited</option>',
-                    'input type="number" name="discount" value="None"',
+                    'input type="number" name="monthly_discounted_price" value="None"',
+                    'input type="number" name="annual_discounted_price" value="None"',
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
                     'scrub-realm-button">',
@@ -951,6 +976,7 @@ class TestSupportEndpoint(ZulipTestCase):
             self.example_user("hamlet"),
             invited_as=1,
             invite_expires_in_minutes=invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         )
         result = query_result_from_before("zulip", 2)
         check_multiuse_invite_link_query_result(result)
@@ -1095,9 +1121,12 @@ class TestSupportEndpoint(ZulipTestCase):
 
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
-        result = self.client_post(
-            "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
-        )
+        discount_change_data = {
+            "realm_id": f"{lear_realm.id}",
+            "monthly_discounted_price": "600",
+            "annual_discounted_price": "6000",
+        }
+        result = self.client_post("/activity/support", discount_change_data)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
@@ -1105,18 +1134,191 @@ class TestSupportEndpoint(ZulipTestCase):
         self.login_user(iago)
 
         result = self.client_post(
-            "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "required_plan_tier": f"{CustomerPlan.TIER_CLOUD_STANDARD}",
+            },
         )
-        self.assert_in_success_response(["Discount for lear changed to 25% from 0%"], result)
+        self.assert_in_success_response(
+            ["Required plan tier for lear set to Zulip Cloud Standard."],
+            result,
+        )
+        result = self.client_post("/activity/support", discount_change_data)
+        self.assert_in_success_response(
+            ["Monthly price for lear changed to 600 from 0. Annual price changed to 6000 from 0."],
+            result,
+        )
 
         customer.refresh_from_db()
         plan = get_current_plan_by_customer(customer)
         assert plan is not None
-        self.assertEqual(customer.default_discount, Decimal(25))
-        self.assertEqual(plan.discount, Decimal(25))
+        self.assertEqual(customer.monthly_discounted_price, 600)
+        self.assertEqual(customer.annual_discounted_price, 6000)
+        self.assertEqual(plan.discount, "25")
         start_next_billing_cycle = start_of_next_billing_cycle(plan, timezone_now())
         billing_cycle_string = start_next_billing_cycle.strftime("%d %B %Y")
 
+        twenty_five_percent_discounted_response = [
+            "<b>Plan name</b>: Zulip Cloud Standard",
+            "<b>Status</b>: Active",
+            "<b>Discount</b>: 25%",
+            "<b>Billing schedule</b>: Monthly",
+            "<b>Licenses</b>: 2/10 (Manual)",
+            "<b>Price per license</b>: $6.00",
+            "<b>Annual recurring revenue</b>: $720.00",
+            f"<b>Start of next billing cycle</b>: {billing_cycle_string}",
+        ]
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            twenty_five_percent_discounted_response,
+            result,
+        )
+
+        # Set price back to original price to reset discount.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "monthly_discounted_price": "800",
+                "annual_discounted_price": "8000",
+            },
+        )
+
+        no_discount_response = [
+            "<b>Plan name</b>: Zulip Cloud Standard",
+            "<b>Status</b>: Active",
+            "<b>Billing schedule</b>: Monthly",
+            "<b>Licenses</b>: 2/10 (Manual)",
+            "<b>Price per license</b>: $8.00",
+            "<b>Annual recurring revenue</b>: $960.00",
+            f"<b>Start of next billing cycle</b>: {billing_cycle_string}",
+        ]
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            no_discount_response,
+            result,
+        )
+
+        # Apply 25% discount again.
+        self.client_post("/activity/support", discount_change_data)
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(twenty_five_percent_discounted_response, result)
+
+        # Set discount price to 0 to reset discount
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "monthly_discounted_price": "0",
+                "annual_discounted_price": "0",
+            },
+        )
+
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            no_discount_response,
+            result,
+        )
+
+        # Apply monthly discount but no annual discount.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "monthly_discounted_price": "600",
+                "annual_discounted_price": "0",
+            },
+        )
+
+        monthly_discounted_response = [
+            "<b>Plan name</b>: Zulip Cloud Standard",
+            "<b>Status</b>: Active",
+            "<b>Discount</b>: 25%",
+            "<b>Billing schedule</b>: Monthly",
+            "<b>Licenses</b>: 2/10 (Manual)",
+            "<b>Price per license</b>: $6.00",
+            "<b>Annual recurring revenue</b>: $720.00",
+            f"<b>Start of next billing cycle</b>: {billing_cycle_string}",
+        ]
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            monthly_discounted_response,
+            result,
+        )
+
+        # Apply annual discount but no monthly discount.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "monthly_discounted_price": "0",
+                "annual_discounted_price": "6000",
+            },
+        )
+
+        # Since user is on monthly schedule no discount is applied.
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            no_discount_response,
+            result,
+        )
+
+        # Switch user to annual plan and the discount should be automatically applied.
+        plan.status = CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
+        plan.save(update_fields=["status"])
+        support_admin = self.example_user("iago")
+        assert plan.next_invoice_date is not None
+        RealmBillingSession(
+            support_admin, lear_realm, support_session=True
+        ).make_end_of_cycle_updates_if_needed(plan, plan.next_invoice_date)
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            [
+                "<b>Plan name</b>: Zulip Cloud Standard",
+                "<b>Status</b>: Active",
+                "<b>Discount</b>: 25%",
+                "<b>Billing schedule</b>: Annual",
+                "<b>Licenses</b>: 2/10 (Manual)",
+                "<b>Price per license</b>: $60.00",
+                "<b>Annual recurring revenue</b>: $600.00",
+            ],
+            result,
+        )
+
+        # Apply a monthly discount but no annual discount.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "monthly_discounted_price": "600",
+                "annual_discounted_price": "0",
+            },
+        )
+
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            [
+                "<b>Plan name</b>: Zulip Cloud Standard",
+                "<b>Status</b>: Active",
+                "<b>Billing schedule</b>: Annual",
+                "<b>Licenses</b>: 2/10 (Manual)",
+                "<b>Price per license</b>: $80.00",
+                "<b>Annual recurring revenue</b>: $800.00",
+            ],
+            result,
+        )
+
+        # Switch customer to monthly plan and the discount should be automatically applied.
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        plan.status = CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE
+        plan.save(update_fields=["status"])
+        support_admin = self.example_user("iago")
+        assert plan.next_invoice_date is not None
+        RealmBillingSession(
+            support_admin, lear_realm, support_session=True
+        ).make_end_of_cycle_updates_if_needed(plan, add_months(plan.next_invoice_date, 12))
         result = self.client_get("/activity/support", {"q": "lear"})
         self.assert_in_success_response(
             [
@@ -1127,7 +1329,6 @@ class TestSupportEndpoint(ZulipTestCase):
                 "<b>Licenses</b>: 2/10 (Manual)",
                 "<b>Price per license</b>: $6.00",
                 "<b>Annual recurring revenue</b>: $720.00",
-                f"<b>Start of next billing cycle</b>: {billing_cycle_string}",
             ],
             result,
         )
@@ -1221,7 +1422,11 @@ class TestSupportEndpoint(ZulipTestCase):
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "status": "deactivated"}
             )
-            m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
+            m.assert_called_once_with(
+                lear_realm,
+                acting_user=self.example_user("iago"),
+                deactivation_reason="owner_request",
+            )
             self.assert_in_success_response(["lear deactivated"], result)
 
         with mock.patch("corporate.views.support.do_send_realm_reactivation_email") as m:

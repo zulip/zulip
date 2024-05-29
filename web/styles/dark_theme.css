@@ -59,9 +59,9 @@
     }
 
     /************************* MODAL DARK THEME *******************/
-    .user_profile_manage_own_edit_button,
-    .user_profile_manage_others_edit_button,
-    .user_profile_manage_own_copy_link_button {
+    .user-profile-manage-own-edit-button,
+    .user-profile-manage-others-edit-button,
+    .user-profile-manage-own-copy-link-button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 
@@ -102,12 +102,6 @@
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
         }
-    }
-
-    .modal__btn:disabled,
-    .disabled-message-send-controls button {
-        opacity: 1;
-        background-color: hsl(0deg 0% 83% / 50%);
     }
 
     & table.table-striped thead.table-sticky-headers th {
@@ -355,7 +349,7 @@
         border-color: hsl(0deg 0% 100% / 40%);
     }
 
-    .streams_popover .sp-container {
+    #stream-actions-menu-popover .sp-container {
         background-color: transparent;
 
         & button {
@@ -482,7 +476,7 @@
         background-color: hsl(0deg 86% 14%) !important;
     }
 
-    #compose-direct-recipient.pill-container {
+    #compose-direct-recipient .pill-container {
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
@@ -810,18 +804,6 @@
         text-shadow: none;
     }
 
-    /* There is no lefthand border to cover in
-      dark mode, so don't apply negative margin
-      that would otherwise pull the unread marker
-      to the left. */
-    .unread_marker {
-        margin-left: 0;
-    }
-
-    .selected_message .messagebox-content {
-        border-color: hsl(217deg 64% 59% / 70%);
-    }
-
     #message-edit-history-overlay-container {
         .message_edit_history_content {
             .highlight_text_inserted {
@@ -843,7 +825,8 @@
 
     .upgrade-tip,
     .upgrade-or-sponsorship-tip,
-    .tip {
+    .tip,
+    .invite-stream-notice {
         color: inherit;
         background-color: hsl(46deg 28% 38% / 27%);
         border: 1px solid hsl(49deg 38% 46%);
@@ -941,14 +924,6 @@
         }
     }
 
-    /* Popover: */
-    .hotspot.overlay .hotspot-popover {
-        border-color: hsl(0deg 0% 0% / 20%) !important;
-        /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
-    color. */
-        box-shadow: 0 5px 10px hsl(0deg 0% 0% / 40%);
-    }
-
     #user-profile-modal {
         #default-section {
             .default-field {
@@ -980,47 +955,6 @@
         }
     }
 
-    /* Arrows: */
-    .hotspot.overlay {
-        .hotspot-popover.arrow-right::before {
-            border-left-color: hsl(0deg 0% 0% / 20%);
-        }
-
-        .hotspot-popover.arrow-right::after {
-            border-left-color: hsl(212deg 28% 18%);
-        }
-
-        .hotspot-popover.arrow-bottom::before {
-            border-top-color: hsl(0deg 0% 0% / 20%);
-        }
-
-        .hotspot-popover.arrow-bottom::after {
-            border-top-color: hsl(212deg 28% 18%);
-        }
-
-        .hotspot-popover.arrow-left::before {
-            border-right-color: hsl(0deg 0% 0% / 20%);
-        }
-
-        .hotspot-popover.arrow-left::after {
-            border-right-color: hsl(212deg 28% 18%);
-        }
-
-        .hotspot-popover.arrow-top::before {
-            border-bottom-color: hsl(0deg 0% 0% / 20%);
-        }
-
-        .hotspot-popover.arrow-top::after {
-            border-bottom-color: hsl(212deg 28% 18%);
-        }
-    }
-
-    /* Content: */
-    .hotspot.overlay .hotspot-popover .hotspot-popover-content,
-    .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
-        background-color: var(--color-background);
-    }
-
     .top-messages-logo {
         opacity: 0.7;
     }
@@ -1035,6 +969,10 @@
         background-color: hsl(212deg 25% 15%);
         border-color: hsl(0deg 0% 0% / 50%);
         color: inherit;
+
+        & a:hover {
+            color: hsl(0deg 0% 100%);
+        }
     }
 
     /* Search highlight used in both topics and rendered_markdown */
@@ -1165,7 +1103,7 @@
         }
     }
 
-    .panel_subscriber_member_list > .pill-container {
+    .panel_user_list > .pill-container {
         &:hover {
             color: inherit;
         }

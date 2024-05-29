@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type {ReferenceElement} from "tippy.js";
 import tippy, {delegate} from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
@@ -234,11 +235,11 @@ export function initialize(): void {
     $("body").on(
         "blur",
         ".message_control_button, .delete-selected-drafts-button-container",
-        (e) => {
+        function (this: ReferenceElement) {
             // Remove tooltip when user is trying to tab through all the icons.
             // If user tabs slowly, tooltips are displayed otherwise they are
             // destroyed before they can be displayed.
-            e.currentTarget?._tippy?.destroy();
+            this._tippy?.destroy();
         },
     );
 
@@ -277,7 +278,7 @@ export function initialize(): void {
             if (title === undefined) {
                 return false;
             }
-            const filename = $(instance.reference).prop("data-filename");
+            const filename = $(instance.reference).attr("data-filename");
             const $markup = $("<span>").text(title);
             if (title !== filename) {
                 // If the image title is the same as the filename, there's no reason
@@ -380,7 +381,7 @@ export function initialize(): void {
     delegate("body", {
         target: ".settings-radio-input-parent.default_stream_private_tooltip",
         content: $t({
-            defaultMessage: "Default streams for new users cannot be made private.",
+            defaultMessage: "Default channels for new users cannot be made private.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -391,7 +392,7 @@ export function initialize(): void {
     delegate("body", {
         target: ".default-stream.default_stream_private_tooltip",
         content: $t({
-            defaultMessage: "Private streams cannot be default streams for new users.",
+            defaultMessage: "Private channels cannot be default channels for new users.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -400,10 +401,10 @@ export function initialize(): void {
     });
 
     delegate("body", {
-        target: "#generate_multiuse_invite_radio_container.disabled_setting_tooltip",
+        target: "[data-tab-key='invite-link-tab'].disabled",
         content: $t({
             defaultMessage:
-                "You do not have permissions to generate invite links in this organization.",
+                "You do not have permissions to create invite links in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -426,10 +427,10 @@ export function initialize(): void {
     });
 
     delegate("body", {
-        target: "#email_invite_radio_container.disabled_setting_tooltip",
+        target: "[data-tab-key='invite-email-tab'].disabled",
         content: $t({
             defaultMessage:
-                "You do not have permissions to send email invitations in this organization.",
+                "You do not have permissions to send invite emails in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -480,7 +481,7 @@ export function initialize(): void {
         target: "#stream_creation_form .add_subscribers_disabled",
         content: $t({
             defaultMessage:
-                "You do not have permission to add other users to streams in this organization.",
+                "You do not have permission to add other users to channels in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -555,7 +556,7 @@ export function initialize(): void {
                 instance.setContent(
                     $t({
                         defaultMessage:
-                            "You do not have permission to move messages to another stream in this organization.",
+                            "You do not have permission to move messages to another channel in this organization.",
                     }),
                 );
                 return undefined;
@@ -619,6 +620,21 @@ export function initialize(): void {
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: ".popover-contains-shift-hotkey",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const hotkey_hints = $(instance.reference).attr("data-hotkey-hints");
+            if (hotkey_hints) {
+                instance.setContent(hotkey_hints.replace("⇧", "Shift").replaceAll(",", " + "));
+                return undefined;
+            }
+            return false;
         },
     });
 }

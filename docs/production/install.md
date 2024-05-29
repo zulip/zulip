@@ -10,7 +10,7 @@ You can choose from several convenient options for hosting Zulip:
 - Use [Zulip Cloud](https://zulip.com/plans/) hosting. Read our [guide to choosing between Zulip Cloud and
   self-hosting](https://zulip.com/help/getting-your-organization-started-with-zulip#choosing-between-zulip-cloud-and-self-hosting).
 
-To **import data** from [Slack][slack-import], [Mattermost][mattermost-import], [Rocket.Chat][rocketchat-import], [Gitter][gitter-import], [Zulip Cloud][zulip-cloud-import], or [another Zulip
+To **import data** from [Slack][slack-import], [Mattermost][mattermost-import], [Rocket.Chat][rocketchat-import], [Zulip Cloud][zulip-cloud-import], or [another Zulip
 server][zulip-server-import], follow the linked instructions.
 
 You can **try out Zulip** before setting up your own server by [checking
@@ -100,9 +100,7 @@ documentation.
 
 If you are importing data, stop here and return to the import instructions for
 [Slack][slack-import], [Mattermost][mattermost-import],
-[Rocket.Chat][rocketchat-import], [Gitter][gitter-import], [Zulip
-Cloud][zulip-cloud-import], [a server backup][zulip-backups], or [another Zulip
-server][zulip-server-import].
+[Rocket.Chat][rocketchat-import], [Zulip Cloud][zulip-cloud-import], [a server backup][zulip-backups], or [another Zulip server][zulip-server-import].
 
 :::
 
@@ -114,7 +112,6 @@ server][zulip-server-import].
 [slack-import]: https://zulip.com/help/import-from-slack
 [mattermost-import]: https://zulip.com/help/import-from-mattermost
 [rocketchat-import]: https://zulip.com/help/import-from-rocketchat
-[gitter-import]: https://zulip.com/help/import-from-gitter
 [zulip-cloud-import]: export-and-import.md#import-into-a-new-zulip-server
 [zulip-server-import]: export-and-import.md#import-into-a-new-zulip-server
 

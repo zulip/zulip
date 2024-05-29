@@ -21,9 +21,9 @@ sanity_check.check_venv(__file__)
 import aiohttp
 from aiohttp import hdrs, web
 from aiohttp.http_exceptions import BadStatusLine
-from returns.curry import partial
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
+from zerver.lib.partial import partial
 
 if "posix" in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev should not be run as root.")

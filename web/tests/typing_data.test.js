@@ -82,6 +82,12 @@ test("basics", () => {
     // test duplicate ids in a groups
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([20, 40, 20]), 20);
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
+
+    // test clearing out typing data
+    typing_data.clear_typing_data();
+    assert.deepEqual(typing_data.get_group_typists(), []);
+    assert.deepEqual(typing_data.get_all_direct_message_typists(), []);
+    assert.deepEqual(typing_data.get_topic_typists(stream_id, topic), []);
 });
 
 test("muted_typists_excluded", () => {
@@ -181,6 +187,16 @@ test("timers", () => {
         timer_set: true,
     });
 
+    // clearing out typing data
+    kickstart();
+    typing_data.clear_typing_data();
+    assert.deepEqual(events, {
+        f: stub_f,
+        timer_cleared: true,
+        timer_set: true,
+    });
+
+    kickstart();
     // first time clearing, we clear
     clear();
     assert.deepEqual(events, {

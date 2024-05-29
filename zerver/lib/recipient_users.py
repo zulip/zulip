@@ -3,8 +3,8 @@ from typing import Dict, Optional, Sequence
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
-from zerver.models import Recipient, UserProfile
-from zerver.models.recipients import get_or_create_huddle
+from zerver.models import Huddle, Recipient, UserProfile
+from zerver.models.recipients import get_huddle_hash, get_or_create_huddle
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -13,6 +13,7 @@ def get_recipient_from_user_profiles(
     forwarded_mirror_message: bool,
     forwarder_user_profile: Optional[UserProfile],
     sender: UserProfile,
+    create: bool = True,
 ) -> Recipient:
     # Avoid mutating the passed in list of recipient_profiles.
     recipient_profiles_map = {user_profile.id: user_profile for user_profile in recipient_profiles}
@@ -48,7 +49,13 @@ def get_recipient_from_user_profiles(
     recipient_profiles_map[sender.id] = sender
 
     user_ids = list(recipient_profiles_map)
-    huddle = get_or_create_huddle(user_ids)
+    if create:
+        huddle = get_or_create_huddle(user_ids)
+    else:
+        # We intentionally let the Huddle.DoesNotExist escape, in the
+        # case that there is no such huddle, and the user passed
+        # create=False
+        huddle = Huddle.objects.get(huddle_hash=get_huddle_hash(user_ids))
     return Recipient(
         id=huddle.recipient_id,
         type=Recipient.DIRECT_MESSAGE_GROUP,
@@ -91,12 +98,14 @@ def recipient_for_user_profiles(
     forwarded_mirror_message: bool,
     forwarder_user_profile: Optional[UserProfile],
     sender: UserProfile,
+    *,
     allow_deactivated: bool = False,
+    create: bool = True,
 ) -> Recipient:
     recipient_profiles = validate_recipient_user_profiles(
         user_profiles, sender, allow_deactivated=allow_deactivated
     )
 
     return get_recipient_from_user_profiles(
-        recipient_profiles, forwarded_mirror_message, forwarder_user_profile, sender
+        recipient_profiles, forwarded_mirror_message, forwarder_user_profile, sender, create=create
     )

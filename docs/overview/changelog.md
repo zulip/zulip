@@ -13,9 +13,58 @@ log][commit-log] for an up-to-date list of all changes.
 
 #### Upgrade notes for 9.0
 
-- None yet.
+- This release introduces a new [Zulip updates](https://zulip.com/help/configure-automated-notices#zulip-update-announcements) feature, which
+  announces significant product changes and new features via automated
+  messages to a configurable stream. Generally, these announcements will
+  be sent automatically when upgrading to the new release. However, when
+  you first upgrade to the 9.x series, they will be sent with a delay
+  (explained in an automated direct message to organization administrators)
+  to give time to potentially reconfigure which stream to use. You can
+  override the delay by running `./manage.py send_zulip_update_announcements --skip-delay`
+  once you've done any necessary configuration updates.
 
 ## Zulip Server 8.x series
+
+### Zulip Server 8.4
+
+_Released 2024-05-09_
+
+- Notably improved the performance of several common API endpoints.
+- Fixed a regression in 8.3 which caused server errors when trying to view
+  message edit history, for messages that had been moved after having previously
+  edited or moved.
+- Fixed a memory leak in the missed-message email worker.
+- Improved documentation and support for [running the PostgreSQL service on a
+  separate server](../production/postgresql.md#separate-postgresql-database).
+- Added support for PostgreSQL streaming replication without wal-g or S3
+  backups.
+- Added support for including [warm-standby remote PostgreSQL
+  servers](../production/postgresql.md#postgresql-warm-standby) in the
+  PostgreSQL server list.
+- Started always installing the version of `postgresql-client` which matches the
+  PostgreSQL server’s version.
+- Increased the visual prominence of reactions you have added/upvoted.
+- The ‘default' topic visibility icon is no longer displayed in the inbox view,
+  for a cleaner look.
+- Fixed confusing wording in the [Alertmanager
+  integration](https://zulip.com/integrations/doc/alertmanager).
+- Started allowing DMs to bots and to oneself, regardless if [DMs are in general
+  restricted](https://zulip.com/help/restrict-direct-messages).
+- Notices indicating that “push notifications are not working” are now
+  considerably more robust to temporary networking failures reaching the mobile
+  push notifications service.
+- Improved startup time of Zulip services by only performing configuration
+  checks once, rather than in every service at startup.
+- Improved how timeouts function in potentially long-running requests.
+- Added checks that `./manage.py register_server --rotate-key` can edit the
+  secrets file before rotating the secret.
+- Fixed sorting of “invited by” column in the invitations settings panel.
+- Fixed several non-exploitable HTML injection bugs.
+- Fixed a bug when “Direct messages” are collapsed in the left sidebar, which
+  could cause a DM conversation to be incorrectly highlighted after navigating
+  to a different conversation.
+- Upgraded Python dependencies.
+- Updated translations.
 
 ### Zulip Server 8.3
 
@@ -726,7 +775,7 @@ _Released 2023-01-23_
   “[delay before sending message notification emails](https://zulip.com/help/email-notifications#delay-before-sending-emails)”
   setting.
 - Fixed an error which prevented users from changing
-  [stream-specific notification settings](https://zulip.com/help/stream-notifications#set-notifications-for-a-single-stream).
+  [stream-specific notification settings](https://zulip.com/help/stream-notifications#configure-notifications-for-a-single-stream).
 - Fixed the redirect from `/apps` to https://zulip.com/apps/.
 - Started preserving timezone information in
   [Rocket.Chat imports](https://zulip.com/help/import-from-rocketchat).

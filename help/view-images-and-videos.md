@@ -108,8 +108,8 @@ attached to messages in your current view.
 ## Browse images and videos
 
 In the Zulip desktop or web app, you can browse the images and videos in
-the current view. For example, if you're in a stream view, you'll be able
-to browse through all the images and videos in that stream. If you do a
+the current view. For example, if you're in a channel view, you'll be able
+to browse through all the images and videos in that channel. If you do a
 [search](/help/search-for-messages), the **viewer** will display all the
 images and videos in messages matching that search.
 

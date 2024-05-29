@@ -17,11 +17,11 @@ from zerver.tornado.django_api import send_event_on_commit
 def check_default_stream_group_name(group_name: str) -> None:
     if group_name.strip() == "":
         raise JsonableError(
-            _("Invalid default stream group name '{group_name}'").format(group_name=group_name)
+            _("Invalid default channel group name '{group_name}'").format(group_name=group_name)
         )
     if len(group_name) > DefaultStreamGroup.MAX_NAME_LENGTH:
         raise JsonableError(
-            _("Default stream group name too long (limit: {max_length} characters)").format(
+            _("Default channel group name too long (limit: {max_length} characters)").format(
                 max_length=DefaultStreamGroup.MAX_NAME_LENGTH,
             )
         )
@@ -29,7 +29,7 @@ def check_default_stream_group_name(group_name: str) -> None:
         if ord(i) == 0:
             raise JsonableError(
                 _(
-                    "Default stream group name '{group_name}' contains NULL (0x00) characters."
+                    "Default channel group name '{group_name}' contains NULL (0x00) characters."
                 ).format(
                     group_name=group_name,
                 )
@@ -45,7 +45,7 @@ def lookup_default_stream_groups(
             default_stream_group = DefaultStreamGroup.objects.get(name=group_name, realm=realm)
         except DefaultStreamGroup.DoesNotExist:
             raise JsonableError(
-                _("Invalid default stream group {group_name}").format(group_name=group_name)
+                _("Invalid default channel group {group_name}").format(group_name=group_name)
             )
         default_stream_groups.append(default_stream_group)
     return default_stream_groups
@@ -93,8 +93,8 @@ def do_create_default_stream_group(
         if stream.id in default_stream_ids:
             raise JsonableError(
                 _(
-                    "'{stream_name}' is a default stream and cannot be added to '{group_name}'",
-                ).format(stream_name=stream.name, group_name=group_name)
+                    "'{channel_name}' is a default channel and cannot be added to '{group_name}'",
+                ).format(channel_name=stream.name, group_name=group_name)
             )
 
     check_default_stream_group_name(group_name)
@@ -104,7 +104,7 @@ def do_create_default_stream_group(
     if not created:
         raise JsonableError(
             _(
-                "Default stream group '{group_name}' already exists",
+                "Default channel group '{group_name}' already exists",
             ).format(group_name=group_name)
         )
 
@@ -120,14 +120,14 @@ def do_add_streams_to_default_stream_group(
         if stream.id in default_stream_ids:
             raise JsonableError(
                 _(
-                    "'{stream_name}' is a default stream and cannot be added to '{group_name}'",
-                ).format(stream_name=stream.name, group_name=group.name)
+                    "'{channel_name}' is a default channel and cannot be added to '{group_name}'",
+                ).format(channel_name=stream.name, group_name=group.name)
             )
         if stream in group.streams.all():
             raise JsonableError(
                 _(
-                    "Stream '{stream_name}' is already present in default stream group '{group_name}'",
-                ).format(stream_name=stream.name, group_name=group.name)
+                    "Channel '{channel_name}' is already present in default channel group '{group_name}'",
+                ).format(channel_name=stream.name, group_name=group.name)
             )
         group.streams.add(stream)
 
@@ -143,8 +143,8 @@ def do_remove_streams_from_default_stream_group(
         if stream.id not in group_stream_ids:
             raise JsonableError(
                 _(
-                    "Stream '{stream_name}' is not present in default stream group '{group_name}'",
-                ).format(stream_name=stream.name, group_name=group.name)
+                    "Channel '{channel_name}' is not present in default channel group '{group_name}'",
+                ).format(channel_name=stream.name, group_name=group.name)
             )
 
     delete_stream_ids = {stream.id for stream in streams}
@@ -158,14 +158,14 @@ def do_change_default_stream_group_name(
 ) -> None:
     if group.name == new_group_name:
         raise JsonableError(
-            _("This default stream group is already named '{group_name}'").format(
+            _("This default channel group is already named '{group_name}'").format(
                 group_name=new_group_name
             )
         )
 
     if DefaultStreamGroup.objects.filter(name=new_group_name, realm=realm).exists():
         raise JsonableError(
-            _("Default stream group '{group_name}' already exists").format(
+            _("Default channel group '{group_name}' already exists").format(
                 group_name=new_group_name
             )
         )

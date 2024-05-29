@@ -1,12 +1,11 @@
 from typing import Any
 
-from django.core.management.base import BaseCommand
 from typing_extensions import override
 
-from zerver.lib.management import check_config
+from zerver.lib.management import ZulipBaseCommand, check_config
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Checks /etc/zulip/settings.py for common configuration issues."""
 
     @override

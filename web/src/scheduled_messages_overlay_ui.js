@@ -87,8 +87,7 @@ function format(scheduled_messages) {
 }
 
 export function launch() {
-    $("#scheduled_messages_overlay_container").empty();
-    $("#scheduled_messages_overlay_container").append(render_scheduled_messages_overlay());
+    $("#scheduled_messages_overlay_container").html(render_scheduled_messages_overlay());
     overlays.open_overlay({
         name: "scheduled",
         $overlay: $("#scheduled_messages_overlay"),
@@ -101,7 +100,7 @@ export function launch() {
         scheduled_messages_data: format(scheduled_messages.scheduled_messages_data),
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
-    $messages_list.append(rendered_list);
+    $messages_list.append($(rendered_list));
 
     const first_element_id = keyboard_handling_context.get_items_ids()[0];
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
@@ -116,7 +115,7 @@ export function rerender() {
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.find(".scheduled-message-row").remove();
-    $messages_list.append(rendered_list);
+    $messages_list.append($(rendered_list));
 }
 
 export function remove_scheduled_message_id(scheduled_msg_id) {

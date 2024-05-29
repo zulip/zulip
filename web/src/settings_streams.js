@@ -29,17 +29,17 @@ function get_chosen_default_streams() {
     // Return the set of stream id's of streams chosen in the default stream modal.
     return new Set(
         $("#default-stream-choices .choice-row .dropdown_widget_value")
-            .map((_i, elem) => $(elem).data("stream-id")?.toString())
+            .map((_i, elem) => Number($(elem).attr("data-stream-id")).toString())
             .get(),
     );
 }
 
 function create_choice_row() {
     const $container = $("#default-stream-choices");
-    const value = settings_profile_fields.get_value_for_new_option("#default-stream-choices");
+    const value = settings_profile_fields.get_value_for_new_option($container);
     const stream_dropdown_widget_name = `select_default_stream_${value}`;
-    const row = render_default_stream_choice({value, stream_dropdown_widget_name});
-    $container.append(row);
+    const row_html = render_default_stream_choice({value, stream_dropdown_widget_name});
+    $container.append($(row_html));
 
     // List of non-default streams that are not yet selected.
     function get_options() {
@@ -58,7 +58,7 @@ function create_choice_row() {
         const $stream_dropdown_widget = $(`#${CSS.escape(stream_dropdown_widget_name)}_widget`);
         const $stream_name = $stream_dropdown_widget.find(".dropdown_widget_value");
         $stream_name.text(selected_stream_name);
-        $stream_name.data("stream-id", selected_stream_id);
+        $stream_name.attr("data-stream-id", selected_stream_id);
 
         add_choice_row($stream_dropdown_widget);
         dropdown.hide();
@@ -91,7 +91,7 @@ export function maybe_disable_widgets() {
         return;
     }
 
-    $(".organization-box [data-name='default-streams-list']")
+    $(".organization-box [data-name='default-channels-list']")
         .find("input:not(.search), button, select")
         .prop("disabled", true);
 }
@@ -120,12 +120,12 @@ export function build_default_stream_table() {
                 scroll_util.reset_scrollbar($table);
             },
         },
-        $parent_container: $("#admin-default-streams-list").expectOne(),
+        $parent_container: $("#admin-default-channels-list").expectOne(),
         init_sort: "name_alphabetic",
         sort_fields: {
             ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
         },
-        $simplebar_container: $("#admin-default-streams-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-default-channels-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_default_streams_loading_indicator"));
@@ -187,7 +187,7 @@ function show_add_default_streams_modal() {
                 },
                 error(xhr) {
                     ui_report.error(
-                        $t_html({defaultMessage: "Failed adding one or more streams."}),
+                        $t_html({defaultMessage: "Failed adding one or more channels."}),
                         xhr,
                         $("#dialog_error"),
                     );
@@ -209,10 +209,10 @@ function show_add_default_streams_modal() {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add default streams"}),
+        html_heading: $t_html({defaultMessage: "Add default channels"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Add"}),
-        help_link: "/help/set-default-streams-for-new-users",
+        help_link: "/help/set-default-channels-for-new-users",
         id: "add-default-stream-modal",
         loading_spinner: true,
         on_click: add_default_streams,

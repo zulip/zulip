@@ -1,38 +1,52 @@
-import z from "zod";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import type {Submessage} from "./types";
 import * as widgetize from "./widgetize";
 
-export const zform_widget_extra_data_schema = z.object({
-    choices: z.array(
-        z.object({
-            type: z.string(),
-            long_name: z.string(),
-            reply: z.string(),
-            short_name: z.string(),
-        }),
-    ),
-    heading: z.string(),
-    type: z.literal("choices"),
-});
+export const zform_widget_extra_data_schema = z
+    .object({
+        choices: z.array(
+            z.object({
+                type: z.string(),
+                long_name: z.string(),
+                reply: z.string(),
+                short_name: z.string(),
+            }),
+        ),
+        heading: z.string(),
+        type: z.literal("choices"),
+    })
+    .nullable();
 
-const poll_widget_extra_data_schema = z.object({
-    question: z.string().optional(),
-    options: z.array(z.string()).optional(),
-});
+const poll_widget_extra_data_schema = z
+    .object({
+        question: z.string().optional(),
+        options: z.array(z.string()).optional(),
+    })
+    .nullable();
+
+export const todo_widget_extra_data_schema = z
+    .object({
+        task_list_title: z.string().optional(),
+        tasks: z.array(z.object({task: z.string(), desc: z.string()})).optional(),
+    })
+    .nullable();
 
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
-    data: z.object({
-        widget_type: z.string().optional(),
-        extra_data: z
-            .union([zform_widget_extra_data_schema, poll_widget_extra_data_schema])
-            .nullable(),
-    }),
+    data: z.discriminatedUnion("widget_type", [
+        z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
+        z.object({widget_type: z.literal("zform"), extra_data: zform_widget_extra_data_schema}),
+        z.object({
+            widget_type: z.literal("todo"),
+            extra_data: todo_widget_extra_data_schema,
+        }),
+    ]),
 });
 
 const inbound_data_event_schema = z.object({
@@ -66,12 +80,21 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
 
     message.submessages.sort((m1, m2) => m1.id - m2.id);
 
-    const events = message.submessages.map((obj) => ({
+    const events = message.submessages.map((obj): {sender_id: number; data: unknown} => ({
         sender_id: obj.sender_id,
         data: JSON.parse(obj.content),
     }));
     const clean_events = submessages_event_schema.parse(events);
     return clean_events;
+}
+
+export function process_widget_rows_in_list(list: MessageList | undefined): void {
+    for (const message_id of widgetize.widget_event_handlers.keys()) {
+        const $row = list?.get_row(message_id);
+        if ($row && $row.length !== 0) {
+            process_submessages({message_id, $row});
+        }
+    }
 }
 
 export function process_submessages(in_opts: {$row: JQuery; message_id: number}): void {
@@ -173,7 +196,7 @@ export function handle_event(submsg: Submessage): void {
         return;
     }
 
-    let data;
+    let data: unknown;
 
     try {
         data = JSON.parse(submsg.content);

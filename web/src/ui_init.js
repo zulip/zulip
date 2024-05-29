@@ -14,6 +14,7 @@ import * as activity from "./activity";
 import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
+import {all_messages_data} from "./all_messages_data";
 import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
@@ -27,6 +28,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_reply from "./compose_reply";
+import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_setup from "./compose_setup";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
@@ -46,9 +48,9 @@ import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotkey from "./hotkey";
-import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
 import * as inbox_ui from "./inbox_ui";
+import * as information_density from "./information_density";
 import * as invite from "./invite";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers";
@@ -61,7 +63,6 @@ import * as markdown_config from "./markdown_config";
 import * as message_actions_popover from "./message_actions_popover";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
-import * as message_list from "./message_list";
 import * as message_list_hover from "./message_list_hover";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
@@ -97,7 +98,6 @@ import * as reload_setup from "./reload_setup";
 import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
@@ -173,13 +173,16 @@ function initialize_navbar() {
 
 function initialize_compose_box() {
     $("#compose-container").append(
-        render_compose({
-            embedded: $("#compose").attr("data-embedded") === "",
-            file_upload_enabled: realm.max_file_upload_size_mib > 0,
-            giphy_enabled: giphy.is_giphy_enabled(),
-            max_stream_name_length: realm.max_stream_name_length,
-            max_topic_length: realm.max_topic_length,
-        }),
+        $(
+            render_compose({
+                embedded: $("#compose").attr("data-embedded") === "",
+                file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
+                giphy_enabled: giphy.is_giphy_enabled(),
+                max_stream_name_length: realm.max_stream_name_length,
+                max_topic_length: realm.max_topic_length,
+                max_message_length: realm.max_message_length,
+            }),
+        ),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
     common.adjust_mac_kbd_tags(".open_enter_sends_dialog kbd");
@@ -275,9 +278,9 @@ export function initialize_kitchen_sink_stuff() {
     }
 
     if (!user_settings.dense_mode) {
-        $("body").addClass("less_dense_mode");
+        $("body").addClass("less-dense-mode");
     } else {
-        $("body").addClass("more_dense_mode");
+        $("body").addClass("more-dense-mode");
     }
 
     // To keep the specificity same for the CSS related to hiding the
@@ -650,8 +653,10 @@ export function initialize_everything(state_data) {
     sentry.initialize();
 
     /* To store theme data for spectators, we need to initialize
-       user_settings before setting the theme. */
+       user_settings before setting the theme. Because information
+       density is so fundamental, we initialize that first, however. */
     initialize_user_settings(user_settings_params);
+    information_density.initialize();
     if (page_params.is_spectator) {
         const ls = localstorage();
         const preferred_theme = ls.get("spectator-theme-preference");
@@ -677,7 +682,7 @@ export function initialize_everything(state_data) {
     user_topic_popover.initialize();
     topic_popover.initialize();
     message_actions_popover.initialize();
-    scheduled_messages_popover.initialize();
+    compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
     people.initialize(current_user.user_id, people_params);
@@ -721,7 +726,6 @@ export function initialize_everything(state_data) {
 
     realm_logo.initialize();
     message_lists.initialize();
-    message_list.initialize();
     recent_view_ui.initialize({
         on_click_participant(avatar_element, participant_user_id) {
             const user = people.get_by_user_id(participant_user_id);
@@ -729,10 +733,14 @@ export function initialize_everything(state_data) {
         },
         on_mark_pm_as_read: unread_ops.mark_pm_as_read,
         on_mark_topic_as_read: unread_ops.mark_topic_as_read,
-        maybe_load_older_messages() {
+        maybe_load_older_messages(first_unread_message_id) {
+            recent_view_ui.set_backfill_in_progress(true);
             message_fetch.maybe_load_older_messages({
-                msg_list: message_lists.home,
+                msg_list_data: all_messages_data,
                 recent_view: true,
+                // To have a hard anchor on our target of first unread message id,
+                // we pass it from here, otherwise it might get updated and lead to confusion.
+                first_unread_message_id,
             });
         },
     });
@@ -790,10 +798,15 @@ export function initialize_everything(state_data) {
     });
     compose_closed_ui.initialize();
     compose_reply.initialize();
+    drafts.initialize(); // Must happen before reload_setup.initialize()
     reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
-    message_fetch.initialize(server_events.home_view_loaded);
+    message_fetch.initialize(() => {
+        recent_view_ui.set_initial_message_fetch_status(false);
+        recent_view_ui.revive_current_focus();
+        server_events.finished_initial_fetch();
+    });
     message_scroll.initialize();
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(realm.realm_linkifiers);
@@ -857,17 +870,16 @@ export function initialize_everything(state_data) {
             const sub = sub_store.get(stream_id);
             narrow.activate(
                 [
-                    {operator: "stream", operand: sub.name},
+                    {operator: "channel", operand: sub.name},
                     {operator: "topic", operand: topic},
                 ],
                 {trigger: "sidebar"},
             );
         },
     });
-    drafts.initialize();
+    drafts.initialize_ui();
     drafts_overlay_ui.initialize();
     onboarding_steps.initialize();
-    hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();
