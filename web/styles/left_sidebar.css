@@ -961,6 +961,7 @@ li.top_left_scheduled_messages {
     height: 20px;
 }
 
+.dm-markers-and-controls,
 .stream-markers-and-controls,
 .topic-markers-and-controls {
     grid-area: markers-and-controls;
@@ -1127,17 +1128,6 @@ li.topic-list-item {
 
     .unread_count {
         grid-area: markers-and-controls;
-        /* TODO: This is an alternative method
-           for presenting a 16px-tall unread
-           counter, regardless of context. This
-           method could be used app-wide once
-           all of the layout methods for presenting
-           unreads have been modernized.
-
-           Set the line-height to match the
-           font-size, so that the numerals sit in
-           a 12px box. */
-        line-height: 12px;
         /* Use flexbox to vertically center
            the 12px-high text node within the
            16px-high unread box. */

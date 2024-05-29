@@ -65,6 +65,7 @@ export function get_conversations(): DisplayObject[] {
         const recipients_string = people.get_recipients(user_ids_string);
 
         const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
+        const has_unread_mention = unread.get_counts().mention_dict.get(user_ids_string);
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
 
@@ -96,6 +97,7 @@ export function get_conversations(): DisplayObject[] {
             user_circle_class,
             is_group,
             is_bot,
+            has_unread_mention,
         };
         display_objects.push(display_object);
     }
