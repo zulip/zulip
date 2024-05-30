@@ -4,6 +4,13 @@ Settings defining permissions in Zulip are increasingly represented
 using [user groups](/help/user-groups), which offer much more flexible
 configuration than the older [roles](/api/roles-and-permissions) system.
 
+!!! warn ""
+
+    This API feature is under development, and currently only values that
+    correspond to a single named user group are permitted in
+    production environments, pending the web application UI supporting
+    displaying more complex values correctly.
+
 In the API, these settings are represented using a **group-setting
 value**, which can take two forms:
 
