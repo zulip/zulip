@@ -284,7 +284,7 @@ function do_hashchange_overlay(old_hash) {
         window.history.replaceState(
             null,
             "",
-            browser_history.get_full_url(base + "/" + settings_panel_object.current_tab()),
+            browser_history.get_full_url(base + "/" + settings_panel_object.current_tab),
         );
     }
 
@@ -366,9 +366,9 @@ function do_hashchange_overlay(old_hash) {
         settings_hashes.has(base) && settings_hashes.has(old_base) && overlays.settings_open();
     if (is_hashchange_internal) {
         if (base === "settings") {
-            settings_panel_menu.normal_settings.activate_section_or_default(section);
+            settings_panel_menu.normal_settings.set_current_tab(section);
         } else {
-            settings_panel_menu.org_settings.activate_section_or_default(section);
+            settings_panel_menu.org_settings.set_current_tab(section);
         }
         settings_toggle.highlight_toggle(base);
         return;

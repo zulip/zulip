@@ -280,6 +280,8 @@ export function launch(section) {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
-    settings_panel_menu.org_settings.activate_section_or_default(section);
+    if (section !== "") {
+        settings_panel_menu.org_settings.set_current_tab(section);
+    }
     settings_toggle.highlight_toggle("organization");
 }

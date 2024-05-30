@@ -49,6 +49,7 @@ export class SettingsPanelMenu {
         this.$main_elem = opts.$main_elem;
         this.hash_prefix = opts.hash_prefix;
         this.$curr_li = this.$main_elem.children("li").eq(0);
+        this.current_tab = this.$curr_li.data("section");
 
         this.$main_elem.on("click", "li[data-section]", (e) => {
             const section = $(e.currentTarget).attr("data-section");
@@ -64,7 +65,7 @@ export class SettingsPanelMenu {
 
     show() {
         this.$main_elem.show();
-        const section = this.current_tab();
+        const section = this.current_tab;
         if (two_column_mode()) {
             // In one column mode want to show the settings list, not the first settings section.
             this.activate_section_or_default(section);
@@ -74,10 +75,6 @@ export class SettingsPanelMenu {
 
     hide() {
         this.$main_elem.hide();
-    }
-
-    current_tab() {
-        return this.$curr_li.data("section");
     }
 
     li_for_section(section) {
@@ -123,6 +120,10 @@ export class SettingsPanelMenu {
         return true;
     }
 
+    set_current_tab(tab) {
+        this.current_tab = tab;
+    }
+
     activate_section_or_default(section) {
         popovers.hide_all();
         if (!section) {
@@ -130,7 +131,7 @@ export class SettingsPanelMenu {
 
             if (two_column_mode()) {
                 // In two column mode we resume to the last active section.
-                section = this.current_tab();
+                section = this.current_tab;
             } else {
                 // In single column mode we close the active section
                 // so that you always start at the settings list.
@@ -143,13 +144,14 @@ export class SettingsPanelMenu {
         if ($li_for_section.length === 0) {
             // This happens when there is no such section or the user does not have
             // permission to view that section.
-            section = this.current_tab();
+            section = this.current_tab;
         } else {
             this.$curr_li = $li_for_section;
         }
 
         this.$main_elem.children("li").removeClass("active");
         this.$curr_li.addClass("active");
+        this.set_current_tab(section);
 
         const settings_section_hash = "#" + this.hash_prefix + section;
 
