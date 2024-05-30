@@ -84,6 +84,7 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     const copy_rows = rows.visible_range(start_id, end_id);
 
     const $start_row = copy_rows[0];
+    assert($start_row !== undefined);
     const $start_recipient_row = rows.get_message_recipient_row($start_row);
     const start_recipient_row_id = rows.id_for_recipient_row($start_recipient_row);
     let should_include_start_recipient_header = false;
@@ -503,7 +504,7 @@ export function paste_handler_converter(paste_html: string): string {
                 (text_children = [...node.childNodes].filter(
                     (child) => child.textContent !== null && child.textContent.trim() !== "",
                 )).length === 1 &&
-                text_children[0].nodeName === "CODE"
+                text_children[0]?.nodeName === "CODE"
             );
         },
 
