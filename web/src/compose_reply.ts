@@ -82,6 +82,7 @@ export function respond_to_message(opts: {
             const current_filter = narrow_state.filter();
             assert(current_filter !== undefined);
             const first_term = current_filter.terms()[0];
+            assert(first_term !== undefined);
             const first_operator = first_term.operator;
             const first_operand = first_term.operand;
 
