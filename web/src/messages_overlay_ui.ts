@@ -13,8 +13,8 @@ export type Context = {
 };
 
 export function row_with_focus(context: Context): JQuery {
-    const focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`)[0];
-    return $(focused_item).parent(`.${CSS.escape(context.row_item_selector)}`);
+    const $focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`);
+    return $focused_item.parent(`.${CSS.escape(context.row_item_selector)}`);
 }
 
 export function activate_element(elem: HTMLElement, context: Context): void {
@@ -41,7 +41,7 @@ export function focus_on_sibling_element(context: Context): void {
     }
 
     const $new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
-    if ($new_focus_element.length > 0) {
+    if ($new_focus_element[0] !== undefined) {
         assert($new_focus_element[0].children[0] instanceof HTMLElement);
         activate_element($new_focus_element[0].children[0], context);
     }
@@ -125,39 +125,23 @@ function initialize_focus(event_name: string, context: Context): void {
     }
 
     const modal_items_ids = context.get_items_ids();
-    if (modal_items_ids.length === 0) {
+    const id = modal_items_ids.at(event_name === "up_arrow" ? -1 : 0);
+    if (id === undefined) {
         // modal is empty
         return;
     }
 
-    let $element: JQuery;
-
-    function get_last_element(): JQuery {
-        const last_id = modal_items_ids.at(-1) ?? "";
-        return get_element_by_id(last_id, context);
-    }
-
-    function get_first_element(): JQuery {
-        const first_id = modal_items_ids[0];
-        return get_element_by_id(first_id, context);
-    }
-
-    if (event_name === "up_arrow") {
-        $element = get_last_element();
-    } else {
-        $element = get_first_element();
-    }
-
+    const $element = get_element_by_id(id, context);
     const focus_element = $element[0].children[0];
     assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
 }
 
 function scroll_to_element($element: JQuery, context: Context): void {
-    if ($element.length === 0) {
+    if ($element[0] === undefined) {
         return;
     }
-    if ($element.children.length === 0) {
+    if ($element[0].children[0] === undefined) {
         return;
     }
     assert($element[0].children[0] instanceof HTMLElement);
