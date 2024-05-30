@@ -933,7 +933,7 @@ export function get_candidates(
             assert(tokens !== null);
             if (tokens[1]) {
                 const stream_name = tokens[1];
-                token = tokens[2] || "";
+                token = tokens[2] ?? "";
 
                 // Don't autocomplete if there is a space following '>'
                 if (token.startsWith(" ")) {
