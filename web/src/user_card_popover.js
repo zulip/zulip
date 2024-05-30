@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
@@ -455,7 +455,7 @@ function init_email_tooltip(user) {
 
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
-            tippy(this, {
+            tippy.default(this, {
                 placement: "bottom",
                 content: people.get_visible_email(user),
                 interactive: true,

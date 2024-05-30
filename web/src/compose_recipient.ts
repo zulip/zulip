@@ -3,7 +3,7 @@
 import $ from "jquery";
 import _, {isNumber} from "lodash";
 import assert from "minimalistic-assert";
-import type {Instance, Placement} from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
@@ -238,7 +238,7 @@ export function possibly_update_stream_name_in_compose(stream_id: number): void 
     }
 }
 
-function item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void {
+function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
     const recipient_id_str = $(event.currentTarget).attr("data-unique-id");
     assert(recipient_id_str !== undefined);
     let recipient_id: string | number = recipient_id_str;
@@ -273,7 +273,7 @@ function get_options_for_recipient_widget(): Option[] {
     return options;
 }
 
-function compose_recipient_dropdown_on_show(dropdown: Instance): void {
+function compose_recipient_dropdown_on_show(dropdown: tippy.Instance): void {
     // Offset to display dropdown above compose.
     let top_offset = 5;
     const window_height = window.innerHeight;
@@ -285,7 +285,7 @@ function compose_recipient_dropdown_on_show(dropdown: Instance): void {
     // pixels below compose starting from top of compose box.
     const bottom_space = window_height - recipient_input_top - search_box_and_padding_height;
     // Show dropdown on top / bottom based on available space.
-    let placement: Placement = "top-start";
+    let placement: tippy.Placement = "top-start";
     if (bottom_space > top_space) {
         placement = "bottom-start";
         top_offset = -30;

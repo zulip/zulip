@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 // You won't find every click handler here, but it's a good place to start!
 
@@ -519,7 +519,7 @@ export function initialize() {
             // This will default to "bottom" placement for this tooltip.
             placement = "auto";
         }
-        tippy($elem[0], {
+        tippy.default($elem[0], {
             // Quickly display and hide right sidebar tooltips
             // so that they don't stick and overlap with
             // each other.

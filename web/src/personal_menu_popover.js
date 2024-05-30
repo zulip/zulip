@@ -1,5 +1,5 @@
 import $ from "jquery";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
@@ -37,7 +37,7 @@ export function initialize() {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.personal_menu = instance;
 
-            tippy(".personal-menu-clear-status", {
+            tippy.default(".personal-menu-clear-status", {
                 placement: "top",
                 appendTo: document.body,
             });

@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 import {z} from "zod";
 
 import * as blueslip from "../blueslip";
@@ -224,7 +224,7 @@ function update_last_full_update(end_times: number[]): void {
 }
 
 $(() => {
-    tippy(".last_update_tooltip", {
+    tippy.default(".last_update_tooltip", {
         // Same defaults as set in our tippyjs module.
         maxWidth: 300,
         delay: [100, 20],

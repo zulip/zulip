@@ -1,5 +1,5 @@
 import $ from "jquery";
-import type {Instance as PopoverInstance, ReferenceElement} from "tippy.js";
+import type * as tippy from "tippy.js";
 import url_template_lib from "url-template";
 
 import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
@@ -12,13 +12,13 @@ import * as ui_util from "./ui_util";
 
 type RealmPlaygroundWithURL = RealmPlayground & {playground_url: string};
 
-let playground_links_popover_instance: PopoverInstance;
+let playground_links_popover_instance: tippy.Instance;
 
 // Playground_store contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
 // to pop off of.
 function toggle_playground_links_popover(
-    element: ReferenceElement,
+    element: tippy.ReferenceElement,
     playground_store: Map<number, RealmPlaygroundWithURL>,
 ): void {
     if (is_open()) {

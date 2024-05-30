@@ -1,7 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {delegate} from "tippy.js";
-import type * as tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
@@ -44,7 +43,7 @@ const store_message_list_instances_plugin = {
 
 function message_list_tooltip(target: string, props: Partial<tippy.Props> = {}): void {
     const {onShow, ...other_props} = props;
-    delegate("body", {
+    tippy.delegate("body", {
         target,
         appendTo: () => document.body,
         plugins: [store_message_list_instances_plugin],

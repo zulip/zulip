@@ -1,6 +1,5 @@
 import $ from "jquery";
-import type {ReferenceElement} from "tippy.js";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import {$t} from "./i18n";
 
@@ -123,8 +122,8 @@ function set_password_toggle_label(
 ): void {
     $(password_selector).attr("aria-label", label);
     if (tippy_tooltips) {
-        const element: ReferenceElement = $(password_selector)[0];
-        const tippy_instance = element._tippy ?? tippy(element);
+        const element: tippy.ReferenceElement = $(password_selector)[0];
+        const tippy_instance = element._tippy ?? tippy.default(element);
         tippy_instance.setContent(label);
     } else {
         $(password_selector).attr("title", label);

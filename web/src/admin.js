@@ -1,5 +1,5 @@
 import $ from "jquery";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
@@ -272,7 +272,7 @@ export function build_page() {
             }),
         };
 
-        tippy($("#realm_can_access_all_users_group_widget_container")[0], opts);
+        tippy.default($("#realm_can_access_all_users_group_widget_container")[0], opts);
     }
 }
 
