@@ -80,11 +80,12 @@ function insert_tip_box() {
         is_admin: current_user.is_admin,
     });
     $(".organization-box")
-        .find(".settings-section")
+        .find(".settings-section, .user-settings-section")
         .not("#emoji-settings")
         .not("#organization-auth-settings")
         .not("#admin-bot-list")
         .not("#admin-invites-list")
+        .not("#admin-user-list")
         .prepend($(tip_box_html));
 }
 
@@ -276,12 +277,15 @@ export function build_page() {
     }
 }
 
-export function launch(section) {
+export function launch(section, user_settings_tab) {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
     if (section !== "") {
         settings_panel_menu.org_settings.set_current_tab(section);
+    }
+    if (section === "users") {
+        settings_panel_menu.org_settings.set_user_settings_tab(user_settings_tab);
     }
     settings_toggle.goto("organization");
 }

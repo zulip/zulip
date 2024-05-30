@@ -16,6 +16,7 @@ import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as setting_invites from "./settings_invites";
 import {current_user} from "./state_data";
 import * as timerender from "./timerender";
 import * as user_deactivation_ui from "./user_deactivation_ui";
@@ -329,7 +330,7 @@ section.active.create_table = (active_users) => {
             },
             onupdate: reset_scrollbar($users_table),
         },
-        $parent_container: $("#admin-user-list").expectOne(),
+        $parent_container: $("#admin-active-users-list").expectOne(),
         init_sort: "full_name_alphabetic",
         sort_fields: {
             email: user_sort.sort_email,
@@ -338,7 +339,7 @@ section.active.create_table = (active_users) => {
             id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
-        $simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
@@ -561,6 +562,7 @@ export function set_up_humans() {
     start_data_load();
     section.active.handle_events();
     section.deactivated.handle_events();
+    setting_invites.set_up();
 }
 
 export function set_up_bots() {
