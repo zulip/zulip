@@ -111,7 +111,6 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.create_public_stream_policy, CommonPolicyEnum.ADMINS_ONLY)
         self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
         self.assertEqual(
@@ -133,7 +132,6 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.create_public_stream_policy, CommonPolicyEnum.ADMINS_ONLY)
         self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
         self.assertEqual(
@@ -763,7 +761,6 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
-            create_public_stream_policy=10,
             create_private_stream_policy=10,
             create_web_public_stream_policy=10,
             invite_to_stream_policy=10,
@@ -1484,7 +1481,6 @@ class RealmAPITest(ZulipTestCase):
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
             create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
-            create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,

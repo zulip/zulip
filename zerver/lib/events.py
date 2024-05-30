@@ -89,7 +89,12 @@ from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
-from zerver.models.realms import CommonMessagePolicyEnum, EditTopicPolicyEnum, get_realm_domains
+from zerver.models.realms import (
+    CommonMessagePolicyEnum,
+    EditTopicPolicyEnum,
+    get_corresponding_policy_value_for_group_setting,
+    get_realm_domains,
+)
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
@@ -286,6 +291,12 @@ def fetch_initial_state_data(
                 continue
 
             state["realm_" + setting_name] = getattr(realm, permission_configuration.id_field_name)
+
+        state["realm_create_public_stream_policy"] = (
+            get_corresponding_policy_value_for_group_setting(
+                realm, "can_create_public_channel_group", Realm.COMMON_POLICY_TYPES
+            )
+        )
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -1235,6 +1246,13 @@ def apply_event(
                     state["realm_email_auth_enabled"] = value["Email"]["enabled"]
 
                 if key == "can_create_public_channel_group":
+                    state["realm_create_public_stream_policy"] = (
+                        get_corresponding_policy_value_for_group_setting(
+                            user_profile.realm,
+                            "can_create_public_channel_group",
+                            Realm.COMMON_POLICY_TYPES,
+                        )
+                    )
                     state["can_create_public_streams"] = user_profile.has_permission(key)
                     state["can_create_streams"] = (
                         state["can_create_private_streams"]

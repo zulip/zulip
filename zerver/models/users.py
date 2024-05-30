@@ -752,7 +752,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "can_create_public_channel_group",
             "create_multiuse_invite_group",
             "create_private_stream_policy",
-            "create_public_stream_policy",
             "create_web_public_stream_policy",
             "delete_own_message_policy",
             "edit_topic_policy",

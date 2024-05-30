@@ -263,6 +263,16 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     POLICY_NOBODY = 6
     POLICY_OWNERS_ONLY = 7
 
+    SYSTEM_GROUPS_ENUM_MAP = {
+        SystemGroups.OWNERS: POLICY_OWNERS_ONLY,
+        SystemGroups.ADMINISTRATORS: POLICY_ADMINS_ONLY,
+        SystemGroups.MODERATORS: POLICY_MODERATORS_ONLY,
+        SystemGroups.FULL_MEMBERS: POLICY_FULL_MEMBERS_ONLY,
+        SystemGroups.MEMBERS: POLICY_MEMBERS_ONLY,
+        SystemGroups.EVERYONE: POLICY_EVERYONE,
+        SystemGroups.NOBODY: POLICY_NOBODY,
+    }
+
     COMMON_POLICY_TYPES = [field.value for field in CommonPolicyEnum]
 
     COMMON_MESSAGE_POLICY_TYPES = [field.value for field in CommonMessagePolicyEnum]
@@ -293,9 +303,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to create streams.
-    create_public_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
-    )
     create_private_stream_policy = models.PositiveSmallIntegerField(
         default=CommonPolicyEnum.MEMBERS_ONLY
     )
@@ -638,7 +645,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
         create_private_stream_policy=int,
-        create_public_stream_policy=int,
         create_web_public_stream_policy=int,
         default_code_block_language=str,
         default_language=str,
@@ -1091,6 +1097,27 @@ def get_org_type_display_name(org_type: int) -> str:
             return realm_type_details["name"]
 
     return ""
+
+
+def get_corresponding_policy_value_for_group_setting(
+    realm: Realm,
+    group_setting_name: str,
+    valid_policy_enums: List[int],
+) -> int:
+    setting_group = getattr(realm, group_setting_name)
+    if (
+        hasattr(setting_group, "named_user_group")
+        and setting_group.named_user_group.is_system_group
+    ):
+        enum_policy_value = Realm.SYSTEM_GROUPS_ENUM_MAP[setting_group.named_user_group.name]
+        if enum_policy_value in valid_policy_enums:
+            return enum_policy_value
+
+    # If the group setting is not set to one of the role based groups
+    # that the previous enum setting allowed, then just return the
+    # enum value corresponding to largest group.
+    assert valid_policy_enums == Realm.COMMON_POLICY_TYPES
+    return Realm.POLICY_MEMBERS_ONLY
 
 
 class RealmDomain(models.Model):

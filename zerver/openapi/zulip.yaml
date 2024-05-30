@@ -4240,14 +4240,6 @@ paths:
                                             **Changes**: New in Zulip 9.0 (feature level 264). Previously
                                             `realm_create_public_stream_policy` field used to control the
                                             permission to create public channels.
-                                    create_public_stream_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create public channels in this organization.
-
-                                        **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                                        create channels was controlled by the `create_stream_policy` setting.
                                     create_private_stream_policy:
                                       type: integer
                                       description: |
@@ -15252,19 +15244,30 @@ paths:
                               permission to create public channels.
                       realm_create_public_stream_policy:
                         type: integer
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The [policy][permission-level] for which users can create public channels
-                          in this organization.
+                          A deprecated representation of a superset of the users who
+                          have permission to create public channels in the organization,
+                          available for backwards-compatibility. Clients should use
+                          `can_create_public_channel_group` instead.
+
+                          It is an enum with the following possible values, corresponding
+                          to roles/system groups:
 
                           - 1 = Members only
                           - 2 = Admins only
                           - 3 = [Full members][calc-full-member] only
                           - 4 = Admins and moderators only
 
-                          **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                          create channels was controlled by the `realm_create_stream_policy` setting.
+                          **Changes**: Deprecated in Zulip 9.0 (feature level 264) and
+                          replaced by `realm_can_create_public_channel_group`, which
+                          supports finer resolution of configurations, resulting in this
+                          property being inaccurate following that transition.
+
+                          Before Zulip 5.0 (feature level 102), permission to create
+                          channels was controlled by the `realm_create_stream_policy` setting.
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member

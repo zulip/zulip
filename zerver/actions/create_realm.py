@@ -121,9 +121,6 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
     ):
         # Limit user creation to administrators.
         realm.invite_to_realm_policy = InviteToRealmPolicyEnum.ADMINS_ONLY
-        # Restrict public stream creation to staff, but allow private
-        # streams (useful for study groups, etc.).
-        realm.create_public_stream_policy = CommonPolicyEnum.ADMINS_ONLY
         # Don't allow members (students) to manage user groups or
         # stream subscriptions.
         realm.user_group_edit_policy = CommonPolicyEnum.MODERATORS_ONLY

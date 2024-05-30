@@ -148,7 +148,6 @@ def update_realm(
     message_content_allowed_in_email_notifications: Optional[Json[bool]] = None,
     bot_creation_policy: Optional[Json[BotCreationPolicyEnum]] = None,
     can_create_public_channel_group: Optional[Json[GroupSettingChangeRequest]] = None,
-    create_public_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
     create_private_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
     create_web_public_stream_policy: Optional[Json[CreateWebPublicStreamPolicyEnum]] = None,
     invite_to_stream_policy: Optional[Json[CommonPolicyEnum]] = None,

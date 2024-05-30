@@ -4614,9 +4614,6 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = user_profile.realm
 
         do_set_realm_property(
-            realm, "create_public_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
-        )
-        do_set_realm_property(
             realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
         )
         do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
