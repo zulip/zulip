@@ -34,15 +34,12 @@ type SettingOptionValueWithKey = SettingOptionValue & {key: string};
 export function get_sorted_options_list(
     option_values_object: Record<string, SettingOptionValue>,
 ): SettingOptionValueWithKey[] {
-    const options_list: SettingOptionValueWithKey[] = Object.keys(option_values_object).map(
-        (key: string) => ({
-            ...option_values_object[key],
-            key,
-        }),
+    const options_list: SettingOptionValueWithKey[] = Object.entries(option_values_object).map(
+        ([key, value]) => ({...value, key}),
     );
     let comparator: (x: SettingOptionValueWithKey, y: SettingOptionValueWithKey) => number;
 
-    if (!options_list[0].order) {
+    if (options_list[0] !== undefined && !options_list[0].order) {
         comparator = (x, y) => {
             const key_x = x.key.toUpperCase();
             const key_y = y.key.toUpperCase();
@@ -172,14 +169,14 @@ export function get_property_value(
 }
 
 export function realm_authentication_methods_to_boolean_dict(): Record<string, boolean> {
-    const auth_method_to_bool: Record<string, boolean> = {};
-    for (const [auth_method_name, auth_method_info] of Object.entries(
-        realm.realm_authentication_methods,
-    )) {
-        auth_method_to_bool[auth_method_name] = auth_method_info.enabled;
-    }
-
-    return sort_object_by_key(auth_method_to_bool);
+    return Object.fromEntries(
+        Object.entries(realm.realm_authentication_methods)
+            .sort()
+            .map(([auth_method_name, auth_method_info]) => [
+                auth_method_name,
+                auth_method_info.enabled,
+            ]),
+    );
 }
 
 export function extract_property_name($elem: JQuery, for_realm_default_settings?: boolean): string {
@@ -474,17 +471,6 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
         JSON.parse(field.field_data),
     );
     return JSON.stringify(proposed_value);
-}
-
-export function sort_object_by_key(obj: Record<string, boolean>): Record<string, boolean> {
-    const keys = Object.keys(obj).sort();
-    const new_obj: Record<string, boolean> = {};
-
-    for (const key of keys) {
-        new_obj[key] = obj[key];
-    }
-
-    return new_obj;
 }
 
 export let default_code_language_widget: DropdownWidget | null = null;
