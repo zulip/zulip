@@ -2,7 +2,7 @@ import {subDays} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
@@ -364,7 +364,7 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
 
 function draft_notify(): void {
     // Display a tooltip to notify the user about the saved draft.
-    const instance = tippy(".top_left_drafts .unread_count", {
+    const instance = tippy.default(".top_left_drafts .unread_count", {
         content: $t({defaultMessage: "Saved as draft"}),
         arrow: true,
         placement: "right",

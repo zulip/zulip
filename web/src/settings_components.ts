@@ -1,7 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import type {PopperElement, Props} from "tippy.js";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
@@ -1158,12 +1157,14 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
         disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
-        const $button_wrapper = $subsection_elem.find<PopperElement>(".subsection-changes-save");
+        const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
+            ".subsection-changes-save",
+        );
         const tippy_instance = $button_wrapper[0]._tippy;
         if (disable_save_btn) {
             // avoid duplication of tippy
             if (!tippy_instance) {
-                const opts: Partial<Props> = {placement: "top"};
+                const opts: Partial<tippy.Props> = {placement: "top"};
                 initialize_disable_btn_hint_popover(
                     $button_wrapper,
                     $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
@@ -1183,9 +1184,9 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
 export function initialize_disable_btn_hint_popover(
     $btn_wrapper: JQuery,
     hint_text: string | undefined,
-    opts: Partial<Props>,
+    opts: Partial<tippy.Props>,
 ): void {
-    const tippy_opts: Partial<Props> = {
+    const tippy_opts: Partial<tippy.Props> = {
         animation: false,
         hideOnClick: false,
         placement: "bottom",
@@ -1197,5 +1198,5 @@ export function initialize_disable_btn_hint_popover(
     if (hint_text !== undefined) {
         tippy_opts.content = hint_text;
     }
-    tippy($btn_wrapper[0], tippy_opts);
+    tippy.default($btn_wrapper[0], tippy_opts);
 }

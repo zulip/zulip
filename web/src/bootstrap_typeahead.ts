@@ -138,8 +138,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
-import type {Instance} from "tippy.js";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import {get_string_diff} from "./util";
 
@@ -234,7 +233,7 @@ export class Typeahead<ItemType extends string | object> {
     advanceKeyCodes: number[];
     non_tippy_parent_element: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
-    instance: Instance | undefined;
+    instance: tippy.Instance | undefined;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -341,7 +340,7 @@ export class Typeahead<ItemType extends string | object> {
             // We don't need tippy to position typeaheads which already know where they should be.
             return this;
         }
-        this.instance = tippy(this.input_element.$element[0], {
+        this.instance = tippy.default(this.input_element.$element[0], {
             // Lets typeahead take the width needed to fit the content
             // and wraps it if it overflows the visible container.
             maxWidth: "none",

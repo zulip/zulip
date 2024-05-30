@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import type {Instance as PopoverInstance, ReferenceElement} from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.hbs";
 
@@ -17,7 +17,7 @@ import * as ui_util from "./ui_util";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
 
-let user_group_popover_instance: PopoverInstance | undefined;
+let user_group_popover_instance: tippy.Instance | undefined;
 
 type PopoverGroupMember = User & {user_circle_class: string; user_last_seen_time_status: string};
 
@@ -57,7 +57,7 @@ export function handle_keyboard(key: string): void {
 // in case of message, message_id is the message id containing it;
 // in case of user group pill, message_id is not used;
 export function toggle_user_group_info_popover(
-    element: ReferenceElement,
+    element: tippy.ReferenceElement,
     message_id: number | undefined,
 ): void {
     if (is_open()) {

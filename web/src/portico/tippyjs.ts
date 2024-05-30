@@ -1,8 +1,8 @@
 import $ from "jquery";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 function initialize(): void {
-    tippy("[data-tippy-content]", {
+    tippy.default("[data-tippy-content]", {
         // Same defaults as set in web app tippyjs module.
         maxWidth: 300,
         delay: [100, 20],

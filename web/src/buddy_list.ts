@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_section_header from "../templates/buddy_list/section_header.hbs";
 import render_view_all_subscribers from "../templates/buddy_list/view_all_subscribers.hbs";
@@ -166,7 +166,7 @@ export class BuddyList extends BuddyListConf {
                     // This will default to "bottom" placement for this tooltip.
                     placement = "auto";
                 }
-                tippy($elem[0], {
+                tippy.default($elem[0], {
                     // Because the buddy list subheadings are potential click targets
                     // for purposes having nothing to do with the subscriber count
                     // (collapsing/expanding), we delay showing the tooltip until the

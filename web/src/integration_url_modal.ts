@@ -1,6 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
-import type {Instance} from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 import render_integration_events from "../templates/settings/integration_events.hbs";
@@ -177,7 +177,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
         function integration_item_click_callback(
             event: JQuery.ClickEvent,
-            dropdown: Instance,
+            dropdown: tippy.Instance,
         ): void {
             integration_input_dropdown_widget.render();
             $(".integration-url-name-wrapper").trigger("input");
@@ -214,7 +214,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
             return options;
         }
 
-        function stream_item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void {
+        function stream_item_click_callback(
+            event: JQuery.ClickEvent,
+            dropdown: tippy.Instance,
+        ): void {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
             const user_selected_option = stream_input_dropdown_widget.value();
