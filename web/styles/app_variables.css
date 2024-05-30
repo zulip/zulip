@@ -351,6 +351,8 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(200deg 100% 40%);
+    --color-user-circle-active: hsl(106deg 74% 44%);
+    --color-user-circle-idle: hsl(29deg 84% 51%);
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
