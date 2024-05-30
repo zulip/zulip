@@ -183,8 +183,10 @@ function set_up_create_field_form(): void {
             $field_url_pattern_elem.show();
         } else {
             $field_url_pattern_elem.hide();
-            const profile_field_name =
-                realm.realm_default_external_accounts[profile_field_external_account_type].name;
+            const external_account =
+                realm.realm_default_external_accounts[profile_field_external_account_type];
+            assert(external_account !== undefined);
+            const profile_field_name = external_account.name;
             $("#profile_field_name").val(profile_field_name).prop("disabled", true);
             $("#profile_field_hint").val("").prop("disabled", true);
         }
@@ -776,7 +778,9 @@ export function get_external_account_link(field: UserExternalAccountData): strin
         assert(field.field_data.url_pattern !== undefined);
         field_url_pattern = field.field_data.url_pattern;
     } else {
-        field_url_pattern = realm.realm_default_external_accounts[field_subtype].url_pattern;
+        const external_account = realm.realm_default_external_accounts[field_subtype];
+        assert(external_account !== undefined);
+        field_url_pattern = external_account.url_pattern;
     }
     return field_url_pattern.replace("%(username)s", () => field.value);
 }
