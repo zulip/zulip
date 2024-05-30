@@ -581,7 +581,7 @@ export class Filter {
             return parts;
         }
 
-        if (terms.length >= 2) {
+        if (terms[0] !== undefined && terms[1] !== undefined) {
             const is = (term: NarrowTerm, expected: string): boolean =>
                 Filter.canonicalize_operator(term.operator) === expected && !term.negated;
 
@@ -1151,6 +1151,7 @@ export class Filter {
 
     filter_with_new_params(params: NarrowTerm): Filter {
         const new_params = this.fix_terms([params])[0];
+        assert(new_params !== undefined);
         const terms = this._terms.map((term) => {
             const new_term = {...term};
             if (new_term.operator === new_params.operator && !new_term.negated) {
