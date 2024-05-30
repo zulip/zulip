@@ -175,6 +175,10 @@ export function initialize() {
         show_uploaded_files_section: realm.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
+        can_edit_user_panel:
+            current_user.is_admin ||
+            settings_data.user_can_create_multiuse_invite() ||
+            settings_data.user_can_invite_users_by_email(),
     });
     $("#settings_overlay_container").append($(rendered_settings_overlay));
 

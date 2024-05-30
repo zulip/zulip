@@ -80,7 +80,7 @@ bots will be deactivated until the user manually
 
 {tab|via-organization-settings}
 
-{settings_tab|deactivated-users-admin}
+{settings_tab|deactivated}
 
 1. Click the **Reactivate** button to the right of the user account that you
    want to reactivate.

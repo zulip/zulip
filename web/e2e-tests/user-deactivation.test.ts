@@ -15,6 +15,7 @@ async function navigate_to_user_list(page: Page): Promise<void> {
 
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
     await page.click("li[data-section='users']");
+    await page.waitForSelector("#admin-user-list.show", {visible: true});
 }
 
 async function user_row(page: Page, name: string): Promise<string> {
@@ -80,7 +81,8 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
 
     // "Deactivated users" section doesn't render just deactivated users until reloaded.
     await page.reload();
-    const deactivated_users_section = "li[data-section='deactivated-users-admin']";
+    await page.waitForSelector("#admin-user-list.show", {visible: true});
+    const deactivated_users_section = ".tab-container .ind-tab[data-tab-key='deactivated']";
     await page.waitForSelector(deactivated_users_section, {visible: true});
     await page.click(deactivated_users_section);
 

@@ -361,7 +361,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [settings, "launch"],
     ]);
 
-    window.location.hash = "#organization/users";
+    window.location.hash = "#organization/users/active";
 
     helper.clear_events();
     $window_stub.trigger("hashchange");
@@ -369,7 +369,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [overlays, "close_for_hash_change"],
         [settings, "build_page"],
         [admin, "build_page"],
-        [admin, "launch", ["users"]],
+        [admin, "launch", ["users", "active"]],
     ]);
 
     window.location.hash = "#organization/user-list-admin";
@@ -384,7 +384,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [overlays, "close_for_hash_change"],
         [settings, "build_page"],
         [admin, "build_page"],
-        [admin, "launch", ["users"]],
+        [admin, "launch", ["users", "active"]],
     ]);
 
     helper.clear_events();
