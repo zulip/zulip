@@ -131,12 +131,9 @@ so they are notified.
    - Paste the contents of `tools/droplets/new-droplet-image` into the
      text box which says `Enter user data here...`
    - Name it e.g. `base-ubuntu-22-04.zulipdev.org`
-1. Add an A record for `base.zulipdev.org` to point to the new host.
 1. Wait for the host to boot.
-1. `scp tools/droplets/new-droplet-image base.zulipdev.org:/tmp/new-droplet-image`
-1. `ssh root@base.zulipdev.org bash /tmp/new-droplet-image`; this
-   should take about 15 minutes to complete, and will finish by
-   closing the connection and shutting the host down.
+1. Wait for the host to complete provisioning and shut down; this will take
+   about 15 minutes.
 1. Go to the Snapshots tab on the image, and "Take a Snapshot".
 1. Wait for several minutes for it to complete.
 1. "Add to region" the snapshot into `NYC3`, `SFO3`, `BLR1`, and `FRA1`.
