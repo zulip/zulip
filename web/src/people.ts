@@ -1722,13 +1722,13 @@ export function get_custom_profile_data(
 export function get_custom_fields_by_type(
     user_id: number,
     field_type: number,
-): ProfileDatum[] | null {
+): (ProfileDatum | undefined)[] | null {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
         return null;
     }
-    const filteredProfileData: ProfileDatum[] = [];
+    const filteredProfileData: (ProfileDatum | undefined)[] = [];
     for (const field of realm.custom_profile_fields) {
         if (field.type === field_type) {
             filteredProfileData.push(profile_data[field.id]);
