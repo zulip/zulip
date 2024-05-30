@@ -111,7 +111,7 @@ function register_click_handlers(): void {
             // the language has multiple playground links configured, a popover
             // is shown.
             const extracted_code = $codehilite_div.find("code").text();
-            if (playground_info.length === 1) {
+            if (playground_info.length === 1 && playground_info[0] !== undefined) {
                 const url_template = url_template_lib.parse(playground_info[0].url_template);
                 $view_in_playground_button.attr(
                     "href",
