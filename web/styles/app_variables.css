@@ -58,6 +58,13 @@
     --right-sidebar-width: 250px;
     --left-sidebar-header-icon-width: 15px;
 
+    /* We base sidebar row heights on their line heights.
+       Prominent rows include things like headers (e.g., VIEWS)
+       as well as navigation items. Everything else takes
+       the smaller line-height. */
+    --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
+    --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
+
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
     --message-actions-popover-min-width: 230px;
