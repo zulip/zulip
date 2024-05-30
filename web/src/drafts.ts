@@ -154,7 +154,7 @@ export const draft_model = (function () {
     }
 
     function getDraft(id: string): LocalStorageDraft | false {
-        return get()[id] || false;
+        return get()[id] ?? false;
     }
 
     function getDraftCount(): number {
@@ -191,8 +191,9 @@ export const draft_model = (function () {
             return _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
         }
 
-        if (drafts[id]) {
-            changed = !check_if_equal(drafts[id], draft);
+        const old_draft = drafts[id];
+        if (old_draft !== undefined) {
+            changed = !check_if_equal(old_draft, draft);
             drafts[id] = draft;
             save(drafts);
         }
@@ -264,9 +265,7 @@ export function rename_stream_recipient(
     new_stream_id: number,
     new_topic: string,
 ): void {
-    const current_drafts = draft_model.get();
-    for (const draft_id of Object.keys(current_drafts)) {
-        const draft = current_drafts[draft_id];
+    for (const [draft_id, draft] of Object.entries(draft_model.get())) {
         if (draft.type !== "stream" || draft.stream_id === undefined) {
             continue;
         }
@@ -655,9 +654,7 @@ export function initialize(): void {
     // refreshed in the middle of sending a message. We
     // reset the field on page reload to ensure that drafts
     // don't get stuck in that state.
-    const current_drafts = draft_model.get();
-    for (const draft_id of Object.keys(current_drafts)) {
-        const draft = current_drafts[draft_id];
+    for (const [draft_id, draft] of Object.entries(draft_model.get())) {
         if (draft.is_sending_saving) {
             draft.is_sending_saving = false;
             draft_model.editDraft(draft_id, draft);
