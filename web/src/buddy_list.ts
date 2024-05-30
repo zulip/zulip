@@ -46,7 +46,11 @@ function total_subscriber_count(
         const pm_ids_list = [...pm_ids_set];
         // Plus one for the "me" user, who isn't in the recipients list (except
         // for when it's a private message conversation with only "me" in it).
-        if (pm_ids_list.length === 1 && people.is_my_user_id(pm_ids_list[0])) {
+        if (
+            pm_ids_list.length === 1 &&
+            pm_ids_list[0] !== undefined &&
+            people.is_my_user_id(pm_ids_list[0])
+        ) {
             return 1;
         }
         return pm_ids_list.length + 1;
@@ -610,22 +614,16 @@ export class BuddyList extends BuddyListConf {
 
     find_position(opts: {user_id: number; user_id_list: number[]}): number {
         const user_id = opts.user_id;
-        let i;
-
         const user_id_list = opts.user_id_list;
 
         const current_sub = narrow_state.stream_sub();
         const pm_ids_set = narrow_state.pm_ids_set();
 
-        for (i = 0; i < user_id_list.length; i += 1) {
-            const list_user_id = user_id_list[i];
-
-            if (this.compare_function(user_id, list_user_id, current_sub, pm_ids_set) < 0) {
-                return i;
-            }
-        }
-
-        return user_id_list.length;
+        const i = user_id_list.findIndex(
+            (list_user_id) =>
+                this.compare_function(user_id, list_user_id, current_sub, pm_ids_set) < 0,
+        );
+        return i === -1 ? user_id_list.length : i;
     }
 
     force_render(opts: {pos: number}): void {
