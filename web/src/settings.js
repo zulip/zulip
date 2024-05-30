@@ -161,7 +161,9 @@ export function launch(section) {
     settings_sections.reset_sections();
 
     open_settings_overlay();
-    settings_panel_menu.normal_settings.activate_section_or_default(section);
+    if (section !== "") {
+        settings_panel_menu.normal_settings.set_current_tab(section);
+    }
     settings_toggle.highlight_toggle("settings");
 }
 
