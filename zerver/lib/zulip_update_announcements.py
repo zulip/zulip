@@ -154,8 +154,8 @@ configuration change), or [turn this feature off]({organization_settings_url}) a
     )
 
 
-def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) -> bool:
-    level_none_to_zero_auditlog = RealmAuditLog.objects.filter(
+def get_level_none_to_initial_auditlog(realm: Realm) -> Optional[RealmAuditLog]:
+    return RealmAuditLog.objects.filter(
         realm=realm,
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
         extra_data__contains={
@@ -167,8 +167,12 @@ def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) 
             "property": "zulip_update_announcements_level",
         },
     ).first()
-    assert level_none_to_zero_auditlog is not None
-    group_direct_message_sent_on = level_none_to_zero_auditlog.event_time
+
+
+def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) -> bool:
+    level_none_to_initial_auditlog = get_level_none_to_initial_auditlog(realm)
+    assert level_none_to_initial_auditlog is not None
+    group_direct_message_sent_on = level_none_to_initial_auditlog.event_time
     return timezone_now() - group_direct_message_sent_on < timedelta(days=days)
 
 
@@ -263,10 +267,16 @@ def send_zulip_update_announcements_to_realm(
         else:
             new_zulip_update_announcements_level = 0
     elif realm.zulip_update_announcements_stream is None:
-        # We wait for a week after sending group DMs to let admins configure
-        # stream for zulip update announcements. After that, they miss updates
-        # until they don't configure.
-        if not is_group_direct_message_sent_to_admins_within_days(realm, days=7):
+        # Realm misses the update messages in two cases:
+        # Case 1: New realm created, and later stream manually set to None.
+        # No group direct message is sent. Introductory message in the topic is sent.
+        # Case 2: For old realm or realm imported from other product, we wait for A WEEK
+        # after sending group DMs to let admins configure stream for zulip update announcements.
+        # After that, they miss updates until they don't configure.
+        level_none_to_initial_auditlog = get_level_none_to_initial_auditlog(realm)
+        if level_none_to_initial_auditlog is None or not (
+            timezone_now() - level_none_to_initial_auditlog.event_time < timedelta(days=7)
+        ):
             new_zulip_update_announcements_level = latest_zulip_update_announcements_level
     else:
         # Wait for 24 hours after sending group DM to allow admins to change the
