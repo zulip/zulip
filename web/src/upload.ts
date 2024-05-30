@@ -534,7 +534,7 @@ export function initialize(): void {
         if (compose_state.composing()) {
             // Compose box is open; drop there.
             upload_files(compose_upload_object, compose_config, files);
-        } else if ($last_drag_drop_edit_container.length !== 0) {
+        } else if ($last_drag_drop_edit_container[0] !== undefined) {
             // A message edit box is open; drop there.
             const row_id = rows.get_message_id($last_drag_drop_edit_container[0]);
             const $drag_drop_container = edit_config(row_id).drag_drop_container();

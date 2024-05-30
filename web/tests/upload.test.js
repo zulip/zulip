@@ -754,7 +754,7 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
         dropped_row_id = config.row;
         upload_files_called = true;
     });
-    $(".message_edit_form form").last = () => ({length: 1});
+    $(".message_edit_form form").last = () => ({length: 1, [0]: "stub"});
     override(rows, "get_message_id", () => 40);
 
     // Edit box which registered the event handler no longer exists.
@@ -776,7 +776,7 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
 
     override(rows, "get_message_id", () => 40);
     // Edit box open
-    $(".message_edit_form form").last = () => ({length: 1});
+    $(".message_edit_form form").last = () => ({length: 1, [0]: "stub"});
     drop_handler(drop_event);
     assert.equal(upload_files_called, true);
     assert.equal(dropped_row_id, 40);
