@@ -471,7 +471,7 @@ export class Typeahead<ItemType extends string | object> {
         let $next = $active.next();
 
         if (!$next.length) {
-            $next = $(this.$menu.find("li")[0]);
+            $next = this.$menu.find("li").first();
         }
 
         $next.addClass("active");
