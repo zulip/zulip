@@ -269,6 +269,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     const subbed_streams = stream_data.subscribed_subs();
     if (
         subbed_streams.length === 1 &&
+        subbed_streams[0] !== undefined &&
         (is_clear_topic_button_triggered ||
             (opts.trigger === "compose_hotkey" && opts.message_type === "stream"))
     ) {
@@ -516,7 +517,11 @@ export function on_narrow(opts: NarrowActivateOpts): void {
             opts.private_message_recipient
         ) {
             const emails = opts.private_message_recipient.split(",");
-            if (emails.length !== 1 || !people.get_by_email(emails[0])!.is_bot) {
+            if (
+                emails.length !== 1 ||
+                emails[0] === undefined ||
+                !people.get_by_email(emails[0])!.is_bot
+            ) {
                 // If we are navigating between direct message conversations,
                 // we want the compose box to close for non-bot users.
                 if (compose_state.composing()) {
