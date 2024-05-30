@@ -72,6 +72,9 @@
         var(--markdown-interelement-space-px) * 2
     );
 
+    /* Legacy values */
+    --legacy-body-line-height-unitless: calc(20 / 14);
+
     .more-dense-mode {
         /* The legacy values here are not altered by JavaScript */
         --base-font-size-px: 14px;
