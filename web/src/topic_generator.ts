@@ -164,7 +164,7 @@ export function get_next_unread_pm_string(curr_pm: string): string | undefined {
     return undefined;
 }
 
-export function get_next_stream(curr_stream: string): string {
+export function get_next_stream(curr_stream: string): string | undefined {
     const my_streams = stream_list_sort.get_streams();
     const curr_stream_index = my_streams.indexOf(curr_stream);
     return my_streams[
@@ -174,7 +174,7 @@ export function get_next_stream(curr_stream: string): string {
     ];
 }
 
-export function get_prev_stream(curr_stream: string): string {
+export function get_prev_stream(curr_stream: string): string | undefined {
     const my_streams = stream_list_sort.get_streams();
     const curr_stream_index = my_streams.indexOf(curr_stream);
     return my_streams[curr_stream_index <= 0 ? my_streams.length - 1 : curr_stream_index - 1];
