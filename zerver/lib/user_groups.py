@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Collection, Dict, Iterable, Iterator, List, Mapping, Optional, TypedDict, Union
 
+from django.conf import settings
 from django.db import connection, transaction
 from django.db.models import F, Prefetch, QuerySet
 from django.utils.timezone import now as timezone_now
@@ -712,12 +713,20 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 def parse_group_setting_value(
     setting_value: Union[int, AnonymousSettingGroupDict],
+    setting_name: str,
 ) -> Union[int, AnonymousSettingGroupDict]:
     if isinstance(setting_value, int):
         return setting_value
 
     if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
         return setting_value.direct_subgroups[0]
+
+    if not settings.ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS:
+        raise JsonableError(
+            _("{setting_name} can only be set to a single named user group.").format(
+                setting_name=setting_name
+            )
+        )
 
     return setting_value
 

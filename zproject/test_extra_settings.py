@@ -268,3 +268,5 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
         "name_formatted_included": True,
     }
 }
+
+ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = True

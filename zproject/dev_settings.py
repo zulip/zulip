@@ -207,3 +207,6 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
 SELF_HOSTING_MANAGEMENT_SUBDOMAIN = "selfhosting"
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = True
 PUSH_NOTIFICATION_BOUNCER_URL = f"http://push.{EXTERNAL_HOST}"
+
+# Breaks the UI if used, but enabled for development environment testing.
+ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = True

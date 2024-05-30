@@ -70,7 +70,9 @@ def add_user_group(
             continue
 
         if request_settings_dict[setting_name] is not None:
-            setting_value = parse_group_setting_value(request_settings_dict[setting_name])
+            setting_value = parse_group_setting_value(
+                request_settings_dict[setting_name], setting_name
+            )
             setting_value_group = access_user_group_for_setting(
                 setting_value,
                 user_profile,
@@ -130,11 +132,13 @@ def edit_user_group(
             continue
 
         setting_value = request_settings_dict[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new)
+        new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
 
         expected_current_setting_value = None
         if setting_value.old is not None:
-            expected_current_setting_value = parse_group_setting_value(setting_value.old)
+            expected_current_setting_value = parse_group_setting_value(
+                setting_value.old, setting_name
+            )
 
         current_value = getattr(user_group, setting_name)
         current_setting_api_value = get_group_setting_value_for_api(current_value)
