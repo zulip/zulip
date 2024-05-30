@@ -97,14 +97,14 @@ export function handle_narrow_activated(filter: Filter): void {
 
     // TODO: handle confused filters like "in:all stream:foo"
     ops = filter.operands("in");
-    if (ops.length >= 1) {
+    if (ops[0] !== undefined) {
         filter_name = ops[0];
         if (filter_name === "home") {
             highlight_all_messages_view();
         }
     }
     ops = filter.operands("is");
-    if (ops.length >= 1) {
+    if (ops[0] !== undefined) {
         filter_name = ops[0];
         if (filter_name === "starred") {
             $filter_li = $(".top_left_starred_messages");
