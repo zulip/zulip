@@ -79,10 +79,19 @@ const read_data_schema = instantiate_type_DataByEveryoneUser(
     z.object({read: z.array(z.number())}),
 ).extend({...common_data_schema.shape});
 
-const sent_data_schema = instantiate_type_DataByEveryoneUser(z.record(z.array(z.number()))).extend({
+const sent_data_schema = instantiate_type_DataByEveryoneUser(
+    z.object({
+        human: z.array(z.number()),
+        bot: z.array(z.number()),
+    }),
+).extend({...common_data_schema.shape});
+
+const ordered_sent_data_schema = instantiate_type_DataByEveryoneUser(
+    z.record(z.array(z.number())),
+).extend({
     ...common_data_schema.shape,
+    display_order: z.array(z.string()),
 });
-const ordered_sent_data_schema = sent_data_schema.extend({display_order: z.array(z.string())});
 
 const user_count_data_schema = z
     .object({everyone: active_user_data})
