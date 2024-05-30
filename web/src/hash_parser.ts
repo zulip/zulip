@@ -12,7 +12,7 @@ export function get_hash_section(hash?: string): string {
 
     const parts = hash.replace(/\/$/, "").split(/\//);
 
-    return parts[1] || "";
+    return parts[1] ?? "";
 }
 
 function get_nth_hash_section(hash: string, n: number): string {
