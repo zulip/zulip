@@ -92,7 +92,7 @@ export function at_rendered_bottom(): boolean {
 // further to see the rest of that message.
 export function bottom_rendered_message_visible(): boolean {
     const $last_row = rows.last_visible();
-    if ($last_row.length) {
+    if ($last_row[0] !== undefined) {
         const message_bottom = $last_row[0].getBoundingClientRect().bottom;
         const bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
         return bottom_of_feed > message_bottom;
