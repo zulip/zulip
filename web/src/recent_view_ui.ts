@@ -463,14 +463,21 @@ export function hide_loading_indicator(): void {
     loading.destroy_indicator($("#recent_view_loading_messages_indicator"));
 }
 
-export function process_messages(messages: Message[], msg_list_data?: MessageListData): void {
+export function process_messages(
+    messages: Message[],
+    rows_order_changed = true,
+    msg_list_data?: MessageListData,
+): void {
     // Always synced with messages in all_messages_data.
 
     let conversation_data_updated = false;
+    const updated_rows = new Set<string>();
     if (messages.length > 0) {
         for (const msg of messages) {
             if (recent_view_data.process_message(msg)) {
                 conversation_data_updated = true;
+                const key = recent_view_util.get_key_from_message(msg);
+                updated_rows.add(key);
             }
         }
     }
@@ -483,7 +490,12 @@ export function process_messages(messages: Message[], msg_list_data?: MessageLis
 
     // Only rerender if conversation data actually changed.
     if (conversation_data_updated) {
-        complete_rerender();
+        if (!rows_order_changed) {
+            // If rows order didn't change, we can just rerender the affected rows.
+            bulk_inplace_rerender([...updated_rows]);
+        } else {
+            complete_rerender();
+        }
     }
 }
 
@@ -881,7 +893,24 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     return false;
 }
 
-export function inplace_rerender(topic_key: string): boolean {
+export function bulk_inplace_rerender(row_keys: string[]): void {
+    if (!topics_widget) {
+        return;
+    }
+
+    // When doing bulk rerender, we assume that order of rows are not going
+    // to change by default. Row insertion can still change the order but
+    // we ensure the list remains sorted after insertion.
+    topics_widget.replace_list_data(get_list_data_for_widget(), false);
+    topics_widget.filter_and_sort();
+    for (const key of row_keys) {
+        inplace_rerender(key, true);
+    }
+
+    setTimeout(revive_current_focus, 0);
+}
+
+export function inplace_rerender(topic_key: string, is_bulk_rerender?: boolean): boolean {
     if (!recent_view_util.is_visible()) {
         return false;
     }
@@ -896,11 +925,17 @@ export function inplace_rerender(topic_key: string): boolean {
     // if a topic is rendered since the `filtered_list` might have
     // already been updated via other calls.
     const is_topic_rendered = $topic_row.length;
-    // Resorting the topics_widget is important for the case where we
-    // are rerendering because of message editing or new messages
-    // arriving, since those operations often change the sort key.
     assert(topics_widget !== undefined);
-    topics_widget.filter_and_sort();
+    if (!is_bulk_rerender) {
+        // Resorting the topics_widget is important for the case where we
+        // are rerendering because of message editing or new messages
+        // arriving, since those operations often change the sort key.
+        //
+        // NOTE: This doesn't add any new entry to the original list but updates the filtered list
+        // based on the current filters and updated row data.
+        topics_widget.filter_and_sort();
+    }
+
     const current_topics_list = topics_widget.get_current_list();
     if (is_topic_rendered && filters_should_hide_row(topic_data)) {
         // Since the row needs to be removed from DOM, we need to adjust `row_focus`
@@ -931,7 +966,9 @@ export function inplace_rerender(topic_key: string): boolean {
             ),
         );
     }
-    setTimeout(revive_current_focus, 0);
+    if (!is_bulk_rerender) {
+        setTimeout(revive_current_focus, 0);
+    }
     return true;
 }
 
@@ -1204,13 +1241,17 @@ function filter_click_handler(
     topics_widget.hard_redraw();
 }
 
+function get_list_data_for_widget(): ConversationData[] {
+    return [...recent_view_data.get_conversations().values()];
+}
+
 export function complete_rerender(): void {
     if (!recent_view_util.is_visible()) {
         return;
     }
 
     // Show topics list
-    const mapped_topic_values = [...recent_view_data.get_conversations().values()];
+    const mapped_topic_values = get_list_data_for_widget();
 
     if (topics_widget) {
         topics_widget.replace_list_data(mapped_topic_values);

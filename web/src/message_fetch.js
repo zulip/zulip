@@ -587,8 +587,8 @@ export function initialize(finished_initial_fetch) {
     // Since `all_messages_data` contains continuous message history
     // which always contains the latest message, it makes sense for
     // Recent view to display the same data and be in sync.
-    all_messages_data.set_add_messages_callback((messages) => {
-        recent_view_ui.process_messages(messages, all_messages_data);
+    all_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
+        recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
     });
 
     // TODO: Ideally we'd have loading indicators for Recent Conversations
