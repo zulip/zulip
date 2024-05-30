@@ -292,7 +292,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 };
             }
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
-            assert(user_ids !== undefined);
+            assert(user_ids?.[0] !== undefined);
             if (
                 realm.realm_private_message_policy ===
                     settings_config.private_message_policy_values.disabled.code &&
