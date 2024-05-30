@@ -121,7 +121,7 @@ export function stream_name(current_filter: Filter | undefined = filter()): stri
         return undefined;
     }
     const stream_operands = current_filter.operands("channel");
-    if (stream_operands.length === 1) {
+    if (stream_operands.length === 1 && stream_operands[0] !== undefined) {
         const name = stream_operands[0];
 
         // Use get_name() to get the most current stream
@@ -139,7 +139,7 @@ export function stream_sub(
     }
     const stream_operands = current_filter.operands("channel");
 
-    if (stream_operands.length !== 1) {
+    if (stream_operands.length !== 1 || stream_operands[0] === undefined) {
         return undefined;
     }
 
