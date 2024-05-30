@@ -218,7 +218,7 @@ export function validate_channels_settings_hash(hash: string): string {
         return channels_settings_section_url();
     }
 
-    if (/\d+/.test(section)) {
+    if (section !== undefined && /\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
         const sub = sub_store.get(stream_id);
         // There are a few situations where we can't display stream settings:
@@ -235,7 +235,7 @@ export function validate_channels_settings_hash(hash: string): string {
 
         let right_side_tab = hash_components[3];
         const valid_right_side_tab_values = new Set(["general", "personal", "subscribers"]);
-        if (!valid_right_side_tab_values.has(right_side_tab)) {
+        if (right_side_tab === undefined || !valid_right_side_tab_values.has(right_side_tab)) {
             right_side_tab = "general";
         }
         return channels_settings_edit_url(sub, right_side_tab);
@@ -253,7 +253,7 @@ export function validate_group_settings_hash(hash: string): string {
         return "#groups/your";
     }
 
-    if (/\d+/.test(section)) {
+    if (section !== undefined && /\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
         const group = user_groups.maybe_get_user_group_from_id(group_id);
         if (!group) {
@@ -265,17 +265,21 @@ export function validate_group_settings_hash(hash: string): string {
         const group_name = hash_components[2];
         let right_side_tab = hash_components[3];
         const valid_right_side_tab_values = new Set(["general", "members"]);
-        if (group.name === group_name && valid_right_side_tab_values.has(right_side_tab)) {
+        if (
+            group.name === group_name &&
+            right_side_tab !== undefined &&
+            valid_right_side_tab_values.has(right_side_tab)
+        ) {
             return hash;
         }
-        if (!valid_right_side_tab_values.has(right_side_tab)) {
+        if (right_side_tab === undefined || !valid_right_side_tab_values.has(right_side_tab)) {
             right_side_tab = "general";
         }
         return group_edit_url(group, right_side_tab);
     }
 
     const valid_section_values = ["new", "your", "all"];
-    if (!valid_section_values.includes(section)) {
+    if (section === undefined || !valid_section_values.includes(section)) {
         blueslip.info("invalid section for groups: " + section);
         return "#groups/your";
     }
