@@ -7,21 +7,7 @@ export const status_classes = "alert-error alert-success alert-info alert-warnin
 
 export function phrase_match(query: string, phrase: string): boolean {
     // match "tes" to "test" and "stream test" but not "hostess"
-    let i;
-    query = query.toLowerCase();
-
-    phrase = phrase.toLowerCase();
-    if (phrase.startsWith(query)) {
-        return true;
-    }
-
-    const parts = phrase.split(" ");
-    for (i = 0; i < parts.length; i += 1) {
-        if (parts[i].startsWith(query)) {
-            return true;
-        }
-    }
-    return false;
+    return (" " + phrase.toLowerCase()).includes(" " + query.toLowerCase());
 }
 
 const keys_map = new Map([
