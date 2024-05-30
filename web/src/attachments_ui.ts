@@ -167,12 +167,12 @@ function render_attachments_ui(): void {
     scroll_util.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
-function format_attachment_data(new_attachments: ServerAttachment[]): Attachment[] {
-    return new_attachments.map((attachment) => ({
+function format_attachment_data(attachment: ServerAttachment): Attachment {
+    return {
         ...attachment,
         create_time_str: timerender.render_now(new Date(attachment.create_time)).time_str,
         size_str: bytes_to_size(attachment.size),
-    }));
+    };
 }
 
 export function update_attachments(event: AttachmentEvent): void {
@@ -184,7 +184,7 @@ export function update_attachments(event: AttachmentEvent): void {
         attachments = attachments.filter((a) => a.id !== event.attachment.id);
     }
     if (event.op === "add" || event.op === "update") {
-        attachments.push(format_attachment_data([event.attachment])[0]);
+        attachments.push(format_attachment_data(event.attachment));
     }
     upload_space_used = event.upload_space_used;
     // TODO: This is inefficient and we should be able to do some sort
@@ -213,7 +213,9 @@ export function set_up_attachments(): void {
         success(data) {
             const clean_data = attachment_api_response_schema.parse(data);
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            attachments = format_attachment_data(clean_data.attachments);
+            attachments = clean_data.attachments.map((attachment) =>
+                format_attachment_data(attachment),
+            );
             upload_space_used = clean_data.upload_space_used;
             render_attachments_ui();
         },
