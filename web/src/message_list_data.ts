@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
 import type {Filter} from "./filter";
@@ -127,12 +129,7 @@ export class MessageListData {
         if (i === undefined) {
             return undefined;
         }
-
-        if (i === 0) {
-            return undefined;
-        }
-
-        return this._items[i - 1].id;
+        return this._items[i - 1]?.id;
     }
 
     next(): number | undefined {
@@ -141,28 +138,14 @@ export class MessageListData {
         if (i === undefined) {
             return undefined;
         }
-
-        if (i + 1 >= this._items.length) {
-            return undefined;
-        }
-
-        return this._items[i + 1].id;
+        return this._items[i + 1]?.id;
     }
 
     is_at_end(): boolean {
         if (this._selected_id === -1) {
             return false;
         }
-
-        const n = this._items.length;
-
-        if (n === 0) {
-            return false;
-        }
-
-        const last_msg = this._items[n - 1];
-
-        return last_msg.id === this._selected_id;
+        return this.last()?.id === this._selected_id;
     }
 
     clear(): void {
@@ -444,49 +427,53 @@ export class MessageListData {
 
         let closest = this._lower_bound(id);
 
-        if (closest < items.length && id === items[closest].id) {
-            return items[closest].id;
+        if (id === items[closest]?.id) {
+            return id;
         }
 
         const potential_closest_matches = [];
-        if (closest > 0 && this._is_localonly_id(items[closest - 1].id)) {
+        let prev_item;
+        while (
+            (prev_item = items[closest - 1]) !== undefined &&
+            this._is_localonly_id(prev_item.id)
+        ) {
             // Since we treated all blocks of local ids as their left-most-non-local message
             // for lower_bound purposes, find the real leftmost index (first non-local id)
-            do {
-                potential_closest_matches.push(closest);
-                closest -= 1;
-            } while (closest > 0 && this._is_localonly_id(items[closest - 1].id));
+            potential_closest_matches.push(closest);
+            closest -= 1;
         }
         potential_closest_matches.push(closest);
 
-        if (closest === items.length) {
-            closest = closest - 1;
+        let item = items[closest];
+        if (item === undefined) {
+            item = items[closest - 1];
         } else {
             // Any of the ids that we skipped over (due to them being local-only) might be the
             // closest ID to the desired one, in case there is no exact match.
             potential_closest_matches.unshift(closest - 1);
-            let best_match = items[closest].id;
+            let best_match = item.id;
 
             for (const potential_idx of potential_closest_matches) {
                 if (potential_idx < 0) {
                     continue;
                 }
-                const item = items[potential_idx];
+                const potential_item = items[potential_idx];
 
-                if (item === undefined) {
+                if (potential_item === undefined) {
                     blueslip.warn("Invalid potential_idx: " + potential_idx);
                     continue;
                 }
 
-                const potential_match = item.id;
+                const potential_match = potential_item.id;
                 // If the potential id is the closest to the requested, save that one
                 if (Math.abs(id - potential_match) < Math.abs(best_match - id)) {
                     best_match = potential_match;
-                    closest = potential_idx;
+                    item = potential_item;
                 }
             }
         }
-        return items[closest].id;
+        assert(item !== undefined);
+        return item.id;
     }
 
     advance_past_messages(msg_ids: number[]): void {
