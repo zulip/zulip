@@ -1,14 +1,5 @@
 import type {ExternalAccountFieldData} from "./settings_components";
 
-// TODO/typescript: Move this to submessage.js
-export type Submessage = {
-    id: number;
-    sender_id: number;
-    message_id: number;
-    content: string;
-    msg_type: string;
-};
-
 // TODO/typescript: Move this to server_events
 export type TopicLink = {
     text: string;

@@ -5,8 +5,15 @@ import * as channel from "./channel";
 import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
-import type {Submessage} from "./types";
 import * as widgetize from "./widgetize";
+
+export type Submessage = {
+    id: number;
+    sender_id: number;
+    message_id: number;
+    content: string;
+    msg_type: string;
+};
 
 export const zform_widget_extra_data_schema = z
     .object({

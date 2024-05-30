@@ -2,7 +2,8 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 import * as people from "./people";
-import type {Submessage, TopicLink} from "./types";
+import type {Submessage} from "./submessage";
+import type {TopicLink} from "./types";
 import type {UserStatusEmojiInfo} from "./user_status";
 
 const stored_messages = new Map<number, Message>();
