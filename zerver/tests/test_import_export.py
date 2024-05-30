@@ -1086,6 +1086,54 @@ class RealmImportExportTest(ExportFile):
             Message.objects.filter(realm=imported_realm).count(),
         )
 
+    def test_import_message_edit_history(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        user_mention_message = f"@**King Hamlet|{hamlet.id}** Hello"
+
+        self.login_user(iago)
+        message_id = self.send_stream_message(
+            self.example_user("iago"), "Verona", user_mention_message
+        )
+
+        new_content = "new content"
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": new_content,
+            },
+        )
+        self.assert_json_success(result)
+
+        self.export_realm_and_create_auditlog(realm)
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        imported_message = Message.objects.filter(realm=imported_realm).latest("id")
+        imported_hamlet_id = UserProfile.objects.get(
+            delivery_email=hamlet.delivery_email, realm=imported_realm
+        ).id
+        imported_iago_id = UserProfile.objects.get(
+            delivery_email=iago.delivery_email, realm=imported_realm
+        ).id
+
+        edit_history_json = imported_message.edit_history
+        assert edit_history_json is not None
+        edit_history = orjson.loads(edit_history_json)
+        self.assert_length(edit_history, 1)
+
+        prev_version_of_message = edit_history[0]
+        # Ensure the "user_id" (of the sender) was updated correctly
+        # to the imported id in the data.
+        self.assertEqual(prev_version_of_message["user_id"], imported_iago_id)
+
+        # The mention metadata in the rendered content should be updated.
+        self.assertIn(
+            f'data-user-id="{imported_hamlet_id}"', prev_version_of_message["prev_rendered_content"]
+        )
+
     def get_realm_getters(self) -> List[Callable[[Realm], object]]:
         names = set()
         getters: List[Callable[[Realm], object]] = []
