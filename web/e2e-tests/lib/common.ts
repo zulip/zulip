@@ -49,7 +49,7 @@ export const pm_recipient = {
     },
 };
 
-export const fullname: Record<string, string> = {
+export const fullname = {
     cordelia: "Cordelia, Lear's daughter",
     othello: "Othello, the Moor of Venice",
     hamlet: "King Hamlet",
@@ -237,9 +237,6 @@ export async function get_stream_id(page: Page, stream_name: string): Promise<nu
 }
 
 export async function get_user_id_from_name(page: Page, name: string): Promise<number | undefined> {
-    if (fullname[name] !== undefined) {
-        name = fullname[name];
-    }
     return await page.evaluate((name: string) => zulip_test.get_user_id_from_name(name), name);
 }
 
@@ -247,9 +244,6 @@ export async function get_internal_email_from_name(
     page: Page,
     name: string,
 ): Promise<string | undefined> {
-    if (fullname[name] !== undefined) {
-        name = fullname[name];
-    }
     return await page.evaluate((fullname: string) => {
         const user_id = zulip_test.get_user_id_from_name(fullname);
         return user_id === undefined ? undefined : zulip_test.get_person_by_user_id(user_id).email;

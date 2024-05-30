@@ -203,8 +203,14 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
     await common.check_compose_state(page, {
         content: "Test direct message.",
     });
-    const cordelia_internal_email = await common.get_internal_email_from_name(page, "cordelia");
-    const hamlet_internal_email = await common.get_internal_email_from_name(page, "hamlet");
+    const cordelia_internal_email = await common.get_internal_email_from_name(
+        page,
+        common.fullname.cordelia,
+    );
+    const hamlet_internal_email = await common.get_internal_email_from_name(
+        page,
+        common.fullname.hamlet,
+    );
     await common.pm_recipient.expect(page, `${hamlet_internal_email},${cordelia_internal_email}`);
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),

@@ -41,7 +41,7 @@ async function test_reactivation_confirmation_modal(page: Page, fullname: string
 }
 
 async function test_deactivate_user(page: Page): Promise<void> {
-    const cordelia_user_row = await user_row(page, "cordelia");
+    const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row, {visible: true});
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
     await page.click(cordelia_user_row + " .deactivate");
@@ -62,7 +62,7 @@ async function test_deactivate_user(page: Page): Promise<void> {
 }
 
 async function test_reactivate_user(page: Page): Promise<void> {
-    let cordelia_user_row = await user_row(page, "cordelia");
+    let cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row + ".deactivated_user");
     await page.waitForSelector(cordelia_user_row + " .fa-user-plus");
     await page.click(cordelia_user_row + " .reactivate");
@@ -70,12 +70,12 @@ async function test_reactivate_user(page: Page): Promise<void> {
     await test_reactivation_confirmation_modal(page, common.fullname.cordelia);
 
     await page.waitForSelector(cordelia_user_row + ":not(.deactivated_user)", {visible: true});
-    cordelia_user_row = await user_row(page, "cordelia");
+    cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
 }
 
 async function test_deactivated_users_section(page: Page): Promise<void> {
-    const cordelia_user_row = await user_row(page, "cordelia");
+    const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await test_deactivate_user(page);
 
     // "Deactivated users" section doesn't render just deactivated users until reloaded.

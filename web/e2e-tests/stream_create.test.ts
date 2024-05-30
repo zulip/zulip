@@ -52,8 +52,8 @@ async function test_user_filter_ui(page: Page): Promise<void> {
     // Desdemona should be there by default
     await await_user_visible(page, "desdemona");
 
-    await add_user_to_stream(page, "cordelia");
-    await add_user_to_stream(page, "othello");
+    await add_user_to_stream(page, common.fullname.cordelia);
+    await add_user_to_stream(page, common.fullname.othello);
 
     await page.type(`form#stream_creation_form [name="user_list_filter"]`, "ot", {delay: 100});
     await page.waitForSelector("#create_stream_subscribers", {visible: true});
@@ -64,16 +64,16 @@ async function test_user_filter_ui(page: Page): Promise<void> {
                 .length === 1,
     );
 
-    await await_user_hidden(page, "cordelia");
+    await await_user_hidden(page, common.fullname.cordelia);
     await await_user_hidden(page, "desdemona");
-    await await_user_visible(page, "othello");
+    await await_user_visible(page, common.fullname.othello);
 
     // Clear the filter.
     await clear_ot_filter_with_backspace(page);
 
-    await await_user_visible(page, "cordelia");
+    await await_user_visible(page, common.fullname.cordelia);
     await await_user_visible(page, "desdemona");
-    await await_user_visible(page, "othello");
+    await await_user_visible(page, common.fullname.othello);
 }
 
 async function create_stream(page: Page): Promise<void> {
