@@ -24,7 +24,13 @@ body {
     margin: 0;
     padding: 0;
     font-size: 14px;
-    line-height: calc(20 / 14);
+    /* The line-height used in most of the UI should be at least
+       its legacy value, but should expand with larger base
+       line-height values. */
+    line-height: max(
+        var(--legacy-body-line-height-unitless),
+        var(--base-line-height-unitless)
+    );
     font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
