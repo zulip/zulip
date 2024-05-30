@@ -286,7 +286,7 @@ function format_dm(
 
     let user_circle_class: string | false | undefined;
     let is_bot = false;
-    if (recipient_ids.length === 1) {
+    if (recipient_ids.length === 1 && recipient_ids[0] !== undefined) {
         is_bot = people.get_by_user_id(recipient_ids[0]).is_bot;
         user_circle_class = is_bot ? false : buddy_data.get_user_circle_class(recipient_ids[0]);
     }
@@ -312,7 +312,7 @@ function format_dm(
 function insert_dms(keys_to_insert: string[]): void {
     const sorted_keys = [...dms_dict.keys()];
     // If we need to insert at the top, we do it separately to avoid edge case in loop below.
-    if (keys_to_insert.includes(sorted_keys[0])) {
+    if (sorted_keys[0] !== undefined && keys_to_insert.includes(sorted_keys[0])) {
         $("#inbox-direct-messages-container").prepend(
             $(render_inbox_row(dms_dict.get(sorted_keys[0]))),
         );
@@ -473,7 +473,7 @@ function insert_topics(keys: string[], stream_key: string): void {
     assert(stream_topics_data !== undefined);
     const sorted_keys = [...stream_topics_data.keys()];
     // If we need to insert at the top, we do it separately to avoid edge case in loop below.
-    if (keys.includes(sorted_keys[0])) {
+    if (sorted_keys[0] !== undefined && keys.includes(sorted_keys[0])) {
         const $stream = get_stream_container(stream_key);
         $stream
             .find(".inbox-topic-container")
@@ -1017,7 +1017,9 @@ function set_list_focus(input_key?: string): void {
         }
     }
 
-    $($cols_to_focus[col_focus]).trigger("focus");
+    const col_to_focus = $cols_to_focus[col_focus];
+    assert(col_to_focus !== undefined);
+    $(col_to_focus).trigger("focus");
 }
 
 function focus_filters_dropdown(): void {
@@ -1350,7 +1352,7 @@ function center_focus_if_offscreen(): void {
     // Move focused to row to visible area so to avoid
     // it being under compose box or inbox filters.
     const $elt = $(".inbox-row:focus, .inbox-header:focus");
-    if ($elt.length === 0) {
+    if ($elt[0] === undefined) {
         return;
     }
 
@@ -1377,12 +1379,15 @@ function move_focus_to_visible_area(): void {
         return;
     }
 
-    if (row_focus >= $all_rows.length) {
+    let row = $all_rows[row_focus];
+    if (row === undefined) {
         row_focus = $all_rows.length - 1;
+        row = $all_rows[row_focus];
+        assert(row !== undefined);
         revive_current_focus();
     }
 
-    const elt_pos = $all_rows[row_focus].getBoundingClientRect();
+    const elt_pos = row.getBoundingClientRect();
     if (is_element_visible(elt_pos)) {
         return;
     }
