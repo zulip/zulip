@@ -726,7 +726,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         android_push.assert_called_once_with(
             user_identity,
-            list(reversed(uuid_android_tokens)),
+            uuid_android_tokens,
             {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
             {},
             remote=server,
