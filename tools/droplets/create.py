@@ -188,7 +188,7 @@ def create_droplet(
         name=name,
         region=region,
         image=template_id,
-        size_slug="s-1vcpu-2gb",
+        size_slug="s-2vcpu-4gb",
         user_data=user_data,
         tags=tags,
         backups=False,
