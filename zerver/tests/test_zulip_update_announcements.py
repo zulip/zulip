@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from zerver.actions.create_realm import do_create_realm
 from zerver.data_import.mattermost import do_convert_data
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.message import remove_single_newlines
@@ -416,3 +417,63 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             imported_realm.refresh_from_db()
             self.assertEqual(imported_realm.zulip_update_announcements_level, 6)
             self.assertTrue(zulip_updates_message_query.exists())
+
+    def test_send_zulip_update_announcements_new_realm(self) -> None:
+        with mock.patch(
+            "zerver.lib.zulip_update_announcements.zulip_update_announcements",
+            self.zulip_update_announcements,
+        ):
+            new_realm = do_create_realm(string_id="new_realm", name="new_realm")
+            # New realm created is on the latest level.
+            self.assertEqual(new_realm.zulip_update_announcements_level, 2)
+            assert new_realm.zulip_update_announcements_stream is not None
+
+            # New update added.
+            new_updates = [
+                ZulipUpdateAnnouncement(
+                    level=3,
+                    message="Announcement message 3.",
+                ),
+            ]
+            self.zulip_update_announcements.extend(new_updates)
+
+            now = timezone_now()
+            with time_machine.travel(now, tick=False):
+                send_zulip_update_announcements(skip_delay=False)
+            new_realm.refresh_from_db()
+            notification_bot = get_system_bot(settings.NOTIFICATION_BOT, new_realm.id)
+            stream_messages = Message.objects.filter(
+                realm=new_realm,
+                sender=notification_bot,
+                recipient__type_id=new_realm.zulip_update_announcements_stream.id,
+                date_sent__gte=now,
+            ).order_by("id")
+            # Verify introductory message + update message sent.
+            self.assert_length(stream_messages, 2)
+            self.assertIn("To help you learn about new features", stream_messages[0].content)
+            self.assertEqual(stream_messages[1].content, "Announcement message 3.")
+            self.assertEqual(new_realm.zulip_update_announcements_level, 3)
+
+            new_realm.zulip_update_announcements_stream = None
+            new_realm.save(update_fields=["zulip_update_announcements_stream"])
+
+            # Another new update added.
+            new_updates = [
+                ZulipUpdateAnnouncement(
+                    level=4,
+                    message="Announcement message 4.",
+                ),
+            ]
+            self.zulip_update_announcements.extend(new_updates)
+
+            # Verify update message missed as stream was manually set to None.
+            with time_machine.travel(now + timedelta(days=1), tick=False):
+                send_zulip_update_announcements(skip_delay=False)
+            new_realm.refresh_from_db()
+            stream_messages = Message.objects.filter(
+                realm=new_realm,
+                sender=notification_bot,
+                date_sent__gte=now + timedelta(days=1),
+            ).order_by("id")
+            self.assert_length(stream_messages, 0)
+            self.assertEqual(new_realm.zulip_update_announcements_level, 4)
