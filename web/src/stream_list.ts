@@ -677,7 +677,7 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
     };
 
     const op_stream = filter.operands("channel");
-    if (op_stream.length === 0) {
+    if (op_stream[0] === undefined) {
         return result;
     }
 
