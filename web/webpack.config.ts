@@ -215,6 +215,7 @@ const config = (
                 filename: "5xx.html",
                 template: "html/5xx.html",
                 chunks: ["error-styles"],
+                publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
             }),
         ],
         devServer: {
