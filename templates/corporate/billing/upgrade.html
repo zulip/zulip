@@ -201,10 +201,9 @@
                     <div id="license-automatic-section" class="input-box upgrade-page-field license-management-section">
                         <p class="not-editable-realm-field">
                             {% if fixed_price_plan %}
-                                This is a fixed-price plan.
-                            {% endif %}
+                            This is a fixed-price plan. You will be contacted by Zulip Sales a couple of months before the end of plan to discuss plan renewal.
+                            {% else %}
                             Your subscription will renew automatically.
-                            {% if not fixed_price_plan %}
                             Your bill will vary based on the number of active users in your organization. You can also
                             <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}">purchase a fixed number of licenses</a> instead. See
                             <a target="_blank" href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
