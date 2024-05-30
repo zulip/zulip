@@ -243,6 +243,7 @@ export class DropdownWidget {
 
                     function first_item(): JQuery {
                         const first_item = list_items[0];
+                        assert(first_item !== undefined);
                         return $popper.find(`.list-item[data-unique-id="${first_item.unique_id}"]`);
                     }
 
