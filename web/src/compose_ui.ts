@@ -144,7 +144,7 @@ export function set_focus(opts: ComposeTriggeredOptions): void {
 }
 
 export function smart_insert_inline($textarea: JQuery<HTMLTextAreaElement>, syntax: string): void {
-    function is_space(c: string): boolean {
+    function is_space(c: string | undefined): boolean {
         return c === " " || c === "\t" || c === "\n";
     }
 
@@ -333,7 +333,7 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
         });
         const recipient_names = util.format_array_as_list(recipient_parts, "long", "conjunction");
 
-        if (users.length === 1) {
+        if (users.length === 1 && users[0] !== undefined) {
             // If it's a single user, display status text if available
             const user = users[0];
             const status = user_status.get_status_text(user.user_id);
@@ -896,8 +896,9 @@ export function format_text(
             text.slice(range.start + 1, range.end - 1).includes("](");
 
         if (is_selection_link()) {
-            const description = selected_text.split("](")[0].slice(1);
-            let url = selected_text.split("](")[1].slice(0, -1);
+            const i = selected_text.indexOf("](", 1);
+            const description = selected_text.slice(1, i);
+            let url = selected_text.slice(i + "](".length, -1);
             url = url_to_retain(url);
             text =
                 text.slice(0, range.start) +
