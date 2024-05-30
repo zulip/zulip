@@ -44,7 +44,7 @@ export class MessageListData {
     _selected_id: number;
     predicate?: (message: Message) => boolean;
     // This is a callback that is called when messages are added to the message list.
-    add_messages_callback?: (messages: Message[]) => void;
+    add_messages_callback?: (messages: Message[], recipient_order_changed: boolean) => void;
 
     // MessageListData is a core data structure for keeping track of a
     // contiguous block of messages matching a given narrow that can
@@ -315,7 +315,14 @@ export class MessageListData {
         }
 
         if (this.add_messages_callback) {
-            this.add_messages_callback(messages);
+            // If we only added old messages, last message for any of the existing recipients didn't change.
+            // Although, it maybe have resulted in new recipients being added which should be handled by the caller.
+            const recipient_order_changed = !(
+                top_messages.length > 0 &&
+                bottom_messages.length === 0 &&
+                interior_messages.length === 0
+            );
+            this.add_messages_callback(messages, recipient_order_changed);
         }
 
         const info = {
