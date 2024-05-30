@@ -100,12 +100,12 @@ export function translate_emoticons_to_names({
         const prev_char = str[offset - 1];
         const next_char = str[offset + match.length];
 
-        const symbol_at_start = terminal_symbols.includes(prev_char);
-        const symbol_at_end = terminal_symbols.includes(next_char);
-        const non_space_at_start = symbols_except_space.includes(prev_char);
-        const non_space_at_end = symbols_except_space.includes(next_char);
-        const valid_start = symbol_at_start || offset === 0;
-        const valid_end = symbol_at_end || offset === str.length - match.length;
+        const non_space_at_start =
+            prev_char !== undefined && symbols_except_space.includes(prev_char);
+        const non_space_at_end =
+            next_char !== undefined && symbols_except_space.includes(next_char);
+        const valid_start = prev_char === undefined || terminal_symbols.includes(prev_char);
+        const valid_end = next_char === undefined || terminal_symbols.includes(next_char);
 
         if (non_space_at_start && non_space_at_end) {
             // Hello!:)?
@@ -417,15 +417,11 @@ export function get_topic_links(topic: string): TopicLink[] {
     for (const [pattern, {url_template, group_number_to_name}] of get_linkifier_map().entries()) {
         let match;
         while ((match = pattern.exec(topic)) !== null) {
-            const matched_groups = match.slice(1);
-            let i = 0;
-            const template_context: Record<string, string> = {};
-            while (i < matched_groups.length) {
-                const matched_group = matched_groups[i];
-                const current_group = i + 1;
-                template_context[group_number_to_name[current_group]] = matched_group;
-                i += 1;
-            }
+            const template_context = Object.fromEntries(
+                match
+                    .slice(1)
+                    .map((matched_group, i) => [group_number_to_name[i + 1], matched_group]),
+            );
             const link_url = url_template.expand(template_context);
             // We store the starting index as well, to sort the order of occurrence of the links
             // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
@@ -566,15 +562,9 @@ function handleLinkifier({
     const item = get_linkifier_map().get(pattern);
     assert(item !== undefined);
     const {url_template, group_number_to_name} = item;
-
-    let current_group = 1;
-    const template_context: Record<string, LinkifierMatch> = {};
-
-    for (const match of matches) {
-        template_context[group_number_to_name[current_group]] = match;
-        current_group += 1;
-    }
-
+    const template_context = Object.fromEntries(
+        matches.map((match, i) => [group_number_to_name[i + 1], match]),
+    );
     return url_template.expand(template_context);
 }
 
