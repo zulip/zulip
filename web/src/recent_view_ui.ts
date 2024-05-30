@@ -289,6 +289,7 @@ function get_row_type(row: number): string {
 
     const current_list = topics_widget.get_current_list();
     const current_row = current_list[row];
+    assert(current_row !== undefined);
     return current_row.type;
 }
 
@@ -1318,7 +1319,9 @@ function is_focus_at_last_table_row(): boolean {
 
 function has_unread(row: number): boolean {
     assert(topics_widget !== undefined);
-    const last_msg_id = topics_widget.get_current_list()[row].last_msg_id;
+    const current_row = topics_widget.get_current_list()[row];
+    assert(current_row !== undefined);
+    const last_msg_id = current_row.last_msg_id;
     const last_msg = message_store.get(last_msg_id);
     assert(last_msg !== undefined);
     if (last_msg.type === "stream") {
