@@ -472,6 +472,7 @@ export function process_unread_messages_event({
     for (const message_id of message_ids) {
         const message = message_store.get(message_id);
         const message_info = message_details[message_id];
+        assert(message_info !== undefined);
         let mentioned_me_directly;
 
         if (message) {
