@@ -568,7 +568,7 @@ def remote_server_notify_push(
             user_identity.filter_q(),
             kind=RemotePushDeviceToken.GCM,
             server=server,
-        )
+        ).order_by("id")
     )
     if android_devices and user_id is not None and user_uuid is not None:
         android_devices = delete_duplicate_registrations(
@@ -580,7 +580,7 @@ def remote_server_notify_push(
             user_identity.filter_q(),
             kind=RemotePushDeviceToken.APNS,
             server=server,
-        )
+        ).order_by("id")
     )
     if apple_devices and user_id is not None and user_uuid is not None:
         apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
