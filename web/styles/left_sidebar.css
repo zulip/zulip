@@ -409,6 +409,7 @@ ul.filters {
     list-style-type: none;
     margin-left: 0;
     color: hsl(0deg 0% 20% / 100%);
+    line-height: var(--line-height-sidebar-row);
 
     & a {
         color: inherit;
@@ -975,7 +976,7 @@ li.top_left_scheduled_messages {
     overflow-x: hidden;
     overflow-x: clip;
     text-overflow: ellipsis;
-    padding: 1px $before_unread_count_padding 1px 0;
+    padding: 0 $before_unread_count_padding 0 0;
 }
 
 .conversation-partners-list {
