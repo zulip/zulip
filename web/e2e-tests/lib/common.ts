@@ -139,8 +139,7 @@ export async function fill_form(
     async function is_dropdown(page: Page, name: string): Promise<boolean> {
         return (await page.$(`select[name="${CSS.escape(name)}"]`)) !== null;
     }
-    for (const name of Object.keys(params)) {
-        const value = params[name];
+    for (const [name, value] of Object.entries(params)) {
         if (typeof value === "boolean") {
             await page.$eval(
                 `${form_selector} input[name="${CSS.escape(name)}"]`,
