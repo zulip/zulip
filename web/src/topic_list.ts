@@ -54,7 +54,7 @@ export function zoom_out(): void {
 
     const stream_ids = [...active_widgets.keys()];
 
-    if (stream_ids.length !== 1) {
+    if (stream_ids.length !== 1 || stream_ids[0] === undefined) {
         blueslip.error("Unexpected number of topic lists to zoom out.");
         return;
     }
@@ -237,6 +237,7 @@ export function clear_topic_search(e: JQuery.Event): void {
         const stream_ids = [...active_widgets.keys()];
 
         const stream_id = stream_ids[0];
+        assert(stream_id !== undefined);
         const widget = active_widgets.get(stream_id);
         assert(widget !== undefined);
         const parent_widget = widget.get_parent();
@@ -258,7 +259,7 @@ export function active_stream_id(): number | undefined {
 export function get_stream_li(): JQuery | undefined {
     const widgets = [...active_widgets.values()];
 
-    if (widgets.length !== 1) {
+    if (widgets.length !== 1 || widgets[0] === undefined) {
         return undefined;
     }
 
