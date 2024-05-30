@@ -18,7 +18,7 @@ import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
-export type ProfileData = {
+export type ProfileDatum = {
     value: string;
     rendered_value?: string | undefined;
 };
@@ -41,7 +41,7 @@ export type User = {
     timezone: string;
     avatar_url?: string | null;
     avatar_version: number;
-    profile_data: Record<number, ProfileData>;
+    profile_data: Record<number, ProfileDatum>;
     // used for fake user objects.
     is_missing_server_data?: boolean;
     // used for inaccessible user objects.
@@ -1660,7 +1660,7 @@ export function set_full_name(person_obj: User, new_full_name: string): void {
 
 export function set_custom_profile_field_data(
     user_id: number,
-    field: {id: number} & ProfileData,
+    field: {id: number} & ProfileDatum,
 ): void {
     if (field.id === undefined) {
         blueslip.error("Trying to set undefined field id");
@@ -1699,7 +1699,7 @@ export function my_current_user_id(): number {
     return my_user_id;
 }
 
-export function my_custom_profile_data(field_id: number): ProfileData | null | undefined {
+export function my_custom_profile_data(field_id: number): ProfileDatum | null | undefined {
     if (field_id === undefined) {
         blueslip.error("Undefined field id");
         return undefined;
@@ -1710,7 +1710,7 @@ export function my_custom_profile_data(field_id: number): ProfileData | null | u
 export function get_custom_profile_data(
     user_id: number,
     field_id: number,
-): ProfileData | null | undefined {
+): ProfileDatum | null | undefined {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
@@ -1722,13 +1722,13 @@ export function get_custom_profile_data(
 export function get_custom_fields_by_type(
     user_id: number,
     field_type: number,
-): ProfileData[] | null {
+): ProfileDatum[] | null {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
         return null;
     }
-    const filteredProfileData: ProfileData[] = [];
+    const filteredProfileData: ProfileDatum[] = [];
     for (const field of realm.custom_profile_fields) {
         if (field.type === field_type) {
             filteredProfileData.push(profile_data[field.id]);
