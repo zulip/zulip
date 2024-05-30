@@ -264,6 +264,7 @@ li.show-more-topics {
         font-weight: 400;
         margin-left: 0;
         margin-bottom: 0;
+        line-height: var(--line-height-sidebar-row);
 
         & span.fa-group {
             font-size: 90%;
@@ -701,10 +702,6 @@ li.top_left_scheduled_messages {
 
 .conversation-partners {
     grid-area: row-content;
-    /* Set an 18px line-height to better vertically
-       center user circles and icons (both of which
-       have even heights). */
-    line-height: 18px;
     overflow: hidden;
     text-overflow: ellipsis;
     /* Use an inline grid to provide a modern layout
@@ -1086,8 +1083,6 @@ li.topic-list-item {
 
 .dm-box {
     grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
-    /* This padding maintains a 22px height on DM rows. */
-    padding: 2px 0;
 
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
