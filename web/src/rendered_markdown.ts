@@ -296,7 +296,11 @@ export const update_elements = ($content: JQuery): void => {
             // popover listing the options.
             let title = $t({defaultMessage: "View in playground"});
             const $view_in_playground_button = $buttonContainer.find(".code_external_link");
-            if (playground_info && playground_info.length === 1) {
+            if (
+                playground_info &&
+                playground_info.length === 1 &&
+                playground_info[0] !== undefined
+            ) {
                 title = $t(
                     {defaultMessage: "View in {playground_name}"},
                     {playground_name: playground_info[0].name},
@@ -327,7 +331,7 @@ export const update_elements = ($content: JQuery): void => {
         $content
             .find(".emoji")
             .text(function () {
-                const text = $(this).attr("title");
+                const text = $(this).attr("title") ?? "";
                 return ":" + text + ":";
             })
             .contents()
