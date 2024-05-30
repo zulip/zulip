@@ -1,12 +1,13 @@
-// Mark this as a module for ESLint and Webpack.
-export {};
+import assert from "minimalistic-assert";
 
 function get_new_rand(old_random_int: number, max: number): number {
+    assert(max >= 2);
     const random_int = Math.floor(Math.random() * max);
     return random_int === old_random_int ? get_new_rand(random_int, max) : random_int;
 }
 
 function get_random_item_from_array<T>(array: T[]): T {
+    assert(array.length >= 1);
     return array[Math.floor(Math.random() * array.length)];
 }
 
