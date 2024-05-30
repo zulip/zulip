@@ -621,7 +621,7 @@ export function pm_perma_link(message: Message): string | undefined {
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
-    if (!user_ids) {
+    if (user_ids?.[0] === undefined) {
         return undefined;
     }
 
@@ -710,7 +710,7 @@ export function emails_to_slug(emails_string: string): string | undefined {
 
     const emails = emails_string.split(",");
 
-    if (emails.length === 1) {
+    if (emails.length === 1 && emails[0] !== undefined) {
         const person = get_by_email(emails[0]);
         assert(person !== undefined, "Unknown person in emails_to_slug");
         const name = person.full_name;
@@ -807,6 +807,7 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
     if (
         recipient_ids.length === 1 &&
+        recipient_ids[0] !== undefined &&
         (is_valid_bot_user(recipient_ids[0]) || is_my_user_id(recipient_ids[0]))
     ) {
         return true;
