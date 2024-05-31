@@ -24,8 +24,8 @@ from zerver.models.groups import SystemGroups
 from zerver.models.users import UserProfile
 
 if TYPE_CHECKING:
-    # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
-    from django.contrib.auth.backends import ModelBackend
+    # We use BaseBackend only for typing. Importing it otherwise causes circular dependency.
+    from django.contrib.auth.backends import BaseBackend
 
     from zerver.models import Stream
 
@@ -37,14 +37,13 @@ SECONDS_PER_DAY = 86400
 # these values cannot change in a running production system, but do
 # regularly change within unit tests; we address the latter by calling
 # clear_supported_auth_backends_cache in our standard tearDown code.
-supported_backends: Optional[List["ModelBackend"]] = None
+supported_backends: Optional[List["BaseBackend"]] = None
 
 
-def supported_auth_backends() -> List["ModelBackend"]:
+def supported_auth_backends() -> List["BaseBackend"]:
     global supported_backends
     # Caching temporarily disabled for debugging
     supported_backends = django.contrib.auth.get_backends()
-    assert supported_backends is not None
     return supported_backends
 
 
