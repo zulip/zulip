@@ -35,6 +35,7 @@ from zerver.models import (
     Stream,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import (
     CommonPolicyEnum,
@@ -134,11 +135,23 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
 
 
 @transaction.atomic(savepoint=False)
-def set_default_for_realm_permission_group_settings(realm: Realm) -> None:
+def set_default_for_realm_permission_group_settings(
+    realm: Realm, group_settings_defaults_for_org_types: Optional[Dict[str, Dict[int, str]]] = None
+) -> None:
     system_groups_dict = get_role_based_system_groups_dict(realm)
 
     for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         group_name = permission_configuration.default_group_name
+
+        # Below code updates the group_name if the setting default depends on org_type.
+        if (
+            group_settings_defaults_for_org_types is not None
+            and setting_name in group_settings_defaults_for_org_types
+        ):
+            setting_org_type_defaults = group_settings_defaults_for_org_types[setting_name]
+            if realm.org_type in setting_org_type_defaults:
+                group_name = setting_org_type_defaults[realm.org_type]
+
         setattr(realm, setting_name, system_groups_dict[group_name].usergroup_ptr)
 
     realm.save(update_fields=list(Realm.REALM_PERMISSION_GROUP_SETTINGS.keys()))
@@ -279,7 +292,16 @@ def do_create_realm(
         )
 
         create_system_user_groups_for_realm(realm)
-        set_default_for_realm_permission_group_settings(realm)
+
+        group_settings_defaults_for_org_types = {
+            "can_create_public_channel_group": {
+                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
+                Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
+            }
+        }
+        set_default_for_realm_permission_group_settings(
+            realm, group_settings_defaults_for_org_types
+        )
 
         RealmAuthenticationMethod.objects.bulk_create(
             [

@@ -106,6 +106,11 @@ class RealmTest(ZulipTestCase):
             org_type=Realm.ORG_TYPES["education_nonprofit"]["id"],
         )
 
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
+
         self.assertEqual(realm.create_public_stream_policy, CommonPolicyEnum.ADMINS_ONLY)
         self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
@@ -122,6 +127,11 @@ class RealmTest(ZulipTestCase):
             "education_org_name",
             org_type=Realm.ORG_TYPES["education"]["id"],
         )
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
         self.assertEqual(realm.create_public_stream_policy, CommonPolicyEnum.ADMINS_ONLY)
         self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
