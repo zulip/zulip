@@ -221,7 +221,7 @@ li.show-more-topics {
 
     #private_messages_section_header {
         grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
-        grid-template-rows: 24px;
+        grid-template-rows: var(--line-height-sidebar-row-prominent);
         /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
            value and the styles dependent on it so that this kind of
            1990s layout shenanigans is made unnecessary. */
@@ -787,8 +787,7 @@ li.top_left_scheduled_messages {
     grid-template-columns:
         0 15px minmax(0, 0.5fr) minmax(0, 1fr)
         30px 12px;
-    /* Base height on 24px icon-target area from Vlad's design. */
-    grid-template-rows: 24px;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
     /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
        value and the styles dependent on it so that this kind of
        1990s layout shenanigans is made unnecessary. */
@@ -1161,7 +1160,7 @@ li.topic-list-item {
     top: 0;
     z-index: 2;
     grid-template-columns: 0 0 minmax(0, 1fr) max-content 0 42px;
-    grid-template-rows: 24px;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
     padding-top: $sections_vertical_gutter;
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
@@ -1188,7 +1187,7 @@ li.topic-list-item {
 #streams_header {
     grid-template-columns: 0 0 minmax(0, 1fr) minmax(17px, max-content) 30px 12px;
     /* Keep the stream-search area rows collapsed. */
-    grid-template-rows: 24px 0 0;
+    grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
     padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
     position: sticky;
@@ -1203,7 +1202,7 @@ li.topic-list-item {
         /* Open up the stream-search rows. The 10px
            row maintains space with the streams list
            below. */
-        grid-template-rows: 24px 28px 10px;
+        grid-template-rows: var(--line-height-sidebar-row-prominent) 28px 10px;
     }
 
     .left-sidebar-title {
