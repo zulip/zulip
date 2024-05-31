@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 262
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (272, 2)  # last bumped 2024-05-26 for upgrading Transifex CLI
+PROVISION_VERSION = (280, 0)  # last bumped 2024-05-31 for upgrading Python requirements
