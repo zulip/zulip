@@ -873,11 +873,15 @@ ul {
     /* The emoji popover has a different background color for the
        header and footer, so we customize the arrow to match this color. */
     .tippy-box[data-placement="top"] .tippy-arrow::before {
-        border-top-color: hsl(0deg 0% 93%);
+        border-top-color: var(--color-border-emoji-picker-tippy-arrow);
     }
 
     .tippy-box[data-placement="bottom"] .tippy-arrow::before {
-        border-bottom-color: hsl(0deg 0% 93%);
+        border-bottom-color: var(--color-border-emoji-picker-tippy-arrow);
+    }
+
+    .tippy-box[data-placement="left"] .tippy-arrow::before {
+        border-left-color: var(--color-border-emoji-picker-tippy-arrow);
     }
 }
 
