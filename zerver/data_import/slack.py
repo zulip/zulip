@@ -48,6 +48,7 @@ from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.storage import static_path
 from zerver.lib.upload.base import resize_logo, sanitize_name
+from zerver.lib.url_encoding import near_stream_message_url
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -1010,7 +1011,22 @@ def channel_message_to_zerver_message(
                 }
             elif thread_ts_str in thread_map:
                 topic_name = thread_map[thread_ts_str].get("topic_name", topic_name)
-                # TODO: Append quote-and-reply to the original message for the first thread message
+                # The first thread reply will have quote-and-reply to the original
+                # thread mesagge / thread head in the main import topic.
+                if thread_map[thread_ts_str]["thread_length"] == 1:
+                    message_link = near_stream_message_url()
+                    content = """
+                    `{thread_head_sender}` [said]({message_link}):
+                    ```quote
+                    {thread_head_message}
+                    ```
+                    {first_thread_reply}
+                    """.format(
+                        thread_head_sender="",
+                        message_link=message_link,
+                        thread_head_message="",
+                        first_thread_reply=content,
+                    )
                 thread_map[thread_ts_str]["thread_length"] += 1
             else:
                 topic_name = (
