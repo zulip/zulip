@@ -315,7 +315,7 @@ def do_increment_logging_stat(
     if table == RealmCount:
         assert isinstance(model_object_for_bucket, Realm)
         id_args: Dict[
-            str, Optional[Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"]]
+            str, Optional[Union[Realm, UserProfile, Stream, RemoteRealm, RemoteZulipServer]]
         ] = {"realm": model_object_for_bucket}
     elif table == UserCount:
         assert isinstance(model_object_for_bucket, UserProfile)
