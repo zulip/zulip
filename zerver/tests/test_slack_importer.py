@@ -1018,6 +1018,14 @@ class SlackImporter(ZulipTestCase):
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
+        realm_id = 2
+        realm_subdomain = "test-realm"
+        time = float(timezone_now().timestamp())
+        test_realm: list[dict[str, Any]] = build_zerver_realm(
+            realm_id, realm_subdomain, time, "Slack"
+        )
+        realm = dict(zerver_realm=test_realm)
+
         (
             zerver_message,
             zerver_usermessage,
@@ -1026,6 +1034,7 @@ class SlackImporter(ZulipTestCase):
             reaction,
         ) = channel_message_to_zerver_message(
             1,
+            realm,
             user_data,
             slack_user_id_to_zulip_user_id,
             slack_recipient_name_to_zulip_recipient_id,
@@ -1159,6 +1168,14 @@ class SlackImporter(ZulipTestCase):
                 "channel_name": "random",
             },
             {
+                "text": "another reply !",
+                "user": "U061A1R2R",
+                "ts": "1439869494.000008",
+                # A reply to thread 2
+                "thread_ts": "1439868294.000008",
+                "channel_name": "random",
+            },
+            {
                 "text": "original message for the third thread",
                 "user": "U061A5N1G",
                 "ts": "1439868295.000008",
@@ -1186,6 +1203,14 @@ class SlackImporter(ZulipTestCase):
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
+        realm_id = 2
+        realm_subdomain = "test-realm"
+        time = float(timezone_now().timestamp())
+        test_realm: list[dict[str, Any]] = build_zerver_realm(
+            realm_id, realm_subdomain, time, "Slack"
+        )
+        realm = dict(zerver_realm=test_realm)
+
         (
             zerver_message,
             zerver_usermessage,
@@ -1194,6 +1219,7 @@ class SlackImporter(ZulipTestCase):
             reaction,
         ) = channel_message_to_zerver_message(
             1,
+            realm,
             user_data,
             slack_user_id_to_zulip_user_id,
             slack_recipient_name_to_zulip_recipient_id,
@@ -1210,7 +1236,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 7)
+        self.assert_length(zerver_message, 8)
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
@@ -1225,30 +1251,50 @@ class SlackImporter(ZulipTestCase):
         original_thread1_message = (
             f"message body text\n\n*1 reply in #**random>{thread1_topic_name}***"
         )
+        original_thread1_message_id = zerver_message[1]["id"]
         self.assertEqual(zerver_message[1]["content"], original_thread1_message)
 
         # Original thread message will be sent to the main import topic.
         self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], main_import_topic)
-
-        # Thread reply is in the correct thread topic
-        self.assertEqual(zerver_message[2]["content"], "random")
+        # Thread reply is in the correct thread topic and its first message quotes
+        # back to the original thread message in the main import topic.
+        thread1_reply_1 = f"""
+@_**Jane** [said](http://test-realm.testserver/#narrow/stream/2-random/topic/imported.20from.20Slack/near/{original_thread1_message_id}):
+```quote
+message body text
+```
+random
+"""
+        self.assertEqual(zerver_message[2]["content"], thread1_reply_1)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], thread1_topic_name)
 
         # A new thread with a different date from 2015-06-12, starts the counter from 1.
         thread2_topic_name = "2015-08-18 Slack thread 1"
-        original_thread2_message = f"random\n\n*1 reply in #**random>{thread2_topic_name}***"
+        original_thread2_message = f"random\n\n*2 replies in #**random>{thread2_topic_name}***"
+        original_thread2_message_id = zerver_message[3]["id"]
         self.assertEqual(zerver_message[3]["content"], original_thread2_message)
         self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], main_import_topic)
-        # TODO: the first reply will have a quote-and-reply to the original thread message
-        self.assertEqual(zerver_message[4]["content"], "replying to the second thread :)")
+        thread2_reply_1 = f"""
+@_**Jane** [said](http://test-realm.testserver/#narrow/stream/2-random/topic/imported.20from.20Slack/near/{original_thread2_message_id}):
+```quote
+random
+```
+replying to the second thread :)
+"""
+        self.assertEqual(zerver_message[4]["content"], thread2_reply_1)
         self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], thread2_topic_name)
+
+        # Replies after the first thread reply doesn't have any special formatting.
+        thread2_reply_2 = "another reply !"
+        self.assertEqual(zerver_message[5]["content"], thread2_reply_2)
+        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], thread2_topic_name)
 
         # A new thread with a different timestamp, but the same date as 2015-08-18, starts the
         # counter from 2.
         thread3_topic_name = "2015-08-18 Slack thread 2"
         original_thread3_message = f"original message for the third thread\n\n*1 reply in #**random>{thread3_topic_name}***"
-        self.assertEqual(zerver_message[5]["content"], original_thread3_message)
-        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], main_import_topic)
+        self.assertEqual(zerver_message[6]["content"], original_thread3_message)
+        self.assertEqual(zerver_message[6][EXPORT_TOPIC_NAME], main_import_topic)
         self.assertEqual(
             zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
         )

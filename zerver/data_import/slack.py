@@ -45,6 +45,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    get_zulip_mention_for_slack_user,
 )
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -52,6 +53,7 @@ from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import resize_logo
 from zerver.lib.upload import sanitize_name
+from zerver.lib.url_encoding import near_stream_message_url
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -71,6 +73,14 @@ SlackToZulipRecipientT: TypeAlias = dict[str, int]
 SlackBotEmailT = TypeVar("SlackBotEmailT", bound="SlackBotEmail")
 
 MAIN_IMPORT_TOPIC = "imported from Slack"
+
+FIRST_THREAD_REPLY_TEMPLATE = """
+{thread_sender_str} [said]({thread_head_near_link}):
+```quote
+{thread_head_message}
+```
+{first_thread_reply}
+"""
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
@@ -773,6 +783,7 @@ def convert_slack_workspace_messages(
             reactions,
         ) = channel_message_to_zerver_message(
             realm_id,
+            realm,
             users,
             slack_user_id_to_zulip_user_id,
             slack_recipient_name_to_zulip_recipient_id,
@@ -859,6 +870,7 @@ def get_messages_iterator(
 
 def channel_message_to_zerver_message(
     realm_id: int,
+    realm: ZerverFieldsT,
     users: list[ZerverFieldsT],
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
     slack_recipient_name_to_zulip_recipient_id: SlackToZulipRecipientT,
@@ -895,6 +907,10 @@ def channel_message_to_zerver_message(
     total_skipped_user_messages = 0
     thread_counter: dict[str, int] = defaultdict(int)
     thread_map: dict[str, dict[str, Any]] = {}
+
+    realm_properties = dict(**realm["zerver_realm"][0])
+    realm_model = Realm(**realm_properties)
+
     for message in all_messages:
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
@@ -1009,16 +1025,34 @@ def channel_message_to_zerver_message(
                 thread_topic_name = f"{thread_date} Slack thread {count}"
                 thread_topic_link_str = f"#**{import_channel_name}>{thread_topic_name}**"
 
+                message_dict = {
+                    "type": "stream" if is_private else "",
+                    "id": message_id,
+                    "stream_id": recipient_id,
+                    "topic": topic_name,
+                    "display_recipient": import_channel_name,
+                }
+
                 thread_map[thread_ts_str] = {
                     "thread_topic_name": thread_topic_name,
                     "thread_head_message_index": len(zerver_message),
                     "thread_topic_link_str": thread_topic_link_str,
                     "thread_length": 0,
+                    "thread_head_near_link": near_stream_message_url(realm_model, message_dict),
+                    "thread_sender_str": get_zulip_mention_for_slack_user(
+                        slack_user_id, None, users, True
+                    ),
+                    "thread_head_message": content,
                 }
+
             elif thread_ts_str in thread_map:
+                # The first thread reply will quote and reply to the original
+                # thread message/thread head in the main import topic.
                 thread_metadata = thread_map[thread_ts_str]
                 topic_name = thread_metadata.get("thread_topic_name", topic_name)
-                # TODO: Append quote-and-reply to the original message for the first thread message
+                if thread_metadata["thread_length"] == 0:
+                    thread_metadata.update({"first_thread_reply": content})
+                    content = FIRST_THREAD_REPLY_TEMPLATE.format(**thread_metadata)
                 thread_metadata["thread_length"] += 1
             else:
                 # This occurs when the original thread message isn't imported,
