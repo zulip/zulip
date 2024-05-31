@@ -26,6 +26,7 @@ from typing_extensions import Annotated
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
     COUNT_STATS,
+    LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER,
     REMOTE_INSTALLATION_COUNT_STATS,
     do_increment_logging_stat,
 )
@@ -1178,6 +1179,17 @@ def remote_server_post_analytics(
 
     realm_id_to_remote_realm = build_realm_id_to_remote_realm_dict(server, realms)
 
+    # Note that due to skipping rows from the remote server which
+    # match LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER, we may
+    # theoretically choose to omit the last RemoteRealmCount (or
+    # InstallationCount, below) row sent by the remote server, causing
+    # them to attempt to re-send that row repeatedlly.  Since the last
+    # CountStat is not currently a skipped type, this is, in practice,
+    # unlikely to occur.
+    #
+    # TODO: Record the high-water RealmCount and InstallationCount's
+    # `remote_id` values on the RemoteServer, rather than computing
+    # them via get_last_id_from_server
     remote_realm_counts = [
         RemoteRealmCount(
             remote_realm=realm_id_to_remote_realm.get(row.realm),
@@ -1190,6 +1202,7 @@ def remote_server_post_analytics(
             value=row.value,
         )
         for row in realm_counts
+        if row.property not in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
     ]
     batch_create_table_data(server, RemoteRealmCount, remote_realm_counts)
 
@@ -1203,6 +1216,7 @@ def remote_server_post_analytics(
             value=row.value,
         )
         for row in installation_counts
+        if row.property not in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
     ]
     batch_create_table_data(server, RemoteInstallationCount, remote_installation_counts)
 

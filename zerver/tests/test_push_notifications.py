@@ -2098,7 +2098,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             "POST",
             "server/analytics",
             {
-                "realm_counts": '[{"id":1,"property":"invites_sent::day","subgroup":null,"end_time":574300800.0,"value":5,"realm":2}]',
+                "realm_counts": '[{"id":1,"property":"messages_sent:is_bot:hour","subgroup":"false","end_time":574300800.0,"value":5,"realm":2}]',
                 "installation_counts": "[]",
                 "version": '"2.0.6+git"',
             },
