@@ -5,10 +5,12 @@ import shutil
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
+from dataclasses import dataclass
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
 import requests
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.forms.models import model_to_dict
@@ -851,3 +853,29 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
             f"Invalid email format, please fix the following email(s) and try again: {details}"
         )
         raise ValidationError(error_log)
+
+
+@dataclass
+class MaxContentLengths:
+    reply_content: int
+    quoted_content: int
+
+
+def get_length_measurements_for_a_quote_and_reply(
+    reply_content_length: int,
+    template_syntax_buffer: int = 200,
+    quoted_content_length_limit: int = 1000,
+    max_message_length: int = settings.MAX_MESSAGE_LENGTH,
+) -> MaxContentLengths:
+    min_quoted_content_length = template_syntax_buffer + quoted_content_length_limit
+
+    if reply_content_length <= max_message_length - min_quoted_content_length:
+        return MaxContentLengths(
+            reply_content=reply_content_length,
+            quoted_content=max_message_length - reply_content_length,
+        )
+    else:
+        return MaxContentLengths(
+            reply_content=max_message_length - min_quoted_content_length,
+            quoted_content=min_quoted_content_length,
+        )
