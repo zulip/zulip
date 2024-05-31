@@ -1,0 +1,12 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+<div class="error_page">
+    <div class="container">
+        <div class="row-fluid">
+            {% block error_page_content %}
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

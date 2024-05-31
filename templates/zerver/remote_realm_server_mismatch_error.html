@@ -1,4 +1,4 @@
-{% extends "zerver/portico.html" %}
+{% extends "zerver/portico_error_page.html" %}
 
 {% block title %}
 <title>{{ _("Error") }} | Zulip</title>
@@ -6,26 +6,20 @@
 
 {% block portico_class_name %}error{% endblock %}
 
-{% block portico_content %}
-<div class="error_page">
-    <div class="container">
-        <div class="row-fluid">
-            <img src="{{ static('images/errors/400art.svg') }}" alt=""/>
-            <div class="errorbox">
-                <div class="errorcontent">
-                    <h1 class="lead">{{ _("Unexpected Zulip server registration") }}</h1>
-                    <p>
-                        {% trans %}
-                        Your Zulip organization is registered as associated with a
-                        different Zulip server installation.
+{% block error_page_content %}
+<img src="{{ static('images/errors/400art.svg') }}" alt=""/>
+<div class="errorbox">
+    <div class="errorcontent">
+        <h1 class="lead">{{ _("Unexpected Zulip server registration") }}</h1>
+        <p>
+            {% trans %}
+            Your Zulip organization is registered as associated with a
+            different Zulip server installation.
 
-                        Please <a href="mailto:{{ support_email }}">contact Zulip support</a>
-                        for assistance in resolving this issue.
-                        {% endtrans %}
-                    </p>
-                </div>
-            </div>
-        </div>
+            Please <a href="mailto:{{ support_email }}">contact Zulip support</a>
+            for assistance in resolving this issue.
+            {% endtrans %}
+        </p>
     </div>
 </div>
 {% endblock %}
