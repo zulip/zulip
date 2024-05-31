@@ -59,6 +59,7 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
+from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.models import (
     Message,
     PreregistrationRealm,
@@ -1490,8 +1491,26 @@ message body text
         self.assertEqual(zerver_message[1]["content"], expected_thread_1_message_1_content)
         self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
 
-        # Thread reply is in the correct thread topic
-        self.assertEqual(zerver_message[2]["content"], "random")
+        # Thread reply is in the correct thread topic and its first message quotes
+        # back to the original thread message in the main import topic.
+        thread_1_message_1_id = zerver_message[1]["id"]
+        thread_1_message_2_content = "random"
+        thread_1_channel_id = zerver_message[1]["recipient"]
+        link_syntax_for_thread_1_message_1 = get_message_link_syntax(
+            thread_1_channel_id,
+            "random",
+            MAIN_SLACK_IMPORT_TOPIC,
+            thread_1_message_1_id,
+        )
+
+        expected_thread_1_message_2_content = f"""
+@_**Jane** said {link_syntax_for_thread_1_message_1}:
+``` quote
+message body text
+```
+{thread_1_message_2_content}
+"""
+        self.assertEqual(zerver_message[2]["content"], expected_thread_1_message_2_content)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
     def test_convert_thread_topic_name_cut_off(self) -> None:
