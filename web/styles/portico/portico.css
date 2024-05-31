@@ -1,5 +1,10 @@
 :root {
     --color-background-modal: hsl(0deg 0% 98%);
+    /*
+        It is fine if footer is longer than that
+        since we are only trying to avoid overlap.
+    */
+    --height-footer: 495px;
 }
 
 [data-tippy-root] .tippy-box .tippy-content {
@@ -1010,7 +1015,7 @@ input.new-organization-button {
 }
 
 .error_page {
-    min-height: calc(100vh - 290px);
+    min-height: calc(100vh - var(--height-footer));
     height: 100%;
     background-color: hsl(163deg 42% 85%);
     font-family: "Source Sans 3 VF", sans-serif;

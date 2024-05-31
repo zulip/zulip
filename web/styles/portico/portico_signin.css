@@ -4,11 +4,11 @@ html {
 
 .flex {
     display: flex;
-    padding: 80px 0;
+    padding: 20px 0 80px;
     align-items: center;
     justify-content: center;
 
-    min-height: calc(100vh - 402px);
+    min-height: calc(100vh - var(--height-footer));
 }
 
 .m-10 {
@@ -292,7 +292,7 @@ html {
 .header {
     color: hsl(0deg 0% 27%);
     background-color: hsl(0deg 0% 100%);
-    position: fixed;
+    position: sticky;
     width: 100%;
     top: 0;
 
