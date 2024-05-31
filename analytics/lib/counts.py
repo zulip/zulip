@@ -953,11 +953,12 @@ BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES = [
 # the stat is still in the future). As these logging counts are designed
 # to be used on the self-hosted installation for either debugging or rate
 # limiting, sending these incomplete counts to the bouncer has low value.
-LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER = [
+LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER = {
     "invites_sent::day",
     "mobile_pushes_sent::day",
     "active_users_log:is_bot:day",
-]
+    "active_users:is_bot:day",
+}
 
 # To avoid refactoring for now COUNT_STATS can be used as before
 COUNT_STATS = get_count_stats()
