@@ -468,7 +468,7 @@ function open_edit_form_modal(this: HTMLElement): void {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
 
         // If it exceeds or equals the max limit, we are disabling option for display custom
-        // profile field on user card and adding tooptip, unless the field is already checked.
+        // profile field on user card and adding tooltip, unless the field is already checked.
         if (display_in_profile_summary_fields_limit_reached && !field.display_in_profile_summary) {
             $profile_field_form
                 .find("input[name=display_in_profile_summary]")
