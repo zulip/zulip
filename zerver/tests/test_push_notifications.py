@@ -2659,7 +2659,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
 
         # Restore the deleted realm to verify that the bouncer correctly handles that
-        # by togglin off .realm_locally_deleted.
+        # by toggling off .realm_locally_deleted.
         restored_zephyr_realm = do_create_realm("zephyr", "Zephyr")
         restored_zephyr_realm.uuid = deleted_realm_uuid
         restored_zephyr_realm.save()

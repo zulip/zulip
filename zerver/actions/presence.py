@@ -129,9 +129,9 @@ def do_update_user_presence(
         # sending an immediate presence update via the events system that this user is now online,
         # rather than waiting for other clients to poll the presence update.
         # Sending these presence update events adds load to the system, so we only want to do this
-        # if the user has missed a couple regular presence checkins
+        # if the user has missed a couple regular presence check-ins
         # (so their state is at least 2 * PRESENCE_PING_INTERVAL_SECS + 10 old),
-        # and also is under the risk of being shown by clients as offline before the next regular presence checkin
+        # and also is under the risk of being shown by clients as offline before the next regular presence check-in
         # (so at least `settings.OFFLINE_THRESHOLD_SECS - settings.PRESENCE_PING_INTERVAL_SECS - 10`).
         # These two values happen to be the same in the default configuration.
         seconds=settings.OFFLINE_THRESHOLD_SECS - settings.PRESENCE_PING_INTERVAL_SECS - 10
