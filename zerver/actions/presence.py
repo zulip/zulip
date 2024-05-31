@@ -2,7 +2,8 @@ import time
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.db import transaction
+from django.db import connection, transaction
+from psycopg2 import sql
 
 from zerver.actions.user_activity import update_user_activity_interval
 from zerver.lib.presence import (
@@ -86,7 +87,12 @@ def consolidate_client(client: Client) -> Client:
         return client
 
 
-@transaction.atomic(savepoint=False)
+# This function takes a very hot lock on the PresenceSequence row for the user's realm.
+# Since all presence updates in the realm all compete for this lock, we need to be
+# maximally efficient and only hold it as briefly as possible.
+# For that reason, we need durable=True to ensure we're not running inside a larger
+# transaction, which may stay alive longer than we'd like, holding the lock.
+@transaction.atomic(durable=True)
 def do_update_user_presence(
     user_profile: UserProfile,
     client: Client,
@@ -95,6 +101,10 @@ def do_update_user_presence(
     *,
     force_send_update: bool = False,
 ) -> None:
+    # This function requires some careful handling around setting the
+    # last_update_id field when updatng UserPresence objects. See the
+    # PresenceSequence model and the comments throughout the code for more details.
+
     client = consolidate_client(client)
 
     # If the user doesn't have a UserPresence row yet, we create one with
@@ -109,10 +119,16 @@ def do_update_user_presence(
     if status == UserPresence.LEGACY_STATUS_ACTIVE_INT:
         defaults["last_active_time"] = log_time
 
-    (presence, created) = UserPresence.objects.get_or_create(
-        user_profile=user_profile,
-        defaults=defaults,
-    )
+    try:
+        presence = UserPresence.objects.select_for_update().get(user_profile=user_profile)
+        creating = False
+    except UserPresence.DoesNotExist:
+        # We're not ready to write until we know the next last_update_id value.
+        # We don't want to hold the lock on PresenceSequence for too long,
+        # so we defer that until the last moment.
+        # Create the presence object in-memory only for now.
+        presence = UserPresence(**defaults, user_profile=user_profile)
+        creating = True
 
     # We initialize these values as a large delta so that if the user
     # was never active, we always treat the user as newly online.
@@ -144,13 +160,13 @@ def do_update_user_presence(
     # times per minute with multiple connected browser windows.
     # We also need to be careful not to wrongly "update" the timestamp if we actually already
     # have newer presence than the reported log_time.
-    if not created and time_since_last_connected_for_comparison > timedelta(
+    if not creating and time_since_last_connected_for_comparison > timedelta(
         seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
     ):
         presence.last_connected_time = log_time
         update_fields.append("last_connected_time")
     if (
-        not created
+        not creating
         and status == UserPresence.LEGACY_STATUS_ACTIVE_INT
         and time_since_last_active_for_comparison
         > timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS)
@@ -162,11 +178,87 @@ def do_update_user_presence(
             # last_connected_time >= last_active_time.
             presence.last_connected_time = log_time
             update_fields.append("last_connected_time")
-    if len(update_fields) > 0:
-        presence.save(update_fields=update_fields)
+
+    # WARNING: Delicate, performance-sensitive block.
+
+    # It's time to determine last_update_id and update the presence object in the database.
+    # This briefly takes the crucial lock on the PresenceSequence row for the user's realm.
+    # We're doing this in a single SQL query to avoid any unnecessary overhead, in particular
+    # database round-trips.
+    # We're also intentionally doing this at the very end of the function, at the last step
+    # before the transaction commits. This ensures the lock is held for the shortest
+    # time possible.
+    # Note: The lock isn't acquired explicitly via something like SELECT FOR UPDATE,
+    # but rather we rely on the UPDATE statement taking an implicit row lock.
+
+    # Equivalent Python code:
+    # if creating or len(update_fields) > 0:
+    #     presence_sequence = PresenceSequence.objects.select_for_update().get(realm_id=user_profile.realm_id)
+    #     new_last_update_id = presence_sequence.last_update_id + 1
+    #     presence_sequence.last_update_id = new_last_update_id
+    #     if creating:
+    #         presence.last_update_id = new_last_update_id
+    #         presence.save()
+    #     elif len(update_fields) > 0:
+    #         presence.last_update_id = new_last_update_id
+    #         presence.save(update_fields=[*update_fields, "last_update_id"])
+    #     presence_sequence.save(update_fields=["last_update_id"])
+    # But let's do it in a single, direct SQL query instead.
+
+    if creating or len(update_fields) > 0:
+        query = sql.SQL("""
+            WITH new_last_update_id AS (
+                UPDATE zerver_presencesequence
+                SET last_update_id = last_update_id + 1
+                WHERE realm_id = {realm_id}
+                RETURNING last_update_id
+            )
+        """).format(realm_id=sql.Literal(user_profile.realm_id))
+
+        if creating:
+            # There's a small possibility of a race where a different process may have
+            # already created a row for this user. Given the extremely close timing
+            # of these events, there's no clear reason to prefer one over the other,
+            # so we just go with the most direct approach of DO UPDATE, so that the
+            # last event emitted (the one coming from our process, since we're the slower one)
+            # matches the created presence state.
+            # TODO: Might be worth changing this to DO NOTHING instead with a bit of extra logic
+            # to skip emitting an event in such a scenario.
+            query += sql.SQL("""
+                INSERT INTO zerver_userpresence (user_profile_id, last_active_time, last_connected_time, realm_id, last_update_id)
+                VALUES ({user_profile_id}, {last_active_time}, {last_connected_time}, {realm_id}, (SELECT last_update_id FROM new_last_update_id))
+                ON CONFLICT (user_profile_id) DO UPDATE SET
+                last_active_time = EXCLUDED.last_active_time,
+                last_connected_time = EXCLUDED.last_connected_time,
+                realm_id = EXCLUDED.realm_id,
+                last_update_id = EXCLUDED.last_update_id;
+            """).format(
+                user_profile_id=sql.Literal(user_profile.id),
+                last_active_time=sql.Literal(presence.last_active_time),
+                last_connected_time=sql.Literal(presence.last_connected_time),
+                realm_id=sql.Literal(user_profile.realm_id),
+            )
+        else:
+            assert len(update_fields) > 0
+            update_fields_segment = sql.SQL(", ").join(
+                sql.SQL("{field} = {value}  ").format(
+                    field=sql.Identifier(field), value=sql.Literal(getattr(presence, field))
+                )
+                for field in update_fields
+            )
+            query += sql.SQL("""
+                UPDATE zerver_userpresence
+                SET {update_fields_segment}, last_update_id = (SELECT last_update_id FROM new_last_update_id)
+                WHERE id = {presence_id}
+            """).format(
+                update_fields_segment=update_fields_segment, presence_id=sql.Literal(presence.id)
+            )
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
 
     if force_send_update or (
-        not user_profile.realm.presence_disabled and (created or became_online)
+        not user_profile.realm.presence_disabled and (creating or became_online)
     ):
         # We do the transaction.on_commit here, rather than inside
         # send_presence_changed, to help keep presence transactions
