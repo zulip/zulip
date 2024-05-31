@@ -4,9 +4,6 @@
 .user_circle_empty_line {
     border-radius: 50%;
     border: 1px solid;
-    float: left;
-    position: relative;
-    top: 5px;
 }
 
 .user_circle_green {

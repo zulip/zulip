@@ -117,14 +117,10 @@ $user_status_emoji_width: 24px;
     }
 
     .user_circle {
-        min-width: 8px;
+        width: 8px;
         height: 8px;
-        margin: 0 5px;
-        display: block;
-        /* This is a temporary adjustment until
-           the right-sidebar rows are rewritten
-           with CSS Grid. */
-        top: calc(var(--line-height-sidebar-row) / 4);
+        grid-area: starting-anchor-element;
+        place-self: center center;
     }
 
     .empty-list-message {
@@ -184,7 +180,6 @@ $user_status_emoji_width: 24px;
 
 .user-presence-link,
 .user_sidebar_entry .selectable_sidebar_block {
-    display: flex;
     overflow: hidden;
 
     .user-name {
@@ -195,21 +190,18 @@ $user_status_emoji_width: 24px;
 
 .user_sidebar_entry .selectable_sidebar_block {
     grid-area: row-content;
-    display: flex;
-    flex-direction: row;
-}
-
-.user-name-and-status-wrapper {
-    display: block;
-    width: 100%;
+    display: grid;
+    grid-template:
+        "starting-anchor-element row-content markers-and-controls" var(
+            --line-height-sidebar-row
+        )
+        ".                       row-content ." auto / 20px minmax(0, 1fr)
+        minmax(0, auto);
+    align-items: baseline;
 }
 
 .user-presence-link {
-    width: calc(100% - $user_status_emoji_width);
-
-    .status-emoji {
-        top: 9px;
-    }
+    grid-area: row-content;
 }
 
 .my_user_status {
@@ -266,7 +258,6 @@ $user_status_emoji_width: 24px;
 
     .status-text {
         display: block;
-        width: 170px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -281,8 +272,9 @@ $user_status_emoji_width: 24px;
     }
 
     .unread_count {
+        grid-area: markers-and-controls;
+        align-self: center;
         display: none;
-        margin-top: 2.5px;
     }
 
     .unread_count:not(.hide) {
