@@ -3511,6 +3511,30 @@ class RealmPropertyActionTest(BaseAction):
             if user_group.name == default_group_name:
                 continue
 
+            if (
+                not setting_permission_configuration.allow_internet_group
+                and user_group.name == SystemGroups.EVERYONE_ON_INTERNET
+            ):
+                continue
+
+            if (
+                not setting_permission_configuration.allow_everyone_group
+                and user_group.name == SystemGroups.EVERYONE
+            ):
+                continue
+
+            if (
+                not setting_permission_configuration.allow_owners_group
+                and user_group.name == SystemGroups.OWNERS
+            ):
+                continue
+
+            if (
+                not setting_permission_configuration.allow_nobody_group
+                and user_group.name == SystemGroups.NOBODY
+            ):
+                continue
+
             now = timezone_now()
             state_change_expected = True
             num_events = 1
