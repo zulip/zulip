@@ -606,6 +606,8 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## optionally RABBITMQ_PORT, to the hostname and port here.
 # RABBITMQ_HOST = "127.0.0.1"
 # RABBITMQ_PORT = 5672
+## To use a different RabbitMQ "virtual host", adjust this.
+# RABBITMQ_VHOST = "/"
 ## To use another RabbitMQ user than the default "zulip", set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = "zulip"
 ## To access the RabbitMQ server over TLS, set this to True; this is
