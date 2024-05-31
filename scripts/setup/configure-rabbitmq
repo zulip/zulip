@@ -10,6 +10,7 @@ set -eu
 
 RABBITMQ_USERNAME=$("$(dirname "$0")/../get-django-setting" RABBITMQ_USERNAME)
 RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
+RABBITMQ_VHOST=$("$(dirname "$0")/../get-django-setting" RABBITMQ_VHOST)
 
 rabbitmqctl await_startup
 rabbitmqctl delete_user "$RABBITMQ_USERNAME" || true
@@ -17,4 +18,7 @@ rabbitmqctl delete_user zulip || true
 rabbitmqctl delete_user guest || true
 rabbitmqctl add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
 rabbitmqctl set_user_tags "$RABBITMQ_USERNAME" administrator
-rabbitmqctl set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'
+if ! rabbitmqctl list_vhosts --no-table-headers --quiet | grep -qx "$RABBITMQ_VHOST"; then
+    rabbitmqcql add_vhost "$RABBITMQ_VHOST"
+fi
+rabbitmqctl set_permissions -p "$RABBITMQ_VHOST" "$RABBITMQ_USERNAME" '.*' '.*' '.*'
