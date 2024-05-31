@@ -71,15 +71,16 @@ $user_status_emoji_width: 24px;
         padding: 0;
 
         .user-list-sidebar-menu-icon {
-            display: none;
-            padding: 0 6px;
+            visibility: hidden;
+            justify-self: center;
 
             & i {
-                padding-right: 0.35em;
-                display: inline-block;
-                width: 13px;
                 font-size: 17px;
-                vertical-align: middle;
+                /* Ensure the icon takes the same baseline
+                   as the rest of the row, for perfect
+                   vertical alignment with the username and
+                   status circle. */
+                line-height: inherit;
             }
 
             /*
@@ -90,7 +91,7 @@ $user_status_emoji_width: 24px;
             */
 
             @media (hover: none) {
-                display: inline;
+                visibility: visible;
                 /* Show dots on touchscreens in a less distracting,
                    lighter shade. */
                 color: var(--color-vdots-hint);
@@ -99,7 +100,7 @@ $user_status_emoji_width: 24px;
 
         &:hover {
             .user-list-sidebar-menu-icon {
-                display: inline;
+                visibility: visible;
                 cursor: pointer;
                 color: var(--color-vdots-visible);
 
@@ -193,7 +194,7 @@ $user_status_emoji_width: 24px;
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
-    width: calc(100% - 26px);
+    grid-area: row-content;
     display: flex;
     flex-direction: row;
 }
@@ -245,9 +246,19 @@ $user_status_emoji_width: 24px;
 }
 
 .user_sidebar_entry {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    display: grid;
+    /* We establish a two-row, two-column outer grid so
+       that controls remain aligned with the username,
+       even when there is a status line shown below.
+
+       The 26px column for the vdots is less than the
+       30px allotted in the left sidebar, but it holds
+       the username area constant, so that no ellipsis
+       appears on the username on hover. */
+    grid-template:
+        "row-content ending-anchor-element" var(--line-height-sidebar-row)
+        "row-content ." auto / minmax(0, 1fr) 26px;
+    align-content: baseline;
 
     .user-name-and-status-emoji {
         display: flex;
