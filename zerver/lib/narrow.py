@@ -72,7 +72,16 @@ from zerver.lib.validator import (
     check_string_or_int,
     check_string_or_int_list,
 )
-from zerver.models import Huddle, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
+from zerver.models import (
+    Huddle,
+    Message,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserProfile,
+)
 from zerver.models.streams import get_active_streams
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
@@ -549,7 +558,7 @@ class NarrowBuilder:
     def by_id(
         self, query: Select, operand: Union[int, str], maybe_negate: ConditionTransform
     ) -> Select:
-        if not str(operand).isdigit():
+        if not str(operand).isdigit() or int(operand) > Message.MAX_POSSIBLE_MESSAGE_ID:
             raise BadNarrowOperatorError("Invalid message ID")
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))

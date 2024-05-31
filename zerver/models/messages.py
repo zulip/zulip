@@ -132,6 +132,8 @@ class Message(AbstractMessage):
     #   Recipient type via the API.
     API_RECIPIENT_TYPES = ["direct", "private", "stream", "channel"]
 
+    MAX_POSSIBLE_MESSAGE_ID = 2147483647
+
     search_tsvector = SearchVectorField(null=True)
 
     DEFAULT_SELECT_RELATED = ["sender", "realm", "recipient", "sending_client"]
