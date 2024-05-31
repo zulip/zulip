@@ -1317,6 +1317,8 @@ li.topic-list-item {
 .streams_subheader {
     font-size: 0.8em;
     font-weight: normal;
+    /* 16px line-height at 0.8em (11.2px at 14px legacy em) */
+    line-height: 1.4286em;
     padding-left: $far_left_gutter_size;
     cursor: pointer;
     text-align: center;
