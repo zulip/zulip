@@ -831,7 +831,8 @@ input[type="checkbox"] {
 }
 
 #org-join-settings,
-#org-guest-settings {
+#org-guest-settings,
+#org-stream-permissions {
     .dropdown-widget-button {
         width: 325px;
         color: hsl(0deg 0% 33%);

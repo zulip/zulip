@@ -496,14 +496,6 @@ run_test("realm settings", ({override}) => {
     test_realm_integer(event, "realm_create_private_stream_policy");
 
     update_called = false;
-    event = event_fixtures.realm__update__create_public_stream_policy;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
-        assert_same(property, "create_public_stream_policy");
-        update_called = true;
-    };
-    test_realm_integer(event, "realm_create_public_stream_policy");
-
-    update_called = false;
     event = event_fixtures.realm__update__create_web_public_stream_policy;
     stream_settings_ui.update_stream_privacy_choices = (property) => {
         assert_same(property, "create_web_public_stream_policy");
@@ -575,12 +567,19 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_enable_spectator_access, true);
     assert_same(update_called, true);
 
+    let update_stream_privacy_choices_called = false;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "can_create_public_channel_group");
+        update_stream_privacy_choices_called = true;
+    };
+
     event = event_fixtures.realm__update_dict__default;
     realm.realm_create_multiuse_invite_group = 1;
     realm.realm_allow_message_editing = false;
     realm.realm_message_content_edit_limit_seconds = 0;
     realm.realm_edit_topic_policy = 3;
     realm.realm_authentication_methods = {Google: {enabled: false, available: true}};
+    realm.realm_can_create_public_channel_group = 1;
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
@@ -590,6 +589,8 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_authentication_methods, {
         Google: {enabled: true, available: true},
     });
+    assert_same(realm.realm_can_create_public_channel_group, 3);
+    assert_same(update_stream_privacy_choices_called, true);
 
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);

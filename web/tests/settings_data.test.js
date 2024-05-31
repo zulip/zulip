@@ -147,11 +147,6 @@ test_policy(
     settings_data.user_can_create_private_streams,
 );
 test_policy(
-    "user_can_create_public_streams",
-    "realm_create_public_stream_policy",
-    settings_data.user_can_create_public_streams,
-);
-test_policy(
     "user_can_subscribe_other_users",
     "realm_invite_to_stream_policy",
     settings_data.user_can_subscribe_other_users,
@@ -458,4 +453,43 @@ run_test("user_can_access_all_other_users", () => {
 
     realm.realm_can_access_all_users_group = everyone.id;
     assert.ok(settings_data.user_can_access_all_other_users());
+});
+
+run_test("user_can_create_public_streams", () => {
+    const admin_user_id = 1;
+    const moderator_user_id = 2;
+    const member_user_id = 3;
+
+    const admins = {
+        name: "Admins",
+        id: 1,
+        members: new Set([admin_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const moderators = {
+        name: "Moderators",
+        id: 2,
+        members: new Set([moderator_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    };
+
+    user_groups.initialize({realm_user_groups: [admins, moderators]});
+
+    assert.equal(settings_data.user_can_create_public_streams(), false);
+
+    realm.realm_can_create_public_channel_group = 1;
+    current_user.user_id = admin_user_id;
+    assert.equal(settings_data.user_can_create_public_streams(), true);
+
+    current_user.user_id = moderator_user_id;
+    assert.equal(settings_data.user_can_create_public_streams(), false);
+
+    realm.realm_can_create_public_channel_group = 2;
+    current_user.user_id = moderator_user_id;
+    assert.equal(settings_data.user_can_create_public_streams(), true);
+
+    current_user.user_id = member_user_id;
+    assert.equal(settings_data.user_can_create_public_streams(), false);
 });

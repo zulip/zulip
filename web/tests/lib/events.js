@@ -387,6 +387,7 @@ exports.fixtures = {
             authentication_methods: {
                 Google: {enabled: true, available: true},
             },
+            can_create_public_channel_group: 3,
         },
     },
 

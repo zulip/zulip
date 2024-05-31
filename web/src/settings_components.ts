@@ -204,7 +204,6 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 type simple_dropdown_realm_settings = Pick<
     typeof realm,
     | "realm_create_private_stream_policy"
-    | "realm_create_public_stream_policy"
     | "realm_create_web_public_stream_policy"
     | "realm_invite_to_stream_policy"
     | "realm_user_group_edit_policy"
@@ -472,6 +471,7 @@ export let can_remove_subscribers_group_widget: DropdownWidget | null = null;
 export let can_access_all_users_group_widget: DropdownWidget | null = null;
 export let can_mention_group_widget: DropdownWidget | null = null;
 export let new_group_can_mention_group_widget: DropdownWidget | null = null;
+export let can_create_public_channel_group_widget: DropdownWidget | null = null;
 
 export function get_widget_for_dropdown_list_settings(
     property_name: string,
@@ -493,6 +493,8 @@ export function get_widget_for_dropdown_list_settings(
             return can_access_all_users_group_widget;
         case "can_mention_group":
             return can_mention_group_widget;
+        case "realm_can_create_public_channel_group":
+            return can_create_public_channel_group_widget;
         default:
             blueslip.error("No dropdown list widget for property", {property_name});
             return null;
@@ -533,6 +535,10 @@ export function set_can_mention_group_widget(widget: DropdownWidget): void {
 
 export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
     new_group_can_mention_group_widget = widget;
+}
+
+export function set_can_create_public_channel_group_widget(widget: DropdownWidget): void {
+    can_create_public_channel_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(
@@ -812,6 +818,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_default_code_block_language":
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
+        case "realm_can_create_public_channel_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "realm_message_content_edit_limit_seconds":
@@ -999,6 +1006,14 @@ export function populate_data_for_realm_settings_request(
                         ...data,
                         ...get_request_data_for_org_join_restrictions(input_value.toString()),
                     };
+                    continue;
+                }
+
+                if (property_name === "can_create_public_channel_group") {
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: realm.realm_can_create_public_channel_group,
+                    });
                     continue;
                 }
                 data[property_name] = input_value;

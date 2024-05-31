@@ -120,7 +120,6 @@ export function get_org_type_dropdown_options() {
 
 const simple_dropdown_properties = [
     "realm_create_private_stream_policy",
-    "realm_create_public_stream_policy",
     "realm_create_web_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
@@ -487,6 +486,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_default_code_block_language":
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
+        case "realm_can_create_public_channel_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
@@ -887,6 +887,37 @@ export function init_dropdown_widgets() {
     });
     settings_components.set_can_access_all_users_group_widget(can_access_all_users_group_widget);
     can_access_all_users_group_widget.setup();
+
+    const can_create_public_channel_group_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "realm_can_create_public_channel_group",
+        get_options: () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "can_create_public_channel_group",
+                "realm",
+            ),
+        $events_container: $("#settings_overlay_container #organization-permissions"),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            settings_components.can_create_public_channel_group_widget.render();
+            settings_components.save_discard_realm_settings_widget_status_handler(
+                $("#org-stream-permissions"),
+            );
+        },
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: realm.realm_can_create_public_channel_group,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+    });
+    settings_components.set_can_create_public_channel_group_widget(
+        can_create_public_channel_group_widget,
+    );
+    can_create_public_channel_group_widget.setup();
 }
 
 export function register_save_discard_widget_handlers(
