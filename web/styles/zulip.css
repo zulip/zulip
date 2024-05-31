@@ -836,6 +836,7 @@ strong {
                 height: 8px;
                 margin: 0 5px 0 -6px;
                 position: relative;
+                float: left;
                 top: 6px;
                 right: 8px;
                 display: inline-block;
