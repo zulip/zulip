@@ -42,6 +42,7 @@ from zerver.data_import.import_util import (
     get_attachment_path_and_content,
     get_data_file,
     get_domain_name_for_import,
+    get_length_measurements_for_a_quote_and_reply,
     long_term_idle_helper,
     make_subscriber_map,
     process_avatars,
@@ -55,18 +56,20 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    get_zulip_mention_for_slack_user,
     process_slack_block_and_attachment,
 )
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
-from zerver.lib.topic_link_util import get_stream_topic_link_syntax
+from zerver.lib.topic_link_util import get_message_link_syntax, get_stream_topic_link_syntax
 from zerver.lib.validator import to_wild_value
 from zerver.models import (
     CustomProfileField,
@@ -85,6 +88,13 @@ AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
 AddedDMsT: TypeAlias = dict[str, int]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
 
+
+FIRST_THREAD_REPLY_TEMPLATE = """
+{first_thread_sender_mention} said {first_thread_message_link_syntax}:
+{fence} quote
+{first_thread_snippet}
+{fence}
+""".strip()
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
@@ -1021,9 +1031,17 @@ class MessageConversionResult:
 
 
 @dataclass
+class ThreadMessageData:
+    content: str
+    link_syntax: str
+
+
+@dataclass
 class ThreadMetadata:
+    first_thread_message: ThreadMessageData
     topic_link_syntax: str
     topic_name: str
+    thread_length: int
 
 
 MAIN_SLACK_IMPORT_TOPIC = "imported from Slack"
@@ -1143,10 +1161,12 @@ def get_thread_reply_notification(
 def create_topic_name_for_message(
     added_channels: AddedChannelsT,
     channel_name: str | None,
+    content: str,
     topic_name_content: str,
     convert_slack_threads: bool,
     is_direct_message_type: bool,
     message: ZerverFieldsT,
+    message_id: int,
     thread_counter: dict[str, int],
     thread_map: dict[str, ThreadMetadata],
 ) -> str:
@@ -1173,24 +1193,78 @@ def create_topic_name_for_message(
             topic_name_content, thread_ts_datetime, thread_counter
         )
 
+        channel_id = added_channels[channel_name][1]
         thread_map[thread_key] = ThreadMetadata(
+            first_thread_message=ThreadMessageData(
+                content=content,
+                link_syntax=get_message_link_syntax(
+                    stream_id=channel_id,
+                    stream_name=channel_name,
+                    topic_name=MAIN_SLACK_IMPORT_TOPIC,
+                    message_id=message_id,
+                ),
+            ),
             topic_link_syntax=get_stream_topic_link_syntax(
-                stream_id=added_channels[channel_name][1],
+                stream_id=channel_id,
                 stream_name=channel_name,
                 topic_name=thread_topic_name,
             ),
             topic_name=thread_topic_name,
+            thread_length=1,
         )
         return MAIN_SLACK_IMPORT_TOPIC
     elif thread_key in thread_map:
-        # For thread replies, send them to the thread topic.
-        # TODO: Make the first reply in the thread quote the thread message
-        # in the main topic.
+        # For thread replies, send them to the thread's topic.
+        thread_map[thread_key].thread_length += 1
         return thread_map[thread_key].topic_name
     else:
         # This can occur when the original thread message isn't imported,
         # such as when only a slice of the chat history is imported.
         return f"{thread_ts_str} No channel message"
+
+
+def edit_thread_message_content(
+    content: str,
+    message: ZerverFieldsT,
+    users: list[ZerverFieldsT],
+    thread_metadata: ThreadMetadata,
+) -> str | None:
+    # Edit the second thread message to quote-and-reply to the first
+    # thread message. It should be the first message in its thread
+    # topic.
+    if thread_metadata.thread_length == 2:
+        subtype = message.get("subtype", False)
+        parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
+        first_thread_message = thread_metadata.first_thread_message
+        max_length_for = get_length_measurements_for_a_quote_and_reply(
+            reply_content_length=len(content)
+        )
+        first_thread_sender_mention = get_zulip_mention_for_slack_user(
+            slack_user_id=parent_user_id,
+            slack_user_shortname=None,
+            users=users,
+            silent=True,
+        )
+        assert first_thread_sender_mention is not None
+        quoted_content = FIRST_THREAD_REPLY_TEMPLATE.format(
+            first_thread_sender_mention=first_thread_sender_mention,
+            first_thread_message_link_syntax=first_thread_message.link_syntax,
+            first_thread_snippet=truncate_content(
+                first_thread_message.content,
+                max_length_for.quoted_content,
+                "\n[message truncated]",
+            ),
+            fence=get_unused_fence(first_thread_message.content),
+        )
+
+        reply_content = truncate_content(
+            content,
+            max_length_for.reply_content,
+            "\n[message truncated]",
+        )
+        return f"{quoted_content}\n{reply_content}"
+
+    return None
 
 
 def channel_message_to_zerver_message(
@@ -1303,14 +1377,14 @@ def channel_message_to_zerver_message(
         # Part of the thread topic name is based on the message content. Use the
         # raw content before we add attachment URLs to reduce the likelihood of
         # generating topic names with URLs.
-        topic_name_content = content
+        unannotated_content = content
         content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
 
         topic_name = create_topic_name_for_message(
             added_channels=added_channels,
             channel_name=channel_name,
             content=content,
-            topic_name_content=topic_name_content,
+            topic_name_content=unannotated_content,
             convert_slack_threads=convert_slack_threads,
             is_direct_message_type=is_direct_message_type,
             message=message,
@@ -1322,6 +1396,20 @@ def channel_message_to_zerver_message(
         content += get_thread_reply_notification(
             convert_slack_threads, message, thread_map, thread_reply_counts
         )
+
+        thread_metadata: ThreadMetadata | None = None
+        if not is_direct_message_type and is_slack_thread_message(convert_slack_threads, message):
+            thread_metadata = thread_map.get(get_thread_key(message))
+
+        if thread_metadata is not None:
+            edited_content = edit_thread_message_content(
+                content=content,
+                message=message,
+                users=users,
+                thread_metadata=thread_metadata,
+            )
+            if edited_content:
+                content = edited_content
 
         zulip_message = build_message(
             topic_name=topic_name,

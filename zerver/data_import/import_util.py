@@ -63,6 +63,12 @@ class GetEmojiResult:
     filename: str
 
 
+@dataclass
+class MaxContentLengths:
+    reply_content: int
+    quoted_content: int
+
+
 DATA_IMPORT_CLIENTS = {
     # Match low ID clients in zerver/lib/server_initialization.py.
     # This has no functional impact other than ensuring low IDs.
@@ -1026,3 +1032,28 @@ def scrub_missing_upload_records_after_download(
             if os.path.isfile(os.path.join(output_dir, "uploads", upload_record.path))
         ],
     )
+
+
+def get_length_measurements_for_a_quote_and_reply(
+    reply_content_length: int,
+    template_syntax_buffer: int = 200,
+    quoted_content_length_limit: int = 1000,
+) -> MaxContentLengths:
+    """Splits the message length limit between a reply and the message it
+    quotes, so that neither has to be truncated a second time when the two
+    are assembled.
+    """
+    available_length = settings.MAX_MESSAGE_LENGTH - template_syntax_buffer
+
+    if reply_content_length <= available_length - quoted_content_length_limit:
+        return MaxContentLengths(
+            reply_content=reply_content_length,
+            quoted_content=available_length - reply_content_length,
+        )
+    else:
+        # The reply is long enough to crowd out the quote, so cap it and
+        # leave the quote its guaranteed room.
+        return MaxContentLengths(
+            reply_content=available_length - quoted_content_length_limit,
+            quoted_content=quoted_content_length_limit,
+        )
