@@ -474,6 +474,9 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="id", operand="notanint")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
+        term = dict(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
     def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator="id", operand=555, negated=True)
         self._do_add_term_test(term, "WHERE id != %(param_1)s")
