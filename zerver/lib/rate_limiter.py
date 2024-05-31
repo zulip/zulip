@@ -226,10 +226,10 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
         """
         Returns a tuple of `(rate_limited, time_till_free)`.
         For simplicity, we have loosened the semantics here from
-        - each key may make atmost `count * (t / window)` request within any t
+        - each key may make at most `count * (t / window)` request within any t
           time interval.
         to
-        - each key may make atmost `count * [(t / window) + 1]` request within
+        - each key may make at most `count * [(t / window) + 1]` request within
           any t time interval.
         Thus, we only need to store reset_times for each key which will be less
         memory-intensive. This also has the advantage that you can only ever

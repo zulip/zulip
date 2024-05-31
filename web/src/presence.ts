@@ -72,7 +72,7 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
         }
     */
 
-    /* Mark users as offline after this many seconds since their last checkin, */
+    /* Mark users as offline after this many seconds since their last check-in, */
     const offline_threshold_secs = page_params.server_presence_offline_threshold_seconds;
 
     function age(timestamp?: number): number {
