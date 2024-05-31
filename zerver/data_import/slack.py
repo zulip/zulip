@@ -47,16 +47,18 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    get_zulip_mention_for_slack_user,
     process_slack_block_and_attachment,
 )
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
-from zerver.lib.topic_link_util import get_stream_topic_link_syntax
+from zerver.lib.topic_link_util import get_message_link_syntax, get_stream_topic_link_syntax
 from zerver.lib.upload import sanitize_name
 from zerver.models import (
     CustomProfileField,
@@ -75,6 +77,14 @@ DMMembersT: TypeAlias = dict[str, tuple[str, str]]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
 
 MAIN_IMPORT_TOPIC = "imported from Slack"
+
+FIRST_THREAD_REPLY_TEMPLATE = """
+{original_thread_sender_mention} said {original_thread_message_link_syntax}:
+{fence} quote
+{original_thread_snippet}
+{fence}
+{first_thread_reply}
+"""
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
@@ -145,7 +155,9 @@ class ThreadMetadata:
     topic_name: str
     topic_link_syntax: str
     thread_length: int
+    original_message: str
     original_message_index: int
+    original_message_link_syntax: str
 
 
 def rm_tree(path: str) -> None:
@@ -1107,12 +1119,38 @@ def channel_message_to_zerver_message(
                         thread_topic_name,
                     ),
                     thread_length=0,
+                    original_message=content,
                     original_message_index=len(zerver_message),
+                    original_message_link_syntax=get_message_link_syntax(
+                        recipient_id,
+                        channel_name,
+                        topic_name,
+                        message_id,
+                    ),
                 )
+
             elif thread_key in thread_map:
+                # The first thread reply will quote and reply to the original
+                # thread message/thread head in the main import topic.
                 thread_metadata: ThreadMetadata = thread_map[thread_key]
                 topic_name = thread_metadata.topic_name
-                # TODO: Append quote-and-reply to the original message for the first thread message
+                if thread_metadata.thread_length == 0:
+                    content = FIRST_THREAD_REPLY_TEMPLATE.format(
+                        original_thread_sender_mention=get_zulip_mention_for_slack_user(
+                            parent_user_id,
+                            None,
+                            users,
+                            True,
+                        ),
+                        original_thread_message_link_syntax=thread_metadata.original_message_link_syntax,
+                        original_thread_snippet=truncate_content(
+                            thread_metadata.original_message,
+                            settings.MAX_MESSAGE_LENGTH - len(content) - 500,
+                            "\n[message truncated]",
+                        ),
+                        first_thread_reply=content,
+                        fence=get_unused_fence(content),
+                    )
                 thread_metadata.thread_length += 1
             else:
                 # This occurs when the original thread message isn't imported,
