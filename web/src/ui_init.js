@@ -222,6 +222,7 @@ export function initialize_kitchen_sink_stuff() {
     message_viewport.$scroll_container.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
         if (
+            !popovers.any_active() &&
             !overlays.any_active() &&
             !modals.any_active() &&
             narrow_state.is_message_feed_visible()
