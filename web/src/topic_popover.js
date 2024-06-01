@@ -5,12 +5,12 @@ import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delet
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
 import * as confirm_dialog from "./confirm_dialog";
+import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as starred_messages_ui from "./starred_messages_ui";
-import {realm} from "./state_data";
 import * as stream_popover from "./stream_popover";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
@@ -28,22 +28,21 @@ export function initialize() {
                 popover_menus.on_show_prep(instance);
                 let stream_id;
                 let topic_name;
-                let url;
 
                 if (instance.reference.classList.contains("inbox-topic-menu")) {
                     const $elt = $(instance.reference);
                     stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
                     topic_name = $elt.attr("data-topic-name");
-                    url = new URL($elt.attr("data-topic-url"), realm.realm_url);
                 } else {
                     const $elt = $(instance.reference)
                         .closest(".topic-sidebar-menu-icon")
                         .expectOne();
                     const $stream_li = $elt.closest(".narrow-filter").expectOne();
                     topic_name = $elt.closest("li").expectOne().attr("data-topic-name");
-                    url = $elt.closest("li").find(".sidebar-topic-name").expectOne().prop("href");
                     stream_id = stream_popover.elem_to_stream_id($stream_li);
                 }
+
+                const url = hash_util.by_channel_topic_permalink(stream_id, topic_name);
 
                 instance.context = popover_menus_data.get_topic_popover_content_context({
                     stream_id,
