@@ -69,6 +69,7 @@ class StreamDict(TypedDict, total=False):
     history_public_to_subscribers: bool | None
     message_retention_days: int | None
     can_remove_subscribers_group: UserGroup | None
+    default_code_block_language: str
 
 
 def get_stream_permission_policy_name(
@@ -140,6 +141,7 @@ def create_stream_if_needed(
     message_retention_days: int | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
+    default_code_block_language: str = "",
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -167,6 +169,7 @@ def create_stream_if_needed(
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             can_remove_subscribers_group=can_remove_subscribers_group,
+            default_code_block_language=default_code_block_language,
         ),
     )
 
@@ -220,6 +223,9 @@ def create_streams_if_needed(
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            default_code_block_language=stream_dict.get(
+                "default_code_block_language", realm.default_code_block_language
+            ),
             acting_user=acting_user,
         )
 
@@ -868,6 +874,7 @@ def stream_to_dict(stream: Stream, recent_traffic: dict[int, int] | None = None)
 
     return APIStreamDict(
         can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
+        default_code_block_language=stream.default_code_block_language,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,

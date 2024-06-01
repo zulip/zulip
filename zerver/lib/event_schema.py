@@ -51,6 +51,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 # larger "subscription" events that also contain personal settings.
 default_stream_fields = [
     ("can_remove_subscribers_group", int),
+    ("default_code_block_language", str),
     ("creator_id", OptionalType(int)),
     ("date_created", int),
     ("description", str),
