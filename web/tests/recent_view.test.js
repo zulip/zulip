@@ -9,6 +9,7 @@ const {page_params} = require("./lib/zpage_params");
 
 window.scrollTo = noop;
 const test_url = () => "https://www.example.com";
+const test_permalink = () => "https://www.example.com/with/12";
 
 // We assign this in our test() wrapper.
 let messages;
@@ -94,6 +95,7 @@ mock_esm("../src/compose_closed_ui", {
 mock_esm("../src/hash_util", {
     by_stream_url: test_url,
     by_stream_topic_url: test_url,
+    by_stream_topic_permalink: test_permalink,
     by_conversation_and_time_url: test_url,
 });
 mock_esm("../src/message_list_data", {
@@ -407,7 +409,7 @@ function generate_topic_data(topic_info_array) {
             stream_url: "https://www.example.com",
             topic,
             conversation_key: get_topic_key(stream_id, topic),
-            topic_url: "https://www.example.com",
+            topic_url: "https://www.example.com/with/12",
             unread_count,
             mention_in_unread: false,
             visibility_policy,
