@@ -150,6 +150,7 @@ class RawStreamDict(TypedDict):
     message_retention_days: Optional[int]
     name: str
     rendered_description: str
+    default_code_block_language: str
     stream_post_policy: int
 
 
@@ -197,6 +198,7 @@ class SubscriptionStreamDict(TypedDict):
     pin_to_top: bool
     push_notifications: Optional[bool]
     rendered_description: str
+    default_code_block_language: str
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: Optional[int]
@@ -217,6 +219,7 @@ class NeverSubscribedStreamDict(TypedDict):
     message_retention_days: Optional[int]
     name: str
     rendered_description: str
+    default_code_block_language: str
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: Optional[int]
@@ -240,6 +243,7 @@ class DefaultStreamDict(TypedDict):
     message_retention_days: Optional[int]
     name: str
     rendered_description: str
+    default_code_block_language: str
     stream_id: int  # `stream_id`` represents `id` of the `Stream` object in `API_FIELDS`
     stream_post_policy: int
     # Computed fields not specified in `Stream.API_FIELDS`
