@@ -34,18 +34,12 @@ export function update_audio_chat_button_display(): void {
     $(".message-edit-feature-group .audio_link").toggle(show_audio_chat_button);
 }
 
-function insert_video_call_url(
-    url: string,
-    $target_textarea: JQuery<HTMLTextAreaElement> | undefined,
-): void {
+function insert_video_call_url(url: string, $target_textarea: JQuery<HTMLTextAreaElement>): void {
     const link_text = $t({defaultMessage: "Join video call."});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, $target_textarea, "block", 1);
 }
 
-function insert_audio_call_url(
-    url: string,
-    $target_textarea: JQuery<HTMLTextAreaElement> | undefined,
-): void {
+function insert_audio_call_url(url: string, $target_textarea: JQuery<HTMLTextAreaElement>): void {
     const link_text = $t({defaultMessage: "Join voice call."});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, $target_textarea, "block", 1);
 }
@@ -54,11 +48,13 @@ export function generate_and_insert_audio_or_video_call_link(
     $target_element: JQuery,
     is_audio_call: boolean,
 ): void {
-    let $target_textarea: JQuery<HTMLTextAreaElement> | undefined;
+    let $target_textarea: JQuery<HTMLTextAreaElement>;
     let edit_message_id: string | undefined;
     if ($target_element.parents(".message_edit_form").length === 1) {
         edit_message_id = rows.id($target_element.parents(".message_row")).toString();
         $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+    } else {
+        $target_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
     }
 
     const available_providers = realm.realm_available_video_chat_providers;
