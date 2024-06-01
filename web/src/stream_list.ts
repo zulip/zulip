@@ -910,7 +910,7 @@ export function set_event_handlers({
             const topic_list_info = topic_list_data.get_list_info(stream_id, false, "");
             const topic_item = topic_list_info.items[0];
             if (topic_item !== undefined) {
-                const destination_url = hash_util.by_stream_topic_url(
+                const destination_url = hash_util.by_channel_topic_permalink(
                     stream_id,
                     topic_item.topic_name,
                 );

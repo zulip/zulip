@@ -100,6 +100,9 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 11);
+
+    // The topic link is not a permalink since the topic has no
+    // messages sent yet.
     assert.deepEqual(list_info.items[0], {
         topic_name: "topic 11",
         topic_resolved_prefix: "",
@@ -137,7 +140,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_resolved_prefix: "✔ ",
         is_empty_string_topic: false,
         unread: 0,
-        url: "#narrow/channel/556-general/topic/.E2.9C.94.20topic.209",
+        url: `#narrow/channel/556-general/topic/.E2.9C.94.20topic.209/with/${1000 + 9}`,
     });
 
     assert.deepEqual(list_info.items[1], {
@@ -153,7 +156,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_resolved_prefix: "",
         is_empty_string_topic: false,
         unread: 0,
-        url: "#narrow/channel/556-general/topic/topic.208",
+        url: `#narrow/channel/556-general/topic/topic.208/with/${1000 + 8}`,
     });
 
     // Empty string as topic name.
@@ -178,7 +181,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_resolved_prefix: "",
         is_empty_string_topic: true,
         unread: 0,
-        url: "#narrow/channel/556-general/topic/",
+        url: "#narrow/channel/556-general/topic//with/2025",
     });
 
     // If we zoom in, our results are based on topic filter.

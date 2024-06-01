@@ -135,7 +135,7 @@ function choose_topics(
             is_followed: is_topic_followed,
             is_unmuted_or_followed: is_topic_unmuted_or_followed,
             is_active_topic,
-            url: hash_util.by_stream_topic_url(stream_id, topic_name),
+            url: hash_util.by_channel_topic_permalink(stream_id, topic_name),
             contains_unread_mention,
         };
 

@@ -449,7 +449,7 @@ function format_topic(
         is_empty_string_topic: topic === "",
         unread_count: topic_unread_count,
         conversation_key: get_topic_key(stream_id, topic),
-        topic_url: hash_util.by_stream_topic_url(stream_id, topic),
+        topic_url: hash_util.by_channel_topic_permalink(stream_id, topic),
         is_hidden: filter_should_hide_stream_row({stream_id, topic}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
         mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),

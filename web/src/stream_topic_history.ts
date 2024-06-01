@@ -372,6 +372,14 @@ export function get_max_message_id(stream_id: number): number {
     return history.get_max_message_id();
 }
 
+export function get_latest_known_message_id_in_topic(
+    stream_id: number,
+    topic_name: string,
+): number | undefined {
+    const history = stream_dict.get(stream_id);
+    return history?.topics.get(topic_name)?.message_id;
+}
+
 export function reset(): void {
     // This is only used by tests.
     stream_dict.clear();

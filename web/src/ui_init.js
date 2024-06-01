@@ -667,10 +667,18 @@ export function initialize_everything(state_data) {
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
             const sub = sub_store.get(stream_id);
+            const latest_msg_id = stream_topic_history.get_latest_known_message_id_in_topic(
+                stream_id,
+                topic,
+            );
+
+            assert(latest_msg_id !== undefined);
+
             message_view.show(
                 [
                     {operator: "channel", operand: sub.stream_id.toString()},
                     {operator: "topic", operand: topic},
+                    {operator: "with", operand: latest_msg_id},
                 ],
                 {trigger: "sidebar"},
             );

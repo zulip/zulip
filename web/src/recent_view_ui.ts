@@ -659,7 +659,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const topic = last_msg.topic;
         const topic_display_name = util.get_final_topic_display_name(topic);
         const is_empty_string_topic = topic === "";
-        const topic_url = hash_util.by_stream_topic_url(stream_id, topic);
+        const topic_url = hash_util.by_channel_topic_permalink(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
         // We only supply the data to the topic rows and let jquery
