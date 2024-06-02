@@ -22694,7 +22694,7 @@ components:
         Whether the client wants [custom profile field](/help/custom-profile-fields)
         data to be included in the response.
 
-        **Changes**: New in Zulip 2.1.0. Previous versions do no offer these
+        **Changes**: New in Zulip 2.1.0. Previous versions do not offer these
         data via the API.
       schema:
         type: boolean
