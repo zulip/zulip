@@ -68,7 +68,6 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
         get_user(Address(username=name, domain="zulip.com").addr_spec, realm).id
         for name in user_names
     ]
-
     assert ids_list == user_ids
 
 
@@ -142,14 +141,12 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
             {"name": "private-channel"},
         ],
     )
-
     stream_id = client.get_stream_id("private-channel")["stream_id"]
     client.call_endpoint(
         f"streams/{stream_id}",
         method="PATCH",
         request={"is_private": True},
     )
-
     result = nonadmin_client.add_subscriptions(
         streams=[
             {"name": "private-channel"},
@@ -190,7 +187,6 @@ def add_default_stream(client: Client) -> None:
         ],
     )
     stream_id = client.get_stream_id("test channel")["stream_id"]
-
     # {code_example|start}
     # Add a channel to the set of default channels for new users.
     result = client.add_default_stream(stream_id)
@@ -202,11 +198,9 @@ def add_default_stream(client: Client) -> None:
 @openapi_test_function("/default_streams:delete")
 def remove_default_stream(client: Client) -> None:
     stream_id = client.get_stream_id("test channel")["stream_id"]
-
     # {code_example|start}
     # Remove a channel from the set of default channels for new users.
     request = {"stream_id": stream_id}
-
     result = client.call_endpoint(
         url="/default_streams",
         method="DELETE",
@@ -250,7 +244,6 @@ def update_presence(client: Client) -> None:
         "ping_only": False,
         "new_user_input": False,
     }
-
     result = client.update_presence(request)
     validate_response_result(result)
 
@@ -287,7 +280,6 @@ def update_status(client: Client) -> None:
         "reaction_type": "unicode_emoji",
     }
     result = client.call_endpoint(url="/users/me/status", method="POST", request=request)
-
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/users/me/status", "post", "200")
@@ -310,7 +302,6 @@ def get_members(client: Client) -> None:
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/users", "get", "200")
-
     members = [m for m in result["members"] if m["email"] == "newbie@zulip.com"]
     assert len(members) == 1
     newbie = members[0]
@@ -365,7 +356,6 @@ def get_invitations(client: Client) -> None:
 @openapi_test_function("/invites:post")
 def send_invitations(client: Client) -> None:
     stream_ids = get_subscribed_stream_ids(client)[:3]
-
     # {code_example|start}
     # Send invitations.
     request = {
@@ -383,7 +373,6 @@ def send_invitations(client: Client) -> None:
 @openapi_test_function("/invites/multiuse:post")
 def create_reusable_invitation_link(client: Client) -> None:
     stream_ids = get_subscribed_stream_ids(client)[:3]
-
     # {code_example|start}
     # Create a reusable invitation link.
     request = {
@@ -506,7 +495,6 @@ def get_subscription_status(client: Client) -> None:
     user_id = 7
     ensure_users([user_id], ["zoe"])
     stream_id = client.get_subscriptions()["subscriptions"][0]["stream_id"]
-
     # {code_example|start}
     # Check whether a user is a subscriber to a given channel.
     result = client.call_endpoint(
@@ -540,11 +528,9 @@ def reorder_realm_linkifiers(client: Client) -> None:
         method="GET",
     )
     reordered_linkifiers = [linkifier["id"] for linkifier in realm_linkifiers["linkifiers"]][::-1]
-
     # {code_example|start}
     # Reorder the linkifiers in the user's organization.
     request = {"ordered_linkifier_ids": json.dumps(reordered_linkifiers)}
-
     result = client.call_endpoint(url="/realm/linkifiers", method="PATCH", request=request)
     # {code_example|end}
     validate_response_result(result)
@@ -572,11 +558,9 @@ def reorder_realm_profile_fields(client: Client) -> None:
     )
     realm_profile_field_ids = [field["id"] for field in realm_profile_fields["custom_fields"]]
     reordered_profile_fields = realm_profile_field_ids[::-1]
-
     # {code_example|start}
     # Reorder the custom profile fields in the user's organization.
     request = {"order": json.dumps(reordered_profile_fields)}
-
     result = client.call_endpoint(url="/realm/profile_fields", method="PATCH", request=request)
     # {code_example|end}
     validate_response_result(result)
@@ -588,7 +572,6 @@ def create_realm_profile_field(client: Client) -> None:
     # {code_example|start}
     # Create a custom profile field in the user's organization.
     request = {"name": "Phone", "hint": "Contact no.", "field_type": 1}
-
     result = client.call_endpoint(url="/realm/profile_fields", method="POST", request=request)
     # {code_example|end}
     validate_response_result(result)
@@ -622,7 +605,6 @@ def update_realm_filter(client: Client, filter_id: int) -> None:
         "pattern": "#(?P<id>[0-9]+)",
         "url_template": "https://github.com/zulip/zulip/issues/{id}",
     }
-
     result = client.call_endpoint(
         url=f"/realm/filters/{filter_id}", method="PATCH", request=request
     )
@@ -680,7 +662,6 @@ def get_profile(client: Client) -> None:
 @openapi_test_function("/users/me:delete")
 def deactivate_own_user(client: Client, owner_client: Client) -> None:
     user_id = client.get_profile()["user_id"]
-
     # {code_example|start}
     # Deactivate the account of the current user/bot.
     result = client.call_endpoint(
@@ -704,7 +685,6 @@ def get_stream_id(client: Client) -> int:
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/get_stream_id", "get", "200")
-
     return result["stream_id"]
 
 
@@ -771,7 +751,6 @@ def update_stream(client: Client, stream_id: int) -> None:
         "stream_post_policy": 2,
         "is_private": True,
     }
-
     result = client.update_stream(request)
     # {code_example|end}
     validate_response_result(result)
@@ -788,7 +767,6 @@ def get_user_groups(client: Client) -> int:
     validate_against_openapi_schema(result, "/user_groups", "get", "200")
     [hamlet_user_group] = (u for u in result["user_groups"] if u["name"] == "hamletcharacters")
     assert hamlet_user_group["description"] == "Characters of Hamlet"
-
     [marketing_user_group] = (u for u in result["user_groups"] if u["name"] == "marketing")
     return marketing_user_group["id"]
 
@@ -827,7 +805,6 @@ def get_subscriptions(client: Client) -> None:
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "get", "200")
-
     streams = [s for s in result["subscriptions"] if s["name"] == "python-test"]
     assert streams[0]["description"] == "Channel for testing Python"
 
@@ -872,7 +849,6 @@ def toggle_mute_topic(client: Client) -> None:
         method="POST",
         request=message,
     )
-
     # {code_example|start}
     # Mute the topic "boat party" in the channel named "Denmark".
     request = {
@@ -892,7 +868,6 @@ def toggle_mute_topic(client: Client) -> None:
         "topic": "boat party",
         "op": "remove",
     }
-
     result = client.mute_topic(request)
     # {code_example|end}
     validate_response_result(result)
@@ -902,7 +877,6 @@ def toggle_mute_topic(client: Client) -> None:
 @openapi_test_function("/user_topics:post")
 def update_user_topic(client: Client) -> None:
     stream_id = client.get_stream_id("Denmark")["stream_id"]
-
     # {code_example|start}
     # Mute the topic "dinner" in a channel, given the channel's ID.
     request = {
@@ -926,7 +900,6 @@ def update_user_topic(client: Client) -> None:
         "topic": "dinner",
         "visibility_policy": 0,
     }
-
     result = client.call_endpoint(
         url="user_topics",
         method="POST",
@@ -999,7 +972,6 @@ def mark_topic_as_read(client: Client) -> None:
 @openapi_test_function("/users/me/subscriptions/properties:post")
 def update_subscription_settings(client: Client) -> None:
     subscriptions = client.get_subscriptions()["subscriptions"]
-
     assert len(subscriptions) >= 2
     stream_a_id = subscriptions[0]["stream_id"]
     stream_b_id = subscriptions[1]["stream_id"]
@@ -1068,14 +1040,12 @@ def check_messages_match_narrow(client: Client) -> None:
     message["content"] = "no link here"
     response = client.send_message(message)
     msg_ids.append(response["id"])
-
     # {code_example|start}
     # Check which messages, given the message IDs, match a narrow.
     request = {
         "msg_ids": msg_ids,
         "narrow": [{"operator": "has", "operand": "link"}],
     }
-
     result = client.call_endpoint(url="messages/matches_narrow", method="GET", request=request)
     # {code_example|end}
     validate_response_result(result)
@@ -1085,7 +1055,6 @@ def check_messages_match_narrow(client: Client) -> None:
 @openapi_test_function("/messages/{message_id}:get")
 def get_raw_message(client: Client, message_id: int) -> None:
     assert int(message_id)
-
     # {code_example|start}
     # Get the raw content of a message given the message's ID.
     result = client.get_raw_message(message_id)
@@ -1098,7 +1067,6 @@ def get_raw_message(client: Client, message_id: int) -> None:
 def get_attachments(client: Client) -> int:
     # {code_example|start}
     # Get your attachments.
-
     result = client.get_attachments()
     # {code_example|end}
     validate_response_result(result)
@@ -1110,7 +1078,6 @@ def get_attachments(client: Client) -> int:
 def remove_attachment(client: Client, attachment_id: int) -> None:
     # {code_example|start}
     # Delete the attachment given the attachment's ID.
-
     url = "attachments/" + str(attachment_id)
     result = client.call_endpoint(
         url=url,
@@ -1124,7 +1091,6 @@ def remove_attachment(client: Client, attachment_id: int) -> None:
 @openapi_test_function("/messages:post")
 def send_message(client: Client) -> int:
     request: Dict[str, Any] = {}
-
     # {code_example|start}
     # Send a channel message.
     request = {
@@ -1134,7 +1100,6 @@ def send_message(client: Client) -> int:
         "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
-
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/messages", "post", "200")
@@ -1153,7 +1118,6 @@ def send_message(client: Client) -> int:
         "content": "With mirth and laughter let old wrinkles come.",
     }
     result = client.send_message(request)
-
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/messages", "post", "200")
@@ -1161,7 +1125,6 @@ def send_message(client: Client) -> int:
     # Confirm the message was actually sent.
     message_id = result["id"]
     validate_message(client, message_id, request["content"])
-
     return message_id
 
 
@@ -1174,7 +1137,6 @@ def add_reaction(client: Client, message_id: int) -> None:
         "message_id": message_id,
         "emoji_name": "octopus",
     }
-
     result = client.add_reaction(request)
     # {code_example|end}
     validate_response_result(result)
@@ -1190,7 +1152,6 @@ def remove_reaction(client: Client, message_id: int) -> None:
         "message_id": message_id,
         "emoji_name": "octopus",
     }
-
     result = client.remove_reaction(request)
     # {code_example|end}
     validate_response_result(result)
@@ -1233,7 +1194,6 @@ def test_private_message_invalid_recipient(client: Client) -> None:
 @openapi_test_function("/messages/{message_id}:patch")
 def update_message(client: Client, message_id: int) -> None:
     assert int(message_id)
-
     # {code_example|start}
     # Edit a message. Make sure that `message_id` is set to the ID of the
     # message you wish to update.
@@ -1258,7 +1218,6 @@ def test_update_message_edit_permission_error(client: Client, nonadmin_client: C
         "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
-
     request = {
         "message_id": result["id"],
         "content": "New content",
@@ -1286,7 +1245,6 @@ def test_delete_message_edit_permission_error(client: Client, nonadmin_client: C
         "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
-
     result = nonadmin_client.delete_message(result["id"])
     validate_response_result(result, expected_result="error")
     validate_against_openapi_schema(result, "/messages/{message_id}", "delete", "400")
@@ -1321,7 +1279,6 @@ def update_message_flags(client: Client) -> None:
         "content": "I come not, friends, to steal away your hearts.",
     }
     message_ids = [client.send_message(request)["id"] for i in range(3)]
-
     # {code_example|start}
     # Add the "read" flag to messages, given the messages' IDs.
     request = {
@@ -1425,12 +1382,10 @@ def update_settings(client: Client) -> None:
 @openapi_test_function("/user_uploads:post")
 def upload_file(client: Client) -> None:
     path_to_file = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
-
     # {code_example|start}
     # Upload a file.
     with open(path_to_file, "rb") as fp:
         result = client.upload_file(fp)
-
     # Share the file by including it in a message.
     client.send_message(
         {
@@ -1544,7 +1499,6 @@ def set_typing_status(client: Client) -> None:
         "topic": topic,
     }
     result = client.set_typing_status(request)
-
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
@@ -1558,7 +1512,6 @@ def set_typing_status(client: Client) -> None:
         "topic": topic,
     }
     result = client.set_typing_status(request)
-
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
@@ -1567,7 +1520,6 @@ def set_typing_status(client: Client) -> None:
 @openapi_test_function("/realm/emoji/{emoji_name}:post")
 def upload_custom_emoji(client: Client) -> None:
     emoji_path = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
-
     # {code_example|start}
     # Upload a custom emoji; assume `emoji_path` is the path to your image.
     with open(emoji_path, "rb") as fp:
@@ -1650,7 +1602,6 @@ def update_user_group(client: Client, user_group_id: int) -> None:
         "name": "marketing",
         "description": "The marketing team.",
     }
-
     result = client.update_user_group(request)
     # {code_example|end}
     validate_response_result(result)
@@ -1699,7 +1650,6 @@ def test_user_account_deactivated(client: Client) -> None:
         "content": "**foo**",
     }
     result = client.render_message(request)
-
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "403")
 
 
@@ -1708,7 +1658,6 @@ def test_realm_deactivated(client: Client) -> None:
         "content": "**foo**",
     }
     result = client.render_message(request)
-
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "403")
 
 
