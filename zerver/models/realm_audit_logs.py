@@ -242,6 +242,19 @@ class RealmAuditLog(AbstractRealmAuditLog):
                     ]
                 ),
             ),
+            models.Index(
+                # Used in analytics/lib/counts.py for computing active users for realm_active_humans
+                name="zerver_realmauditlog_user_activations_idx",
+                fields=["modified_user", "event_time"],
+                condition=Q(
+                    event_type__in=[
+                        AbstractRealmAuditLog.USER_CREATED,
+                        AbstractRealmAuditLog.USER_ACTIVATED,
+                        AbstractRealmAuditLog.USER_DEACTIVATED,
+                        AbstractRealmAuditLog.USER_REACTIVATED,
+                    ]
+                ),
+            ),
         ]
 
     @override
