@@ -220,7 +220,7 @@ def remove_default_stream(client: Client) -> None:
 @openapi_test_function("/users/{user_id_or_email}/presence:get")
 def get_user_presence(client: Client) -> None:
     # {code_example|start}
-    # Get presence information for "iago@zulip.com"
+    # Get presence information for "iago@zulip.com".
     result = client.get_user_presence("iago@zulip.com")
     # {code_example|end}
     validate_response_result(result)
@@ -258,7 +258,7 @@ def update_presence(client: Client) -> None:
 @openapi_test_function("/users:post")
 def create_user(client: Client) -> None:
     # {code_example|start}
-    # Create a user
+    # Create a user.
     request = {
         "email": "newbie@zulip.com",
         "password": "temp",
@@ -269,7 +269,7 @@ def create_user(client: Client) -> None:
     validate_response_result(result)
     validate_against_openapi_schema(result, "/users", "post", "200")
 
-    # Test "Email already used error"
+    # Test "Email already used error".
     result = client.create_user(request)
     validate_response_result(result, expected_result="error")
     validate_against_openapi_schema(result, "/users", "post", "400")
@@ -278,7 +278,7 @@ def create_user(client: Client) -> None:
 @openapi_test_function("/users/me/status:post")
 def update_status(client: Client) -> None:
     # {code_example|start}
-    # The request contains the new status and away boolean
+    # The request contains the new status and "away" boolean.
     request = {
         "status_text": "on vacation",
         "away": False,
@@ -292,7 +292,7 @@ def update_status(client: Client) -> None:
     validate_response_result(result)
     validate_against_openapi_schema(result, "/users/me/status", "post", "200")
 
-    # Test "status_text is too long error"
+    # Test "status_text is too long error".
     request = {
         "status_text": "This is a message that exceeds 60 characters, and so should throw an error.",
         "away": "false",
@@ -305,7 +305,7 @@ def update_status(client: Client) -> None:
 @openapi_test_function("/users:get")
 def get_members(client: Client) -> None:
     # {code_example|start}
-    # Get all users in the realm
+    # Get all users in the organization.
     result = client.get_members()
     # {code_example|end}
     validate_response_result(result)
@@ -355,7 +355,7 @@ def get_user_by_email(client: Client) -> None:
 @openapi_test_function("/invites:get")
 def get_invitations(client: Client) -> None:
     # {code_example|start}
-    # Get all invitations
+    # Get all invitations.
     result = client.call_endpoint(url="/invites", method="GET")
     # {code_example|end}
     validate_response_result(result)
@@ -367,7 +367,7 @@ def send_invitations(client: Client) -> None:
     stream_ids = get_subscribed_stream_ids(client)[:3]
 
     # {code_example|start}
-    # Send invitations
+    # Send invitations.
     request = {
         "invitee_emails": "example@zulip.com, logan@zulip.com",
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
@@ -385,7 +385,7 @@ def create_reusable_invitation_link(client: Client) -> None:
     stream_ids = get_subscribed_stream_ids(client)[:3]
 
     # {code_example|start}
-    # Create reusable invitation link
+    # Create a reusable invitation link.
     request = {
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
@@ -412,7 +412,7 @@ def revoke_email_invitation(client: Client) -> None:
     assert len(invite) == 1
     invite_id = invite[0]["id"]
     # {code_example|start}
-    # Revoke email invitation
+    # Revoke email invitation.
     result = client.call_endpoint(url=f"/invites/{invite_id}", method="DELETE")
     # {code_example|end}
     validate_response_result(result)
@@ -431,7 +431,7 @@ def revoke_reusable_invitation_link(client: Client) -> None:
     assert len(invite) == 1
     invite_id = invite[0]["id"]
     # {code_example|start}
-    # Revoke reusable invitation link
+    # Revoke reusable invitation link.
     result = client.call_endpoint(url=f"/invites/multiuse/{invite_id}", method="DELETE")
     # {code_example|end}
     validate_response_result(result)
@@ -523,7 +523,7 @@ def get_subscription_status(client: Client) -> None:
 @openapi_test_function("/realm/linkifiers:get")
 def get_realm_linkifiers(client: Client) -> None:
     # {code_example|start}
-    # Fetch all the filters in this organization
+    # Fetch all the linkifiers in this organization.
     result = client.call_endpoint(
         url="/realm/linkifiers",
         method="GET",
@@ -602,7 +602,7 @@ def add_realm_filter(client: Client) -> int:
 
     # {code_example|start}
     # Add a filter to automatically linkify #<number> to the corresponding
-    # issue in Zulip's server repo
+    # issue in Zulip's server repository.
     request = {
         "pattern": "#(?P<id>[0-9]+)",
         "url_template": "https://github.com/zulip/zulip/issues/{id}",
@@ -617,7 +617,7 @@ def add_realm_filter(client: Client) -> int:
 @openapi_test_function("/realm/filters/{filter_id}:patch")
 def update_realm_filter(client: Client, filter_id: int) -> None:
     # {code_example|start}
-    # Update the linkifier (realm_filter).
+    # Update a linkifier.
     request = {
         "pattern": "#(?P<id>[0-9]+)",
         "url_template": "https://github.com/zulip/zulip/issues/{id}",
@@ -634,7 +634,7 @@ def update_realm_filter(client: Client, filter_id: int) -> None:
 @openapi_test_function("/realm/filters/{filter_id}:delete")
 def remove_realm_filter(client: Client, filter_id: int) -> None:
     # {code_example|start}
-    # Remove the linkifier (realm_filter).
+    # Remove a linkifier.
     result = client.remove_realm_filter(filter_id)
     # {code_example|end}
     validate_response_result(result)
@@ -644,7 +644,7 @@ def remove_realm_filter(client: Client, filter_id: int) -> None:
 @openapi_test_function("/realm/playgrounds:post")
 def add_realm_playground(client: Client) -> None:
     # {code_example|start}
-    # Add a realm playground for Python
+    # Add a code playground for Python.
     request = {
         "name": "Python playground",
         "pygments_language": "Python",
@@ -659,7 +659,7 @@ def add_realm_playground(client: Client) -> None:
 @openapi_test_function("/realm/playgrounds/{playground_id}:delete")
 def remove_realm_playground(client: Client) -> None:
     # {code_example|start}
-    # Remove the playground with ID 1
+    # Remove the code playground with ID 1.
     result = client.call_endpoint(url="/realm/playgrounds/1", method="DELETE")
     # {code_example|end}
     validate_response_result(result)
@@ -670,7 +670,7 @@ def remove_realm_playground(client: Client) -> None:
 def get_profile(client: Client) -> None:
     # {code_example|start}
     # Get the profile of the user/bot that requests this endpoint,
-    # which is `client` in this case:
+    # which is `client` in this case.
     result = client.get_profile()
     # {code_example|end}
     validate_response_result(result)
@@ -682,7 +682,7 @@ def deactivate_own_user(client: Client, owner_client: Client) -> None:
     user_id = client.get_profile()["user_id"]
 
     # {code_example|start}
-    # Deactivate the account of the current user/bot that requests.
+    # Deactivate the account of the current user/bot.
     result = client.call_endpoint(
         url="/users/me",
         method="DELETE",
@@ -781,7 +781,7 @@ def update_stream(client: Client, stream_id: int) -> None:
 @openapi_test_function("/user_groups:get")
 def get_user_groups(client: Client) -> int:
     # {code_example|start}
-    # Get all user groups of the realm
+    # Get all user groups of the organization.
     result = client.get_user_groups()
     # {code_example|end}
     validate_response_result(result)
@@ -861,7 +861,7 @@ def remove_subscriptions(client: Client) -> None:
 
 @openapi_test_function("/users/me/subscriptions/muted_topics:patch")
 def toggle_mute_topic(client: Client) -> None:
-    # Send a test message
+    # Send a test message.
     message = {
         "type": "stream",
         "to": "Denmark",
@@ -966,7 +966,7 @@ def remove_user_mute(client: Client) -> None:
 @openapi_test_function("/mark_all_as_read:post")
 def mark_all_as_read(client: Client) -> None:
     # {code_example|start}
-    # Mark all of the user's unread messages as read
+    # Mark all of the user's unread messages as read.
     result = client.mark_all_as_read()
     # {code_example|end}
     validate_response_result(result)
@@ -977,7 +977,7 @@ def mark_all_as_read(client: Client) -> None:
 def mark_stream_as_read(client: Client) -> None:
     stream_id = client.get_subscriptions()["subscriptions"][0]["stream_id"]
     # {code_example|start}
-    # Mark the unread messages in the channel with ID 1 as read.
+    # Mark the unread messages in a channel as read, given the channel's ID.
     result = client.mark_stream_as_read(stream_id)
     # {code_example|end}
     validate_response_result(result)
@@ -989,7 +989,7 @@ def mark_topic_as_read(client: Client) -> None:
     stream_id = client.get_subscriptions()["subscriptions"][0]["stream_id"]
     topic_name = client.get_stream_topics(stream_id)["topics"][0]["name"]
     # {code_example|start}
-    # Mark unread messages in a given topic, given a channel ID, as read.
+    # Mark unread messages in a given topic/channel as read.
     result = client.mark_topic_as_read(stream_id, topic_name)
     # {code_example|end}
     validate_response_result(result)
@@ -1028,7 +1028,7 @@ def update_subscription_settings(client: Client) -> None:
 @openapi_test_function("/messages/render:post")
 def render_message(client: Client) -> None:
     # {code_example|start}
-    # Render a message
+    # Render a message.
     request = {
         "content": "**foo**",
     }
@@ -1070,7 +1070,7 @@ def check_messages_match_narrow(client: Client) -> None:
     msg_ids.append(response["id"])
 
     # {code_example|start}
-    # Check which messages within an array match a narrow.
+    # Check which messages, given the message IDs, match a narrow.
     request = {
         "msg_ids": msg_ids,
         "narrow": [{"operator": "has", "operand": "link"}],
@@ -1087,7 +1087,7 @@ def get_raw_message(client: Client, message_id: int) -> None:
     assert int(message_id)
 
     # {code_example|start}
-    # Get the raw content of the message with ID "message_id"
+    # Get the raw content of a message given the message's ID.
     result = client.get_raw_message(message_id)
     # {code_example|end}
     validate_response_result(result)
@@ -1109,7 +1109,7 @@ def get_attachments(client: Client) -> int:
 @openapi_test_function("/attachments/{attachment_id}:delete")
 def remove_attachment(client: Client, attachment_id: int) -> None:
     # {code_example|start}
-    # Delete the attachment with given attachment_id.
+    # Delete the attachment given the attachment's ID.
 
     url = "attachments/" + str(attachment_id)
     result = client.call_endpoint(
@@ -1139,7 +1139,7 @@ def send_message(client: Client) -> int:
     validate_response_result(result)
     validate_against_openapi_schema(result, "/messages", "post", "200")
 
-    # test that the message was actually sent
+    # Confirm the message was actually sent.
     message_id = result["id"]
     validate_message(client, message_id, request["content"])
 
@@ -1158,7 +1158,7 @@ def send_message(client: Client) -> int:
     validate_response_result(result)
     validate_against_openapi_schema(result, "/messages", "post", "200")
 
-    # test that the message was actually sent
+    # Confirm the message was actually sent.
     message_id = result["id"]
     validate_message(client, message_id, request["content"])
 
@@ -1169,7 +1169,7 @@ def send_message(client: Client) -> int:
 def add_reaction(client: Client, message_id: int) -> None:
     request: Dict[str, Any] = {}
     # {code_example|start}
-    # Add an emoji reaction
+    # Add an emoji reaction.
     request = {
         "message_id": message_id,
         "emoji_name": "octopus",
@@ -1185,7 +1185,7 @@ def add_reaction(client: Client, message_id: int) -> None:
 def remove_reaction(client: Client, message_id: int) -> None:
     request: Dict[str, Any] = {}
     # {code_example|start}
-    # Remove an emoji reaction
+    # Remove an emoji reaction.
     request = {
         "message_id": message_id,
         "emoji_name": "octopus",
@@ -1200,7 +1200,7 @@ def remove_reaction(client: Client, message_id: int) -> None:
 @openapi_test_function("/messages/{message_id}/read_receipts:get")
 def get_read_receipts(client: Client, message_id: int) -> None:
     # {code_example|start}
-    # Get read receipts for a message
+    # Get read receipts for a message, given the message's ID.
     result = client.call_endpoint(f"/messages/{message_id}/read_receipts", method="GET")
     # {code_example|end}
     validate_response_result(result)
@@ -1235,9 +1235,8 @@ def update_message(client: Client, message_id: int) -> None:
     assert int(message_id)
 
     # {code_example|start}
-    # Edit a message
-    # (make sure that message_id below is set to the ID of the
-    # message you wish to update)
+    # Edit a message. Make sure that `message_id` is set to the ID of the
+    # message you wish to update.
     request = {
         "message_id": message_id,
         "content": "New content",
@@ -1247,7 +1246,7 @@ def update_message(client: Client, message_id: int) -> None:
     validate_response_result(result)
     validate_against_openapi_schema(result, "/messages/{message_id}", "patch", "200")
 
-    # test it was actually updated
+    # Confirm the message was actually updated.
     validate_message(client, message_id, request["content"])
 
 
@@ -1272,7 +1271,7 @@ def test_update_message_edit_permission_error(client: Client, nonadmin_client: C
 @openapi_test_function("/messages/{message_id}:delete")
 def delete_message(client: Client, message_id: int) -> None:
     # {code_example|start}
-    # Delete the message with ID "message_id"
+    # Delete a message, given the message's ID.
     result = client.delete_message(message_id)
     # {code_example|end}
     validate_response_result(result)
@@ -1296,7 +1295,7 @@ def test_delete_message_edit_permission_error(client: Client, nonadmin_client: C
 @openapi_test_function("/messages/{message_id}/history:get")
 def get_message_history(client: Client, message_id: int) -> None:
     # {code_example|start}
-    # Get the edit history for message with ID "message_id"
+    # Get the edit history for a message, given the message's ID.
     result = client.get_message_history(message_id)
     # {code_example|end}
     validate_response_result(result)
@@ -1314,7 +1313,7 @@ def get_realm_emoji(client: Client) -> None:
 
 @openapi_test_function("/messages/flags:post")
 def update_message_flags(client: Client) -> None:
-    # Send a few test messages
+    # Send a few test messages.
     request: Dict[str, Any] = {
         "type": "stream",
         "to": "Denmark",
@@ -1324,7 +1323,7 @@ def update_message_flags(client: Client) -> None:
     message_ids = [client.send_message(request)["id"] for i in range(3)]
 
     # {code_example|start}
-    # Add the "read" flag to the messages with IDs in "message_ids"
+    # Add the "read" flag to messages, given the messages' IDs.
     request = {
         "messages": message_ids,
         "op": "add",
@@ -1336,7 +1335,7 @@ def update_message_flags(client: Client) -> None:
     validate_against_openapi_schema(result, "/messages/flags", "post", "200")
 
     # {code_example|start}
-    # Remove the "starred" flag from the messages with IDs in "message_ids"
+    # Remove the "starred" flag from messages, given the messages' IDs.
     request = {
         "messages": message_ids,
         "op": "remove",
@@ -1349,7 +1348,7 @@ def update_message_flags(client: Client) -> None:
 
 
 def register_queue_all_events(client: Client) -> str:
-    # Register the queue and get all events
+    # Register the queue and get all events.
     # Mainly for verifying schema of /register.
     result = client.register()
     validate_response_result(result)
@@ -1360,7 +1359,7 @@ def register_queue_all_events(client: Client) -> str:
 @openapi_test_function("/register:post")
 def register_queue(client: Client) -> str:
     # {code_example|start}
-    # Register the queue
+    # Register the queue.
     result = client.register(
         event_types=["message", "realm_emoji"],
     )
@@ -1373,14 +1372,14 @@ def register_queue(client: Client) -> str:
 @openapi_test_function("/events:delete")
 def deregister_queue(client: Client, queue_id: str) -> None:
     # {code_example|start}
-    # Delete a queue (queue_id is the ID of the queue
-    # to be removed)
+    # Delete a queue, where `queue_id` is the ID of the queue
+    # to be removed.
     result = client.deregister(queue_id)
     # {code_example|end}
     validate_response_result(result)
     validate_against_openapi_schema(result, "/events", "delete", "200")
 
-    # Test "BAD_EVENT_QUEUE_ID" error
+    # Test "BAD_EVENT_QUEUE_ID" error.
     result = client.deregister(queue_id)
     validate_response_result(result, expected_result="error")
     validate_against_openapi_schema(result, "/events", "delete", "400")
@@ -1389,8 +1388,8 @@ def deregister_queue(client: Client, queue_id: str) -> None:
 @openapi_test_function("/events:get")
 def get_queue(client: Client, queue_id: str) -> None:
     # {code_example|start}
-    # If you already have a queue registered and thus, have a queue_id
-    # on hand, you may use client.get_events() and pass in the above
+    # If you already have a queue registered, and thus have a `queue_id`
+    # on hand, you may use `client.get_events()` and pass in the below
     # parameters, like so:
     result = client.get_events(queue_id=queue_id, last_event_id=-1)
     # {code_example|end}
@@ -1401,7 +1400,7 @@ def get_queue(client: Client, queue_id: str) -> None:
 @openapi_test_function("/server_settings:get")
 def get_server_settings(client: Client) -> None:
     # {code_example|start}
-    # Fetch the settings for this server
+    # Fetch the settings for this server.
     result = client.get_server_settings()
     # {code_example|end}
     validate_response_result(result)
@@ -1411,7 +1410,7 @@ def get_server_settings(client: Client) -> None:
 @openapi_test_function("/settings:patch")
 def update_settings(client: Client) -> None:
     # {code_example|start}
-    # Enable push notifications even when online and change emoji set
+    # Enable push notifications even when online and change emoji set.
     request = {
         "enable_offline_push_notifications": True,
         "enable_online_push_notifications": True,
@@ -1428,7 +1427,7 @@ def upload_file(client: Client) -> None:
     path_to_file = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
 
     # {code_example|start}
-    # Upload a file
+    # Upload a file.
     with open(path_to_file, "rb") as fp:
         result = client.upload_file(fp)
 
