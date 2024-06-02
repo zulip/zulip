@@ -1054,7 +1054,6 @@ def check_messages_match_narrow(client: Client) -> None:
 
 @openapi_test_function("/messages/{message_id}:get")
 def get_raw_message(client: Client, message_id: int) -> None:
-    assert int(message_id)
     # {code_example|start}
     # Get the raw content of a message given the message's ID.
     result = client.get_raw_message(message_id)
@@ -1193,7 +1192,6 @@ def test_private_message_invalid_recipient(client: Client) -> None:
 
 @openapi_test_function("/messages/{message_id}:patch")
 def update_message(client: Client, message_id: int) -> None:
-    assert int(message_id)
     # {code_example|start}
     # Edit a message. Make sure that `message_id` is set to the ID of the
     # message you wish to update.
