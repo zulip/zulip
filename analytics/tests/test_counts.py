@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
 from unittest import mock
 
-import orjson
 import time_machine
 from django.apps import apps
 from django.db import models
@@ -2081,18 +2080,6 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         self.stat = COUNT_STATS["realm_active_humans::day"]
         self.current_property = self.stat.property
 
-    def mark_audit_active(self, user: UserProfile, end_time: Optional[datetime] = None) -> None:
-        if end_time is None:
-            end_time = self.TIME_ZERO
-        UserCount.objects.create(
-            user=user,
-            realm=user.realm,
-            property="active_users_audit:is_bot:day",
-            subgroup=orjson.dumps(user.is_bot).decode(),
-            end_time=end_time,
-            value=1,
-        )
-
     def mark_15day_active(self, user: UserProfile, end_time: Optional[datetime] = None) -> None:
         if end_time is None:
             end_time = self.TIME_ZERO
@@ -2100,38 +2087,35 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             user=user, realm=user.realm, property="15day_actives::day", end_time=end_time, value=1
         )
 
-    def test_basic_boolean_logic(self) -> None:
+    def test_basic_logic(self) -> None:
         user = self.create_user()
-        self.mark_audit_active(user, end_time=self.TIME_ZERO - self.DAY)
         self.mark_15day_active(user, end_time=self.TIME_ZERO)
-        self.mark_audit_active(user, end_time=self.TIME_ZERO + self.DAY)
         self.mark_15day_active(user, end_time=self.TIME_ZERO + self.DAY)
 
         for i in [-1, 0, 1]:
             do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO + i * self.DAY)
-        self.assertTableState(RealmCount, ["value", "end_time"], [[1, self.TIME_ZERO + self.DAY]])
+        self.assertTableState(
+            RealmCount, ["value", "end_time"], [[1, self.TIME_ZERO], [1, self.TIME_ZERO + self.DAY]]
+        )
 
     def test_bots_not_counted(self) -> None:
         bot = self.create_user(is_bot=True)
-        self.mark_audit_active(bot)
         self.mark_15day_active(bot)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(RealmCount, [], [])
 
     def test_multiple_users_realms_and_times(self) -> None:
-        user1 = self.create_user()
-        user2 = self.create_user()
+        user1 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY)
+        user2 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY)
         second_realm = do_create_realm(string_id="second", name="second")
-        user3 = self.create_user(realm=second_realm)
-        user4 = self.create_user(realm=second_realm)
-        user5 = self.create_user(realm=second_realm)
+        user3 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY, realm=second_realm)
+        user4 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY, realm=second_realm)
+        user5 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY, realm=second_realm)
 
-        for user in [user1, user2, user3, user4, user5]:
-            self.mark_audit_active(user)
-            self.mark_15day_active(user)
         for user in [user1, user3, user4]:
-            self.mark_audit_active(user, end_time=self.TIME_ZERO - self.DAY)
             self.mark_15day_active(user, end_time=self.TIME_ZERO - self.DAY)
+        for user in [user1, user2, user3, user4, user5]:
+            self.mark_15day_active(user)
 
         for i in [-1, 0, 1]:
             do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO + i * self.DAY)
@@ -2139,17 +2123,14 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             RealmCount,
             ["value", "realm", "end_time"],
             [
-                [2, self.default_realm, self.TIME_ZERO],
-                [3, second_realm, self.TIME_ZERO],
                 [1, self.default_realm, self.TIME_ZERO - self.DAY],
                 [2, second_realm, self.TIME_ZERO - self.DAY],
+                [2, self.default_realm, self.TIME_ZERO],
+                [3, second_realm, self.TIME_ZERO],
             ],
         )
 
         # Check that adding spurious entries doesn't make a difference
-        self.mark_audit_active(user1, end_time=self.TIME_ZERO + self.DAY)
-        self.mark_15day_active(user2, end_time=self.TIME_ZERO + self.DAY)
-        self.mark_15day_active(user2, end_time=self.TIME_ZERO - self.DAY)
         self.create_user()
         third_realm = do_create_realm(string_id="third", name="third")
         self.create_user(realm=third_realm)
@@ -2162,10 +2143,10 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             RealmCount,
             ["value", "realm", "end_time"],
             [
-                [2, self.default_realm, self.TIME_ZERO],
-                [3, second_realm, self.TIME_ZERO],
                 [1, self.default_realm, self.TIME_ZERO - self.DAY],
                 [2, second_realm, self.TIME_ZERO - self.DAY],
+                [2, self.default_realm, self.TIME_ZERO],
+                [3, second_realm, self.TIME_ZERO],
             ],
         )
 
