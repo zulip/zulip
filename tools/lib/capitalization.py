@@ -255,6 +255,7 @@ def check_banned_words(text: str) -> List[str]:
             if (
                 "realm_name" in lower_cased_text
                 or "realm_uri" in lower_cased_text
+                or "realm_url" in lower_cased_text
                 or "remote_realm_host" in lower_cased_text
             ):
                 continue
