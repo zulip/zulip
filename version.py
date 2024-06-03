@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 262
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (280, 0)  # last bumped 2024-05-31 for upgrading Python requirements
+PROVISION_VERSION = (280, 1)  # last bumped 2024-06-03 for adding @types/js-cookie
