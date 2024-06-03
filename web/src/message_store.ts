@@ -79,7 +79,8 @@ export type RawMessage = {
 ) &
     MatchedMessage;
 
-// We add these boolean properties to Raw message in `message_store.set_message_booleans` method.
+// We add these boolean properties to Raw message in
+// `message_store.convert_raw_message_to_message_with_booleans` method.
 export type MessageWithBooleans = (
     | Omit<RawMessage & {type: "private"}, "flags">
     | Omit<RawMessage & {type: "stream"}, "flags">
@@ -129,7 +130,8 @@ export type Message = (
     message_reactions?: MessageCleanReaction[];
     url?: string;
 
-    // Used in `markdown.js`, `server_events.js`, and `set_message_booleans`
+    // Used in `markdown.js`, `server_events.js`, and
+    // `convert_raw_message_to_message_with_booleans`
     flags?: string[];
 
     small_avatar_url?: string; // Used in `message_avatar.hbs`
@@ -195,7 +197,9 @@ export function get_pm_full_names(user_ids: number[]): string {
     return names.join(", ");
 }
 
-export function set_message_booleans(message: RawMessage): MessageWithBooleans {
+export function convert_raw_message_to_message_with_booleans(
+    message: RawMessage,
+): MessageWithBooleans {
     const flags = message.flags ?? [];
 
     function convert_flag(flag_name: string): boolean {

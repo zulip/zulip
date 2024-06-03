@@ -29,7 +29,8 @@ export function process_new_message(raw_message: RawMessage): Message {
         return cached_msg;
     }
 
-    const message_with_booleans = message_store.set_message_booleans(raw_message);
+    const message_with_booleans =
+        message_store.convert_raw_message_to_message_with_booleans(raw_message);
     people.extract_people_from_message(message_with_booleans);
 
     const sent_by_me = people.is_current_user(message_with_booleans.sender_email);
