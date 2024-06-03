@@ -154,12 +154,12 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
         request,
         data=dict(
             direct_admins=[
-                dict(email=u.delivery_email, realm_uri=u.realm.url)
+                dict(email=u.delivery_email, realm_url=u.realm.url)
                 for u in users
                 if u.is_realm_admin
             ],
             direct_users=[
-                dict(email=u.delivery_email, realm_uri=u.realm.url)
+                dict(email=u.delivery_email, realm_url=u.realm.url)
                 for u in users
                 if not u.is_realm_admin
             ],

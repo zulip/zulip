@@ -467,19 +467,19 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 def create_response_for_otp_flow(
     key: str, otp: str, user_profile: UserProfile, encrypted_key_field_name: str
 ) -> HttpResponse:
-    realm_uri = user_profile.realm.url
+    realm_url = user_profile.realm.url
 
     # Check if the mobile URI is overridden in settings, if so, replace it
     # This block should only apply to the mobile flow, so we if add others, this
     # needs to be conditional.
-    if realm_uri in settings.REALM_MOBILE_REMAP_URIS:
-        realm_uri = settings.REALM_MOBILE_REMAP_URIS[realm_uri]
+    if realm_url in settings.REALM_MOBILE_REMAP_URIS:
+        realm_url = settings.REALM_MOBILE_REMAP_URIS[realm_url]
 
     params = {
         encrypted_key_field_name: otp_encrypt_api_key(key, otp),
         "email": user_profile.delivery_email,
         "user_id": user_profile.id,
-        "realm": realm_uri,
+        "realm": realm_url,
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
     response = HttpResponse(status=302)
@@ -830,7 +830,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         We need to override this function so that we can redirect to
         realm.url instead of '/'.
         """
-        realm_uri = self.get_user().realm.url
+        realm_url = self.get_user().realm.url
         # This mock.patch business is an unpleasant hack that we'd
         # ideally like to remove by instead patching the upstream
         # module to support better configurability of the
@@ -839,7 +839,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         # process involving pbr -> pkgresources (which is really slow).
         from unittest.mock import patch
 
-        with patch.object(settings, "LOGIN_REDIRECT_URL", realm_uri):
+        with patch.object(settings, "LOGIN_REDIRECT_URL", realm_url):
             return super().done(form_list, **kwargs)
 
 

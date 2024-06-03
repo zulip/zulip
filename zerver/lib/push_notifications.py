@@ -1449,13 +1449,13 @@ def send_test_push_notification_directly_to_devices(
     apple_payload = copy.deepcopy(payload)
     android_payload = copy.deepcopy(payload)
 
-    realm_uri = base_payload["realm_uri"]
+    realm_url = base_payload["realm_url"]
     realm_name = base_payload["realm_name"]
     apns_data = {
         "alert": {
             "title": _("Test notification"),
-            "body": _("This is a test notification from {realm_name} ({realm_uri}).").format(
-                realm_name=realm_name, realm_uri=realm_uri
+            "body": _("This is a test notification from {realm_name} ({realm_url}).").format(
+                realm_name=realm_name, realm_url=realm_url
             ),
         },
         "sound": "default",
