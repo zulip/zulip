@@ -97,6 +97,14 @@ export function get_topic_menu_popover(): tippy.Instance | null {
     return popover_instances.topics_menu;
 }
 
+export function is_topic_menu_popover_displayed(): boolean | undefined {
+    return popover_instances.topics_menu?.state.isVisible;
+}
+
+export function is_visibility_policy_popover_displayed(): boolean | undefined {
+    return popover_instances.change_visibility_policy?.state.isVisible;
+}
+
 export function get_scheduled_messages_popover(): tippy.Instance | null {
     return popover_instances.send_later;
 }

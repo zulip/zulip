@@ -1,7 +1,9 @@
 import $ from "jquery";
 
+import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
+import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as popover_menus from "./popover_menus";
 import * as recent_view_ui from "./recent_view_ui";
@@ -12,17 +14,38 @@ import * as unread_ui from "./unread_ui";
 import * as user_topics from "./user_topics";
 import type {ServerUserTopic} from "./user_topics";
 
+function should_add_topic_update_delay(visibility_policy: number): boolean | undefined {
+    // If topic visibility related popovers are active, add a delay to all methods that
+    // hide the topic on mute. This allows the switching animations to complete before the
+    // popover is force closed due to the reference element being removed from view.
+    const is_topic_muted = visibility_policy === user_topics.all_visibility_policies.MUTED;
+    const is_relevant_popover_open =
+        popover_menus.is_topic_menu_popover_displayed() ??
+        popover_menus.is_visibility_policy_popover_displayed();
+
+    // Don't add delay if the user is in inbox view or topics narrow, since
+    // the popover's reference element is always visible in these cases.
+    const is_inbox_view = inbox_util.is_visible();
+    const is_topic_narrow = narrow_state.narrowed_by_topic_reply();
+
+    return is_topic_muted && is_relevant_popover_open && !is_inbox_view && !is_topic_narrow;
+}
+
 export function handle_topic_updates(user_topic_event: ServerUserTopic): void {
     // Update the UI after changes in topic visibility policies.
     user_topics.set_user_topic(user_topic_event);
-    popover_menus.get_topic_menu_popover()?.hide();
 
-    stream_list.update_streams_sidebar();
-    unread_ui.update_unread_counts();
-    message_lists.current?.update_muting_and_rerender();
-    recent_view_ui.update_topic_visibility_policy(
-        user_topic_event.stream_id,
-        user_topic_event.topic_name,
+    setTimeout(
+        () => {
+            stream_list.update_streams_sidebar();
+            unread_ui.update_unread_counts();
+            message_lists.current?.update_muting_and_rerender();
+            recent_view_ui.update_topic_visibility_policy(
+                user_topic_event.stream_id,
+                user_topic_event.topic_name,
+            );
+        },
+        should_add_topic_update_delay(user_topic_event.visibility_policy) ? 500 : 0,
     );
 
     if (overlays.settings_open() && settings_user_topics.loaded) {
