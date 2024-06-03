@@ -936,7 +936,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(91), self.assert_memcached_count(14):
+        with self.assert_database_query_count(90), self.assert_memcached_count(14):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 

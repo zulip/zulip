@@ -8,7 +8,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
-from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import (
     internal_send_huddle_message,
@@ -514,12 +513,6 @@ def do_create_user(
             realm_creation_audit_log.acting_user = user_profile
             realm_creation_audit_log.save(update_fields=["acting_user"])
 
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
-        )
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
             billing_session.update_license_ledger_if_needed(event_time)
@@ -623,12 +616,6 @@ def do_activate_mirror_dummy_user(
             },
         )
         maybe_enqueue_audit_log_upload(user_profile.realm)
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
-        )
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
             billing_session.update_license_ledger_if_needed(event_time)
@@ -677,12 +664,6 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         )
         bot_owner_changed = True
 
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-    )
     if settings.BILLING_ENABLED:
         billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
         billing_session.update_license_ledger_if_needed(event_time)

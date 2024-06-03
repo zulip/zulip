@@ -678,34 +678,6 @@ def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
     ).format(**kwargs, realm_clause=realm_clause)
 
 
-# Hardcodes the query needed by active_users:is_bot:day, since that is
-# currently the only stat that uses this.
-def count_user_by_realm_query(realm: Optional[Realm]) -> QueryFn:
-    if realm is None:
-        realm_clause: Composable = SQL("")
-    else:
-        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
-    return lambda kwargs: SQL(
-        """
-    INSERT INTO analytics_realmcount
-        (realm_id, value, property, subgroup, end_time)
-    SELECT
-        zerver_realm.id, count(*), %(property)s, {subgroup}, %(time_end)s
-    FROM zerver_realm
-    JOIN zerver_userprofile
-    ON
-        zerver_realm.id = zerver_userprofile.realm_id
-    WHERE
-        zerver_realm.date_created < %(time_end)s AND
-        zerver_userprofile.date_joined >= %(time_start)s AND
-        zerver_userprofile.date_joined < %(time_end)s AND
-        {realm_clause}
-        zerver_userprofile.is_active = TRUE
-    GROUP BY zerver_realm.id {group_by_clause}
-"""
-    ).format(**kwargs, realm_clause=realm_clause)
-
-
 # Hardcodes the query needed for active_users_audit:is_bot:day.
 # Assumes that a user cannot have two RealmAuditLog entries with the
 # same event_time and event_type in [RealmAuditLog.USER_CREATED,
@@ -878,10 +850,7 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
             ),
             CountStat.DAY,
         ),
-        # Number of users stats
-        # Stats that count the number of active users in the UserProfile.is_active sense.
-        # 'active_users_audit:is_bot:day' is the canonical record of which users were
-        # active on which days (in the UserProfile.is_active sense).
+        # Counts the number of active users in the UserProfile.is_active sense.
         # Important that this stay a daily stat, so that 'realm_active_humans::day' works as expected.
         CountStat(
             "active_users_audit:is_bot:day",
@@ -889,29 +858,6 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
                 RealmCount, check_realmauditlog_by_user_query(realm), (UserProfile, "is_bot")
             ),
             CountStat.DAY,
-        ),
-        # Important note: LoggingCountStat objects aren't passed the
-        # Realm argument, because by nature they have a logging
-        # structure, not a pull-from-database structure, so there's no
-        # way to compute them for a single realm after the fact (the
-        # use case for passing a Realm argument).
-        # Sanity check on 'active_users_audit:is_bot:day', and a archetype for future LoggingCountStats.
-        # In RealmCount, 'active_users_audit:is_bot:day' should be the partial
-        # sum sequence of 'active_users_log:is_bot:day', for any realm that
-        # started after the latter stat was introduced.
-        # Included in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER.
-        LoggingCountStat("active_users_log:is_bot:day", RealmCount, CountStat.DAY),
-        # Another sanity check on 'active_users_audit:is_bot:day'. Is only an
-        # approximation, e.g. if a user is deactivated between the end of the
-        # day and when this stat is run, they won't be counted. However, is the
-        # simplest of the three to inspect by hand.
-        CountStat(
-            "active_users:is_bot:day",
-            sql_data_collector(
-                RealmCount, count_user_by_realm_query(realm), (UserProfile, "is_bot")
-            ),
-            CountStat.DAY,
-            interval=TIMEDELTA_MAX,
         ),
         CountStat(
             "upload_quota_used_bytes::day",
