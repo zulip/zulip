@@ -263,6 +263,16 @@
     --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
     --color-border-sidebar: hsl(0deg 0% 87%);
 
+    /* Recent view */
+    --color-border-recent-view-row: hsl(0deg 0% 87%);
+    --color-border-recent-view-table: hsl(0deg 0% 0% / 60%);
+    --color-background-recent-view-row: hsl(100deg 11% 96%);
+    --color-background-recent-view-row-hover: hsl(210deg 100% 97%);
+    --color-background-recent-view-unread-row: hsl(0deg 0% 100%);
+    --color-background-recent-view-unread-row-hover: hsl(210deg 100% 97%);
+    --color-recent-view-link: hsl(205deg 47% 42%);
+    --color-recent-view-link-hover: hsl(214deg 40% 58%);
+
     /* Compose box colors */
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
     --color-compose-send-button-background: hsl(240deg 96% 68%);
@@ -590,6 +600,16 @@
     --color-background-alert-word: hsl(22deg 70% 35%);
     --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
+
+    /* Recent view */
+    --color-border-recent-view-row: hsl(0deg 0% 0% / 20%);
+    --color-border-recent-view-table: hsl(0deg 0% 88%);
+    --color-background-recent-view-row: hsl(0deg 0% 11%);
+    --color-background-recent-view-row-hover: hsl(208deg 26% 11% / 60%);
+    --color-background-recent-view-unread-row: hsl(212deg 30% 22% / 40%);
+    --color-background-recent-view-unread-row-hover: hsl(212deg 30% 22% / 60%);
+    --color-recent-view-link: hsl(206deg 89% 74%);
+    --color-recent-view-link-hover: hsl(208deg 64% 52%);
 
     /* Compose box colors */
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);

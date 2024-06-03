@@ -40,7 +40,6 @@ import * as recent_senders from "./recent_senders";
 import * as recent_view_data from "./recent_view_data";
 import type {ConversationData} from "./recent_view_data";
 import * as recent_view_util from "./recent_view_util";
-import * as scroll_util from "./scroll_util";
 import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -114,6 +113,9 @@ let is_initial_message_fetch_pending = true;
 // We wait for rows to render and restore focus before processing
 // any new events.
 let is_waiting_for_revive_current_focus = true;
+// Used to store the last scroll position of the recent view before
+// it is hidden to avoid scroll jumping when it is shown again.
+let last_scroll_offset: number | undefined;
 
 export function set_initial_message_fetch_status(value: boolean): void {
     is_initial_message_fetch_pending = value;
@@ -206,7 +208,7 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
     // We might be loading messages in another narrow before the recent view
     // is shown, so we keep the state updated and update the banner only
     // once it's actually rendered.
-    if ($("#recent_view_table table tbody").length) {
+    if ($("#recent-view-content-tbody tr").length) {
         update_load_more_banner();
     }
 }
@@ -278,7 +280,7 @@ function get_row_type(row: number): string {
     // Return "private" or "stream"
     // We use CSS method for finding row type until topics_widget gets initialized.
     if (!topics_widget) {
-        const $topic_rows = $("#recent_view_table table tbody tr");
+        const $topic_rows = $("#recent-view-content-tbody tr");
         const $topic_row = $topic_rows.eq(row);
         const is_private = $topic_row.attr("data-private");
         if (is_private) {
@@ -310,7 +312,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         return true;
     }
 
-    const $topic_rows = $("#recent_view_table table tbody tr");
+    const $topic_rows = $("#recent-view-content-tbody tr");
     if ($topic_rows.length === 0 || row < 0 || row >= $topic_rows.length) {
         row_focus = 0;
         // return focus back to filters if we cannot focus on the table.
@@ -338,9 +340,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     $current_focus_elem = "table";
 
     if (using_keyboard) {
-        const scroll_element = $(
-            "#recent_view_table .table_fix_head .simplebar-content-wrapper",
-        )[0]!;
+        const scroll_element = $("html")[0]!;
         const half_height_of_visible_area = scroll_element.offsetHeight / 2;
         const topic_offset = topic_offset_to_visible_area($topic_row);
 
@@ -379,7 +379,7 @@ export function get_focused_row_message(): Message | undefined {
             return undefined;
         }
 
-        const $topic_rows = $("#recent_view_table table tbody tr");
+        const $topic_rows = $("#recent-view-content-tbody tr");
         const $topic_row = $topic_rows.eq(row_focus);
         const topic_id = $topic_row.attr("id");
         assert(topic_id !== undefined);
@@ -1127,22 +1127,18 @@ function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
         // topic and the callers will take care of undefined being returned.
         return undefined;
     }
-    const $scroll_container = $("#recent_view_table .table_fix_head");
-    const thead_height = $scroll_container.find("thead").outerHeight(true)!;
-    const scroll_container_props = $scroll_container[0]!.getBoundingClientRect();
 
-    // Since user cannot see row under thead, exclude it as part of the scroll container.
-    const scroll_container_top = scroll_container_props.top + thead_height;
-    const compose_height = $("#compose").outerHeight(true)!;
-    const scroll_container_bottom = scroll_container_props.bottom - compose_height;
+    // Rows are only visible below thead bottom and above compose top.
+    const thead_bottom = $("#recent-view-table-headers")[0]!.getBoundingClientRect().bottom;
+    const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
 
     const topic_props = $topic_row[0]!.getBoundingClientRect();
 
     // Topic is above the visible scroll region.
-    if (topic_props.top < scroll_container_top) {
+    if (topic_props.top < thead_bottom) {
         return "above";
         // Topic is below the visible scroll region.
-    } else if (topic_props.bottom > scroll_container_bottom) {
+    } else if (topic_props.bottom > compose_top) {
         return "below";
     }
 
@@ -1155,9 +1151,7 @@ function recenter_focus_if_off_screen(): void {
         return;
     }
 
-    const table_wrapper_element = $("#recent_view_table .table_fix_head")[0]!;
-    const $topic_rows = $("#recent_view_table table tbody tr");
-
+    const $topic_rows = $("#recent-view-content-tbody tr");
     if (row_focus >= $topic_rows.length) {
         // User used a filter which reduced
         // the number of visible rows.
@@ -1172,9 +1166,10 @@ function recenter_focus_if_off_screen(): void {
 
     if (topic_offset !== "visible") {
         // Get the element at the center of the table.
-        const position = table_wrapper_element.getBoundingClientRect();
-        const topic_center_x = (position.left + position.right) / 2;
-        const topic_center_y = (position.top + position.bottom) / 2;
+        const thead_props = $("#recent-view-table-headers")[0]!.getBoundingClientRect();
+        const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
+        const topic_center_x = (thead_props.left + thead_props.right) / 2;
+        const topic_center_y = (thead_props.bottom + compose_top) / 2;
 
         const topic_element = document.elementFromPoint(topic_center_x, topic_center_y);
         if (
@@ -1184,7 +1179,7 @@ function recenter_focus_if_off_screen(): void {
             // There are two theoretical reasons that the center
             // element might be null. One is that we haven't rendered
             // the view yet; but in that case, we should have returned
-            // early checking is_waiting_for_revive_current_focus:
+            // early checking is_waiting_for_revive_current_focus.
             //
             // The other possibility is that the table is too short
             // for there to be an topic row element at the center of
@@ -1199,19 +1194,29 @@ function recenter_focus_if_off_screen(): void {
     }
 }
 
-function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
-    const table_bottom_margin = 100; // Extra margin at the bottom of table.
-    const table_row_height = 50;
-    return (
-        scroll_container.scrollTop +
-            scroll_container.clientHeight +
-            table_bottom_margin +
-            table_row_height >
-        scroll_container.scrollHeight
-    );
+function is_scroll_position_for_render(): boolean {
+    const scroll_position = window.scrollY;
+    const window_height = window.innerHeight;
+    // We allocate `--max-unexpanded-compose-height` in empty space
+    // below the last rendered row in recent view.
+    //
+    // We don't want user to see this empty space until there are no
+    // new rows to render when the user is scrolling to the bottom of
+    // the view. So, we render new rows when user has scrolled 2 / 3
+    // of (the total scrollable height - the empty space).
+    const compose_max_height = $("html").css("--max-unexpanded-compose-height");
+    assert(typeof compose_max_height === "string");
+    const scroll_max = document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
+    return scroll_position + window_height >= (2 / 3) * scroll_max;
 }
 
 function callback_after_render(): void {
+    // It is important to restore the scroll position as soon
+    // as the rendering is complete to avoid scroll jumping.
+    if (last_scroll_offset !== undefined) {
+        window.scrollTo(0, last_scroll_offset);
+    }
+
     update_load_more_banner();
     setTimeout(() => {
         revive_current_focus();
@@ -1261,6 +1266,11 @@ export function complete_rerender(): void {
         return;
     }
 
+    // This is the first time we are rendering the Recent Conversations view.
+    // So, we always scroll to the top to avoid any scroll jumping in case
+    // user is returning from another view.
+    window.scrollTo(0, 0);
+
     const rendered_body = render_recent_view_body({
         search_val: $("#recent_view_search").val() ?? "",
         ...get_recent_view_filters_params(),
@@ -1273,7 +1283,7 @@ export function complete_rerender(): void {
     // was not the first view loaded in the app.
     show_selected_filters();
 
-    const $container = $("#recent_view_table table tbody");
+    const $container = $("#recent-view-content-tbody");
     $container.empty();
     topics_widget = list_widget.create($container, mapped_topic_values, {
         name: "recent_view_table",
@@ -1296,7 +1306,7 @@ export function complete_rerender(): void {
             ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
-        $simplebar_container: $("#recent_view_table .table_fix_head"),
+        $simplebar_container: $("html"),
         callback_after_render,
         is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
@@ -1309,6 +1319,10 @@ export function complete_rerender(): void {
 }
 
 export function show(): void {
+    // We remove event handler before hiding, so they need to
+    // be attached again, checking for topics_widget to be defined
+    // is a reliable solution to check if recent view was displayed earlier.
+    const reattach_event_handlers = topics_widget !== undefined;
     views_util.show({
         highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_recent_view,
         $view: $("#recent_view"),
@@ -1321,6 +1335,12 @@ export function show(): void {
         set_visible: recent_view_util.set_visible,
         complete_rerender,
     });
+    last_scroll_offset = undefined;
+
+    if (reattach_event_handlers) {
+        assert(topics_widget !== undefined);
+        topics_widget.set_up_event_handlers();
+    }
 
     if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_recent_view_modal")) {
         const html_body = render_introduce_zulip_view_modal({
@@ -1348,7 +1368,11 @@ function filter_buttons(): JQuery {
 }
 
 export function hide(): void {
+    // Since we have events attached to element (window) which are present in
+    // views others than recent view, it is important to clear events here.
+    topics_widget?.clear_event_handlers();
     is_waiting_for_revive_current_focus = true;
+    last_scroll_offset = window.scrollY;
     views_util.hide({
         $view: $("#recent_view"),
         set_visible: recent_view_util.set_visible,
@@ -1433,9 +1457,8 @@ function down_arrow_navigation(): void {
 }
 
 function get_page_up_down_delta(): number {
-    const table_height = $("#recent_view_table .table_fix_head").height()!;
-    const table_header_height = $("#recent_view_table table thead").height()!;
-    const compose_box_height = $("#compose").height()!;
+    const thead_bottom = $("#recent-view-table-headers")[0]!.getBoundingClientRect().bottom;
+    const compose_box_top = window.innerHeight - $("#compose").outerHeight(true)!;
     // One usually wants PageDown to move what had been the bottom row
     // to now be at the top, so one can be confident one will see
     // every row using it. This offset helps achieve that goal.
@@ -1443,38 +1466,45 @@ function get_page_up_down_delta(): number {
     // See navigate.amount_to_paginate for similar logic in the message feed.
     const scrolling_reduction_to_maintain_context = 75;
 
-    const delta =
-        table_height -
-        table_header_height -
-        compose_box_height -
-        scrolling_reduction_to_maintain_context;
+    const delta = compose_box_top - thead_bottom - scrolling_reduction_to_maintain_context;
     return delta;
 }
 
 function page_up_navigation(): void {
-    const $scroll_container = scroll_util.get_scroll_element(
-        $("#recent_view_table .table_fix_head"),
-    );
     const delta = get_page_up_down_delta();
-    const new_scrollTop = $scroll_container.scrollTop()! - delta;
+    const new_scrollTop = window.scrollY - delta;
     if (new_scrollTop <= 0) {
         row_focus = 0;
+        // If we are already at the scroll top, a scroll event
+        // is not triggered since the window doesn't actually scroll so
+        // we need to update `row_focus` manually.
+        if (window.scrollY === 0) {
+            set_table_focus(row_focus, col_focus);
+            return;
+        }
     }
-    $scroll_container.scrollTop(new_scrollTop);
+
+    window.scroll(0, new_scrollTop);
 }
 
 function page_down_navigation(): void {
-    const $scroll_container = scroll_util.get_scroll_element(
-        $("#recent_view_table .table_fix_head"),
-    );
     const delta = get_page_up_down_delta();
-    const new_scrollTop = $scroll_container.scrollTop()! + delta;
-    const table_height = $("#recent_view_table .table_fix_head").height()!;
-    if (new_scrollTop >= table_height) {
+    const new_scrollTop = window.scrollY + delta;
+    const max_scroll_top = document.body.scrollHeight - window.innerHeight;
+
+    if (new_scrollTop >= max_scroll_top) {
         assert(topics_widget !== undefined);
         row_focus = topics_widget.get_current_list().length - 1;
+        // If we are already at the scroll bottom, a scroll event
+        // is not triggered since the window doesn't actually scroll so
+        // we need to update `row_focus` manually.
+        if (window.scrollY === max_scroll_top) {
+            set_table_focus(row_focus, col_focus);
+            return;
+        }
     }
-    $scroll_container.scrollTop(new_scrollTop);
+
+    window.scroll(0, new_scrollTop);
 }
 
 function check_row_type_transition(row: number, col: number): boolean {
@@ -1706,14 +1736,18 @@ export function initialize({
 }): void {
     load_filters();
 
-    $("body").on("click", "#recent_view_table .recent_view_participant_avatar", function (e) {
-        const user_id_string = $(this).parent().attr("data-user-id");
-        assert(user_id_string !== undefined);
-        const participant_user_id = Number.parseInt(user_id_string, 10);
-        e.stopPropagation();
-        assert(this instanceof Element);
-        on_click_participant(this, participant_user_id);
-    });
+    $("body").on(
+        "click",
+        "#recent-view-content-table .recent_view_participant_avatar",
+        function (e) {
+            const user_id_string = $(this).parent().attr("data-user-id");
+            assert(user_id_string !== undefined);
+            const participant_user_id = Number.parseInt(user_id_string, 10);
+            e.stopPropagation();
+            assert(this instanceof Element);
+            on_click_participant(this, participant_user_id);
+        },
+    );
 
     $("body").on(
         "keydown",
@@ -1722,7 +1756,7 @@ export function initialize({
     );
 
     // Mute topic in a unmuted stream
-    $("body").on("click", "#recent_view_table .stream_unmuted.on_hover_topic_mute", (e) => {
+    $("body").on("click", "#recent-view-content-table .stream_unmuted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
         assert(e.target instanceof HTMLElement);
         const $elt = $(e.target);
@@ -1735,20 +1769,24 @@ export function initialize({
     });
 
     // Unmute topic in a unmuted stream
-    $("body").on("click", "#recent_view_table .stream_unmuted.on_hover_topic_unmute", (e) => {
-        e.stopPropagation();
-        assert(e.target instanceof HTMLElement);
-        const $elt = $(e.target);
-        const topic_row_index = $elt.closest("tr").index();
-        focus_clicked_element(topic_row_index, COLUMNS.mute);
-        user_topics.set_visibility_policy_for_element(
-            $elt,
-            user_topics.all_visibility_policies.INHERIT,
-        );
-    });
+    $("body").on(
+        "click",
+        "#recent-view-content-table .stream_unmuted.on_hover_topic_unmute",
+        (e) => {
+            e.stopPropagation();
+            assert(e.target instanceof HTMLElement);
+            const $elt = $(e.target);
+            const topic_row_index = $elt.closest("tr").index();
+            focus_clicked_element(topic_row_index, COLUMNS.mute);
+            user_topics.set_visibility_policy_for_element(
+                $elt,
+                user_topics.all_visibility_policies.INHERIT,
+            );
+        },
+    );
 
     // Unmute topic in a muted stream
-    $("body").on("click", "#recent_view_table .stream_muted.on_hover_topic_unmute", (e) => {
+    $("body").on("click", "#recent-view-content-table .stream_muted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         assert(e.target instanceof HTMLElement);
         const $elt = $(e.target);
@@ -1761,7 +1799,7 @@ export function initialize({
     });
 
     // Mute topic in a muted stream
-    $("body").on("click", "#recent_view_table .stream_muted.on_hover_topic_mute", (e) => {
+    $("body").on("click", "#recent-view-content-table .stream_muted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
         assert(e.target instanceof HTMLElement);
         const $elt = $(e.target);
@@ -1779,7 +1817,7 @@ export function initialize({
         change_focused_element($(e.target), "click");
     });
 
-    $("body").on("click", "#recent_view_table .on_hover_topic_read", (e) => {
+    $("body").on("click", "#recent-view-content-table .on_hover_topic_read", (e) => {
         e.stopPropagation();
         assert(e.currentTarget instanceof HTMLElement);
         const $elt = $(e.currentTarget);

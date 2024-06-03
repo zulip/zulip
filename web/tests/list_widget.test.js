@@ -76,6 +76,7 @@ function make_scroll_container() {
         assert.equal(ev, "scroll.list_widget_container");
         $scroll_container.cleared = true;
     };
+    $scroll_container.is = () => false;
 
     return $scroll_container;
 }

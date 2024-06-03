@@ -323,10 +323,6 @@ p.n-margin {
     }
 }
 
-.recent_view_container #recent_view_table {
-    margin-top: var(--navbar-fixed-height);
-}
-
 .app {
     min-width: 100%;
     min-height: 100%;

@@ -7,6 +7,7 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
+window.scrollTo = noop;
 const test_url = () => "https://www.example.com";
 
 // We assign this in our test() wrapper.

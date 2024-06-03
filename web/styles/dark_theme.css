@@ -689,22 +689,6 @@
         }
     }
 
-    #recent_view_table tr {
-        background-color: var(--color-background);
-
-        &:hover {
-            background-color: hsl(208deg 26% 11% / 60%);
-        }
-    }
-
-    #recent_view_table .unread_topic {
-        background-color: hsl(212deg 30% 22% / 40%);
-
-        &:hover {
-            background-color: hsl(212deg 30% 22% / 60%);
-        }
-    }
-
     .btn-recent-selected,
     #recent_view_table thead th {
         background-color: hsl(228deg 11% 17%) !important;
@@ -714,18 +698,7 @@
         }
     }
 
-    #recent_view_table td a {
-        color: hsl(206deg 89% 74%);
-        text-decoration: none;
-
-        &:hover {
-            color: hsl(208deg 64% 52%);
-        }
-    }
-
     #recent_view_table {
-        border-color: hsl(0deg 0% 0% / 60%);
-
         .fa-envelope,
         .fa-group {
             opacity: 0.7;
@@ -788,8 +761,7 @@
     #settings_page .sidebar-wrapper *,
     table,
     table th,
-    table td,
-    #recent_view_table table td {
+    table td {
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
