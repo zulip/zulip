@@ -1968,7 +1968,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(remote_realm_count.remote_id, realm_count.id)
         self.assertEqual(remote_realm_count.remote_realm, None)
         self.assertEqual(remote_installation_count.remote_id, installation_count.id)
-        # InstallationCont/RemoteInstallationCount don't have realm/remote_realm foreign
+        # InstallationCount/RemoteInstallationCount don't have realm/remote_realm foreign
         # keys, because they're aggregated over all realms.
 
         self.assertEqual(remote_realm_audit_log.remote_id, realm_audit_log.id)
