@@ -6,8 +6,38 @@ const FakeEvent = require("./zjquery_event.cjs");
 
 const noop = function () {};
 
+const ignore_missing = Symbol("ignore_missing");
+
+const reject_missing_handler = {
+    has(target, property) {
+        if (!(property in target || target[ignore_missing]?.(property))) {
+            throw new TypeError(`unknown property ${property} of mock ${target.constructor.name}`);
+        }
+        return Reflect.has(target, property);
+    },
+    get(target, property, receiver) {
+        if (!(property in target || target[ignore_missing]?.(property))) {
+            throw new TypeError(`unknown property ${property} of mock ${target.constructor.name}`);
+        }
+        return Reflect.get(target, property, receiver);
+    },
+    ownKeys(target) {
+        throw new TypeError(`enumerating properties of mock ${target.constructor.name}`);
+    },
+};
+
+class RejectMissing {
+    constructor() {
+        return new Proxy(this, reject_missing_handler);
+    }
+}
+
+class FakeElement extends RejectMissing {
+    _tippy = undefined;
+}
+
 // TODO: convert this to a true class
-function FakeElement(selector, opts) {
+exports.FakeJQuery = function (selector, opts) {
     let html = "never-been-set";
     let text = "never-been-set";
     let value;
@@ -23,8 +53,6 @@ function FakeElement(selector, opts) {
     const event_store = make_event_store(selector);
 
     const $self = {
-        length: 1,
-        [0]: {textContent: text, to_$: () => $self},
         [Symbol.iterator]: Array.prototype.values,
         addClass(class_name) {
             classes.set(class_name, true);
@@ -258,10 +286,14 @@ function FakeElement(selector, opts) {
         }
 
         $self.length = opts.elements.length;
-    }
-
-    if (selector[0] === "<") {
-        $self.html(selector);
+    } else {
+        $self.length = 1;
+        $self[0] = new FakeElement();
+        $self[0].textContent = text;
+        $self[0].to_$ = () => $self;
+        if (selector[0] === "<") {
+            $self.html(selector);
+        }
     }
 
     $self.selector = selector;
@@ -269,7 +301,7 @@ function FakeElement(selector, opts) {
     $self.__zjquery = true;
 
     return $self;
-}
+};
 
 function make_event_store(selector) {
     /*
@@ -399,5 +431,3 @@ function make_event_store(selector) {
 
     return self;
 }
-
-module.exports = FakeElement;

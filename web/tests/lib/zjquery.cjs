@@ -4,11 +4,11 @@ const assert = require("node:assert/strict");
 
 /*
     When using zjquery, the first call to $("#foo")
-    returns a new instance of the FakeElement pseudoclass,
+    returns a new instance of the FakeJQuery pseudoclass,
     and then subsequent calls to $("#foo") get the
     same instance.
 */
-const FakeElement = require("./zjquery_element.cjs");
+const {FakeJQuery} = require("./zjquery_element.cjs");
 const FakeEvent = require("./zjquery_event.cjs");
 
 function verify_selector_for_zulip(selector) {
@@ -43,7 +43,7 @@ function make_zjquery() {
     const fn = {};
 
     function new_elem(selector, create_opts) {
-        const $elem = FakeElement(selector, {...create_opts});
+        const $elem = FakeJQuery(selector, {...create_opts});
         Object.assign($elem, fn);
 
         // Create a proxy handler to detect missing stubs.
