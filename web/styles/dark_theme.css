@@ -555,7 +555,7 @@
     }
 
     .preview_message_area {
-        background-color: inherit;
+        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     .top-navbar-border {

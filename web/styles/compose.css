@@ -1148,7 +1148,7 @@ textarea.new_message_textarea,
 
     border: 1px solid hsl(0deg 0% 67%);
     border-radius: 4px;
-    background-color: hsl(0deg 0% 98%);
+    background-color: hsl(0deg 0% 100%);
     cursor: not-allowed;
 }
 
