@@ -202,7 +202,7 @@ export function get_gear_menu_content_context() {
     const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
     return {
         realm_name: realm.realm_name,
-        realm_url: new URL(realm.realm_uri).hostname,
+        realm_url: new URL(realm.realm_url).hostname,
         is_owner: current_user.is_owner,
         is_admin: current_user.is_admin,
         is_spectator: page_params.is_spectator,

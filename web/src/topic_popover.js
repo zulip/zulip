@@ -34,7 +34,7 @@ export function initialize() {
                     const $elt = $(instance.reference);
                     stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
                     topic_name = $elt.attr("data-topic-name");
-                    url = new URL($elt.attr("data-topic-url"), realm.realm_uri);
+                    url = new URL($elt.attr("data-topic-url"), realm.realm_url);
                 } else {
                     const $elt = $(instance.reference)
                         .closest(".topic-sidebar-menu-icon")

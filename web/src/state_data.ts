@@ -163,7 +163,7 @@ export const realm_schema = z.object({
     realm_require_unique_names: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
     realm_upload_quota_mib: z.nullable(z.number()),
-    realm_uri: z.string(),
+    realm_url: z.string(),
     realm_user_group_edit_policy: z.number(),
     realm_video_chat_provider: z.number(),
     realm_waiting_period_threshold: z.number(),

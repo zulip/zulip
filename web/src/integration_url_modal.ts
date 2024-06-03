@@ -138,7 +138,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
             const selected_events = set_events_param(params);
 
-            const realm_url = realm.realm_uri;
+            const realm_url = realm.realm_url;
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
             $dialog_submit_button.prop("disabled", false);
