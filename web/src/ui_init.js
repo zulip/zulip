@@ -510,6 +510,8 @@ export function initialize_everything(state_data) {
     );
     const local_message_params = pop_fields("max_message_id");
 
+    const onboarding_steps_params = pop_fields("onboarding_steps");
+
     const current_user_params = pop_fields(
         "avatar_source",
         "avatar_url",
@@ -529,7 +531,6 @@ export function initialize_everything(state_data) {
         "is_guest",
         "is_moderator",
         "is_owner",
-        "onboarding_steps",
         "user_id",
     );
 
@@ -880,7 +881,7 @@ export function initialize_everything(state_data) {
     });
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
-    onboarding_steps.initialize();
+    onboarding_steps.initialize(onboarding_steps_params);
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();

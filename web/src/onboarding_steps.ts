@@ -1,7 +1,21 @@
+import {z} from "zod";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {current_user} from "./state_data";
-import type {OnboardingStep} from "./state_data";
+
+const one_time_notice_schema = z.object({
+    name: z.string(),
+    type: z.literal("one_time_notice"),
+});
+
+/* We may introduce onboarding step of types other than 'one time notice'
+in future. Earlier, we had 'hotspot' and 'one time notice' as the two
+types. We can simply do:
+const onboarding_step_schema = z.union([one_time_notice_schema, other_type_schema]);
+to avoid major refactoring when new type is introduced in the future. */
+const onboarding_step_schema = one_time_notice_schema;
+
+export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 
 export const ONE_TIME_NOTICES_TO_DISPLAY = new Set<string>();
 
@@ -31,6 +45,6 @@ export function update_onboarding_steps_to_display(onboarding_steps: OnboardingS
     }
 }
 
-export function initialize(): void {
-    update_onboarding_steps_to_display(current_user.onboarding_steps);
+export function initialize(params: {onboarding_steps: OnboardingStep[]}): void {
+    update_onboarding_steps_to_display(params.onboarding_steps);
 }

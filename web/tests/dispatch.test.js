@@ -126,6 +126,7 @@ const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
+const onboarding_steps = zrequire("onboarding_steps");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 
@@ -321,10 +322,14 @@ run_test("default_streams", ({override}) => {
 });
 
 run_test("onboarding_steps", () => {
-    current_user.onboarding_steps = [];
+    onboarding_steps.initialize({onboarding_steps: []});
     const event = event_fixtures.onboarding_steps;
+    const one_time_notices = new Set();
+    for (const onboarding_step of event.onboarding_steps) {
+        one_time_notices.add(onboarding_step.name);
+    }
     dispatch(event);
-    assert_same(current_user.onboarding_steps, event.onboarding_steps);
+    assert_same(onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY, one_time_notices);
 });
 
 run_test("invites_changed", ({override}) => {
