@@ -126,13 +126,9 @@
     border: 1px solid hsl(0deg 0% 0% / 20%);
     background-color: hsl(0deg 0% 100%);
 
-    .input {
-        height: 20px;
-
-        &:first-child:empty::before {
-            content: attr(data-no-recipients-text);
-            opacity: 0.5;
-        }
+    .input:first-child:empty::before {
+        content: attr(data-no-recipients-text);
+        opacity: 0.5;
     }
 
     .pill + .input:empty::before {
