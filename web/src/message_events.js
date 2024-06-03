@@ -166,6 +166,8 @@ export function insert_new_messages(messages, sent_by_this_client) {
     message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+
+    return messages;
 }
 
 export function update_messages(events) {

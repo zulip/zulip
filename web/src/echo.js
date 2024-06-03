@@ -194,12 +194,12 @@ export function insert_local_message(message_request, local_id_float, insert_new
         message.topic_links = markdown.get_topic_links(message.topic);
     }
 
-    waiting_for_id.set(message.local_id, message);
-    waiting_for_ack.set(message.local_id, message);
-
     message.display_recipient = build_display_recipient(message);
 
-    insert_new_messages([message], true);
+    [message] = insert_new_messages([message], true);
+
+    waiting_for_id.set(message.local_id, message);
+    waiting_for_ack.set(message.local_id, message);
 
     return message;
 }

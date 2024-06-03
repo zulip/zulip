@@ -66,6 +66,7 @@ run_test("message_event", ({override}) => {
     override(message_events, "insert_new_messages", (messages) => {
         assert.equal(messages[0].content, event.message.content);
         inserted = true;
+        return messages;
     });
 
     server_events._get_events_success([event]);
