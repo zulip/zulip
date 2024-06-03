@@ -409,6 +409,7 @@ ul.filters {
     list-style-type: none;
     margin-left: 0;
     color: hsl(0deg 0% 20% / 100%);
+    /* Streams take a standard row height. */
     line-height: var(--line-height-sidebar-row);
 
     & a {
@@ -1066,6 +1067,7 @@ li.top_left_scheduled_messages {
 }
 
 ul.topic-list {
+    line-height: var(--line-height-sidebar-row-prominent);
     list-style-type: none;
     font-weight: normal;
 }
