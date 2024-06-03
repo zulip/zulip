@@ -254,9 +254,10 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
-            return echo.insert_local_message(message_request, local_id_float, (messages) =>
-                assert.equal(messages[0].timestamp, fake_now),
-            );
+            return echo.insert_local_message(message_request, local_id_float, (messages) => {
+                assert.equal(messages[0].timestamp, fake_now);
+                return messages;
+            });
         });
 
         override(transmit, "send_message", (payload, success) => {

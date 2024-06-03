@@ -240,6 +240,7 @@ run_test("insert_local_message streams", ({override}) => {
         assert.equal(message.sender_full_name, "Iago");
         assert.equal(message.sender_id, 123);
         insert_message_called = true;
+        return [message];
     };
 
     const message_request = {
@@ -280,6 +281,7 @@ run_test("insert_local_message direct message", ({override}) => {
     const insert_new_messages = ([message]) => {
         assert.equal(message.display_recipient.length, 3);
         insert_message_called = true;
+        return [message];
     };
 
     override(markdown, "render", () => {
@@ -311,7 +313,7 @@ run_test("test reify_message_id", ({override}) => {
         sender_id: 123,
         draft_id: 100,
     };
-    echo.insert_local_message(message_request, local_id_float, noop);
+    echo.insert_local_message(message_request, local_id_float, (messages) => messages);
 
     let message_store_reify_called = false;
     let notifications_reify_called = false;
