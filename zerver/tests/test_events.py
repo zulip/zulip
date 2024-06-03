@@ -3128,6 +3128,27 @@ class NormalActionsTest(BaseAction):
             is_legacy=True,
         )
 
+    def test_do_delete_first_message_in_stream(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "test_stream1")
+        msg_id = self.send_stream_message(hamlet, "test_stream1")
+        msg_id_2 = self.send_stream_message(hamlet, "test_stream1")
+        message = Message.objects.get(id=msg_id)
+        with self.verify_action(state_change_expected=True, num_events=2) as events:
+            do_delete_messages(self.user_profile.realm, [message])
+
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "first_message_id")
+        self.assertEqual(events[0]["value"], msg_id_2)
+
+        check_delete_message(
+            "events[1]",
+            events[1],
+            message_type="stream",
+            num_message_ids=1,
+            is_legacy=False,
+        )
+
     def test_do_delete_message_personal(self) -> None:
         msg_id = self.send_personal_message(
             self.example_user("cordelia"),

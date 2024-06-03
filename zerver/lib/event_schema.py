@@ -1370,6 +1370,7 @@ def check_stream_update(
         "value",
         "name",
         "stream_id",
+        "first_message_id",
     }
 
     if prop == "description":
@@ -1389,6 +1390,9 @@ def check_stream_update(
         assert extra_keys == set()
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop == "can_remove_subscribers_group":
+        assert extra_keys == set()
+        assert isinstance(value, int)
+    elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)
     else:
