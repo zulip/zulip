@@ -12,11 +12,11 @@ const puppeteer = require("puppeteer");
 const options = {};
 
 program
-    .arguments("<message_id> <image_path> <realm_uri")
-    .action((messageId, imagePath, realmUri) => {
+    .arguments("<message_id> <image_path> <realm_url>")
+    .action((messageId, imagePath, realmUrl) => {
         options.messageId = messageId;
         options.imagePath = imagePath;
-        options.realmUri = realmUri;
+        options.realmUrl = realmUrl;
         console.log(`Capturing screenshot for message ${messageId} to ${imagePath}`);
     })
     .parse(process.argv);
@@ -43,7 +43,7 @@ async function run() {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
         await page.setViewport({width: 1280, height: 1024, deviceScaleFactor: 2});
-        await page.goto(`${options.realmUri}/devlogin`);
+        await page.goto(`${options.realmUrl}/devlogin`);
         // wait for Iago devlogin button and click on it.
         await page.waitForSelector('[value="iago@zulip.com"]');
 
@@ -54,7 +54,7 @@ async function run() {
         ]);
 
         // Navigate to message and capture screenshot
-        await page.goto(`${options.realmUri}/#narrow/id/${options.messageId}`, {
+        await page.goto(`${options.realmUrl}/#narrow/id/${options.messageId}`, {
             waitUntil: "networkidle2",
         });
         // eslint-disable-next-line no-undef
