@@ -21,7 +21,7 @@ export function post_onboarding_step_as_read(onboarding_step_name: string): void
     });
 }
 
-export function update_notice_to_display(onboarding_steps: OnboardingStep[]): void {
+export function update_onboarding_steps_to_display(onboarding_steps: OnboardingStep[]): void {
     ONE_TIME_NOTICES_TO_DISPLAY.clear();
 
     for (const onboarding_step of onboarding_steps) {
@@ -32,5 +32,5 @@ export function update_notice_to_display(onboarding_steps: OnboardingStep[]): vo
 }
 
 export function initialize(): void {
-    update_notice_to_display(current_user.onboarding_steps);
+    update_onboarding_steps_to_display(current_user.onboarding_steps);
 }

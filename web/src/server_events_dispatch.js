@@ -146,7 +146,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "onboarding_steps":
-            onboarding_steps.update_notice_to_display(event.onboarding_steps);
+            onboarding_steps.update_onboarding_steps_to_display(event.onboarding_steps);
             current_user.onboarding_steps = current_user.onboarding_steps
                 ? [...current_user.onboarding_steps, ...event.onboarding_steps]
                 : event.onboarding_steps;
