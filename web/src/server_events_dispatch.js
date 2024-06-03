@@ -147,9 +147,6 @@ export function dispatch_normal_event(event) {
 
         case "onboarding_steps":
             onboarding_steps.update_onboarding_steps_to_display(event.onboarding_steps);
-            current_user.onboarding_steps = current_user.onboarding_steps
-                ? [...current_user.onboarding_steps, ...event.onboarding_steps]
-                : event.onboarding_steps;
             break;
 
         case "invites_changed":
