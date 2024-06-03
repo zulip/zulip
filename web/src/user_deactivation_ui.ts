@@ -38,7 +38,7 @@ export function confirm_deactivation(
 
             const bots_owned_by_user = bot_data.get_all_bots_owned_by_user(user_id);
             const user = people.get_by_user_id(user_id);
-            const realm_url = realm.realm_uri;
+            const realm_url = realm.realm_url;
             const realm_name = realm.realm_name;
             const opts = {
                 username: user.full_name,

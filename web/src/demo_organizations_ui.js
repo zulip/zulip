@@ -30,7 +30,7 @@ export function handle_demo_organization_conversion() {
         }
 
         const email_set = !settings_data.user_email_not_configured();
-        const parts = new URL(realm.realm_uri).hostname.split(".");
+        const parts = new URL(realm.realm_url).hostname.split(".");
         parts.shift();
         const domain = parts.join(".");
         const html_body = render_convert_demo_organization_form({
@@ -74,7 +74,7 @@ export function handle_demo_organization_conversion() {
             };
             const opts = {
                 success_continuation(data) {
-                    window.location.href = data.realm_uri;
+                    window.location.href = data.realm_url;
                 },
             };
             dialog_widget.submit_api_request(channel.patch, "/json/realm", data, opts);
