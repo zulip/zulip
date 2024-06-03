@@ -60,6 +60,7 @@ from zerver.lib.push_notifications import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Client,
@@ -118,7 +119,7 @@ class AnalyticsTestCase(ZulipTestCase):
         RemoteRealm.objects.all().delete()
 
     # Lightweight creation of users, streams, and messages
-    def create_user(self, **kwargs: Any) -> UserProfile:
+    def create_user(self, skip_auditlog: bool = False, **kwargs: Any) -> UserProfile:
         self.name_counter += 1
         defaults = {
             "email": f"user{self.name_counter}@domain.tld",
@@ -136,7 +137,7 @@ class AnalyticsTestCase(ZulipTestCase):
             if kwargs["is_bot"]:
                 pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
                 pass_kwargs["bot_owner"] = None
-            return create_user(
+            user = create_user(
                 kwargs["email"],
                 "password",
                 kwargs["realm"],
@@ -145,6 +146,18 @@ class AnalyticsTestCase(ZulipTestCase):
                 role=UserProfile.ROLE_REALM_ADMINISTRATOR,
                 **pass_kwargs,
             )
+            if not skip_auditlog:
+                RealmAuditLog.objects.create(
+                    realm=kwargs["realm"],
+                    acting_user=None,
+                    modified_user=user,
+                    event_type=RealmAuditLog.USER_CREATED,
+                    event_time=kwargs["date_joined"],
+                    extra_data={
+                        RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(kwargs["realm"])
+                    },
+                )
+            return user
 
     def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
         self.name_counter += 1
@@ -1882,7 +1895,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.user = self.create_user()
+        self.user = self.create_user(skip_auditlog=True)
         self.stat = COUNT_STATS["active_users_audit:is_bot:day"]
         self.current_property = self.stat.property
 
@@ -1955,11 +1968,11 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     # Also tests that aggregation to RealmCount and InstallationCount is
     # being done, and that we're storing the user correctly in UserCount
     def test_multiple_users_realms_and_bots(self) -> None:
-        user1 = self.create_user()
-        user2 = self.create_user()
+        user1 = self.create_user(skip_auditlog=True)
+        user2 = self.create_user(skip_auditlog=True)
         second_realm = do_create_realm(string_id="moo", name="moo")
-        user3 = self.create_user(realm=second_realm)
-        user4 = self.create_user(realm=second_realm, is_bot=True)
+        user3 = self.create_user(skip_auditlog=True, realm=second_realm)
+        user4 = self.create_user(skip_auditlog=True, realm=second_realm, is_bot=True)
         for user in [user1, user2, user3, user4]:
             self.add_event(RealmAuditLog.USER_CREATED, 1, user=user)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
@@ -2001,7 +2014,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     # that situation doesn't throw an error.
     def test_empty_realm_or_user_with_no_relevant_activity(self) -> None:
         self.add_event(RealmAuditLog.USER_SOFT_ACTIVATED, 1)
-        self.create_user()  # also test a user with no RealmAuditLog entries
+        self.create_user(skip_auditlog=True)  # also test a user with no RealmAuditLog entries
         do_create_realm(string_id="moo", name="moo")
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, [], [])
@@ -2020,9 +2033,9 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.assertTableState(UserCount, ["subgroup"], [["false"]])
 
     def test_simultaneous_max_audit_entries_of_different_users(self) -> None:
-        user1 = self.create_user()
-        user2 = self.create_user()
-        user3 = self.create_user()
+        user1 = self.create_user(skip_auditlog=True)
+        user2 = self.create_user(skip_auditlog=True)
+        user3 = self.create_user(skip_auditlog=True)
         self.add_event(RealmAuditLog.USER_CREATED, 0.5, user=user1)
         self.add_event(RealmAuditLog.USER_CREATED, 0.5, user=user2)
         self.add_event(RealmAuditLog.USER_CREATED, 1, user=user3)
