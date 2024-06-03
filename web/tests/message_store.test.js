@@ -160,9 +160,9 @@ test("message_booleans_parity", () => {
     // This test asserts that both have identical behavior for the
     // flags common between them.
     const assert_bool_match = (flags, expected_message) => {
-        let set_message = {topic: "set_message_booleans", flags};
+        let set_message = {topic: "convert_raw_message_to_message_with_booleans", flags};
         const update_message = {topic: "update_booleans"};
-        set_message = message_store.set_message_booleans(set_message);
+        set_message = message_store.convert_raw_message_to_message_with_booleans(set_message);
         message_store.update_booleans(update_message, flags);
         for (const key of Object.keys(expected_message)) {
             assert.equal(
@@ -172,7 +172,7 @@ test("message_booleans_parity", () => {
             );
             assert.equal(update_message[key], expected_message[key]);
         }
-        assert.equal(set_message.topic, "set_message_booleans");
+        assert.equal(set_message.topic, "convert_raw_message_to_message_with_booleans");
         assert.equal(update_message.topic, "update_booleans");
     };
 
