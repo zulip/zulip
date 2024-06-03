@@ -1684,5 +1684,8 @@
   "{stream_name}: {sub_count} users": "{stream_name}: {sub_count} utenti",
   "{user_time} local time": "{user_time} ora locale",
   "{username} [said]({link_to_message}):": "{username} [ha scritto]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} ha reagito con {emoji_name}"
+  "{username} reacted with {emoji_name}": "{username} ha reagito con {emoji_name}",
+  "New organization icon": "Nuova icona organizzazione",
+  "New organization logo": "Nuovo logo organizzazione",
+  "New profile picture": "Nuova immagine del profilo"
 }

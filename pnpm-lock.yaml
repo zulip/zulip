@@ -55,6 +55,12 @@ importers:
       '@uppy/core':
         specifier: ^4.0.1
         version: 4.1.2
+      '@uppy/dashboard':
+        specifier: 3.2.2
+        version: 3.2.2(@uppy/core@4.1.2)
+      '@uppy/image-editor':
+        specifier: ^2.1.1
+        version: 2.4.6(@uppy/core@4.1.2)
       '@uppy/progress-bar':
         specifier: ^4.0.0
         version: 4.0.0(@uppy/core@4.1.2)
@@ -2266,6 +2272,9 @@ packages:
   '@tootallnate/quickjs-emscripten@0.23.0':
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
 
+  '@transloadit/prettier-bytes@0.0.7':
+    resolution: {integrity: sha512-VeJbUb0wEKbcwaSlj5n+LscBl9IPgLPkHVGBkh00cztv6X4L/TJXK58LzFuBKX7/GAfiGhIwH67YTLTlzvIzBA==}
+
   '@transloadit/prettier-bytes@0.3.4':
     resolution: {integrity: sha512-8/SnIF9Q2k52mbjRVAYLranwkaDTLb+O9r4Z/uo8uNw//SjygKvvbF4BHSOuReufaAyum1q13602VcNud25Dfg==}
 
@@ -2638,13 +2647,49 @@ packages:
   '@uppy/core@4.1.2':
     resolution: {integrity: sha512-PGfQqSEEa9rOCy5LVYjEcmS/gydmqjdadEbd5sizqNMRwxz/DaIjEbGpZ3CP31RwEn17f2rK/F8BlgivzuuqIg==}
 
+  '@uppy/dashboard@3.2.2':
+    resolution: {integrity: sha512-VMclIoFrt0DI6Tdd6wkIX870LnlheANZrSDWvGogYc7ydkOE36/83nRwh7ZTBurA5orX5KIbjDqO5/Sd799zpQ==}
+    peerDependencies:
+      '@uppy/core': ^3.0.6
+
+  '@uppy/image-editor@2.4.6':
+    resolution: {integrity: sha512-uQ8k4pUSsYBv6ZBoICwKq3M1DqiKg6AFM/nbvxL/q5KpRkRTszzPvP4hyvjY2zDLLf/NlK3E45N2IcWraV87dQ==}
+    peerDependencies:
+      '@uppy/core': ^3.11.3
+
+  '@uppy/informer@3.1.0':
+    resolution: {integrity: sha512-vmpTLqzSLmZSuIVDZV0o19yXVqyTh5/uCbKUEiyfBhR726kQiuYQLP/ZHaKcvW3c1ESQGbNg53iNHbFBqF681w==}
+    peerDependencies:
+      '@uppy/core': ^3.9.3
+
   '@uppy/progress-bar@4.0.0':
     resolution: {integrity: sha512-hCUjlfGWHlvBPQDO5YBH/8HEr+3+ZEobTblBg0Wbn3ecJSiKkSRi0GkDVp3OMnwfqgK2wm8Ve+tR/5Gds7vE0A==}
     peerDependencies:
       '@uppy/core': ^4.0.0
 
+  '@uppy/provider-views@3.13.0':
+    resolution: {integrity: sha512-Z2oI88A+GC2zIPk8beoeFN/miHKkhtF58mYjvb5miGCMMZM7p7LRj98sgb5OOdKsGrfeiuTavtgL424BvcVd8w==}
+    peerDependencies:
+      '@uppy/core': ^3.13.0
+
+  '@uppy/status-bar@3.3.3':
+    resolution: {integrity: sha512-TCcnBjTDbq/AmnGOcWbCpQNsv05Z6Y36zdmTCt/xNe2/gTVAYAzGRoGOrkeb6jf/E4AAi25VyOolSqL2ibB8Kw==}
+    peerDependencies:
+      '@uppy/core': ^3.11.2
+
   '@uppy/store-default@4.1.0':
     resolution: {integrity: sha512-z5VSc4PNXpAtrrUPg5hdKJO5Ul7u4ZYLyK+tYzvEgzgR4nLVZmpGzj/d4N90jXpUqEibWKXvevODEB5VlTLHzg==}
+
+  '@uppy/thumbnail-generator@3.1.0':
+    resolution: {integrity: sha512-tDKK/cukC0CrM0F/OlHFmvpGGUq+Db4YfakhIGPKtT7ZO8aWOiIu5JIvaYUnKRxGq3RGsk4zhkxYXuoxVzzsGA==}
+    peerDependencies:
+      '@uppy/core': ^3.10.0
+
+  '@uppy/utils@5.9.0':
+    resolution: {integrity: sha512-9Ubddd3orCOLYjf0KobwgJ+aTrABSxk9t4X/QdM4qJHVZuMIftkaMplrViRUO+kvIBCXEZDIP2AmS060siDNGw==}
+
+  '@uppy/utils@6.0.0':
+    resolution: {integrity: sha512-24mvEYlt189setvd0z8l3LJRxiq+W8UAZ3lCHRP1Qzq6rSdd/cVaTiIgV+0ZvNnZMmiEKeKdEcfFG3VeGvE3dg==}
 
   '@uppy/utils@6.0.2':
     resolution: {integrity: sha512-ZoNeAa1YTKSlcvXe1SP3POjzjRZ9jSojorbst03vwd1Ks9vHPGf6pne61DowTXHZ3HMj1vpcIaQ1VIEWeeADlA==}
@@ -3349,6 +3394,9 @@ packages:
   clamp@1.0.1:
     resolution: {integrity: sha512-kgMuFyE78OC6Dyu3Dy7vcx4uy97EIbVxJB/B0eJ3bUNAkwdNcxYzgKltnyADiYwsR7SEqkkUPsEUT//OVS6XMA==}
 
+  classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
+
   cldr-annotations-derived-modern@45.0.0:
     resolution: {integrity: sha512-IIgaQV6f9wx09TKfpx/o9A0qWcryoEPR3VkPwj+8Mwthkxtx0uQtYffBNTo7gDhBC1ADwKhOZbyi5eac6I56Tw==}
 
@@ -3633,6 +3681,9 @@ packages:
 
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
+
+  cropperjs@1.5.7:
+    resolution: {integrity: sha512-sGj+G/ofKh+f6A4BtXLJwtcKJgMUsXYVUubfTo9grERiDGXncttefmue/fyQFvn8wfdyoD1KhDRYLfjkJFl0yw==}
 
   cross-spawn@7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
@@ -4448,6 +4499,9 @@ packages:
   execa@8.0.1:
     resolution: {integrity: sha512-VyhnebXciFV2DESc+p6B+y0LjSm0krU4OgJN44qFAhBY0TJ+1V61tYD2+wHusZ6F9n5K+vl8k0sTy7PEfV4qpg==}
     engines: {node: '>=16.17'}
+
+  exifr@7.1.3:
+    resolution: {integrity: sha512-g/aje2noHivrRSLbAUtBPWFbxKdKhgj/xr1vATDdUXPOFYJlQ62Ft0oy+72V6XLIpDJfHs6gXLbBLAolqOXYRw==}
 
   exponential-backoff@3.1.1:
     resolution: {integrity: sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==}
@@ -5462,6 +5516,9 @@ packages:
     resolution: {integrity: sha512-Kw/ReK0iqwKeu0MITLFuj0jbPAmEiOsIwyIXvvbfa6QfmN9pkD1M+8pdk7Rl/dTKbH34/XBFMbgD4iMJhLQbGA==}
     engines: {node: '>=0.10.0'}
 
+  is-shallow-equal@1.0.1:
+    resolution: {integrity: sha512-lq5RvK+85Hs5J3p4oA4256M1FEffzmI533ikeDHvJd42nouRRx5wBzt36JuviiGe5dIPyHON/d0/Up+PBo6XkQ==}
+
   is-shared-array-buffer@1.0.3:
     resolution: {integrity: sha512-nA2hv5XIhLR3uVzDDfCIknerhx8XUKnstuOERPNNIinXG7v9u+ohXF67vxm4TPTEPU6lm61ZkwP3c9PCB97rhg==}
     engines: {node: '>= 0.4'}
@@ -6017,6 +6074,9 @@ packages:
     resolution: {integrity: sha512-LZcMTBAgqUUKNXZagcZxvXXfgF1bHX7Y7nQ0QyEiNbRJgE29GhgPd8Yna1VQcLlPiHt/5RFJMWYN9Uv/VPNvjQ==}
     engines: {node: '>= 4.0.0'}
 
+  memoize-one@6.0.0:
+    resolution: {integrity: sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==}
+
   memory-fs@0.2.0:
     resolution: {integrity: sha512-+y4mDxU4rvXXu5UDSGCGNiesFmwCHuefGMoPCO1WYucNYj7DsLqrFaa2fXVI0H+NNiPTwwzKwspn9yTZqUGqng==}
 
@@ -6330,6 +6390,11 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  nanoid@4.0.2:
+    resolution: {integrity: sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==}
+    engines: {node: ^14 || ^16 || >=18}
+    hasBin: true
+
   nanoid@5.0.7:
     resolution: {integrity: sha512-oLxFY2gd2IqnjcYyOXD8XGCftpGtZP2AbHbOkthDkvRywH5ayNtPVy9YlOPcHckXzbLTCHpkb7FB+yuxKV13pQ==}
     engines: {node: ^18 || >=20}
@@ -6592,6 +6657,10 @@ packages:
     resolution: {integrity: sha512-/bjOqmgETBYB5BoEeGVea8dmvHb2m9GLy1E9W43yeyfP6QQCZGFNa+XRceJEuDB6zqr+gKpIAmlLebMpykw/MQ==}
     engines: {node: '>=10'}
 
+  p-queue@7.4.1:
+    resolution: {integrity: sha512-vRpMXmIkYF2/1hLBKisKeVYJZ8S2tZ0zEAmIJgdVKP2nq0nh4qCdf8bgw+ZgKrkh71AOCaqzwbJJk1WtdcF3VA==}
+    engines: {node: '>=12'}
+
   p-queue@8.0.1:
     resolution: {integrity: sha512-NXzu9aQJTAzbBqOt2hwsR63ea7yvxJc0PwN/zobNAudYfb1B7R08SzB4TsLeSbUCuG467NhnoT0oO6w1qRO+BA==}
     engines: {node: '>=18'}
@@ -6599,6 +6668,10 @@ packages:
   p-retry@6.2.0:
     resolution: {integrity: sha512-JA6nkq6hKyWLLasXQXUrO4z8BUZGUt/LjlJxx8Gb2+2ntodU/SS63YZ8b0LUTbQ8ZB9iwOfhEPhg4ykKnn2KsA==}
     engines: {node: '>=16.17'}
+
+  p-timeout@5.1.0:
+    resolution: {integrity: sha512-auFDyzzzGZZZdHz3BtET9VEz0SE/uMEAx7uWfGPucfzEwwe/xH0iVeZibQmANYE/hp9T2+UUZT5m+BKyrDp3Ew==}
+    engines: {node: '>=12'}
 
   p-timeout@6.1.2:
     resolution: {integrity: sha512-UbD77BuZ9Bc9aABo74gfXhNvzC9Tx7SxtHSh1fxvx3jTLLYvmVhiQZZrJzqqU0jKbN32kb5VOKiLEQI/3bIjgQ==}
@@ -11188,6 +11261,8 @@ snapshots:
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
+  '@transloadit/prettier-bytes@0.0.7': {}
+
   '@transloadit/prettier-bytes@0.3.4': {}
 
   '@trysound/sax@0.2.0': {}
@@ -11635,13 +11710,75 @@ snapshots:
       nanoid: 5.0.7
       preact: 10.23.2
 
+  '@uppy/dashboard@3.2.2(@uppy/core@4.1.2)':
+    dependencies:
+      '@transloadit/prettier-bytes': 0.0.7
+      '@uppy/core': 4.1.2
+      '@uppy/informer': 3.1.0(@uppy/core@4.1.2)
+      '@uppy/provider-views': 3.13.0(@uppy/core@4.1.2)
+      '@uppy/status-bar': 3.3.3(@uppy/core@4.1.2)
+      '@uppy/thumbnail-generator': 3.1.0(@uppy/core@4.1.2)
+      '@uppy/utils': 5.9.0
+      classnames: 2.5.1
+      is-shallow-equal: 1.0.1
+      lodash.debounce: 4.0.8
+      memoize-one: 6.0.0
+      nanoid: 4.0.2
+      preact: 10.23.2
+
+  '@uppy/image-editor@2.4.6(@uppy/core@4.1.2)':
+    dependencies:
+      '@uppy/core': 4.1.2
+      '@uppy/utils': 5.9.0
+      cropperjs: 1.5.7
+      preact: 10.23.2
+
+  '@uppy/informer@3.1.0(@uppy/core@4.1.2)':
+    dependencies:
+      '@uppy/core': 4.1.2
+      '@uppy/utils': 5.9.0
+      preact: 10.23.2
+
   '@uppy/progress-bar@4.0.0(@uppy/core@4.1.2)':
     dependencies:
       '@uppy/core': 4.1.2
-      '@uppy/utils': 6.0.2
+      '@uppy/utils': 6.0.0
+      preact: 10.23.2
+
+  '@uppy/provider-views@3.13.0(@uppy/core@4.1.2)':
+    dependencies:
+      '@uppy/core': 4.1.2
+      '@uppy/utils': 5.9.0
+      classnames: 2.5.1
+      nanoid: 4.0.2
+      p-queue: 7.4.1
+      preact: 10.23.2
+
+  '@uppy/status-bar@3.3.3(@uppy/core@4.1.2)':
+    dependencies:
+      '@transloadit/prettier-bytes': 0.3.4
+      '@uppy/core': 4.1.2
+      '@uppy/utils': 5.9.0
+      classnames: 2.5.1
       preact: 10.23.2
 
   '@uppy/store-default@4.1.0': {}
+
+  '@uppy/thumbnail-generator@3.1.0(@uppy/core@4.1.2)':
+    dependencies:
+      '@uppy/core': 4.1.2
+      '@uppy/utils': 5.9.0
+      exifr: 7.1.3
+
+  '@uppy/utils@5.9.0':
+    dependencies:
+      lodash: 4.17.21
+      preact: 10.23.2
+
+  '@uppy/utils@6.0.0':
+    dependencies:
+      lodash: 4.17.21
+      preact: 10.23.2
 
   '@uppy/utils@6.0.2':
     dependencies:
@@ -11652,7 +11789,7 @@ snapshots:
     dependencies:
       '@uppy/companion-client': 4.0.1(@uppy/core@4.1.2)
       '@uppy/core': 4.1.2
-      '@uppy/utils': 6.0.2
+      '@uppy/utils': 6.0.0
 
   '@volar/kit@2.4.0(typescript@5.5.4)':
     dependencies:
@@ -12557,6 +12694,8 @@ snapshots:
 
   clamp@1.0.1: {}
 
+  classnames@2.5.1: {}
+
   cldr-annotations-derived-modern@45.0.0: {}
 
   cldr-annotations-modern@45.0.0: {}
@@ -12845,6 +12984,8 @@ snapshots:
       '@emotion/utils': 0.11.3
 
   create-require@1.1.1: {}
+
+  cropperjs@1.5.7: {}
 
   cross-spawn@7.0.3:
     dependencies:
@@ -13806,6 +13947,8 @@ snapshots:
       onetime: 6.0.0
       signal-exit: 4.1.0
       strip-final-newline: 3.0.0
+
+  exifr@7.1.3: {}
 
   exponential-backoff@3.1.1: {}
 
@@ -15054,6 +15197,8 @@ snapshots:
     dependencies:
       is-unc-path: 1.0.0
 
+  is-shallow-equal@1.0.1: {}
+
   is-shared-array-buffer@1.0.3:
     dependencies:
       call-bind: 1.0.7
@@ -15783,6 +15928,8 @@ snapshots:
       tree-dump: 1.0.2(tslib@2.7.0)
       tslib: 2.7.0
 
+  memoize-one@6.0.0: {}
+
   memory-fs@0.2.0: {}
 
   meow@10.1.5:
@@ -16233,6 +16380,8 @@ snapshots:
 
   nanoid@3.3.7: {}
 
+  nanoid@4.0.2: {}
+
   nanoid@5.0.7: {}
 
   native-promise-only@0.8.1: {}
@@ -16555,6 +16704,11 @@ snapshots:
     dependencies:
       aggregate-error: 3.1.0
 
+  p-queue@7.4.1:
+    dependencies:
+      eventemitter3: 5.0.1
+      p-timeout: 5.1.0
+
   p-queue@8.0.1:
     dependencies:
       eventemitter3: 5.0.1
@@ -16565,6 +16719,8 @@ snapshots:
       '@types/retry': 0.12.2
       is-network-error: 1.1.0
       retry: 0.13.1
+
+  p-timeout@5.1.0: {}
 
   p-timeout@6.1.2: {}
 

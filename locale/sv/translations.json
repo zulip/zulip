@@ -1555,5 +1555,8 @@
   "{stream_name}: {sub_count} users": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": ""
+  "{username} reacted with {emoji_name}": "",
+  "New organization icon": "Ny organisationsikon",
+  "New organization logo": "Ny organisationslogotyp",
+  "New profile picture": "Ny profilbild"
 }

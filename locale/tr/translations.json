@@ -1682,5 +1682,8 @@
   "{stream_name}: {sub_count} users": "",
   "{user_time} local time": "{user_time} lokal zaman",
   "{username} [said]({link_to_message}):": "{username} [dedi]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username}, {emoji_name} ile reaksiyona girdi"
+  "{username} reacted with {emoji_name}": "{username}, {emoji_name} ile reaksiyona girdi",
+  "New organization icon": "Yeni organizasyon simgesi",
+  "New organization logo": "Yeni organizasyon logosu",
+  "New profile picture": "Yeni profil resmi"
 }

@@ -13,6 +13,8 @@ const realm_icon = mock_esm("../src/realm_icon");
 
 const channel = mock_esm("../src/channel");
 
+mock_esm("@uppy/dashboard", {default: class Dashboard {}});
+
 mock_esm("../src/csrf", {csrf_token: "token-stub"});
 mock_esm("../src/loading", {
     make_indicator: noop,
@@ -247,7 +249,7 @@ function test_change_save_button_state() {
 }
 
 function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
-    const file_input = [{files: ["image1.png", "image2.png"]}];
+    const file_input = {files: ["image1.png", "image2.png"]};
 
     let posted;
     override(channel, "post", (req) => {
