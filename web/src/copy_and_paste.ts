@@ -377,6 +377,18 @@ export function is_white_space_pre(paste_html: string): boolean {
     );
 }
 
+function is_single_image(paste_html: string): boolean {
+    const html_fragment = new DOMParser()
+        .parseFromString(paste_html, "text/html")
+        .querySelector("body");
+    assert(html_fragment !== null);
+    return (
+        html_fragment.childNodes.length === 1 &&
+        html_fragment.firstElementChild !== null &&
+        html_fragment.firstElementChild.nodeName === "IMG"
+    );
+}
+
 export function paste_handler_converter(paste_html: string): string {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
@@ -662,6 +674,10 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
             paste_html &&
             !compose_ui.shift_pressed
         ) {
+            if (is_single_image(paste_html)) {
+                // If the copied content is a single image, we let upload.ts handle it.
+                return;
+            }
             event.preventDefault();
             event.stopPropagation();
             paste_html = maybe_transform_html(paste_html, paste_text);
