@@ -197,32 +197,31 @@
                     </div>
 
                     {% if page_params.free_trial_days %}
-                    {% elif not manual_license_management %}
-                    <div id="license-automatic-section" class="input-box upgrade-page-field license-management-section">
+                    {% else %}
+                    <div id="license-management-details" class="input-box upgrade-page-field license-management-section">
+                        {% if fixed_price_plan %}
                         <p class="not-editable-realm-field">
-                            {% if fixed_price_plan %}
-                            This is a fixed-price plan. You will be contacted by Zulip Sales a couple of months before the end of plan to discuss plan renewal.
-                            {% else %}
-                            Your subscription will renew automatically.
-                            Your bill will vary based on the number of active users in your organization. You can also
-                            <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}">purchase a fixed number of licenses</a> instead. See
-                            <a target="_blank" href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
-                            {% endif %}
+                            This is a fixed-price plan. You will be contacted by Zulip Sales a couple of months before the plan ends to discuss plan renewal.
+                        </p>
+                        {% elif not manual_license_management %}
+                        <p class="not-editable-realm-field">
+                            Your subscription will renew automatically. Your bill will vary based on the number of active users in your organization.
+                            You can also <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}">purchase a fixed number of licenses</a> instead.
+                            See <a target="_blank" href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
                         </p>
                         <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
-                    </div>
-                    {% else %}
-                    <div id="license-manual-section" class="input-box upgrade-page-field license-management-section">
+                        {% else %}
                         <p class="not-editable-realm-field">
-                            Your subscription will renew automatically. You will be able to manage the number of licenses on
-                            your organization's billing page.
+                            Your subscription will renew automatically. You will be able to manage the number of licenses on your organization's billing page.
                             {% if not page_params.setup_payment_by_invoice %}
                             You can also <a href="{{ page_params.billing_base_url }}/upgrade/?tier={{ page_params.tier }}">choose automatic license management</a> instead.
                             {% endif %}
                             See <a href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
                         </p>
+                        {% endif %}
                     </div>
                     {% endif %}
+
                     {% if not is_demo_organization %}
                     <div {% if page_params.setup_payment_by_invoice %} id="update-invoice-billing-info" {% elif payment_method %} id="upgrade-payment-info"{% endif %}>
                         {% if page_params.setup_payment_by_invoice %}
