@@ -1651,5 +1651,8 @@
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (výchozí)",
   "{user_time} local time": "{user_time} místní čas",
   "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} odpověděl {emoji_name}"
+  "{username} reacted with {emoji_name}": "{username} odpověděl {emoji_name}",
+  "New organization icon": "Nová ikona organizace",
+  "New organization logo": "Nové logo organizace",
+  "New profile picture": "Nová profilová fotografie"
 }

@@ -179,6 +179,11 @@ async function test_add_emoji(page: Page): Promise<void> {
     const emoji_upload_handle = await page.$("input#emoji_file_input");
     assert.ok(emoji_upload_handle);
     await emoji_upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
+
+    await page.waitForSelector("#emoji_preview_text", {visible: true});
+    await page.click("#emoji_image_save_button");
+
+    await page.waitForSelector("#emoji_preview_text", {visible: false});
     await page.click("#add-custom-emoji-modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
@@ -211,19 +216,38 @@ async function test_custom_realm_emoji(page: Page): Promise<void> {
     await test_delete_emoji(page);
 }
 
-async function test_upload_realm_icon_image(page: Page): Promise<void> {
+async function test_upload_realm_icon_image_cropped(page: Page): Promise<void> {
     const upload_handle = await page.$("#realm-icon-upload-widget input.image_file_input");
     assert.ok(upload_handle);
     await upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
-    await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
-        visible: true,
-    });
+    await common.wait_for_micromodal_to_open(page);
+    await page.click(".dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
+
     await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
         hidden: true,
     });
     await page.waitForSelector(
         '#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]',
+        {visible: true},
+    );
+}
+
+async function test_upload_realm_logo_image_scaled(page: Page): Promise<void> {
+    const upload_handle = await page.$("#realm-day-logo-upload-widget input.image_file_input");
+    assert.ok(upload_handle);
+    await upload_handle.uploadFile("static/images/logo/zulip-icon-512x512.png");
+
+    await common.wait_for_micromodal_to_open(page);
+    await page.click("#scale_to_fit");
+    await common.wait_for_micromodal_to_close(page);
+
+    await page.waitForSelector("#realm-day-logo-upload-widget .upload-spinner-background", {
+        hidden: true,
+    });
+    await page.waitForSelector(
+        '#realm-day-logo-upload-widget .image-block[src^="/user_avatars/2/realm/logo.png?version=2"]',
         {visible: true},
     );
 }
@@ -235,6 +259,15 @@ async function delete_realm_icon(page: Page): Promise<void> {
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 }
 
+async function delete_realm_logo(page: Page): Promise<void> {
+    await page.click("li[data-section='organization-profile']");
+    await page.click("#realm-day-logo-upload-widget .image-delete-button");
+
+    await page.waitForSelector("#realm-day-logo-upload-widget .image-delete-button", {
+        hidden: true,
+    });
+}
+
 async function test_organization_profile(page: Page): Promise<void> {
     await page.click("li[data-section='organization-profile']");
     const gravatar_selctor =
@@ -242,11 +275,27 @@ async function test_organization_profile(page: Page): Promise<void> {
     await page.waitForSelector(gravatar_selctor, {visible: true});
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 
-    await test_upload_realm_icon_image(page);
+    await test_upload_realm_icon_image_cropped(page);
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: true});
 
     await delete_realm_icon(page);
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
+    await page.waitForSelector(gravatar_selctor, {visible: true});
+
+    await page.waitForSelector(gravatar_selctor, {visible: true});
+    await page.waitForSelector("#realm-day-logo-upload-widget .image-delete-button", {
+        hidden: true,
+    });
+
+    await test_upload_realm_logo_image_scaled(page);
+    await page.waitForSelector("#realm-day-logo-upload-widget .image-delete-button", {
+        visible: true,
+    });
+
+    await delete_realm_logo(page);
+    await page.waitForSelector("#realm-day-logo-upload-widget .image-delete-button", {
+        hidden: true,
+    });
     await page.waitForSelector(gravatar_selctor, {visible: true});
 }
 

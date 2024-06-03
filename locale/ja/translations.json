@@ -1592,5 +1592,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "現地時間 {user_time}",
   "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} が {emoji_name} で反応しました"
+  "{username} reacted with {emoji_name}": "{username} が {emoji_name} で反応しました",
+  "New organization icon": "新しい組織アイコン",
+  "New organization logo": "新しい組織ロゴ",
+  "New profile picture": "新しいプロフィール写真"
 }

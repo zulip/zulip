@@ -1666,5 +1666,8 @@
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (پیش‌فرض)",
   "{user_time} local time": "{user_time} زمان محلی",
   "{username} [said]({link_to_message}):": "{username} [گفت]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} با ایموجی {emoji_name} واکنش نشان‌داد"
+  "{username} reacted with {emoji_name}": "{username} با ایموجی {emoji_name} واکنش نشان‌داد",
+  "New organization icon": "آیکون سازمان جدید",
+  "New organization logo": "لوگوی سازمان جدید",
+  "New profile picture": "عکس پروفایل جدید"
 }

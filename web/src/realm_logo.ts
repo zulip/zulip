@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as channel from "./channel";
+import {$t} from "./i18n";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as ui_util from "./ui_util";
@@ -51,6 +52,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
         $upload_button_elem.expectOne(),
         upload_function,
         realm.max_logo_file_size_mib,
+        $t({defaultMessage: "New organization logo"}),
     );
 }
 

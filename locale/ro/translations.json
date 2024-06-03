@@ -1592,5 +1592,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "{username} [a spus]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} a reacționat cu {emoji_name}"
+  "{username} reacted with {emoji_name}": "{username} a reacționat cu {emoji_name}",
+  "New organization icon": "Noua pictogramă a organizației",
+  "New organization logo": "Noua siglă a organizației",
+  "New profile picture": "Noua fotografie de profil"
 }

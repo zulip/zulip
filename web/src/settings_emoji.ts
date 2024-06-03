@@ -177,9 +177,14 @@ export function add_custom_emoji_post_render(): void {
     const $input_error = $("#emoji_file_input_error");
     const $clear_button = $("#emoji_image_clear_button");
     const $upload_button = $("#emoji_upload_button");
+    const $save_button = $("#emoji_image_save_button");
+    const $scale_to_fit_button = $("#emoji_scale_to_fit_button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
+    const $other_elements_to_hide = $(
+        "#add-custom-emoji-modal .dialog_submit_button, #add-custom-emoji-modal .dialog_exit_button, .emoji_name_input",
+    );
 
     $preview_image.hide();
 
@@ -189,8 +194,11 @@ export function add_custom_emoji_post_render(): void {
         $input_error,
         $clear_button,
         $upload_button,
+        $save_button,
+        $scale_to_fit_button,
         $preview_text,
         $preview_image,
+        $other_elements_to_hide,
     );
 
     get_file_input().on("input", () => {
@@ -267,8 +275,11 @@ function show_modal(): void {
         const formData = new FormData();
         const files = $<HTMLInputElement>("input#emoji_file_input")[0]!.files;
         assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            formData.append("file-" + i, file);
+        if (files[0] && files[0].type === "image/gif") {
+            // we cannot crop a gif with uppy
+            formData.append("file-0", files[0]);
+        } else {
+            formData.append("file-0", upload_widget.get_edited_file());
         }
 
         if (is_default_emoji(emoji.name)) {

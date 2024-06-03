@@ -1589,5 +1589,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "{user_time} lokal tid",
   "{username} [said]({link_to_message}):": "{username} [sagde]({link_to_message}):",
-  "{username} reacted with {emoji_name}": ""
+  "{username} reacted with {emoji_name}": "",
+  "New organization icon": "Nyt organisationsikon",
+  "New organization logo": "Nyt organisationslogo",
+  "New profile picture": "Nyt profilbillede"
 }

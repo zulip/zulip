@@ -94,11 +94,11 @@ function display_avatar_upload_started() {
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-function upload_avatar($file_input) {
+function upload_avatar(file_input) {
     const form_data = new FormData();
 
     form_data.append("csrfmiddlewaretoken", csrf_token);
-    for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
+    for (const [i, file] of Array.prototype.entries.call(file_input.files)) {
         form_data.append("file-" + i, file);
     }
     display_avatar_upload_started();

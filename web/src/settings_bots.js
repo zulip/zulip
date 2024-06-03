@@ -20,6 +20,7 @@ import * as people from "./people";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
+import * as upload_widget from "./upload_widget";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
 
@@ -232,11 +233,8 @@ export function add_a_new_bot() {
             });
             formData.append("config_data", JSON.stringify(config_data));
         }
-        for (const [i, file] of Array.prototype.entries.call(
-            $("#bot_avatar_file_input")[0].files,
-        )) {
-            formData.append("file-" + i, file);
-        }
+
+        formData.append("file-0", upload_widget.get_edited_file());
 
         channel.post({
             url: "/json/bots",

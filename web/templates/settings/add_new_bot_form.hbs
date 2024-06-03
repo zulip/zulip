@@ -30,8 +30,7 @@
         <div class="input-group">
             <label for="bot_short_name" class="modal-field-label">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
             <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part modal_text_input"
-              placeholder="{{t 'cookie' }}" value="" />
-            -bot@{{ realm_bot_domain }}
+              placeholder="{{t 'cookie' }}" value="" /> <span id="bot-domain">-bot@{{ realm_bot_domain }}</span>
             <div>
                 <label for="create_bot_short_name" generated="true" class="text-error"></label>
             </div>
@@ -59,15 +58,17 @@
                 {{/each}}
             {{/each}}
         </div>
-        <div class="input-group">
+        <div class="input-group" id="avatar_upload_container">
             <label for="bot_avatar_file_input" class="modal-field-label">{{t "Avatar" }}</label>
             <div id="bot_avatar_file"></div>
             <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
             <div id="add_bot_preview_text">
                 <img id="add_bot_preview_image" />
             </div>
-            <button class="button white rounded small btn-danger" style="display: none;" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
-            <button class="button white rounded" id="bot_avatar_upload_button">{{t "Choose avatar" }}</button> ({{t "Optional" }})
+            <button class="button white rounded" style="display: none;" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+            <button class="button white rounded" style="display: none;" id="bot_avatar_save_button">{{t "Save changes" }}</button>
+            <button class="button white rounded" style="display: none;" id="bot_avatar_scale_to_fit_button">{{t "Scale to fit" }}</button>
+            <button class="button white rounded" id="bot_avatar_upload_button">{{t "Choose avatar" }}</button> <span id="optional_text">({{t "Optional" }})</span>
         </div>
         <p>
             <div id="bot_avatar_file_input_error" class="text-error"></div>

@@ -15,6 +15,8 @@
     "@uppy/core": "^3.0.2",
     "@uppy/progress-bar": "^3.0.1",
     "@uppy/xhr-upload": "^3.0.2",
+    "@uppy/dashboard": "3.2.2",
+    "@uppy/image-editor": "^2.1.1",
     "@zxcvbn-ts/core": "^3.0.1",
     "@zxcvbn-ts/language-common": "^3.0.2",
     "@zxcvbn-ts/language-en": "^3.0.1",

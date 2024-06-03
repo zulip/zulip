@@ -137,6 +137,18 @@ export function open(
         }
     });
 
+    let drag = false;
+
+    $micromodal.find(".modal__overlay").on("mousedown", () => {
+        drag = false;
+    });
+
+    $micromodal.find(".modal__overlay").on("mouseover", (e) => {
+        if (e.target.matches(".cropper-face.cropper-move")) {
+            drag = true;
+        }
+    });
+
     $micromodal.find(".modal__overlay").on("click", (e) => {
         /* Micromodal's data-micromodal-close feature doesn't check for
            range selections; this means dragging a selection of text in an
@@ -147,7 +159,7 @@ export function open(
             return;
         }
 
-        if (document.getSelection()?.type === "Range") {
+        if (document.getSelection()?.type === "Range" || drag) {
             return;
         }
         close(modal_id);

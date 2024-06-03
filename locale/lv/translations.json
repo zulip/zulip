@@ -1666,5 +1666,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": ""
+  "{username} reacted with {emoji_name}": "",
+  "New organization icon": "Jauna organizācijas ikona",
+  "New organization logo": "Jauns organizācijas logotips",
+  "New profile picture": "Jauna profila bilde"
 }

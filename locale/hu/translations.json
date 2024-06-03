@@ -1582,5 +1582,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "{username} [mondta] ({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} {emoji_name} hangulatjellel reagált"
+  "{username} reacted with {emoji_name}": "{username} {emoji_name} hangulatjellel reagált",
+  "New organization icon": "Új szervezeti ikon",
+  "New organization logo": "Új szervezeti logó",
+  "New profile picture": "Új profilkép"
 }

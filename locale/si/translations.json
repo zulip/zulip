@@ -1666,5 +1666,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": ""
+  "{username} reacted with {emoji_name}": "",
+  "New organization icon": "නව සංවිධාන අයිකනය",
+  "New organization logo": "නව සංවිධාන ලාංඡනය",
+  "New profile picture": "නව පැතිකඩ පින්තූරය"
 }
