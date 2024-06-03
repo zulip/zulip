@@ -706,10 +706,11 @@ def count_user_by_realm_query(realm: Optional[Realm]) -> QueryFn:
     ).format(**kwargs, realm_clause=realm_clause)
 
 
-# Currently hardcodes the query needed for active_users_audit:is_bot:day.
-# Assumes that a user cannot have two RealmAuditLog entries with the same event_time and
-# event_type in [RealmAuditLog.USER_CREATED, USER_DEACTIVATED, etc].
-# In particular, it's important to ensure that migrations don't cause that to happen.
+# Hardcodes the query needed for active_users_audit:is_bot:day.
+# Assumes that a user cannot have two RealmAuditLog entries with the
+# same event_time and event_type in [RealmAuditLog.USER_CREATED,
+# USER_DEACTIVATED, etc].  In particular, it's important to ensure
+# that migrations don't cause that to happen.
 def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
@@ -720,25 +721,23 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
     INSERT INTO analytics_usercount
         (user_id, realm_id, value, property, subgroup, end_time)
     SELECT
-        ral1.modified_user_id, ral1.realm_id, 1, %(property)s, {subgroup}, %(time_end)s
-    FROM zerver_realmauditlog ral1
+        zerver_userprofile.id, zerver_userprofile.realm_id, 1, %(property)s, {subgroup}, %(time_end)s
+    FROM zerver_userprofile
     JOIN (
-        SELECT modified_user_id, max(event_time) AS max_event_time
-        FROM zerver_realmauditlog
-        WHERE
-            event_type in ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated}) AND
-            {realm_clause}
-            event_time < %(time_end)s
-        GROUP BY modified_user_id
-    ) ral2
-    ON
-        ral1.event_time = max_event_time AND
-        ral1.modified_user_id = ral2.modified_user_id
-    JOIN zerver_userprofile
-    ON
-        ral1.modified_user_id = zerver_userprofile.id
+            SELECT DISTINCT ON (modified_user_id)
+                    modified_user_id, event_type
+            FROM
+                    zerver_realmauditlog
+            WHERE
+                    event_type IN ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated}) AND
+                    {realm_clause}
+                    event_time < %(time_end)s
+            ORDER BY
+                    modified_user_id,
+                    event_time DESC
+    ) last_user_event ON last_user_event.modified_user_id = zerver_userprofile.id
     WHERE
-        ral1.event_type in ({user_created}, {user_activated}, {user_reactivated})
+        last_user_event.event_type in ({user_created}, {user_activated}, {user_reactivated})
     """
     ).format(
         **kwargs,
