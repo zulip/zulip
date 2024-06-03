@@ -7,7 +7,6 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
-from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
@@ -360,13 +359,6 @@ def do_deactivate_user(
             },
         )
         maybe_enqueue_audit_log_upload(user_profile.realm)
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
-            increment=-1,
-        )
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
             billing_session.update_license_ledger_if_needed(event_time)

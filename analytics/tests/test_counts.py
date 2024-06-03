@@ -543,34 +543,6 @@ class TestCountStats(AnalyticsTestCase):
         # This huddle should not show up anywhere
         self.create_huddle_with_recipient()
 
-    def test_active_users_by_is_bot(self) -> None:
-        stat = COUNT_STATS["active_users:is_bot:day"]
-        self.current_property = stat.property
-
-        # To be included
-        self.create_user(is_bot=True)
-        self.create_user(is_bot=True, date_joined=self.TIME_ZERO - 25 * self.HOUR)
-        self.create_user(is_bot=False)
-
-        # To be excluded
-        self.create_user(is_active=False)
-
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-
-        self.assertTableState(
-            RealmCount,
-            ["value", "subgroup", "realm"],
-            [
-                [2, "true"],
-                [1, "false"],
-                [3, "false", self.second_realm],
-                [1, "false", self.no_message_realm],
-            ],
-        )
-        self.assertTableState(InstallationCount, ["value", "subgroup"], [[2, "true"], [5, "false"]])
-        self.assertTableState(UserCount, [], [])
-        self.assertTableState(StreamCount, [], [])
-
     def test_upload_quota_used_bytes(self) -> None:
         stat = COUNT_STATS["upload_quota_used_bytes::day"]
         self.current_property = stat.property
@@ -605,31 +577,6 @@ class TestCountStats(AnalyticsTestCase):
                 [10, None, self.second_realm, self.TIME_ZERO + self.DAY],
             ],
         )
-
-    def test_active_users_by_is_bot_for_realm_constraint(self) -> None:
-        # For single Realm
-
-        COUNT_STATS = get_count_stats(self.default_realm)
-        stat = COUNT_STATS["active_users:is_bot:day"]
-        self.current_property = stat.property
-
-        # To be included
-        self.create_user(is_bot=True, date_joined=self.TIME_ZERO - 25 * self.HOUR)
-        self.create_user(is_bot=False)
-
-        # To be excluded
-        self.create_user(
-            email="test@second.analytics",
-            realm=self.second_realm,
-            date_joined=self.TIME_ZERO - 2 * self.DAY,
-        )
-
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
-        self.assertTableState(RealmCount, ["value", "subgroup"], [[1, "true"], [1, "false"]])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ["value", "subgroup"], [])
-        self.assertTableState(UserCount, [], [])
-        self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_by_is_bot(self) -> None:
         stat = COUNT_STATS["messages_sent:is_bot:hour"]
@@ -1418,46 +1365,6 @@ class TestLoggingCountStats(AnalyticsTestCase):
         )
         self.assertTableState(UserCount, ["property", "value"], [["user test", 1]])
         self.assertTableState(StreamCount, ["property", "value"], [["stream test", 1]])
-
-    def test_active_users_log_by_is_bot(self) -> None:
-        property = "active_users_log:is_bot:day"
-        user = do_create_user(
-            "email", "password", self.default_realm, "full_name", acting_user=None
-        )
-        self.assertEqual(
-            1,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-        do_deactivate_user(user, acting_user=None)
-        self.assertEqual(
-            0,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-        do_activate_mirror_dummy_user(user, acting_user=None)
-        self.assertEqual(
-            1,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-        do_deactivate_user(user, acting_user=None)
-        self.assertEqual(
-            0,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-        do_reactivate_user(user, acting_user=None)
-        self.assertEqual(
-            1,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     def test_mobile_pushes_received_count(self) -> None:
