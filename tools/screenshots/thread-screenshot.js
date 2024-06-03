@@ -12,13 +12,13 @@ const puppeteer = require("puppeteer");
 const options = {};
 
 program
-    .arguments("<narrow_uri> <narrow> <unread_msg_id> <image_path> <realm_uri")
-    .action((narrow_uri, narrow, unread_msg_id, imagePath, realmUri) => {
+    .arguments("<narrow_uri> <narrow> <unread_msg_id> <image_path> <realm_url>")
+    .action((narrow_uri, narrow, unread_msg_id, imagePath, realmUrl) => {
         options.narrowUri = narrow_uri;
         options.narrow = narrow;
         options.messageId = unread_msg_id;
         options.imagePath = imagePath;
-        options.realmUri = realmUri;
+        options.realmUrl = realmUrl;
         console.log(`Capturing screenshot for ${narrow} to ${imagePath}`);
     })
     .parse(process.argv);
@@ -45,7 +45,7 @@ async function run() {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
         await page.setViewport({width: 1280, height: 1024, deviceScaleFactor: 2});
-        await page.goto(`${options.realmUri}/devlogin`);
+        await page.goto(`${options.realmUrl}/devlogin`);
         // wait for Iago devlogin button and click on it.
         await page.waitForSelector('[value="iago@zulip.com"]');
 
