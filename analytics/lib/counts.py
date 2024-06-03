@@ -718,10 +718,10 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
         realm_clause = SQL("realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
         """
-    INSERT INTO analytics_usercount
-        (user_id, realm_id, value, property, subgroup, end_time)
+    INSERT INTO analytics_realmcount
+        (realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_userprofile.id, zerver_userprofile.realm_id, 1, %(property)s, {subgroup}, %(time_end)s
+        zerver_userprofile.realm_id, count(*), %(property)s, {subgroup}, %(time_end)s
     FROM zerver_userprofile
     JOIN (
             SELECT DISTINCT ON (modified_user_id)
@@ -738,6 +738,7 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
     ) last_user_event ON last_user_event.modified_user_id = zerver_userprofile.id
     WHERE
         last_user_event.event_type in ({user_created}, {user_activated}, {user_reactivated})
+    GROUP BY zerver_userprofile.realm_id {group_by_clause}
     """
     ).format(
         **kwargs,
@@ -885,7 +886,7 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         CountStat(
             "active_users_audit:is_bot:day",
             sql_data_collector(
-                UserCount, check_realmauditlog_by_user_query(realm), (UserProfile, "is_bot")
+                RealmCount, check_realmauditlog_by_user_query(realm), (UserProfile, "is_bot")
             ),
             CountStat.DAY,
         ),
