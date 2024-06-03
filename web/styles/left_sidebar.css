@@ -608,7 +608,7 @@ li.active-sub-filter {
        named grid area. */
     display: grid;
     grid-template-areas: "selected-home-view";
-    line-height: var(--line-height-sidebar-row-prominent);
+    line-height: var(--line-height-sidebar-row);
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
