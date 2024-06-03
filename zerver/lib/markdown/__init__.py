@@ -132,7 +132,7 @@ class MessageRenderingResult:
 @dataclass
 class DbData:
     mention_data: MentionData
-    realm_uri: str
+    realm_url: str
     realm_alert_words_automaton: Optional[ahocorasick.Automaton]
     active_realm_emoji: Dict[str, EmojiInfo]
     sent_by_bot: bool
@@ -274,9 +274,9 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
     """
 
     if db_data:
-        realm_uri_prefix = db_data.realm_uri + "/"
-        if link.startswith((realm_uri_prefix + "#", realm_uri_prefix + "user_uploads/")):
-            return link[len(realm_uri_prefix) :]
+        realm_url_prefix = db_data.realm_url + "/"
+        if link.startswith((realm_url_prefix + "#", realm_url_prefix + "user_uploads/")):
+            return link[len(realm_url_prefix) :]
 
     return link
 
@@ -2664,7 +2664,7 @@ def do_convert(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
             active_realm_emoji=active_realm_emoji,
-            realm_uri=message_realm.url,
+            realm_url=message_realm.url,
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
             translate_emoticons=translate_emoticons,
