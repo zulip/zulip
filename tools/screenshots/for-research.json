@@ -1,0 +1,67 @@
+[
+    {
+        "recipient_type": "channel",
+        "channel": "general",
+        "color": "#9987E1",
+        "topic": "paper posted",
+        "users": {
+            "John Lin": {},
+            "Dal Kim": {},
+            "Bo Lin": {}
+        },
+        "messages": [
+            {
+                "sender": "John Lin",
+                "content": "Hi all! We just posted a pre-publication draft of our paper! Sharing here for feedback, suggestions, etc. [paper.pdf](#)",
+                "reactions": {
+                    "tada": ["John Lin", "Iago", "Dal Kim", "Bo Lin"],
+                    "eyes": ["Dal Kim", "Iago"]
+                },
+                "date": {"year": 2024, "month": 6, "day": 4, "hour": 14, "minute": 39}
+            },
+            {
+                "sender": "Dal Kim",
+                "content": "Just noticed a small typo in Figure 4. The caption says `detales` instead of `details`. :smile:",
+                "reactions": {
+                    "check": ["John Lin"]
+                },
+                "date": {"year": 2024, "month": 6, "day": 4, "hour": 14, "minute": 57}
+            }
+        ],
+        "screenshot": "static/images/landing-page/research/interactive_messaging_day_1.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "thesis support group",
+        "color": "#95A5FD",
+        "topic": "chat live",
+        "users": {
+            "Zoe Davis": {},
+            "James Williams": {},
+            "Bo Lin": {},
+            "Nolan Turner": {}
+        },
+        "messages": [
+            {
+                "sender": "Zoe Davis",
+                "content": "Hey! How does <time:2024-05-14T17:00:00+05:30> sound for doing a video call today? My paper just got rejected.",
+                "reactions": {
+                    "+1": ["James Williams", "Iago", "Zoe Davis", "Bo Lin", "Nolan Turner"],
+                    "broken_heart": ["James Williams", "Iago", "Zoe Davis", "Nolan Turner"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 13, "hour": 15, "minute": 15}
+            },
+            {
+                "sender": "James Williams",
+                "content": "I need to send off a draft of chapter 2 to my advisor. Will try to make it!",
+                "date": {"year": 2024, "month": 5, "day": 13, "hour": 15, "minute": 34}
+            },
+            {
+                "sender": "Zoe Davis",
+                "content": "@**everyone** Video call is happening now! [Join video call.](#)",
+                "date": {"year": 2024, "month": 5, "day": 13, "hour": 16, "minute": 30}
+            }
+        ],
+        "screenshot": "static/images/landing-page/research/interactive_messaging_day_2.png"
+    }
+]
