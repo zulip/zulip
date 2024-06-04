@@ -11,6 +11,116 @@ This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
 log][commit-log] for an up-to-date list of all changes.
 
+#### Highlights
+
+- Added support for Ubuntu 24.04. Dropped support for Ubuntu 20.04.
+- Added a configurable "Zulip updates" system that sends automated
+  messages describing changes to Zulip that are relevant to end
+  users. See the upgrade notes for details.
+- Streams have been renamed to Channels. The functionality remains
+  exactly the same, and bots do not need to be updated.
+- The All messages view has been renamed to Combined feed, and
+  its internals have been reworked, fixing many subtle bugs.
+- When you paste content into the compose box, Zulip will now do its
+  best to preserve the formatting, including links, bulleted lists,
+  bold, italics, and more. Pasting as plain text remains an
+  alternative option.
+- To quote and reply to part of a message, you can now select the part
+  that you want to quote.
+- The right sidebar has been redesigned to highlight users in the
+  current channel or direct message conversation. You can also now
+  hide the user list in the right sidebar to reduce distraction.
+- When you start composing, the most recently edited draft for the
+  conversation you are composing to now automatically appears in the
+  compose box. You can always save a draft and start a new message
+  using the send options menu next to the Send button.
+- If you'd prefer not to see notifications when others type, you can
+  now disable them.
+- Topics and messages now load much faster when you open the web or
+  desktop app.
+- Zulip's new-user and new-organization onboarding experiences have
+  been completely reworked.
+- Redesigned most popovers with a more modern visual style and
+  improved accessibility for screen readers.
+
+#### Full feature changelog
+
+- The back button now preserves scroll position in previous views,
+  as well as whether a stream's full topic list is expanded.
+- Added new `Alt+P` keyboard shortcut to toggle the Markdown preview
+  in the compose box.
+- Added new `Shift+V` keyboard shortcut to view read receipts.
+- The `Shift+M` keyboard shortcut for muting now works in the recent
+  conversations and inbox views.
+- Redesigned the users panel in organization settings, with a new role filter.
+- Redesigned the invite users modal.
+- Redesigned the message edit history view as a modal.
+- Redesigned the TODO widget.
+- Improved compose typeahead sorting algorithms significantly.
+- Improved compose box design, including how overly long messages are
+  indicated, how drafts are displayed, etc.
+- Added mark-as-unread option to topic popover menus.
+- Added warnings for several dangerous actions, like merging topics.
+- Added support for directly linking to a user's profile.
+- Added descriptions in message view header area for global views, and
+  stream views now prompt administrators to add a description.
+- Added a tooltip to let you see the name of a status emoji.
+- Added new option to disable seeing typing notifications, distinct
+  from the existing options to disable sending typing notifications.
+- Added support for requiring unique names in an organization.
+- Added support for marking a custom profile field as required.
+- Added controls whether users should be subscribed to the
+  organization's default streams in invitations and the SCIM
+  integration.
+- Added a confirmation notice when moving a single message, linking to
+  its new location.
+- Creating a stream now immediately navigates you to the new stream.
+- Renamed "Full name" input fields to "Name".
+- Renamed the "more topics" widget to "show all topics" to better hint
+  what it does.
+- Improved stream settings overlay to show additional metadata, like
+  the stream creator and creation date.
+- Improved navigation in the stream and group settings overlays.
+- Improved how desktop notifications display quoted content.
+- Improved filtering options for the GitHub integration.
+- Improved dozens of Help Center articles.
+- Improved wording in various automated notices.
+- Improved new-organization defaults for various permissions settings.
+- Improved how users are displayed in settings to use clickable user
+  pills.
+- Improved the efficiency of Zulip's internal statistics system, both
+  in terms of CPU and storage usage.
+- Improved tooltips to better clarify how drafts work.
+- The left sidebar now displays the current conversation even when it
+  contains no messages.
+- Improved performance/scalability of the Zulip server, including more
+  efficient algorithms for fetching message history and presence.
+- New incoming webhooks for Patreon and GitHub Sponsors.
+- Simplified the process for configuring integrations with custom
+  filtering of events.
+- Added a great deal of API documentation, covering more common
+  concepts as well as several previously undocumented API endpoints,
+  like setting a user's status.
+- Added new API endpoint to fetch an individual user's status.
+- Added support for showing the beta Flutter app in statistics.
+- Greatly improved the experience restarting a Zulip server under heavy load.
+- Fixed timeout/slowness issues rendering messages with dozens of
+  LaTeX blocks.
+- Fixed several subtle bugs involving message feed scroll position.
+- Fixed several subtle scrolling, flickering, and live-update bugs in
+  the recent conversations view.
+- Fixed several bugs involving uploading files while editing messages.
+- Fixed several subtle layout bugs in the web app.
+- Fixed several bugs involving the compose box, its banners, and tooltips.
+- Fixed several race condition bugs affecting the server and web app.
+- Fixed local echo of message editing.
+- Removed the Gitter data import tool, since Gitter removed the data
+  export API that enabled it.
+- Removed multiple queue workers, reducing memory usage.
+- Upgraded dependencies, including Django 5.0.
+- The great majority of the Zulip web application has been converted
+  to TypeScript, fixing many subtle bugs.
+
 #### Upgrade notes for 9.0
 
 - This release introduces a new [Zulip updates](https://zulip.com/help/configure-automated-notices#zulip-update-announcements) feature, which
@@ -22,6 +132,7 @@ log][commit-log] for an up-to-date list of all changes.
   to give time to potentially reconfigure which stream to use. You can
   override the delay by running `./manage.py send_zulip_update_announcements --skip-delay`
   once you've done any necessary configuration updates.
+- Advertise LaTeX option.
 
 ## Zulip Server 8.x series
 
