@@ -1016,6 +1016,7 @@ input.new-organization-button {
 
 .error_page {
     min-height: calc(100vh - var(--height-footer));
+    padding: 20px 10px 50px;
     height: 100%;
     background-color: hsl(163deg 42% 85%);
     font-family: "Source Sans 3 VF", sans-serif;
