@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from django_stubs_ext import StrPromise
 
-from zerver.actions.message_delete import DeleteMessagesEvent
+from zerver.actions.message_delete import DeleteMessagesEvent, do_delete_messages
 from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
@@ -147,7 +147,7 @@ def maybe_send_resolve_topic_notifications(
     old_topic_name: str,
     new_topic_name: str,
     changed_messages: QuerySet[Message],
-) -> Optional[int]:
+) -> Tuple[Optional[int], bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
     #
@@ -174,7 +174,16 @@ def maybe_send_resolve_topic_notifications(
         # administrator can the messages in between. We consider this
         # to be a fundamental risk of irresponsible message deletion,
         # not a bug with the "resolve topics" feature.
-        return None
+        return None, False
+
+    # Sometimes a user might accidentally resolve a topic, and then
+    # have to undo the action. We don't want to spam "resolved",
+    # "unresolved" messages one after another in such a situation.
+    # For that reason, we apply a short grace period during which
+    # such an undo action will just delete the previous notification
+    # message instead.
+    if maybe_delete_previous_resolve_topic_notification(stream, new_topic_name):
+        return None, True
 
     # Compute the users who either sent or reacted to messages that
     # were moved via the "resolve topic' action. Only those users
@@ -205,7 +214,27 @@ def maybe_send_resolve_topic_notifications(
             limit_unread_user_ids=affected_participant_ids,
         )
 
-    return resolved_topic_message_id
+    return resolved_topic_message_id, False
+
+
+def maybe_delete_previous_resolve_topic_notification(stream: Stream, topic: str) -> bool:
+    assert stream.recipient_id is not None
+    last_message = messages_for_topic(stream.realm_id, stream.recipient_id, topic).last()
+
+    if last_message is None:
+        return False
+
+    if last_message.type != Message.MessageType.RESOLVE_TOPIC_NOTIFICATION:
+        return False
+
+    current_time = timezone_now()
+    time_difference = (current_time - last_message.date_sent).total_seconds()
+
+    if time_difference > settings.RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS:
+        return False
+
+    do_delete_messages(stream.realm, [last_message])
+    return True
 
 
 def send_message_moved_breadcrumbs(
@@ -1009,6 +1038,7 @@ def do_update_message(
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
     resolved_topic_message_id = None
+    resolved_topic_message_deleted = False
     if topic_name is not None and content is None:
         # When stream is changed and topic is marked as resolved or unresolved
         # in the same API request, resolved or unresolved notification should
@@ -1019,12 +1049,14 @@ def do_update_message(
             stream_to_send_resolve_topic_notification = new_stream
 
         assert stream_to_send_resolve_topic_notification is not None
-        resolved_topic_message_id = maybe_send_resolve_topic_notifications(
-            user_profile=user_profile,
-            stream=stream_to_send_resolve_topic_notification,
-            old_topic_name=orig_topic_name,
-            new_topic_name=topic_name,
-            changed_messages=changed_messages,
+        resolved_topic_message_id, resolved_topic_message_deleted = (
+            maybe_send_resolve_topic_notifications(
+                user_profile=user_profile,
+                stream=stream_to_send_resolve_topic_notification,
+                old_topic_name=orig_topic_name,
+                new_topic_name=topic_name,
+                changed_messages=changed_messages,
+            )
         )
 
     if (new_stream is not None or topic_name is not None) and stream_being_edited is not None:
@@ -1047,20 +1079,21 @@ def do_update_message(
         # The new thread notification code path is a bit subtle. We
         # don't want every resolve-topic action to also annoyingly
         # send an extra notification that the topic was moved!
-        #
-        # Since one can resolve/unresolve a topic at the same time
-        # you're moving it, we need to carefully treat the resolve
-        # topic notification as satisfying our obligation to send a
-        # notification to the new topic only if the only thing this
-        # request did is mark the topic as resolved.
         new_thread_notification_string = None
         if send_notification_to_new_thread and (
+            # The stream changed -> eligible to notify.
             new_stream is not None
-            or not resolved_topic_message_id
+            # The topic changed -> eligible to notify.
             or (
                 pre_truncation_topic_name is not None
                 and orig_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
                 != pre_truncation_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
+            )
+            or not (
+                # We have not completed our obligation to notify about a
+                # resolve topic, which happens if either we sent a notification or
+                # deleted a very recent previous notification.
+                resolved_topic_message_id or resolved_topic_message_deleted
             )
         ):
             stream_for_new_topic = new_stream if new_stream is not None else stream_being_edited

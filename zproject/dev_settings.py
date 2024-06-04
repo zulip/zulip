@@ -210,3 +210,7 @@ PUSH_NOTIFICATION_BOUNCER_URL = f"http://push.{EXTERNAL_HOST}"
 
 # Breaks the UI if used, but enabled for development environment testing.
 ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = True
+
+# This value needs to be lower in development than usual to allow
+# for quicker testing of the feature.
+RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5

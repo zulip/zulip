@@ -641,3 +641,8 @@ CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Any]] = None
 # False in production, as we can only handle named user groups in the
 # web app settings UI.
 ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = False
+
+# Grace period during which we don't send a resolve/unresolve
+# notification to a stream and also delete the previous counter
+# notification.
+RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60

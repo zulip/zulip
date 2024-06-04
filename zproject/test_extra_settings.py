@@ -270,3 +270,9 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
 }
 
 ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = True
+
+# This override disables the grace period for undoing resolving/unresolving
+# a topic in tests.
+# This allows tests to not worry about the special behavior during the grace period.
+# Otherwise they would have to do lots of mocking of the timer to work around this.
+RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 0
