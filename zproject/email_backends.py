@@ -2,13 +2,14 @@
 import configparser
 import logging
 from email.message import Message
-from typing import MutableSequence, Sequence, Union
+from typing import Any, MutableSequence, Sequence, Union
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import EmailMessage
 from django.template import loader
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 
@@ -108,3 +109,13 @@ class EmailLogBackEnd(EmailBackend):
                 email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
                 logging.info("Emails sent in development are available at %s", email_log_url)
         return num_sent
+
+
+class PersistentSMTPEmailBackend(EmailBackend):
+    @override
+    def open(self, **kwargs: Any) -> bool | None:
+        is_opened = super().open()
+        if is_opened:
+            self.opened_at = timezone_now()
+
+        return is_opened

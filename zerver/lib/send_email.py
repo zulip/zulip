@@ -16,7 +16,6 @@ import orjson
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.mail.backends.base import BaseEmailBackend
-from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
@@ -33,7 +32,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.models import Realm, ScheduledEmail, UserProfile
 from zerver.models.scheduled_jobs import EMAIL_TYPES
 from zerver.models.users import get_user_profile_by_id
-from zproject.email_backends import EmailLogBackEnd, get_forward_address
+from zproject.email_backends import EmailLogBackEnd, PersistentSMTPEmailBackend, get_forward_address
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
@@ -294,6 +293,8 @@ def send_email(
         if connection.send_messages([mail]) == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)
             raise EmailNotDeliveredError
+        elif settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES == 0:
+            connection.close()
     except smtplib.SMTPResponseException as e:
         logger.exception(
             "Error sending %s email to %s with error code %s: %s",
@@ -330,12 +331,20 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
 
     # No-op to ensure that we don't return a connection that has been
     # closed by the mail server.
-    if isinstance(connection, EmailBackend):
-        try:
-            assert connection.connection is not None
-            status = connection.connection.noop()[0]
-        except Exception:
-            status = -1
+    if isinstance(connection, PersistentSMTPEmailBackend):
+        time_elapsed = (timezone_now() - connection.opened_at).seconds / 60
+        if (
+            settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES is not None
+            and time_elapsed >= settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES
+        ):
+            status = -2
+        else:
+            try:
+                assert connection.connection is not None
+                status = connection.connection.noop()[0]
+            except Exception:
+                status = -1
+
         if status != 250:
             # Close and connect again.
             connection.close()
