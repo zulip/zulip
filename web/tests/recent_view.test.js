@@ -94,7 +94,7 @@ mock_esm("../src/hash_util", {
     by_stream_url: test_url,
     by_stream_topic_url: test_url,
     by_conversation_and_time_url: test_url,
-    from_conversation_data: test_url,
+    by_conversation_and_time_url_by_message_id: test_url,
 });
 mock_esm("../src/message_list_data", {
     MessageListData: class {},
@@ -701,8 +701,6 @@ test("test_filter_pm", ({mock_template}) => {
             participated: true,
             type: "private",
             to_user_ids: "2,3",
-            display_recipient: [{id: 1}, {id: 2}, {id: 3}],
-            pm_with_url: test_url(),
         },
     ];
 
@@ -714,8 +712,7 @@ test("test_filter_pm", ({mock_template}) => {
             participated: true,
             type: "private",
             to_user_ids: private_messages[0].to_user_ids,
-            display_recipient: private_messages[0].display_recipient,
-            pm_with_url: private_messages[0].pm_with_url,
+            sender_id: 1,
         }),
         false,
     );
@@ -725,8 +722,7 @@ test("test_filter_pm", ({mock_template}) => {
             participated: true,
             type: "private",
             to_user_ids: private_messages[1].to_user_ids,
-            display_recipient: private_messages[1].display_recipient,
-            pm_with_url: private_messages[1].pm_with_url,
+            sender_id: 1,
         }),
         true,
     );
@@ -736,8 +732,7 @@ test("test_filter_pm", ({mock_template}) => {
             participated: true,
             type: "private",
             to_user_ids: private_messages[2].to_user_ids,
-            display_recipient: private_messages[2].display_recipient,
-            pm_with_url: private_messages[2].pm_with_url,
+            sender_id: 1,
         }),
         false,
     );

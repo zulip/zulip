@@ -1,13 +1,9 @@
-import assert from "minimalistic-assert";
-
-import type {DisplayRecipientUser, Message} from "./message_store";
+import type {Message} from "./message_store";
 import * as people from "./people";
 import {get_key_from_conversation_data} from "./recent_view_util";
-import * as unread from "./unread";
 
 export type ConversationData = {
     participated: boolean;
-    unread_count: number;
     latest_message_timestamp: number;
     // `last_msg_id` should not be used for fetching messages, since
     // we might not have a message in the message store by that id.
@@ -21,10 +17,8 @@ export type ConversationData = {
     | {
           type: "private";
           to_user_ids: string;
-          display_recipient: DisplayRecipientUser[];
-          display_reply_to: string;
+          sender_id: number;
           recipient_id: number;
-          pm_with_url: string;
       }
     | {
           type: "stream";
@@ -35,13 +29,6 @@ export type ConversationData = {
 export const conversations = new Map<string, ConversationData>();
 // For stream messages, key is stream-id:topic.
 // For pms, key is the user IDs to whom the message is being sent.
-
-function message_to_conversation_unread_count(msg: Message): number {
-    if (msg.type === "private") {
-        return unread.num_unread_for_user_ids_string(msg.to_user_ids);
-    }
-    return unread.num_unread_for_topic(msg.stream_id, msg.topic);
-}
 
 export function process_message(msg: Message): boolean {
     // Important: This function must correctly handle processing a
@@ -59,29 +46,22 @@ export function process_message(msg: Message): boolean {
         const participated = false;
         const last_msg_id = -1;
         const latest_message_timestamp = msg.timestamp;
-        const unread_count = message_to_conversation_unread_count(msg);
 
         if (msg.type === "private") {
-            // Display recipient contains user information for DMs.
-            assert(typeof msg.display_recipient !== "string");
             conversation_data = {
                 participated,
                 last_msg_id,
                 latest_message_timestamp,
-                unread_count,
                 type: "private",
-                to_user_ids: msg.to_user_ids,
-                display_recipient: msg.display_recipient,
-                display_reply_to: msg.display_reply_to,
                 recipient_id: msg.recipient_id,
-                pm_with_url: msg.pm_with_url,
+                to_user_ids: msg.to_user_ids,
+                sender_id: msg.sender_id,
             };
         } else {
             conversation_data = {
                 participated,
                 last_msg_id,
                 latest_message_timestamp,
-                unread_count,
                 type: "stream",
                 stream_id: msg.stream_id,
                 topic: msg.topic,

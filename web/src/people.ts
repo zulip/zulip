@@ -620,8 +620,14 @@ export function pm_perma_link(message: Message): string | undefined {
 
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
+    if (user_ids === undefined) {
+        return undefined;
+    }
+    return pm_with_url_from_user_ids(user_ids);
+}
 
-    if (user_ids?.[0] === undefined) {
+export function pm_with_url_from_user_ids(user_ids: number[]): string | undefined {
+    if (user_ids[0] === undefined) {
         return undefined;
     }
 

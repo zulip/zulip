@@ -867,6 +867,8 @@ test_people("message_methods", () => {
         sender_id: charles.user_id,
     };
     assert.equal(people.pm_with_url(message), "#narrow/dm/301,302-group");
+    assert.equal(people.pm_with_url_from_user_ids([301, 302]), "#narrow/dm/301,302-group");
+    assert.equal(people.pm_with_url_from_user_ids([]), undefined);
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,301,302-group");
     assert.equal(people.pm_reply_to(message), "Athens@example.com,charles@example.com");
     assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png?s=50");
