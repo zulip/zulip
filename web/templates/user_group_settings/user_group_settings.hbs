@@ -43,6 +43,21 @@
 
                 {{> group_permissions can_mention_group_widget_name="can_mention_group" can_manage_group_widget_name="can_manage_group"}}
             </div>
+
+            <div class="group_detail_box">
+                <div class="user_group_details_box_header">
+                    <h3 class="user_group_setting_subsection_title">
+                        {{t "User group details" }}
+                    </h3>
+                </div>
+                <div class="creator_details group_details_box_subsection">
+                    {{> ../creator_details }}
+                </div>
+                <div class="group_details_box_subsection">
+                    {{t "User group ID"}}<br/>
+                    {{group.id}}
+                </div>
+            </div>
         </div>
 
         <div class="group_member_settings group_setting_section" data-group-section="members">

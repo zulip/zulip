@@ -3148,6 +3148,8 @@ paths:
                                     {
                                       "name": "backend",
                                       "members": [12],
+                                      "creator_id": 9,
+                                      "date_created": 1717484476,
                                       "description": "Backend team",
                                       "id": 2,
                                       "is_system_group": false,
@@ -20026,6 +20028,34 @@ paths:
                               type: integer
                               description: |
                                 The user group's integer ID.
+                            date_created:
+                              type: integer
+                              nullable: true
+                              description: |
+                                The UNIX timestamp for when the user group was created, in UTC seconds.
+
+                                A `null` value means the user group has no recorded date, which is often
+                                because the group predates the metadata being tracked starting in Zulip 8.0,
+                                or because it was created via a data import tool
+                                or [management command][management-commands].
+
+                                **Changes**: New in Zulip 10.0 (feature level 292).
+
+                                [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
+                            creator_id:
+                              type: integer
+                              nullable: true
+                              description: |
+                                The ID of the user who created this user group.
+
+                                A `null` value means the user group has no recorded creator, which is often
+                                because the group predates the metadata being tracked starting in Zulip 8.0,
+                                or because it was created via a data import tool
+                                or [management command][management-commands].
+
+                                **Changes**: New in Zulip 10.0 (feature level 292).
+
+                                [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
                             members:
                               type: array
                               description: |
@@ -20107,6 +20137,8 @@ paths:
                             {
                               "description": "Owners of this organization",
                               "id": 1,
+                              "creator_id": null,
+                              "date_created": null,
                               "name": "role:owners",
                               "members": [1],
                               "direct_subgroup_ids": [],
@@ -20117,6 +20149,8 @@ paths:
                             {
                               "description": "Administrators of this organization, including owners",
                               "id": 2,
+                              "creator_id": null,
+                              "date_created": null,
                               "name": "role:administrators",
                               "members": [2],
                               "direct_subgroup_ids": [1],
@@ -20127,6 +20161,8 @@ paths:
                             {
                               "description": "Characters of Hamlet",
                               "id": 3,
+                              "creator_id": null,
+                              "date_created": 1717484476,
                               "name": "hamletcharacters",
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
@@ -21269,6 +21305,30 @@ components:
           type: string
           description: |
             The name of the user group.
+        date_created:
+          type: integer
+          nullable: true
+          description: |
+            The UNIX timestamp for when the user group was created, in UTC seconds.
+
+            A `null` value means the user group has no recorded date, which is often
+            because the user group is very old, or because it was created via a data
+            import tool or [management command][management-commands].
+
+            **Changes**: New in Zulip 10.0 (feature level 292).
+            [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
+        creator_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of the user who created this user group.
+
+            A `null` value means the user group has no recorded creator, which is often
+            because the user group is very old, or because it was created via a data
+            import tool or [management command][management-commands].
+
+            **Changes**: New in Zulip 10.0 (feature level 292).
+            [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
         description:
           type: string
           description: |
