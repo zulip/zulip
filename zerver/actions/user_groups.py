@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
@@ -53,6 +54,7 @@ def create_user_group_in_database(
         description=description,
         is_system_group=is_system_group,
         realm_for_sharding=realm,
+        creator=acting_user,
     )
 
     for setting_name, setting_value in group_settings_map.items():
@@ -170,11 +172,17 @@ def do_send_create_user_group_event(
     members: list[UserProfile],
     direct_subgroups: Sequence[UserGroup] = [],
 ) -> None:
+    creator_id = user_group.creator_id
+    assert user_group.date_created is not None
+    date_created = datetime_to_timestamp(user_group.date_created)
+
     event = dict(
         type="user_group",
         op="add",
         group=dict(
             name=user_group.name,
+            creator_id=creator_id,
+            date_created=date_created,
             members=[member.id for member in members],
             description=user_group.description,
             id=user_group.id,

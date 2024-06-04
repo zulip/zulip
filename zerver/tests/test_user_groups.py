@@ -33,6 +33,7 @@ from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     get_direct_user_groups,
@@ -80,13 +81,16 @@ class UserGroupTestCase(ZulipTestCase):
 
     def test_user_groups_in_realm_serialized(self) -> None:
         realm = get_realm("zulip")
+        user = self.example_user("iago")
         user_group = NamedUserGroup.objects.filter(realm=realm).first()
         assert user_group is not None
-        empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=None)
+        empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=user)
 
         user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
         self.assert_length(user_groups, 10)
         self.assertEqual(user_groups[0]["id"], user_group.id)
+        self.assertEqual(user_groups[0]["creator_id"], user_group.creator_id)
+        self.assertEqual(user_groups[0]["date_created"], user_group.date_created)
         self.assertEqual(user_groups[0]["name"], SystemGroups.NOBODY)
         self.assertEqual(user_groups[0]["description"], "Nobody")
         self.assertEqual(user_groups[0]["members"], [])
@@ -100,6 +104,8 @@ class UserGroupTestCase(ZulipTestCase):
             "user_profile_id", flat=True
         )
         self.assertEqual(user_groups[1]["id"], owners_system_group.id)
+        self.assertEqual(user_groups[1]["creator_id"], owners_system_group.creator_id)
+        self.assertEqual(user_groups[1]["date_created"], owners_system_group.date_created)
         self.assertEqual(user_groups[1]["name"], SystemGroups.OWNERS)
         self.assertEqual(user_groups[1]["description"], "Owners of this organization")
         self.assertEqual(set(user_groups[1]["members"]), set(membership))
@@ -119,6 +125,11 @@ class UserGroupTestCase(ZulipTestCase):
             name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
         )
         self.assertEqual(user_groups[9]["id"], empty_user_group.id)
+        self.assertEqual(user_groups[9]["creator_id"], empty_user_group.creator_id)
+        assert empty_user_group.date_created is not None
+        self.assertEqual(
+            user_groups[9]["date_created"], datetime_to_timestamp(empty_user_group.date_created)
+        )
         self.assertEqual(user_groups[9]["name"], "newgroup")
         self.assertEqual(user_groups[9]["description"], "")
         self.assertEqual(user_groups[9]["members"], [])
@@ -143,6 +154,13 @@ class UserGroupTestCase(ZulipTestCase):
         )
         user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
+        self.assertEqual(user_groups[10]["creator_id"], new_user_group.creator_id)
+        new_user_group_date_created = (
+            datetime_to_timestamp(new_user_group.date_created)
+            if new_user_group.date_created is not None
+            else None
+        )
+        self.assertEqual(user_groups[10]["date_created"], new_user_group_date_created)
         self.assertEqual(user_groups[10]["name"], "newgroup2")
         self.assertEqual(user_groups[10]["description"], "")
         self.assertEqual(user_groups[10]["members"], [othello.id])

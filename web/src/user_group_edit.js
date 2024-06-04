@@ -24,6 +24,8 @@ import * as settings_components from "./settings_components";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import {current_user, realm} from "./state_data";
+import * as stream_data from "./stream_data";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
 import * as user_group_create from "./user_group_create";
@@ -333,6 +335,13 @@ function update_toggler_for_group_setting() {
 export function show_settings_for(group) {
     const html = render_user_group_settings({
         group,
+        // We get timestamp in seconds from the API but timerender needs milliseconds.
+        date_created_string: timerender.get_localized_date_or_time_for_format(
+            new Date(group.date_created * 1000),
+            "dayofyear_year",
+        ),
+        creator: stream_data.maybe_get_creator_details(group.creator_id),
+        is_creator: group.creator_id === current_user.user_id,
         is_member: user_groups.is_direct_member_of(people.my_current_user_id(), group.id),
     });
 

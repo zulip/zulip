@@ -129,6 +129,8 @@ export const realm_emoji_map_schema = z.record(server_emoji_schema);
 export const user_group_schema = z.object({
     description: z.string(),
     id: z.number(),
+    creator_id: z.number().nullable(),
+    date_created: z.number().nullable(),
     name: z.string(),
     members: z.array(z.number()),
     is_system_group: z.boolean(),

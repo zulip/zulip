@@ -950,8 +950,10 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream_details_box {
-        > .stream_details_subsection {
+    .stream_details_box,
+    .group_detail_box {
+        > .stream_details_subsection,
+        > .group_details_box_subsection {
             margin: 0 0 10px; /* mimic paragraph spacing */
         }
 

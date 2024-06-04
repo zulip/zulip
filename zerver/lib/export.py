@@ -301,6 +301,7 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
     "zerver_realm": ["date_created"],
     "zerver_scheduledmessage": ["scheduled_timestamp"],
     "zerver_stream": ["date_created"],
+    "zerver_namedusergroup": ["date_created"],
     "zerver_useractivityinterval": ["start", "end"],
     "zerver_useractivity": ["last_visit"],
     "zerver_onboardingstep": ["timestamp"],

@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import CASCADE
+from django.utils.timezone import now as timezone_now
 from django_cte import CTEManager
 
 from zerver.lib.types import GroupPermissionSetting
@@ -52,6 +53,10 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
     )
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
     description = models.TextField(default="", db_column="description")
+    date_created = models.DateTimeField(default=timezone_now, null=True)
+    creator = models.ForeignKey(
+        UserProfile, null=True, on_delete=models.SET_NULL, related_name="+", db_column="creator_id"
+    )
     is_system_group = models.BooleanField(default=False, db_column="is_system_group")
 
     can_manage_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
