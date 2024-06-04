@@ -1177,7 +1177,10 @@ function recenter_focus_if_off_screen(): void {
         const topic_center_y = (position.top + position.bottom) / 2;
 
         const topic_element = document.elementFromPoint(topic_center_x, topic_center_y);
-        if (topic_element === null) {
+        if (
+            topic_element === null ||
+            $(topic_element).parents("#recent-view-content-tbody").length === 0
+        ) {
             // There are two theoretical reasons that the center
             // element might be null. One is that we haven't rendered
             // the view yet; but in that case, we should have returned
