@@ -58,3 +58,4 @@ if __name__ == "__main__":
         # somewhat-implicit JSON unescape. This may behave in unexpected ways
         # on other OSes or system encodings.
         json.dump(json_data, dest, ensure_ascii=False, indent=args.indent_level)
+        dest.write("\n")
