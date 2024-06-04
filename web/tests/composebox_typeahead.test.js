@@ -424,6 +424,8 @@ const harry_item = user_item(harry);
 const hamletcharacters = user_group_item({
     name: "hamletcharacters",
     id: 1,
+    creator_id: null,
+    date_created: 1596710000,
     description: "Characters of Hamlet",
     members: new Set([100, 104]),
     is_system_group: false,
@@ -435,6 +437,8 @@ const hamletcharacters = user_group_item({
 const backend = user_group_item({
     name: "Backend",
     id: 2,
+    creator_id: null,
+    date_created: 1596710000,
     description: "Backend team",
     members: new Set([101]),
     is_system_group: false,
@@ -446,6 +450,8 @@ const backend = user_group_item({
 const call_center = user_group_item({
     name: "Call Center",
     id: 3,
+    creator_id: null,
+    date_created: 1596710000,
     description: "folks working in support",
     members: new Set([102]),
     is_system_group: false,

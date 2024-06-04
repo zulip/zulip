@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 292**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`GET
+  /user_groups`](/api/get-user-groups): Added `creator_id` and
+  `date_created` fields to user groups objects.
+
 **Feature level 291**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events),

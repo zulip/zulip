@@ -809,6 +809,8 @@ exports.fixtures = {
         group: {
             id: 555,
             name: "Mobile",
+            creator_id: null,
+            date_created: fake_now,
             description: "mobile folks",
             members: [1],
             is_system_group: false,

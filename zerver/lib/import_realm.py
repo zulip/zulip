@@ -754,13 +754,15 @@ def bulk_import_named_user_groups(data: TableData) -> None:
             group["can_manage_group_id"],
             group["can_mention_group_id"],
             group["deactivated"],
+            group["creator_id"],
+            group["date_created"],
         )
         for group in data["zerver_namedusergroup"]
     ]
 
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_manage_group_id, can_mention_group_id, deactivated)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_manage_group_id, can_mention_group_id, deactivated, creator_id, date_created)
         VALUES %s
         """
     )
@@ -1197,6 +1199,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             bulk_import_model(data, UserGroup)
 
             if "zerver_namedusergroup" in data:
+                re_map_foreign_keys(
+                    data, "zerver_namedusergroup", "creator", related_table="user_profile"
+                )
+                fix_datetime_fields(data, "zerver_namedusergroup")
                 re_map_foreign_keys(
                     data, "zerver_namedusergroup", "usergroup_ptr", related_table="usergroup"
                 )

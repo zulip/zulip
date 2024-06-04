@@ -45,6 +45,8 @@ export function add(user_group_raw: UserGroupRaw): void {
         description: user_group_raw.description,
         id: user_group_raw.id,
         name: user_group_raw.name,
+        creator_id: user_group_raw.creator_id,
+        date_created: user_group_raw.date_created,
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),

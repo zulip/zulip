@@ -13,6 +13,8 @@ run_test("user_groups", () => {
     const students = {
         description: "Students group",
         name: "Students",
+        creator_id: null,
+        date_created: 1596710000,
         id: 0,
         members: new Set([1, 2]),
         is_system_group: false,
@@ -32,6 +34,8 @@ run_test("user_groups", () => {
     const admins = {
         name: "Admins",
         description: "foo",
+        creator_id: null,
+        date_created: 1596710000,
         id: 1,
         members: new Set([3]),
         is_system_group: false,
