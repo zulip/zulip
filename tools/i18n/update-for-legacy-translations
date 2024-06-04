@@ -237,6 +237,7 @@ for locale in get_locales():
     current = get_json_filename(locale)
     legacy = get_legacy_filename(locale)
     if os.path.exists(current) and os.path.exists(legacy):
+        print(f"Checking legacy translations for: {current}")
         current_translations = get_translations(current)
         legacy_translations = get_translations(legacy)
         update_for_legacy_stream_translations(current_translations, legacy_translations, current)
