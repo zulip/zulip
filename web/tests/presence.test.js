@@ -68,6 +68,11 @@ people.add_active_user(zoe);
 people.add_active_user(bot);
 people.add_active_user(john);
 people.add_active_user(jane);
+
+const inaccessible_user_id = 9999;
+const inaccessible_user = people.add_inaccessible_user(inaccessible_user_id);
+inaccessible_user.is_inaccessible_user = true;
+
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
@@ -81,17 +86,6 @@ function test(label, f) {
 
 test("my user", () => {
     assert.equal(presence.get_status(me.user_id), "active");
-});
-
-test("unknown user", () => {
-    const unknown_user_id = 999;
-    const now = 888888;
-    const presences = {};
-    presences[unknown_user_id.toString()] = "does-not-matter";
-
-    // We just skip the unknown user.
-    presence.set_info(presences, now);
-    assert.equal(presence.presence_info.get(unknown_user_id), undefined);
 });
 
 test("status_from_raw", () => {
@@ -137,6 +131,8 @@ test("set_presence_info", () => {
     const recent = now + 1 - OFFLINE_THRESHOLD_SECS;
     const a_while_ago = now - OFFLINE_THRESHOLD_SECS * 2;
 
+    const unknown_user_id = 999;
+
     presences[alice.user_id.toString()] = {
         active_timestamp: recent,
     };
@@ -159,6 +155,15 @@ test("set_presence_info", () => {
     };
 
     presences[jane.user_id.toString()] = {
+        idle_timestamp: now,
+    };
+
+    // Unknown user ids can also be in the presence data.
+    presences[unknown_user_id.toString()] = {
+        idle_timestamp: now,
+    };
+
+    presences[inaccessible_user_id.toString()] = {
         idle_timestamp: now,
     };
 
@@ -204,6 +209,14 @@ test("set_presence_info", () => {
 
     assert.deepEqual(presence.presence_info.get(jane.user_id), {status: "idle", last_active: now});
     assert.equal(presence.get_status(jane.user_id), "idle");
+
+    assert.deepEqual(presence.presence_info.get(unknown_user_id), {
+        status: "idle",
+        last_active: now,
+    });
+    assert.equal(presence.get_status(unknown_user_id), "idle");
+
+    assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
 test("missing values", () => {

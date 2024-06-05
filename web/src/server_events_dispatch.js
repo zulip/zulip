@@ -454,13 +454,24 @@ export function dispatch_normal_event(event) {
 
         case "realm_user":
             switch (event.op) {
-                case "add":
+                case "add": {
+                    // There may be presence data we already received from the server
+                    // before getting this event. Check if we need to redraw.
+                    const should_redraw = activity_ui.check_should_redraw_new_user(
+                        event.person.user_id,
+                    );
+
                     people.add_active_user(event.person);
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
                         settings_users.redraw_bots_list();
                     }
+
+                    if (should_redraw) {
+                        activity_ui.redraw_user(event.person.user_id);
+                    }
                     break;
+                }
                 case "update":
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();

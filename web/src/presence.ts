@@ -34,10 +34,16 @@ export type PresenceInfoFromEvent = {
 const raw_info = new Map<number, RawPresence>();
 export const presence_info = new Map<number, PresenceStatus>();
 
-// We use this internally and export it for testing convenience.
+// An integer that is updated whenever we get new presence data.
+// TODO: Improve this comment.
+export let presence_last_update_id = -1;
+
+// We keep and export this for testing convenience.
 export function clear_internal_data(): void {
     raw_info.clear();
     presence_info.clear();
+
+    presence_last_update_id = -1;
 }
 
 const BIG_REALM_COUNT = 250;
@@ -166,6 +172,7 @@ export function update_info_from_event(
 export function set_info(
     presences: Record<number, Omit<RawPresence, "server_timestamp">>,
     server_timestamp: number,
+    last_update_id: number,
 ): void {
     /*
         Example `presences` data:
@@ -177,7 +184,8 @@ export function set_info(
         }
     */
 
-    clear_internal_data();
+    presence_last_update_id = last_update_id;
+
     for (const [user_id_str, info] of Object.entries(presences)) {
         const user_id = Number.parseInt(user_id_str, 10);
 
@@ -190,19 +198,14 @@ export function set_info(
         // new users were created in the meantime, we may see user IDs
         // not yet present in people.js if server_events doesn't have
         // current data (or we've been offline, our event queue was
-        // GC'ed, and we're about to reload).  Such user_ids being
-        // present could, in turn, create spammy downstream exceptions
-        // when rendering the buddy list.  To address this, we check
-        // if the user ID is not yet present in people.js, and if it
-        // is, we skip storing that user (we'll see them again in the
-        // next presence request in 1 minute anyway).
-        //
-        // It's important to check both suspect_offline and
-        // reload_state.is_in_progress, because races where presence
-        // returns data on users not yet received via the server_events
-        // system are common in both situations.
+        // GC'ed, and we're about to reload).
+        // Despite that, we still add the presence data to our structures,
+        // and it is the job of the code using them to correctly
+        // ignore these until we receive the basic metadata on this user.
+        // We skip inaccessible users here, as we do in other places;
+        // presence info for them is not used.
         const person = people.maybe_get_user_by_id(user_id, true);
-        if (person === undefined || person.is_inaccessible_user) {
+        if (person?.is_inaccessible_user) {
             // There are a number of situations where it is expected
             // that we get presence data for a user ID that we do
             // not have in our user database, including when we're
@@ -212,8 +215,8 @@ export function set_info(
             // and whenever presence wins a race with the events system
             // for events regarding a newly created or visible user.
             //
-            // Either way, we deal by skipping this user and
-            // continuing with processing everyone else.
+            // Either way, we still record the information unless
+            // we're dealing with an inaccessible user.
             continue;
         }
 
@@ -281,6 +284,7 @@ export function last_active_date(user_id: number): Date | undefined {
 export function initialize(params: {
     presences: Record<number, Omit<RawPresence, "server_timestamp">>;
     server_timestamp: number;
+    presence_last_update_id: number;
 }): void {
-    set_info(params.presences, params.server_timestamp);
+    set_info(params.presences, params.server_timestamp, params.presence_last_update_id);
 }
