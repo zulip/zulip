@@ -427,6 +427,8 @@ export function initialize_everything(state_data) {
             dark_theme.enable();
         } else if (preferred_theme === "light") {
             dark_theme.disable();
+        } else {
+            dark_theme.default_preference_checker();
         }
     }
 
