@@ -35,9 +35,9 @@ const meta = {
 
 export let user_settings_panel: SettingsPanel;
 
-export let user_default_language_name: string;
+export let user_default_language_name: string | undefined;
 
-export function set_default_language_name(name: string): void {
+export function set_default_language_name(name: string | undefined): void {
     user_default_language_name = name;
 }
 
@@ -345,7 +345,7 @@ export function update_page(property: UserSettingsProperty): void {
     // The default_language button text updates to the language
     // name and not the value of the user_settings property.
     if (property === "default_language") {
-        $container.find(".default_language_name").text(user_default_language_name);
+        $container.find(".default_language_name").text(user_default_language_name ?? "");
         return;
     }
 
