@@ -11,6 +11,7 @@ const search_suggestion = mock_esm("../src/search_suggestion");
 
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
+const stream_data = zrequire("stream_data");
 
 function stub_pills() {
     const $pill_container = $("#searchbox-input-container.pill-container");
@@ -24,6 +25,14 @@ set_global("getSelection", () => ({
 }));
 
 let typeahead_forced_open = false;
+
+const verona = {
+    subscribed: true,
+    color: "blue",
+    name: "Verona",
+    stream_id: 1,
+};
+stream_data.add_sub(verona);
 
 run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
@@ -211,7 +220,11 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                 for (const pill of pills) {
                     pill.$element.remove = noop;
                 }
-                search_pill.set_search_bar_contents(terms, search.search_pill_widget);
+                search_pill.set_search_bar_contents(
+                    terms,
+                    search.search_pill_widget,
+                    $search_query_box.text,
+                );
             };
 
             terms = [

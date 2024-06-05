@@ -198,39 +198,6 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
     await expect_home(page);
 }
 
-async function expect_non_existing_user(page: Page): Promise<void> {
-    await common.get_current_msg_list_id(page, true);
-    await page.waitForSelector(".empty_feed_notice", {visible: true});
-    const expected_message = "This user does not exist!";
-    assert.strictEqual(
-        await common.get_text_from_selector(page, ".empty_feed_notice"),
-        expected_message,
-    );
-}
-
-async function expect_non_existing_users(page: Page): Promise<void> {
-    await common.get_current_msg_list_id(page, true);
-    await page.waitForSelector(".empty_feed_notice", {visible: true});
-    const expected_message = "One or more of these users do not exist!";
-    assert.strictEqual(
-        await common.get_text_from_selector(page, ".empty_feed_notice"),
-        expected_message,
-    );
-}
-
-async function search_non_existing_user(page: Page, str: string, item: string): Promise<void> {
-    await page.click(".search_icon");
-    await page.waitForSelector(".navbar-search.expanded", {visible: true});
-    // Close the "in: home" pill
-    await page.click(".navbar-search .pill-close-button");
-    await common.select_item_via_typeahead(page, "#search_query", str, item);
-    // Enter to trigger search
-    await page.keyboard.press("Enter");
-    await expect_non_existing_user(page);
-    await un_narrow(page);
-    await expect_home(page);
-}
-
 async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
@@ -281,24 +248,6 @@ async function search_tests(page: Page): Promise<void> {
     );
 
     await search_silent_user(page, "sender:emailgateway@zulip.com", "");
-
-    await search_non_existing_user(page, "sender:dummyuser@zulip.com", "");
-
-    await search_and_check(
-        page,
-        "dm:dummyuser@zulip.com",
-        "",
-        expect_non_existing_user,
-        "Invalid user - Zulip Dev - Zulip",
-    );
-
-    await search_and_check(
-        page,
-        "dm:dummyuser@zulip.com,dummyuser2@zulip.com",
-        "",
-        expect_non_existing_users,
-        "Invalid users - Zulip Dev - Zulip",
-    );
 }
 
 async function expect_all_direct_messages(page: Page): Promise<void> {
