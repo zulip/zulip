@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import {localstorage} from "./localstorage";
 import {page_params} from "./page_params";
+import * as realm_logo from "./realm_logo";
 import * as settings_config from "./settings_config";
 import {user_settings} from "./user_settings";
 
@@ -12,6 +13,7 @@ export function enable(): void {
         const ls = localstorage();
         ls.set("spectator-theme-preference", "dark");
         user_settings.color_scheme = settings_config.color_scheme_values.night.code;
+        realm_logo.render();
     }
 }
 
@@ -22,6 +24,7 @@ export function disable(): void {
         const ls = localstorage();
         ls.set("spectator-theme-preference", "light");
         user_settings.color_scheme = settings_config.color_scheme_values.day.code;
+        realm_logo.render();
     }
 }
 
@@ -32,5 +35,6 @@ export function default_preference_checker(): void {
         const ls = localstorage();
         ls.set("spectator-theme-preference", "automatic");
         user_settings.color_scheme = settings_config.color_scheme_values.automatic.code;
+        realm_logo.render();
     }
 }
