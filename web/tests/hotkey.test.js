@@ -318,7 +318,7 @@ run_test("basic mappings", () => {
 
     assert_mapping("c", compose_actions, "start");
     assert_mapping("x", compose_actions, "start");
-    assert_mapping("P", narrow, "by");
+    assert_mapping("P", narrow, "activate");
     assert_mapping("g", gear_menu, "toggle");
 });
 

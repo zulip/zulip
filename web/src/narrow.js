@@ -997,12 +997,6 @@ export function narrow_to_next_pm_string(opts = {}) {
     activate(filter_expr, updated_opts);
 }
 
-// Activate narrowing with a single operator.
-// This is just for syntactic convenience.
-export function by(operator, operand, opts) {
-    activate([{operator, operand}], opts);
-}
-
 export function by_topic(target_id, opts) {
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const original = message_store.get(target_id);
@@ -1050,7 +1044,7 @@ export function by_recipient(target_id, opts) {
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            by("dm", message.reply_to, opts);
+            activate([{operator: "dm", operand: message.reply_to}], opts);
             break;
 
         case "stream":
@@ -1064,7 +1058,15 @@ export function by_recipient(target_id, opts) {
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            by("stream", stream_data.get_stream_name_from_id(message.stream_id), opts);
+            activate(
+                [
+                    {
+                        operator: "stream",
+                        operand: stream_data.get_stream_name_from_id(message.stream_id),
+                    },
+                ],
+                opts,
+            );
             break;
     }
 }
@@ -1104,10 +1106,10 @@ export function to_compose_target() {
         // If there are no recipients or any recipient is
         // invalid, narrow to your direct message feed.
         if (emails.length === 0 || invalid.length > 0) {
-            by("is", "dm", opts);
+            activate([{operator: "is", operand: "dm"}], opts);
             return;
         }
-        by("dm", util.normalize_recipients(recipient_string), opts);
+        activate([{operator: "dm", operand: util.normalize_recipients(recipient_string)}], opts);
     }
 }
 
