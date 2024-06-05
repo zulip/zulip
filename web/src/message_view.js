@@ -463,7 +463,6 @@ export function show(raw_terms, opts) {
                     );
 
                     if (adjusted_terms === null) {
-                        blueslip.error("adjusted_terms impossibly null");
                         return;
                     }
 
