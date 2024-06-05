@@ -1,12 +1,26 @@
 import $ from "jquery";
 
+import type {Filter} from "./filter";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import assert from "minimalistic-assert";
 
 let is_inbox_visible = false;
+export let filter: Filter | undefined;
 
 export function set_visible(value: boolean): void {
     is_inbox_visible = value;
+}
+
+export function set_filter(new_filter: Filter | undefined): void {
+    if (new_filter !== undefined) {
+        assert(new_filter.is_stream_only_narrow())
+    }
+    filter = new_filter;
+}
+
+export function current_filter(): Filter | undefined {
+    return filter;
 }
 
 export function is_visible(): boolean {
