@@ -1449,7 +1449,8 @@ def send_test_push_notification_directly_to_devices(
     apple_payload = copy.deepcopy(payload)
     android_payload = copy.deepcopy(payload)
 
-    realm_url = base_payload["realm_url"]
+    # TODO/compatibility: Backwards-compatibility name for realm_url.
+    realm_url = base_payload.get("realm_url", base_payload["realm_uri"])
     realm_name = base_payload["realm_name"]
     apns_data = {
         "alert": {
