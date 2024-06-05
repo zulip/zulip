@@ -774,7 +774,15 @@ export function initialize_everything(state_data) {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
-            narrow.by("stream", sub.name, {trigger});
+            narrow.activate(
+                [
+                    {
+                        operator: "stream",
+                        operand: sub.name,
+                    },
+                ],
+                {trigger},
+            );
             activity_ui.build_user_sidebar();
         },
     });
@@ -851,7 +859,15 @@ export function initialize_everything(state_data) {
     activity.initialize();
     activity_ui.initialize({
         narrow_by_email(email) {
-            narrow.by("dm", email, {trigger: "sidebar"});
+            narrow.activate(
+                [
+                    {
+                        operator: "dm",
+                        operand: email,
+                    },
+                ],
+                {trigger: "sidebar"},
+            );
         },
     });
     // This needs to happen after activity_ui.initialize, so that user_filter
