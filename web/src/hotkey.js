@@ -1091,7 +1091,7 @@ export function process_hotkey(e, hotkey) {
         case "toggle_conversation_view":
             if (narrow_state.narrowed_by_topic_reply()) {
                 // narrow to stream if user is in topic view
-                return do_narrow_action(narrow.by_recipient);
+                return do_narrow_action(narrow.narrow_by_recipient);
             } else if (narrow_state.narrowed_by_pm_reply()) {
                 // do nothing if user is in DM view
                 return false;

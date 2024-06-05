@@ -474,7 +474,7 @@ export function initialize() {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.by_recipient(row_id, {trigger: "message header"});
+        narrow.narrow_by_recipient(row_id, {trigger: "message header"});
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {

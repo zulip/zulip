@@ -1003,7 +1003,7 @@ export function by_topic(target_id, opts) {
     if (original.type !== "stream") {
         // Only stream messages have topics, but the
         // user wants us to narrow in some way.
-        by_recipient(target_id, opts);
+        narrow_by_recipient(target_id, opts);
         return;
     }
 
@@ -1027,7 +1027,7 @@ export function by_topic(target_id, opts) {
     activate(search_terms, opts);
 }
 
-export function by_recipient(target_id, opts) {
+export function narrow_by_recipient(target_id, opts) {
     opts = {then_select_id: target_id, ...opts};
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
