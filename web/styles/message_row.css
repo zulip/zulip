@@ -619,16 +619,6 @@ of the base style defined for a read-only textarea in dark mode. */
     }
 }
 
-.message_edit_spinner {
-    margin-right: 8px;
-    padding-top: 5px;
-}
-
-.message_edit_spinner .loading_indicator_spinner {
-    width: 20px;
-    height: 20px;
-}
-
 .message_edit {
     display: none;
 }
