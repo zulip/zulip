@@ -238,8 +238,8 @@ class TestMiscStuff(ZulipTestCase):
         """Verify that all the fields from `Stream.API_FIELDS` and `Subscription.API_FIELDS` present
         in `APIStreamDict` and `APISubscriptionDict`, respectively.
         """
-        expected_fields = set(Stream.API_FIELDS) | {"stream_id"}
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields = set(Stream.API_FIELDS) | {"stream_id", "is_archived"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
@@ -5941,10 +5941,11 @@ class GetSubscribersTest(ZulipTestCase):
             "stream_id",
             "stream_weekly_traffic",
             "subscribers",
+            "is_archived",
         }
 
         expected_fields = set(Stream.API_FIELDS) | set(Subscription.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         for lst in [sub_data.subscriptions, sub_data.unsubscribed]:
@@ -5956,10 +5957,11 @@ class GetSubscribersTest(ZulipTestCase):
             "stream_id",
             "stream_weekly_traffic",
             "subscribers",
+            "is_archived",
         }
 
         expected_fields = set(Stream.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         for never_sub in sub_data.never_subscribed:

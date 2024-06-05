@@ -177,11 +177,12 @@ class Stream(models.Model):
     # * "id" is represented as "stream_id" in most API interfaces.
     # * "email_token" is not realm-public and thus is not included here.
     # * is_in_zephyr_realm is a backend-only optimization.
-    # * "deactivated" streams are filtered from the API entirely.
+    # * "deactivated" is represented as "is_archived" in API interfaces.
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [
         "creator_id",
         "date_created",
+        "deactivated",
         "description",
         "first_message_id",
         "history_public_to_subscribers",
@@ -197,6 +198,7 @@ class Stream(models.Model):
 
     def to_dict(self) -> DefaultStreamDict:
         return DefaultStreamDict(
+            is_archived=self.deactivated,
             can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             creator_id=self.creator_id,
             date_created=datetime_to_timestamp(self.date_created),

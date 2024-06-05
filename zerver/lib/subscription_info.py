@@ -42,6 +42,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
     subscribed = []
     for stream in get_web_public_streams_queryset(realm):
         # Add Stream fields.
+        is_archived = stream.deactivated
         can_remove_subscribers_group_id = stream.can_remove_subscribers_group_id
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
@@ -73,6 +74,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         wildcard_mentions_notify = True
 
         sub = SubscriptionStreamDict(
+            is_archived=is_archived,
             audible_notifications=audible_notifications,
             can_remove_subscribers_group=can_remove_subscribers_group_id,
             color=color,
@@ -115,6 +117,7 @@ def build_unsubscribed_sub_from_stream_dict(
         can_remove_subscribers_group_id=stream_dict["can_remove_subscribers_group"],
         creator_id=stream_dict["creator_id"],
         date_created=timestamp_to_datetime(stream_dict["date_created"]),
+        deactivated=stream_dict["is_archived"],
         description=stream_dict["description"],
         first_message_id=stream_dict["first_message_id"],
         history_public_to_subscribers=stream_dict["history_public_to_subscribers"],
@@ -144,6 +147,7 @@ def build_stream_dict_for_sub(
     recent_traffic: dict[int, int] | None,
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
+    is_archived = raw_stream_dict["deactivated"]
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
@@ -187,6 +191,7 @@ def build_stream_dict_for_sub(
 
     # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
+        is_archived=is_archived,
         audible_notifications=audible_notifications,
         can_remove_subscribers_group=can_remove_subscribers_group_id,
         color=color,
@@ -218,6 +223,7 @@ def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
 ) -> NeverSubscribedStreamDict:
+    is_archived = raw_stream_dict["deactivated"]
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
@@ -244,6 +250,7 @@ def build_stream_dict_for_never_sub(
 
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
+        is_archived=is_archived,
         can_remove_subscribers_group=can_remove_subscribers_group_id,
         creator_id=creator_id,
         date_created=date_created,

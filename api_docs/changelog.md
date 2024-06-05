@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 296**
+
+* [POST /register](/api/register-queue),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id),
+  [`GET /events`](/api/get-events),
+  [GET /users/me/subscriptions](/api/get-subscriptions):
+  The `is_archived` property has been added to the streams
+  and subscriptions to indicate their active status.
+
 **Feature level 295**
 
 * [`GET /export/realm/consents`](/api/get-realm-export-consents): Added
