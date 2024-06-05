@@ -32,8 +32,8 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
+import * as message_view from "./message_view";
 import * as modals from "./modals";
-import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navbar_menus from "./navbar_menus";
 import * as navigate from "./navigate";
@@ -832,7 +832,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (event_name === "narrow_to_compose_target") {
-        narrow.to_compose_target();
+        message_view.to_compose_target();
         return true;
     }
 
@@ -925,7 +925,7 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that don't require a message
     switch (event_name) {
         case "narrow_private":
-            narrow.show(
+            message_view.show(
                 [
                     {
                         operator: "is",
@@ -952,19 +952,19 @@ export function process_hotkey(e, hotkey) {
             browser_history.go_to_location("keyboard-shortcuts");
             return true;
         case "stream_cycle_backward":
-            narrow.stream_cycle_backward();
+            message_view.stream_cycle_backward();
             return true;
         case "stream_cycle_forward":
-            narrow.stream_cycle_forward();
+            message_view.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
             return true;
         case "narrow_to_next_unread_followed_topic":
-            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
+            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
             return true;
         case "p_key":
-            narrow.narrow_to_next_pm_string({trigger: "hotkey"});
+            message_view.narrow_to_next_pm_string({trigger: "hotkey"});
             return true;
         case "open_recent_view":
             browser_history.go_to_location("#recent");
@@ -1091,13 +1091,13 @@ export function process_hotkey(e, hotkey) {
         case "toggle_conversation_view":
             if (narrow_state.narrowed_by_topic_reply()) {
                 // narrow to stream if user is in topic view
-                return do_narrow_action(narrow.narrow_by_recipient);
+                return do_narrow_action(message_view.narrow_by_recipient);
             } else if (narrow_state.narrowed_by_pm_reply()) {
                 // do nothing if user is in DM view
                 return false;
             }
             // else narrow to conversation view (topic / DM)
-            return do_narrow_action(narrow.narrow_by_topic);
+            return do_narrow_action(message_view.narrow_by_topic);
         case "toggle_stream_subscription":
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
             return true;
@@ -1194,10 +1194,10 @@ export function process_hotkey(e, hotkey) {
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`
-            // but we use `narrow.show` to pass in the `trigger` parameter
+            // but we use `message_view.show` to pass in the `trigger` parameter
             switch (msg.type) {
                 case "private":
-                    narrow.show(
+                    message_view.show(
                         [
                             {operator: "dm", operand: msg.reply_to},
                             {operator: "near", operand: msg.id},
@@ -1206,7 +1206,7 @@ export function process_hotkey(e, hotkey) {
                     );
                     return true;
                 case "stream":
-                    narrow.show(
+                    message_view.show(
                         [
                             {
                                 operator: "channel",

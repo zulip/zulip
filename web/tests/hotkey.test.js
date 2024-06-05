@@ -50,7 +50,7 @@ const message_actions_popover = mock_esm("../src/message_actions_popover");
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
-const narrow = mock_esm("../src/narrow");
+const message_view = mock_esm("../src/message_view");
 const narrow_state = mock_esm("../src/narrow_state");
 const navigate = mock_esm("../src/navigate");
 const modals = mock_esm("../src/modals", {
@@ -313,12 +313,12 @@ run_test("basic mappings", () => {
     assert_mapping("w", activity_ui, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
-    assert_mapping("A", narrow, "stream_cycle_backward");
-    assert_mapping("D", narrow, "stream_cycle_forward");
+    assert_mapping("A", message_view, "stream_cycle_backward");
+    assert_mapping("D", message_view, "stream_cycle_forward");
 
     assert_mapping("c", compose_actions, "start");
     assert_mapping("x", compose_actions, "start");
-    assert_mapping("P", narrow, "show");
+    assert_mapping("P", message_view, "show");
     assert_mapping("g", gear_menu, "toggle");
 });
 
@@ -381,7 +381,7 @@ run_test("misc", ({override}) => {
     assert_mapping("e", message_edit, "start");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
-    assert_mapping("s", narrow, "narrow_by_recipient");
+    assert_mapping("s", message_view, "narrow_by_recipient");
 
     override(narrow_state, "narrowed_by_topic_reply", () => false);
     override(narrow_state, "narrowed_by_pm_reply", () => true);
@@ -435,13 +435,13 @@ run_test("G/M keys", () => {
 run_test("n/p keys", () => {
     // Test keys that work when a message is selected and
     // also when the message list is empty.
-    assert_mapping("n", narrow, "narrow_to_next_topic");
-    assert_mapping("p", narrow, "narrow_to_next_pm_string");
-    assert_mapping("n", narrow, "narrow_to_next_topic");
+    assert_mapping("n", message_view, "narrow_to_next_topic");
+    assert_mapping("p", message_view, "narrow_to_next_pm_string");
+    assert_mapping("n", message_view, "narrow_to_next_topic");
 });
 
 run_test("narrow next unread followed topic", () => {
-    assert_mapping("N", narrow, "narrow_to_next_topic", true, true);
+    assert_mapping("N", message_view, "narrow_to_next_topic", true, true);
 });
 
 run_test("motion_keys", () => {

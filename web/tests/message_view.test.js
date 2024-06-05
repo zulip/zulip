@@ -14,7 +14,7 @@ const narrow_banner = zrequire("narrow_banner");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
-const narrow = zrequire("narrow");
+const message_view = zrequire("message_view");
 const narrow_title = zrequire("narrow_title");
 const settings_config = zrequire("settings_config");
 const recent_view_util = zrequire("recent_view_util");
@@ -661,21 +661,21 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
 });
 
 run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
-    disallow_rewire(narrow, "show");
+    disallow_rewire(message_view, "show");
 
     // No-op when not composing.
     compose_state.set_message_type(undefined);
-    narrow.to_compose_target();
+    message_view.to_compose_target();
 
     // No-op when empty stream.
     compose_state.set_message_type("stream");
     compose_state.set_stream_id("");
-    narrow.to_compose_target();
+    message_view.to_compose_target();
 });
 
 run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     const args = {called: false};
-    override_rewire(narrow, "show", (terms, opts) => {
+    override_rewire(message_view, "show", (terms, opts) => {
         args.terms = terms;
         args.opts = opts;
         args.called = true;
@@ -688,7 +688,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     // Test with existing topic
     compose_state.topic("one");
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.equal(args.opts.trigger, "narrow_to_compose_target");
     assert.deepEqual(args.terms, [
@@ -699,7 +699,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     // Test with new topic
     compose_state.topic("four");
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [
         {operator: "channel", operand: "ROME"},
@@ -709,21 +709,21 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     // Test with blank topic
     compose_state.topic("");
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
 
     // Test with no topic
     compose_state.topic(undefined);
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
     const args = {called: false};
-    override_rewire(narrow, "show", (terms, opts) => {
+    override_rewire(message_view, "show", (terms, opts) => {
         args.terms = terms;
         args.opts = opts;
         args.called = true;
@@ -740,35 +740,35 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     // Test with valid person
     emails = "alice@example.com";
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "dm", operand: "alice@example.com"}]);
 
     // Test with valid persons
     emails = "alice@example.com,ray@example.com";
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "dm", operand: "alice@example.com,ray@example.com"}]);
 
     // Test with some invalid persons
     emails = "alice@example.com,random,ray@example.com";
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 
     // Test with all invalid persons
     emails = "alice,random,ray";
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 
     // Test with no persons
     emails = "";
     args.called = false;
-    narrow.to_compose_target();
+    message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 });

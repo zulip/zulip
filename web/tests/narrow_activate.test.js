@@ -60,7 +60,7 @@ mock_esm("../src/unread_ui", {
 });
 
 //
-// We have strange hacks in narrow.show to sleep 0
+// We have strange hacks in message_view.show to sleep 0
 // seconds.
 set_global("setTimeout", (f, t) => {
     assert.equal(t, 0);
@@ -75,7 +75,7 @@ const {buddy_list} = zrequire("buddy_list");
 const activity_ui = zrequire("activity_ui");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
-const narrow = zrequire("narrow");
+const message_view = zrequire("message_view");
 const people = zrequire("people");
 
 const denmark = {
@@ -211,7 +211,7 @@ run_test("basics", ({override}) => {
         opts.cont();
     };
 
-    narrow.show(terms, {
+    message_view.show(terms, {
         then_select_id: selected_id,
     });
 
@@ -243,7 +243,7 @@ run_test("basics", ({override}) => {
     message_lists.current.selected_id = () => -1;
     message_lists.current.get_row = () => row;
 
-    narrow.show([{operator: "is", operand: "private"}], {
+    message_view.show([{operator: "is", operand: "private"}], {
         then_select_id: selected_id,
     });
 
@@ -254,7 +254,7 @@ run_test("basics", ({override}) => {
     row.get_offset_to_window = () => ({top: 100, bottom: 150});
     message_lists.current.get_row = () => row;
 
-    narrow.show(terms, {
+    message_view.show(terms, {
         then_select_id: selected_id,
     });
 
@@ -266,7 +266,7 @@ run_test("basics", ({override}) => {
     row.get_offset_to_window = () => ({top: 150, bottom: 250});
     message_lists.current.get_row = () => row;
 
-    narrow.show(terms, {
+    message_view.show(terms, {
         then_select_id: selected_id,
     });
 

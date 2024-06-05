@@ -4,7 +4,7 @@ import * as tippy from "tippy.js";
 import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
 import * as channel from "./channel";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
@@ -79,7 +79,7 @@ export function initialize() {
             $popper.one("click", ".narrow-self-direct-message", (e) => {
                 const user_id = current_user.user_id;
                 const email = people.get_by_user_id(user_id).email;
-                narrow.show(
+                message_view.show(
                     [
                         {
                             operator: "dm",
@@ -95,7 +95,7 @@ export function initialize() {
             $popper.one("click", ".narrow-messages-sent", (e) => {
                 const user_id = current_user.user_id;
                 const email = people.get_by_user_id(user_id).email;
-                narrow.show(
+                message_view.show(
                     [
                         {
                             operator: "sender",

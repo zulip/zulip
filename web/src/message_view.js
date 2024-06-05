@@ -171,7 +171,7 @@ function create_and_update_message_list(filter, id_info, opts) {
     //
     // It's fine for the hash change to happen anytime before updating
     // the current message list as we are trying to emulate the `hashchange`
-    // workflow we have which calls `narrow.show` after hash is updated.
+    // workflow we have which calls `message_view.show` after hash is updated.
     if (opts.change_hash) {
         update_hash_to_match_filter(filter, opts.trigger);
         opts.show_more_topics = history.state?.show_more_topics ?? false;
@@ -276,7 +276,7 @@ export function show(raw_terms, opts) {
         return;
     }
 
-    // Since narrow.show is called directly from various
+    // Since message_view.show is called directly from various
     // places in our code without passing through hashchange,
     // we need to check if the narrow is allowed for spectator here too.
     if (
@@ -456,7 +456,7 @@ export function show(raw_terms, opts) {
                     success(data) {
                         // After the message is fetched, we make the
                         // message locally available and then call
-                        // narrow.show recursively, setting a flag to
+                        // message_view.show recursively, setting a flag to
                         // indicate we've already done this.
                         message_helper.process_new_message(data.message);
                         show(raw_terms, {
@@ -470,7 +470,7 @@ export function show(raw_terms, opts) {
                         // happen, for example, if a user types
                         // `stream:foo topic:bar near:1` into the search
                         // box. No special rewriting is required, so call
-                        // narrow.show recursively.
+                        // message_view.show recursively.
                         show(raw_terms, {
                             fetched_target_message: true,
                             ...opts,
@@ -478,7 +478,7 @@ export function show(raw_terms, opts) {
                     },
                 });
 
-                // The channel.get will call narrow.show recursively
+                // The channel.get will call message_view.show recursively
                 // from a continuation unconditionally; the correct thing
                 // to do here is return.
                 return;
@@ -487,7 +487,7 @@ export function show(raw_terms, opts) {
 
         // IMPORTANT: No code that modifies UI state should appear above
         // this point. This is important to prevent calling such functions
-        // more than once in the event that we call narrow.show
+        // more than once in the event that we call message_view.show.
         // recursively.
         reset_ui_state(opts);
 

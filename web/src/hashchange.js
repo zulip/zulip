@@ -12,9 +12,9 @@ import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
 import * as message_fetch from "./message_fetch";
+import * as message_view from "./message_view";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
-import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -57,7 +57,7 @@ function show_all_message_view() {
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
-    narrow.show([{operator: "in", operand: "home"}], {
+    message_view.show([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
         then_select_id: history.state?.narrow_pointer,
@@ -198,7 +198,7 @@ function do_hashchange_normal(from_reload) {
                 narrow_opts.then_select_offset = data_for_hash.narrow_offset;
                 narrow_opts.show_more_topics = data_for_hash.show_more_topics ?? false;
             }
-            narrow.show(terms, narrow_opts);
+            message_view.show(terms, narrow_opts);
             return true;
         }
         case "":

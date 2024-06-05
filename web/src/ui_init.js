@@ -67,11 +67,11 @@ import * as message_list_hover from "./message_list_hover";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
+import * as message_view from "./message_view";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
 import * as muted_users from "./muted_users";
-import * as narrow from "./narrow";
 import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
@@ -774,7 +774,7 @@ export function initialize_everything(state_data) {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
-            narrow.show(
+            message_view.show(
                 [
                     {
                         operator: "stream",
@@ -832,14 +832,14 @@ export function initialize_everything(state_data) {
     compose_textarea.initialize();
     upload.initialize();
     search.initialize({
-        on_narrow_search: narrow.show,
+        on_narrow_search: message_view.show,
     });
     desktop_notifications.initialize();
     audible_notifications.initialize();
     compose_notifications.initialize({
         on_click_scroll_to_selected: message_viewport.scroll_to_selected,
         on_narrow_to_recipient(message_id) {
-            narrow.narrow_by_topic(message_id, {trigger: "compose_notification"});
+            message_view.narrow_by_topic(message_id, {trigger: "compose_notification"});
         },
     });
     unread_ops.initialize();
@@ -859,7 +859,7 @@ export function initialize_everything(state_data) {
     activity.initialize();
     activity_ui.initialize({
         narrow_by_email(email) {
-            narrow.show(
+            message_view.show(
                 [
                     {
                         operator: "dm",
@@ -886,7 +886,7 @@ export function initialize_everything(state_data) {
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
             const sub = sub_store.get(stream_id);
-            narrow.show(
+            message_view.show(
                 [
                     {operator: "channel", operand: sub.name},
                     {operator: "topic", operand: topic},

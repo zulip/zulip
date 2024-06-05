@@ -4,7 +4,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import {localstorage} from "./localstorage";
 import * as message_fetch from "./message_fetch";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
@@ -28,7 +28,7 @@ export function initialize() {
         // exist, but be log it so that it's available for future
         // debugging if an exception happens later.
         blueslip.info("Invalid hash change reload token");
-        narrow.changehash("", trigger);
+        message_view.changehash("", trigger);
         return;
     }
     ls.remove(hash_fragment);
@@ -83,5 +83,5 @@ export function initialize() {
     });
 
     activity.set_new_user_input(false);
-    narrow.changehash(vars.oldhash, trigger);
+    message_view.changehash(vars.oldhash, trigger);
 }
