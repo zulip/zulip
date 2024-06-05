@@ -1719,7 +1719,7 @@ msgstr "به روز رسانی"
 #: templates/zerver/portico-header.html:8
 #: templates/zerver/portico-header.html:12
 msgid "Zulip"
-msgstr "زولیپ "
+msgstr "زولیپ"
 
 #: templates/zerver/digest_base.html:5
 msgid "Digest"
