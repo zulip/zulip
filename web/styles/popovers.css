@@ -1067,8 +1067,10 @@ ul {
     }
 }
 
-.visibility_policy_popover {
-    padding: 0 4px;
+.visibility-policy-popover {
+    .popover-menu-list {
+        padding: 2px;
+    }
 }
 
 .recipient-bar-topic-visibility-switcher {
@@ -1240,6 +1242,15 @@ ul {
             &:active {
                 background: var(--color-background-active-popover-menu);
             }
+        }
+    }
+
+    .tab-picker {
+        .tab-option-content:focus-visible {
+            border-radius: 4px;
+            /* Override the default focus style */
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -1px;
         }
     }
 
@@ -1431,11 +1442,4 @@ ul.popover-menu-list {
 #theme-switcher,
 .sidebar-topic-visibility-switcher {
     margin: 2px 10px;
-
-    .tab-option-content:focus-visible {
-        border-radius: 4px;
-        /* Override the default focus style */
-        outline: 1px solid var(--color-outline-focus) !important;
-        outline-offset: -1px;
-    }
 }
