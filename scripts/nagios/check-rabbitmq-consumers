@@ -65,5 +65,5 @@ for queue_name in consumers:
     atomic_nagios_write(
         "check-rabbitmq-consumers-" + queue_name,
         "critical" if consumers[queue_name] < target_count else "ok",
-        "queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}",
+        f"queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}",
     )
