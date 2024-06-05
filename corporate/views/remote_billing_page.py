@@ -830,7 +830,7 @@ def check_rate_limits(
         assert e.secs_to_freedom is not None
         return render(
             request,
-            "zerver/rate_limit_exceeded.html",
+            "zerver/portico_error_pages/rate_limit_exceeded.html",
             context={"retry_after": int(e.secs_to_freedom)},
             status=429,
         )

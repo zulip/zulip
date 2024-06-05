@@ -928,7 +928,7 @@ def social_auth_subdomain_login_page(request: HttpRequest) -> HttpResponse:
         except Realm.DoesNotExist:
             pass
 
-    return render(request, "zerver/auth_subdomain.html", status=400)
+    return render(request, "zerver/portico_error_pages/auth_subdomain.html", status=400)
 
 
 def start_two_factor_auth(
@@ -1208,7 +1208,7 @@ def password_reset(request: HttpRequest) -> HttpResponse:
         assert e.secs_to_freedom is not None
         return render(
             request,
-            "zerver/rate_limit_exceeded.html",
+            "zerver/portico_error_pages/rate_limit_exceeded.html",
             context={"retry_after": int(e.secs_to_freedom)},
             status=429,
         )

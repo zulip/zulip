@@ -178,7 +178,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if banned_desktop_app:
         return render(
             request,
-            "zerver/insecure_desktop_app.html",
+            "zerver/portico_error_pages/insecure_desktop_app.html",
             context={
                 "auto_update_broken": auto_update_broken,
             },
@@ -187,7 +187,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if unsupported_browser:
         return render(
             request,
-            "zerver/unsupported_browser.html",
+            "zerver/portico_error_pages/unsupported_browser.html",
             context={
                 "browser_name": browser_name,
             },
