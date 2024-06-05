@@ -12,6 +12,9 @@ type MessageListView = {
     update_recipient_bar_background_color: () => void;
     rerender_messages: (messages: Message[], message_content_edited?: boolean) => void;
     is_fetched_end_rendered: () => boolean;
+    is_fetched_start_rendered: () => boolean;
+    first_rendered_message: () => Message | undefined;
+    last_rendered_message: () => Message | undefined;
     show_message_as_read: (message: Message, options: {from?: "pointer" | "server"}) => void;
     show_messages_as_unread: (message_ids: number[]) => void;
     _render_win_start: number;
@@ -46,6 +49,9 @@ export type MessageList = {
     can_mark_messages_read_without_setting: () => boolean;
     rerender_view: () => void;
     update_muting_and_rerender: () => void;
+    prev: () => number | undefined;
+    next: () => number | undefined;
+    is_at_end: () => boolean;
     prevent_reading: () => void;
     resume_reading: () => void;
     data: MessageListData;
@@ -55,6 +61,7 @@ export type MessageList = {
         messages: Message[],
         append_opts: {messages_are_new: boolean},
     ) => RenderInfo | undefined;
+    first: () => Message | undefined;
     last: () => Message | undefined;
     visibly_empty: () => boolean;
     selected_message: () => Message;
