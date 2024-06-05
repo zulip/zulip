@@ -862,12 +862,12 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     except RealmCreationKey.InvalidError:
         return TemplateResponse(
             request,
-            "zerver/realm_creation_link_invalid.html",
+            "zerver/portico_error_pages/realm_creation_link_invalid.html",
         )
     if not settings.OPEN_REALM_CREATION and key_record is None:
         return TemplateResponse(
             request,
-            "zerver/realm_creation_disabled.html",
+            "zerver/portico_error_pages/realm_creation_disabled.html",
         )
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
@@ -881,7 +881,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 assert e.secs_to_freedom is not None
                 return TemplateResponse(
                     request,
-                    "zerver/rate_limit_exceeded.html",
+                    "zerver/portico_error_pages/rate_limit_exceeded.html",
                     context={"retry_after": int(e.secs_to_freedom)},
                     status=429,
                 )
@@ -1049,7 +1049,7 @@ def accounts_home(
                 assert e.secs_to_freedom is not None
                 return render(
                     request,
-                    "zerver/rate_limit_exceeded.html",
+                    "zerver/portico_error_pages/rate_limit_exceeded.html",
                     context={"retry_after": int(e.secs_to_freedom)},
                     status=429,
                 )
@@ -1133,7 +1133,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     assert e.secs_to_freedom is not None
                     return render(
                         request,
-                        "zerver/rate_limit_exceeded.html",
+                        "zerver/portico_error_pages/rate_limit_exceeded.html",
                         context={"retry_after": int(e.secs_to_freedom)},
                         status=429,
                     )
