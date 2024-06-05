@@ -40,6 +40,7 @@ const fake_now = 1596713966;
 
 exports.test_streams = {
     devel: {
+        is_archived: false,
         name: "devel",
         description: ":devel fun:",
         rendered_description: "<b>devel fun</b>",
@@ -56,6 +57,7 @@ exports.test_streams = {
         can_remove_subscribers_group: 2,
     },
     test: {
+        is_archived: false,
         name: "test",
         description: "test desc",
         rendered_description: "test desc",
