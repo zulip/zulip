@@ -49,7 +49,7 @@ export function initialize() {
             if (message.type === "stream") {
                 narrow.by_topic(message_id, {trigger: "desktop_notification_reply"});
             } else {
-                narrow.by_recipient(message_id, {trigger: "desktop_notification_reply"});
+                narrow.narrow_by_recipient(message_id, {trigger: "desktop_notification_reply"});
             }
         }
 

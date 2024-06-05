@@ -381,7 +381,7 @@ run_test("misc", ({override}) => {
     assert_mapping("e", message_edit, "start");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
-    assert_mapping("s", narrow, "by_recipient");
+    assert_mapping("s", narrow, "narrow_by_recipient");
 
     override(narrow_state, "narrowed_by_topic_reply", () => false);
     override(narrow_state, "narrowed_by_pm_reply", () => true);
