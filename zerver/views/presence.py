@@ -154,7 +154,13 @@ def update_active_status_backend(
     ping_only: Json[bool] = False,
     new_user_input: Json[bool] = False,
     slim_presence: Json[bool] = False,
+    last_update_id: Optional[Json[int]] = None,
 ) -> HttpResponse:
+    if last_update_id is not None:
+        # This param being submitted by the client, means they want to use
+        # the modern API.
+        slim_presence = True
+
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: {status}").format(status=status))
@@ -166,7 +172,9 @@ def update_active_status_backend(
     if ping_only:
         ret: Dict[str, Any] = {}
     else:
-        ret = get_presence_response(user_profile, slim_presence)
+        ret = get_presence_response(
+            user_profile, slim_presence, last_update_id_fetched_by_client=last_update_id
+        )
 
     if user_profile.realm.is_zephyr_mirror_realm:
         # In zephyr mirroring realms, users can't see the presence of other
@@ -190,4 +198,8 @@ def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> H
     # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
-    return json_success(request, data=get_presence_response(user_profile, slim_presence=False))
+    data = get_presence_response(user_profile, slim_presence=False)
+
+    # We're not interested in the last_update_id field in this context.
+    data.pop("presence_last_update_id", None)
+    return json_success(request, data=data)

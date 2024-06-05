@@ -425,6 +425,11 @@ class BaseAction(ZulipTestCase):
                 state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
             # Since time is different for every call, just fix the value
             state["server_timestamp"] = 0
+            if "presence_last_update_id" in state:
+                # We don't adjust presence_last_update_id via apply_events,
+                # since events don't carry the relevant information.
+                # Fix the value just like server_timestamp.
+                state["presence_last_update_id"] = 0
 
         normalize(state1)
         normalize(state2)

@@ -123,6 +123,7 @@ def fetch_initial_state_data(
     user_avatar_url_field_optional: bool = False,
     user_settings_object: bool = False,
     slim_presence: bool = False,
+    presence_last_update_id_fetched_by_client: Optional[int] = None,
     include_subscribers: bool = True,
     include_streams: bool = True,
     spectator_requested_language: Optional[str] = None,
@@ -229,11 +230,23 @@ def fetch_initial_state_data(
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
 
     if want("presence"):
-        state["presences"] = (
-            {}
-            if user_profile is None
-            else get_presences_for_realm(realm, slim_presence, user_profile)
-        )
+        if presence_last_update_id_fetched_by_client is not None:
+            # This param being submitted by the client, means they want to use
+            # the modern API.
+            slim_presence = True
+
+        if user_profile is not None:
+            presences, presence_last_update_id_fetched_by_server = get_presences_for_realm(
+                realm,
+                slim_presence,
+                last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
+                requesting_user_profile=user_profile,
+            )
+            state["presences"] = presences
+            state["presence_last_update_id"] = presence_last_update_id_fetched_by_server
+        else:
+            state["presences"] = {}
+
         # Send server_timestamp, to match the format of `GET /presence` requests.
         state["server_timestamp"] = time.time()
 
@@ -1304,6 +1317,15 @@ def apply_event(
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
+        # Note: Fetch_initial_state_data includes
+        # a presence_last_update_id value, reflecting the Max .last_update_id
+        # value of the UserPresence objects in the data. Events don't carry
+        # information about the last_update_id of the UserPresence object
+        # to which they correspond, so we don't (and can't) attempt to update that initial
+        # presence data here.
+        # This means that the state resulting from fetch_initial_state + apply_events will not
+        # match the state of a hypothetical fetch_initial_state fetch that included the fully
+        # updated data. This is intended and not a bug.
         if slim_presence:
             user_key = str(event["user_id"])
         else:
@@ -1559,6 +1581,7 @@ def do_events_register(
     apply_markdown: bool = True,
     client_gravatar: bool = False,
     slim_presence: bool = False,
+    presence_last_update_id_fetched_by_client: Optional[int] = None,
     event_types: Optional[Sequence[str]] = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
@@ -1608,8 +1631,9 @@ def do_events_register(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             user_list_incomplete=user_list_incomplete,
-            # slim_presence is a noop, because presence is not included.
+            # These presence params are a noop, because presence is not included.
             slim_presence=True,
+            presence_last_update_id_fetched_by_client=None,
             # Force include_subscribers=False for security reasons.
             include_subscribers=include_subscribers,
             # Force include_streams=False for security reasons.
@@ -1656,6 +1680,7 @@ def do_events_register(
         user_avatar_url_field_optional=user_avatar_url_field_optional,
         user_settings_object=user_settings_object,
         slim_presence=slim_presence,
+        presence_last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
         include_subscribers=include_subscribers,
         include_streams=include_streams,
         pronouns_field_type_supported=pronouns_field_type_supported,
