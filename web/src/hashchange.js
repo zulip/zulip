@@ -57,7 +57,7 @@ function show_all_message_view() {
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
-    narrow.activate([{operator: "in", operand: "home"}], {
+    narrow.show([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
         then_select_id: history.state?.narrow_pointer,
@@ -198,7 +198,7 @@ function do_hashchange_normal(from_reload) {
                 narrow_opts.then_select_offset = data_for_hash.narrow_offset;
                 narrow_opts.show_more_topics = data_for_hash.show_more_topics ?? false;
             }
-            narrow.activate(terms, narrow_opts);
+            narrow.show(terms, narrow_opts);
             return true;
         }
         case "":

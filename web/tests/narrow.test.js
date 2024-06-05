@@ -661,7 +661,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
 });
 
 run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
-    disallow_rewire(narrow, "activate");
+    disallow_rewire(narrow, "show");
 
     // No-op when not composing.
     compose_state.set_message_type(undefined);
@@ -675,7 +675,7 @@ run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
 
 run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     const args = {called: false};
-    override_rewire(narrow, "activate", (terms, opts) => {
+    override_rewire(narrow, "show", (terms, opts) => {
         args.terms = terms;
         args.opts = opts;
         args.called = true;
@@ -723,7 +723,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
     const args = {called: false};
-    override_rewire(narrow, "activate", (terms, opts) => {
+    override_rewire(narrow, "show", (terms, opts) => {
         args.terms = terms;
         args.opts = opts;
         args.called = true;

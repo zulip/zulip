@@ -925,7 +925,7 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that don't require a message
     switch (event_name) {
         case "narrow_private":
-            narrow.activate(
+            narrow.show(
                 [
                     {
                         operator: "is",
@@ -1194,10 +1194,10 @@ export function process_hotkey(e, hotkey) {
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`
-            // but we use `narrow.activate` to pass in the `trigger` parameter
+            // but we use `narrow.show` to pass in the `trigger` parameter
             switch (msg.type) {
                 case "private":
-                    narrow.activate(
+                    narrow.show(
                         [
                             {operator: "dm", operand: msg.reply_to},
                             {operator: "near", operand: msg.id},
@@ -1206,7 +1206,7 @@ export function process_hotkey(e, hotkey) {
                     );
                     return true;
                 case "stream":
-                    narrow.activate(
+                    narrow.show(
                         [
                             {
                                 operator: "channel",

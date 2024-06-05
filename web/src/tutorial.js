@@ -13,7 +13,7 @@ function set_tutorial_status(status, callback) {
 export function initialize() {
     if (page_params.needs_tutorial) {
         set_tutorial_status("started");
-        narrow.activate(
+        narrow.show(
             [
                 {
                     operator: "is",

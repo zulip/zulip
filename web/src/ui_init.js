@@ -774,7 +774,7 @@ export function initialize_everything(state_data) {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
-            narrow.activate(
+            narrow.show(
                 [
                     {
                         operator: "stream",
@@ -832,7 +832,7 @@ export function initialize_everything(state_data) {
     compose_textarea.initialize();
     upload.initialize();
     search.initialize({
-        on_narrow_search: narrow.activate,
+        on_narrow_search: narrow.show,
     });
     desktop_notifications.initialize();
     audible_notifications.initialize();
@@ -859,7 +859,7 @@ export function initialize_everything(state_data) {
     activity.initialize();
     activity_ui.initialize({
         narrow_by_email(email) {
-            narrow.activate(
+            narrow.show(
                 [
                     {
                         operator: "dm",
@@ -886,7 +886,7 @@ export function initialize_everything(state_data) {
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
             const sub = sub_store.get(stream_id);
-            narrow.activate(
+            narrow.show(
                 [
                     {operator: "channel", operand: sub.name},
                     {operator: "topic", operand: topic},

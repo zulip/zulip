@@ -60,7 +60,7 @@ mock_esm("../src/unread_ui", {
 });
 
 //
-// We have strange hacks in narrow.activate to sleep 0
+// We have strange hacks in narrow.show to sleep 0
 // seconds.
 set_global("setTimeout", (f, t) => {
     assert.equal(t, 0);
@@ -211,7 +211,7 @@ run_test("basics", ({override}) => {
         opts.cont();
     };
 
-    narrow.activate(terms, {
+    narrow.show(terms, {
         then_select_id: selected_id,
     });
 
@@ -243,7 +243,7 @@ run_test("basics", ({override}) => {
     message_lists.current.selected_id = () => -1;
     message_lists.current.get_row = () => row;
 
-    narrow.activate([{operator: "is", operand: "private"}], {
+    narrow.show([{operator: "is", operand: "private"}], {
         then_select_id: selected_id,
     });
 
@@ -254,7 +254,7 @@ run_test("basics", ({override}) => {
     row.get_offset_to_window = () => ({top: 100, bottom: 150});
     message_lists.current.get_row = () => row;
 
-    narrow.activate(terms, {
+    narrow.show(terms, {
         then_select_id: selected_id,
     });
 
@@ -266,7 +266,7 @@ run_test("basics", ({override}) => {
     row.get_offset_to_window = () => ({top: 150, bottom: 250});
     message_lists.current.get_row = () => row;
 
-    narrow.activate(terms, {
+    narrow.show(terms, {
         then_select_id: selected_id,
     });
 

@@ -19,7 +19,7 @@ export function hide_scheduled_message_success_compose_banner(scheduled_message_
 
 function narrow_via_edit_scheduled_message(compose_args) {
     if (compose_args.message_type === "stream") {
-        narrow.activate(
+        narrow.show(
             [
                 {
                     operator: "channel",
@@ -30,7 +30,7 @@ function narrow_via_edit_scheduled_message(compose_args) {
             {trigger: "edit scheduled message"},
         );
     } else {
-        narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
+        narrow.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
             trigger: "edit scheduled message",
         });
     }
