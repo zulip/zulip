@@ -18,7 +18,7 @@ import * as message_lists from "./message_lists";
 import * as message_notifications from "./message_notifications";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
@@ -152,7 +152,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     if (sent_by_this_client) {
         compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
             narrow_to_recipient(message_id) {
-                narrow.narrow_by_topic(message_id, {trigger: "outside_current_view"});
+                message_view.narrow_by_topic(message_id, {trigger: "outside_current_view"});
             },
         });
     }
@@ -429,7 +429,7 @@ export function update_messages(events) {
                         trigger: "stream/topic change",
                         then_select_id: current_selected_id,
                     };
-                    narrow.show(terms, opts);
+                    message_view.show(terms, opts);
                 }
             }
 

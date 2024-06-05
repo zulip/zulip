@@ -5,7 +5,7 @@ import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as stream_data from "./stream_data";
 
 export function initialize() {
@@ -27,7 +27,7 @@ export function initialize() {
 
     // The code below is for sending a message received from notification reply which
     // is often referred to as inline reply feature. This is done so desktop app doesn't
-    // have to depend on channel.post for setting crsf_token and narrow.narrow_by_topic
+    // have to depend on channel.post for setting crsf_token and message_view.narrow_by_topic
     // to narrow to the message being sent.
     if (window.electron_bridge.set_send_notification_reply_message_supported !== undefined) {
         window.electron_bridge.set_send_notification_reply_message_supported(true);
@@ -47,9 +47,11 @@ export function initialize() {
 
         function success() {
             if (message.type === "stream") {
-                narrow.narrow_by_topic(message_id, {trigger: "desktop_notification_reply"});
+                message_view.narrow_by_topic(message_id, {trigger: "desktop_notification_reply"});
             } else {
-                narrow.narrow_by_recipient(message_id, {trigger: "desktop_notification_reply"});
+                message_view.narrow_by_recipient(message_id, {
+                    trigger: "desktop_notification_reply",
+                });
             }
         }
 

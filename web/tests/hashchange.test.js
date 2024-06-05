@@ -31,7 +31,7 @@ const browser_history = zrequire("browser_history");
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
-const narrow = zrequire("../src/narrow");
+const message_view = zrequire("../src/message_view");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 
@@ -181,9 +181,9 @@ function test_helper({override, override_rewire, change_tab}) {
     stub(ui_report, "error");
 
     if (change_tab) {
-        override_rewire(narrow, "show", (terms) => {
+        override_rewire(message_view, "show", (terms) => {
             narrow_terms = terms;
-            events.push("narrow.show");
+            events.push("message_view.show");
         });
 
         override(info_overlay, "show", (name) => {
@@ -237,7 +237,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.show",
+        "message_view.show",
     ]);
 
     helper.clear_events();
@@ -245,7 +245,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.show",
+        "message_view.show",
     ]);
 
     // Test old "#recent_topics" hash redirects to "#recent".
@@ -268,7 +268,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.show",
+        "message_view.show",
     ]);
     let terms = helper.get_narrow_terms();
     assert.equal(terms[0].operand, "Denmark");
@@ -280,7 +280,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.show",
+        "message_view.show",
     ]);
     terms = helper.get_narrow_terms();
     assert.equal(terms.length, 0);
@@ -375,7 +375,7 @@ run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
     let terms = [{operator: "is", operand: "dm"}];
 
     blueslip.expect("error", "browser does not support pushState");
-    narrow.update_hash_to_match_filter(new Filter(terms));
+    message_view.update_hash_to_match_filter(new Filter(terms));
 
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(window.location.hash, "#narrow/is/dm");
@@ -388,7 +388,7 @@ run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
     terms = [{operator: "is", operand: "starred"}];
 
     helper.clear_events();
-    narrow.update_hash_to_match_filter(new Filter(terms));
+    message_view.update_hash_to_match_filter(new Filter(terms));
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
 });

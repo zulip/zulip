@@ -7,8 +7,8 @@ import * as browser_history from "./browser_history";
 import * as compose_actions from "./compose_actions";
 import * as drafts from "./drafts";
 import {$t} from "./i18n";
+import * as message_view from "./message_view";
 import * as messages_overlay_ui from "./messages_overlay_ui";
-import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
@@ -24,7 +24,7 @@ function restore_draft(draft_id) {
 
     if (compose_args.type === "stream") {
         if (draft.stream_id !== undefined && draft.topic !== "") {
-            narrow.show(
+            message_view.show(
                 [
                     {
                         operator: "channel",
@@ -37,7 +37,7 @@ function restore_draft(draft_id) {
         }
     } else {
         if (compose_args.private_message_recipient !== "") {
-            narrow.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
+            message_view.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
                 trigger: "restore draft",
             });
         }

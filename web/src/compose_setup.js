@@ -17,7 +17,7 @@ import * as dialog_widget from "./dialog_widget";
 import * as flatpickr from "./flatpickr";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as poll_modal from "./poll_modal";
@@ -283,7 +283,7 @@ export function initialize() {
         `.${CSS.escape(compose_banner.CLASSNAMES.search_view)} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            narrow.to_compose_target();
+            message_view.to_compose_target();
         },
     );
 
@@ -440,7 +440,7 @@ export function initialize() {
 
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
-        narrow.to_compose_target();
+        message_view.to_compose_target();
     });
 
     $("#compose").on("click", ".collapse_composebox_button", (e) => {

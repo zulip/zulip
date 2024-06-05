@@ -24,8 +24,8 @@ import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
+import * as message_view from "./message_view";
 import * as muted_users from "./muted_users";
-import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -688,7 +688,7 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        narrow.show(
+        message_view.show(
             [
                 {
                     operator: "dm",
@@ -708,7 +708,7 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        narrow.show(
+        message_view.show(
             [
                 {
                     operator: "sender",

@@ -20,7 +20,7 @@ import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
@@ -474,7 +474,7 @@ export function initialize() {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.narrow_by_recipient(row_id, {trigger: "message header"});
+        message_view.narrow_by_recipient(row_id, {trigger: "message header"});
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
@@ -483,7 +483,7 @@ export function initialize() {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.narrow_by_topic(row_id, {trigger: "message header"});
+        message_view.narrow_by_topic(row_id, {trigger: "message header"});
     });
 
     // SIDEBARS

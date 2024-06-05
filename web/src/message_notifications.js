@@ -5,7 +5,7 @@ import * as blueslip from "./blueslip";
 import * as desktop_notifications from "./desktop_notifications";
 import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as people from "./people";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
@@ -162,7 +162,7 @@ export function process_notification(notification) {
             notification_object.addEventListener("click", () => {
                 notification_object.close();
                 if (message.type !== "test-notification") {
-                    narrow.narrow_by_topic(message.id, {trigger: "notification"});
+                    message_view.narrow_by_topic(message.id, {trigger: "notification"});
                 }
                 window.focus();
             });
