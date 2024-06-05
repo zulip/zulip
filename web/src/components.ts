@@ -23,6 +23,7 @@ export type Toggle = {
     value: () => string | undefined;
     get: () => JQuery;
     goto: (name: string) => void;
+    register_event_handlers: () => void;
 };
 
 export function toggle(opts: {
@@ -115,10 +116,14 @@ export function toggle(opts: {
         return false;
     }
 
-    meta.$ind_tab.on("click", function () {
-        const idx = Number($(this).attr("data-tab-id"));
-        select_tab(idx);
-    });
+    function register_event_handlers(): void {
+        meta.$ind_tab.off("click");
+        meta.$ind_tab.on("click", function () {
+            const idx = Number($(this).attr("data-tab-id"));
+            select_tab(idx);
+        });
+    }
+    register_event_handlers();
 
     keydown_util.handle({
         $elem: meta.$ind_tab,
@@ -186,6 +191,8 @@ export function toggle(opts: {
                 select_tab(idx);
             }
         },
+
+        register_event_handlers,
     };
 
     return prototype;

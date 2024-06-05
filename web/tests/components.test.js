@@ -73,6 +73,12 @@ const ind_tab = (function () {
         }
     };
 
+    $self.off = (name) => {
+        if (name === "click") {
+            env.click_f = undefined;
+        }
+    };
+
     $self.removeClass = (c) => {
         for (const $tab of env.tabs) {
             $tab.removeClass(c);
