@@ -480,7 +480,7 @@ export function initialize_everything(state_data) {
 
     const pm_conversations_params = pop_fields("recent_private_conversations");
 
-    const presence_params = pop_fields("presences", "server_timestamp");
+    const presence_params = pop_fields("presences", "server_timestamp", "presence_last_update_id");
 
     const starred_messages_params = pop_fields("starred_messages");
     const stream_data_params = pop_fields(

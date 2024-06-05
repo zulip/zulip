@@ -6,7 +6,6 @@ const _ = require("lodash");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
 const {current_user, realm, user_settings} = require("./lib/zpage_params");
 
 const timerender = mock_esm("../src/timerender");
@@ -500,9 +499,16 @@ test("get_items_for_users", () => {
     ]);
 });
 
-test("error handling", () => {
-    presence.presence_info.set(42, {status: "active"});
-    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
-    blueslip.expect("warn", "Got user_id in presence but not people: 42");
-    buddy_data.get_filtered_and_sorted_user_ids();
+test("unknown user id in presence", () => {
+    // This test is to make sure that we don't generate errors
+    // when we have a user_id in presence that we don't have
+    // information about.
+    // Such scenarios can happen if we receive presence info involving
+    // a new user before the user creation event reaches us.
+    presence.presence_info.set(999, {status: "active"});
+    const user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+
+    // This user id should not be present in the filtered list,
+    // it's meant to be ignored until we know about the user.
+    assert.equal(user_ids.includes(999), false);
 });

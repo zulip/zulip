@@ -805,6 +805,7 @@ test("initialize", ({override, mock_template}) => {
         msg: "",
         result: "success",
         server_timestamp: 0,
+        presence_last_update_id: -1,
     });
     $(window).trigger("focus");
     clear();
@@ -829,6 +830,7 @@ test("initialize", ({override, mock_template}) => {
         msg: "",
         result: "success",
         server_timestamp: 0,
+        presence_last_update_id: -1,
     });
 
     assert.ok($("#zephyr-mirror-error").hasClass("show"));
@@ -880,4 +882,21 @@ test("electron_bridge", ({override_rewire}) => {
 test("test_send_or_receive_no_presence_for_spectator", () => {
     page_params.is_spectator = true;
     activity.send_presence_to_server();
+});
+
+test("check_should_redraw_new_user", () => {
+    presence.presence_info.set(9999, {status: "active"});
+
+    // A user that wasn't yet known, but has presence info should be redrawn
+    // when being added.
+    assert.equal(activity_ui.check_should_redraw_new_user(9999), true);
+
+    // We don't even build the user sidebar if realm_presence_disabled is true,
+    // so nothing to redraw.
+    realm.realm_presence_disabled = true;
+    assert.equal(activity_ui.check_should_redraw_new_user(9999), false);
+
+    realm.realm_presence_disabled = false;
+    // A new user that didn't have presence info should not be redrawn.
+    assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
 });

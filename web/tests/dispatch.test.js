@@ -125,6 +125,7 @@ const alert_words = zrequire("alert_words");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
+const presence = zrequire("presence");
 const user_status = zrequire("user_status");
 const onboarding_steps = zrequire("onboarding_steps");
 
@@ -728,8 +729,28 @@ run_test("realm_domains", ({override}) => {
     assert_same(realm.realm_domains, []);
 });
 
+run_test("add_realm_user_redraw_logic", ({override}) => {
+    presence.presence_info.set(999, {status: "active"});
+
+    override(settings_account, "maybe_update_deactivate_account_button", noop);
+
+    const check_should_redraw_new_user_stub = make_stub();
+    // make_stub().f returns true by default, so it's already doing what we want.
+    override(activity_ui, "check_should_redraw_new_user", check_should_redraw_new_user_stub.f);
+    const redraw_user_stub = make_stub();
+    override(activity_ui, "redraw_user", redraw_user_stub.f);
+
+    const event = event_fixtures.realm_user__add;
+    event.person.user_id = 999;
+    dispatch(event);
+
+    assert.equal(redraw_user_stub.num_calls, 1);
+    assert.equal(redraw_user_stub.get_args("user_id").user_id, 999);
+});
+
 run_test("realm_user", ({override}) => {
     override(settings_account, "maybe_update_deactivate_account_button", noop);
+    override(activity_ui, "check_should_redraw_new_user", noop);
     let event = event_fixtures.realm_user__add;
     dispatch({...event});
     const added_person = people.get_by_user_id(event.person.user_id);

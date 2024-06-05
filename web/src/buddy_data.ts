@@ -1,4 +1,3 @@
-import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as muted_users from "./muted_users";
@@ -312,10 +311,11 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
     // This first filter is for whether the user is eligible to be
     // displayed in the right sidebar at all.
     user_ids = user_ids.filter((user_id) => {
-        const person = people.maybe_get_user_by_id(user_id);
+        const person = people.maybe_get_user_by_id(user_id, true);
 
         if (!person) {
-            blueslip.warn("Got user_id in presence but not people: " + user_id);
+            // See the comments in presence.set_info for details, but this is an expected race.
+            // User IDs for whom we have presence but no user metadata should be skipped.
             return false;
         }
 
