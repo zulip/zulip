@@ -24,8 +24,12 @@
 
 .todo-widget {
     .todo-task-list-title-bar {
+        flex: 1 1 auto;
         display: flex;
+        /* Ensure controls remain visible on narrower screens. */
+        flex-flow: row wrap;
         gap: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
     }
 
     .add-task-bar {
@@ -233,12 +237,8 @@ input {
     &.poll-option,
     &.poll-question,
     &.todo-task-list-title {
-        flex: 1 1 auto;
+        flex: 1 0 auto;
         padding: 4px 6px;
-    }
-
-    &.todo-task-list-title {
-        flex: 0 0 auto;
     }
 }
 
@@ -251,8 +251,11 @@ input {
 .poll-question-remove,
 .todo-task-list-title-check,
 .todo-task-list-title-remove {
-    width: 28px !important;
-    height: 28px;
+    align-self: stretch;
+    /* TODO: Re-express the 30.5px value here
+       as part of information density work. */
+    flex: 0 0 30.5px;
+    min-height: 30.5px;
     border-radius: 3px;
     border: 1px solid hsl(0deg 0% 80%);
     background-color: hsl(0deg 0% 100%);
@@ -265,17 +268,26 @@ input {
 .poll-edit-question,
 .todo-edit-task-list-title {
     opacity: 0.4;
-    display: inline-block;
-    margin-left: 5px;
 
     &:hover {
         opacity: 1;
     }
 }
 
-.poll-question-header,
-.todo-task-list-title-header {
-    display: inline;
+.poll-question-bar {
+    flex: 1 1 auto;
+    display: flex;
+    /* Ensure controls remain visible on narrower screens. */
+    flex-flow: row wrap;
+    gap: 5px;
+    margin-bottom: var(--markdown-interelement-space-px);
+}
+
+.poll-widget-header-area,
+.todo-widget-header-area {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
 }
 
 .current-user-vote {
