@@ -162,7 +162,7 @@ export function process_notification(notification) {
             notification_object.addEventListener("click", () => {
                 notification_object.close();
                 if (message.type !== "test-notification") {
-                    narrow.by_topic(message.id, {trigger: "notification"});
+                    narrow.narrow_by_topic(message.id, {trigger: "notification"});
                 }
                 window.focus();
             });

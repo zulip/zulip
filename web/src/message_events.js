@@ -152,7 +152,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     if (sent_by_this_client) {
         compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
             narrow_to_recipient(message_id) {
-                narrow.by_topic(message_id, {trigger: "outside_current_view"});
+                narrow.narrow_by_topic(message_id, {trigger: "outside_current_view"});
             },
         });
     }

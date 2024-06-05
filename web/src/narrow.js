@@ -997,7 +997,7 @@ export function narrow_to_next_pm_string(opts = {}) {
     show(filter_expr, updated_opts);
 }
 
-export function by_topic(target_id, opts) {
+export function narrow_by_topic(target_id, opts) {
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const original = message_store.get(target_id);
     if (original.type !== "stream") {
