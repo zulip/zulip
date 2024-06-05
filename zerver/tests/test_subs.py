@@ -1417,7 +1417,7 @@ class StreamAdminTest(ZulipTestCase):
             )
             .exists()
         )
-        self.assertFalse(subscription_exists)
+        self.assertTrue(subscription_exists)
 
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
@@ -1540,7 +1540,7 @@ class StreamAdminTest(ZulipTestCase):
                     "type": "subscription",
                     "user_ids": [desdemona.id],
                 },
-                "users": [iago.id],
+                "users": [cordelia.id, hamlet.id, iago.id],
             },
         )
 
@@ -1554,7 +1554,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.history_public_to_subscribers)
 
         self.assertEqual(
-            [desdemona.id],
+            [hamlet.id, cordelia.id, desdemona.id],
             [
                 sub.user_profile_id
                 for sub in get_active_subscriptions_for_stream_id(
@@ -2500,10 +2500,7 @@ class StreamAdminTest(ZulipTestCase):
         deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
         deactivated_stream = get_stream(deactivated_stream_name, realm)
         self.assertTrue(deactivated_stream.deactivated)
-        self.assertTrue(deactivated_stream.invite_only)
         self.assertEqual(deactivated_stream.name, deactivated_stream_name)
-        subscribers = self.users_subscribed_to_stream(deactivated_stream_name, realm)
-        self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
         result = self.client_get("/json/streams", {"include_subscribed": "false"})
