@@ -104,8 +104,11 @@
     }
 
     & li {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
         list-style: none;
-        margin: 0 2px 6px 0;
+        margin: 0 0 5px;
     }
 
     & ul {
@@ -148,6 +151,9 @@
 
     & span.poll-option {
         font-weight: 600;
+        /* Start with max-content, but allow options
+           to shrink, so that voting names wrap comfortably. */
+        flex: 0 1 max-content;
     }
 
     .poll-vote {
@@ -156,7 +162,6 @@
         border-style: solid;
         font-weight: 600;
         border-radius: 3px;
-        margin-right: 4px;
         min-width: 25px;
         height: 25px;
         font-size: 13px;
@@ -174,7 +179,10 @@
 
     .poll-names {
         color: hsl(0deg 0% 45%);
-        padding-left: 4px;
+        /* Aim for 50% of the flexbox for voting names,
+           but also shrink modestly (.5) adjacent a long
+           option. */
+        flex: 1 0.5 50%;
     }
 }
 
