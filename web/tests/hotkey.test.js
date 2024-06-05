@@ -389,7 +389,7 @@ run_test("misc", ({override}) => {
 
     override(narrow_state, "narrowed_by_topic_reply", () => false);
     override(narrow_state, "narrowed_by_pm_reply", () => false);
-    assert_mapping("s", narrow, "by_topic");
+    assert_mapping("s", message_view, "narrow_by_topic");
 
     override(message_edit, "can_move_message", () => true);
     assert_mapping("m", stream_popover, "build_move_topic_to_stream_popover");

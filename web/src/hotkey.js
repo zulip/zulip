@@ -1097,7 +1097,7 @@ export function process_hotkey(e, hotkey) {
                 return false;
             }
             // else narrow to conversation view (topic / DM)
-            return do_narrow_action(narrow.by_topic);
+            return do_narrow_action(narrow.narrow_by_topic);
         case "toggle_stream_subscription":
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
             return true;

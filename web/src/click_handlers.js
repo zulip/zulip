@@ -483,7 +483,7 @@ export function initialize() {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.by_topic(row_id, {trigger: "message header"});
+        narrow.narrow_by_topic(row_id, {trigger: "message header"});
     });
 
     // SIDEBARS

@@ -839,7 +839,7 @@ export function initialize_everything(state_data) {
     compose_notifications.initialize({
         on_click_scroll_to_selected: message_viewport.scroll_to_selected,
         on_narrow_to_recipient(message_id) {
-            narrow.by_topic(message_id, {trigger: "compose_notification"});
+            narrow.narrow_by_topic(message_id, {trigger: "compose_notification"});
         },
     });
     unread_ops.initialize();
