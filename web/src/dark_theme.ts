@@ -27,4 +27,10 @@ export function disable(): void {
 
 export function default_preference_checker(): void {
     $(":root").removeClass("dark-theme").addClass("color-scheme-automatic");
+
+    if (page_params.is_spectator) {
+        const ls = localstorage();
+        ls.set("spectator-theme-preference", "automatic");
+        user_settings.color_scheme = settings_config.color_scheme_values.automatic.code;
+    }
 }
