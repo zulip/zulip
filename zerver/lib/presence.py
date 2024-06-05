@@ -1,7 +1,7 @@
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Dict, Mapping, Optional, Sequence
+from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -147,14 +147,25 @@ def get_presence_for_user(
 
 
 def get_presence_dict_by_realm(
-    realm: Realm, slim_presence: bool = False, requesting_user_profile: Optional[UserProfile] = None
-) -> Dict[str, Dict[str, Any]]:
+    realm: Realm,
+    slim_presence: bool = False,
+    last_update_id_fetched_by_client: Optional[int] = None,
+    requesting_user_profile: Optional[UserProfile] = None,
+) -> Tuple[Dict[str, Dict[str, Any]], int]:
     two_weeks_ago = timezone_now() - timedelta(weeks=2)
+    kwargs: Dict[str, object] = dict()
+    if last_update_id_fetched_by_client is not None:
+        kwargs["last_update_id__gt"] = last_update_id_fetched_by_client
+
     query = UserPresence.objects.filter(
         realm_id=realm.id,
-        last_connected_time__gte=two_weeks_ago,
         user_profile__is_active=True,
         user_profile__is_bot=False,
+        # We can consider tweaking this value when last_update_id is being used,
+        # to potentially fetch more data since such a client is expected to only
+        # do it once and then only do small, incremental fetches.
+        last_connected_time__gte=two_weeks_ago,
+        **kwargs,
     )
 
     if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE and not check_user_can_access_all_users(
@@ -172,26 +183,67 @@ def get_presence_dict_by_realm(
             "user_profile_id",
             "user_profile__enable_offline_push_notifications",
             "user_profile__date_joined",
+            "last_update_id",
         )
     )
+    # Get max last_update_id from the list.
+    if presence_rows:
+        last_update_id_fetched_by_server: Optional[int] = max(
+            row["last_update_id"] for row in presence_rows
+        )
+    elif last_update_id_fetched_by_client is not None:
+        # If there are no results, that means that are no new updates to presence
+        # since what the client has last seen. Therefore, returning the same
+        # last_update_id that the client provided is correct.
+        last_update_id_fetched_by_server = last_update_id_fetched_by_client
+    else:
+        # If the client didn't specify a last_update_id, we return -1 to indicate
+        # the lack of any data fetched, while sticking to the convention of
+        # returning an integer.
+        last_update_id_fetched_by_server = -1
 
-    return get_presence_dicts_for_rows(presence_rows, slim_presence)
+    assert last_update_id_fetched_by_server is not None
+    return get_presence_dicts_for_rows(
+        presence_rows, slim_presence
+    ), last_update_id_fetched_by_server
 
 
 def get_presences_for_realm(
-    realm: Realm, slim_presence: bool, requesting_user_profile: UserProfile
-) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    realm: Realm,
+    slim_presence: bool,
+    last_update_id_fetched_by_client: Optional[int],
+    requesting_user_profile: UserProfile,
+) -> Tuple[Dict[str, Dict[str, Dict[str, Any]]], Optional[int]]:
     if realm.presence_disabled:
         # Return an empty dict if presence is disabled in this realm
-        return defaultdict(dict)
+        return defaultdict(dict), None
 
-    return get_presence_dict_by_realm(realm, slim_presence, requesting_user_profile)
+    return get_presence_dict_by_realm(
+        realm,
+        slim_presence,
+        last_update_id_fetched_by_client,
+        requesting_user_profile=requesting_user_profile,
+    )
 
 
 def get_presence_response(
-    requesting_user_profile: UserProfile, slim_presence: bool
+    requesting_user_profile: UserProfile,
+    slim_presence: bool,
+    last_update_id_fetched_by_client: Optional[int] = None,
 ) -> Dict[str, Any]:
     realm = requesting_user_profile.realm
     server_timestamp = time.time()
-    presences = get_presences_for_realm(realm, slim_presence, requesting_user_profile)
-    return dict(presences=presences, server_timestamp=server_timestamp)
+    presences, last_update_id_fetched_by_server = get_presences_for_realm(
+        realm,
+        slim_presence,
+        last_update_id_fetched_by_client,
+        requesting_user_profile=requesting_user_profile,
+    )
+
+    response_dict = dict(
+        presences=presences,
+        server_timestamp=server_timestamp,
+        presence_last_update_id=last_update_id_fetched_by_server,
+    )
+
+    return response_dict

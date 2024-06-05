@@ -13156,6 +13156,20 @@ paths:
                             either the user's ID or the user's Zulip API email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
+                      presence_last_update_id:
+                        type: integer
+                        description: |
+                          Present if `presence` is present in `fetch_event_types`.
+
+                          Provides the `last_update_id` value of the latest presence data fetched by
+                          the server and included in the response in `presences`. This can be used
+                          as the value of the `presence_last_update_id` parameter when polling
+                          for presence data at the /users/me/presence endpoint to tell the server
+                          to only fetch the relevant newer data in order to skip redundant
+                          already-known presence information.
+
+                          **Changes**: New in Zulip 9.0 (feature level 263).
+
                       server_timestamp:
                         type: number
                         description: |

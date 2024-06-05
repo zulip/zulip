@@ -20,6 +20,29 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 263**:
+
+* `POST /users/me/presence`: A new `last_update_id`
+  parameter can be given, instructing
+  the server to only fetch presence data with `last_update_id`
+  greater than the value provided. The server also provides
+  a `presence_last_update_id` field in the response, which
+  tells the client the greatest `last_update_id` of the fetched
+  presence data. This can then be used as the value in the
+  aforementioned parameter to avoid re-fetching of already known
+  data when polling the endpoint next time.
+  Additionally, the client specifying the `last_update_id`
+  implies it uses the modern API format, so
+  `slim_presence=true` will be assumed by the server.
+
+
+* [`POST /register`](/api/register-queue): The response now also
+  includes a `presence_last_update_id` field, with the same
+  meaning as described above for `/users/me/presence`.
+  In the same way, the retrieved value can be passed when
+  querying `/users/me/presence` to avoid re-fetching of already
+  known data.
+
 **Feature level 262**:
 
 * [`GET /users/{user_id}/status`](/api/get-user-status): Added a new

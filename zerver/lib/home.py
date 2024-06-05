@@ -169,6 +169,7 @@ def build_page_params_for_home_page_load(
             apply_markdown=True,
             client_gravatar=True,
             slim_presence=True,
+            presence_last_update_id_fetched_by_client=-1,
             client_capabilities=client_capabilities,
             narrow=narrow,
             include_streams=False,

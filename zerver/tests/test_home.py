@@ -114,6 +114,7 @@ class HomeTest(ZulipTestCase):
         "password_min_guesses",
         "password_min_length",
         "presences",
+        "presence_last_update_id",
         "queue_id",
         "realm_add_custom_emoji_policy",
         "realm_allow_edit_history",
