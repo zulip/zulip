@@ -210,7 +210,12 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
             if (e.key === "Escape" && $search_query_box.is(":focus")) {
                 exit_search({keep_search_narrow_open: false});
             } else if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
-                narrow_or_search_for_term({on_narrow_search});
+                const text_terms = Filter.parse(get_search_bar_text());
+                if (text_terms.every((term) => Filter.is_valid_search_term(term))) {
+                    narrow_or_search_for_term({on_narrow_search});
+                } else {
+                    $("#search_query").addClass("shake");
+                }
             }
         });
 
@@ -287,7 +292,11 @@ function reset_searchbox(): void {
     assert(search_pill_widget !== null);
     search_pill_widget.clear();
     search_input_has_changed = false;
-    search_pill.set_search_bar_contents(narrow_state.search_terms(), search_pill_widget);
+    search_pill.set_search_bar_contents(
+        narrow_state.search_terms(),
+        search_pill_widget,
+        set_search_bar_text,
+    );
 }
 
 function exit_search(opts: {keep_search_narrow_open: boolean}): void {

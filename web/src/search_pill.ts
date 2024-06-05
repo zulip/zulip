@@ -1,4 +1,4 @@
-import assert from "minimalistic-assert";
+import $ from "jquery";
 
 import {Filter} from "./filter";
 import * as input_pill from "./input_pill";
@@ -39,8 +39,12 @@ type SearchPill =
 
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
-export function create_item_from_search_string(search_string: string): SearchPill {
+export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_terms = Filter.parse(search_string);
+    if (!search_terms.every((term) => Filter.is_valid_search_term(term))) {
+        // This will cause pill validation to fail and trigger a shake animation.
+        return undefined;
+    }
     const description_html = Filter.search_description_as_html(search_terms);
     return {
         display_value: search_string,
@@ -60,6 +64,9 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         get_text_from_item: get_search_string_from_item,
         split_text_on_comma: false,
     });
+    // We don't automatically create pills on paste. When the user
+    // presses enter, we validate the input then.
+    pills.createPillonPaste(() => false);
     return pills;
 }
 
@@ -96,42 +103,53 @@ const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
 export function set_search_bar_contents(
     search_terms: NarrowTerm[],
     pill_widget: SearchPillWidget,
-    set_search_bar_text?: (text: string) => void,
+    set_search_bar_text: (text: string) => void,
 ): void {
     pill_widget.clear();
     let partial_pill = "";
+    const invalid_inputs = [];
+
     for (const term of search_terms) {
-        if (user_pill_operators.has(term.operator) && term.operand !== "") {
-            const user_emails = term.operand.split(",");
-            const users = user_emails.map((email) => {
-                const user = people.get_by_email(email);
-                assert(user !== undefined);
-                return user;
-            });
-            append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
-            continue;
-        }
         const input = Filter.unparse([term]);
+
         // If the last term looks something like `dm:`, we
         // don't want to make it a pill, since it isn't isn't
         // a complete search term yet.
         // Instead, we keep the partial pill to the end of the
         // search box as text input, which will update the
         // typeahead to show operand suggestions.
-        if (
-            set_search_bar_text !== undefined &&
-            input.at(-1) === ":" &&
-            term.operand === "" &&
-            term === search_terms.at(-1)
-        ) {
+        if (input.at(-1) === ":" && term.operand === "" && term === search_terms.at(-1)) {
             partial_pill = input;
             continue;
         }
+
+        if (!Filter.is_valid_search_term(term)) {
+            invalid_inputs.push(input);
+            continue;
+        }
+
+        if (user_pill_operators.has(term.operator) && term.operand !== "") {
+            const users = term.operand.split(",").map((email) => {
+                // This is definitely not undefined, because we just validated it
+                // with `Filter.is_valid_search_term`.
+                const user = people.get_by_email(email)!;
+                return user;
+            });
+            append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
+            continue;
+        }
+
         pill_widget.appendValue(input);
     }
     pill_widget.clear_text();
-    if (set_search_bar_text !== undefined) {
-        set_search_bar_text(partial_pill);
+
+    const search_bar_text_strings = [...invalid_inputs];
+    if (partial_pill !== "") {
+        search_bar_text_strings.push(partial_pill);
+    }
+    set_search_bar_text(search_bar_text_strings.join(" "));
+    if (invalid_inputs.length) {
+        $("#search_query").addClass("shake");
     }
 }
 
