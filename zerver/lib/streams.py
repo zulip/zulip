@@ -149,6 +149,8 @@ def create_stream_if_needed(
             name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
         )
 
+    stream_name = stream_name.strip()
+
     assert can_remove_subscribers_group is not None
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
