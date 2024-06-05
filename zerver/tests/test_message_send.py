@@ -30,7 +30,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_post_policy
+from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
@@ -1336,6 +1336,34 @@ class MessagePOSTTest(ZulipTestCase):
 
         msg = self.get_last_message()
         self.assertEqual(int(datetime_to_timestamp(msg.date_sent)), int(fake_timestamp))
+
+    def test_send_message_in_archived_stream(self) -> None:
+        self.login("hamlet")
+        stream_name = "archived stream"
+        stream = self.make_stream(stream_name)
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps([stream.id]).decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        self.assert_json_success(result)
+
+        do_deactivate_stream(stream, acting_user=None)
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps([stream.id]).decode(),
+                "content": "Second Test message",
+                "topic": "Test topic",
+            },
+        )
+        self.assert_json_error(result, f"Not authorized to send to channel '{stream.name}'")
 
     def test_unsubscribed_can_forge_sender(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()

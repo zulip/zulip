@@ -290,8 +290,13 @@ def access_stream_for_send_message(
         else:
             raise JsonableError(_("User not authorized for this query"))
 
-    if archived_channel_notice:
-        return
+    # Deactivated streams are not accessible.
+    if stream.deactivated:
+        if archived_channel_notice:
+            return
+        raise JsonableError(
+            _("Not authorized to send to channel '{channel_name}'").format(channel_name=stream.name)
+        )
 
     if is_cross_realm_bot_email(sender.delivery_email):
         return
@@ -431,7 +436,9 @@ def access_stream_common(
     except Subscription.DoesNotExist:
         sub = None
 
-    if check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=allow_realm_admin):
+    if not stream.deactivated and check_basic_stream_access(
+        user_profile, stream, sub, allow_realm_admin=allow_realm_admin
+    ):
         return sub
 
     # Otherwise it is a private stream and you're not on it, so throw
@@ -667,6 +674,11 @@ def filter_stream_authorization(
 
     unauthorized_streams: list[Stream] = []
     for stream in streams:
+        # Deactivated streams are not accessible
+        if stream.deactivated:
+            unauthorized_streams.append(stream)
+            continue
+
         # The user is authorized for their own streams
         if stream.recipient_id in subscribed_recipient_ids:
             continue
