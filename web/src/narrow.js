@@ -171,7 +171,7 @@ function create_and_update_message_list(filter, id_info, opts) {
     //
     // It's fine for the hash change to happen anytime before updating
     // the current message list as we are trying to emulate the `hashchange`
-    // workflow we have which calls `narrow.activate` after hash is updated.
+    // workflow we have which calls `narrow.show` after hash is updated.
     if (opts.change_hash) {
         update_hash_to_match_filter(filter, opts.trigger);
         opts.show_more_topics = history.state?.show_more_topics ?? false;
@@ -219,7 +219,7 @@ function handle_post_message_list_change(
     compose_recipient.handle_middle_pane_transition();
 }
 
-export function activate(raw_terms, opts) {
+export function show(raw_terms, opts) {
     /* Main entry point for switching to a new view / message list.
 
        Supported parameters:
@@ -271,12 +271,12 @@ export function activate(raw_terms, opts) {
         // cause you to end up in the wrong place if you are actively scrolling
         // on an unnarrow. Wait a bit and try again once the scrolling is likely over.
         setTimeout(() => {
-            activate(raw_terms, opts);
+            show(raw_terms, opts);
         }, 50);
         return;
     }
 
-    // Since narrow.activate is called directly from various
+    // Since narrow.show is called directly from various
     // places in our code without passing through hashchange,
     // we need to check if the narrow is allowed for spectator here too.
     if (
@@ -405,7 +405,7 @@ export function activate(raw_terms, opts) {
                         return;
                     }
 
-                    activate(adjusted_terms, {
+                    show(adjusted_terms, {
                         ...opts,
                         // Update the URL fragment to reflect the redirect.
                         change_hash: true,
@@ -438,7 +438,7 @@ export function activate(raw_terms, opts) {
                 ) {
                     const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
                     if (adjusted_terms !== null) {
-                        activate(adjusted_terms, {
+                        show(adjusted_terms, {
                             ...opts,
                             // Update the URL fragment to reflect the redirect.
                             change_hash: true,
@@ -456,10 +456,10 @@ export function activate(raw_terms, opts) {
                     success(data) {
                         // After the message is fetched, we make the
                         // message locally available and then call
-                        // narrow.activate recursively, setting a flag to
+                        // narrow.show recursively, setting a flag to
                         // indicate we've already done this.
                         message_helper.process_new_message(data.message);
-                        activate(raw_terms, {
+                        show(raw_terms, {
                             ...opts,
                             fetched_target_message: true,
                         });
@@ -470,15 +470,15 @@ export function activate(raw_terms, opts) {
                         // happen, for example, if a user types
                         // `stream:foo topic:bar near:1` into the search
                         // box. No special rewriting is required, so call
-                        // narrow.activate recursively.
-                        activate(raw_terms, {
+                        // narrow.show recursively.
+                        show(raw_terms, {
                             fetched_target_message: true,
                             ...opts,
                         });
                     },
                 });
 
-                // The channel.get will call narrow.activate recursively
+                // The channel.get will call narrow.show recursively
                 // from a continuation unconditionally; the correct thing
                 // to do here is return.
                 return;
@@ -487,7 +487,7 @@ export function activate(raw_terms, opts) {
 
         // IMPORTANT: No code that modifies UI state should appear above
         // this point. This is important to prevent calling such functions
-        // more than once in the event that we call narrow.activate
+        // more than once in the event that we call narrow.show
         // recursively.
         reset_ui_state(opts);
 
@@ -890,7 +890,7 @@ export function render_message_list_with_selected_message(opts) {
 export function activate_stream_for_cycle_hotkey(stream_name) {
     // This is the common code for A/D hotkeys.
     const filter_expr = [{operator: "channel", operand: stream_name}];
-    activate(filter_expr, {});
+    show(filter_expr, {});
 }
 
 export function stream_cycle_backward() {
@@ -964,7 +964,7 @@ export function narrow_to_next_topic(opts = {}) {
         {operator: "topic", operand: next_narrow.topic},
     ];
 
-    activate(filter_expr, opts);
+    show(filter_expr, opts);
 }
 
 export function narrow_to_next_pm_string(opts = {}) {
@@ -994,7 +994,7 @@ export function narrow_to_next_pm_string(opts = {}) {
         force_close: true,
     };
 
-    activate(filter_expr, updated_opts);
+    show(filter_expr, updated_opts);
 }
 
 export function by_topic(target_id, opts) {
@@ -1024,7 +1024,7 @@ export function by_topic(target_id, opts) {
         {operator: "topic", operand: original.topic},
     ];
     opts = {then_select_id: target_id, ...opts};
-    activate(search_terms, opts);
+    show(search_terms, opts);
 }
 
 export function narrow_by_recipient(target_id, opts) {
@@ -1044,7 +1044,7 @@ export function narrow_by_recipient(target_id, opts) {
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            activate([{operator: "dm", operand: message.reply_to}], opts);
+            show([{operator: "dm", operand: message.reply_to}], opts);
             break;
 
         case "stream":
@@ -1058,7 +1058,7 @@ export function narrow_by_recipient(target_id, opts) {
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            activate(
+            show(
                 [
                     {
                         operator: "stream",
@@ -1095,7 +1095,7 @@ export function to_compose_target() {
         if (topic !== "") {
             terms.push({operator: "topic", operand: topic});
         }
-        activate(terms, opts);
+        show(terms, opts);
         return;
     }
 
@@ -1106,10 +1106,10 @@ export function to_compose_target() {
         // If there are no recipients or any recipient is
         // invalid, narrow to your direct message feed.
         if (emails.length === 0 || invalid.length > 0) {
-            activate([{operator: "is", operand: "dm"}], opts);
+            show([{operator: "is", operand: "dm"}], opts);
             return;
         }
-        activate([{operator: "dm", operand: util.normalize_recipients(recipient_string)}], opts);
+        show([{operator: "dm", operand: util.normalize_recipients(recipient_string)}], opts);
     }
 }
 

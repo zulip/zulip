@@ -79,7 +79,7 @@ export function initialize() {
             $popper.one("click", ".narrow-self-direct-message", (e) => {
                 const user_id = current_user.user_id;
                 const email = people.get_by_user_id(user_id).email;
-                narrow.activate(
+                narrow.show(
                     [
                         {
                             operator: "dm",
@@ -95,7 +95,7 @@ export function initialize() {
             $popper.one("click", ".narrow-messages-sent", (e) => {
                 const user_id = current_user.user_id;
                 const email = people.get_by_user_id(user_id).email;
-                narrow.activate(
+                narrow.show(
                     [
                         {
                             operator: "sender",

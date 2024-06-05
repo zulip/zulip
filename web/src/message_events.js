@@ -429,7 +429,7 @@ export function update_messages(events) {
                         trigger: "stream/topic change",
                         then_select_id: current_selected_id,
                     };
-                    narrow.activate(terms, opts);
+                    narrow.show(terms, opts);
                 }
             }
 

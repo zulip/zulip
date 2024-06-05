@@ -181,9 +181,9 @@ function test_helper({override, override_rewire, change_tab}) {
     stub(ui_report, "error");
 
     if (change_tab) {
-        override_rewire(narrow, "activate", (terms) => {
+        override_rewire(narrow, "show", (terms) => {
             narrow_terms = terms;
-            events.push("narrow.activate");
+            events.push("narrow.show");
         });
 
         override(info_overlay, "show", (name) => {
@@ -237,7 +237,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.activate",
+        "narrow.show",
     ]);
 
     helper.clear_events();
@@ -245,7 +245,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.activate",
+        "narrow.show",
     ]);
 
     // Test old "#recent_topics" hash redirects to "#recent".
@@ -268,7 +268,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.activate",
+        "narrow.show",
     ]);
     let terms = helper.get_narrow_terms();
     assert.equal(terms[0].operand, "Denmark");
@@ -280,7 +280,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.activate",
+        "narrow.show",
     ]);
     terms = helper.get_narrow_terms();
     assert.equal(terms.length, 0);

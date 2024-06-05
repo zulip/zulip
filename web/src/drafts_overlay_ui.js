@@ -24,7 +24,7 @@ function restore_draft(draft_id) {
 
     if (compose_args.type === "stream") {
         if (draft.stream_id !== undefined && draft.topic !== "") {
-            narrow.activate(
+            narrow.show(
                 [
                     {
                         operator: "channel",
@@ -37,7 +37,7 @@ function restore_draft(draft_id) {
         }
     } else {
         if (compose_args.private_message_recipient !== "") {
-            narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
+            narrow.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
                 trigger: "restore draft",
             });
         }
