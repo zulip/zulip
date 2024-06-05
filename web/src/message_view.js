@@ -450,7 +450,6 @@ export function show(raw_terms, opts) {
                     const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
 
                     if (adjusted_terms === null) {
-                        blueslip.error("adjusted_terms impossibly null");
                         return;
                     }
 
