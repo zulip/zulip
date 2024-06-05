@@ -82,18 +82,6 @@ a:focus {
 .container {
   width: 940px;
 }
-.row-fluid {
-  width: 100%;
-}
-.row-fluid:before,
-.row-fluid:after {
-  display: table;
-  content: "";
-  line-height: 0;
-}
-.row-fluid:after {
-  clear: both;
-}
 .container {
   margin-right: auto;
   margin-left: auto;
@@ -305,9 +293,6 @@ input:focus:invalid:focus {
   .container {
     width: auto;
   }
-  .row-fluid {
-    width: 100%;
-  }
   .row {
     margin-left: 0;
   }
@@ -328,18 +313,6 @@ input:focus:invalid:focus {
   .container {
     width: 724px;
   }
-  .row-fluid {
-    width: 100%;
-  }
-  .row-fluid:before,
-  .row-fluid:after {
-    display: table;
-    content: "";
-    line-height: 0;
-  }
-  .row-fluid:after {
-    clear: both;
-  }
   input {
     margin-left: 0;
   }
@@ -359,18 +332,6 @@ input:focus:invalid:focus {
   }
   .container {
     width: 1170px;
-  }
-  .row-fluid {
-    width: 100%;
-  }
-  .row-fluid:before,
-  .row-fluid:after {
-    display: table;
-    content: "";
-    line-height: 0;
-  }
-  .row-fluid:after {
-    clear: both;
   }
   input {
     margin-left: 0;
