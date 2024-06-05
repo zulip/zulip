@@ -394,6 +394,7 @@ def send_subscription_add_events(
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
                 history_public_to_subscribers=stream_dict["history_public_to_subscribers"],
+                is_archived=stream_dict["is_archived"],
                 invite_only=stream_dict["invite_only"],
                 is_web_public=stream_dict["is_web_public"],
                 message_retention_days=stream_dict["message_retention_days"],

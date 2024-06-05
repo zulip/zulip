@@ -867,6 +867,7 @@ def stream_to_dict(stream: Stream, recent_traffic: dict[int, int] | None = None)
         stream_weekly_traffic = None
 
     return APIStreamDict(
+        is_archived=stream.deactivated,
         can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
