@@ -61,20 +61,12 @@ const ct = composebox_typeahead;
 // broadcast-mentions/persons/groups.
 ct.__Rewire__("max_num_items", 15);
 
-function user_or_mention_item(item) {
-    return {
-        is_broadcast: undefined, // default, overridden by `item`
-        ...item,
-        type: "user_or_mention",
-    };
+function user_item(user) {
+    return {type: "user", user};
 }
 
-function user_item(item) {
-    return {
-        ...item,
-        is_broadcast: undefined,
-        type: "user",
-    };
+function broadcast_item(user) {
+    return {type: "broadcast", user};
 }
 
 function slash_item(slash) {
@@ -333,90 +325,102 @@ function emoji_objects(emoji_names) {
     return emoji_names.map((emoji_name) => emoji_list_by_name.get(emoji_name));
 }
 
-const ali = user_or_mention_item({
+const ali = {
     email: "ali@zulip.com",
     user_id: 98,
     full_name: "Ali",
     is_moderator: false,
-});
+};
+const ali_item = user_item(ali);
 
-const alice = user_or_mention_item({
+const alice = {
     email: "alice@zulip.com",
     user_id: 99,
     full_name: "Alice",
     is_moderator: false,
-});
+};
+const alice_item = user_item(alice);
 
-const hamlet = user_or_mention_item({
+const hamlet = {
     email: "hamlet@zulip.com",
     user_id: 100,
     full_name: "King Hamlet",
     is_moderator: false,
-});
+};
+const hamlet_item = user_item(hamlet);
 
-const othello = user_or_mention_item({
+const othello = {
     email: "othello@zulip.com",
     user_id: 101,
     full_name: "Othello, the Moor of Venice",
     is_moderator: false,
     delivery_email: null,
-});
+};
+const othello_item = user_item(othello);
 
-const cordelia = user_or_mention_item({
+const cordelia = {
     email: "cordelia@zulip.com",
     user_id: 102,
     full_name: "Cordelia, Lear's daughter",
     is_moderator: false,
-});
+};
+const cordelia_item = user_item(cordelia);
 
-const deactivated_user = user_or_mention_item({
+const deactivated_user = {
     email: "other@zulip.com",
     user_id: 103,
     full_name: "Deactivated User",
     is_moderator: false,
-});
+};
+const deactivated_user_item = user_item(deactivated_user);
 
-const lear = user_or_mention_item({
+const lear = {
     email: "lear@zulip.com",
     user_id: 104,
     full_name: "King Lear",
     is_moderator: false,
-});
+};
+const lear_item = user_item(lear);
 
-const twin1 = user_or_mention_item({
+const twin1 = {
     full_name: "Mark Twin",
     is_moderator: false,
     user_id: 105,
     email: "twin1@zulip.com",
-});
+};
+const twin1_item = user_item(twin1);
 
-const twin2 = user_or_mention_item({
+const twin2 = {
     full_name: "Mark Twin",
     is_moderator: false,
     user_id: 106,
     email: "twin2@zulip.com",
-});
+};
+const twin2_item = user_item(twin2);
 
-const gael = user_or_mention_item({
+const gael = {
     full_name: "Gaël Twin",
     is_moderator: false,
     user_id: 107,
     email: "twin3@zulip.com",
-});
+};
+const gael_item = user_item(gael);
 
-const hal = user_or_mention_item({
+const hal = {
     full_name: "Earl Hal",
     is_moderator: false,
     user_id: 108,
     email: "hal@zulip.com",
-});
+};
+const hal_item = user_item(hal);
 
-const harry = user_or_mention_item({
+const harry = {
     full_name: "Harry",
     is_moderator: false,
     user_id: 109,
     email: "harry@zulip.com",
-});
+};
+const harry_item = user_item(harry);
 
 const hamletcharacters = user_group_item({
     name: "hamletcharacters",
@@ -457,17 +461,17 @@ const make_emoji = (emoji_dict) => ({
 
 // Sorted by name
 const sorted_user_list = [
-    ali,
-    alice,
-    cordelia,
-    hal, // Early Hal
-    gael,
-    harry,
-    hamlet, // King Hamlet
-    lear,
-    twin1, // Mark Twin
-    twin2,
-    othello,
+    ali_item,
+    alice_item,
+    cordelia_item,
+    hal_item, // Early Hal
+    gael_item,
+    harry_item,
+    hamlet_item, // King Hamlet
+    lear_item,
+    twin1_item, // Mark Twin
+    twin2_item,
+    othello_item,
 ];
 
 function test(label, f) {
@@ -585,38 +589,38 @@ test("content_typeahead_selected", ({override}) => {
 
     query = "@**Mark Tw";
     ct.get_or_set_token_for_testing("Mark Tw");
-    actual_value = ct.content_typeahead_selected(twin1, query, input_element);
+    actual_value = ct.content_typeahead_selected(twin1_item, query, input_element);
     expected_value = "@**Mark Twin|105** ";
     assert.equal(actual_value, expected_value);
 
     let warned_for_mention = false;
     override(compose_validate, "warn_if_mentioning_unsubscribed_user", (mentioned) => {
-        assert.equal(mentioned, othello);
+        assert.equal(mentioned, othello_item);
         warned_for_mention = true;
     });
 
     query = "@oth";
     ct.get_or_set_token_for_testing("oth");
-    actual_value = ct.content_typeahead_selected(othello, query, input_element);
+    actual_value = ct.content_typeahead_selected(othello_item, query, input_element);
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
     assert.ok(warned_for_mention);
 
     query = "Hello @oth";
     ct.get_or_set_token_for_testing("oth");
-    actual_value = ct.content_typeahead_selected(othello, query, input_element);
+    actual_value = ct.content_typeahead_selected(othello_item, query, input_element);
     expected_value = "Hello @**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
 
     query = "@**oth";
     ct.get_or_set_token_for_testing("oth");
-    actual_value = ct.content_typeahead_selected(othello, query, input_element);
+    actual_value = ct.content_typeahead_selected(othello_item, query, input_element);
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
 
     query = "@*oth";
     ct.get_or_set_token_for_testing("oth");
-    actual_value = ct.content_typeahead_selected(othello, query, input_element);
+    actual_value = ct.content_typeahead_selected(othello_item, query, input_element);
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
 
@@ -638,7 +642,7 @@ test("content_typeahead_selected", ({override}) => {
     // silent mention
     ct.get_or_set_completing_for_tests("silent_mention");
     const silent_hamlet = {
-        ...hamlet,
+        ...hamlet_item,
         is_silent: true,
     };
     query = "@_kin";
@@ -944,23 +948,21 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // This should match the users added at the beginning of this test file.
                 let actual_value = options.source("");
                 let expected_value = [
-                    user_item(ali),
-                    user_item(alice),
-                    user_item(cordelia),
-                    user_item(hal),
-                    user_item(gael),
-                    user_item(harry),
-                    user_item(hamlet),
-                    user_item(lear),
-                    user_item(twin1),
-                    user_item(twin2),
-                    user_item(othello),
+                    ali_item,
+                    alice_item,
+                    cordelia_item,
+                    hal_item,
+                    gael_item,
+                    harry_item,
+                    hamlet_item,
+                    lear_item,
+                    twin1_item,
+                    twin2_item,
+                    othello_item,
                     hamletcharacters,
                     backend,
                     call_center,
                 ];
-                actual_value.sort((a, b) => a.user_id - b.user_id);
-                expected_value.sort((a, b) => a.user_id - b.user_id);
                 assert.deepEqual(actual_value, expected_value);
 
                 function matcher(query, person) {
@@ -970,46 +972,46 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 let query;
                 query = "el"; // Matches both "othELlo" and "cordELia"
-                assert.equal(matcher(query, othello), true);
-                assert.equal(matcher(query, cordelia), true);
+                assert.equal(matcher(query, othello_item), true);
+                assert.equal(matcher(query, cordelia_item), true);
 
                 query = "bender"; // Doesn't exist
-                assert.equal(matcher(query, othello), false);
-                assert.equal(matcher(query, cordelia), false);
+                assert.equal(matcher(query, othello_item), false);
+                assert.equal(matcher(query, cordelia_item), false);
 
                 query = "gael";
-                assert.equal(matcher(query, gael), true);
+                assert.equal(matcher(query, gael_item), true);
 
                 query = "Gaël";
-                assert.equal(matcher(query, gael), true);
+                assert.equal(matcher(query, gael_item), true);
 
                 query = "gaël";
-                assert.equal(matcher(query, gael), true);
+                assert.equal(matcher(query, gael_item), true);
 
                 // Don't make suggestions if the last name only has whitespaces
                 // (we're between typing names).
                 query = "othello@zulip.com,     ";
-                assert.equal(matcher(query, othello), false);
-                assert.equal(matcher(query, cordelia), false);
+                assert.equal(matcher(query, othello_item), false);
+                assert.equal(matcher(query, cordelia_item), false);
 
                 // query = 'othello@zulip.com,, , cord';
                 query = "cord";
-                assert.equal(matcher(query, othello), false);
-                assert.equal(matcher(query, cordelia), true);
+                assert.equal(matcher(query, othello_item), false);
+                assert.equal(matcher(query, cordelia_item), true);
 
                 // If the user is already in the list, typeahead doesn't include it
                 // again.
                 query = "cordelia@zulip.com, cord";
-                assert.equal(matcher(query, othello), false);
-                assert.equal(matcher(query, cordelia), false);
+                assert.equal(matcher(query, othello_item), false);
+                assert.equal(matcher(query, cordelia_item), false);
 
                 // Matching by email
                 query = "oth";
                 deactivated_user.delivery_email = null;
-                assert.equal(matcher(query, deactivated_user), false);
+                assert.equal(matcher(query, deactivated_user_item), false);
 
                 deactivated_user.delivery_email = "other@zulip.com";
-                assert.equal(matcher(query, deactivated_user), true);
+                assert.equal(matcher(query, deactivated_user_item), true);
 
                 function sorter(query, people) {
                     return typeahead_helper.sort_recipients({
@@ -1024,21 +1026,21 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // beginning first, and then the rest of them in REVERSE order of
                 // the input.
                 query = "othello";
-                actual_value = sorter(query, [othello]);
-                expected_value = [othello];
+                actual_value = sorter(query, [othello_item]);
+                expected_value = [othello_item];
                 assert.deepEqual(actual_value, expected_value);
 
                 query = "Ali";
-                actual_value = sorter(query, [alice, ali]);
-                expected_value = [ali, alice];
+                actual_value = sorter(query, [alice_item, ali_item]);
+                expected_value = [ali_item, alice_item];
                 assert.deepEqual(actual_value, expected_value);
 
                 // A literal match at the beginning of an element puts it at the top.
                 query = "co"; // Matches everything ("x@zulip.COm")
-                actual_value = sorter(query, [othello, deactivated_user, cordelia]);
-                expected_value = [cordelia, deactivated_user, othello];
-                actual_value.sort((a, b) => a.user_id - b.user_id);
-                expected_value.sort((a, b) => a.user_id - b.user_id);
+                actual_value = sorter(query, [othello_item, deactivated_user_item, cordelia_item]);
+                expected_value = [cordelia_item, deactivated_user_item, othello_item];
+                actual_value.sort((a, b) => a.user.user_id - b.user.user_id);
+                expected_value.sort((a, b) => a.user.user_id - b.user.user_id);
                 assert.deepEqual(actual_value, expected_value);
 
                 query = "non-existing-user";
@@ -1050,8 +1052,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // if there wasn't any logic replacing `no break-space`
                 // with normal space.
                 query = "cordelia, lear's\u00A0";
-                assert.equal(matcher(query, cordelia), true);
-                assert.equal(matcher(query, othello), false);
+                assert.equal(matcher(query, cordelia_item), true);
+                assert.equal(matcher(query, othello_item), false);
 
                 const event = {
                     target: "#doesnotmatter",
@@ -1060,12 +1062,12 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // options.updater()
                 options.query = "othello";
                 appended_names = [];
-                options.updater(othello, event);
+                options.updater(othello_item, event);
                 assert.deepEqual(appended_names, ["Othello, the Moor of Venice"]);
 
                 options.query = "othello@zulip.com, cor";
                 appended_names = [];
-                actual_value = options.updater(cordelia, event);
+                actual_value = options.updater(cordelia_item, event);
                 assert.deepEqual(appended_names, ["Cordelia, Lear's daughter"]);
 
                 const click_event = {type: "click", target: "#doesnotmatter"};
@@ -1073,7 +1075,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Focus lost (caused by the click event in the typeahead list)
                 $("#private_message_recipient").trigger("blur");
                 appended_names = [];
-                actual_value = options.updater(othello, click_event);
+                actual_value = options.updater(othello_item, click_event);
                 assert.deepEqual(appended_names, ["Othello, the Moor of Venice"]);
 
                 cleared = false;
@@ -1120,7 +1122,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // content_highlighter_html.
                 ct.get_or_set_completing_for_tests("mention");
                 ct.get_or_set_token_for_testing("othello");
-                actual_value = options.highlighter_html(othello);
+                actual_value = options.highlighter_html(othello_item);
                 expected_value =
                     `    <span class="user_circle_empty user_circle"></span>\n` +
                     `    <img class="typeahead-image" src="http://zulip.zulipdev.com/avatar/${othello.user_id}?s&#x3D;50" />\n` +
@@ -1486,7 +1488,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         },
     ]);
 
-    const mention_all = user_or_mention_item(ct.broadcast_mentions()[0]);
+    const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
     const users_and_all_mention = [...sorted_user_list, mention_all];
     const users_and_user_groups = [
         ...sorted_user_list,
@@ -1495,7 +1497,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         backend,
         call_center, // "folks working in support"
     ];
-    const mention_everyone = user_or_mention_item(ct.broadcast_mentions()[1]);
+    const mention_everyone = broadcast_item(ct.broadcast_mentions()[1]);
     function mentions_with_silent_marker(mentions, is_silent) {
         return mentions.map((item) => ({
             ...item,
@@ -1515,25 +1517,34 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@_**", mentions_with_silent_marker(users_and_user_groups, true));
     assert_typeahead_equals(
         "test @**o",
-        mentions_with_silent_marker([othello, cordelia, mention_everyone], false),
+        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
     );
-    assert_typeahead_equals("test @_**o", mentions_with_silent_marker([othello, cordelia], true));
+    assert_typeahead_equals(
+        "test @_**o",
+        mentions_with_silent_marker([othello_item, cordelia_item], true),
+    );
     assert_typeahead_equals(
         "test @*o",
-        mentions_with_silent_marker([othello, cordelia, mention_everyone], false),
+        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
     );
     assert_typeahead_equals(
         "test @_*k",
-        mentions_with_silent_marker([hamlet, lear, twin1, twin2, backend], true),
+        mentions_with_silent_marker(
+            [hamlet_item, lear_item, twin1_item, twin2_item, backend],
+            true,
+        ),
     );
     assert_typeahead_equals(
         "test @*h",
-        mentions_with_silent_marker([harry, hal, hamlet, cordelia, othello], false),
+        mentions_with_silent_marker(
+            [harry_item, hal_item, hamlet_item, cordelia_item, othello_item],
+            false,
+        ),
     );
     assert_typeahead_equals(
         "test @_*h",
         mentions_with_silent_marker(
-            [harry, hal, hamlet, hamletcharacters, cordelia, othello],
+            [harry_item, hal_item, hamlet_item, hamletcharacters, cordelia_item, othello_item],
             true,
         ),
     );
@@ -1550,28 +1561,69 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(
         "test\n@i",
         mentions_with_silent_marker(
-            [ali, alice, cordelia, gael, hamlet, lear, twin1, twin2, othello],
+            [
+                ali_item,
+                alice_item,
+                cordelia_item,
+                gael_item,
+                hamlet_item,
+                lear_item,
+                twin1_item,
+                twin2_item,
+                othello_item,
+            ],
             false,
         ),
     );
     assert_typeahead_equals(
         "test\n@_i",
         mentions_with_silent_marker(
-            [ali, alice, cordelia, gael, hamlet, lear, twin1, twin2, othello],
+            [
+                ali_item,
+                alice_item,
+                cordelia_item,
+                gael_item,
+                hamlet_item,
+                lear_item,
+                twin1_item,
+                twin2_item,
+                othello_item,
+            ],
             true,
         ),
     );
     assert_typeahead_equals(
         "test\n @l",
         mentions_with_silent_marker(
-            [cordelia, lear, ali, alice, hal, gael, hamlet, othello, mention_all],
+            [
+                cordelia_item,
+                lear_item,
+                ali_item,
+                alice_item,
+                hal_item,
+                gael_item,
+                hamlet_item,
+                othello_item,
+                mention_all,
+            ],
             false,
         ),
     );
     assert_typeahead_equals(
         "test\n @_l",
         mentions_with_silent_marker(
-            [cordelia, lear, ali, alice, hal, gael, hamlet, othello, hamletcharacters, call_center],
+            [
+                cordelia_item,
+                lear_item,
+                ali_item,
+                alice_item,
+                hal_item,
+                gael_item,
+                hamlet_item,
+                othello_item,
+                hamletcharacters,
+                call_center,
+            ],
             true,
         ),
     );
@@ -1583,9 +1635,12 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(" @_zuli", []);
     assert_typeahead_equals(
         "test @o",
-        mentions_with_silent_marker([othello, cordelia, mention_everyone], false),
+        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
     );
-    assert_typeahead_equals("test @_o", mentions_with_silent_marker([othello, cordelia], true));
+    assert_typeahead_equals(
+        "test @_o",
+        mentions_with_silent_marker([othello_item, cordelia_item], true),
+    );
     assert_typeahead_equals("test @z", []);
     assert_typeahead_equals("test @_z", []);
 
@@ -1760,7 +1815,11 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("~~~test", "ing", []);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
     for (const symbol of terminal_symbols.split()) {
-        assert_typeahead_equals("@othello", symbol, mentions_with_silent_marker([othello], false));
+        assert_typeahead_equals(
+            "@othello",
+            symbol,
+            mentions_with_silent_marker([othello_item], false),
+        );
         assert_typeahead_equals(":tada", symbol, emoji_objects(["tada"]));
         assert_typeahead_starts_with("```p", symbol, p_langs);
         assert_typeahead_starts_with("~~~p", symbol, p_langs);
@@ -1808,10 +1867,10 @@ test("content_highlighter_html", ({override_rewire}) => {
     ct.get_or_set_completing_for_tests("mention");
     let th_render_person_called = false;
     override_rewire(typeahead_helper, "render_person", (person) => {
-        assert.deepEqual(person, othello);
+        assert.deepEqual(person, othello_item);
         th_render_person_called = true;
     });
-    ct.content_highlighter_html(othello);
+    ct.content_highlighter_html(othello_item);
 
     let th_render_user_group_called = false;
     override_rewire(typeahead_helper, "render_user_group", (user_group) => {
@@ -1873,10 +1932,10 @@ test("filter_and_sort_mentions (normal)", () => {
     current_user.user_id = 101;
     let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
-    const mention_all = user_or_mention_item(ct.broadcast_mentions()[0]);
+    const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
     assert.deepEqual(
         suggestions,
-        possibly_silent_list([mention_all, ali, alice, hal, call_center], is_silent),
+        possibly_silent_list([mention_all, ali_item, alice_item, hal_item, call_center], is_silent),
     );
 
     // call_center group is shown in typeahead even when user is member of
@@ -1885,7 +1944,7 @@ test("filter_and_sort_mentions (normal)", () => {
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(
         suggestions,
-        possibly_silent_list([mention_all, ali, alice, hal, call_center], is_silent),
+        possibly_silent_list([mention_all, ali_item, alice_item, hal_item, call_center], is_silent),
     );
 
     // call_center group is not shown in typeahead when user is neither
@@ -1893,7 +1952,10 @@ test("filter_and_sort_mentions (normal)", () => {
     // recursive subgroups.
     current_user.user_id = 102;
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
-    assert.deepEqual(suggestions, possibly_silent_list([mention_all, ali, alice, hal], is_silent));
+    assert.deepEqual(
+        suggestions,
+        possibly_silent_list([mention_all, ali_item, alice_item, hal_item], is_silent),
+    );
 });
 
 test("filter_and_sort_mentions (silent)", () => {
@@ -1901,14 +1963,20 @@ test("filter_and_sort_mentions (silent)", () => {
 
     let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
-    assert.deepEqual(suggestions, possibly_silent_list([ali, alice, hal, call_center], is_silent));
+    assert.deepEqual(
+        suggestions,
+        possibly_silent_list([ali_item, alice_item, hal_item, call_center], is_silent),
+    );
 
     // call_center group is shown in typeahead irrespective of whether
     // user is member of can_mention_group or its subgroups for a
     // silent mention.
     current_user.user_id = 102;
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
-    assert.deepEqual(suggestions, possibly_silent_list([ali, alice, hal, call_center], is_silent));
+    assert.deepEqual(
+        suggestions,
+        possibly_silent_list([ali_item, alice_item, hal_item, call_center], is_silent),
+    );
 });
 
 test("typeahead_results", () => {
@@ -2005,22 +2073,22 @@ test("typeahead_results", () => {
             is_silent: false,
         };
     }
-    assert_mentions_matches("cordelia", [not_silent(cordelia)]);
-    assert_mentions_matches("cordelia, le", [not_silent(cordelia)]);
+    assert_mentions_matches("cordelia", [not_silent(cordelia_item)]);
+    assert_mentions_matches("cordelia, le", [not_silent(cordelia_item)]);
     assert_mentions_matches("cordelia, le ", []);
-    assert_mentions_matches("moor", [not_silent(othello)]);
-    assert_mentions_matches("moor ", [not_silent(othello)]);
-    assert_mentions_matches("moor of", [not_silent(othello)]);
-    assert_mentions_matches("moor of ven", [not_silent(othello)]);
-    assert_mentions_matches("oor", [not_silent(othello)]);
+    assert_mentions_matches("moor", [not_silent(othello_item)]);
+    assert_mentions_matches("moor ", [not_silent(othello_item)]);
+    assert_mentions_matches("moor of", [not_silent(othello_item)]);
+    assert_mentions_matches("moor of ven", [not_silent(othello_item)]);
+    assert_mentions_matches("oor", [not_silent(othello_item)]);
     assert_mentions_matches("oor ", []);
     assert_mentions_matches("oor o", []);
     assert_mentions_matches("oor of venice", []);
-    assert_mentions_matches("King ", [not_silent(hamlet), not_silent(lear)]);
-    assert_mentions_matches("King H", [not_silent(hamlet)]);
-    assert_mentions_matches("King L", [not_silent(lear)]);
+    assert_mentions_matches("King ", [not_silent(hamlet_item), not_silent(lear_item)]);
+    assert_mentions_matches("King H", [not_silent(hamlet_item)]);
+    assert_mentions_matches("King L", [not_silent(lear_item)]);
     assert_mentions_matches("delia lear", []);
-    assert_mentions_matches("Mark Tw", [not_silent(twin1), not_silent(twin2)]);
+    assert_mentions_matches("Mark Tw", [not_silent(twin1_item), not_silent(twin2_item)]);
 
     // Earlier user group and stream mentions were autocompleted by their
     // description too. This is now removed as it often led to unexpected
@@ -2034,31 +2102,31 @@ test("typeahead_results", () => {
 
     // Verify we suggest only the first matching stream wildcard mention,
     // irrespective of how many equivalent stream wildcard mentions match.
-    const mention_everyone = not_silent(user_or_mention_item(ct.broadcast_mentions()[1]));
+    const mention_everyone = not_silent(broadcast_item(ct.broadcast_mentions()[1]));
     // Here, we suggest only "everyone" instead of both the matching
     // "everyone" and "stream" wildcard mentions.
     assert_mentions_matches("e", [
         not_silent(mention_everyone),
-        not_silent(hal),
-        not_silent(alice),
-        not_silent(cordelia),
-        not_silent(gael),
-        not_silent(hamlet),
-        not_silent(lear),
-        not_silent(othello),
+        not_silent(hal_item),
+        not_silent(alice_item),
+        not_silent(cordelia_item),
+        not_silent(gael_item),
+        not_silent(hamlet_item),
+        not_silent(lear_item),
+        not_silent(othello_item),
         not_silent(hamletcharacters),
         not_silent(call_center),
     ]);
 
     // Verify we suggest both 'the first matching stream wildcard' and
     // 'topic wildcard' mentions. Not only one matching wildcard mention.
-    const mention_topic = user_or_mention_item(ct.broadcast_mentions()[4]);
+    const mention_topic = broadcast_item(ct.broadcast_mentions()[4]);
     // Here, we suggest both "everyone" and "topic".
     assert_mentions_matches("o", [
-        not_silent(othello),
+        not_silent(othello_item),
         not_silent(mention_everyone),
         not_silent(mention_topic),
-        not_silent(cordelia),
+        not_silent(cordelia_item),
     ]);
 
     // Autocomplete by slash commands.
@@ -2101,20 +2169,20 @@ test("message people", ({override, override_rewire}) => {
     };
 
     results = ct.get_person_suggestions("Ha", opts);
-    assert.deepEqual(results, [harry, hal]);
+    assert.deepEqual(results, [harry_item, hal_item]);
 
     // Now let's exclude Hal and include King Hamlet.
     user_ids = [hamlet.user_id, harry.user_id];
 
     results = ct.get_person_suggestions("Ha", opts);
-    assert.deepEqual(results, [harry, hamlet]);
+    assert.deepEqual(results, [harry_item, hamlet_item]);
 
     // Reincluding Hal and deactivating harry
     user_ids = [hamlet.user_id, harry.user_id, hal.user_id];
     people.deactivate(harry);
     results = ct.get_person_suggestions("Ha", opts);
     // harry is excluded since it has been deactivated.
-    assert.deepEqual(results, [hal, hamlet]);
+    assert.deepEqual(results, [hal_item, hamlet_item]);
 });
 
 test("muted users excluded from results", () => {
@@ -2127,7 +2195,7 @@ test("muted users excluded from results", () => {
 
     // Nobody is muted
     results = ct.get_person_suggestions("corde", opts);
-    assert.deepEqual(results, [cordelia]);
+    assert.deepEqual(results, [cordelia_item]);
 
     // Mute Cordelia, and test that she's excluded from results.
     muted_users.add_muted_user(cordelia.user_id);
@@ -2137,7 +2205,7 @@ test("muted users excluded from results", () => {
     // Make sure our muting logic doesn't break wildcard mentions
     // or user group mentions.
     results = ct.get_person_suggestions("all", opts);
-    const mention_all = user_or_mention_item(ct.broadcast_mentions()[0]);
+    const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
     assert.deepEqual(results, [mention_all, call_center]);
 });
 
@@ -2163,12 +2231,12 @@ test("direct message recipients sorted according to stream / topic being viewed"
     compose_state.set_stream_id("");
     results = ct.get_pm_people("li");
     // `get_pm_people` can't return mentions, so the items are all user items.
-    assert.deepEqual(results, [user_item(ali), user_item(alice), user_item(cordelia)]);
+    assert.deepEqual(results, [ali_item, alice_item, cordelia_item]);
 
     // When viewing denmark stream, subscriber cordelia is placed higher
     compose_state.set_stream_id(denmark_stream.stream_id);
     results = ct.get_pm_people("li");
-    assert.deepEqual(results, [user_item(cordelia), user_item(ali), user_item(alice)]);
+    assert.deepEqual(results, [cordelia_item, ali_item, alice_item]);
 
     // Simulating just alice being subscribed to denmark.
     override_rewire(
@@ -2180,5 +2248,5 @@ test("direct message recipients sorted according to stream / topic being viewed"
     // When viewing denmark stream to which alice is subscribed, ali is not
     // 1st despite having an exact name match with the query.
     results = ct.get_pm_people("ali");
-    assert.deepEqual(results, [user_item(alice), user_item(ali)]);
+    assert.deepEqual(results, [alice_item, ali_item]);
 });

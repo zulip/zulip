@@ -33,7 +33,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as timerender from "./timerender";
 import * as typeahead_helper from "./typeahead_helper";
-import type {UserOrMention, UserOrMentionPillData} from "./typeahead_helper";
+import type {UserOrMentionPillData} from "./typeahead_helper";
 import type {UserGroupPillData} from "./user_group_pill";
 import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
@@ -493,7 +493,6 @@ export function broadcast_mentions(): PseudoMentionUser[] {
         pm_recipient_count: Number.POSITIVE_INFINITY,
 
         full_name: mention,
-        is_broadcast: true,
 
         // used for sorting
         idx,
@@ -596,15 +595,8 @@ export function get_pm_people(query: string): (UserGroupPillData | UserPillData)
     // to do this.
     const user_suggestions: (UserGroupPillData | UserPillData)[] = [];
     for (const suggestion of suggestions) {
-        if (suggestion.type === "user_or_mention") {
-            assert(suggestion.is_broadcast === undefined);
-            user_suggestions.push({
-                ...suggestion,
-                type: "user",
-            });
-        } else {
-            user_suggestions.push(suggestion);
-        }
+        assert(suggestion.type !== "broadcast");
+        user_suggestions.push(suggestion);
     }
     return user_suggestions;
 }
@@ -634,18 +626,20 @@ export function get_person_suggestions(
         }
         // Exclude muted users from typeaheads.
         persons = muted_users.filter_muted_users(persons);
-        let user_or_mention_list: UserOrMention[] = persons.map((person) => ({
-            ...person,
-            is_broadcast: undefined,
+        let person_items: UserOrMentionPillData[] = persons.map((person) => ({
+            type: "user",
+            user: person,
         }));
 
         if (opts.want_broadcast) {
-            user_or_mention_list = [...user_or_mention_list, ...broadcast_mentions()];
+            person_items = [
+                ...person_items,
+                ...broadcast_mentions().map((mention) => ({
+                    type: "broadcast" as const,
+                    user: mention,
+                })),
+            ];
         }
-        const person_items: UserOrMentionPillData[] = user_or_mention_list.map((person) => ({
-            ...person,
-            type: "user_or_mention",
-        }));
 
         return person_items.filter((item) => typeahead_helper.query_matches_person(query, item));
     }
@@ -975,7 +969,8 @@ export function content_highlighter_html(item: TypeaheadSuggestion): string | un
         case "emoji":
             return typeahead_helper.render_emoji(item);
         case "user_group":
-        case "user_or_mention":
+        case "user":
+        case "broadcast":
             return typeahead_helper.render_person_or_user_group(item);
         case "slash":
             return typeahead_helper.render_typeahead_item({
@@ -1041,7 +1036,8 @@ export function content_typeahead_selected(
             }
             break;
         case "user_group":
-        case "user_or_mention": {
+        case "user":
+        case "broadcast": {
             const is_silent = item.is_silent;
             beginning = beginning.slice(0, -token.length - 1);
             if (beginning.endsWith("@_*")) {
@@ -1061,14 +1057,18 @@ export function content_typeahead_selected(
                 // that functionality yet, and we haven't gotten much
                 // feedback on this being an actual pitfall.
             } else {
-                const user_id = item.is_broadcast ? undefined : item.user_id;
-                let mention_text = people.get_mention_syntax(item.full_name, user_id, is_silent);
-                if (!is_silent && !item.is_broadcast) {
+                const user_id = item.type === "broadcast" ? undefined : item.user.user_id;
+                let mention_text = people.get_mention_syntax(
+                    item.user.full_name,
+                    user_id,
+                    is_silent,
+                );
+                if (!is_silent && item.type !== "broadcast") {
                     compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
                     mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
                         mention_text,
-                        item.full_name,
-                        item.user_id,
+                        item.user.full_name,
+                        item.user.user_id,
                     );
                 }
                 beginning += mention_text + " ";
@@ -1358,7 +1358,7 @@ export function initialize({
                     pill_widget.clear_text();
                 }
             } else {
-                compose_pm_pill.set_from_typeahead(item);
+                compose_pm_pill.set_from_typeahead(item.user);
             }
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter

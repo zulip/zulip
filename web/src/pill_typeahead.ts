@@ -16,7 +16,8 @@ import type {UserPillData} from "./user_pill";
 
 function person_matcher(query: string, item: UserPillData): boolean {
     return (
-        people.is_known_user_id(item.user_id) && typeahead_helper.query_matches_person(query, item)
+        people.is_known_user_id(item.user.user_id) &&
+        typeahead_helper.query_matches_person(query, item)
     );
 }
 
@@ -73,10 +74,9 @@ export function set_up(
                     // If user_source is specified in opts, it
                     // is given priority. Otherwise we use
                     // default user_pill.typeahead_source.
-                    const users: UserPillData[] = opts.user_source().map((user) => ({
-                        ...user,
-                        type: "user",
-                    }));
+                    const users: UserPillData[] = opts
+                        .user_source()
+                        .map((user) => ({type: "user", user}));
                     source = [...source, ...users];
                 } else {
                     source = [...source, ...user_pill.typeahead_source(pills, exclude_bots)];
@@ -132,7 +132,7 @@ export function set_up(
             const users: UserPillData[] = [];
             if (include_users) {
                 for (const match of matches) {
-                    if (match.type === "user" && people.is_known_user_id(match.user_id)) {
+                    if (match.type === "user" && people.is_known_user_id(match.user.user_id)) {
                         users.push(match);
                     }
                 }
@@ -164,9 +164,9 @@ export function set_up(
             } else if (
                 include_users &&
                 item.type === "user" &&
-                people.is_known_user_id(item.user_id)
+                people.is_known_user_id(item.user.user_id)
             ) {
-                user_pill.append_user(item, pills);
+                user_pill.append_user(item.user, pills);
             }
 
             $input.trigger("focus");

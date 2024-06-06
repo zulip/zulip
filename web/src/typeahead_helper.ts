@@ -26,9 +26,10 @@ import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
 import * as util from "./util";
 
-export type UserOrMention = PseudoMentionUser | (User & {is_broadcast: undefined});
+export type UserOrMention =
+    | {type: "broadcast"; user: PseudoMentionUser}
+    | {type: "user"; user: User};
 export type UserOrMentionPillData = UserOrMention & {
-    type: "user_or_mention";
     is_silent?: boolean;
 };
 
@@ -116,32 +117,34 @@ export function render_typeahead_item(args: {
 }
 
 export function render_person(person: UserPillData | UserOrMentionPillData): string {
-    if (person.type === "user_or_mention" && person.is_broadcast) {
+    if (person.type === "broadcast") {
         return render_typeahead_item({
-            primary: person.special_item_text,
+            primary: person.user.special_item_text,
             is_person: true,
         });
     }
-    const user_circle_class = buddy_data.get_user_circle_class(person.user_id);
+    const user_circle_class = buddy_data.get_user_circle_class(person.user.user_id);
 
-    const avatar_url = people.small_avatar_url_for_person(person);
+    const avatar_url = people.small_avatar_url_for_person(person.user);
 
-    const status_emoji_info = user_status.get_status_emoji(person.user_id);
+    const status_emoji_info = user_status.get_status_emoji(person.user.user_id);
 
     const PRONOUNS_ID = realm.custom_profile_field_types.PRONOUNS.id;
-    const pronouns_list = people.get_custom_fields_by_type(person.user_id, PRONOUNS_ID);
+    const pronouns_list = people.get_custom_fields_by_type(person.user.user_id, PRONOUNS_ID);
 
     const pronouns = pronouns_list?.[0]?.value;
 
     const typeahead_arguments = {
-        primary: person.full_name,
+        primary: person.user.full_name,
         img_src: avatar_url,
         user_circle_class,
         is_person: true,
         status_emoji_info,
-        should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(
+            person.user.user_id,
+        ),
         pronouns,
-        secondary: person.delivery_email,
+        secondary: person.user.delivery_email,
     };
 
     return render_typeahead_item(typeahead_arguments);
@@ -249,43 +252,31 @@ export function compare_people_for_relevance(
     current_stream_id?: number,
 ): number {
     // give preference to "all", "everyone" or "stream"
-    // We use is_broadcast for a quick check.  It will
-    // true for all/everyone/stream and undefined (falsy)
-    // for actual people.
-    const person_a_is_broadcast = person_a.type === "user_or_mention" && person_a.is_broadcast;
-    const person_b_is_broadcast = person_b.type === "user_or_mention" && person_b.is_broadcast;
     if (compose_state.get_message_type() !== "private") {
-        if (person_a_is_broadcast) {
-            if (person_b_is_broadcast) {
-                return person_a.idx - person_b.idx;
+        if (person_a.type === "broadcast") {
+            if (person_b.type === "broadcast") {
+                return person_a.user.idx - person_b.user.idx;
             }
             return -1;
-        } else if (person_b_is_broadcast) {
+        } else if (person_b.type === "broadcast") {
             return 1;
         }
     } else {
-        if (person_a_is_broadcast) {
-            if (person_b_is_broadcast) {
-                return person_a.idx - person_b.idx;
+        if (person_a.type === "broadcast") {
+            if (person_b.type === "broadcast") {
+                return person_a.user.idx - person_b.user.idx;
             }
             return 1;
-        } else if (person_b_is_broadcast) {
+        } else if (person_b.type === "broadcast") {
             return -1;
         }
     }
 
     // Now handle actual people users.
-    assert(
-        (person_a.type === "user_or_mention" && !person_a.is_broadcast) || person_a.type === "user",
-    );
-    assert(
-        (person_b.type === "user_or_mention" && !person_b.is_broadcast) || person_b.type === "user",
-    );
-
     // give preference to subscribed users first
     if (current_stream_id !== undefined) {
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user_id);
+        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
+        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
 
         if (a_is_sub && !b_is_sub) {
             return -1;
@@ -295,13 +286,13 @@ export function compare_people_for_relevance(
     }
 
     if (compare_by_current_conversation !== undefined) {
-        const preference = compare_by_current_conversation(person_a, person_b);
+        const preference = compare_by_current_conversation(person_a.user, person_b.user);
         if (preference !== 0) {
             return preference;
         }
     }
 
-    return compare_by_pms(person_a, person_b);
+    return compare_by_pms(person_a.user, person_b.user);
 }
 
 export function sort_people_for_relevance<UserType extends UserOrMentionPillData | UserPillData>(
@@ -444,7 +435,7 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
         return sort_people_for_relevance(items, current_stream_id, current_topic);
     }
 
-    const users_name_results = typeahead.triage_raw(query, users, (p) => p.full_name);
+    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
     const users_name_good_matches = [
         ...users_name_results.exact_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -455,7 +446,7 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     const email_results = typeahead.triage_raw(
         query,
         users_name_results.no_matches,
-        (p) => p.email,
+        (p) => p.user.email,
     );
     const email_good_matches = [
         ...email_results.exact_matches,
@@ -523,11 +514,13 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
 
     function add_user_recipients(items: UserType[]): void {
         for (const item of items) {
-            const item_is_broadcast = item.type === "user_or_mention" && item.is_broadcast;
-            const topic_wildcard_mention = item.email === "topic";
-            if (!item_is_broadcast || topic_wildcard_mention || !stream_wildcard_mention_included) {
+            if (
+                item.type !== "broadcast" ||
+                item.user.email === "topic" ||
+                !stream_wildcard_mention_included
+            ) {
                 recipients.push(item);
-                if (item_is_broadcast && !topic_wildcard_mention) {
+                if (item.type === "broadcast" && item.user.email !== "topic") {
                     stream_wildcard_mention_included = true;
                 }
             }
@@ -654,16 +647,13 @@ export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
 ): boolean {
-    if (typeahead.query_matches_string_in_order(query, person.full_name, " ")) {
+    if (typeahead.query_matches_string_in_order(query, person.user.full_name, " ")) {
         return true;
     }
-    if (
-        (person.type === "user" || person.is_broadcast === undefined) &&
-        Boolean(person.delivery_email)
-    ) {
+    if (person.type === "user" && Boolean(person.user.delivery_email)) {
         return typeahead.query_matches_string_in_order(
             query,
-            people.get_visible_email(person),
+            people.get_visible_email(person.user),
             " ",
         );
     }

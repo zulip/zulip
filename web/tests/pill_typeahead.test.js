@@ -39,10 +39,7 @@ function override_typeahead_helper(override_rewire) {
 }
 
 function user_item(user) {
-    return {
-        ...user,
-        type: "user",
-    };
+    return {type: "user", user};
 }
 
 const jill = {
