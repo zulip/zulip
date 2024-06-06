@@ -33,8 +33,9 @@ function override_typeahead_helper(override_rewire) {
     override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
     });
-    override_rewire(typeahead_helper, "sort_recipients", () => {
+    override_rewire(typeahead_helper, "sort_recipients", ({users}) => {
         sort_recipients_called = true;
+        return users;
     });
 }
 
@@ -130,7 +131,100 @@ for (const sub of subs) {
     stream_data.add_sub(sub);
 }
 
-run_test("set_up", ({mock_template, override, override_rewire}) => {
+run_test("set_up_user", ({mock_template, override, override_rewire}) => {
+    override_rewire(typeahead_helper, "render_person", () => $fake_rendered_person);
+    override_rewire(typeahead_helper, "sort_recipients", ({users}) => {
+        sort_recipients_called = true;
+        return users;
+    });
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        assert.equal(typeof data.has_image, "boolean");
+        return html;
+    });
+    let input_pill_typeahead_called = false;
+    const $fake_input = $.create(".input");
+    $fake_input.before = noop;
+
+    const $container = $.create(".pill-container");
+    $container.find = () => $fake_input;
+
+    const $pill_widget = input_pill.create({
+        $container,
+        create_item_from_text: noop,
+        get_text_from_item: noop,
+    });
+
+    let update_func_called = false;
+    function update_func() {
+        update_func_called = true;
+    }
+
+    override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
+        assert.equal(input_element.$element, $fake_input);
+        assert.equal(config.items, 5);
+        assert.ok(config.dropup);
+        assert.ok(config.stopAdvance);
+
+        assert.equal(typeof config.source, "function");
+        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.matcher, "function");
+        assert.equal(typeof config.sorter, "function");
+        assert.equal(typeof config.updater, "function");
+
+        // test queries
+        const person_query = "me";
+
+        (function test_highlighter() {
+            assert.equal(config.highlighter_html(me_item, person_query), $fake_rendered_person);
+        })();
+
+        (function test_matcher() {
+            let result;
+            result = config.matcher(me_item, person_query);
+            assert.ok(result);
+            result = config.matcher(jill_item, person_query);
+            assert.ok(!result);
+        })();
+
+        (function test_sorter() {
+            sort_recipients_called = false;
+            config.sorter([me_item], person_query);
+            assert.ok(sort_recipients_called);
+        })();
+
+        (function test_source() {
+            let expected_result = [];
+            let actual_result = [];
+            const result = config.source(person_query);
+            actual_result = result.map((item) => item.user_id);
+            expected_result = [...expected_result, ...person_items];
+            expected_result = expected_result.map((item) => item.user_id);
+            assert.deepEqual(actual_result, expected_result);
+        })();
+
+        (function test_updater() {
+            function number_of_pills() {
+                const pills = $pill_widget.items();
+                return pills.length;
+            }
+            assert.equal(number_of_pills(), 0);
+            config.updater(me_item, person_query);
+            assert.equal(number_of_pills(), 1);
+
+            assert.ok(update_func_called);
+        })();
+
+        // input_pill_typeahead_called is set true if
+        // no exception occurs in pill_typeahead.set_up_user.
+        input_pill_typeahead_called = true;
+    });
+
+    pill_typeahead.set_up_user($fake_input, $pill_widget, {update_func});
+    assert.ok(input_pill_typeahead_called);
+});
+
+run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     override_typeahead_helper(override_rewire);
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
@@ -328,12 +422,12 @@ run_test("set_up", ({mock_template, override, override_rewire}) => {
         })();
 
         // input_pill_typeahead_called is set true if
-        // no exception occurs in pill_typeahead.set_up.
+        // no exception occurs in pill_typeahead.set_up_combined.
         input_pill_typeahead_called = true;
     });
 
     function test_pill_typeahead(opts) {
-        pill_typeahead.set_up($fake_input, $pill_widget, opts);
+        pill_typeahead.set_up_combined($fake_input, $pill_widget, opts);
         assert.ok(input_pill_typeahead_called);
     }
 
@@ -365,6 +459,6 @@ run_test("set_up", ({mock_template, override, override_rewire}) => {
     opts = {};
     input_pill_typeahead_called = false;
     blueslip.expect("error", "Unspecified possible item types");
-    pill_typeahead.set_up($fake_input, $pill_widget, {});
+    pill_typeahead.set_up_combined($fake_input, $pill_widget, {});
     assert.ok(!input_pill_typeahead_called);
 });
