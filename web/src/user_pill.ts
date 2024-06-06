@@ -132,7 +132,7 @@ export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
 }
 
 export function typeahead_source(
-    pill_widget: CombinedPillContainer,
+    pill_widget: UserPillWidget | CombinedPillContainer,
     exclude_bots?: boolean,
 ): UserPillData[] {
     const users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
@@ -148,7 +148,7 @@ export function filter_taken_users(
     return items;
 }
 
-export function append_user(user: User, pills: CombinedPillContainer): void {
+export function append_user(user: User, pills: UserPillWidget | CombinedPillContainer): void {
     if (user) {
         append_person({
             pill_widget: pills,

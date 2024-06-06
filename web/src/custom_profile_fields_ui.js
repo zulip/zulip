@@ -117,15 +117,14 @@ export function initialize_custom_user_type_fields(
                     const update_func = () => pill_update_handler(field, pills);
                     const opts = {
                         update_func,
-                        user: true,
                         exclude_bots: true,
                     };
-                    pill_typeahead.set_up($input, pills, opts);
+                    pill_typeahead.set_up_user($input, pills, opts);
                     pills.onPillRemove(() => {
                         pill_update_handler(field, pills);
                     });
                 } else {
-                    pill_typeahead.set_up($input, pills, {user: true, exclude_bots: true});
+                    pill_typeahead.set_up_user($input, pills, {exclude_bots: true});
                 }
             }
             user_pills.set(field.id, pills);

@@ -12,7 +12,7 @@ import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import type {UserGroupPillData} from "./user_group_pill";
 import * as user_pill from "./user_pill";
-import type {UserPillData} from "./user_pill";
+import type {UserPillData, UserPillWidget} from "./user_pill";
 
 function person_matcher(query: string, item: UserPillData): boolean {
     return (
@@ -27,7 +27,52 @@ function group_matcher(query: string, item: UserGroupPillData): boolean {
 
 type TypeaheadItem = UserGroupPillData | StreamPillData | UserPillData;
 
-export function set_up(
+export function set_up_user(
+    $input: JQuery,
+    pills: UserPillWidget,
+    opts: {
+        exclude_bots?: boolean;
+        update_func?: () => void;
+    },
+): void {
+    const exclude_bots = opts.exclude_bots;
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    new Typeahead(bootstrap_typeahead_input, {
+        items: 5,
+        dropup: true,
+        source(_query: string): UserPillData[] {
+            return user_pill.typeahead_source(pills, exclude_bots);
+        },
+        highlighter_html(item: UserPillData, _query: string): string {
+            return typeahead_helper.render_person(item);
+        },
+        matcher(item: UserPillData, query: string): boolean {
+            query = query.toLowerCase();
+            query = query.replaceAll("\u00A0", " ");
+            return person_matcher(query, item);
+        },
+        sorter(matches: UserPillData[], query: string): UserPillData[] {
+            const users = matches.filter((match) => people.is_known_user_id(match.user.user_id));
+            return typeahead_helper.sort_recipients({users, query}).map((item) => {
+                assert(item.type === "user");
+                return item;
+            });
+        },
+        updater(item: UserPillData, _query: string): undefined {
+            if (people.is_known_user_id(item.user.user_id)) {
+                user_pill.append_user(item.user, pills);
+            }
+            $input.trigger("focus");
+            opts.update_func?.();
+        },
+        stopAdvance: true,
+    });
+}
+
+export function set_up_combined(
     $input: JQuery,
     pills: CombinedPillContainer,
     opts: {

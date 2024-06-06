@@ -56,7 +56,7 @@ function set_up_pill_typeahead({
         user_group: true,
         user: true,
     };
-    pill_typeahead.set_up($pill_container.find(".input"), pill_widget, opts);
+    pill_typeahead.set_up_combined($pill_container.find(".input"), pill_widget, opts);
 }
 
 export function create({
