@@ -617,13 +617,17 @@ function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boole
     // Look at the two characters before the start of the original
     // range in search of the tell-tale `](` from existing Markdown
     // link syntax
-    const possible_markdown_link_markers = $textarea[0]!.value.slice(range.start - 2, range.start);
-
-    if (possible_markdown_link_markers === "](") {
+    if (cursor_at_markdown_link_marker($textarea)) {
         return false;
     }
 
     return true;
+}
+
+export function cursor_at_markdown_link_marker($textarea: JQuery<HTMLTextAreaElement>): boolean {
+    const range = $textarea.range();
+    const possible_markdown_link_markers = $textarea[0]!.value.slice(range.start - 2, range.start);
+    return possible_markdown_link_markers === "](";
 }
 
 export function maybe_transform_html(html: string, text: string): string {
