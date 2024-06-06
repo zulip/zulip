@@ -3,21 +3,32 @@
     display: flex;
     column-gap: 4px;
     flex-direction: row;
-    align-items: center;
+    /* With precisely controlled line-heights
+       in this area, stretch will both center
+       and maintain uniform heights between the
+       reply button and the new-message button. */
+    align-items: stretch;
 
     .new_message_button {
         .button.small {
-            font-size: 1em;
+            /* Keep the new message button sized to match
+               adjacent buttons. */
+            font-size: inherit;
+            line-height: var(--line-height-compose-buttons);
             padding: 3px 10px;
-            vertical-align: middle;
         }
 
         .compose_mobile_button {
-            & span {
-                font-size: 1.2em !important;
-                font-weight: 400;
-                line-height: var(--line-height-compose-buttons);
-            }
+            /* This is ugly, but necessary to use the
+               text + for the compose button. An icon
+               would likely be a better choice here.
+               1.2em is 16.8px at 14px em. */
+            font-size: 1.2em !important;
+            /* 1.2em is 16.8px at 14px em; this
+               maintains the 20px em-equivalent compose
+               line height, but at a 16.8px em. */
+            line-height: 1.19em !important;
+            font-weight: 400;
         }
     }
 

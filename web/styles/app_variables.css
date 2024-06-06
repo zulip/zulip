@@ -173,15 +173,16 @@
     Line height of the message buttons in compose box. Here it's necessary
     to control this value uniformly and precisely to avoid issues with
     layout shifts originating with non-Latin characters in this area.
+    1.429em is 20px at 14px em.
     */
-    --line-height-compose-buttons: 20px;
+    --line-height-compose-buttons: 1.429em;
 
     /*
     Maximum height of the subscribers list in stream settings so that
     it doesn't cause the container to have a second scrollbar.
     This value will be overridden when stream settings is opened.
     */
-    --stream-subscriber-list-max-height: 100%;
+    --stream-subscriber-list-max-height: 1.429em;
 
     /*
       Reusable dimensions and offsets.
