@@ -20,6 +20,6 @@ without provisioning after the first time). Other common issues are
 documented in the
 [Troubleshooting and common errors](/development/setup-recommended.md#troubleshooting-and-common-errors)
 section. If that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
+[#provision help](https://chat.zulip.org/#narrow/channel/21-provision-help)
 in the [Zulip development community server](https://zulip.com/development-community/) for
 real-time help.

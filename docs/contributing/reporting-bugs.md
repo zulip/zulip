@@ -90,18 +90,18 @@ Steps and best practices for starting a conversation:
    community](https://zulip.com/development-community/) if you don't already
    have an account.
 2. Pick an **appropriate channel** to report your issue:
-   - [#issues](https://chat.zulip.org/#narrow/stream/9-issues) for issues with
+   - [#issues](https://chat.zulip.org/#narrow/channel/9-issues) for issues with
      the Zulip web app or server. Use this channel if you aren't sure which
      channel is most appropriate.
-   - [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) for issues with
+   - [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile) for issues with
      the mobile apps.
-   - [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) for issues
+   - [#desktop](https://chat.zulip.org/#narrow/channel/16-desktop) for issues
      that are specific to the Zulip desktop app, and therefore _do not_
      occur in the web app.
-   - [#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal)
+   - [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal)
      for issues with the terminal app.
    - [#production
-     help](https://chat.zulip.org/#narrow/stream/31-production-help) for issues
+     help](https://chat.zulip.org/#narrow/channel/31-production-help) for issues
      related to self-hosting Zulip. See the [troubleshooting
      guide](../production/troubleshooting.md) for additional details.
 3. **[Start a new topic](https://zulip.com/help/starting-a-new-topic)** for

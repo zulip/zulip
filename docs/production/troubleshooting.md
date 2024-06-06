@@ -20,7 +20,7 @@ To report a problem or ask a question, please start a new topic in the
   which versions you are upgrading.
 
 [chat-zulip-org]: https://zulip.com/development-community/
-[production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
+[production-help]: https://chat.zulip.org/#narrow/channel/31-production-help
 [code-block]: https://zulip.com/help/code-blocks
 
 Contact [sales@zulip.com](mailto:sales@zulip.com) if you'd like to

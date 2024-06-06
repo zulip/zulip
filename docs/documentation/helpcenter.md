@@ -80,7 +80,7 @@ be merged into the existing help center documentation where appropriate.
 
 If you are unsure about how and where to document the feature, you
 can always ask in
-[#documentation](https://chat.zulip.org/#narrow/stream/19-documentation)
+[#documentation](https://chat.zulip.org/#narrow/channel/19-documentation)
 on the [Zulip community server](https://zulip.com/development-community/).
 
 ### Updating an existing article
