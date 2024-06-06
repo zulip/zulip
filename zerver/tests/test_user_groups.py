@@ -84,7 +84,7 @@ class UserGroupTestCase(ZulipTestCase):
         assert user_group is not None
         empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=None)
 
-        user_groups = user_groups_in_realm_serialized(realm)
+        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
         self.assert_length(user_groups, 10)
         self.assertEqual(user_groups[0]["id"], user_group.id)
         self.assertEqual(user_groups[0]["name"], SystemGroups.NOBODY)
@@ -141,7 +141,7 @@ class UserGroupTestCase(ZulipTestCase):
             },
             acting_user=None,
         )
-        user_groups = user_groups_in_realm_serialized(realm)
+        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["name"], "newgroup2")
         self.assertEqual(user_groups[10]["description"], "")
@@ -162,10 +162,33 @@ class UserGroupTestCase(ZulipTestCase):
         )
         self.assertFalse(user_groups[0]["deactivated"])
 
-        do_deactivate_user_group(new_user_group, acting_user=None)
-        user_groups = user_groups_in_realm_serialized(realm)
+        another_new_group = check_add_user_group(
+            realm, "newgroup3", [self.example_user("hamlet")], acting_user=None
+        )
+        add_subgroups_to_user_group(
+            new_user_group, [another_new_group, owners_system_group], acting_user=None
+        )
+        do_deactivate_user_group(another_new_group, acting_user=None)
+        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=True)
+        self.assert_length(user_groups, 12)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
-        self.assertTrue(user_groups[10]["deactivated"])
+        self.assertEqual(user_groups[10]["name"], "newgroup2")
+        self.assertFalse(user_groups[10]["deactivated"])
+        self.assertCountEqual(
+            user_groups[10]["direct_subgroup_ids"], [another_new_group.id, owners_system_group.id]
+        )
+        self.assertEqual(user_groups[11]["id"], another_new_group.id)
+        self.assertEqual(user_groups[11]["name"], "newgroup3")
+        self.assertTrue(user_groups[11]["deactivated"])
+
+        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
+        self.assert_length(user_groups, 11)
+        self.assertEqual(user_groups[10]["id"], new_user_group.id)
+        self.assertEqual(user_groups[10]["name"], "newgroup2")
+        self.assertFalse(user_groups[10]["deactivated"])
+        self.assertCountEqual(
+            user_groups[10]["direct_subgroup_ids"], [another_new_group.id, owners_system_group.id]
+        )
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")

@@ -472,7 +472,9 @@ def get_setting_value_for_user_group_object(
     )
 
 
-def user_groups_in_realm_serialized(realm: Realm) -> list[UserGroupDict]:
+def user_groups_in_realm_serialized(
+    realm: Realm, *, allow_deactivated: bool
+) -> list[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
@@ -484,6 +486,9 @@ def user_groups_in_realm_serialized(realm: Realm) -> list[UserGroupDict]:
         "can_mention_group",
         "can_mention_group__named_user_group",
     ).filter(realm=realm)
+
+    if not allow_deactivated:
+        realm_groups = realm_groups.filter(deactivated=False)
 
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
         "user_group_id", "user_profile_id"
