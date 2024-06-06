@@ -120,7 +120,6 @@ html {
 .help {
     .app-main {
         padding: 0;
-        margin-top: 59px;
     }
 
     /* Markdown processor generates lots of spurious <p></p> */
@@ -1228,10 +1227,6 @@ input.new-organization-button {
         .hamburger {
             top: 50px;
         }
-    }
-
-    .help .app-main {
-        margin-top: 39px;
     }
 
     .help .markdown {
