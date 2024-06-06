@@ -513,7 +513,7 @@ def fetch_initial_state_data(
         state["realm_playgrounds"] = get_realm_playgrounds(realm)
 
     if want("realm_user_groups"):
-        state["realm_user_groups"] = user_groups_in_realm_serialized(realm)
+        state["realm_user_groups"] = user_groups_in_realm_serialized(realm, allow_deactivated=True)
 
     if user_profile is not None:
         settings_user = user_profile

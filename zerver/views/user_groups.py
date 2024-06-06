@@ -22,7 +22,7 @@ from zerver.decorator import require_member_or_admin, require_user_group_create_
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import PathOnly, typed_endpoint, typed_endpoint_without_parameters
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
@@ -93,9 +93,16 @@ def add_user_group(
 
 
 @require_member_or_admin
-@typed_endpoint_without_parameters
-def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    user_groups = user_groups_in_realm_serialized(user_profile.realm)
+@typed_endpoint
+def get_user_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    allow_deactivated: Json[bool] = False,
+) -> HttpResponse:
+    user_groups = user_groups_in_realm_serialized(
+        user_profile.realm, allow_deactivated=allow_deactivated
+    )
     return json_success(request, data={"user_groups": user_groups})
 
 
