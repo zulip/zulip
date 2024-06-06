@@ -126,7 +126,6 @@ export function send_presence_to_server(redraw?: () => void): void {
             status: compute_active_status(),
             ping_only: !redraw,
             new_user_input,
-            slim_presence: true,
             last_update_id: presence.presence_last_update_id,
         },
         success(response) {
