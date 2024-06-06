@@ -67,14 +67,14 @@ We recommend taking the following steps before diving into the issue tracker:
 - Join the [Zulip development
   community](https://zulip.com/development-community/), and introduce yourself
   in the channel for the program you are participating in
-  ([#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
-  [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)). Before you
+  ([#GSoC](https://chat.zulip.org/#narrow/channel/14-GSoC) or
+  [#Outreachy](https://chat.zulip.org/#narrow/channel/391-Outreachy)). Before you
   jump in, be sure to review the [Zulip community
   norms](https://zulip.com/development-community/).
 
 - Follow our instructions to [install the development
   environment](../development/overview.md), getting help in [#provision
-  help](https://chat.zulip.org/#narrow/stream/21-provision-help) if needed.
+  help](https://chat.zulip.org/#narrow/channel/21-provision-help) if needed.
 
 - Familiarize yourself with [using the development
   environment](../development/using.md).
@@ -87,7 +87,7 @@ As you are getting started on your first pull request:
 
 - Read the [Zulip guide to Git](../git/overview.md). It's especially important
   to master using `git rebase`, so that you can restructure your commits. You can
-  get help in [#git help](https://chat.zulip.org/#narrow/stream/44-git-help) if
+  get help in [#git help](https://chat.zulip.org/#narrow/channel/44-git-help) if
   you get stuck.
 
 - To make it easier to structure your PRs well, we recommend installing a
@@ -182,8 +182,8 @@ give you feedback and help you improve your proposal.
 
 - Please post a link to your draft in the Zulip development community
   channel dedicated to your program (e.g.,
-  [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
-  [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)). Use
+  [#GSoC](https://chat.zulip.org/#narrow/channel/14-GSoC) or
+  [#Outreachy](https://chat.zulip.org/#narrow/channel/391-Outreachy)). Use
   `Your name - project proposal` as the topic.
 
 - We recommend linking to a draft in an app that works in the browser and allows

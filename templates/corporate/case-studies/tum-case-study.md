@@ -84,5 +84,5 @@ and [research](/for/research/)!
 
 
 [tum-ranking]: https://www.in.tum.de/en/the-department/profile-of-the-department/facts-figures/facts-and-figures-2020/
-[czo-patch-thread]: https://chat.zulip.org/#narrow/stream/3-backend/topic/Tornado.20performance/near/1111686
+[czo-patch-thread]: https://chat.zulip.org/#narrow/channel/3-backend/topic/Tornado.20performance/near/1111686
 [zulip-4-blog]: https://blog.zulip.com/2021/05/13/zulip-4-0-released/

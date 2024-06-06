@@ -37,7 +37,7 @@ topic][integrations-thread] in
 or submit a pull request [updating this
 page](https://zulip.readthedocs.io/en/latest/documentation/api.html).
 
-[integrations-thread]: https://chat.zulip.org/#narrow/stream/127-integrations/topic/API.20client.20libraries/
+[integrations-thread]: https://chat.zulip.org/#narrow/channel/127-integrations/topic/API.20client.20libraries/
 
 ### Outdated
 

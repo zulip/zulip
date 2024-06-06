@@ -140,7 +140,7 @@ function show_home_view() {
             // empty hash (like a stream narrow) will
             // introduce a bug that user will not be able to
             // go back in browser history. See
-            // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
+            // https://chat.zulip.org/#narrow/channel/9-issues/topic/Browser.20back.20button.20on.20RT
             // for detailed description of the issue.
             window.location.hash = user_settings.web_home_view;
         }

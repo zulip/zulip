@@ -12,7 +12,7 @@ After provisioning, you'll want to
 [(re)start the Zulip development server](/development/setup-recommended.md#step-3-start-the-development-environment).
 
 If you run into any trouble, [#provision
-help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
+help](https://chat.zulip.org/#narrow/channel/21-provision-help) in the
 [Zulip development community
 server](https://zulip.com/development-community/) is a great place to ask for
 help.

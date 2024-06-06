@@ -38,7 +38,7 @@ feedback.
 ## Getting started
 
 - Send test messages to [#test
-  here](https://chat.zulip.org/#narrow/stream/7-test-here) or as a PM
+  here](https://chat.zulip.org/#narrow/channel/7-test-here) or as a PM
   to yourself to avoid disturbing others.
 - Start a [new topic](/help/introduction-to-topics) unless you’re replying
   to an existing conversation. If you see a new user talking about
@@ -46,7 +46,7 @@ feedback.
   appropriate new topic](/help/move-content-to-another-topic).
 - If you’re not sure where to start, introduce yourself and your
   interests in [#new
-  members](https://chat.zulip.org/#narrow/stream/95-new-members),
+  members](https://chat.zulip.org/#narrow/channel/95-new-members),
   using your name as the topic to create a dedicated space.
 - Follow the community [code of
   conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
@@ -90,121 +90,121 @@ topic to a different channel](/help/move-content-to-another-channel).
 
 ## Channels for everyone
 
-- [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback) is
+- [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) is
   for posting feedback on Zulip, including feature requests, suggestions for
   improvements to the UI or existing features, or anything else! We also
   appreciate hearing about how Zulip is used in your organization.
-- [#integrations](https://chat.zulip.org/#narrow/stream/127-integrations)
+- [#integrations](https://chat.zulip.org/#narrow/channel/127-integrations)
   is for bug reports or questions about integrations.
-- [#issues](https://chat.zulip.org/#narrow/stream/9-issues) is for reporting
+- [#issues](https://chat.zulip.org/#narrow/channel/9-issues) is for reporting
   bugs (or possible bugs) in the Zulip web app or server implementation.
-- [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile),
-  [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop), and
-  [#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal)
+- [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile),
+  [#desktop](https://chat.zulip.org/#narrow/channel/16-desktop), and
+  [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal)
   are the best places to post bug reports or questions about Zulip's apps. Note
-  that [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) should only
+  that [#desktop](https://chat.zulip.org/#narrow/channel/16-desktop) should only
   be used for issues specific to the desktop app, which shares most of its UI
   and implementation with the web app.
 - Everyone is welcome to introduce themselves in [#new
-  members](https://chat.zulip.org/#narrow/stream/95-new-members). Posting
+  members](https://chat.zulip.org/#narrow/channel/95-new-members). Posting
   here with your name as the topic is a great option if you’re
   uncertain where to start a conversation.
-- [#test here](https://chat.zulip.org/#narrow/stream/7-test-here) is
+- [#test here](https://chat.zulip.org/#narrow/channel/7-test-here) is
   for sending test messages without inconveniencing other users :). We
   recommend muting this channel when not using it.
 
 ## Channels for Zulip users and administrators
 
-- [#user questions](https://chat.zulip.org/#narrow/stream/138-user-questions) is
+- [#user questions](https://chat.zulip.org/#narrow/channel/138-user-questions) is
   for questions about how to configure your Zulip organization, and accomplish
   your goals with Zulip. You can also refer to the [Zulip help center](/help)
   for detailed documentation.
-- [#production help](https://chat.zulip.org/#narrow/stream/31-production-help) is
+- [#production help](https://chat.zulip.org/#narrow/channel/31-production-help) is
   for all questions related to [self-hosting
   Zulip](/self-hosting/).
 - [#zulip
-  cloud](https://chat.zulip.org/#narrow/stream/387-zulip-cloud) is for
+  cloud](https://chat.zulip.org/#narrow/channel/387-zulip-cloud) is for
   all conversations about the [Zulip Cloud](https://zulip.com/plans/)
   service.
 
 ## Channels for code contributors
 
 - [#development
-  help](https://chat.zulip.org/#narrow/stream/49-development-help) is
+  help](https://chat.zulip.org/#narrow/channel/49-development-help) is
   for asking for help with any Zulip server/web app development work
   (use the app channels #mobile, #desktop, or #zulip-terminal for help
   working on one of the apps).
 - [#provision
-  help](https://chat.zulip.org/#narrow/stream/21-provision-help) is
+  help](https://chat.zulip.org/#narrow/channel/21-provision-help) is
   for help specifically on setting up the server/web app development
-  environment. [#tools](https://chat.zulip.org/#narrow/stream/18-tools)
+  environment. [#tools](https://chat.zulip.org/#narrow/channel/18-tools)
   is other conversations about the server/web app developer tooling.
-- [#git help](https://chat.zulip.org/#narrow/stream/44-git-help) is
+- [#git help](https://chat.zulip.org/#narrow/channel/44-git-help) is
   for help with using Git.
-- [#code review](https://chat.zulip.org/#narrow/stream/91-code-review)
+- [#code review](https://chat.zulip.org/#narrow/channel/91-code-review)
   is for getting feedback on your work. We encourage all developers to
   comment on work posted here, even if you’re new to the Zulip
   project; reviewing other PRs is a great way to develop experience,
   and even just manually testing a proposed new feature and posting
   feedback is super helpful. Note that GitHub is our primary system
   for managing code reviews.
-- [#backend](https://chat.zulip.org/#narrow/stream/3-backend),
-  [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend),
-  [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation),
+- [#backend](https://chat.zulip.org/#narrow/channel/3-backend),
+  [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend),
+  [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation),
   and app-specific channels
-  ([#mobile](https://chat.zulip.org/#narrow/stream/48-mobile), etc.)
+  ([#mobile](https://chat.zulip.org/#narrow/channel/48-mobile), etc.)
   are the right place for general conversations about work in those
   areas (including design discussions, questions, updates on a
   project, or anything else).
 - [#automated
-  testing](https://chat.zulip.org/#narrow/stream/43-automated-testing)
+  testing](https://chat.zulip.org/#narrow/channel/43-automated-testing)
   is primarily used for automated notifications about [CI
   failures](https://zulip.readthedocs.io/en/latest/testing/continuous-integration.html),
   but is also a good place to discuss projects to improve Zulip’s
   automated testing infrastructure.
-- [#api design](https://chat.zulip.org/#narrow/stream/378-api-design)
+- [#api design](https://chat.zulip.org/#narrow/channel/378-api-design)
   is a low-traffic channel for discussing and coordinating changes to
   the [Zulip API](https://zulip.com/api/rest), with all stakeholders
   present.
 
 ## Channels for translators
-- [#translation](https://chat.zulip.org/#narrow/stream/58-translation)
+- [#translation](https://chat.zulip.org/#narrow/channel/58-translation)
   is for discussing [Zulip’s
   translations](https://zulip.readthedocs.io/en/latest/translating/translating.html).
 - Some languages have channels named like
-  [#translation/fr](https://chat.zulip.org/#narrow/stream/371-translation.2Ffr)
+  [#translation/fr](https://chat.zulip.org/#narrow/channel/371-translation.2Ffr)
   and
-  [#translation/zh_tw](https://chat.zulip.org/#narrow/stream/377-translation.2Fzh_tw)
+  [#translation/zh_tw](https://chat.zulip.org/#narrow/channel/377-translation.2Fzh_tw)
   to coordinate translation work for that language.
 
 ## Channels for anyone spending time in the community
-- [#announce](https://chat.zulip.org/#narrow/stream/1-announce) is our
+- [#announce](https://chat.zulip.org/#narrow/channel/1-announce) is our
   low-traffic channel for project announcements (releases, etc.).
-- [#checkins](https://chat.zulip.org/#narrow/stream/65-checkins) is
+- [#checkins](https://chat.zulip.org/#narrow/channel/65-checkins) is
   for progress updates on what you’re working on and its status;
   usually folks post with their name as the topic. Everyone is welcome
   to participate!
-- [#design](https://chat.zulip.org/#narrow/stream/101-design) is where
+- [#design](https://chat.zulip.org/#narrow/channel/101-design) is where
   we discuss UI and feature design and collect feedback on potential
   design changes. We love feedback, so don’t hesitate to speak up!
   Note that
-  [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback) is
+  [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) is
   usually the best place for end users to start a topic about a
   proposed design change;
-  [#design](https://chat.zulip.org/#narrow/stream/101-design) is
+  [#design](https://chat.zulip.org/#narrow/channel/101-design) is
   primarily intended for discussing changes the community is actively
   working on.
-- [#discussions](https://chat.zulip.org/#narrow/stream/277-discussions)
+- [#discussions](https://chat.zulip.org/#narrow/channel/277-discussions)
   is where we do fun community conversations like “Ask Me Anything”
   Q&A sessions with project members.
-- [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation)
+- [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation)
   is where we discuss improving Zulip’s user, sysadmin, API, and
   developer documentation.
-- [#general](https://chat.zulip.org/#narrow/stream/2-general) is for
+- [#general](https://chat.zulip.org/#narrow/channel/2-general) is for
   all topics of general interest.
-- [#learning](https://chat.zulip.org/#narrow/stream/92-learning) is
+- [#learning](https://chat.zulip.org/#narrow/channel/92-learning) is
   for posting great learning resources one comes across.
-- [#off topic](https://chat.zulip.org/#narrow/stream/97-off-topic) is
+- [#off topic](https://chat.zulip.org/#narrow/channel/97-off-topic) is
   is for occasional conversations not related to Zulip, usually things
   of general interest to open-source communities.
 
@@ -253,7 +253,7 @@ to issue 1234 in the main Zulip project repositories:
 We [continuously test out new features or ideas][release-lifecycle] on
 chat.zulip.org before rolling them out to Zulip Cloud or including
 them in a Zulip Server release (or deciding not to!). Please report in
-[#issues](https://chat.zulip.org/#narrow/stream/9-issues) anything you
+[#issues](https://chat.zulip.org/#narrow/channel/9-issues) anything you
 notice that seems broken! It’s likely you’ve found a bug in an upcoming
 feature.
 
