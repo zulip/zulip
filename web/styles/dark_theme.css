@@ -559,16 +559,6 @@
         opacity: 0.2;
     }
 
-    .spectator-view #gear-menu-dropdown {
-        .gear-menu-select-dark-theme {
-            display: none;
-        }
-
-        .gear-menu-select-light-theme {
-            display: block;
-        }
-    }
-
     .narrow_to_compose_recipients,
     .clear_search_button,
     .clear_search_button:focus,
