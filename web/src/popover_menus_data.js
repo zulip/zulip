@@ -230,5 +230,8 @@ export function get_gear_menu_content_context() {
         show_webathena: page_params.show_webathena,
         sponsorship_pending: page_params.sponsorship_pending,
         user_has_billing_access,
+        // user color scheme
+        user_color_scheme: user_settings.color_scheme,
+        color_scheme_values: settings_config.color_scheme_values,
     };
 }

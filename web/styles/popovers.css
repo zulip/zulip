@@ -1409,11 +1409,6 @@ ul {
             color: var(--color-gear-menu-blue-text);
         }
     }
-
-    .gear-menu-select-light-theme,
-    .gear-menu-select-dark-theme {
-        display: none;
-    }
 }
 
 ul.popover-menu-list {
@@ -1424,12 +1419,6 @@ ul.popover-menu-list {
     li.popover-menu-separator {
         margin: 4px 0;
         border-bottom: solid 1px var(--color-border-popover-menu-separator);
-    }
-}
-
-.spectator-view {
-    #gear-menu-dropdown .gear-menu-select-dark-theme {
-        display: block;
     }
 }
 

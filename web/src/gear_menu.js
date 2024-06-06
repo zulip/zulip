@@ -10,6 +10,7 @@ import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
+import * as settings_config from "./settings_config";
 import * as settings_preferences from "./settings_preferences";
 import {parse_html} from "./ui_util";
 
@@ -161,22 +162,16 @@ export function initialize() {
             // it being called before message lists are initialized and the order cannot be changed.
             // Also, since these buttons are only visible for spectators which doesn't have events,
             // if theme is changed in a different tab, the theme of this tab remains the same.
-            $popper.on("click", "#gear-menu-dropdown .gear-menu-select-dark-theme", (e) => {
-                popover_menus.hide_current_popover_if_visible(instance);
-                e.preventDefault();
-                e.stopPropagation();
+            $popper.on("change", "input[name='theme-select']", (e) => {
+                const theme_code = Number.parseInt($(e.currentTarget).attr("data-theme-code"), 10);
                 requestAnimationFrame(() => {
-                    dark_theme.enable();
-                    message_lists.update_recipient_bar_background_color();
-                });
-            });
-
-            $popper.on("click", "#gear-menu-dropdown .gear-menu-select-light-theme", (e) => {
-                popover_menus.hide_current_popover_if_visible(instance);
-                e.preventDefault();
-                e.stopPropagation();
-                requestAnimationFrame(() => {
-                    dark_theme.disable();
+                    if (theme_code === settings_config.color_scheme_values.night.code) {
+                        dark_theme.enable();
+                    } else if (theme_code === settings_config.color_scheme_values.day.code) {
+                        dark_theme.disable();
+                    } else {
+                        dark_theme.default_preference_checker();
+                    }
                     message_lists.update_recipient_bar_background_color();
                 });
             });
