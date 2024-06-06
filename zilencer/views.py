@@ -759,9 +759,17 @@ def validate_incoming_table_data(
 ) -> None:
     last_id = get_last_id_from_server(server, model)
     for row in rows:
-        if is_count_stat and (
-            row["property"] not in COUNT_STATS
-            or row["property"] in BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES
+        # We are silent about stats not in COUNT_STATS which are
+        # in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER --
+        # these are stats we stopped recording, but old versions
+        # may still have and report.
+        if (
+            is_count_stat
+            and (
+                row["property"] not in COUNT_STATS
+                or row["property"] in BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES
+            )
+            and row["property"] not in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
         ):
             raise JsonableError(_("Invalid property {property}").format(property=row["property"]))
 
