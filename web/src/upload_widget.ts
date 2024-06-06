@@ -228,7 +228,7 @@ export function build_widget(
                         $preview_image?.show();
                         $file_name_field.show();
                         $other_elements_to_hide?.show();
-                        if ($file_name_field.closest(".edit_bot_avatar_file").length) {
+                        if (!$file_name_field.closest("#emoji-file-name").length) {
                             $clear_button.hide();
                         }
                     });
@@ -253,7 +253,6 @@ export function build_widget(
         $save_button.hide();
         $scale_to_fit_button.hide();
         $input_error.hide();
-        $preview_image?.hide();
         $other_elements_to_hide?.show();
         $clear_button.hide();
         $upload_button.show();

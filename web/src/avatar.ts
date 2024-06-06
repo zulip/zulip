@@ -26,16 +26,7 @@ export function build_bot_create_widget(): UploadWidget {
     const $scale_to_fit_button = $("#bot_avatar_scale_to_fit_button");
     const $preview_text = $("#add_bot_preview_text");
     const $preview_image = $("#add_bot_preview_image");
-    const $other_elements_to_hide = $(
-        '#create_bot_form .input-group label[for="bot_type"],' +
-            "#create_bot_form .input-group #create_bot_type," +
-            '#create_bot_form .input-group label[for="create_bot_name"],' +
-            "#create_bot_form .input-group #create_bot_name," +
-            '#create_bot_form .input-group label[for="bot_short_name"],' +
-            "#create_bot_form .input-group #create_bot_short_name," +
-            '#create_bot_form .input-group #avatar_upload_container span:contains("(Optional)")' +
-            ".deactivate_bot_button , .modal__footer, #optional_text, .modal-field-label, #bot-domain",
-    );
+    const $other_elements_to_hide = $("#create_bot_form .hideable, .modal__footer");
 
     return upload_widget.build_widget(
         get_file_input,
@@ -65,7 +56,7 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
     const $preview_text = $target.find("#edit_bot_avatar_preview_text");
     const $preview_image = $target.find(".edit_bot_avatar_preview_image");
     const $other_elements_to_hide = $(
-        ".edit_bot_form :not(.edit-avatar-section,.dropdown-menu, #current_bot_avatar_image, #edit_bot_avatar_save_button, #edit_bot_avatar_scale_to_fit_button, #bot-edit-form-error), .deactivate_bot_button, .manage-profile-tab-footer, .modal__footer_wrapper, #tab-toggle, #reactivate-bot",
+        "#bot-edit-form .hideable, .deactivate_bot_button, .manage-profile-tab-footer, .modal__footer_wrapper, #tab-toggle, #reactivate-bot",
     );
 
     return upload_widget.build_widget(
