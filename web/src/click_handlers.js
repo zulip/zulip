@@ -774,7 +774,13 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        window.location.hash = "narrow/is/dm";
+        if (!$(e.target).hasClass("direct-messages-list-filter")) {
+            // Avoiding having clicks on the filter input.
+            //
+            // TODO: Refactor to use more precise selectors for this
+            // click handler in general; this is a fragile pattern.
+            window.location.hash = "narrow/is/dm";
+        }
     });
 
     // disable the draggability for left-sidebar components

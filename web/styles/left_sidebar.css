@@ -1130,6 +1130,13 @@ li.topic-list-item {
     }
 }
 
+/* Since direct-messages-sticky-header also has the `input-append`
+   class accompanying it. The display property of that class will
+   overwrite display: none if we don't have a more specific CSS
+   rule. It will also overwrite `display: none` even if `.zoom-out`
+   properties are declared after the `.input-append` properties since
+   the latter is more specific. */
+#direct-messages-sticky-header.zoom-out,
 .zoom-out {
     #topics_header {
         display: none;
@@ -1225,53 +1232,6 @@ li.topic-list-item {
            vertical centering. */
         line-height: 20px;
         white-space: nowrap;
-
-        .stream-list-filter {
-            /* Use the border-box model so flex
-               can do its thing despite whatever
-               padding and border we specify. */
-            box-sizing: border-box;
-            flex: 1 0 100%;
-            /* Match the input height exactly
-               with the row height for a perfect
-               fit and better vertical alignment. */
-            height: 28px;
-            /* Pad the entire clear-button area,
-               so that input text does not bleed
-               into there. */
-            padding-right: 30px;
-        }
-
-        .clear_search_button {
-            /* Use the border-box model so flex
-               can do its thing despite whatever
-               padding and border we specify. */
-            box-sizing: border-box;
-            /* Clear inherited positioning. */
-            position: static;
-            /* We're going to use flexbox, not
-               positioning, to get the clear button
-               over top of the input. This -30px
-               margin accomplishes that, in tandem
-               with the 30px width of this element,
-               which is shared with the ending
-               anchor element in left sidebar header
-               rows. */
-            width: 30px;
-            margin-left: -30px;
-            /* Flexbox respects z-index; this just
-               ensures the button remains over top
-               of the input. */
-            z-index: 1;
-            /* Make the button itself a flex container,
-               so we can perfectly center the X icon. */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* Flexbox will pull the element open
-               to make a generous clickable area. */
-            padding: 0;
-        }
     }
 
     &.hide_unread_counts {
@@ -1304,6 +1264,57 @@ li.topic-list-item {
                 display: none;
             }
         }
+    }
+}
+
+.stream_search_section,
+.direct-messages-search-section {
+    .stream-list-filter,
+    .direct-messages-list-filter {
+        /* Use the border-box model so flex
+           can do its thing despite whatever
+           padding and border we specify. */
+        box-sizing: border-box;
+        flex: 1 0 100%;
+        /* Match the input height exactly
+           with the row height for a perfect
+           fit and better vertical alignment. */
+        height: 28px;
+        /* Pad the entire clear-button area,
+           so that input text does not bleed
+           into there. */
+        padding-right: 30px;
+    }
+
+    .clear_search_button {
+        /* Use the border-box model so flex
+           can do its thing despite whatever
+           padding and border we specify. */
+        box-sizing: border-box;
+        /* Clear inherited positioning. */
+        position: static;
+        /* We're going to use flexbox, not
+           positioning, to get the clear button
+           over top of the input. This -30px
+           margin accomplishes that, in tandem
+           with the 30px width of this element,
+           which is shared with the ending
+           anchor element in left sidebar header
+           rows. */
+        width: 30px;
+        margin-left: -30px;
+        /* Flexbox respects z-index; this just
+           ensures the button remains over top
+           of the input. */
+        z-index: 1;
+        /* Make the button itself a flex container,
+           so we can perfectly center the X icon. */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Flexbox will pull the element open
+           to make a generous clickable area. */
+        padding: 0;
     }
 }
 
@@ -1413,6 +1424,13 @@ li.topic-list-item {
             background-color: hsl(120deg 12.3% 71.4% / 38%);
             border-radius: 4px;
         }
+    }
+
+    .direct-messages-search-section {
+        display: flex;
+        grid-column: row-content / markers-and-controls;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
 
     .zoom-in-hide {
