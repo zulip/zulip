@@ -14,10 +14,16 @@
         display: none;
     }
 
+    /* TODO: Remove the `.navbar_title` span from the `message_view_header.hbs`
+       template. That span predates the use of flexbox, and makes it so that
+       elements like the `.narrow_description` have different line-height and
+       sizing contexts depending on whether it's a view or a narrow being shown. */
+
     .message-header-stream-settings-button,
     .navbar_title {
         font-weight: 600;
-        font-size: 16px;
+        /* 16px at 14px em */
+        font-size: 1.1429em;
         padding: 0 2px 0 6px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -32,14 +38,16 @@
         align-items: baseline;
 
         .zulip-icon {
-            font-size: 14px;
+            /* 14px at 16px em, inherited from .navbar_title */
+            font-size: 0.875em;
             /* Pull the icon out of baseline alignment,
                and center with stream name. */
             align-self: center;
         }
 
         .zulip-icon-inbox {
-            font-size: 16px;
+            /* 16px at 16px em, inherited from .navbar_title */
+            font-size: 1em;
         }
 
         .fa-envelope {
@@ -61,9 +69,15 @@
 
         .fa {
             .fa-envelope {
-                font-size: 14px;
+                /* 14px at 16px em, inherited from .navbar_title */
+                font-size: 0.875em;
                 margin: 0 5px;
             }
+        }
+
+        .narrow_description {
+            /* 14px at 16px em, inherited from .navbar_title */
+            font-size: 0.875em;
         }
     }
 
@@ -83,7 +97,8 @@
            before the stream name must begin to shrink */
         flex-shrink: 100;
         background: none;
-        font-size: 14px;
+        /* 14px at 14px em */
+        font-size: 1em;
         color: inherit;
         font-weight: 400;
         padding-left: 10px;
