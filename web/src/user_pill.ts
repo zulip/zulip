@@ -18,7 +18,7 @@ export type UserPill = {
 
 export type UserPillWidget = InputPillContainer<UserPill>;
 
-export type UserPillData = User & {type: "user"};
+export type UserPillData = {type: "user"; user: User};
 
 export function create_item_from_email(
     email: string,
@@ -136,10 +136,7 @@ export function typeahead_source(
     exclude_bots?: boolean,
 ): UserPillData[] {
     const users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
-    return filter_taken_users(users, pill_widget).map((user) => ({
-        ...user,
-        type: "user",
-    }));
+    return filter_taken_users(users, pill_widget).map((user) => ({type: "user", user}));
 }
 
 export function filter_taken_users(

@@ -69,7 +69,6 @@ export type PseudoMentionUser = {
     email: string;
     pm_recipient_count: number;
     full_name: string;
-    is_broadcast: true;
     idx: number;
 };
 
