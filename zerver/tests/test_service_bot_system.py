@@ -299,7 +299,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
             "keys": ["This is a list, but should be a serialized string."],
         }
         result = self.client_get("/json/bot_storage", invalid_params)
-        self.assert_json_error(result, 'Argument "keys" is not valid JSON.')
+        self.assert_json_error(result, "keys is not valid JSON")
 
         params = {
             "keys": orjson.dumps(["key 1", "nonexistent key"]).decode(),
@@ -311,7 +311,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
             "storage": orjson.dumps({"foo": [1, 2, 3]}).decode(),
         }
         result = self.client_put("/json/bot_storage", params)
-        self.assert_json_error(result, "storage contains a value that is not a string")
+        self.assert_json_error(result, 'storage["foo"] is not a string')
 
         # Remove some entries.
         keys_to_remove = ["key 1", "key 2"]
