@@ -533,6 +533,7 @@ RETENTION_DEFAULT: Union[str, int] = "realm_default"
 EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 
 
+@transaction.atomic(savepoint=False)
 @require_non_guest_user
 @has_request_variables
 def add_subscriptions_backend(

@@ -32,7 +32,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.core.signals import got_request_exception
-from django.db import connection
+from django.db import connection, transaction
 from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
@@ -1458,13 +1458,17 @@ Output:
             "invite_only": orjson.dumps(invite_only).decode(),
         }
         post_data.update(extra_post_data)
-        result = self.api_post(
-            user,
-            "/api/v1/users/me/subscriptions",
-            post_data,
-            intentionally_undocumented=False,
-            **extra,
-        )
+        # We wrap the API call with a 'transaction.atomic()' context
+        # manager as it helps us with NOT rolling back the entire
+        # test transaction due to error responses.
+        with transaction.atomic():
+            result = self.api_post(
+                user,
+                "/api/v1/users/me/subscriptions",
+                post_data,
+                intentionally_undocumented=False,
+                **extra,
+            )
         if not allow_fail:
             self.assert_json_success(result)
         return result
