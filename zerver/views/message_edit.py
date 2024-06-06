@@ -180,9 +180,11 @@ def delete_message_backend(
     # concurrently are serialized properly with deleting the message; this prevents a deadlock
     # that would otherwise happen because of the other transaction holding a lock on the `Message`
     # row.
-    message = access_message(user_profile, message_id, lock_message=True)
-    validate_can_delete_message(user_profile, message)
     try:
+        message = access_message(user_profile, message_id, lock_message=True)
+        if message is None:
+            raise Message.DoesNotExist
+        validate_can_delete_message(user_profile, message)
         do_delete_messages(user_profile.realm, [message])
     except (Message.DoesNotExist, IntegrityError):
         raise JsonableError(_("Message already deleted"))

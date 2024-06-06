@@ -290,14 +290,15 @@ def access_message(
             # We want to lock only the `Message` row, and not the related fields
             # because the `Message` row only has a possibility of races.
             base_query = base_query.select_for_update(of=("self",))
-        message = base_query.get(id=message_id)
+        message = base_query.filter(id=message_id).first()
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
 
+    if message is None:
+        return message
     has_user_message = lambda: UserMessage.objects.filter(
         user_profile=user_profile, message_id=message_id
     ).exists()
-
     if has_message_access(user_profile, message, has_user_message=has_user_message):
         return message
     raise JsonableError(_("Invalid message(s)"))
@@ -384,11 +385,9 @@ def has_message_access(
       row for the target message.
     * The optional stream parameter is validated; is_subscribed is not.
     """
-
     if message.recipient.type != Recipient.STREAM:
         # You can only access direct messages you received
         return has_user_message()
-
     if stream is None:
         stream = Stream.objects.get(id=message.recipient.type_id)
     else:
