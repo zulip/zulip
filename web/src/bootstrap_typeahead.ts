@@ -344,6 +344,7 @@ export class Typeahead<ItemType extends string | object> {
             // Lets typeahead take the width needed to fit the content
             // and wraps it if it overflows the visible container.
             maxWidth: "none",
+            delay: [0, 0],
             theme: "popover-menu",
             placement: this.dropup ? "top-start" : "bottom-start",
             popperOptions: {
