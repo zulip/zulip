@@ -8,9 +8,13 @@
         </div>
         <div id="emoji-file-name"></div>
     </div>
-    <button type="button" class="button white rounded" style="display: none;" id="emoji_image_clear_button">{{t "Clear image" }}</button>
-    <button type="button" class="button white rounded" style="display: none;" id="emoji_image_save_button">{{t "Save changes" }}</button>
-    <button type="button" class="button white rounded" style="display: none;" id="emoji_scale_to_fit_button">{{t "Scale to fit" }}</button>
+    <div id="image_editor">
+        <button type="button" class="modal__btn image_clear" style="display: none;" id="emoji_image_clear_button">{{t "Clear image" }}</button>
+        <div>
+            <button type="button" class="modal__btn image_save" style="display: none;" id="emoji_scale_to_fit_button">{{t "Scale to fit" }}</button>
+            <button type="button" class="modal__btn image_save" style="display: none;" id="emoji_image_save_button">{{t "Save changes" }}</button>
+        </div>
+    </div>
     <div id="emoji_file_input_error" class="text-error"></div>
     <div class="emoji_name_input">
         <label for="emoji_name" class="modal-field-label">{{t "Emoji name" }}</label>

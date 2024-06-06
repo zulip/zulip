@@ -781,38 +781,14 @@ input[type="checkbox"] {
     #emoji_preview_text {
         margin-top: 6px;
     }
-
-    #emoji_image_save_button {
-        float: right;
-        background-color: hsl(240deg 95% 66%);
-        color: hsl(0deg 0% 100%);
-        transition: transform 0.3s ease;
-        margin-top: 11px;
-    }
-
-    #emoji_scale_to_fit_button {
-        float: right;
-        background-color: hsl(240deg 95% 66%);
-        color: hsl(0deg 0% 100%);
-        transition: transform 0.3s ease;
-        margin-top: 11px;
-        margin-right: 8px;
-    }
-
-    #emoji_image_clear_button {
-        transition: transform 0.3s ease;
-        margin-top: 11px;
-    }
-
-    #emoji_image_save_button:hover,
-    #emoji_image_clear_button:hover,
-    #emoji_scale_to_fit_button:hover {
-        transform: scale(1.03);
-    }
 }
 
 #emoji_file_input_error {
     vertical-align: middle;
+}
+
+#emoji_image_clear_button.image_clear {
+    margin-bottom: 24px;
 }
 
 .uppy-DashboardContent-back,
@@ -839,6 +815,26 @@ input[type="checkbox"] {
 
 #scale_to_fit {
     order: -1;
+}
+
+#image_editor {
+    display: flex;
+    justify-content: space-between;
+}
+
+.image_clear,
+.image_save {
+    color: hsl(0deg 0% 100%) !important;
+    margin-top: 24px;
+}
+
+.image_save {
+    background-color: hsl(240deg 96% 68%);
+    margin-left: 12px;
+}
+
+.image_clear {
+    background-color: hsl(0deg 100% 20%);
 }
 
 .add-new-linkifier-box,
@@ -1097,66 +1093,6 @@ input[type="checkbox"] {
     height: 100px;
     width: 100px;
     margin: 2px 0 8px;
-}
-
-#bot_avatar_save_button {
-    float: right;
-    background-color: hsl(240deg 95% 66%);
-    color: hsl(0deg 0% 100%);
-    margin-top: 9px;
-    transition: transform 0.3s ease;
-}
-
-#bot_avatar_scale_to_fit_button {
-    float: right;
-    background-color: hsl(240deg 95% 66%);
-    color: hsl(0deg 0% 100%);
-    transition: transform 0.3s ease;
-    margin-top: 9px;
-    margin-right: 8px;
-}
-
-#bot_avatar_clear_button {
-    background-color: hsl(0deg 100% 20%);
-    color: hsl(0deg 0% 100%);
-    margin-top: 9px;
-    transition: transform 0.3s ease;
-}
-
-#bot_avatar_save_button:hover,
-#bot_avatar_scale_to_fit_button:hover,
-#bot_avatar_clear_button:hover {
-    transform: scale(1.03);
-}
-
-#edit_bot_avatar_save_button {
-    float: right;
-    background-color: hsl(240deg 95% 66%);
-    color: hsl(0deg 0% 100%);
-    margin-top: 11px;
-    transition: transform 0.3s ease;
-}
-
-#edit_bot_avatar_scale_to_fit_button {
-    float: right;
-    background-color: hsl(240deg 95% 66%);
-    color: hsl(0deg 0% 100%);
-    transition: transform 0.3s ease;
-    margin-top: 11px;
-    margin-right: 8px;
-}
-
-#edit_bot_avatar_clear_button {
-    background-color: hsl(0deg 100% 20%);
-    color: hsl(0deg 0% 100%);
-    margin-top: 11px;
-    transition: transform 0.3s ease;
-}
-
-#edit_bot_avatar_save_button:hover,
-#edit_bot_avatar_scale_to_fit_button:hover,
-#edit_bot_avatar_clear_button:hover {
-    transform: scale(1.03);
 }
 
 #add-alert-word {
