@@ -335,6 +335,9 @@ importers:
       '@types/spectrum':
         specifier: ^1.8.4
         version: 1.8.7
+      '@types/throttle-debounce':
+        specifier: ^5.0.2
+        version: 5.0.2
       '@types/tinycolor2':
         specifier: ^1.4.5
         version: 1.4.6
@@ -1984,6 +1987,9 @@ packages:
 
   '@types/spectrum@1.8.7':
     resolution: {integrity: sha512-zeLcQ1qyKJGyq7V3TzXwyKITcetm8BOMY/PI1qHLxeJrBFS9BtsHtLFfj+X2wU6B7TCqoes7ZMQeoFBxHxg/6g==}
+
+  '@types/throttle-debounce@5.0.2':
+    resolution: {integrity: sha512-pDzSNulqooSKvSNcksnV72nk8p7gRqN8As71Sp28nov1IgmPKWbOEIwAWvBME5pPTtaXJAvG3O4oc76HlQ4kqQ==}
 
   '@types/tinycolor2@1.4.6':
     resolution: {integrity: sha512-iEN8J0BoMnsWBqjVbWH/c0G0Hh7O21lpR2/+PrvAVgWdzL7eexIFm4JN/Wn10PTcmNdtS6U67r499mlWMXOxNw==}
@@ -9307,6 +9313,8 @@ snapshots:
     dependencies:
       '@types/jquery': 3.5.30
       '@types/tinycolor2': 1.4.6
+
+  '@types/throttle-debounce@5.0.2': {}
 
   '@types/tinycolor2@1.4.6': {}
 

@@ -107,6 +107,7 @@
     "@types/plotly.js": "^2.12.20",
     "@types/sortablejs": "^1.15.1",
     "@types/spectrum": "^1.8.4",
+    "@types/throttle-debounce": "^5.0.2",
     "@types/tinycolor2": "^1.4.5",
     "@types/turndown": "^5.0.1",
     "@typescript-eslint/eslint-plugin": "^7.0.2",

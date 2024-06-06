@@ -1,5 +1,11 @@
+import {renderGrid} from "@giphy/js-components";
+import type {GifsResult, Rating, TrendingOptions} from "@giphy/js-fetch-api";
+import {GiphyFetch} from "@giphy/js-fetch-api";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
+import {z} from "zod";
 
 import render_giphy_picker from "../templates/giphy_picker.hbs";
 
@@ -10,30 +16,35 @@ import * as rows from "./rows";
 import {realm} from "./state_data";
 import * as ui_util from "./ui_util";
 
-let giphy_fetch;
+const rating_schema = z.enum(["pg", "g", "y", "pg-13", "r"]);
+
+let giphy_fetch: GiphyFetch | undefined;
 let search_term = "";
-let gifs_grid;
-let giphy_popover_instance;
+let gifs_grid: {remove: () => void} | undefined;
+let giphy_popover_instance: tippy.Instance | undefined;
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
-let edit_message_id;
+let edit_message_id: number | undefined;
 
-export function is_popped_from_edit_message() {
+export function is_popped_from_edit_message(): boolean {
     return giphy_popover_instance !== undefined && edit_message_id !== undefined;
 }
 
-export function focus_current_edit_message() {
-    $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`).trigger("focus");
+export function focus_current_edit_message(): void {
+    assert(edit_message_id !== undefined);
+    $(`#edit_form_${CSS.escape(edit_message_id.toString())} .message_edit_content`).trigger(
+        "focus",
+    );
 }
 
-export function is_giphy_enabled() {
+export function is_giphy_enabled(): boolean {
     return (
         realm.giphy_api_key !== "" &&
         realm.realm_giphy_rating !== realm.giphy_rating_options.disabled.id
     );
 }
 
-export function update_giphy_rating() {
+export function update_giphy_rating(): void {
     if (
         realm.realm_giphy_rating === realm.giphy_rating_options.disabled.id ||
         realm.giphy_api_key === ""
@@ -44,11 +55,12 @@ export function update_giphy_rating() {
     }
 }
 
-function get_rating() {
+function get_rating(): Rating {
     const options = realm.giphy_rating_options;
-    for (const rating in realm.giphy_rating_options) {
-        if (options[rating].id === realm.realm_giphy_rating) {
-            return rating;
+    for (const [rating, rating_value] of Object.entries(options)) {
+        if (rating_value.id === realm.realm_giphy_rating) {
+            const parsedRating = rating_schema.parse(rating);
+            return parsedRating;
         }
     }
 
@@ -58,16 +70,14 @@ function get_rating() {
     return "g";
 }
 
-async function renderGIPHYGrid(targetEl) {
-    const {renderGrid} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-components");
-    const {GiphyFetch} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-fetch-api");
-
+function renderGIPHYGrid(targetEl: HTMLElement): {remove: () => void} {
     if (giphy_fetch === undefined) {
         giphy_fetch = new GiphyFetch(realm.giphy_api_key);
     }
 
-    function fetchGifs(offset) {
-        const config = {
+    async function fetchGifs(offset: number): Promise<GifsResult> {
+        assert(giphy_fetch !== undefined);
+        const config: TrendingOptions = {
             offset,
             limit: 25,
             rating: get_rating(),
@@ -75,12 +85,14 @@ async function renderGIPHYGrid(targetEl) {
         };
         if (search_term === "") {
             // Get the trending gifs by default.
-            return giphy_fetch.trending(config);
+            const giphy_trending = await giphy_fetch.trending(config);
+            return giphy_trending;
         }
-        return giphy_fetch.search(search_term, config);
+        const giphy_search = await giphy_fetch.search(search_term, config);
+        return giphy_search;
     }
 
-    const render = () =>
+    const render: () => () => void = () =>
         // See https://github.com/Giphy/giphy-js/blob/master/packages/components/README.md#grid
         // for detailed documentation.
         renderGrid(
@@ -94,10 +106,10 @@ async function renderGIPHYGrid(targetEl) {
                 // GIF; nice in principle but too distracting.
                 hideAttribution: true,
                 onGifClick(props) {
-                    let $textarea = $("textarea#compose-textarea");
+                    let $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
                     if (edit_message_id !== undefined) {
                         $textarea = $(
-                            `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
+                            `#edit_form_${CSS.escape(edit_message_id.toString())} .message_edit_content`,
                         );
                     }
 
@@ -127,18 +139,18 @@ async function renderGIPHYGrid(targetEl) {
     };
 }
 
-async function update_grid_with_search_term() {
+function update_grid_with_search_term(): void {
     if (!gifs_grid) {
         return;
     }
 
-    const $search_elem = $("#giphy-search-query");
+    const $search_elem = $<HTMLTextAreaElement>("textarea#giphy-search-query");
     // GIPHY popover may have been hidden by the
     // time this function is called.
-    if ($search_elem.length) {
+    if ($search_elem[0] !== undefined) {
         search_term = $search_elem[0].value;
         gifs_grid.remove();
-        gifs_grid = await renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
+        gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]!);
         return;
     }
 
@@ -146,7 +158,7 @@ async function update_grid_with_search_term() {
     gifs_grid = undefined;
 }
 
-export function hide_giphy_popover() {
+export function hide_giphy_popover(): boolean {
     // Returns `true` if the popover was open.
     if (giphy_popover_instance) {
         giphy_popover_instance.destroy();
@@ -158,7 +170,7 @@ export function hide_giphy_popover() {
     return false;
 }
 
-function toggle_giphy_popover(target) {
+function toggle_giphy_popover(target: tippy.ReferenceElement): void {
     popover_menus.toggle_popover_menu(
         target,
         {
@@ -167,10 +179,10 @@ function toggle_giphy_popover(target) {
                 instance.setContent(ui_util.parse_html(render_giphy_picker()));
                 $(instance.popper).addClass("giphy-popover");
             },
-            async onShow(instance) {
+            onShow(instance) {
                 giphy_popover_instance = instance;
                 const $popper = $(giphy_popover_instance.popper).trigger("focus");
-                gifs_grid = await renderGIPHYGrid($popper.find(".giphy-content")[0]);
+                gifs_grid = renderGIPHYGrid($popper.find(".giphy-content")[0]!);
 
                 const $click_target = $(instance.reference);
                 if ($click_target.parents(".message_edit_form").length === 1) {
@@ -198,10 +210,10 @@ function toggle_giphy_popover(target) {
                 $popper.on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
                 $popper.on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
 
-                $popper.on("click", "#giphy_search_clear", async (e) => {
+                $popper.on("click", "#giphy_search_clear", (e) => {
                     e.stopPropagation();
                     $("#giphy-search-query").val("");
-                    await update_grid_with_search_term();
+                    update_grid_with_search_term();
                 });
 
                 // Focus on search box by default.
@@ -219,12 +231,16 @@ function toggle_giphy_popover(target) {
     );
 }
 
-function register_click_handlers() {
-    $("body").on("click", ".compose_control_button.compose_gif_icon", (e) => {
-        toggle_giphy_popover(e.currentTarget);
-    });
+function register_click_handlers(): void {
+    $("body").on(
+        "click",
+        ".compose_control_button.compose_gif_icon",
+        function (this: tippy.ReferenceElement) {
+            toggle_giphy_popover(this);
+        },
+    );
 }
 
-export function initialize() {
+export function initialize(): void {
     register_click_handlers();
 }
