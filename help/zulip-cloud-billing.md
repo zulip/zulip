@@ -8,6 +8,8 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {start_tabs}
 
+{tab|by-card}
+
 {relative|gear|plans}
 
 1. On the page listing Zulip Cloud plans, click the button at the bottom
@@ -15,9 +17,26 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {!plan-upgrade-steps.md!}
 
+{tab|by-invoice}
+
+!!! warn ""
+
+    Only [manual license
+    management](#how-does-manual-license-management-work) is available
+    when paying by invoice.
+
+{relative|gear|plans}
+
+1. On the page listing Zulip Cloud plans, click the button at the bottom
+   of the plan you would like to purchase.
+
+{!pay-by-invoice-steps.md!}
+
 {end_tabs}
 
 ## Manage billing
+
+{!manage-billing-intro.md!}
 
 {start_tabs}
 
@@ -47,7 +66,7 @@ Free** at the end of the current billing period.
 ## Free and discounted Zulip Cloud Standard
 
 Zulip sponsors free plans for over 1000 worthy organizations. The following
-types of organizations are generally eligible for a free Zulip Cloud Standard plan.
+types of organizations are generally eligible for a free **Zulip Cloud Standard** plan.
 
 - Open-source projects, including projects with a small paid team.
 - Research in an academic setting, such as research groups, cross-institutional
@@ -57,7 +76,7 @@ types of organizations are generally eligible for a free Zulip Cloud Standard pl
 - Most communities that need features beyond the Free plan in order to use Zulip.
 
 The following types of organizations are generally eligible for significant
-discounts on Zulip Cloud Standard.
+discounts on **Zulip Cloud Standard**.
 
 - Education organizations are eligible for [education
   pricing](https://zulip.com/for/education/#feature-pricing).
@@ -95,8 +114,8 @@ sponosorship](#apply-for-sponsorship). Contact
 
 ### Apply for sponsorship
 
-Submit a sponsorship request to apply for a free or discounted Zulip Cloud
-Standard plan. If you do not have a Zulip organization yet, contact
+Submit a sponsorship request to apply for a free or discounted **Zulip Cloud
+Standard** plan. If you do not have a Zulip organization yet, contact
 [sales@zulip.com](mailto:sales@zulip.com) to inquire about sponsorship
 eligibility.
 
@@ -111,6 +130,14 @@ eligibility.
 
 1. Fill out the requested information, and click **Submit**.
 
+!!! tip ""
+
+     If you don't see the **Request sponsorship** link in the gear menu,
+     update your [organization type](/help/organization-type) to one of
+     the eligible types of organizations [listed
+     above](#free-and-discounted-zulip-cloud-standard) that best fits
+     your organization.
+
 {tab|request-education-pricing}
 
 1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
@@ -120,6 +147,12 @@ eligibility.
 
 1. Fill out the requested information, and click **Submit**.
 
+!!! tip ""
+
+     If you don't see the **Request education pricing** link in the gear menu,
+     update your [organization type](/help/organization-type) to either
+     **Education (non-profit)** or **Education (for-profit)**.
+
 {end_tabs}
 
 ## Differences between Zulip Cloud plans
@@ -128,7 +161,7 @@ eligibility.
 
 Only the most recent 10,000 messages can be viewed and searched on the Zulip
 Cloud Free plan. Older messages are still stored and will become available
-again if the organization is upgraded to Zulip Cloud Standard.
+again if the organization is upgraded to **Zulip Cloud Standard**.
 
 ### Will you switch to limiting Zulip Cloud Free history to messages sent in the last 90 days (like Slack has)?
 
@@ -139,10 +172,9 @@ tool.
 
 ## Payment methods
 
-### Can I pay by credit card and/or invoice?
+### What are my payment options?
 
-You can always use a credit card to pay. If you would like to pay by invoice,
-you will need to sign up for an annual plan.
+{!payment-options.md!}
 
 ### How does automatic license management work?
 
@@ -152,10 +184,7 @@ you will need to sign up for an annual plan.
 
 {!manual-billing-intro.md!}
 
-#### Manually manage licenses
-
-If your organization is on a manual billing plan, you can manage the number of
-licenses on your organization's billing page.
+#### Manually update number of licenses
 
 {start_tabs}
 
@@ -163,12 +192,7 @@ licenses on your organization's billing page.
 
 {relative|gear|billing}
 
-1. Modify **Number of licenses for current billing period** or **Number of
-   licenses for next billing period**, and click **Update**.
-
-!!! tip ""
-
-    You can only increase the number of licenses for the current billing period.
+{!manual-add-license-instructions.md!}
 
 {end_tabs}
 
