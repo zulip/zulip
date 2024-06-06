@@ -29,6 +29,8 @@ format used by the Zulip server that they are interacting with.
   group is deactivated or not.
 * [`GET /events`](/api/get-events): When a user group is deactivated `user_group`
   op: `update` event is sent to the clients.
+* [`GET /user_groups`](/api/get-user-groups): Added support for excluding deactivated
+  user groups from the response.
 
 **Feature level 266**
 

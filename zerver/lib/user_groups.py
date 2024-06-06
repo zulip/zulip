@@ -428,7 +428,9 @@ def get_group_setting_value_for_api(
     )
 
 
-def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
+def user_groups_in_realm_serialized(
+    realm: Realm, *, allow_deactivated: bool
+) -> List[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
@@ -454,6 +456,9 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
         .filter(realm=realm)
     )
 
+    if not allow_deactivated:
+        realm_groups = realm_groups.filter(deactivated=False)
+
     group_dicts: Dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
         group_dicts[user_group.id] = dict(
@@ -467,20 +472,26 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
             deactivated=user_group.deactivated,
         )
 
-    membership = (
-        UserGroupMembership.objects.filter(user_group__realm=realm)
-        .exclude(user_group__named_user_group=None)
-        .values_list("user_group_id", "user_profile_id")
+    membership = UserGroupMembership.objects.filter(user_group__realm=realm).exclude(
+        user_group__named_user_group=None
     )
-    for user_group_id, user_profile_id in membership:
+    if not allow_deactivated:
+        membership = membership.filter(user_group__named_user_group__deactivated=False)
+
+    for user_group_id, user_profile_id in membership.values_list(
+        "user_group_id", "user_profile_id"
+    ):
         group_dicts[user_group_id]["members"].append(user_profile_id)
 
-    group_membership = (
-        GroupGroupMembership.objects.filter(subgroup__realm=realm)
-        .exclude(supergroup__named_user_group=None)
-        .values_list("subgroup_id", "supergroup_id")
+    group_membership = GroupGroupMembership.objects.filter(subgroup__realm=realm).exclude(
+        supergroup__named_user_group=None
     )
-    for subgroup_id, supergroup_id in group_membership:
+    if not allow_deactivated:
+        group_membership = group_membership.filter(
+            supergroup__named_user_group__deactivated=False, subgroup__deactivated=False
+        )
+
+    for subgroup_id, supergroup_id in group_membership.values_list("subgroup_id", "supergroup_id"):
         group_dicts[supergroup_id]["direct_subgroup_ids"].append(subgroup_id)
 
     for group_dict in group_dicts.values():

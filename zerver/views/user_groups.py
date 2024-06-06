@@ -97,8 +97,14 @@ def add_user_group(
 
 @require_member_or_admin
 @has_request_variables
-def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    user_groups = user_groups_in_realm_serialized(user_profile.realm)
+def get_user_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    allow_deactivated: bool = REQ(json_validator=check_bool, default=False),
+) -> HttpResponse:
+    user_groups = user_groups_in_realm_serialized(
+        user_profile.realm, allow_deactivated=allow_deactivated
+    )
     return json_success(request, data={"user_groups": user_groups})
 
 

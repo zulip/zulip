@@ -19348,6 +19348,24 @@ paths:
             **Note**: This endpoint is only available to [members and
             administrators](/help/roles-and-permissions); bots and guests
             cannot use this endpoint.
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                allow_deactivated:
+                  description: |
+                    Whether to include deactivated user groups in the response.
+
+                    **Changes**: New in Zulip 9.0 (feature level 267).
+                  type: boolean
+                  example: true
+                  default: false
+            encoding:
+              allow_deactivated:
+                contentType: application/json
       responses:
         "200":
           description: Success.
