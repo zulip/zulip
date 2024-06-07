@@ -169,7 +169,9 @@
         */
         padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
         color: var(--color-text-message-default);
-        font-size: var(--base-font-size-px);
+        /* We explicitly set line-height here so that
+           the message area is not beholden to the legacy
+           `max()` declaration on `body`. */
         line-height: var(--base-line-height-unitless);
         min-height: 17px;
         display: block;
