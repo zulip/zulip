@@ -7,22 +7,22 @@ import type {MessageList} from "./message_lists";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 
-function show_history_limit_notice(): void {
+const show_history_limit_notice = (): void => {
     $(".top-messages-logo").hide();
     $(".history-limited-box").show();
     narrow_banner.hide_empty_narrow_message();
-}
+};
 
-function hide_history_limit_notice(): void {
+const hide_history_limit_notice = (): void => {
     $(".top-messages-logo").show();
     $(".history-limited-box").hide();
-}
+};
 
-function hide_end_of_results_notice(): void {
+const hide_end_of_results_notice = (): void => {
     $(".all-messages-search-caution").hide();
-}
+};
 
-function show_end_of_results_notice(): void {
+const show_end_of_results_notice = (): void => {
     $(".all-messages-search-caution").show();
 
     // Set the link to point to this search with streams:public added.
@@ -32,9 +32,9 @@ function show_end_of_results_notice(): void {
     const terms = narrow_filter.terms();
     const update_hash = hash_util.search_public_streams_notice_url(terms);
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
-}
+};
 
-export function update_top_of_narrow_notices(msg_list: MessageList): void {
+export const update_top_of_narrow_notices = (msg_list: MessageList): void => {
     // Assumes that the current state is all notices hidden (i.e. this
     // will not hide a notice that should not be there)
     if (message_lists.current === undefined || msg_list !== message_lists.current) {
@@ -63,9 +63,9 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
     if (msg_list.data.fetch_status.history_limited()) {
         show_history_limit_notice();
     }
-}
+};
 
-export function hide_top_of_narrow_notices(): void {
+export const hide_top_of_narrow_notices = (): void => {
     hide_end_of_results_notice();
     hide_history_limit_notice();
-}
+};

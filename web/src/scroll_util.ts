@@ -4,16 +4,16 @@ import SimpleBar from "simplebar";
 // This type is helpful for testing, where we may have a dummy object instead of an actual jquery object.
 type JQueryOrZJQuery = {__zjquery?: true} & JQuery;
 
-export function get_content_element($element: JQuery): JQuery {
+export const get_content_element = ($element: JQuery): JQuery => {
     const element = $element.expectOne()[0]!;
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getContentElement()!);
     }
     return $element;
-}
+};
 
-export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
+export const get_scroll_element = ($element: JQueryOrZJQuery): JQuery => {
     // For testing we just return the element itself.
     if ($element?.__zjquery) {
         return $element;
@@ -29,9 +29,9 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
         return $(new SimpleBar(element).getScrollElement()!);
     }
     return $element;
-}
+};
 
-export function reset_scrollbar($element: JQuery): void {
+export const reset_scrollbar = ($element: JQuery): void => {
     const element = $element.expectOne()[0]!;
     const sb = SimpleBar.instances.get(element);
     if (sb) {
@@ -39,13 +39,13 @@ export function reset_scrollbar($element: JQuery): void {
     } else {
         element.scrollTop = 0;
     }
-}
+};
 
-export function scroll_delta(opts: {
+export const scroll_delta = (opts: {
     elem_top: number;
     elem_bottom: number;
     container_height: number;
-}): number {
+}): number => {
     const elem_top = opts.elem_top;
     const container_height = opts.container_height;
     const elem_bottom = opts.elem_bottom;
@@ -63,13 +63,13 @@ export function scroll_delta(opts: {
     }
 
     return delta;
-}
+};
 
-export function scroll_element_into_container(
+export const scroll_element_into_container = (
     $elem: JQuery,
     $container: JQuery,
     sticky_header_height = 0,
-): void {
+): void => {
     // This does the minimum amount of scrolling that is needed to make
     // the element visible.  It doesn't try to center the element, so
     // this will be non-intrusive to users when they already have
@@ -92,4 +92,4 @@ export function scroll_element_into_container(
     }
 
     $container.scrollTop(($container.scrollTop() ?? 0) + delta);
-}
+};

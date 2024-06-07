@@ -21,7 +21,7 @@ import _ from "lodash";
  * @param {string} raw
  * @returns {number[]}
  */
-function convert_from_raw(digits: string, part_length: number, raw: string): number[] {
+const convert_from_raw = (digits: string, part_length: number, raw: string): number[] => {
     const result = [];
     for (let i = 0; i < raw.length; ) {
         let t = 0;
@@ -32,7 +32,7 @@ function convert_from_raw(digits: string, part_length: number, raw: string): num
         result.push(t);
     }
     return result;
-}
+};
 
 /** Isolate initiator characters. */
 const i_chars = new Set([0x2066, 0x2067, 0x2068]);
@@ -86,7 +86,7 @@ const lr_ranges = [
  * @param {number} ch A character to get its bidirectional class.
  * @returns {'I' | 'PDI' | 'R' | 'L' | 'Other'}
  */
-function get_bidi_class(ch: number): "I" | "PDI" | "R" | "L" | "Other" {
+const get_bidi_class = (ch: number): "I" | "PDI" | "R" | "L" | "Other" => {
     if (i_chars.has(ch)) {
         return "I"; // LRI, RLI, FSI
     }
@@ -102,14 +102,14 @@ function get_bidi_class(ch: number): "I" | "PDI" | "R" | "L" | "Other" {
         return "L";
     }
     return "Other";
-}
+};
 
 /**
  * Gets the direction that should be used to show the string.
  * @param {string} str The string to get its direction.
  * @returns {'ltr' | 'rtl'}
  */
-export function get_direction(str: string): "ltr" | "rtl" {
+export const get_direction = (str: string): "ltr" | "rtl" => {
     let isolations = 0;
     for (const ch of str) {
         const bidi_class = get_bidi_class(ch.codePointAt(0)!);
@@ -137,9 +137,9 @@ export function get_direction(str: string): "ltr" | "rtl" {
         }
     }
     return "ltr";
-}
+};
 
-export function set_rtl_class_for_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
+export const set_rtl_class_for_textarea = ($textarea: JQuery<HTMLTextAreaElement>): void => {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     let text = $textarea.val()!;
     if (text.startsWith("```quote")) {
@@ -150,4 +150,4 @@ export function set_rtl_class_for_textarea($textarea: JQuery<HTMLTextAreaElement
     } else {
         $textarea.removeClass("rtl");
     }
-}
+};

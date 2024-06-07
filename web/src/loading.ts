@@ -4,7 +4,7 @@ import loading_black_image from "../../static/images/loading/loader-black.svg";
 import loading_white_image from "../../static/images/loading/loader-white.svg";
 import render_loader from "../templates/loader.hbs";
 
-export function make_indicator(
+export const make_indicator = (
     $outer_container: JQuery,
     {
         abs_positioned = false,
@@ -17,7 +17,7 @@ export function make_indicator(
         width?: number | undefined;
         height?: number | undefined;
     } = {},
-): void {
+): void => {
     let $container = $outer_container;
 
     // TODO: We set white-space to 'nowrap' because under some
@@ -72,22 +72,22 @@ export function make_indicator(
     }
 
     $outer_container.data("destroying", false);
-}
+};
 
-export function destroy_indicator($container: JQuery): void {
+export const destroy_indicator = ($container: JQuery): void => {
     if ($container.data("destroying")) {
         return;
     }
     $container.data("destroying", true);
     $container.empty();
     $container.css({width: 0, height: 0});
-}
+};
 
-export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): void {
+export const show_button_spinner = ($elt: JQuery, using_dark_theme: boolean): void => {
     if (!using_dark_theme) {
         $elt.attr("src", loading_black_image);
     } else {
         $elt.attr("src", loading_white_image);
     }
     $elt.css("display", "inline-block");
-}
+};

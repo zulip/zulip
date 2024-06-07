@@ -4,7 +4,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as unread_ui from "./unread_ui";
 
-export function update_is_muted(sub, value) {
+export const update_is_muted = (sub, value) => {
     sub.is_muted = value;
 
     for (const msg_list of message_lists.all_rendered_message_lists()) {
@@ -23,4 +23,4 @@ export function update_is_muted(sub, value) {
     settings_notifications.update_muted_stream_state(sub);
     stream_edit.update_muting_rendering(sub);
     stream_list.set_in_home_view(sub.stream_id, !sub.is_muted);
-}
+};

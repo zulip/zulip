@@ -16,17 +16,17 @@ import * as util from "./util";
 
 const reload_hooks = [];
 
-export function add_reload_hook(hook) {
+export const add_reload_hook = (hook) => {
     reload_hooks.push(hook);
-}
+};
 
-function call_reload_hooks() {
+const call_reload_hooks = () => {
     for (const hook of reload_hooks) {
         hook();
     }
-}
+};
 
-function preserve_state(send_after_reload, save_compose) {
+const preserve_state = (send_after_reload, save_compose) => {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
         // save the browser's position across reloads (since there's
@@ -100,9 +100,9 @@ function preserve_state(send_after_reload, save_compose) {
     };
     ls.set("reload:" + token, metadata);
     window.location.replace("#reload:" + token);
-}
+};
 
-export function is_stale_refresh_token(token_metadata, now) {
+export const is_stale_refresh_token = (token_metadata, now) => {
     // TODO/compatibility: the metadata was changed from a string
     // to a map containing the string and a timestamp. For now we'll
     // delete all tokens that only contain the url. Remove this
@@ -119,16 +119,16 @@ export function is_stale_refresh_token(token_metadata, now) {
     const timedelta = now - token_metadata.timestamp;
     const days_since_token_creation = timedelta / milliseconds_in_a_day;
     return days_since_token_creation > 7;
-}
+};
 
-function delete_stale_tokens(ls) {
+const delete_stale_tokens = (ls) => {
     const now = Date.now();
     ls.removeDataRegexWithCondition("reload:\\d+", (metadata) =>
         is_stale_refresh_token(metadata, now),
     );
-}
+};
 
-function do_reload_app(send_after_reload, save_compose, message_html) {
+const do_reload_app = (send_after_reload, save_compose, message_html) => {
     if (reload_state.is_in_progress()) {
         blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
         return;
@@ -164,10 +164,10 @@ function do_reload_app(send_after_reload, save_compose, message_html) {
         });
     }, 5000);
 
-    function retry_reload() {
+    const retry_reload = () => {
         blueslip.log("Retrying page reload due to 30s timer");
         window.location.reload(true);
-    }
+    };
     util.call_function_periodically(retry_reload, 30000);
 
     try {
@@ -177,14 +177,14 @@ function do_reload_app(send_after_reload, save_compose, message_html) {
     }
 
     window.location.reload(true);
-}
+};
 
-export function initiate({
+export const initiate = ({
     immediate = false,
     save_compose = true,
     send_after_reload = false,
     message_html = "Reloading ...",
-}) {
+}) => {
     if (immediate) {
         do_reload_app(send_after_reload, save_compose, message_html);
     }
@@ -222,9 +222,9 @@ export function initiate({
     const basic_idle_timeout = 1000 * 60 * 1 + random_variance;
     let compose_started_handler;
 
-    function reload_from_idle() {
+    const reload_from_idle = () => {
         do_reload_app(false, save_compose, message_html);
-    }
+    };
 
     // Make sure we always do a reload eventually after
     // unconditional_timeout.  Because we save cursor location and
@@ -232,7 +232,7 @@ export function initiate({
     // particularly disruptive.
     setTimeout(reload_from_idle, unconditional_timeout);
 
-    const compose_done_handler = function () {
+    const compose_done_handler = () => {
         // If the user sends their message or otherwise closes
         // compose, we return them to the not-composing timeouts.
         idle_control.cancel();
@@ -240,7 +240,7 @@ export function initiate({
         $(document).off("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
         $(document).on("compose_started.zulip", compose_started_handler);
     };
-    compose_started_handler = function () {
+    compose_started_handler = () => {
         // If the user stops being idle and starts composing a
         // message, switch to the compose-open timeouts.
         idle_control.cancel();
@@ -256,7 +256,7 @@ export function initiate({
         idle_control = $(document).idle({idle: basic_idle_timeout, onIdle: reload_from_idle});
         $(document).on("compose_started.zulip", compose_started_handler);
     }
-}
+};
 
 window.addEventListener("beforeunload", () => {
     // When navigating away from the page do not try to reload.

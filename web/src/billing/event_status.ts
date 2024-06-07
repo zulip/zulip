@@ -28,17 +28,17 @@ const stripe_response_schema = z.object({
 
 type StripeSession = z.infer<typeof stripe_response_schema>["session"];
 
-function update_status_and_redirect(redirect_to: string): void {
+const update_status_and_redirect = (redirect_to: string): void => {
     window.location.replace(redirect_to);
-}
+};
 
-function show_error_message(message: string): void {
+const show_error_message = (message: string): void => {
     $("#webhook-loading").hide();
     $("#webhook-error").show();
     $("#webhook-error").text(message);
-}
+};
 
-function handle_session_complete_event(session: StripeSession): void {
+const handle_session_complete_event = (session: StripeSession): void => {
     let redirect_to = "";
     switch (session.type) {
         case "card_update_from_billing_page":
@@ -53,9 +53,11 @@ function handle_session_complete_event(session: StripeSession): void {
             break;
     }
     update_status_and_redirect(redirect_to);
-}
+};
 
-async function stripe_checkout_session_status_check(stripe_session_id: string): Promise<boolean> {
+const stripe_checkout_session_status_check = async (
+    stripe_session_id: string,
+): Promise<boolean> => {
     const response: unknown = await $.get(`/json${billing_base_url}/billing/event/status`, {
         stripe_session_id,
     });
@@ -77,9 +79,9 @@ async function stripe_checkout_session_status_check(stripe_session_id: string): 
     }
 
     return false;
-}
+};
 
-export async function stripe_invoice_status_check(stripe_invoice_id: string): Promise<boolean> {
+export const stripe_invoice_status_check = async (stripe_invoice_id: string): Promise<boolean> => {
     const response: unknown = await $.get(`/json${billing_base_url}/billing/event/status`, {
         stripe_invoice_id,
     });
@@ -111,18 +113,18 @@ export async function stripe_invoice_status_check(stripe_invoice_id: string): Pr
         default:
             return false;
     }
-}
+};
 
-export async function check_status(): Promise<boolean> {
+export const check_status = async (): Promise<boolean> => {
     if ($("#data").attr("data-stripe-session-id")) {
         return await stripe_checkout_session_status_check(
             $("#data").attr("data-stripe-session-id")!,
         );
     }
     return await stripe_invoice_status_check($("#data").attr("data-stripe-invoice-id")!);
-}
+};
 
-async function start_status_polling(): Promise<void> {
+const start_status_polling = async (): Promise<void> => {
     let completed = false;
     try {
         completed = await check_status();
@@ -133,9 +135,9 @@ async function start_status_polling(): Promise<void> {
     if (!completed) {
         setTimeout(() => void start_status_polling(), 5000);
     }
-}
+};
 
-async function initialize(): Promise<void> {
+const initialize = async (): Promise<void> => {
     const form_loading = "#webhook-loading";
     const form_loading_indicator = "#webhook_loading_indicator";
 
@@ -145,7 +147,7 @@ async function initialize(): Promise<void> {
     });
     $(form_loading).show();
     await start_status_polling();
-}
+};
 
 $(() => {
     void initialize();

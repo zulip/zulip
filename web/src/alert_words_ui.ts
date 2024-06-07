@@ -12,7 +12,7 @@ import * as ui_report from "./ui_report";
 
 export let loaded = false;
 
-export function rerender_alert_words_ui(): void {
+export const rerender_alert_words_ui = (): void => {
     if (!loaded) {
         return;
     }
@@ -24,18 +24,16 @@ export function rerender_alert_words_ui(): void {
     ListWidget.create($word_list, words, {
         name: "alert-words-list",
         get_item: ListWidget.default_get_item,
-        modifier_html(alert_word) {
-            return render_alert_word_settings_item({alert_word});
-        },
+        modifier_html: (alert_word) => render_alert_word_settings_item({alert_word}),
         $parent_container: $("#alert-word-settings"),
         $simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
         sort_fields: {
             ...ListWidget.generic_sort_functions("alphabetic", ["word"]),
         },
     });
-}
+};
 
-function update_alert_word_status(status_text: string, is_error: boolean): void {
+const update_alert_word_status = (status_text: string, is_error: boolean): void => {
     const $alert_word_status = $("#alert_word_status");
     if (is_error) {
         $alert_word_status.removeClass("alert-success").addClass("alert-danger");
@@ -44,9 +42,9 @@ function update_alert_word_status(status_text: string, is_error: boolean): void 
     }
     $alert_word_status.find(".alert_word_status_text").text(status_text);
     $alert_word_status.show();
-}
+};
 
-function add_alert_word(): void {
+const add_alert_word = (): void => {
     const alert_word = $<HTMLInputElement>("input#add-alert-word-name").val()!.trim();
 
     if (alert_words.has_alert_word(alert_word)) {
@@ -62,14 +60,14 @@ function add_alert_word(): void {
 
     const data = {alert_words: JSON.stringify(words_to_be_added)};
     dialog_widget.submit_api_request(channel.post, "/json/users/me/alert_words", data);
-}
+};
 
-function remove_alert_word(alert_word: string): void {
+const remove_alert_word = (alert_word: string): void => {
     const words_to_be_removed = [alert_word];
     void channel.del({
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
-        success() {
+        success: () => {
             update_alert_word_status(
                 $t(
                     {defaultMessage: `Alert word "{alert_word}" removed successfully!`},
@@ -78,16 +76,16 @@ function remove_alert_word(alert_word: string): void {
                 false,
             );
         },
-        error() {
+        error: () => {
             update_alert_word_status($t({defaultMessage: "Error removing alert word!"}), true);
         },
     });
-}
+};
 
-export function show_add_alert_word_modal(): void {
+export const show_add_alert_word_modal = (): void => {
     const html_body = render_add_alert_word();
 
-    function add_alert_word_post_render(): void {
+    const add_alert_word_post_render = (): void => {
         const $add_user_group_input_element = $<HTMLInputElement>("input#add-alert-word-name");
         const $add_user_group_submit_button = $("#add-alert-word .dialog_submit_button");
         $add_user_group_submit_button.prop("disabled", true);
@@ -98,7 +96,7 @@ export function show_add_alert_word_modal(): void {
                 $add_user_group_input_element.val()!.trim() === "",
             );
         });
-    }
+    };
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Add a new alert word"}),
@@ -112,9 +110,9 @@ export function show_add_alert_word_modal(): void {
         on_shown: () => $("#add-alert-word-name").trigger("focus"),
         post_render: add_alert_word_post_render,
     });
-}
+};
 
-export function set_up_alert_words(): void {
+export const set_up_alert_words = (): void => {
     // The settings page must be rendered before this function gets called.
     loaded = true;
     rerender_alert_words_ui();
@@ -133,8 +131,8 @@ export function set_up_alert_words(): void {
         const $alert = $(event.currentTarget).parents(".alert");
         $alert.hide();
     });
-}
+};
 
-export function reset(): void {
+export const reset = (): void => {
     loaded = false;
-}
+};

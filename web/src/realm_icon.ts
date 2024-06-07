@@ -5,10 +5,9 @@ import {current_user, realm} from "./state_data";
 import * as upload_widget from "./upload_widget";
 import type {UploadFunction} from "./upload_widget";
 
-export function build_realm_icon_widget(upload_function: UploadFunction): void {
-    const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $<HTMLInputElement>("#realm-icon-upload-widget .image_file_input").expectOne();
-    };
+export const build_realm_icon_widget = (upload_function: UploadFunction): void => {
+    const get_file_input = (): JQuery<HTMLInputElement> =>
+        $<HTMLInputElement>("#realm-icon-upload-widget .image_file_input").expectOne();
 
     if (!current_user.is_admin) {
         return;
@@ -33,9 +32,9 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
         upload_function,
         realm.max_icon_file_size_mib,
     );
-}
+};
 
-export function rerender(): void {
+export const rerender = (): void => {
     $("#realm-icon-upload-widget .image-block").attr("src", realm.realm_icon_url);
     if (realm.realm_icon_source === "U") {
         $("#realm-icon-upload-widget .image-delete-button").show();
@@ -46,4 +45,4 @@ export function rerender(): void {
         const $file_input = $("#realm-icon-upload-widget .image_file_input");
         $file_input.val("");
     }
-}
+};

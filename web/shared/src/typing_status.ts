@@ -27,16 +27,12 @@ type TypingStatusState = {
     idle_timer: ReturnType<typeof setTimeout>;
 };
 
-function lower_same(a: string, b: string): boolean {
-    return a.toLowerCase() === b.toLowerCase();
-}
+const lower_same = (a: string, b: string): boolean => a.toLowerCase() === b.toLowerCase();
 
-function same_stream_and_topic(a: StreamTopic, b: StreamTopic): boolean {
-    // Streams and topics are case-insensitive.
-    return a.stream_id === b.stream_id && lower_same(a.topic, b.topic);
-}
+const same_stream_and_topic = (a: StreamTopic, b: StreamTopic): boolean =>
+    a.stream_id === b.stream_id && lower_same(a.topic, b.topic);
 
-function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
+const same_recipient = (a: Recipient | null, b: Recipient | null): boolean => {
     if (a === null || b === null) {
         return false;
     }
@@ -50,65 +46,65 @@ function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
     }
 
     return false;
-}
+};
 
 /** Exported only for tests. */
 export let state: TypingStatusState | null = null;
 
 /** Exported only for tests. */
-export function stop_last_notification(worker: TypingStatusWorker): void {
+export const stop_last_notification = (worker: TypingStatusWorker): void => {
     assert(state !== null, "State object should not be null here.");
     clearTimeout(state.idle_timer);
     worker.notify_server_stop(state.current_recipient);
     state = null;
-}
+};
 
 /** Exported only for tests. */
-export function start_or_extend_idle_timer(
+export const start_or_extend_idle_timer = (
     worker: TypingStatusWorker,
     typing_stopped_wait_period: number,
-): ReturnType<typeof setTimeout> {
-    function on_idle_timeout(): void {
+): ReturnType<typeof setTimeout> => {
+    const on_idle_timeout = (): void => {
         // We don't do any real error checking here, because
         // if we've been idle, we need to tell folks, and if
         // our current recipients has changed, previous code will
         // have stopped the timer.
         stop_last_notification(worker);
-    }
+    };
 
     if (state?.idle_timer) {
         clearTimeout(state.idle_timer);
     }
     return setTimeout(on_idle_timeout, typing_stopped_wait_period);
-}
+};
 
-function set_next_start_time(current_time: number, typing_started_wait_period: number): void {
+const set_next_start_time = (current_time: number, typing_started_wait_period: number): void => {
     assert(state !== null, "State object should not be null here.");
     state.next_send_start_time = current_time + typing_started_wait_period;
-}
+};
 
-function actually_ping_server(
+const actually_ping_server = (
     worker: TypingStatusWorker,
     recipient: Recipient,
     current_time: number,
     typing_started_wait_period: number,
-): void {
+): void => {
     worker.notify_server_start(recipient);
     set_next_start_time(current_time, typing_started_wait_period);
-}
+};
 
 /** Exported only for tests. */
-export function maybe_ping_server(
+export const maybe_ping_server = (
     worker: TypingStatusWorker,
     recipient: Recipient,
     typing_started_wait_period: number,
-): void {
+): void => {
     assert(state !== null, "State object should not be null here.");
     const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
         actually_ping_server(worker, recipient, current_time, typing_started_wait_period);
     }
-}
+};
 
 /**
  * Update our state machine, and the server as needed, on the user's typing status.
@@ -134,12 +130,12 @@ export function maybe_ping_server(
  *   * Stream message: An Object containing stream_id, topic and message_type="stream".
  *   * No message is being composed: `null`
  */
-export function update(
+export const update = (
     worker: TypingStatusWorker,
     new_recipient: Recipient | null,
     typing_started_wait_period: number,
     typing_stopped_wait_period: number,
-): void {
+): void => {
     if (state !== null) {
         if (same_recipient(new_recipient, state.current_recipient)) {
             // Nothing has really changed, except we may need
@@ -173,4 +169,4 @@ export function update(
     };
     const current_time = worker.get_current_time();
     actually_ping_server(worker, new_recipient, current_time, typing_started_wait_period);
-}
+};

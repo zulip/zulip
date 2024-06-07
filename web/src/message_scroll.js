@@ -12,7 +12,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 
 let hide_scroll_to_bottom_timer;
-export function hide_scroll_to_bottom() {
+export const hide_scroll_to_bottom = () => {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
     if (message_lists.current === undefined) {
         // Scroll to bottom button is not for non-message views.
@@ -40,9 +40,9 @@ export function hide_scroll_to_bottom() {
             $show_scroll_to_bottom_button.removeClass("show");
         }
     }, 3000);
-}
+};
 
-export function show_scroll_to_bottom_button() {
+export const show_scroll_to_bottom_button = () => {
     if (message_viewport.bottom_rendered_message_visible()) {
         // Only show scroll to bottom button when
         // last message is not visible in the
@@ -52,7 +52,7 @@ export function show_scroll_to_bottom_button() {
 
     clearTimeout(hide_scroll_to_bottom_timer);
     $("#scroll-to-bottom-button-container").addClass("show");
-}
+};
 
 $(document).on("keydown", (e) => {
     if (e.shiftKey || e.ctrlKey || e.metaKey) {
@@ -64,7 +64,7 @@ $(document).on("keydown", (e) => {
     $("#scroll-to-bottom-button-container").removeClass("show");
 });
 
-export function scroll_finished() {
+export const scroll_finished = () => {
     message_scroll_state.set_actively_scrolling(false);
     hide_scroll_to_bottom();
 
@@ -114,10 +114,10 @@ export function scroll_finished() {
     // unread_ops.process_visible will update necessary
     // data structures and DOM elements.
     setTimeout(unread_ops.process_visible, 0);
-}
+};
 
 let scroll_timer;
-function scroll_finish() {
+const scroll_finish = () => {
     message_scroll_state.set_actively_scrolling(true);
 
     // Don't present the "scroll to bottom" widget if the current
@@ -129,9 +129,9 @@ function scroll_finish() {
 
     clearTimeout(scroll_timer);
     scroll_timer = setTimeout(scroll_finished, 100);
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     $(document).on(
         "scroll",
         _.throttle(() => {
@@ -191,4 +191,4 @@ export function initialize() {
             }
         }
     });
-}
+};

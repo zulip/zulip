@@ -14,7 +14,7 @@ const message_view = zrequire("message_view");
 const message_lists = zrequire("message_lists");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 
-function test_with(fixture) {
+const test_with = (fixture) => {
     const filter = new Filter(fixture.filter_terms);
     message_lists.set_current({
         data: {
@@ -49,15 +49,15 @@ function test_with(fixture) {
             has_found_newest: () => fixture.has_found_newest,
         },
         visibly_empty: () => fixture.visibly_empty,
-        all_messages() {
+        all_messages: () => {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages;
         },
-        first() {
+        first: () => {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages[0];
         },
-        last() {
+        last: () => {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages.at(-1);
         },
@@ -75,7 +75,7 @@ function test_with(fixture) {
     const msgs = msg_data.all_messages();
     const msg_ids = msgs.map((message) => message.id);
     assert.deepEqual(msg_ids, fixture.expected_msg_ids);
-}
+};
 
 run_test("near after unreads", () => {
     // Current near: behavior is to ignore the unreads and take you

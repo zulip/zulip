@@ -30,15 +30,15 @@ let user_group_by_id_dict: Map<number, UserGroup>;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
-export function init(): void {
+export const init = (): void => {
     user_group_name_dict = new FoldDict();
     user_group_by_id_dict = new Map<number, UserGroup>();
-}
+};
 
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
-export function add(user_group_raw: UserGroupRaw): void {
+export const add = (user_group_raw: UserGroupRaw): void => {
     // Reformat the user group members structure to be a set.
     const user_group = {
         description: user_group_raw.description,
@@ -52,26 +52,25 @@ export function add(user_group_raw: UserGroupRaw): void {
 
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
-}
+};
 
-export function remove(user_group: UserGroup): void {
+export const remove = (user_group: UserGroup): void => {
     user_group_name_dict.delete(user_group.name);
     user_group_by_id_dict.delete(user_group.id);
-}
+};
 
-export function get_user_group_from_id(group_id: number): UserGroup {
+export const get_user_group_from_id = (group_id: number): UserGroup => {
     const user_group = user_group_by_id_dict.get(group_id);
     if (!user_group) {
         throw new Error(`Unknown group_id in get_user_group_from_id: ${group_id}`);
     }
     return user_group;
-}
+};
 
-export function maybe_get_user_group_from_id(group_id: number): UserGroup | undefined {
-    return user_group_by_id_dict.get(group_id);
-}
+export const maybe_get_user_group_from_id = (group_id: number): UserGroup | undefined =>
+    user_group_by_id_dict.get(group_id);
 
-export function update(event: UserGroupUpdateEvent): void {
+export const update = (event: UserGroupUpdateEvent): void => {
     const group = get_user_group_from_id(event.group_id);
     if (event.data.name !== undefined) {
         user_group_name_dict.delete(group.name);
@@ -89,35 +88,34 @@ export function update(event: UserGroupUpdateEvent): void {
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }
-}
+};
 
-export function get_user_group_from_name(name: string): UserGroup | undefined {
-    return user_group_name_dict.get(name);
-}
+export const get_user_group_from_name = (name: string): UserGroup | undefined =>
+    user_group_name_dict.get(name);
 
-export function get_realm_user_groups(): UserGroup[] {
+export const get_realm_user_groups = (): UserGroup[] => {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => !group.is_system_group);
-}
+};
 
-export function get_user_groups_allowed_to_mention(): UserGroup[] {
+export const get_user_groups_allowed_to_mention = (): UserGroup[] => {
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
         const can_mention_group_id = group.can_mention_group;
         return is_user_in_group(can_mention_group_id, current_user.user_id);
     });
-}
+};
 
-export function is_direct_member_of(user_id: number, user_group_id: number): boolean {
+export const is_direct_member_of = (user_id: number, user_group_id: number): boolean => {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error("Could not find user group", {user_group_id});
         return false;
     }
     return user_group.members.has(user_id);
-}
+};
 
-export function add_members(user_group_id: number, user_ids: number[]): void {
+export const add_members = (user_group_id: number, user_ids: number[]): void => {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error("Could not find user group", {user_group_id});
@@ -127,9 +125,9 @@ export function add_members(user_group_id: number, user_ids: number[]): void {
     for (const user_id of user_ids) {
         user_group.members.add(user_id);
     }
-}
+};
 
-export function remove_members(user_group_id: number, user_ids: number[]): void {
+export const remove_members = (user_group_id: number, user_ids: number[]): void => {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error("Could not find user group", {user_group_id});
@@ -139,9 +137,9 @@ export function remove_members(user_group_id: number, user_ids: number[]): void 
     for (const user_id of user_ids) {
         user_group.members.delete(user_id);
     }
-}
+};
 
-export function add_subgroups(user_group_id: number, subgroup_ids: number[]): void {
+export const add_subgroups = (user_group_id: number, subgroup_ids: number[]): void => {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error("Could not find user group", {user_group_id});
@@ -151,9 +149,9 @@ export function add_subgroups(user_group_id: number, subgroup_ids: number[]): vo
     for (const subgroup_id of subgroup_ids) {
         user_group.direct_subgroup_ids.add(subgroup_id);
     }
-}
+};
 
-export function remove_subgroups(user_group_id: number, subgroup_ids: number[]): void {
+export const remove_subgroups = (user_group_id: number, subgroup_ids: number[]): void => {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error("Could not find user group", {user_group_id});
@@ -163,29 +161,27 @@ export function remove_subgroups(user_group_id: number, subgroup_ids: number[]):
     for (const subgroup_id of subgroup_ids) {
         user_group.direct_subgroup_ids.delete(subgroup_id);
     }
-}
+};
 
-export function initialize(params: {realm_user_groups: UserGroupRaw[]}): void {
+export const initialize = (params: {realm_user_groups: UserGroupRaw[]}): void => {
     for (const user_group of params.realm_user_groups) {
         add(user_group);
     }
-}
+};
 
-export function is_user_group(
+export const is_user_group = (
     item: (UserOrMention & {members: undefined}) | UserGroup,
-): item is UserGroup {
-    return item.members !== undefined;
-}
+): item is UserGroup => item.members !== undefined;
 
-export function get_user_groups_of_user(user_id: number): UserGroup[] {
+export const get_user_groups_of_user = (user_id: number): UserGroup[] => {
     const user_groups_realm = get_realm_user_groups();
     const groups_of_user = user_groups_realm.filter((group) =>
         is_direct_member_of(user_id, group.id),
     );
     return groups_of_user;
-}
+};
 
-export function get_recursive_subgroups(target_user_group: UserGroup): Set<number> | undefined {
+export const get_recursive_subgroups = (target_user_group: UserGroup): Set<number> | undefined => {
     // Correctness of this algorithm relying on the ES6 Set
     // implementation having the property that a `for of` loop will
     // visit all items that are added to the set during the loop.
@@ -202,9 +198,9 @@ export function get_recursive_subgroups(target_user_group: UserGroup): Set<numbe
         }
     }
     return subgroup_ids;
-}
+};
 
-export function is_user_in_group(user_group_id: number, user_id: number): boolean {
+export const is_user_in_group = (user_group_id: number, user_id: number): boolean => {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error("Could not find user group", {user_group_id});
@@ -225,12 +221,12 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
         }
     }
     return false;
-}
+};
 
-export function get_realm_user_groups_for_dropdown_list_widget(
+export const get_realm_user_groups_for_dropdown_list_widget = (
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
-): UserGroupForDropdownListWidget[] {
+): UserGroupForDropdownListWidget[] => {
     const group_setting_config = group_permission_settings.get_group_permission_setting_config(
         setting_name,
         setting_type,
@@ -294,4 +290,4 @@ export function get_realm_user_groups_for_dropdown_list_widget(
     }));
 
     return [...system_user_groups, ...user_groups_excluding_system_groups];
-}
+};

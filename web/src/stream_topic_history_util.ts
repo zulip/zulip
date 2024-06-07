@@ -12,7 +12,7 @@ const stream_topic_history_response_schema = z.object({
     ),
 });
 
-export function get_server_history(stream_id: number, on_success: () => void): void {
+export const get_server_history = (stream_id: number, on_success: () => void): void => {
     if (stream_topic_history.has_history_for(stream_id)) {
         on_success();
         return;
@@ -27,15 +27,15 @@ export function get_server_history(stream_id: number, on_success: () => void): v
     void channel.get({
         url,
         data: {},
-        success(data) {
+        success: (data) => {
             const clean_data = stream_topic_history_response_schema.parse(data);
             const server_history = clean_data.topics;
             stream_topic_history.add_history(stream_id, server_history);
             stream_topic_history.remove_request_pending_for(stream_id);
             on_success();
         },
-        error() {
+        error: () => {
             stream_topic_history.remove_request_pending_for(stream_id);
         },
     });
-}
+};

@@ -12,10 +12,10 @@ let time = 0;
 let checker;
 MockDate.set(time);
 
-function advance_secs(secs) {
+const advance_secs = (secs) => {
     time += secs * 1000;
     MockDate.set(time);
-}
+};
 
 set_global("setInterval", (f, interval) => {
     checker = f;
@@ -32,9 +32,9 @@ run_test("basics", () => {
 
     let num_times_called_back = 0;
 
-    function callback() {
+    const callback = () => {
         num_times_called_back += 1;
-    }
+    };
 
     watchdog.on_unsuspend(callback);
 

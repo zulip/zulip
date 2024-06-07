@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-function make_zblueslip() {
+const make_zblueslip = () => {
     const lib = {};
 
     const opts = {
@@ -85,12 +85,12 @@ function make_zblueslip() {
     for (const name of names) {
         if (!opts[name]) {
             // should just log the message.
-            lib[name] = function (message, more_info, cause) {
+            lib[name] = (message, more_info, cause) => {
                 lib.test_logs[name].push({message, more_info, cause});
             };
             continue;
         }
-        lib[name] = function (message, more_info, cause) {
+        lib[name] = (message, more_info, cause) => {
             /* istanbul ignore if */
             if (typeof message !== "string") {
                 // We may catch exceptions in blueslip, and if
@@ -117,6 +117,6 @@ function make_zblueslip() {
     }
 
     return lib;
-}
+};
 
 module.exports = make_zblueslip();

@@ -85,14 +85,14 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
-function render(instance) {
+const render = (instance) => {
     const rendered_gear_menu = render_navbar_gear_menu_popover(
         popover_menus_data.get_gear_menu_content_context(),
     );
     instance.setContent(parse_html(rendered_gear_menu));
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     popover_menus.register_popover_menu("#gear-menu", {
         theme: "popover-menu",
         placement: "bottom",
@@ -108,7 +108,7 @@ export function initialize() {
                 },
             ],
         },
-        onMount(instance) {
+        onMount: (instance) => {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.gear_menu = instance;
             $popper.on("click", ".webathena_login", (e) => {
@@ -136,10 +136,10 @@ export function initialize() {
                         channel.post({
                             url: "/accounts/webathena_kerberos_login/",
                             data: {cred: JSON.stringify(r.session)},
-                            success() {
+                            success: () => {
                                 $("#zephyr-mirror-error").removeClass("show");
                             },
-                            error() {
+                            error: () => {
                                 $("#zephyr-mirror-error").addClass("show");
                             },
                         });
@@ -182,14 +182,14 @@ export function initialize() {
             });
         },
         onShow: render,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
             popover_menus.popover_instances.gear_menu = undefined;
         },
     });
-}
+};
 
-export function toggle() {
+export const toggle = () => {
     if (popover_menus.is_gear_menu_popover_displayed()) {
         popovers.hide_all();
         return;
@@ -202,10 +202,10 @@ export function toggle() {
     }
 
     $("#gear-menu").trigger("click");
-}
+};
 
-export function rerender() {
+export const rerender = () => {
     if (popover_menus.is_gear_menu_popover_displayed()) {
         render(popover_menus.get_gear_menu_instance());
     }
-}
+};

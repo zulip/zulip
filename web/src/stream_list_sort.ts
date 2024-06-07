@@ -23,14 +23,13 @@ let all_streams: number[] = [];
 // to avoid making left sidebar rendering a quadratic operation.
 let filter_out_inactives = false;
 
-export function get_streams(): string[] {
-    return all_streams.flatMap((stream_id) => {
+export const get_streams = (): string[] =>
+    all_streams.flatMap((stream_id) => {
         const stream_name = sub_store.maybe_get_stream_name(stream_id);
         return stream_name === undefined ? [] : [stream_name];
     });
-}
 
-function compare_function(a: number, b: number): number {
+const compare_function = (a: number, b: number): number => {
     const stream_a = sub_store.get(a);
     const stream_b = sub_store.get(b);
 
@@ -38,9 +37,9 @@ function compare_function(a: number, b: number): number {
     const stream_name_b = stream_b ? stream_b.name : "";
 
     return util.strcmp(stream_name_a, stream_name_b);
-}
+};
 
-export function set_filter_out_inactives(): void {
+export const set_filter_out_inactives = (): void => {
     if (
         user_settings.demote_inactive_streams ===
         settings_config.demote_inactive_streams_values.automatic.code
@@ -54,14 +53,12 @@ export function set_filter_out_inactives(): void {
     } else {
         filter_out_inactives = false;
     }
-}
+};
 
 // Exported for access by unit tests.
-export function is_filtering_inactives(): boolean {
-    return filter_out_inactives;
-}
+export const is_filtering_inactives = (): boolean => filter_out_inactives;
 
-export function has_recent_activity(sub: StreamSubscription): boolean {
+export const has_recent_activity = (sub: StreamSubscription): boolean => {
     if (!filter_out_inactives || sub.pin_to_top) {
         // If users don't want to filter inactive streams
         // to the bottom, we respect that setting and don't
@@ -73,11 +70,10 @@ export function has_recent_activity(sub: StreamSubscription): boolean {
         return true;
     }
     return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
-}
+};
 
-export function has_recent_activity_but_muted(sub: StreamSubscription): boolean {
-    return has_recent_activity(sub) && sub.is_muted;
-}
+export const has_recent_activity_but_muted = (sub: StreamSubscription): boolean =>
+    has_recent_activity(sub) && sub.is_muted;
 
 type StreamListSortResult = {
     same_as_before: boolean;
@@ -88,7 +84,7 @@ type StreamListSortResult = {
     muted_active_streams: number[];
 };
 
-export function sort_groups(stream_ids: number[], search_term: string): StreamListSortResult {
+export const sort_groups = (stream_ids: number[], search_term: string): StreamListSortResult => {
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     // Use -, _, : and / as word separators apart from the default space character
     const word_separator_regex = /[\s/:_-]/;
@@ -99,9 +95,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         word_separator_regex,
     );
 
-    function is_normal(sub: StreamSubscription): boolean {
-        return has_recent_activity(sub);
-    }
+    const is_normal = (sub: StreamSubscription): boolean => has_recent_activity(sub);
 
     const pinned_streams = [];
     const normal_streams = [];
@@ -169,21 +163,19 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         muted_pinned_streams,
         muted_active_streams,
     };
-}
+};
 
-function maybe_get_stream_id(i: number): number | undefined {
+const maybe_get_stream_id = (i: number): number | undefined => {
     if (i < 0 || i >= all_streams.length) {
         return undefined;
     }
 
     return all_streams[i];
-}
+};
 
-export function first_stream_id(): number | undefined {
-    return maybe_get_stream_id(0);
-}
+export const first_stream_id = (): number | undefined => maybe_get_stream_id(0);
 
-export function prev_stream_id(stream_id: number): number | undefined {
+export const prev_stream_id = (stream_id: number): number | undefined => {
     const i = all_streams.indexOf(stream_id);
 
     if (i < 0) {
@@ -191,9 +183,9 @@ export function prev_stream_id(stream_id: number): number | undefined {
     }
 
     return maybe_get_stream_id(i - 1);
-}
+};
 
-export function next_stream_id(stream_id: number): number | undefined {
+export const next_stream_id = (stream_id: number): number | undefined => {
     const i = all_streams.indexOf(stream_id);
 
     if (i < 0) {
@@ -201,8 +193,8 @@ export function next_stream_id(stream_id: number): number | undefined {
     }
 
     return maybe_get_stream_id(i + 1);
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     set_filter_out_inactives();
-}
+};

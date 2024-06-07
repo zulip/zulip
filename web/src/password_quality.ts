@@ -19,11 +19,11 @@ zxcvbnOptions.setOptions({
 // Return a boolean indicating whether the password is acceptable.
 // Also updates a Bootstrap progress bar control (a jQuery object)
 // if provided.
-export function password_quality(
+export const password_quality = (
     password: string,
     $bar: JQuery | undefined,
     $password_field: JQuery,
-): boolean {
+): boolean => {
     const min_length = Number($password_field.attr("data-min-length"));
     const min_guesses = Number($password_field.attr("data-min-guesses"));
 
@@ -48,9 +48,9 @@ export function password_quality(
     }
 
     return acceptable;
-}
+};
 
-export function password_warning(password: string, $password_field: JQuery): string {
+export const password_warning = (password: string, $password_field: JQuery): string => {
     const min_length = Number($password_field.attr("data-min-length"));
 
     if (password.length < min_length) {
@@ -60,4 +60,4 @@ export function password_warning(password: string, $password_field: JQuery): str
         );
     }
     return zxcvbn(password).feedback.warning ?? $t({defaultMessage: "Password is too weak"});
-}
+};

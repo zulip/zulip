@@ -8,9 +8,9 @@ import * as popover_menus from "./popover_menus";
 import * as settings_data from "./settings_data";
 import {parse_html} from "./ui_util";
 
-export function initialize(): void {
+export const initialize = (): void => {
     popover_menus.register_popover_menu("#streams_inline_icon", {
-        onShow(instance) {
+        onShow: (instance) => {
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
@@ -51,7 +51,7 @@ export function initialize(): void {
 
             return undefined;
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
             popover_menus.popover_instances.stream_settings = null;
             //  After the popover menu is closed, we want the
@@ -74,4 +74,4 @@ export function initialize(): void {
             });
         },
     });
-}
+};

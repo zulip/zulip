@@ -18,7 +18,11 @@ import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as user_topics from "./user_topics";
 
-export function notify_unmute(muted_narrow: string, stream_id: number, topic_name: string): void {
+export const notify_unmute = (
+    muted_narrow: string,
+    stream_id: number,
+    topic_name: string,
+): void => {
     const $unmute_notification = $(
         render_unmute_topic_banner({
             muted_narrow,
@@ -34,15 +38,15 @@ export function notify_unmute(muted_narrow: string, stream_id: number, topic_nam
         $unmute_notification,
         $("#compose_banners"),
     );
-}
+};
 
-export function notify_above_composebox(
+export const notify_above_composebox = (
     banner_text: string,
     classname: string,
     above_composebox_narrow_url: string | null,
     link_msg_id: number,
     link_text: string,
-): void {
+): void => {
     const $notification = $(
         render_message_sent_banner({
             banner_text,
@@ -56,12 +60,12 @@ export function notify_above_composebox(
     // clear any unmute_banner associated with this same message.
     compose_banner.clear_message_sent_banners(false);
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
-}
+};
 
-export function notify_automatic_new_visibility_policy(
+export const notify_automatic_new_visibility_policy = (
     message: Message,
     data: {automatic_new_visibility_policy: number; id: number},
-): void {
+): void => {
     const followed =
         data.automatic_new_visibility_policy === user_topics.all_visibility_policies.FOLLOWED;
     const stream_topic = get_message_header(message);
@@ -80,11 +84,11 @@ export function notify_automatic_new_visibility_policy(
         }),
     );
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
-}
+};
 
 // Note that this returns values that are not HTML-escaped, for use in
 // Handlebars templates that will do further escaping.
-function get_message_header(message: Message): string {
+const get_message_header = (message: Message): string => {
     if (message.type === "stream") {
         const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
         return `#${stream_name} > ${message.topic}`;
@@ -102,9 +106,9 @@ function get_message_header(message: Message): string {
         {defaultMessage: "direct messages with {recipient}"},
         {recipient: message.display_reply_to},
     );
-}
+};
 
-export function get_muted_narrow(message: Message): string | undefined {
+export const get_muted_narrow = (message: Message): string | undefined => {
     if (
         message.type === "stream" &&
         stream_data.is_muted(message.stream_id) &&
@@ -116,9 +120,9 @@ export function get_muted_narrow(message: Message): string | undefined {
         return "topic";
     }
     return undefined;
-}
+};
 
-export function is_local_mix(message: Message): boolean {
+export const is_local_mix = (message: Message): boolean => {
     if (message_lists.current === undefined) {
         // For non-message list views like Inbox, the message is not visible after sending it.
         return true;
@@ -133,13 +137,13 @@ export function is_local_mix(message: Message): boolean {
     }
 
     return true;
-}
+};
 
-export function notify_local_mixes(
+export const notify_local_mixes = (
     messages: Message[],
     need_user_to_scroll: boolean,
     {narrow_to_recipient}: {narrow_to_recipient: (message_id: number) => void},
-): void {
+): void => {
     /*
         This code should only be called when we are displaying
         messages sent by current client. It notifies users that
@@ -207,9 +211,9 @@ export function notify_local_mixes(
             );
         }
     }
-}
+};
 
-function get_above_composebox_narrow_url(message: Message): string {
+const get_above_composebox_narrow_url = (message: Message): string => {
     let above_composebox_narrow_url;
     if (message.type === "stream") {
         above_composebox_narrow_url = hash_util.by_stream_topic_url(
@@ -220,9 +224,9 @@ function get_above_composebox_narrow_url(message: Message): string {
         above_composebox_narrow_url = message.pm_with_url;
     }
     return above_composebox_narrow_url;
-}
+};
 
-export function reify_message_id(opts: {old_id: number; new_id: number}): void {
+export const reify_message_id = (opts: {old_id: number; new_id: number}): void => {
     const old_id = opts.old_id;
     const new_id = opts.new_id;
 
@@ -237,12 +241,12 @@ export function reify_message_id(opts: {old_id: number; new_id: number}): void {
             compose_banner.set_scroll_to_message_banner_message_id(new_id);
         }
     }
-}
+};
 
-export function initialize(opts: {
+export const initialize = (opts: {
     on_click_scroll_to_selected: () => void;
     on_narrow_to_recipient: (message_id: number) => void;
-}): void {
+}): void => {
     const {on_click_scroll_to_selected, on_narrow_to_recipient} = opts;
     $("#compose_banners").on(
         "click",
@@ -267,4 +271,4 @@ export function initialize(opts: {
             e.preventDefault();
         },
     );
-}
+};

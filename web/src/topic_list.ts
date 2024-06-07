@@ -28,13 +28,13 @@ const active_widgets = new Map<number, TopicListWidget>();
 // We know whether we're zoomed or not.
 let zoomed = false;
 
-export function update(): void {
+export const update = (): void => {
     for (const widget of active_widgets.values()) {
         widget.build();
     }
-}
+};
 
-export function clear(): void {
+export const clear = (): void => {
     popover_menus.get_topic_menu_popover()?.hide();
 
     for (const widget of active_widgets.values()) {
@@ -42,14 +42,14 @@ export function clear(): void {
     }
 
     active_widgets.clear();
-}
+};
 
-export function close(): void {
+export const close = (): void => {
     zoomed = false;
     clear();
-}
+};
 
-export function zoom_out(): void {
+export const zoom_out = (): void => {
     zoomed = false;
 
     const stream_ids = [...active_widgets.keys()];
@@ -65,7 +65,7 @@ export function zoom_out(): void {
     const parent_widget = widget.get_parent();
 
     rebuild(parent_widget, stream_id);
-}
+};
 
 type ListInfoNodeOptions =
     | {
@@ -82,7 +82,7 @@ type ListInfoNodeOptions =
 
 type ListInfoNode = vdom.Node<ListInfoNodeOptions>;
 
-export function keyed_topic_li(conversation: TopicInfo): ListInfoNode {
+export const keyed_topic_li = (conversation: TopicInfo): ListInfoNode => {
     const render = (): string => render_topic_list_item(conversation);
 
     const eq = (other: ListInfoNode): boolean =>
@@ -97,13 +97,13 @@ export function keyed_topic_li(conversation: TopicInfo): ListInfoNode {
         conversation,
         eq,
     };
-}
+};
 
-export function more_li(
+export const more_li = (
     more_topics_unreads: number,
     more_topics_have_unread_mention_messages: boolean,
     more_topics_unread_count_muted: boolean,
-): ListInfoNode {
+): ListInfoNode => {
     const render = (): string =>
         render_more_topics({
             more_topics_unreads,
@@ -123,9 +123,9 @@ export function more_li(
         render,
         eq,
     };
-}
+};
 
-export function spinner_li(): ListInfoNode {
+export const spinner_li = (): ListInfoNode => {
     const render = (): string => render_more_topics_spinner();
 
     const eq = (other: ListInfoNode): boolean => other.type === "spinner";
@@ -138,7 +138,7 @@ export function spinner_li(): ListInfoNode {
         render,
         eq,
     };
-}
+};
 
 export class TopicListWidget {
     prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
@@ -225,7 +225,7 @@ export class TopicListWidget {
     }
 }
 
-export function clear_topic_search(e: JQuery.Event): void {
+export const clear_topic_search = (e: JQuery.Event): void => {
     e.stopPropagation();
     const $input = $("#filter-topic-input");
     if ($input.length) {
@@ -244,9 +244,9 @@ export function clear_topic_search(e: JQuery.Event): void {
 
         rebuild(parent_widget, stream_id);
     }
-}
+};
 
-export function active_stream_id(): number | undefined {
+export const active_stream_id = (): number | undefined => {
     const stream_ids = [...active_widgets.keys()];
 
     if (stream_ids.length !== 1) {
@@ -254,9 +254,9 @@ export function active_stream_id(): number | undefined {
     }
 
     return stream_ids[0];
-}
+};
 
-export function get_stream_li(): JQuery | undefined {
+export const get_stream_li = (): JQuery | undefined => {
     const widgets = [...active_widgets.values()];
 
     if (widgets.length !== 1 || widgets[0] === undefined) {
@@ -265,9 +265,9 @@ export function get_stream_li(): JQuery | undefined {
 
     const $stream_li = widgets[0].get_parent();
     return $stream_li;
-}
+};
 
-export function rebuild($stream_li: JQuery, stream_id: number): void {
+export const rebuild = ($stream_li: JQuery, stream_id: number): void => {
     const active_widget = active_widgets.get(stream_id);
 
     if (active_widget) {
@@ -280,11 +280,11 @@ export function rebuild($stream_li: JQuery, stream_id: number): void {
     widget.build();
 
     active_widgets.set(stream_id, widget);
-}
+};
 
 // For zooming, we only do topic-list stuff here...let stream_list
 // handle hiding/showing the non-narrowed streams
-export function zoom_in(): void {
+export const zoom_in = (): void => {
     zoomed = true;
 
     const stream_id = active_stream_id();
@@ -296,8 +296,8 @@ export function zoom_in(): void {
     const active_widget = active_widgets.get(stream_id);
     assert(active_widget !== undefined);
 
-    function on_success(): void {
-        if (!active_widgets.has(stream_id!)) {
+    const on_success = (): void => {
+        if (!active_widgets.has(stream_id)) {
             blueslip.warn("User re-narrowed before topic history was returned.");
             return;
         }
@@ -311,8 +311,8 @@ export function zoom_in(): void {
             return;
         }
 
-        active_widget!.build();
-    }
+        active_widget.build();
+    };
 
     scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
 
@@ -320,22 +320,22 @@ export function zoom_in(): void {
     active_widget.build(spinner);
 
     stream_topic_history_util.get_server_history(stream_id, on_success);
-}
+};
 
-export function get_topic_search_term(): string {
+export const get_topic_search_term = (): string => {
     const $filter = $<HTMLInputElement>("input#filter-topic-input");
     const filter_val = $filter.val();
     if (filter_val === undefined) {
         return "";
     }
     return filter_val.trim();
-}
+};
 
-export function initialize({
+export const initialize = ({
     on_topic_click,
 }: {
     on_topic_click: (stream_id: number, topic?: string) => void;
-}): void {
+}): void => {
     $("#stream_filters").on(
         "click",
         ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-controls",
@@ -363,4 +363,4 @@ export function initialize({
         assert(stream_id !== undefined);
         active_widgets.get(stream_id)?.build();
     });
-}
+};

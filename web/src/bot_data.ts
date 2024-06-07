@@ -56,23 +56,21 @@ const server_add_bot_schema = server_update_bot_schema.extend({
     is_active: z.boolean(),
 });
 
-export function all_user_ids(): number[] {
-    return [...bots.keys()];
-}
+export const all_user_ids = (): number[] => [...bots.keys()];
 
-export function add(bot_data: ServerAddBotData): void {
+export const add = (bot_data: ServerAddBotData): void => {
     const {services: bot_services, ...clean_bot} = server_add_bot_schema.parse(bot_data);
     bots.set(clean_bot.user_id, clean_bot);
 
     services.set(clean_bot.user_id, bot_services);
-}
+};
 
-export function del(bot_id: number): void {
+export const del = (bot_id: number): void => {
     bots.delete(bot_id);
     services.delete(bot_id);
-}
+};
 
-export function update(bot_id: number, bot_update: ServerUpdateBotData): void {
+export const update = (bot_id: number, bot_update: ServerUpdateBotData): void => {
     const bot = bots.get(bot_id)!;
     Object.assign(bot, server_update_bot_schema.deepPartial().parse(bot_update));
 
@@ -85,9 +83,9 @@ export function update(bot_id: number, bot_update: ServerUpdateBotData): void {
     ) {
         Object.assign(service, services_schema.parse(bot_update.services)[0]);
     }
-}
+};
 
-export function get_all_bots_for_current_user(): Bot[] {
+export const get_all_bots_for_current_user = (): Bot[] => {
     const ret = [];
     for (const bot of bots.values()) {
         if (bot.owner_id !== null && people.is_my_user_id(bot.owner_id)) {
@@ -95,9 +93,9 @@ export function get_all_bots_for_current_user(): Bot[] {
         }
     }
     return ret;
-}
+};
 
-export function get_editable(): Bot[] {
+export const get_editable = (): Bot[] => {
     const ret = [];
     for (const bot of bots.values()) {
         if (bot.is_active && bot.owner_id !== null && people.is_my_user_id(bot.owner_id)) {
@@ -105,9 +103,9 @@ export function get_editable(): Bot[] {
         }
     }
     return ret;
-}
+};
 
-export function get_all_bots_owned_by_user(user_id: number): Bot[] {
+export const get_all_bots_owned_by_user = (user_id: number): Bot[] => {
     const ret = [];
     for (const bot of bots.values()) {
         if (bot.owner_id === user_id && bot.is_active) {
@@ -115,19 +113,15 @@ export function get_all_bots_owned_by_user(user_id: number): Bot[] {
         }
     }
     return ret;
-}
+};
 
-export function get(bot_id: number): Bot | undefined {
-    return bots.get(bot_id);
-}
+export const get = (bot_id: number): Bot | undefined => bots.get(bot_id);
 
-export function get_services(bot_id: number): Services | undefined {
-    return services.get(bot_id);
-}
+export const get_services = (bot_id: number): Services | undefined => services.get(bot_id);
 
-export function initialize(params: BotDataParams): void {
+export const initialize = (params: BotDataParams): void => {
     bots.clear();
     for (const bot of params.realm_bots) {
         add(bot);
     }
-}
+};

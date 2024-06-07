@@ -11,13 +11,13 @@ import * as scheduled_messages from "./scheduled_messages";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 
-export function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
+export const hide_scheduled_message_success_compose_banner = (scheduled_message_id) => {
     $(
         `.message_scheduled_success_compose_banner[data-scheduled-message-id=${scheduled_message_id}]`,
     ).hide();
-}
+};
 
-function narrow_via_edit_scheduled_message(compose_args) {
+const narrow_via_edit_scheduled_message = (compose_args) => {
     if (compose_args.message_type === "stream") {
         message_view.show(
             [
@@ -34,9 +34,9 @@ function narrow_via_edit_scheduled_message(compose_args) {
             trigger: "edit scheduled message",
         });
     }
-}
+};
 
-export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient) {
+export const open_scheduled_message_in_compose = (scheduled_msg, should_narrow_to_recipient) => {
     let compose_args;
     if (scheduled_msg.type === "stream") {
         compose_args = {
@@ -69,9 +69,9 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
 
     compose_actions.start(compose_args);
     scheduled_messages.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
-}
+};
 
-function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
+const show_message_unscheduled_banner = (scheduled_delivery_timestamp) => {
     const deliver_at = timerender.get_full_datetime(
         new Date(scheduled_delivery_timestamp * 1000),
         "time",
@@ -88,17 +88,17 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
         $(unscheduled_banner_html),
         $("#compose_banners"),
     );
-}
+};
 
-export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {
+export const edit_scheduled_message = (scheduled_message_id, should_narrow_to_recipient = true) => {
     const scheduled_msg = scheduled_messages.scheduled_messages_data.get(scheduled_message_id);
     scheduled_messages.delete_scheduled_message(scheduled_message_id, () => {
         open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
         show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);
     });
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     $("body").on("click", ".undo_scheduled_message", (e) => {
         const scheduled_message_id = Number.parseInt(
             $(e.target)
@@ -111,4 +111,4 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
     });
-}
+};

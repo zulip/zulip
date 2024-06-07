@@ -12,12 +12,8 @@ set_global("document", "document-stub");
 
 // timerender calls setInterval when imported
 mock_esm("../src/timerender", {
-    render_date(time) {
-        return [{outerHTML: String(time.getTime())}];
-    },
-    stringify_time(time) {
-        return time.toString("h:mm TT");
-    },
+    render_date: (time) => [{outerHTML: String(time.getTime())}],
+    stringify_time: (time) => time.toString("h:mm TT"),
 });
 
 mock_esm("../src/people", {
@@ -34,20 +30,20 @@ const muted_users = zrequire("muted_users");
 
 let next_timestamp = 1500000000;
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override, mock_template}) => {
         muted_users.set_muted_users([]);
         mock_template("message_list.hbs", false, () => "<message-list-stub>");
         f({override, mock_template});
     });
-}
+};
 
 test("msg_moved_var", () => {
     // This is a test to verify that when the stream or topic is changed
     // (and the content is not), the message says "MOVED" rather than "EDITED."
     // See the end of the test for the list of cases verified.
 
-    function build_message_context(message = {}, message_context = {}) {
+    const build_message_context = (message = {}, message_context = {}) => {
         message_context = {
             ...message_context,
         };
@@ -62,13 +58,11 @@ test("msg_moved_var", () => {
             };
         }
         return message_context;
-    }
+    };
 
-    function build_message_group(messages) {
-        return {message_containers: messages};
-    }
+    const build_message_group = (messages) => ({message_containers: messages});
 
-    function build_list(message_groups) {
+    const build_list = (message_groups) => {
         const list = new MessageListView(
             {
                 id: 1,
@@ -78,19 +72,19 @@ test("msg_moved_var", () => {
         );
         list._message_groups = message_groups;
         return list;
-    }
+    };
 
-    function assert_moved_true(message_container) {
+    const assert_moved_true = (message_container) => {
         assert.equal(message_container.moved, true);
-    }
-    function assert_moved_false(message_container) {
+    };
+    const assert_moved_false = (message_container) => {
         assert.equal(message_container.moved, false);
-    }
-    function assert_moved_undefined(message_container) {
+    };
+    const assert_moved_undefined = (message_container) => {
         assert.equal(message_container.moved, undefined);
-    }
+    };
 
-    (function test_msg_moved_var() {
+    (() => {
         const messages = [
             // no edit history: NO LABEL
             build_message_context({}),
@@ -206,7 +200,7 @@ test("msg_edited_vars", () => {
     //   * message that includes sender
     //   * message without sender
 
-    function build_message_context(message = {}, message_context = {}) {
+    const build_message_context = (message = {}, message_context = {}) => {
         message_context = {
             include_sender: true,
             ...message_context,
@@ -218,13 +212,11 @@ test("msg_edited_vars", () => {
             ...message,
         };
         return message_context;
-    }
+    };
 
-    function build_message_group(messages) {
-        return {message_containers: messages};
-    }
+    const build_message_group = (messages) => ({message_containers: messages});
 
-    function build_list(message_groups) {
+    const build_list = (message_groups) => {
         const list = new MessageListView(
             {
                 id: 1,
@@ -234,30 +226,30 @@ test("msg_edited_vars", () => {
         );
         list._message_groups = message_groups;
         return list;
-    }
+    };
 
-    function assert_left_col(message_container) {
+    const assert_left_col = (message_container) => {
         assert.equal(message_container.modified, true);
         assert.equal(message_container.message_edit_notices_in_left_col, true);
         assert.equal(message_container.message_edit_notices_alongside_sender, false);
         assert.equal(message_container.message_edit_notices_for_status_message, false);
-    }
+    };
 
-    function assert_alongside_sender(message_container) {
+    const assert_alongside_sender = (message_container) => {
         assert.equal(message_container.modified, true);
         assert.equal(message_container.message_edit_notices_in_left_col, false);
         assert.equal(message_container.message_edit_notices_alongside_sender, true);
         assert.equal(message_container.message_edit_notices_for_status_message, false);
-    }
+    };
 
-    function assert_status_msg(message_container) {
+    const assert_status_msg = (message_container) => {
         assert.equal(message_container.modified, true);
         assert.equal(message_container.message_edit_notices_in_left_col, false);
         assert.equal(message_container.message_edit_notices_alongside_sender, false);
         assert.equal(message_container.message_edit_notices_for_status_message, true);
-    }
+    };
 
-    function set_edited_notice_locations(message_container) {
+    const set_edited_notice_locations = (message_container) => {
         const include_sender = message_container.include_sender;
         const is_hidden = message_container.is_hidden;
         const status_message = Boolean(message_container.status_message);
@@ -265,9 +257,9 @@ test("msg_edited_vars", () => {
         message_container.message_edit_notices_alongside_sender = include_sender && !status_message;
         message_container.message_edit_notices_for_status_message =
             include_sender && status_message;
-    }
+    };
 
-    (function test_msg_edited_vars() {
+    (() => {
         const messages = [
             build_message_context(),
             build_message_context({}, {include_sender: false}),
@@ -298,7 +290,7 @@ test("muted_message_vars", () => {
     // This verifies that the variables for muted/hidden messages are set
     // correctly.
 
-    function build_message_context(message = {}, message_context = {}) {
+    const build_message_context = (message = {}, message_context = {}) => {
         message_context = {
             ...message_context,
         };
@@ -306,13 +298,11 @@ test("muted_message_vars", () => {
             ...message,
         };
         return message_context;
-    }
+    };
 
-    function build_message_group(messages) {
-        return {message_containers: messages};
-    }
+    const build_message_group = (messages) => ({message_containers: messages});
 
-    function build_list(message_groups) {
+    const build_list = (message_groups) => {
         const list = new MessageListView(
             {
                 id: 1,
@@ -322,16 +312,16 @@ test("muted_message_vars", () => {
         );
         list._message_groups = message_groups;
         return list;
-    }
+    };
 
-    function calculate_variables(list, messages, is_revealed) {
+    const calculate_variables = (list, messages, is_revealed) => {
         list.set_calculated_message_container_variables(messages[0], is_revealed);
         list.set_calculated_message_container_variables(messages[1], is_revealed);
         list.set_calculated_message_container_variables(messages[2], is_revealed);
         return list._message_groups[0].message_containers;
-    }
+    };
 
-    (function test_hidden_message_variables() {
+    (() => {
         // We want to have no search results, which apparently works like this.
         // See https://chat.zulip.org/#narrow/stream/6-frontend/topic/set_find_results.20with.20no.20results/near/1414799
         const empty_list_stub = $.create("empty-stub", {children: []});
@@ -434,7 +424,7 @@ test("merge_message_groups", ({mock_template}) => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group merging logic on its own.
 
-    function build_message_context(message = {}, message_context = {}) {
+    const build_message_context = (message = {}, message_context = {}) => {
         message_context = {
             include_sender: true,
             ...message_context,
@@ -450,16 +440,14 @@ test("merge_message_groups", ({mock_template}) => {
             ...message,
         };
         return message_context;
-    }
+    };
 
-    function build_message_group(messages) {
-        return {
-            message_containers: messages,
-            message_group_id: _.uniqueId("test_message_group_"),
-        };
-    }
+    const build_message_group = (messages) => ({
+        message_containers: messages,
+        message_group_id: _.uniqueId("test_message_group_"),
+    });
 
-    function build_list(message_groups) {
+    const build_list = (message_groups) => {
         const filter = new Filter([{operator: "stream", operand: "foo"}]);
 
         const list = new message_list.MessageList({
@@ -472,31 +460,27 @@ test("merge_message_groups", ({mock_template}) => {
         view.list.unsubscribed_bookend_content = noop;
         view.list.subscribed_bookend_content = noop;
         return view;
-    }
+    };
 
-    function extract_message_ids(lst) {
-        return lst.map((item) => item.msg.id);
-    }
+    const extract_message_ids = (lst) => lst.map((item) => item.msg.id);
 
-    function assert_message_list_equal(list1, list2) {
+    const assert_message_list_equal = (list1, list2) => {
         const ids1 = extract_message_ids(list1);
         const ids2 = extract_message_ids(list2);
         assert.ok(ids1.length);
         assert.deepEqual(ids1, ids2);
-    }
+    };
 
-    function extract_group(group) {
-        return extract_message_ids(group.message_containers);
-    }
+    const extract_group = (group) => extract_message_ids(group.message_containers);
 
-    function assert_message_groups_list_equal(list1, list2) {
+    const assert_message_groups_list_equal = (list1, list2) => {
         const ids1 = list1.map((group) => extract_group(group));
         const ids2 = list2.map((group) => extract_group(group));
         assert.ok(ids1.length);
         assert.deepEqual(ids1, ids2);
-    }
+    };
 
-    (function test_empty_list_bottom() {
+    (() => {
         const list = build_list([]);
         const message_group = build_message_group([build_message_context()]);
 
@@ -509,7 +493,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.deepEqual(result.append_messages, []);
     })();
 
-    (function test_append_message_same_topic() {
+    (() => {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
@@ -528,7 +512,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert_message_list_equal(result.append_messages, [message2]);
     })();
 
-    (function test_append_message_different_topic() {
+    (() => {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
@@ -546,7 +530,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.deepEqual(result.append_messages, []);
     })();
 
-    (function test_append_message_different_topic_and_days() {
+    (() => {
         const message1 = build_message_context({timestamp: 1000});
         const message_group1 = build_message_group([message1]);
 
@@ -564,7 +548,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.equal(message_group2.date_unchanged, false);
     })();
 
-    (function test_append_message_different_day() {
+    (() => {
         const message1 = build_message_context({timestamp: 1000});
         const message_group1 = build_message_group([message1]);
 
@@ -582,7 +566,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.ok(list._message_groups[0].message_containers[1].want_date_divider);
     })();
 
-    (function test_append_message_historical() {
+    (() => {
         const message1 = build_message_context({historical: false});
         const message_group1 = build_message_group([message1]);
 
@@ -600,7 +584,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.deepEqual(result.append_messages, []);
     })();
 
-    (function test_append_message_same_topic_me_message() {
+    (() => {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
@@ -620,7 +604,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert_message_list_equal(result.append_messages, [message2]);
     })();
 
-    (function test_prepend_message_same_topic() {
+    (() => {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
@@ -641,7 +625,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.deepEqual(result.append_messages, []);
     })();
 
-    (function test_prepend_message_different_topic() {
+    (() => {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
@@ -658,7 +642,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.deepEqual(result.append_messages, []);
     })();
 
-    (function test_prepend_message_different_topic_and_day() {
+    (() => {
         const message1 = build_message_context({timestamp: 900000});
         const message_group1 = build_message_group([message1]);
 
@@ -676,7 +660,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.deepEqual(result.append_messages, []);
     })();
 
-    (function test_prepend_message_different_day() {
+    (() => {
         const message1 = build_message_context({timestamp: 900000});
         const message_group1 = build_message_group([message1]);
 
@@ -694,7 +678,7 @@ test("merge_message_groups", ({mock_template}) => {
         assert.deepEqual(result.append_messages, []);
     })();
 
-    (function test_prepend_message_historical() {
+    (() => {
         const message1 = build_message_context({historical: false});
         const message_group1 = build_message_group([message1]);
 
@@ -720,7 +704,7 @@ test("render_windows", ({mock_template}) => {
     // start/end) when the pointer moves outside of the window or close
     // to the edges.
 
-    const view = (function make_view() {
+    const view = (() => {
         const filter = new Filter([]);
 
         const list = new message_list.MessageList({
@@ -744,7 +728,7 @@ test("render_windows", ({mock_template}) => {
 
     const list = view.list;
 
-    (function test_with_empty_list() {
+    (() => {
         // The function should early exit here.
         const rendered = view.maybe_rerender();
         assert.equal(rendered, false);
@@ -752,7 +736,7 @@ test("render_windows", ({mock_template}) => {
 
     let messages;
 
-    function reset_list(opts) {
+    const reset_list = (opts) => {
         messages = _.range(opts.count).map((i) => ({
             id: i,
         }));
@@ -761,9 +745,9 @@ test("render_windows", ({mock_template}) => {
         list.clear();
 
         list.add_messages(messages, {});
-    }
+    };
 
-    function verify_no_move_range(start, end) {
+    const verify_no_move_range = (start, end) => {
         // In our render window, there are up to 300 positions in
         // the list where we can move the pointer without forcing
         // a re-render.  The code avoids hasty re-renders for
@@ -773,9 +757,9 @@ test("render_windows", ({mock_template}) => {
             const rendered = view.maybe_rerender();
             assert.equal(rendered, false);
         }
-    }
+    };
 
-    function verify_move(idx, range) {
+    const verify_move = (idx, range) => {
         const start = range[0];
         const end = range[1];
 
@@ -784,7 +768,7 @@ test("render_windows", ({mock_template}) => {
         assert.equal(rendered, true);
         assert.equal(view._render_win_start, start);
         assert.equal(view._render_win_end, end);
-    }
+    };
 
     reset_list({count: 51});
     verify_no_move_range(0, 51);

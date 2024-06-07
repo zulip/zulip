@@ -6,11 +6,10 @@ import * as common from "./lib/common";
 
 const message = "test star";
 
-async function stars_count(page: Page): Promise<number> {
-    return (await page.$$(".message-list .zulip-icon-star-filled:not(.empty-star)")).length;
-}
+const stars_count = async (page: Page): Promise<number> =>
+    (await page.$$(".message-list .zulip-icon-star-filled:not(.empty-star)")).length;
 
-async function toggle_test_star_message(page: Page): Promise<void> {
+const toggle_test_star_message = async (page: Page): Promise<void> => {
     const messagebox = await page.waitForSelector(
         `xpath/(//*[${common.has_class_x("message-list")}]//*[${common.has_class_x(
             "message_content",
@@ -25,9 +24,9 @@ async function toggle_test_star_message(page: Page): Promise<void> {
     const star_icon = await messagebox.waitForSelector(".star", {visible: true});
     assert.ok(star_icon !== null);
     await star_icon.click();
-}
+};
 
-async function test_narrow_to_starred_messages(page: Page): Promise<void> {
+const test_narrow_to_starred_messages = async (page: Page): Promise<void> => {
     await page.click('#left-sidebar-navigation-list a[href^="#narrow/is/starred"]');
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [["Verona > stars", [message]]]);
@@ -39,9 +38,9 @@ async function test_narrow_to_starred_messages(page: Page): Promise<void> {
         `.message-list[data-message-list-id='${combined_feed_id}'] .message_row`,
         {visible: true},
     );
-}
+};
 
-async function stars_test(page: Page): Promise<void> {
+const stars_test = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     let message_list_id = await common.get_current_msg_list_id(page, true);
@@ -81,6 +80,6 @@ async function stars_test(page: Page): Promise<void> {
 
     await toggle_test_star_message(page);
     assert.strictEqual(await stars_count(page), 0, "Message was not unstarred correctly.");
-}
+};
 
 common.run_test(stars_test);

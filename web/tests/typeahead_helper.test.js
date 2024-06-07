@@ -25,20 +25,16 @@ const th = zrequire("typeahead_helper");
 
 let next_id = 0;
 
-function assertSameEmails(lst1, lst2) {
+const assertSameEmails = (lst1, lst2) => {
     assert.deepEqual(
         lst1.map((r) => r.user.email),
         lst2.map((r) => r.user.email),
     );
-}
+};
 
-function user_item(user) {
-    return {type: "user", user};
-}
+const user_item = (user) => ({type: "user", user});
 
-function broadcast_item(user) {
-    return {type: "broadcast", user};
-}
+const broadcast_item = (user) => ({type: "broadcast", user});
 
 const a_bot = {
     email: "a_bot@zulip.com",
@@ -124,7 +120,7 @@ stream_data.create_streams([dev_sub, linux_sub]);
 stream_data.add_sub(dev_sub);
 stream_data.add_sub(linux_sub);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         pm_conversations.clear_for_testing();
         recent_senders.clear_for_testing();
@@ -135,7 +131,7 @@ function test(label, f) {
 
         f(helpers);
     });
-}
+};
 
 test("sort_streams", ({override, override_rewire}) => {
     let test_streams = [
@@ -302,12 +298,11 @@ test("sort_streams", ({override, override_rewire}) => {
     assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
 });
 
-function language_items(languages) {
-    return languages.map((language) => ({
+const language_items = (languages) =>
+    languages.map((language) => ({
         type: "syntax",
         language,
     }));
-}
 
 test("sort_languages", ({override_rewire}) => {
     override_rewire(pygments_data, "langs", {
@@ -358,7 +353,7 @@ test("sort_languages on actual data", () => {
     assert.deepEqual(test_langs, language_items(["js", "java"]));
 });
 
-function get_typeahead_result(query, current_stream_id, current_topic) {
+const get_typeahead_result = (query, current_stream_id, current_topic) => {
     const users = people.get_realm_users().map((user) => ({type: "user", user}));
     const result = th.sort_recipients({
         users,
@@ -367,7 +362,7 @@ function get_typeahead_result(query, current_stream_id, current_topic) {
         current_topic,
     });
     return result.map((person) => person.user.email);
-}
+};
 
 test("sort_recipients", () => {
     // Typeahead for recipientbox [query, "", undefined]
@@ -524,9 +519,9 @@ test("sort_recipients pm counts", () => {
     ]);
 
     /* istanbul ignore next */
-    function compare() {
+    const compare = () => {
         throw new Error("We do not expect to need a tiebreaker here.");
-    }
+    };
 
     // get some line coverage
     assert.equal(
@@ -736,9 +731,7 @@ test("test compare directly for direct message", () => {
 });
 
 test("highlight_with_escaping", () => {
-    function highlight(query, item) {
-        return th.make_query_highlighter(query)(item);
-    }
+    const highlight = (query, item) => th.make_query_highlighter(query)(item);
 
     let item = "Denmark";
     let query = "Den";

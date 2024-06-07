@@ -8,7 +8,7 @@ import * as message_store from "./message_store";
 import * as message_view from "./message_view";
 import * as stream_data from "./stream_data";
 
-export function initialize() {
+export const initialize = () => {
     if (window.electron_bridge === undefined) {
         return;
     }
@@ -45,7 +45,7 @@ export function initialize() {
             data.to = stream_data.get_stream_name_from_id(message.stream_id);
         }
 
-        function success() {
+        const success = () => {
             if (message.type === "stream") {
                 message_view.narrow_by_topic(message_id, {trigger: "desktop_notification_reply"});
             } else {
@@ -53,15 +53,15 @@ export function initialize() {
                     trigger: "desktop_notification_reply",
                 });
             }
-        }
+        };
 
-        function error(error) {
+        const error = (error) => {
             window.electron_bridge.send_event("send_notification_reply_message_failed", {
                 data,
                 message_id,
                 error,
             });
-        }
+        };
 
         channel.post({
             url: "/json/messages",
@@ -78,13 +78,13 @@ export function initialize() {
 
         channel.get({
             url,
-            success(data) {
+            success: (data) => {
                 window.open(data.billing_access_url, "_blank", "noopener,noreferrer");
             },
-            error(xhr) {
+            error: (xhr) => {
                 if (xhr.responseJSON?.msg) {
                     feedback_widget.show({
-                        populate($container) {
+                        populate: ($container) => {
                             $container.text(xhr.responseJSON.msg);
                         },
                         title_text: $t({defaultMessage: "Error"}),
@@ -93,4 +93,4 @@ export function initialize() {
             },
         });
     });
-}
+};

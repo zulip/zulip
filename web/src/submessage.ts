@@ -72,7 +72,7 @@ const submessages_event_schema = z
 
 type SubmessageEvents = z.infer<typeof submessages_event_schema>;
 
-export function get_message_events(message: Message): SubmessageEvents | undefined {
+export const get_message_events = (message: Message): SubmessageEvents | undefined => {
     if (message.locally_echoed) {
         return undefined;
     }
@@ -93,18 +93,18 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
     }));
     const clean_events = submessages_event_schema.parse(events);
     return clean_events;
-}
+};
 
-export function process_widget_rows_in_list(list: MessageList | undefined): void {
+export const process_widget_rows_in_list = (list: MessageList | undefined): void => {
     for (const message_id of widgetize.widget_event_handlers.keys()) {
         const $row = list?.get_row(message_id);
         if ($row && $row.length !== 0) {
             process_submessages({message_id, $row});
         }
     }
-}
+};
 
-export function process_submessages(in_opts: {$row: JQuery; message_id: number}): void {
+export const process_submessages = (in_opts: {$row: JQuery; message_id: number}): void => {
     // This happens in our rendering path, so we try to limit any
     // damage that may be triggered by one rogue message.
     try {
@@ -114,9 +114,9 @@ export function process_submessages(in_opts: {$row: JQuery; message_id: number})
         blueslip.error("Failed to do_process_submessages", undefined, error);
         return;
     }
-}
+};
 
-export function do_process_submessages(in_opts: {$row: JQuery; message_id: number}): void {
+export const do_process_submessages = (in_opts: {$row: JQuery; message_id: number}): void => {
     const message_id = in_opts.message_id;
     const message = message_store.get(message_id);
 
@@ -162,9 +162,9 @@ export function do_process_submessages(in_opts: {$row: JQuery; message_id: numbe
         message,
         post_to_server,
     });
-}
+};
 
-export function update_message(submsg: Submessage): void {
+export const update_message = (submsg: Submessage): void => {
     const message = message_store.get(submsg.message_id);
 
     if (message === undefined) {
@@ -187,9 +187,9 @@ export function update_message(submsg: Submessage): void {
     }
 
     message.submessages.push(submsg);
-}
+};
 
-export function handle_event(submsg: Submessage): void {
+export const handle_event = (submsg: Submessage): void => {
     // Update message.submessages in case we haven't actually
     // activated the widget yet, so that when the message does
     // come in view, the data will be complete.
@@ -217,12 +217,11 @@ export function handle_event(submsg: Submessage): void {
         message_id: submsg.message_id,
         data,
     });
-}
+};
 
-export function make_server_callback(
-    message_id: number,
-): (opts: {msg_type: string; data: string}) => void {
-    return function (opts: {msg_type: string; data: string}) {
+export const make_server_callback =
+    (message_id: number): ((opts: {msg_type: string; data: string}) => void) =>
+    (opts: {msg_type: string; data: string}) => {
         const url = "/json/submessage";
 
         void channel.post({
@@ -234,4 +233,3 @@ export function make_server_callback(
             },
         });
     };
-}

@@ -5,7 +5,7 @@ import * as common from "../common";
 
 export type UserOS = "android" | "ios" | "mac" | "windows" | "linux";
 
-export function detect_user_os(): UserOS {
+export const detect_user_os = (): UserOS => {
     if (/android/i.test(navigator.userAgent)) {
         return "android";
     }
@@ -22,7 +22,7 @@ export function detect_user_os(): UserOS {
         return "linux";
     }
     return "mac"; // if unable to determine OS return Mac by default
-}
+};
 
 export function activate_correct_tab($tabbed_section: JQuery): void {
     const user_os = detect_user_os();

@@ -16,13 +16,9 @@ import * as ui_report from "./ui_report";
 // the caller has already checked that the dialog widget is open.
 let widget_id_counter = 0;
 
-function current_dialog_widget_id(): string {
-    return `dialog_widget_modal_${widget_id_counter}`;
-}
+const current_dialog_widget_id = (): string => `dialog_widget_modal_${widget_id_counter}`;
 
-function current_dialog_widget_selector(): string {
-    return `#${current_dialog_widget_id()}`;
-}
+const current_dialog_widget_selector = (): string => `#${current_dialog_widget_id()}`;
 
 /*
  *  Look for confirm_dialog in settings_user_groups
@@ -87,16 +83,16 @@ type RequestOpts = {
     error_continuation?: Parameters<AjaxRequestHandler>[0]["error"];
 };
 
-export function hide_dialog_spinner(): void {
+export const hide_dialog_spinner = (): void => {
     $(".dialog_submit_button span").show();
     const dialog_widget_selector = current_dialog_widget_selector();
     $(`${dialog_widget_selector} .modal__btn`).prop("disabled", false);
 
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
     loading.destroy_indicator($spinner);
-}
+};
 
-export function show_dialog_spinner(): void {
+export const show_dialog_spinner = (): void => {
     const dialog_widget_selector = current_dialog_widget_selector();
     // Disable both the buttons.
     $(`${dialog_widget_selector} .modal__btn`).prop("disabled", true);
@@ -113,12 +109,12 @@ export function show_dialog_spinner(): void {
         width: dialog_submit_button_span_width,
         height: dialog_submit_button_span_height,
     });
-}
+};
 
 // Supports a callback to be called once the modal finishes closing.
-export function close(on_hidden_callback?: () => void): void {
+export const close = (on_hidden_callback?: () => void): void => {
     modals.close(current_dialog_widget_id(), {on_hidden: on_hidden_callback});
-}
+};
 
 export function get_current_values($inputs: JQuery): Record<string, unknown> {
     const current_values: Record<string, unknown> = {};
@@ -143,7 +139,7 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
     return current_values;
 }
 
-export function launch(conf: DialogWidgetConfig): string {
+export const launch = (conf: DialogWidgetConfig): string => {
     // Mandatory fields:
     // * html_heading
     // * html_body
@@ -242,7 +238,7 @@ export function launch(conf: DialogWidgetConfig): string {
 
     modals.open(modal_unique_id, {
         autoremove: true,
-        on_show() {
+        on_show: () => {
             if (conf.focus_submit_on_open) {
                 $submit_button.trigger("focus");
             }
@@ -255,9 +251,9 @@ export function launch(conf: DialogWidgetConfig): string {
         on_hidden: conf?.on_hidden,
     });
     return modal_unique_id;
-}
+};
 
-export function submit_api_request(
+export const submit_api_request = (
     request_method: AjaxRequestHandler,
     url: string,
     data: Omit<Parameters<AjaxRequestHandler>[0]["data"], "undefined">,
@@ -266,18 +262,18 @@ export function submit_api_request(
         success_continuation,
         error_continuation,
     }: RequestOpts = {},
-): void {
+): void => {
     show_dialog_spinner();
     void request_method({
         url,
         data,
-        success(response_data, textStatus, jqXHR) {
+        success: (response_data, textStatus, jqXHR) => {
             close();
             if (success_continuation !== undefined) {
                 success_continuation(response_data, textStatus, jqXHR);
             }
         },
-        error(xhr, error_type, xhn) {
+        error: (xhr, error_type, xhn) => {
             ui_report.error(failure_msg_html, xhr, $("#dialog_error"));
             hide_dialog_spinner();
             if (error_continuation !== undefined) {
@@ -285,4 +281,4 @@ export function submit_api_request(
             }
         },
     });
-}
+};

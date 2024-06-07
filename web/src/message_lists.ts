@@ -71,13 +71,13 @@ export type MessageList = {
 export let current: MessageList | undefined;
 export const rendered_message_lists = new Map<number, MessageList>();
 
-export function set_current(msg_list: MessageList | undefined): void {
+export const set_current = (msg_list: MessageList | undefined): void => {
     // NOTE: Strictly used for mocking in node tests.
     // Use `update_current_message_list` instead in production.
     current = msg_list;
-}
+};
 
-export function update_current_message_list(msg_list: MessageList | undefined): void {
+export const update_current_message_list = (msg_list: MessageList | undefined): void => {
     // Since we change `current` message list in the function, we need to decide if the
     // current message list needs to be cached or discarded.
     //
@@ -113,41 +113,39 @@ export function update_current_message_list(msg_list: MessageList | undefined): 
         rendered_message_lists.set(current.id, current);
         current.view.$list.addClass("focused-message-list");
     }
-}
+};
 
-export function all_rendered_message_lists(): MessageList[] {
-    return [...rendered_message_lists.values()];
-}
+export const all_rendered_message_lists = (): MessageList[] => [...rendered_message_lists.values()];
 
-export function add_rendered_message_list(msg_list: MessageList): void {
+export const add_rendered_message_list = (msg_list: MessageList): void => {
     rendered_message_lists.set(msg_list.id, msg_list);
-}
+};
 
-export function all_rendered_row_for_message_id(message_id: number): JQuery {
+export const all_rendered_row_for_message_id = (message_id: number): JQuery => {
     let $rows = $();
     for (const msg_list of all_rendered_message_lists()) {
         const $row = msg_list.get_row(message_id);
         $rows = $rows.add($row);
     }
     return $rows;
-}
+};
 
-export function all_current_message_rows(): JQuery {
+export const all_current_message_rows = (): JQuery => {
     if (current === undefined) {
         return $();
     }
 
     return current.view.$list.find(".message_row");
-}
+};
 
-export function update_recipient_bar_background_color(): void {
+export const update_recipient_bar_background_color = (): void => {
     for (const msg_list of all_rendered_message_lists()) {
         msg_list.view.update_recipient_bar_background_color();
     }
     inbox_util.update_stream_colors();
-}
+};
 
-export function calculate_timestamp_widths(): void {
+export const calculate_timestamp_widths = (): void => {
     const $temp_time_div = $("<div>");
     $temp_time_div.attr("id", "calculated-timestamp-widths");
     // Size the div to the width of the largest timestamp,
@@ -179,13 +177,13 @@ export function calculate_timestamp_widths(): void {
     $(":root").css("--message-box-timestamp-column-width", `${max_timestamp_width}px`);
     // Clean up by removing the temporary <div> element
     $temp_time_div.remove();
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     // We calculate the widths of a candidate set of timestamps,
     // and use the largest to set `--message-box-timestamp-column-width`
     calculate_timestamp_widths();
     // For users with automatic color scheme, we need to detect change
     // in `prefers-color-scheme` as it changes based on time.
     ui_util.listener_for_preferred_color_scheme_change(update_recipient_bar_background_color);
-}
+};

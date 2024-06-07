@@ -24,19 +24,17 @@ let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy;
 const upload_objects_by_message_edit_row = new Map<number, Uppy>();
 
-export function compose_upload_cancel(): void {
+export const compose_upload_cancel = (): void => {
     compose_upload_object.cancelAll();
-}
+};
 
-export function feature_check(): XMLHttpRequestUpload {
-    // Show the upload button only if the browser supports it.
-    return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
-}
+export const feature_check = (): XMLHttpRequestUpload =>
+    window.XMLHttpRequest && new window.XMLHttpRequest().upload;
 
-export function get_translated_status(file: File | UppyFile): string {
+export const get_translated_status = (file: File | UppyFile): string => {
     const status = $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name});
     return "[" + status + "]()";
-}
+};
 
 type Config = ({mode: "compose"} | {mode: "edit"; row: number}) & {
     textarea: () => JQuery<HTMLTextAreaElement>;
@@ -81,52 +79,48 @@ export const compose_config: Config = {
     markdown_preview_hide_button: () => $("#compose .undo_markdown_preview"),
 };
 
-export function edit_config(row: number): Config {
-    return {
-        mode: "edit",
-        row,
-        textarea: () =>
-            $<HTMLTextAreaElement>(
-                `#edit_form_${CSS.escape(`${row}`)} textarea.message_edit_content`,
-            ),
-        send_button: () => $(`#edit_form_${CSS.escape(`${row}`)}`).find(".message_edit_save"),
-        banner_container: () => $(`#edit_form_${CSS.escape(`${row}`)} .edit_form_banners`),
-        upload_banner_identifier: (file_id) =>
-            `#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(file_id)}`,
-        upload_banner: (file_id) =>
-            $(`#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(file_id)}`),
-        upload_banner_cancel_button: (file_id) =>
-            $(
-                `#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(
-                    file_id,
-                )} .upload_banner_cancel_button`,
-            ),
-        upload_banner_hide_button: (file_id) =>
-            $(
-                `#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(
-                    file_id,
-                )} .main-view-banner-close-button`,
-            ),
-        upload_banner_message: (file_id) =>
-            $(
-                `#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(
-                    file_id,
-                )} .upload_msg`,
-            ),
-        file_input_identifier: () => `#edit_form_${CSS.escape(`${row}`)} input.file_input`,
-        source: () => "message-edit-file-input",
-        drag_drop_container() {
-            assert(message_lists.current !== undefined);
-            return $(
-                `#message-row-${message_lists.current.id}-${CSS.escape(`${row}`)} .message_edit_form`,
-            );
-        },
-        markdown_preview_hide_button: () =>
-            $(`#edit_form_${CSS.escape(`${row}`)} .undo_markdown_preview`),
-    };
-}
+export const edit_config = (row: number): Config => ({
+    mode: "edit",
+    row,
+    textarea: () =>
+        $<HTMLTextAreaElement>(`#edit_form_${CSS.escape(`${row}`)} textarea.message_edit_content`),
+    send_button: () => $(`#edit_form_${CSS.escape(`${row}`)}`).find(".message_edit_save"),
+    banner_container: () => $(`#edit_form_${CSS.escape(`${row}`)} .edit_form_banners`),
+    upload_banner_identifier: (file_id) =>
+        `#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(file_id)}`,
+    upload_banner: (file_id) =>
+        $(`#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(file_id)}`),
+    upload_banner_cancel_button: (file_id) =>
+        $(
+            `#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(
+                file_id,
+            )} .upload_banner_cancel_button`,
+        ),
+    upload_banner_hide_button: (file_id) =>
+        $(
+            `#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(
+                file_id,
+            )} .main-view-banner-close-button`,
+        ),
+    upload_banner_message: (file_id) =>
+        $(
+            `#edit_form_${CSS.escape(`${row}`)} .upload_banner.file_${CSS.escape(
+                file_id,
+            )} .upload_msg`,
+        ),
+    file_input_identifier: () => `#edit_form_${CSS.escape(`${row}`)} input.file_input`,
+    source: () => "message-edit-file-input",
+    drag_drop_container: () => {
+        assert(message_lists.current !== undefined);
+        return $(
+            `#message-row-${message_lists.current.id}-${CSS.escape(`${row}`)} .message_edit_form`,
+        );
+    },
+    markdown_preview_hide_button: () =>
+        $(`#edit_form_${CSS.escape(`${row}`)} .undo_markdown_preview`),
+});
 
-export function hide_upload_banner(uppy: Uppy, config: Config, file_id: string): void {
+export const hide_upload_banner = (uppy: Uppy, config: Config, file_id: string): void => {
     config.upload_banner(file_id).remove();
     if (uppy.getFiles().length === 0) {
         if (config.mode === "compose") {
@@ -135,15 +129,15 @@ export function hide_upload_banner(uppy: Uppy, config: Config, file_id: string):
             config.send_button().prop("disabled", false);
         }
     }
-}
+};
 
-function add_upload_banner(
+const add_upload_banner = (
     config: Config,
     banner_type: string,
     banner_text: string,
     file_id: string,
     is_upload_process_tracker = false,
-): void {
+): void => {
     const new_banner_html = render_upload_banner({
         banner_type,
         is_upload_process_tracker,
@@ -154,13 +148,13 @@ function add_upload_banner(
         $(new_banner_html),
         config.banner_container(),
     );
-}
+};
 
-export function show_error_message(
+export const show_error_message = (
     config: Config,
     message = $t({defaultMessage: "An unknown error occurred."}),
     file_id: string | null = null,
-): void {
+): void => {
     if (file_id) {
         $(`${config.upload_banner_identifier(file_id)} .moving_bar`).hide();
         config.upload_banner(file_id).removeClass("info").addClass("error");
@@ -171,9 +165,9 @@ export function show_error_message(
         // with files. This is notably relevant for the close click handler.
         add_upload_banner(config, "error", message, "generic_error");
     }
-}
+};
 
-export function upload_files(uppy: Uppy, config: Config, files: File[] | FileList): void {
+export const upload_files = (uppy: Uppy, config: Config, files: File[] | FileList): void => {
     if (files.length === 0) {
         return;
     }
@@ -243,9 +237,9 @@ export function upload_files(uppy: Uppy, config: Config, files: File[] | FileLis
             hide_upload_banner(uppy, config, file_id);
         });
     }
-}
+};
 
-export function setup_upload(config: Config): Uppy {
+export const setup_upload = (config: Config): Uppy => {
     const uppy = new Uppy({
         debug: false,
         autoProceed: true,
@@ -455,9 +449,9 @@ export function setup_upload(config: Config): Uppy {
     });
 
     return uppy;
-}
+};
 
-export function deactivate_upload(config: Config): void {
+export const deactivate_upload = (config: Config): void => {
     // Remove event listeners added for handling uploads.
     $(config.file_input_identifier()).off("change");
     config.banner_container().off("click");
@@ -489,9 +483,9 @@ export function deactivate_upload(config: Config): void {
         // now remove the corresponding upload object from the store.
         upload_objects_by_message_edit_row.delete(config.row);
     }
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     compose_upload_object = setup_upload(compose_config);
 
     $(".app, #navbar-fixed-container").on("dragstart", (event) => {
@@ -562,4 +556,4 @@ export function initialize(): void {
             upload_files(compose_upload_object, compose_config, files);
         }
     });
-}
+};

@@ -18,11 +18,11 @@ export type NarrowBannerData = {
     search_data?: SearchData;
 };
 
-export function narrow_error(narrow_banner_data: NarrowBannerData): string {
+export const narrow_error = (narrow_banner_data: NarrowBannerData): string => {
     const title = narrow_banner_data.title;
     const html = narrow_banner_data.html;
     const search_data = narrow_banner_data.search_data;
 
     const empty_feed_notice = render_empty_feed_notice({title, html, search_data});
     return empty_feed_notice;
-}
+};

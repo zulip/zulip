@@ -66,7 +66,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     row_item_selector: "overlay-message-row",
     box_item_selector: "overlay-message-info-box",
     id_attribute_name: "data-message-edit-history-id",
-    get_items_ids(): number[] {
+    get_items_ids: (): number[] => {
         const edited_messages_ids: number[] = [];
         const $message_history_list: JQuery = $(
             "#message-history-overlay .message-edit-history-list",
@@ -78,35 +78,35 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         }
         return edited_messages_ids;
     },
-    on_enter() {
+    on_enter: () => {
         // Do nothing
     },
-    on_delete() {
+    on_delete: () => {
         // Do nothing
     },
 };
 
-function get_display_stream_name(stream_id: number): string {
+const get_display_stream_name = (stream_id: number): string => {
     const stream_name = sub_store.maybe_get_stream_name(stream_id);
     if (stream_name === undefined) {
         return $t({defaultMessage: "Unknown channel"});
     }
     return stream_name;
-}
+};
 
-function show_loading_indicator(): void {
+const show_loading_indicator = (): void => {
     loading.make_indicator($(".message-edit-history-container .loading_indicator"));
     $(".message-edit-history-container .loading_indicator").addClass(
         "overlay_loading_indicator_style",
     );
-}
+};
 
-function hide_loading_indicator(): void {
+const hide_loading_indicator = (): void => {
     loading.destroy_indicator($(".message-edit-history-container .loading_indicator"));
     $(".message-edit-history-container .loading_indicator").removeClass(
         "overlay_loading_indicator_style",
     );
-}
+};
 
 export function fetch_and_render_message_history(message: Message): void {
     $("#message-edit-history-overlay-container").html(render_message_history_overlay());
@@ -246,7 +246,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 keyboard_handling_context,
             );
         },
-        error(xhr) {
+        error: (xhr) => {
             ui_report.error(
                 $t_html({defaultMessage: "Error fetching message edit history."}),
                 xhr,
@@ -258,23 +258,23 @@ export function fetch_and_render_message_history(message: Message): void {
     });
 }
 
-export function open_overlay(): void {
+export const open_overlay = (): void => {
     if (overlays.any_active()) {
         return;
     }
     overlays.open_overlay({
         name: "message_edit_history",
         $overlay: $("#message-history-overlay"),
-        on_close() {
+        on_close: () => {
             exit_overlay();
             $("#message-edit-history-overlay-container").empty();
         },
     });
-}
+};
 
-export function handle_keyboard_events(event_key: string): void {
+export const handle_keyboard_events = (event_key: string): void => {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
-}
+};
 
 export function initialize(): void {
     $("body").on("mouseenter", ".message_edit_notice", (e) => {

@@ -41,12 +41,12 @@ stream_data.add_sub(devel);
 stream_data.add_sub(office);
 stream_data.add_sub(social);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         user_topics.set_user_topics([]);
         f({override});
     });
-}
+};
 
 test("edge_cases", () => {
     // direct messages

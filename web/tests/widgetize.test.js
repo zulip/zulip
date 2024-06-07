@@ -41,7 +41,7 @@ let is_event_handled;
 let is_widget_activated;
 
 const fake_poll_widget = {
-    activate(data) {
+    activate: (data) => {
         is_widget_activated = true;
         $widget_elem = data.$elem;
         assert.ok($widget_elem.hasClass("widget-content"));
@@ -64,7 +64,7 @@ const widgets = zrequire("widgets");
 
 widgets.initialize();
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         events = [...sample_events];
         $widget_elem = undefined;
@@ -74,7 +74,7 @@ function test(label, f) {
         widgetize.clear_for_testing();
         f({override});
     });
-}
+};
 
 test("activate", ({override}) => {
     // Both widgetize.activate and widgetize.handle_event are tested
@@ -91,7 +91,7 @@ test("activate", ({override}) => {
         message: {
             id: 2001,
         },
-        post_to_server(data) {
+        post_to_server: (data) => {
             assert.equal(data.msg_type, "widget");
             assert.equal(data.data, "test_data");
         },

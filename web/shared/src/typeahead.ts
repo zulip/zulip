@@ -52,11 +52,10 @@ export type EmojiSuggestion = Emoji & {
     type: "emoji";
 };
 
-export function remove_diacritics(s: string): string {
-    return s.normalize("NFKD").replace(unicode_marks, "");
-}
+export const remove_diacritics = (s: string): string =>
+    s.normalize("NFKD").replace(unicode_marks, "");
 
-export function last_prefix_match(prefix: string, words: string[]): number | null {
+export const last_prefix_match = (prefix: string, words: string[]): number | null => {
     // This function takes in a lexicographically sorted array of `words`,
     // and a `prefix` string. It uses binary search to compute the index
     // of `prefix`'s upper bound, that is, the string immediately after
@@ -83,17 +82,17 @@ export function last_prefix_match(prefix: string, words: string[]): number | nul
         return left - 1;
     }
     return null;
-}
+};
 
 // This function attempts to match a query in order with a source text.
 // * query is the user-entered search query
 // * source_str is the string we're matching in, e.g. a user's name
 // * split_char is the separator for this syntax (e.g. ' ').
-export function query_matches_string_in_order(
+export const query_matches_string_in_order = (
     query: string,
     source_str: string,
     split_char: string,
-): boolean {
+): boolean => {
     source_str = source_str.toLowerCase();
     source_str = remove_diacritics(source_str);
 
@@ -111,7 +110,7 @@ export function query_matches_string_in_order(
     // (E.g. for 'ab cd ef', query could be 'ab c' or 'cd ef',
     // but not 'b cd ef'.)
     return source_str.startsWith(query) || source_str.includes(split_char + query);
-}
+};
 
 // Match the words in the query to the words in the source text, in any order.
 //
@@ -127,11 +126,11 @@ export function query_matches_string_in_order(
 // * query is the user-entered search query
 // * source_str is the string we're matching in, e.g. a user's name
 // * split_char is the separator for this syntax (e.g. ' ').
-export function query_matches_string_in_any_order(
+export const query_matches_string_in_any_order = (
     query: string,
     source_str: string,
     split_char: string,
-): boolean {
+): boolean => {
     source_str = source_str.toLowerCase();
     source_str = remove_diacritics(source_str);
 
@@ -173,9 +172,9 @@ export function query_matches_string_in_any_order(
         source_words.splice(match_index, 1);
     }
     return true;
-}
+};
 
-function clean_query(query: string): string {
+const clean_query = (query: string): string => {
     query = remove_diacritics(query);
     // When `abc ` with a space at the end is typed in
     // a content-editable widget such as the composebox
@@ -185,13 +184,13 @@ function clean_query(query: string): string {
     query = query.replace(/\u00A0/g, " ");
 
     return query;
-}
+};
 
-export function clean_query_lowercase(query: string): string {
+export const clean_query_lowercase = (query: string): string => {
     query = query.toLowerCase();
     query = clean_query(query);
     return query;
-}
+};
 
 export const parse_unicode_emoji_code = (code: string): string =>
     code
@@ -199,25 +198,25 @@ export const parse_unicode_emoji_code = (code: string): string =>
         .map((hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
         .join("");
 
-export function get_emoji_matcher(query: string): (emoji: EmojiSuggestion) => boolean {
+export const get_emoji_matcher = (query: string): ((emoji: EmojiSuggestion) => boolean) => {
     // replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
     query = clean_query_lowercase(query);
 
-    return function (emoji) {
+    return (emoji) => {
         const matches_emoji_literal =
             emoji.reaction_type === "unicode_emoji" &&
             parse_unicode_emoji_code(emoji.emoji_code) === query;
         return matches_emoji_literal || query_matches_string_in_order(query, emoji.emoji_name, "_");
     };
-}
+};
 
 // space, hyphen, underscore and slash characters are considered word
 // boundaries for now, but we might want to consider the characters
 // from BEFORE_MENTION_ALLOWED_REGEX in zerver/lib/mention.py later.
 export const word_boundary_chars = " _/-";
 
-export function triage_raw<T>(
+export const triage_raw = <T>(
     query: string,
     objs: T[],
     get_item: (x: T) => string,
@@ -227,7 +226,7 @@ export function triage_raw<T>(
     begins_with_case_insensitive_matches: T[];
     word_boundary_matches: T[];
     no_matches: T[];
-} {
+} => {
     /*
         We split objs into five groups:
 
@@ -272,14 +271,14 @@ export function triage_raw<T>(
         word_boundary_matches,
         no_matches,
     };
-}
+};
 
-export function triage<T>(
+export const triage = <T>(
     query: string,
     objs: T[],
     get_item: (x: T) => string,
     sorting_comparator?: (a: T, b: T) => number,
-): {matches: T[]; rest: T[]} {
+): {matches: T[]; rest: T[]} => {
     const {
         exact_matches,
         begins_with_case_sensitive_matches,
@@ -312,27 +311,24 @@ export function triage<T>(
         ],
         rest: no_matches,
     };
-}
+};
 
-export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string): T[] {
+export const sort_emojis = <T extends EmojiSuggestion>(objs: T[], query: string): T[] => {
     // replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
     query = query.toLowerCase();
 
-    function decent_match(name: string): boolean {
+    const decent_match = (name: string): boolean => {
         const pieces = name.toLowerCase().split("_");
         return pieces.some((piece) => piece.startsWith(query));
-    }
+    };
 
     const popular_set = new Set(popular_emojis);
 
-    function is_popular(obj: EmojiSuggestion): boolean {
-        return (
-            obj.reaction_type === "unicode_emoji" &&
-            popular_set.has(obj.emoji_code) &&
-            decent_match(obj.emoji_name)
-        );
-    }
+    const is_popular = (obj: EmojiSuggestion): boolean =>
+        obj.reaction_type === "unicode_emoji" &&
+        popular_set.has(obj.emoji_code) &&
+        decent_match(obj.emoji_name);
 
     const realm_emoji_names = new Set(
         objs.filter((obj) => obj.is_realm_emoji).map((obj) => obj.emoji_name),
@@ -346,12 +342,10 @@ export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string)
 
     const triage_results = triage(query, others, (x) => x.emoji_name);
 
-    function prioritise_realm_emojis(emojis: T[]): T[] {
-        return [
-            ...emojis.filter((emoji) => emoji.is_realm_emoji),
-            ...emojis.filter((emoji) => !emoji.is_realm_emoji),
-        ];
-    }
+    const prioritise_realm_emojis = (emojis: T[]): T[] => [
+        ...emojis.filter((emoji) => emoji.is_realm_emoji),
+        ...emojis.filter((emoji) => !emoji.is_realm_emoji),
+    ];
 
     const sorted_results_with_possible_duplicates = [
         ...perfect_emoji_matches,
@@ -376,4 +370,4 @@ export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string)
     }
 
     return sorted_unique_results;
-}
+};

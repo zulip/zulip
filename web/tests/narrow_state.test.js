@@ -12,7 +12,7 @@ const stream_data = zrequire("stream_data");
 const narrow_state = zrequire("narrow_state");
 const message_lists = zrequire("message_lists");
 
-function set_filter(raw_terms) {
+const set_filter = (raw_terms) => {
     const terms = raw_terms.map((op) => ({
         operator: op[0],
         operand: op[1],
@@ -25,15 +25,15 @@ function set_filter(raw_terms) {
     });
 
     return filter;
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         message_lists.set_current(undefined);
         stream_data.clear_subscriptions();
         f({override});
     });
-}
+};
 
 test("stream", () => {
     assert.equal(narrow_state.public_search_terms(), undefined);

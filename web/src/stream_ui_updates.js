@@ -16,42 +16,28 @@ import * as stream_edit_toggler from "./stream_edit_toggler";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as sub_store from "./sub_store";
 
-export function row_for_stream_id(stream_id) {
-    return $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}']`);
-}
+export const row_for_stream_id = (stream_id) =>
+    $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}']`);
 
-function settings_button_for_sub(sub) {
-    // We don't do expectOne() here, because this button is only
-    // visible if the user has that stream selected in the streams UI.
-    return $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id)}'] .subscribe-button`,
-    );
-}
+const settings_button_for_sub = (sub) =>
+    $(`.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id)}'] .subscribe-button`);
 
 export let show_subscribed = true;
 export let show_not_subscribed = false;
 
-export function is_subscribed_stream_tab_active() {
-    // Returns true if "Subscribed" tab in stream settings is open
-    // otherwise false.
-    return show_subscribed;
-}
+export const is_subscribed_stream_tab_active = () => show_subscribed;
 
-export function is_not_subscribed_stream_tab_active() {
-    // Returns true if "not-subscribed" tab in stream settings is open
-    // otherwise false.
-    return show_not_subscribed;
-}
+export const is_not_subscribed_stream_tab_active = () => show_not_subscribed;
 
-export function set_show_subscribed(value) {
+export const set_show_subscribed = (value) => {
     show_subscribed = value;
-}
+};
 
-export function set_show_not_subscribed(value) {
+export const set_show_not_subscribed = (value) => {
     show_not_subscribed = value;
-}
+};
 
-export function update_web_public_stream_privacy_option_state($container) {
+export const update_web_public_stream_privacy_option_state = ($container) => {
     const $web_public_stream_elem = $container.find(
         `input[value='${CSS.escape(
             settings_config.stream_privacy_policy_values.web_public.code,
@@ -98,9 +84,12 @@ export function update_web_public_stream_privacy_option_state($container) {
             !settings_data.user_can_create_web_public_streams(),
         );
     }
-}
+};
 
-export function update_private_stream_privacy_option_state($container, is_default_stream = false) {
+export const update_private_stream_privacy_option_state = (
+    $container,
+    is_default_stream = false,
+) => {
     // Disable both "Private, shared history" and "Private, protected history" options.
     const $private_stream_elem = $container.find(
         `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
@@ -123,14 +112,14 @@ export function update_private_stream_privacy_option_state($container, is_defaul
     $private_with_public_history_elem
         .closest("div")
         .toggleClass("default_stream_private_tooltip", is_default_stream);
-}
+};
 
-export function initialize_cant_subscribe_popover() {
+export const initialize_cant_subscribe_popover = () => {
     const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
     settings_components.initialize_disable_btn_hint_popover($button_wrapper);
-}
+};
 
-export function set_up_right_panel_section(sub) {
+export const set_up_right_panel_section = (sub) => {
     if (sub.subscribed) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
@@ -146,17 +135,17 @@ export function set_up_right_panel_section(sub) {
         stream_edit_toggler.toggler.disable_tab("personal");
     }
     enable_or_disable_subscribers_tab(sub);
-}
+};
 
-export function update_toggler_for_sub(sub) {
+export const update_toggler_for_sub = (sub) => {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
     set_up_right_panel_section(sub);
-}
+};
 
-export function enable_or_disable_subscribers_tab(sub) {
+export const enable_or_disable_subscribers_tab = (sub) => {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
@@ -170,9 +159,9 @@ export function enable_or_disable_subscribers_tab(sub) {
     }
 
     stream_edit_toggler.toggler.enable_tab("subscribers");
-}
+};
 
-export function update_settings_button_for_sub(sub) {
+export const update_settings_button_for_sub = (sub) => {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
@@ -201,9 +190,9 @@ export function update_settings_button_for_sub(sub) {
         $settings_button.prop("disabled", true);
         $settings_button.removeClass("toggle-subscription-tooltip");
     }
-}
+};
 
-export function update_regular_sub_settings(sub) {
+export const update_regular_sub_settings = (sub) => {
     // These are in the right panel.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
@@ -214,9 +203,9 @@ export function update_regular_sub_settings(sub) {
     } else {
         $settings.find(".stream-email-box").hide();
     }
-}
+};
 
-export function update_default_stream_and_stream_privacy_state($container) {
+export const update_default_stream_and_stream_privacy_state = ($container) => {
     const $default_stream = $container.find(".default-stream");
     const is_stream_creation = $container.attr("id") === "stream-creation";
 
@@ -241,9 +230,9 @@ export function update_default_stream_and_stream_privacy_state($container) {
     // If the default stream option is checked, the private stream options are disabled.
     const is_default_stream = $default_stream.find("input").prop("checked");
     update_private_stream_privacy_option_state($container, is_default_stream);
-}
+};
 
-export function enable_or_disable_permission_settings_in_edit_panel(sub) {
+export const enable_or_disable_permission_settings_in_edit_panel = (sub) => {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
@@ -271,9 +260,9 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
         .prop("disabled", disable_message_retention_setting);
 
     update_web_public_stream_privacy_option_state($("#stream_permission_settings"));
-}
+};
 
-export function update_announce_stream_option() {
+export const update_announce_stream_option = () => {
     if (!hash_parser.is_create_new_stream_narrow()) {
         return;
     }
@@ -291,9 +280,9 @@ export function update_announce_stream_option() {
         new_stream_announcements_stream_sub,
     });
     $("#announce-new-stream").expectOne().html(rendered_announce_stream);
-}
+};
 
-export function update_stream_privacy_icon_in_settings(sub) {
+export const update_stream_privacy_icon_in_settings = (sub) => {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
@@ -309,16 +298,16 @@ export function update_stream_privacy_icon_in_settings(sub) {
             }),
         ),
     );
-}
+};
 
-export function update_permissions_banner(sub) {
+export const update_permissions_banner = (sub) => {
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
 
     const rendered_tip = render_stream_settings_tip(sub);
     $settings.find(".stream-settings-tip-container").html(rendered_tip);
-}
+};
 
-export function update_notification_setting_checkbox(notification_name) {
+export const update_notification_setting_checkbox = (notification_name) => {
     // This is in the right panel (Personal settings).
     const $stream_row = $("#channels_overlay_container .stream-row.active");
     if (!$stream_row.length) {
@@ -329,9 +318,9 @@ export function update_notification_setting_checkbox(notification_name) {
         "checked",
         stream_data.receives_notifications(stream_id, notification_name),
     );
-}
+};
 
-export function update_stream_row_in_settings_tab(sub) {
+export const update_stream_row_in_settings_tab = (sub) => {
     // This is in the left panel.
     // This function display/hide stream row in stream settings tab,
     // used to display immediate effect of add/removal subscription event.
@@ -351,9 +340,9 @@ export function update_stream_row_in_settings_tab(sub) {
             $row.addClass("notdisplayed");
         }
     }
-}
+};
 
-export function update_add_subscriptions_elements(sub) {
+export const update_add_subscriptions_elements = (sub) => {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
@@ -390,22 +379,22 @@ export function update_add_subscriptions_elements(sub) {
             tooltip_message,
         );
     }
-}
+};
 
-export function update_setting_element(sub, setting_name) {
+export const update_setting_element = (sub, setting_name) => {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
     settings_org.discard_stream_property_element_changes($elem, sub);
-}
+};
 
-export function enable_or_disable_add_subscribers_elements(
+export const enable_or_disable_add_subscribers_elements = (
     $container_elem,
     enable_elem,
     stream_creation = false,
-) {
+) => {
     const $input_element = $container_elem.find(".input").expectOne();
     const $add_subscribers_button = $container_elem
         .find('button[name="add_subscriber"]')
@@ -437,4 +426,4 @@ export function enable_or_disable_add_subscribers_elements(
                 .addClass("add_subscribers_disabled");
         }
     }
-}
+};

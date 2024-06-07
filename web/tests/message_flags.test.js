@@ -11,13 +11,13 @@ const message_live_update = mock_esm("../src/message_live_update");
 set_global("document", {hasFocus: () => true});
 
 mock_esm("../src/starred_messages", {
-    add() {},
+    add: () => {},
     get_count: () => 5,
     get_starred_msg_ids: () => [1, 2, 3, 4, 5],
-    remove() {},
+    remove: () => {},
 });
 mock_esm("../src/left_sidebar_navigation_area", {
-    update_starred_count() {},
+    update_starred_count: () => {},
 });
 
 const message_flags = zrequire("message_flags");
@@ -157,12 +157,12 @@ run_test("read", ({override}) => {
     });
 
     // For testing purpose limit the batch size value to 5 instead of 1000
-    function send_read(messages) {
+    const send_read = (messages) => {
         with_overrides(({override_rewire}) => {
             override_rewire(message_flags, "_unread_batch_size", 5);
             message_flags.send_read(messages);
         });
-    }
+    };
 
     let msgs_to_flag_read = [
         {locally_echoed: false, id: 1},
@@ -229,12 +229,12 @@ run_test("read", ({override}) => {
     // Messages still not acked yet
     const events = {};
     const stub_delay = 100;
-    function set_timeout(f, delay) {
+    const set_timeout = (f, delay) => {
         assert.equal(delay, stub_delay);
         events.f = f;
         events.timer_set = true;
         return;
-    }
+    };
     set_global("setTimeout", set_timeout);
     // Mock successful flagging of ids
     success_response_data = {
@@ -284,12 +284,12 @@ run_test("read_empty_data", ({override}) => {
     });
 
     // For testing purpose limit the batch size value to 5 instead of 1000
-    function send_read(messages) {
+    const send_read = (messages) => {
         with_overrides(({override_rewire}) => {
             override_rewire(message_flags, "_unread_batch_size", 5);
             message_flags.send_read(messages);
         });
-    }
+    };
 
     // send read to obtain success callback
     send_read([{locally_echoed: false, id: 1}]);

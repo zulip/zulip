@@ -11,7 +11,7 @@ import type {UserTopic} from "./user_topics";
 
 export let loaded = false;
 
-export function populate_list(): void {
+export const populate_list = (): void => {
     const all_user_topics = [];
     const visibility_policies = Object.values(user_topics.all_visibility_policies);
     for (const visibility_policy of visibility_policies) {
@@ -28,7 +28,7 @@ export function populate_list(): void {
     ListWidget.create<UserTopic>($user_topics_table, all_user_topics, {
         name: "user-topics-list",
         get_item: ListWidget.default_get_item,
-        modifier_html(user_topic) {
+        modifier_html: (user_topic) => {
             const context = {
                 user_topic,
                 user_topic_visibility_policy_values:
@@ -38,10 +38,8 @@ export function populate_list(): void {
         },
         filter: {
             $element: $search_input,
-            predicate(item, value) {
-                return item.topic.toLocaleLowerCase().includes(value);
-            },
-            onupdate() {
+            predicate: (item, value) => item.topic.toLocaleLowerCase().includes(value),
+            onupdate: () => {
                 scroll_util.reset_scrollbar(
                     $user_topics_table.closest(".progressive-table-wrapper"),
                 );
@@ -56,7 +54,7 @@ export function populate_list(): void {
         $parent_container: $("#user-topic-settings"),
         $simplebar_container: $("#user-topic-settings .progressive-table-wrapper"),
     });
-}
+};
 
 export function set_up(): void {
     loaded = true;
@@ -89,6 +87,6 @@ export function set_up(): void {
     populate_list();
 }
 
-export function reset(): void {
+export const reset = (): void => {
     loaded = false;
-}
+};

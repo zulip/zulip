@@ -7,12 +7,12 @@ const {run_test} = require("./lib/test");
 
 const muted_users = zrequire("muted_users");
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         muted_users.set_muted_users([]);
         f({override});
     });
-}
+};
 
 test("edge_cases", () => {
     // invalid user

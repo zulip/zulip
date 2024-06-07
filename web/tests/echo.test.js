@@ -16,22 +16,22 @@ const message_lists = mock_esm("../src/message_lists");
 let disparities = [];
 
 mock_esm("../src/message_live_update", {
-    update_message_in_all_views() {},
+    update_message_in_all_views: () => {},
 });
 
 mock_esm("../src/sent_messages", {
-    mark_disparity(local_id) {
+    mark_disparity: (local_id) => {
         disparities.push(local_id);
     },
-    report_event_received() {},
+    report_event_received: () => {},
 });
 
 const message_store = mock_esm("../src/message_store", {
     get: () => ({failed_request: true}),
 
-    update_booleans() {},
+    update_booleans: () => {},
 
-    convert_raw_message_to_message_with_booleans() {},
+    convert_raw_message_to_message_with_booleans: () => {},
 });
 
 message_lists.current = {

@@ -34,19 +34,19 @@ import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as user_topics from "./user_topics";
 
-export function abort_xhr() {
+export const abort_xhr = () => {
     $("#compose-send-button").prop("disabled", false);
     upload.compose_upload_cancel();
-}
+};
 
-function setup_compose_actions_hooks() {
+const setup_compose_actions_hooks = () => {
     compose_actions.register_compose_box_clear_hook(compose.clear_invites);
     compose_actions.register_compose_box_clear_hook(compose.clear_private_stream_alert);
     compose_actions.register_compose_box_clear_hook(compose.clear_preview_area);
 
     compose_actions.register_compose_cancel_hook(abort_xhr);
     compose_actions.register_compose_cancel_hook(compose_call.abort_video_callbacks);
-}
+};
 
 export function initialize() {
     // Register hooks for compose_actions.
@@ -107,14 +107,14 @@ export function initialize() {
     const update_compose_max_height = new ResizeObserver(resize.reset_compose_message_max_height);
     update_compose_max_height.observe(document.querySelector("#compose"));
 
-    function get_input_info(event) {
+    const get_input_info = (event) => {
         const $edit_banners_container = $(event.target).closest(".edit_form_banners");
         const is_edit_input = Boolean($edit_banners_container.length);
         const $banner_container = $edit_banners_container.length
             ? $edit_banners_container
             : $("#compose_banners");
         return {is_edit_input, $banner_container};
-    }
+    };
 
     $("body").on(
         "click",
@@ -257,11 +257,11 @@ export function initialize() {
             const user_id = Number($invite_row.attr("data-user-id"));
             const stream_id = Number($invite_row.attr("data-stream-id"));
 
-            function success() {
+            const success = () => {
                 $invite_row.remove();
-            }
+            };
 
-            function xhr_failure(xhr) {
+            const xhr_failure = (xhr) => {
                 let error_message = "Failed to subscribe user!";
                 if (xhr.responseJSON?.msg) {
                     error_message = xhr.responseJSON.msg;
@@ -274,7 +274,7 @@ export function initialize() {
                     $("textarea#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);
-            }
+            };
 
             const sub = sub_store.get(stream_id);
 
@@ -387,7 +387,7 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        function validate_input() {
+        const validate_input = () => {
             const question = $("#poll-question-input").val().trim();
 
             if (question === "") {
@@ -399,14 +399,14 @@ export function initialize() {
                 return false;
             }
             return true;
-        }
+        };
 
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Create a poll"}),
             html_body: render_add_poll_modal(),
             html_submit_button: $t_html({defaultMessage: "Add poll"}),
             close_on_submit: true,
-            on_click(e) {
+            on_click: (e) => {
                 // frame a message using data input in modal, then populate the compose textarea with it
                 e.preventDefault();
                 e.stopPropagation();

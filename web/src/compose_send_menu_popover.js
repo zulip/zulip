@@ -24,12 +24,12 @@ const ENTER_SENDS_SELECTION_DELAY = 600;
 
 let send_later_popover_keyboard_toggle = false;
 
-function set_compose_box_schedule(element) {
+const set_compose_box_schedule = (element) => {
     const selected_send_at_time = element.dataset.sendStamp / 1000;
     return selected_send_at_time;
-}
+};
 
-export function open_send_later_menu() {
+export const open_send_later_menu = () => {
     if (!compose_validate.validate(true)) {
         return;
     }
@@ -42,7 +42,7 @@ export function open_send_later_menu() {
 
     modals.open("send_later_modal", {
         autoremove: true,
-        on_show() {
+        on_show: () => {
             interval = setInterval(
                 update_send_later_options,
                 SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
@@ -75,7 +75,7 @@ export function open_send_later_menu() {
                             current_time.getTime() +
                                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
                         ),
-                        onClose() {
+                        onClose: () => {
                             // Return to normal state.
                             $send_later_modal_content.css("pointer-events", "all");
                         },
@@ -97,18 +97,18 @@ export function open_send_later_menu() {
                 },
             );
         },
-        on_shown() {
+        on_shown: () => {
             // When shown, we should give the modal focus to correctly handle keyboard events.
             const $send_later_modal_overlay = $("#send_later_modal .modal__overlay");
             $send_later_modal_overlay.trigger("focus");
         },
-        on_hide() {
+        on_hide: () => {
             clearInterval(interval);
         },
     });
-}
+};
 
-export function do_schedule_message(send_at_time) {
+export const do_schedule_message = (send_at_time) => {
     modals.close_if_open("send_later_modal");
 
     if (!Number.isInteger(send_at_time)) {
@@ -117,9 +117,9 @@ export function do_schedule_message(send_at_time) {
     }
     scheduled_messages.set_selected_schedule_timestamp(send_at_time);
     compose.finish(true);
-}
+};
 
-function get_send_later_menu_items() {
+const get_send_later_menu_items = () => {
     const $current_schedule_popover_elem = $("[data-tippy-root] #send_later_popover");
     if (!$current_schedule_popover_elem) {
         blueslip.error("Trying to get menu items when schedule popover is closed.");
@@ -127,29 +127,29 @@ function get_send_later_menu_items() {
     }
 
     return $current_schedule_popover_elem.find("li:not(.divider):visible a");
-}
+};
 
-function focus_first_send_later_popover_item() {
+const focus_first_send_later_popover_item = () => {
     // It is recommended to only call this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_send_later_menu_items();
     popover_menus.focus_first_popover_item($items);
-}
+};
 
-export function toggle() {
+export const toggle = () => {
     send_later_popover_keyboard_toggle = true;
     $("#send_later i").trigger("click");
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     tippy.delegate("body", {
         ...popover_menus.default_popover_props,
         target: "#send_later i",
-        onUntrigger() {
+        onUntrigger: () => {
             // This is only called when the popover is closed by clicking on `target`.
             $("textarea#compose-textarea").trigger("focus");
         },
-        onShow(instance) {
+        onShow: (instance) => {
             const formatted_send_later_time =
                 scheduled_messages.get_formatted_selected_send_later_time();
             // If there's existing text in the composebox, show an option
@@ -166,7 +166,7 @@ export function initialize() {
             );
             popover_menus.popover_instances.send_later = instance;
         },
-        onMount(instance) {
+        onMount: (instance) => {
             if (send_later_popover_keyboard_toggle) {
                 focus_first_send_later_popover_item();
                 send_later_popover_keyboard_toggle = false;
@@ -222,16 +222,16 @@ export function initialize() {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
             popover_menus.popover_instances.send_later = undefined;
             send_later_popover_keyboard_toggle = false;
         },
     });
-}
+};
 
 // This function is exported for unit testing purposes.
-export function should_update_send_later_options(date) {
+export const should_update_send_later_options = (date) => {
     const current_minute = date.getMinutes();
     const current_hour = date.getHours();
 
@@ -244,9 +244,9 @@ export function should_update_send_later_options(date) {
     // Rerender at MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS before the
     // hour, so we don't offer a 4:00PM send time at 3:59 PM.
     return current_minute === 60 - scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60;
-}
+};
 
-export function update_send_later_options() {
+export const update_send_later_options = () => {
     const now = new Date();
     if (should_update_send_later_options(now)) {
         const filtered_send_opts = scheduled_messages.get_filtered_send_opts(now);
@@ -254,4 +254,4 @@ export function update_send_later_options() {
             $(render_send_later_modal_options(filtered_send_opts)),
         );
     }
-}
+};

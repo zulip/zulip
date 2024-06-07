@@ -39,12 +39,12 @@ const message_lists = mock_esm("../src/message_lists");
 message_lists.current = {
     id: "1",
 };
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         realm.max_file_upload_size_mib = 25;
         return f(helpers);
     });
-}
+};
 
 test("feature_check", ({override}) => {
     assert.ok(!upload.feature_check());
@@ -178,7 +178,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     let uppy_add_file_called = false;
     let remove_file_called = false;
     const uppy = {
-        addFile(params) {
+        addFile: (params) => {
             uppy_add_file_called = true;
             assert.equal(params.source, "compose-file-input");
             assert.equal(params.name, "budapest.png");
@@ -186,7 +186,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
             assert.equal(params.data, files[0]);
             return "id_123";
         },
-        removeFile() {
+        removeFile: () => {
             remove_file_called = true;
         },
     };
@@ -309,7 +309,7 @@ test("uppy_config", () => {
     let uppy_set_meta_called = false;
     let uppy_used_xhrupload = false;
 
-    uppy_stub = function (config) {
+    uppy_stub = (config) => {
         uppy_stub_called = true;
         assert.equal(config.debug, false);
         assert.equal(config.autoProceed, true);
@@ -318,11 +318,11 @@ test("uppy_config", () => {
         assert.ok("exceedsSize" in config.locale.strings);
 
         return {
-            setMeta(params) {
+            setMeta: (params) => {
                 uppy_set_meta_called = true;
                 assert.equal(params.csrfmiddlewaretoken, "csrf_token");
             },
-            use(func, params) {
+            use: (func, params) => {
                 const func_name = func.name;
                 if (func_name === "XHRUpload") {
                     uppy_used_xhrupload = true;
@@ -337,7 +337,7 @@ test("uppy_config", () => {
                     assert.fail(`Missing tests for ${func_name}`);
                 }
             },
-            on() {},
+            on: () => {},
         };
     };
     upload.setup_upload(upload.compose_config);
@@ -374,7 +374,7 @@ test("file_drop", ({override, override_rewire}) => {
 
     let prevent_default_counter = 0;
     const drag_event = {
-        preventDefault() {
+        preventDefault: () => {
             prevent_default_counter += 1;
         },
     };
@@ -389,10 +389,10 @@ test("file_drop", ({override, override_rewire}) => {
     let stop_propagation_counter = 0;
     const files = ["file1", "file2"];
     const drop_event = {
-        preventDefault() {
+        preventDefault: () => {
             prevent_default_counter += 1;
         },
-        stopPropagation() {
+        stopPropagation: () => {
             stop_propagation_counter += 1;
         },
         originalEvent: {
@@ -429,7 +429,7 @@ test("copy_paste", ({override, override_rewire}) => {
                 items: [
                     {
                         kind: "file",
-                        getAsFile() {
+                        getAsFile: () => {
                             get_as_file_called = true;
                         },
                     },
@@ -440,7 +440,7 @@ test("copy_paste", ({override, override_rewire}) => {
                 ],
             },
         }),
-        preventDefault() {},
+        preventDefault: () => {},
     };
     let upload_files_called = false;
     override_rewire(upload, "upload_files", () => {
@@ -471,25 +471,23 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     const callbacks = {};
     let state = {};
 
-    uppy_stub = function () {
-        return {
-            setMeta() {},
-            use() {},
-            on(event_name, callback) {
-                callbacks[event_name] = callback;
-            },
-            removeFile() {},
-            getState: () => ({
-                info: [
-                    {
-                        type: state.type,
-                        details: state.details,
-                        message: state.message,
-                    },
-                ],
-            }),
-        };
-    };
+    uppy_stub = () => ({
+        setMeta: () => {},
+        use: () => {},
+        on: (event_name, callback) => {
+            callbacks[event_name] = callback;
+        },
+        removeFile: () => {},
+        getState: () => ({
+            info: [
+                {
+                    type: state.type,
+                    details: state.details,
+                    message: state.message,
+                },
+            ],
+        }),
+    });
     upload.setup_upload(upload.compose_config);
     assert.equal(Object.keys(callbacks).length, 5);
 
@@ -605,21 +603,19 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 });
 
 test("main_file_drop_compose_mode", ({override, override_rewire}) => {
-    uppy_stub = function () {
-        return {
-            setMeta() {},
-            use() {},
-            cancelAll() {},
-            on() {},
-            getFiles() {},
-            removeFile() {},
-        };
-    };
+    uppy_stub = () => ({
+        setMeta: () => {},
+        use: () => {},
+        cancelAll: () => {},
+        on: () => {},
+        getFiles: () => {},
+        removeFile: () => {},
+    });
     upload.initialize();
 
     let prevent_default_counter = 0;
     const drag_event = {
-        preventDefault() {
+        preventDefault: () => {
             prevent_default_counter += 1;
         },
     };
@@ -637,7 +633,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     const files = ["file1", "file2"];
     const drop_event = {
         target: "target",
-        preventDefault() {
+        preventDefault: () => {
             prevent_default_counter += 1;
         },
         originalEvent: {
@@ -674,9 +670,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     let compose_actions_start_called = false;
     let compose_actions_respond_to_message_called = false;
     override(message_lists, "current", {
-        selected_message() {
-            return msg;
-        },
+        selected_message: () => msg,
     });
     compose_actions.start = () => {
         compose_actions_start_called = true;
@@ -692,9 +686,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     // Test drop on Recent Conversations view
     compose_actions_respond_to_message_called = false;
     override(message_lists, "current", {
-        selected_message() {
-            return undefined;
-        },
+        selected_message: () => undefined,
     });
     upload_files_called = false;
     drop_handler(drop_event);
@@ -704,23 +696,21 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
 });
 
 test("main_file_drop_edit_mode", ({override, override_rewire}) => {
-    uppy_stub = function () {
-        return {
-            setMeta() {},
-            use() {},
-            cancelAll() {},
-            on() {},
-            getFiles() {},
-            removeFile() {},
-        };
-    };
+    uppy_stub = () => ({
+        setMeta: () => {},
+        use: () => {},
+        cancelAll: () => {},
+        on: () => {},
+        getFiles: () => {},
+        removeFile: () => {},
+    });
 
     upload.setup_upload(upload.edit_config(40));
     upload.initialize();
     override(compose_state, "composing", () => false);
     let prevent_default_counter = 0;
     const drag_event = {
-        preventDefault() {
+        preventDefault: () => {
             prevent_default_counter += 1;
         },
     };
@@ -738,7 +728,7 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
     const files = ["file1", "file2"];
     const drop_event = {
         target: "target",
-        preventDefault() {
+        preventDefault: () => {
             prevent_default_counter += 1;
         },
         originalEvent: {

@@ -35,15 +35,15 @@ import {user_settings} from "./user_settings";
 let password_quality; // Loaded asynchronously
 let user_avatar_widget_created = false;
 
-export function update_email(new_email) {
+export const update_email = (new_email) => {
     const $email_input = $("#change_email_button");
 
     if ($email_input) {
         $email_input.text(new_email);
     }
-}
+};
 
-export function update_full_name(new_full_name) {
+export const update_full_name = (new_full_name) => {
     // Arguably, this should work more like how the `update_email`
     // flow works, where we update the name in the modal on open,
     // rather than updating it here, but this works.
@@ -51,9 +51,9 @@ export function update_full_name(new_full_name) {
     if ($full_name_input) {
         $full_name_input.val(new_full_name);
     }
-}
+};
 
-export function update_name_change_display() {
+export const update_name_change_display = () => {
     if ($("#user_details_section").length === 0) {
         return;
     }
@@ -65,9 +65,9 @@ export function update_name_change_display() {
         $("#full_name").prop("disabled", false);
         $("#full_name_input_container").removeClass("disabled_setting_tooltip");
     }
-}
+};
 
-export function update_email_change_display() {
+export const update_email_change_display = () => {
     if ($("#user_details_section").length === 0) {
         return;
     }
@@ -79,22 +79,22 @@ export function update_email_change_display() {
         $("#change_email_button").prop("disabled", false);
         $("#change_email_button_container").removeClass("disabled_setting_tooltip");
     }
-}
+};
 
-function display_avatar_upload_complete() {
+const display_avatar_upload_complete = () => {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
     $("#user-avatar-upload-widget .image-delete-button").show();
-}
+};
 
-function display_avatar_upload_started() {
+const display_avatar_upload_started = () => {
     $("#user-avatar-source").hide();
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
     $("#user-avatar-upload-widget .image-upload-text").hide();
     $("#user-avatar-upload-widget .image-delete-button").hide();
-}
+};
 
-function upload_avatar($file_input) {
+const upload_avatar = ($file_input) => {
     const form_data = new FormData();
 
     form_data.append("csrfmiddlewaretoken", csrf_token);
@@ -108,13 +108,13 @@ function upload_avatar($file_input) {
         cache: false,
         processData: false,
         contentType: false,
-        success() {
+        success: () => {
             display_avatar_upload_complete();
             $("#user-avatar-upload-widget .image_file_input_error").hide();
             $("#user-avatar-source").hide();
             // Rest of the work is done via the user_events -> avatar_url event we will get
         },
-        error(xhr) {
+        error: (xhr) => {
             display_avatar_upload_complete();
             if (current_user.avatar_source === "G") {
                 $("#user-avatar-source").show();
@@ -126,9 +126,9 @@ function upload_avatar($file_input) {
             }
         },
     });
-}
+};
 
-export function update_avatar_change_display() {
+export const update_avatar_change_display = () => {
     if ($("#user-avatar-upload-widget").length === 0) {
         return;
     }
@@ -144,9 +144,9 @@ export function update_avatar_change_display() {
         $("#user-avatar-upload-widget .image_upload_button").removeClass("hide");
         $("#user-avatar-upload-widget .image-disabled").addClass("hide");
     }
-}
+};
 
-export function update_account_settings_display() {
+export const update_account_settings_display = () => {
     if ($("#user_details_section").length === 0) {
         return;
     }
@@ -154,9 +154,9 @@ export function update_account_settings_display() {
     update_name_change_display();
     update_email_change_display();
     update_avatar_change_display();
-}
+};
 
-export function maybe_update_deactivate_account_button() {
+export const maybe_update_deactivate_account_button = () => {
     if (!current_user.is_owner) {
         return;
     }
@@ -171,21 +171,21 @@ export function maybe_update_deactivate_account_button() {
             $deactivate_account_container.removeClass("disabled_setting_tooltip");
         }
     }
-}
+};
 
-export function update_send_read_receipts_tooltip() {
+export const update_send_read_receipts_tooltip = () => {
     if (realm.realm_enable_read_receipts) {
         $("#send_read_receipts_label .settings-info-icon").hide();
     } else {
         $("#send_read_receipts_label .settings-info-icon").show();
     }
-}
+};
 
-function settings_change_error(message_html, xhr) {
+const settings_change_error = (message_html, xhr) => {
     ui_report.error(message_html, xhr, $("#account-settings-status").expectOne());
-}
+};
 
-function update_custom_profile_field(field, method) {
+const update_custom_profile_field = (field, method) => {
     let field_id;
     if (method === channel.del) {
         field_id = field;
@@ -202,9 +202,9 @@ function update_custom_profile_field(field, method) {
         {data: JSON.stringify([field])},
         $spinner_element,
     );
-}
+};
 
-function update_user_custom_profile_fields(fields, method) {
+const update_user_custom_profile_fields = (fields, method) => {
     if (method === undefined) {
         blueslip.error("Undefined method in update_user_custom_profile_fields");
     }
@@ -212,18 +212,18 @@ function update_user_custom_profile_fields(fields, method) {
     for (const field of fields) {
         update_custom_profile_field(field, method);
     }
-}
+};
 
-function update_user_type_field(field, pills) {
+const update_user_type_field = (field, pills) => {
     const user_ids = user_pill.get_user_ids(pills);
     if (user_ids.length < 1) {
         update_user_custom_profile_fields([field.id], channel.del);
     } else {
         update_user_custom_profile_fields([{id: field.id, value: user_ids}], channel.patch);
     }
-}
+};
 
-export function add_custom_profile_fields_to_settings() {
+export const add_custom_profile_fields_to_settings = () => {
     if (!overlays.settings_open()) {
         return;
     }
@@ -242,14 +242,14 @@ export function add_custom_profile_fields_to_settings() {
     );
     custom_profile_fields_ui.initialize_custom_date_type_fields(element_id);
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
-}
+};
 
-export function hide_confirm_email_banner() {
+export const hide_confirm_email_banner = () => {
     if (!overlays.settings_open()) {
         return;
     }
     $("#account-settings-status").hide();
-}
+};
 
 export function set_up() {
     // Add custom profile fields elements to user account settings.
@@ -257,11 +257,11 @@ export function set_up() {
     $("#account-settings-status").hide();
 
     const setup_api_key_modal = () => {
-        function request_api_key(data) {
+        const request_api_key = (data) => {
             channel.post({
                 url: "/json/fetch_api_key",
                 data,
-                success(data) {
+                success: (data) => {
                     $("#get_api_key_password").val("");
                     $("#api_key_value").text(data.api_key);
                     // The display property on the error bar is set to important
@@ -273,7 +273,7 @@ export function set_up() {
                     $("#show_api_key").show();
                     $("#api_key_buttons").show();
                 },
-                error(xhr) {
+                error: (xhr) => {
                     ui_report.error(
                         $t_html({defaultMessage: "Error"}),
                         xhr,
@@ -282,7 +282,7 @@ export function set_up() {
                     $("#show_api_key").hide();
                 },
             });
-        }
+        };
 
         $("#api_key_value").text("");
         $("#show_api_key").hide();
@@ -293,12 +293,12 @@ export function set_up() {
             {tippy_tooltips: true},
         );
 
-        function do_get_api_key() {
+        const do_get_api_key = () => {
             $("#api_key_status").hide();
             const data = {};
             data.password = $("#get_api_key_password").val();
             request_api_key(data);
-        }
+        };
 
         if (realm.realm_password_auth_enabled === false) {
             // Skip the password prompt step, since the user doesn't have one.
@@ -328,10 +328,10 @@ export function set_up() {
                 // via our usual HTTP Basic auth mechanism.
                 url: "/api/v1/users/me/api_key/regenerate",
                 headers: {Authorization: authorization_header},
-                success(data) {
+                success: (data) => {
                     $("#api_key_value").text(data.api_key);
                 },
-                error(xhr) {
+                error: (xhr) => {
                     if (xhr.responseJSON?.msg) {
                         $("#user_api_key_error").text(xhr.responseJSON.msg).show();
                     }
@@ -365,7 +365,7 @@ export function set_up() {
         $("#api_key_status").hide();
         modals.open("api_key_modal", {
             autoremove: true,
-            on_show() {
+            on_show: () => {
                 $("#get_api_key_password").trigger("focus");
             },
         });
@@ -373,7 +373,7 @@ export function set_up() {
         e.stopPropagation();
     });
 
-    function clear_password_change() {
+    const clear_password_change = () => {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
         common.reset_password_toggle_icons(
@@ -386,9 +386,9 @@ export function set_up() {
         );
         $("#old_password, #new_password").val("");
         password_quality?.("", $("#pw_strength .bar"), $("#new_password"));
-    }
+    };
 
-    function change_password_post_render() {
+    const change_password_post_render = () => {
         $("#change_password_modal")
             .find("[data-micromodal-close]")
             .on("click", () => {
@@ -405,13 +405,13 @@ export function set_up() {
             {tippy_tooltips: true},
         );
         clear_password_change();
-    }
+    };
 
     $("#change_password").on("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        function validate_input() {
+        const validate_input = () => {
             const old_password = $("#old_password").val();
             const new_password = $("#new_password").val();
 
@@ -433,7 +433,7 @@ export function set_up() {
                 return false;
             }
             return true;
-        }
+        };
 
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change password"}),
@@ -463,7 +463,7 @@ export function set_up() {
         }
     });
 
-    function do_change_password() {
+    const do_change_password = () => {
         const $change_password_error = $("#change_password_modal").find("#dialog_error");
         $change_password_error.hide();
 
@@ -490,11 +490,11 @@ export function set_up() {
 
         channel.set_password_change_in_progress(true);
         const opts = {
-            success_continuation() {
+            success_continuation: () => {
                 channel.set_password_change_in_progress(false);
                 dialog_widget.close();
             },
-            error_continuation() {
+            error_continuation: () => {
                 dialog_widget.hide_dialog_spinner();
                 channel.set_password_change_in_progress(false);
             },
@@ -509,7 +509,7 @@ export function set_up() {
             opts,
         );
         clear_password_change();
-    }
+    };
 
     $("#full_name").on("change", (e) => {
         e.preventDefault();
@@ -526,13 +526,13 @@ export function set_up() {
         );
     });
 
-    function do_change_email() {
+    const do_change_email = () => {
         const $change_email_error = $("#change_email_modal").find("#dialog_error");
         const data = {};
         data.email = $("#change_email_form").find("input[name='email']").val();
 
         const opts = {
-            success_continuation() {
+            success_continuation: () => {
                 if (page_params.development_environment) {
                     const email_msg = render_settings_dev_env_email_access();
                     ui_report.success(
@@ -543,7 +543,7 @@ export function set_up() {
                 }
                 dialog_widget.close();
             },
-            error_continuation() {
+            error_continuation: () => {
                 dialog_widget.hide_dialog_spinner();
             },
             $error_msg_element: $change_email_error,
@@ -560,7 +560,7 @@ export function set_up() {
             $("#account-settings-status").expectOne(),
             opts,
         );
-    }
+    };
 
     $("#change_email_button").on("click", (e) => {
         e.preventDefault();
@@ -574,7 +574,7 @@ export function set_up() {
                 id: "change_email_modal",
                 form_id: "change_email_form",
                 on_click: do_change_email,
-                on_shown() {
+                on_shown: () => {
                     ui_util.place_caret_at_end($("#change_email_form input")[0]);
                 },
                 update_submit_disabled_state_on_change: true,
@@ -582,7 +582,7 @@ export function set_up() {
         }
     });
 
-    function do_demo_organization_add_email(e) {
+    const do_demo_organization_add_email = (e) => {
         e.preventDefault();
         e.stopPropagation();
         const $change_email_error = $("#demo_organization_add_email_modal").find("#dialog_error");
@@ -591,7 +591,7 @@ export function set_up() {
         data.full_name = $("#demo_organization_update_full_name").val();
 
         const opts = {
-            success_continuation() {
+            success_continuation: () => {
                 if (page_params.development_environment) {
                     const email_msg = render_settings_dev_env_email_access();
                     ui_report.success(
@@ -602,7 +602,7 @@ export function set_up() {
                 }
                 dialog_widget.close();
             },
-            error_continuation() {
+            error_continuation: () => {
                 dialog_widget.hide_dialog_spinner();
             },
             $error_msg_element: $change_email_error,
@@ -619,13 +619,13 @@ export function set_up() {
             $("#account-settings-status").expectOne(),
             opts,
         );
-    }
+    };
 
     $("#demo_organization_add_email_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        function demo_organization_add_email_post_render() {
+        const demo_organization_add_email_post_render = () => {
             // Disable submit button if either input is an empty string.
             const $add_email_element = $("#demo_organization_add_email");
             const $add_name_element = $("#demo_organization_update_full_name");
@@ -641,7 +641,7 @@ export function set_up() {
                     $add_email_element.val().trim() === "" || $add_name_element.val().trim() === "",
                 );
             });
-        }
+        };
 
         if (
             realm.demo_organization_scheduled_deletion_date &&
@@ -659,7 +659,7 @@ export function set_up() {
                 id: "demo_organization_add_email_modal",
                 form_id: "demo_organization_add_email_form",
                 on_click: do_demo_organization_add_email,
-                on_shown() {
+                on_shown: () => {
                     ui_util.place_caret_at_end($("#demo_organization_add_email_form input")[0]);
                 },
                 post_render: demo_organization_add_email_post_render,
@@ -701,15 +701,15 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
 
-        function handle_confirm() {
+        const handle_confirm = () => {
             channel.del({
                 url: "/json/users/me",
-                success() {
+                success: () => {
                     dialog_widget.hide_dialog_spinner();
                     dialog_widget.close();
                     window.location.href = "/login/";
                 },
-                error(xhr) {
+                error: (xhr) => {
                     const error_last_owner = $t_html({
                         defaultMessage: "Error: Cannot deactivate the only organization owner.",
                     });
@@ -741,7 +741,7 @@ export function set_up() {
                         .show();
                 },
             });
-        }
+        };
         const html_body = render_confirm_deactivate_own_user();
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Deactivate your account"}),

@@ -11,44 +11,44 @@ const {current_user} = require("./lib/zpage_params");
 const message_live_update = mock_esm("../src/message_live_update");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
 const settings_account = mock_esm("../src/settings_account", {
-    maybe_update_deactivate_account_button() {},
-    update_email() {},
-    update_full_name() {},
-    update_account_settings_display() {},
+    maybe_update_deactivate_account_button: () => {},
+    update_email: () => {},
+    update_full_name: () => {},
+    update_account_settings_display: () => {},
 });
 const settings_users = mock_esm("../src/settings_users", {
-    update_user_data() {},
-    update_view_on_deactivate() {},
+    update_user_data: () => {},
+    update_view_on_deactivate: () => {},
 });
 mock_esm("../src/user_profile", {
-    update_profile_modal_ui() {},
-    update_user_custom_profile_fields() {},
+    update_profile_modal_ui: () => {},
+    update_user_custom_profile_fields: () => {},
 });
 const stream_events = mock_esm("../src/stream_events");
 
 mock_esm("../src/activity_ui", {
-    redraw() {},
+    redraw: () => {},
 });
 mock_esm("../src/compose_state", {
-    update_email() {},
+    update_email: () => {},
 });
 mock_esm("../src/pm_list", {
-    update_private_messages() {},
+    update_private_messages: () => {},
 });
 mock_esm("../src/settings_linkifiers", {
-    maybe_disable_widgets() {},
+    maybe_disable_widgets: () => {},
 });
 mock_esm("../src/settings_org", {
-    maybe_disable_widgets() {},
+    maybe_disable_widgets: () => {},
 });
 mock_esm("../src/settings_profile_fields", {
-    maybe_disable_widgets() {},
+    maybe_disable_widgets: () => {},
 });
 mock_esm("../src/settings_realm_user_settings_defaults", {
-    maybe_disable_widgets() {},
+    maybe_disable_widgets: () => {},
 });
 mock_esm("../src/settings_streams", {
-    maybe_disable_widgets() {},
+    maybe_disable_widgets: () => {},
 });
 
 current_user.is_admin = true;
@@ -65,11 +65,11 @@ const me = {
     role: settings_config.user_role_values.member.code,
 };
 
-function initialize() {
+const initialize = () => {
     people.init();
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
-}
+};
 
 initialize();
 

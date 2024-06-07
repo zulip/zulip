@@ -13,7 +13,7 @@ import {path_parts} from "./landing-page";
 const INTEGRATIONS = new Map();
 const CATEGORIES = new Map();
 
-function load_data() {
+const load_data = () => {
     for (const integration of $(".integration-lozenge")) {
         const name = $(integration).data("name");
         const display_name = $(integration).find(".integration-name").text().trim();
@@ -31,7 +31,7 @@ function load_data() {
             CATEGORIES.set(name, display_name);
         }
     }
-}
+};
 
 const INITIAL_STATE = {
     category: "all",
@@ -41,7 +41,7 @@ const INITIAL_STATE = {
 
 let state = {...INITIAL_STATE};
 
-function adjust_font_sizing() {
+const adjust_font_sizing = () => {
     for (const integration of $(".integration-lozenge")) {
         const $integration_name = $(integration).find(".integration-name");
         const $integration_category = $(integration).find(".integration-category");
@@ -61,9 +61,9 @@ function adjust_font_sizing() {
             }
         }
     }
-}
+};
 
-function update_path() {
+const update_path = () => {
     let next_path;
     if (state.integration) {
         next_path = $(`.integration-lozenge[data-name="${CSS.escape(state.integration)}"]`)
@@ -79,9 +79,9 @@ function update_path() {
 
     window.history.pushState(state, "", next_path);
     google_analytics.config({page_path: next_path});
-}
+};
 
-function update_categories() {
+const update_categories = () => {
     $(".integration-lozenges").css("opacity", 0);
 
     $(".integration-category").removeClass("selected");
@@ -97,7 +97,7 @@ function update_categories() {
     $(".integration-lozenges").animate({opacity: 1}, {duration: 400});
 
     adjust_font_sizing();
-}
+};
 
 const update_integrations = _.debounce(() => {
     const max_scrollY = window.scrollY;
@@ -134,7 +134,7 @@ const update_integrations = _.debounce(() => {
     adjust_font_sizing();
 }, 50);
 
-function hide_catalog_show_integration() {
+const hide_catalog_show_integration = () => {
     const $lozenge_icon = $(
         `.integration-lozenge.integration-${CSS.escape(state.integration)}`,
     ).clone(false);
@@ -146,7 +146,7 @@ function hide_catalog_show_integration() {
         .split(",")
         .map((category) => category.trim().slice(1, -1));
 
-    function show_integration(doc) {
+    const show_integration = (doc) => {
         $("#integration-instructions-group .name").text(INTEGRATIONS.get(state.integration));
         $("#integration-instructions-group .categories .integration-category").remove();
         for (const category of categories) {
@@ -180,22 +180,22 @@ function hide_catalog_show_integration() {
         $("#integration-instructions-group").animate({opacity: 1}, {duration: 300});
 
         adjust_font_sizing();
-    }
+    };
 
-    function hide_catalog(doc) {
+    const hide_catalog = (doc) => {
         $(".integration-categories-dropdown").css("display", "none");
         $(".integrations .catalog").addClass("hide");
         $(".extra, .integration-main-text, #integration-search").css("display", "none");
 
         show_integration(doc);
         $(".main").css("visibility", "visible");
-    }
+    };
 
     $.get({
         url: "/integrations/doc-html/" + state.integration,
         dataType: "html",
         success: hide_catalog,
-        error(err) {
+        error: (err) => {
             if (err.readyState !== 0) {
                 blueslip.error(`Integration documentation for '${state.integration}' not found.`, {
                     readyState: err.readyState,
@@ -205,30 +205,30 @@ function hide_catalog_show_integration() {
             }
         },
     });
-}
+};
 
-function hide_integration_show_catalog() {
-    function show_catalog() {
+const hide_integration_show_catalog = () => {
+    const show_catalog = () => {
         $("html, body").animate({scrollTop: 0}, {duration: 200});
 
         $(".integration-categories-dropdown").css("display", "");
         $(".integrations .catalog").removeClass("hide");
         $(".extra, .integration-main-text, #integration-search").css("display", "block");
         adjust_font_sizing();
-    }
+    };
 
-    function hide_integration() {
+    const hide_integration = () => {
         $("#integration-instruction-block").css("display", "none");
         $("#integration-instructions-group").css("display", "none");
         $(".inner-content").css({padding: ""});
         $("#integration-instruction-block .integration-lozenge").remove();
         show_catalog();
-    }
+    };
 
     hide_integration();
-}
+};
 
-function get_state_from_path() {
+const get_state_from_path = () => {
     const result = {...INITIAL_STATE};
     result.query = state.query;
 
@@ -240,9 +240,9 @@ function get_state_from_path() {
     }
 
     return result;
-}
+};
 
-function render(next_state) {
+const render = (next_state) => {
     const previous_state = {...state};
     state = next_state;
 
@@ -264,9 +264,9 @@ function render(next_state) {
 
         $(".main").css("visibility", "visible");
     }
-}
+};
 
-function dispatch(action, payload) {
+const dispatch = (action, payload) => {
     switch (action) {
         case "CHANGE_CATEGORY":
             render({...state, category: payload.category});
@@ -301,14 +301,14 @@ function dispatch(action, payload) {
             blueslip.error("Invalid action dispatched on /integrations.");
             break;
     }
-}
+};
 
-function toggle_categories_dropdown() {
+const toggle_categories_dropdown = () => {
     const $dropdown_list = $(".integration-categories-dropdown .dropdown-list");
     $dropdown_list.slideToggle(250);
-}
+};
 
-function integration_events() {
+const integration_events = () => {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
         if (e.key === "Enter" && e.target.value !== "") {
             $(".integration-lozenges .integration-lozenge:visible")[0]?.closest("a").click();
@@ -373,7 +373,7 @@ function integration_events() {
             window.location = window.location.href;
         }
     });
-}
+};
 
 // init
 $(() => {

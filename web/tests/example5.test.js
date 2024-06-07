@@ -32,9 +32,7 @@ const unread_ui = mock_esm("../src/unread_ui");
 message_lists.current = {
     data: {
         filter: {
-            can_apply_locally() {
-                return true;
-            },
+            can_apply_locally: () => true,
         },
     },
 };
@@ -66,18 +64,18 @@ people.add_active_user(isaac);
 
 */
 
-function test_helper({override}) {
+const test_helper = ({override}) => {
     const events = [];
 
     return {
-        redirect(module, func_name) {
+        redirect: (module, func_name) => {
             override(module, func_name, () => {
                 events.push([module, func_name]);
             });
         },
         events,
     };
-}
+};
 
 run_test("insert_message", ({override}) => {
     message_store.clear_for_testing();

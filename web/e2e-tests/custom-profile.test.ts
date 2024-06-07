@@ -7,7 +7,7 @@ import * as common from "./lib/common";
 // This will be the row of the custom profile field we add.
 const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(1)";
 
-async function test_add_new_profile_field(page: Page): Promise<void> {
+const test_add_new_profile_field = async (page: Page): Promise<void> => {
     await page.click("#add-custom-profile-field-btn");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -33,9 +33,9 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
         "Text (short)",
     );
-}
+};
 
-async function test_edit_profile_field(page: Page): Promise<void> {
+const test_edit_profile_field = async (page: Page): Promise<void> => {
     await page.click(`${profile_field_row} button.open-edit-form-modal`);
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -59,9 +59,9 @@ async function test_edit_profile_field(page: Page): Promise<void> {
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
         "Text (short)",
     );
-}
+};
 
-async function test_delete_custom_profile_field(page: Page): Promise<void> {
+const test_delete_custom_profile_field = async (page: Page): Promise<void> => {
     await page.click(`${profile_field_row} button.delete`);
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -80,9 +80,9 @@ async function test_delete_custom_profile_field(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "div#admin-profile-field-status"),
         "Saved",
     );
-}
+};
 
-async function test_custom_profile(page: Page): Promise<void> {
+const test_custom_profile = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await common.manage_organization(page);
 
@@ -92,6 +92,6 @@ async function test_custom_profile(page: Page): Promise<void> {
     await test_add_new_profile_field(page);
     await test_edit_profile_field(page);
     await test_delete_custom_profile_field(page);
-}
+};
 
 common.run_test(test_custom_profile);

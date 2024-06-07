@@ -1,7 +1,7 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
-function initialize(): void {
+const initialize = (): void => {
     tippy.default("[data-tippy-content]", {
         // Same defaults as set in web app tippyjs module.
         maxWidth: 300,
@@ -11,7 +11,7 @@ function initialize(): void {
         animation: true,
         placement: "bottom",
     });
-}
+};
 
 $(() => {
     initialize();

@@ -74,12 +74,12 @@ run_test("case insensitivity", () => {
 run_test("clear", () => {
     const d = new FoldDict();
 
-    function populate() {
+    const populate = () => {
         d.set("fOO", 1);
         assert.equal(d.get("foo"), 1);
         d.set("bAR", 2);
         assert.equal(d.get("bar"), 2);
-    }
+    };
 
     populate();
     assert.equal(d.size, 2);

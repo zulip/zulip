@@ -33,7 +33,7 @@ const test_user103 = {
     user_id: 103,
 };
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         current_user.is_admin = false;
         people.init();
@@ -45,7 +45,7 @@ function test(label, f) {
         people.initialize_current_user(me.user_id);
         f(helpers);
     });
-}
+};
 
 test("basics", () => {
     stream_create_subscribers_data.initialize_with_current_user();

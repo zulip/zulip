@@ -18,7 +18,7 @@ const sentry_key =
           ? "(root)"
           : page_params.realm_sentry_key;
 
-export function normalize_path(path: string, is_portico = false): string {
+export const normalize_path = (path: string, is_portico = false): string => {
     if (path === undefined) {
         return "unknown";
     }
@@ -32,14 +32,14 @@ export function normalize_path(path: string, is_portico = false): string {
         return "portico: " + path;
     }
     return path;
-}
+};
 
-export function shouldCreateSpanForRequest(url: string): boolean {
+export const shouldCreateSpanForRequest = (url: string): boolean => {
     const parsed = new URL(url, window.location.href);
     return parsed.pathname !== "/json/events";
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     // The current_user and realm structures are not available until this is
     // called from ui_init.initialize_everything.
     assert(page_params.page_type === "home");
@@ -66,7 +66,7 @@ export function initialize(): void {
         server_version: realm.zulip_version,
     });
     Sentry.setUser(user_info);
-}
+};
 
 if (page_params.server_sentry_dsn) {
     const sample_rates = new Map([
@@ -86,23 +86,21 @@ if (page_params.server_sentry_dsn) {
         integrations: [
             new Sentry.BrowserTracing({
                 startTransactionOnLocationChange: false,
-                beforeNavigate(context) {
-                    return {
-                        ...context,
-                        metadata: {source: "custom"},
-                        name: normalize_path(location.pathname, sentry_key === "www"),
-                    };
-                },
+                beforeNavigate: (context) => ({
+                    ...context,
+                    metadata: {source: "custom"},
+                    name: normalize_path(location.pathname, sentry_key === "www"),
+                }),
                 shouldCreateSpanForRequest,
             }),
         ],
         sampleRate: page_params.server_sentry_sample_rate ?? 0,
-        tracesSampler(samplingContext) {
+        tracesSampler: (samplingContext) => {
             const base_rate = page_params.server_sentry_trace_rate ?? 0;
             const name = samplingContext.transactionContext.name;
             return base_rate * (sample_rates.get(name) ?? 1);
         },
-        initialScope(scope) {
+        initialScope: (scope) => {
             const user_info: UserInfo = {
                 realm: sentry_key,
             };

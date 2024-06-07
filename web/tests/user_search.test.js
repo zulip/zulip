@@ -10,22 +10,22 @@ const {realm} = require("./lib/zpage_params");
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
     $users_matching_view_container: {
-        attr() {},
+        attr: () => {},
     },
     $other_users_container: {
-        attr() {},
+        attr: () => {},
     },
-    find_li() {},
-    first_key() {},
-    prev_key() {},
-    next_key() {},
+    find_li: () => {},
+    first_key: () => {},
+    prev_key: () => {},
+    next_key: () => {},
 };
 
 mock_esm("../src/buddy_list", {
     buddy_list: fake_buddy_list,
 });
 
-function mock_setTimeout() {
+const mock_setTimeout = () => {
     let set_timeout_function_called = false;
     set_global("setTimeout", (func) => {
         if (set_timeout_function_called) {
@@ -35,7 +35,7 @@ function mock_setTimeout() {
         set_timeout_function_called = true;
         func();
     });
-}
+};
 
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
@@ -72,7 +72,7 @@ const jill = {
 const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (opts) => {
         people.init();
         people.add_active_user(alice);
@@ -84,17 +84,17 @@ function test(label, f) {
         activity_ui.set_cursor_and_filter();
         f(opts);
     });
-}
+};
 
-function set_input_val(val) {
+const set_input_val = (val) => {
     $("input.user-list-filter").val(val);
     $("input.user-list-filter").trigger("input");
-}
+};
 
-function stub_buddy_list_empty_list_message_lengths() {
+const stub_buddy_list_empty_list_message_lengths = () => {
     $("#buddy-list-users-matching-view .empty-list-message").length = 0;
     $("#buddy-list-other-users .empty-list-message").length = 0;
-}
+};
 
 test("clear_search", ({override}) => {
     override(presence, "get_status", () => "active");
@@ -182,7 +182,7 @@ test("filter_user_ids", ({override}) => {
     override(presence, "get_status", (user_id) => user_presence[user_id]);
     override(presence, "get_user_ids", () => all_user_ids);
 
-    function test_filter(search_text, expected_users) {
+    const test_filter = (search_text, expected_users) => {
         const expected_user_ids = expected_users.map((user) => user.user_id);
         $("input.user-list-filter").val(search_text);
         const filter_text = activity_ui.get_filter_text();
@@ -196,7 +196,7 @@ test("filter_user_ids", ({override}) => {
         });
 
         activity_ui.build_user_sidebar();
-    }
+    };
 
     // Sanity check data setup.
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(), [

@@ -4,7 +4,7 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function navigate_to_user_list(page: Page): Promise<void> {
+const navigate_to_user_list = async (page: Page): Promise<void> => {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
@@ -15,15 +15,18 @@ async function navigate_to_user_list(page: Page): Promise<void> {
 
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
     await page.click("li[data-section='user-list-admin']");
-}
+};
 
-async function user_row(page: Page, name: string): Promise<string> {
+const user_row = async (page: Page, name: string): Promise<string> => {
     const user_id = await common.get_user_id_from_name(page, name);
     assert(user_id !== undefined);
     return `.user_row[data-user-id="${CSS.escape(user_id.toString())}"]`;
-}
+};
 
-async function test_reactivation_confirmation_modal(page: Page, fullname: string): Promise<void> {
+const test_reactivation_confirmation_modal = async (
+    page: Page,
+    fullname: string,
+): Promise<void> => {
     await common.wait_for_micromodal_to_open(page);
 
     assert.strictEqual(
@@ -38,9 +41,9 @@ async function test_reactivation_confirmation_modal(page: Page, fullname: string
     );
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
-}
+};
 
-async function test_deactivate_user(page: Page): Promise<void> {
+const test_deactivate_user = async (page: Page): Promise<void> => {
     const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row, {visible: true});
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
@@ -59,9 +62,9 @@ async function test_deactivate_user(page: Page): Promise<void> {
     );
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
-}
+};
 
-async function test_reactivate_user(page: Page): Promise<void> {
+const test_reactivate_user = async (page: Page): Promise<void> => {
     let cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row + ".deactivated_user");
     await page.waitForSelector(cordelia_user_row + " .fa-user-plus");
@@ -72,9 +75,9 @@ async function test_reactivate_user(page: Page): Promise<void> {
     await page.waitForSelector(cordelia_user_row + ":not(.deactivated_user)", {visible: true});
     cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
-}
+};
 
-async function test_deactivated_users_section(page: Page): Promise<void> {
+const test_deactivated_users_section = async (page: Page): Promise<void> => {
     const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await test_deactivate_user(page);
 
@@ -100,9 +103,9 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
         "#admin_deactivated_users_table " + cordelia_user_row + " button:not(.reactivate)",
         {visible: true},
     );
-}
+};
 
-async function test_bot_deactivation_and_reactivation(page: Page): Promise<void> {
+const test_bot_deactivation_and_reactivation = async (page: Page): Promise<void> => {
     await page.click("li[data-section='bot-list-admin']");
 
     const default_bot_user_row = await user_row(page, "Zulip Default Bot");
@@ -130,15 +133,15 @@ async function test_bot_deactivation_and_reactivation(page: Page): Promise<void>
     await test_reactivation_confirmation_modal(page, "Zulip Default Bot");
     await page.waitForSelector(default_bot_user_row + ":not(.deactivated_user)", {visible: true});
     await page.waitForSelector(default_bot_user_row + " .fa-user-times");
-}
+};
 
-async function user_deactivation_test(page: Page): Promise<void> {
+const user_deactivation_test = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await navigate_to_user_list(page);
     await test_deactivate_user(page);
     await test_reactivate_user(page);
     await test_deactivated_users_section(page);
     await test_bot_deactivation_and_reactivation(page);
-}
+};
 
 common.run_test(user_deactivation_test);

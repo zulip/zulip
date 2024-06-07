@@ -56,25 +56,25 @@ type ComposeHook = () => void;
 const compose_clear_box_hooks: ComposeHook[] = [];
 const compose_cancel_hooks: ComposeHook[] = [];
 
-export function register_compose_box_clear_hook(hook: ComposeHook): void {
+export const register_compose_box_clear_hook = (hook: ComposeHook): void => {
     compose_clear_box_hooks.push(hook);
-}
+};
 
-export function register_compose_cancel_hook(hook: ComposeHook): void {
+export const register_compose_cancel_hook = (hook: ComposeHook): void => {
     compose_cancel_hooks.push(hook);
-}
+};
 
-function call_hooks(hooks: ComposeHook[]): void {
+const call_hooks = (hooks: ComposeHook[]): void => {
     for (const f of hooks) {
         f();
     }
-}
+};
 
-export function blur_compose_inputs(): void {
+export const blur_compose_inputs = (): void => {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
-}
+};
 
-function hide_box(): void {
+const hide_box = (): void => {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
@@ -84,9 +84,9 @@ function hide_box(): void {
     compose_fade.clear_compose();
     $(".message_comp").hide();
     $("#compose_controls").show();
-}
+};
 
-function show_compose_box(opts: ComposeActionsOpts): void {
+const show_compose_box = (opts: ComposeActionsOpts): void => {
     let opts_by_message_type: ComposeTriggeredOptions;
     if (opts.message_type === "private") {
         opts_by_message_type = {
@@ -107,13 +107,13 @@ function show_compose_box(opts: ComposeActionsOpts): void {
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
     compose_ui.set_focus(opts_by_message_type);
-}
+};
 
-export function clear_textarea(): void {
+export const clear_textarea = (): void => {
     $("#compose").find("input[type=text], textarea").val("");
-}
+};
 
-function clear_box(): void {
+const clear_box = (): void => {
     call_hooks(compose_clear_box_hooks);
 
     // TODO: Better encapsulate at-mention warnings.
@@ -132,10 +132,10 @@ function clear_box(): void {
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
     $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
-}
+};
 
 let autosize_callback_opts: ComposeActionsStartOpts;
-export function autosize_message_content(opts: ComposeActionsStartOpts): void {
+export const autosize_message_content = (opts: ComposeActionsStartOpts): void => {
     if (!compose_ui.is_full_size()) {
         autosize_callback_opts = opts;
         $("textarea#compose-textarea")
@@ -145,16 +145,16 @@ export function autosize_message_content(opts: ComposeActionsStartOpts): void {
             });
         autosize($("textarea#compose-textarea"));
     }
-}
+};
 
-export function expand_compose_box(): void {
+export const expand_compose_box = (): void => {
     $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
     $("#compose_close").show();
     $("#compose_controls").hide();
     $(".message_comp").show();
-}
+};
 
-export function complete_starting_tasks(opts: ComposeActionsOpts): void {
+export const complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     // This is sort of a kitchen sink function, and it's called only
     // by compose.start() for now.  Having this as a separate function
     // makes testing a bit easier.
@@ -164,9 +164,9 @@ export function complete_starting_tasks(opts: ComposeActionsOpts): void {
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
-}
+};
 
-export function maybe_scroll_up_selected_message(opts: ComposeActionsStartOpts): void {
+export const maybe_scroll_up_selected_message = (opts: ComposeActionsStartOpts): void => {
     if (opts.skip_scrolling_selected_message) {
         return;
     }
@@ -197,38 +197,33 @@ export function maybe_scroll_up_selected_message(opts: ComposeActionsStartOpts):
     if (cover > 0) {
         message_viewport.user_initiated_animate_scroll(cover + 20);
     }
-}
+};
 
-export function fill_in_opts_from_current_narrowed_view(
+export const fill_in_opts_from_current_narrowed_view = (
     opts: ComposeActionsStartOpts,
-): ComposeActionsOpts {
-    return {
-        stream_id: undefined,
-        topic: "",
-        private_message_recipient: "",
-        trigger: "unknown",
+): ComposeActionsOpts => ({
+    stream_id: undefined,
+    topic: "",
+    private_message_recipient: "",
+    trigger: "unknown",
 
-        // Set default parameters based on the current narrowed view.
-        ...narrow_state.set_compose_defaults(),
+    // Set default parameters based on the current narrowed view.
+    ...narrow_state.set_compose_defaults(),
 
-        // Set parameters based on provided opts, overwriting
-        // those set based on current narrowed view, if necessary.
-        ...opts,
-    };
-}
+    // Set parameters based on provided opts, overwriting
+    // those set based on current narrowed view, if necessary.
+    ...opts,
+});
 
-function same_recipient_as_before(opts: ComposeActionsOpts): boolean {
-    return (
-        compose_state.get_message_type() === opts.message_type &&
-        ((opts.message_type === "stream" &&
-            opts.stream_id === compose_state.stream_id() &&
-            opts.topic === compose_state.topic()) ||
-            (opts.message_type === "private" &&
-                opts.private_message_recipient === compose_state.private_message_recipient()))
-    );
-}
+const same_recipient_as_before = (opts: ComposeActionsOpts): boolean =>
+    compose_state.get_message_type() === opts.message_type &&
+    ((opts.message_type === "stream" &&
+        opts.stream_id === compose_state.stream_id() &&
+        opts.topic === compose_state.topic()) ||
+        (opts.message_type === "private" &&
+            opts.private_message_recipient === compose_state.private_message_recipient()));
 
-export function start(raw_opts: ComposeActionsStartOpts): void {
+export const start = (raw_opts: ComposeActionsStartOpts): void => {
     if (page_params.is_spectator) {
         spectators.login_to_access();
         return;
@@ -373,9 +368,9 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     resize.reset_compose_message_max_height();
 
     complete_starting_tasks(opts);
-}
+};
 
-export function cancel(): void {
+export const cancel = (): void => {
     // As user closes the compose box, restore the compose box max height
     if (compose_ui.is_full_size()) {
         compose_ui.make_compose_box_original_size();
@@ -402,9 +397,9 @@ export function cancel(): void {
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
-}
+};
 
-export function on_show_navigation_view(): void {
+export const on_show_navigation_view = (): void => {
     /* This function dictates the behavior of the compose box
      * when navigating to a view, as opposed to a narrow. */
 
@@ -420,9 +415,9 @@ export function on_show_navigation_view(): void {
 
     // Otherwise, close the compose box.
     cancel();
-}
+};
 
-export function on_topic_narrow(): void {
+export const on_topic_narrow = (): void => {
     if (!compose_state.composing()) {
         // If our compose box is closed, then just
         // leave it closed, assuming that the user is
@@ -473,7 +468,7 @@ export function on_topic_narrow(): void {
     compose_fade.update_message_list();
     drafts.update_compose_draft_count();
     $("textarea#compose-textarea").trigger("focus");
-}
+};
 
 // TODO/typescript: Fill this in when converting narrow.js to typescripot.
 type NarrowActivateOpts = {
@@ -482,7 +477,7 @@ type NarrowActivateOpts = {
     private_message_recipient?: string;
 };
 
-export function on_narrow(opts: NarrowActivateOpts): void {
+export const on_narrow = (opts: NarrowActivateOpts): void => {
     // We use force_close when jumping between direct message narrows with
     // the "p" key, so that we don't have an open compose box that makes
     // it difficult to cycle quickly through unread messages.
@@ -559,4 +554,4 @@ export function on_narrow(opts: NarrowActivateOpts): void {
     // mode, so we close the compose box to make it easier to use navigation
     // hotkeys and to provide more screen real estate for messages.
     cancel();
-}
+};

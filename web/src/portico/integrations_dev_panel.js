@@ -16,27 +16,27 @@ const clear_handlers = {
     topic_name: "#topic_name",
     URL: "#URL",
     results_notice: "#results_notice",
-    bot_name() {
+    bot_name: () => {
         $("#bot_name").children()[0].selected = true;
     },
-    integration_name() {
+    integration_name: () => {
         $("#integration_name").children()[0].selected = true;
     },
-    fixture_name() {
+    fixture_name: () => {
         $("#fixture_name").empty();
     },
-    fixture_body() {
+    fixture_body: () => {
         $("#fixture_body")[0].value = "";
     },
-    custom_http_headers() {
+    custom_http_headers: () => {
         $("#custom_http_headers")[0].value = "{}";
     },
-    results() {
+    results: () => {
         $("#idp-results")[0].value = "";
     },
 };
 
-function clear_elements(elements) {
+const clear_elements = (elements) => {
     // Supports strings (a selector to clear) or calling a function
     // (for more complex logic).
     for (const element_name of elements) {
@@ -48,7 +48,7 @@ function clear_elements(elements) {
         }
     }
     return;
-}
+};
 
 // Success/failure colors used for displaying results to the user.
 const results_notice_level_to_color_map = {
@@ -56,23 +56,17 @@ const results_notice_level_to_color_map = {
     success: "#085d44",
 };
 
-function set_results_notice(msg, level) {
+const set_results_notice = (msg, level) => {
     $("#results_notice").text(msg).css("color", results_notice_level_to_color_map[level]);
-}
+};
 
-function get_api_key_from_selected_bot() {
-    return $("#bot_name").val();
-}
+const get_api_key_from_selected_bot = () => $("#bot_name").val();
 
-function get_selected_integration_name() {
-    return $("#integration_name").val();
-}
+const get_selected_integration_name = () => $("#integration_name").val();
 
-function get_fixture_format(fixture_name) {
-    return fixture_name.split(".").at(-1);
-}
+const get_fixture_format = (fixture_name) => fixture_name.split(".").at(-1);
 
-function get_custom_http_headers() {
+const get_custom_http_headers = () => {
     let custom_headers = $("#custom_http_headers").val();
     if (custom_headers !== "") {
         // JSON.parse("") would trigger an error, as empty strings do not qualify as JSON.
@@ -85,9 +79,9 @@ function get_custom_http_headers() {
         }
     }
     return custom_headers;
-}
+};
 
-function set_results(response) {
+const set_results = (response) => {
     /* The backend returns the JSON responses for each of the
     send_message actions included in our request (which is just 1 for
     send, but usually is several for send all).  We display these
@@ -107,9 +101,9 @@ function set_results(response) {
         data += "\nResponse:       " + response.message + "\n\n";
     }
     $("#idp-results")[0].value = data;
-}
+};
 
-function load_fixture_body(fixture_name) {
+const load_fixture_body = (fixture_name) => {
     /* Given a fixture name, use the loaded_fixtures dictionary to set
      * the fixture body field. */
     const integration_name = get_selected_integration_name();
@@ -128,9 +122,9 @@ function load_fixture_body(fixture_name) {
     $("#custom_http_headers")[0].value = JSON.stringify(headers, null, 4);
 
     return;
-}
+};
 
-function load_fixture_options(integration_name) {
+const load_fixture_options = (integration_name) => {
     /* Using the integration name and loaded_fixtures object to set
     the fixture options for the fixture_names dropdown and also set
     the fixture body to the first fixture by default. */
@@ -146,9 +140,9 @@ function load_fixture_options(integration_name) {
     load_fixture_body(fixtures_names[0]);
 
     return;
-}
+};
 
-function update_url() {
+const update_url = () => {
     /* Construct the URL that the webhook should be targeting, using
     the bot's API key and the integration name.  The stream and topic
     are both optional, and for the sake of completeness, it should be
@@ -176,10 +170,10 @@ function update_url() {
     }
 
     return;
-}
+};
 
 // API callers: These methods handle communicating with the Python backend API.
-function handle_unsuccessful_response(response) {
+const handle_unsuccessful_response = (response) => {
     if (response.responseJSON?.msg) {
         const status_code = response.statusCode().status;
         set_results_notice(`Result: (${status_code}) ${response.responseJSON.msg}`, "warning");
@@ -191,9 +185,9 @@ function handle_unsuccessful_response(response) {
         document.write(response.responseText);
     }
     return;
-}
+};
 
-function get_fixtures(integration_name) {
+const get_fixtures = (integration_name) => {
     /* Request fixtures from the backend for any integrations that we
     don't already have fixtures cached in loaded_fixtures). */
     if (integration_name === "") {
@@ -217,7 +211,7 @@ function get_fixtures(integration_name) {
     // /devtools/integrations/<integration_name>/fixtures
     channel.get({
         url: "/devtools/integrations/" + integration_name + "/fixtures",
-        success(response) {
+        success: (response) => {
             loaded_fixtures.set(integration_name, response.fixtures);
             load_fixture_options(integration_name);
             return;
@@ -226,9 +220,9 @@ function get_fixtures(integration_name) {
     });
 
     return;
-}
+};
 
-function send_webhook_fixture_message() {
+const send_webhook_fixture_message = () => {
     /* Make sure that the user is sending valid JSON in the fixture
     body and that the URL is not empty. Then simply send the fixture
     body to the target URL. */
@@ -265,10 +259,10 @@ function send_webhook_fixture_message() {
     channel.post({
         url: "/devtools/integrations/check_send_webhook_fixture_message",
         data: {url, body, custom_headers, is_json},
-        beforeSend(xhr) {
+        beforeSend: (xhr) => {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         },
-        success(response) {
+        success: (response) => {
             // If the previous fixture body was sent successfully,
             // then we should change the success message up a bit to
             // let the user easily know that this fixture body was
@@ -285,9 +279,9 @@ function send_webhook_fixture_message() {
     });
 
     return;
-}
+};
 
-function send_all_fixture_messages() {
+const send_all_fixture_messages = () => {
     /* Send all fixture messages for a given integration. */
     const url = $("#URL").val();
     const integration = get_selected_integration_name();
@@ -300,17 +294,17 @@ function send_all_fixture_messages() {
     channel.post({
         url: "/devtools/integrations/send_all_webhook_fixture_messages",
         data: {url, integration_name: integration},
-        beforeSend(xhr) {
+        beforeSend: (xhr) => {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         },
-        success(response) {
+        success: (response) => {
             set_results(response);
         },
         error: handle_unsuccessful_response,
     });
 
     return;
-}
+};
 
 // Initialization
 $(() => {

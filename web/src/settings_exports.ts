@@ -30,11 +30,11 @@ const meta = {
     loaded: false,
 };
 
-export function reset(): void {
+export const reset = (): void => {
     meta.loaded = false;
-}
+};
 
-function sort_user(a: RealmExport, b: RealmExport): number {
+const sort_user = (a: RealmExport, b: RealmExport): number => {
     const a_name = people.get_full_name(a.acting_user_id).toLowerCase();
     const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
     if (a_name > b_name) {
@@ -43,9 +43,9 @@ function sort_user(a: RealmExport, b: RealmExport): number {
         return 0;
     }
     return -1;
-}
+};
 
-export function populate_exports_table(exports: RealmExport[]): void {
+export const populate_exports_table = (exports: RealmExport[]): void => {
     if (!meta.loaded) {
         return;
     }
@@ -54,7 +54,7 @@ export function populate_exports_table(exports: RealmExport[]): void {
     ListWidget.create($exports_table, Object.values(exports), {
         name: "admin_exports_list",
         get_item: ListWidget.default_get_item,
-        modifier_html(data) {
+        modifier_html: (data) => {
             let failed_timestamp = null;
             let deleted_timestamp = null;
 
@@ -89,10 +89,9 @@ export function populate_exports_table(exports: RealmExport[]): void {
             $element: $exports_table
                 .closest(".settings-section")
                 .find<HTMLInputElement>("input.search"),
-            predicate(item, value) {
-                return people.get_full_name(item.acting_user_id).toLowerCase().includes(value);
-            },
-            onupdate() {
+            predicate: (item, value) =>
+                people.get_full_name(item.acting_user_id).toLowerCase().includes(value),
+            onupdate: () => {
                 scroll_util.reset_scrollbar($exports_table);
             },
         },
@@ -111,7 +110,7 @@ export function populate_exports_table(exports: RealmExport[]): void {
     } else {
         loading.destroy_indicator($spinner);
     }
-}
+};
 
 export function set_up(): void {
     meta.loaded = true;
@@ -123,14 +122,14 @@ export function set_up(): void {
 
         void channel.post({
             url: "/json/export/realm",
-            success() {
+            success: () => {
                 ui_report.success(
                     $t_html({defaultMessage: "Export started. Check back in a few minutes."}),
                     $export_status,
                     4000,
                 );
             },
-            error(xhr) {
+            error: (xhr) => {
                 ui_report.error($t_html({defaultMessage: "Export failed"}), xhr, $export_status);
             },
         });
@@ -139,7 +138,7 @@ export function set_up(): void {
     // Do an initial population of the table
     void channel.get({
         url: "/json/export/realm",
-        success(raw_data) {
+        success: (raw_data) => {
             const data = z.object({exports: z.array(realm_export_schema)}).parse(raw_data);
             populate_exports_table(data.exports);
         },
@@ -155,7 +154,7 @@ export function set_up(): void {
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete data export?"}),
             html_body,
-            on_click() {
+            on_click: () => {
                 dialog_widget.submit_api_request(channel.del, url, {});
             },
             loading_spinner: true,

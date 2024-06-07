@@ -23,7 +23,7 @@ import {user_settings} from "./user_settings";
 
 export const user_settings_panel = {};
 
-function rerender_ui() {
+const rerender_ui = () => {
     const $unmatched_streams_table = $("#stream-specific-notify-table");
     if ($unmatched_streams_table.length === 0) {
         // If we haven't rendered "notification settings" yet, do nothing.
@@ -58,15 +58,15 @@ function rerender_ui() {
     } else {
         $unmatched_streams_table.css("display", "table-row-group");
     }
-}
+};
 
-function change_notification_setting(setting, value, $status_element) {
+const change_notification_setting = (setting, value, $status_element) => {
     const data = {};
     data[setting] = value;
     settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_element);
-}
+};
 
-function update_desktop_icon_count_display(settings_panel) {
+const update_desktop_icon_count_display = (settings_panel) => {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     $container
@@ -75,9 +75,9 @@ function update_desktop_icon_count_display(settings_panel) {
     if (!settings_panel.for_realm_settings) {
         unread_ui.update_unread_counts();
     }
-}
+};
 
-export function set_notification_batching_ui($container, setting_seconds, force_custom) {
+export const set_notification_batching_ui = ($container, setting_seconds, force_custom) => {
     const $edit_elem = $container.find(".email_notification_batching_period_edit_minutes");
     const valid_period_values = settings_config.email_notifications_batching_period_values.map(
         (x) => x.value,
@@ -95,9 +95,9 @@ export function set_notification_batching_ui($container, setting_seconds, force_
         $edit_elem.attr("id"),
         show_edit_elem,
     );
-}
+};
 
-export function set_enable_digest_emails_visibility($container, for_realm_settings) {
+export const set_enable_digest_emails_visibility = ($container, for_realm_settings) => {
     if (realm.realm_digest_emails_enabled) {
         if (for_realm_settings) {
             $container.find(".other_email_notifications").show();
@@ -111,18 +111,18 @@ export function set_enable_digest_emails_visibility($container, for_realm_settin
         }
         $container.find(".enable_digest_emails_label").parent().hide();
     }
-}
+};
 
-export function set_enable_marketing_emails_visibility() {
+export const set_enable_marketing_emails_visibility = () => {
     const $container = $("#user-notification-settings");
     if (page_params.corporate_enabled) {
         $container.find(".enable_marketing_emails_label").parent().show();
     } else {
         $container.find(".enable_marketing_emails_label").parent().hide();
     }
-}
+};
 
-function stream_notification_setting_changed(e) {
+const stream_notification_setting_changed = (e) => {
     const $row = $(e.target).closest(".stream-notifications-row");
     const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
     if (!stream_id) {
@@ -147,7 +147,7 @@ function stream_notification_setting_changed(e) {
         {property: setting, value: e.target.checked},
         $status_element,
     );
-}
+};
 
 export function set_up(settings_panel) {
     const $container = $(settings_panel.container);
@@ -311,7 +311,7 @@ export function set_up(settings_panel) {
     rerender_ui();
 }
 
-export function update_page(settings_panel) {
+export const update_page = (settings_panel) => {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     for (const setting of settings_config.all_notification_settings) {
@@ -351,9 +351,9 @@ export function update_page(settings_panel) {
         }
     }
     rerender_ui();
-}
+};
 
-export function update_muted_stream_state(sub) {
+export const update_muted_stream_state = (sub) => {
     const $row = $(
         `#stream-specific-notify-table .stream-notifications-row[data-stream-id='${CSS.escape(
             sub.stream_id,
@@ -369,9 +369,9 @@ export function update_muted_stream_state(sub) {
         "disabled",
         !realm.realm_push_notifications_enabled,
     );
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     user_settings_panel.container = "#user-notification-settings";
     user_settings_panel.settings_object = user_settings;
     user_settings_panel.notification_sound_elem = "#user-notification-sound-audio";
@@ -391,4 +391,4 @@ export function initialize() {
             $row.closest(".subsection-parent").find(".alert-notification"),
         );
     });
-}
+};

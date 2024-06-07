@@ -87,8 +87,8 @@ import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics_ui from "./user_topics_ui";
 
-export function dispatch_normal_event(event) {
-    const noop = function () {};
+export const dispatch_normal_event = (event) => {
+    const noop = () => {};
     switch (event.type) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
@@ -955,4 +955,4 @@ export function dispatch_normal_event(event) {
             user_topics_ui.handle_topic_updates(event);
             break;
     }
-}
+};

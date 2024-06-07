@@ -23,7 +23,7 @@ export type PollWidgetExtraData = {
     options?: string[] | undefined;
 };
 
-export function activate({
+export const activate = ({
     $elem,
     callback,
     extra_data: {question = "", options = []} = {},
@@ -35,7 +35,7 @@ export function activate({
     ) => void;
     extra_data: PollWidgetExtraData;
     message: Message;
-}): (events: Event[]) => void {
+}): ((events: Event[]) => void) => {
     const is_my_poll = people.is_my_user_id(message.sender_id);
     const poll_data = new PollData({
         message_sender_id: message.sender_id,
@@ -47,13 +47,13 @@ export function activate({
         report_error_function: blueslip.warn,
     });
 
-    function update_edit_controls(): void {
+    const update_edit_controls = (): void => {
         const has_question =
             $elem.find<HTMLInputElement>("input.poll-question").val()!.trim() !== "";
         $elem.find("button.poll-question-check").toggle(has_question);
-    }
+    };
 
-    function render_question(): void {
+    const render_question = (): void => {
         const question = poll_data.get_question();
         const input_mode = poll_data.get_input_mode();
         const can_edit = is_my_poll && !input_mode;
@@ -73,23 +73,23 @@ export function activate({
         $elem.find(".poll-please-wait").toggle(waiting);
 
         $elem.find(".poll-author-help").toggle(author_help);
-    }
+    };
 
-    function start_editing(): void {
+    const start_editing = (): void => {
         poll_data.set_input_mode();
 
         const question = poll_data.get_question();
         $elem.find("input.poll-question").val(question);
         render_question();
         $elem.find("input.poll-question").trigger("focus");
-    }
+    };
 
-    function abort_edit(): void {
+    const abort_edit = (): void => {
         poll_data.clear_input_mode();
         render_question();
-    }
+    };
 
-    function submit_question(): void {
+    const submit_question = (): void => {
         const $poll_question_input = $elem.find<HTMLInputElement>("input.poll-question");
         let new_question = $poll_question_input.val()!.trim();
         const old_question = poll_data.get_question();
@@ -112,9 +112,9 @@ export function activate({
         // Broadcast the new question to our peers.
         const data = poll_data.handle.question.outbound(new_question);
         callback(data);
-    }
+    };
 
-    function submit_option(): void {
+    const submit_option = (): void => {
         const $poll_option_input = $elem.find<HTMLInputElement>("input.poll-option");
         const option = $poll_option_input.val()!.trim();
         const options = poll_data.get_widget_data().options;
@@ -131,14 +131,14 @@ export function activate({
 
         const data = poll_data.handle.new_option.outbound(option);
         callback(data);
-    }
+    };
 
-    function submit_vote(key: string): void {
+    const submit_vote = (key: string): void => {
         const data = poll_data.handle.vote.outbound(key);
         callback(data);
-    }
+    };
 
-    function build_widget(): void {
+    const build_widget = (): void => {
         const html = render_widgets_poll_widget({});
         $elem.html(html);
 
@@ -196,9 +196,9 @@ export function activate({
                 return;
             }
         });
-    }
+    };
 
-    function check_option_button(): void {
+    const check_option_button = (): void => {
         const $poll_option_input = $elem.find<HTMLInputElement>("input.poll-option");
         const option = $poll_option_input.val()!.trim();
         const options = poll_data.get_widget_data().options;
@@ -212,9 +212,9 @@ export function activate({
             $elem.find("button.poll-option").prop("disabled", false);
             $elem.find("button.poll-option").removeAttr("title");
         }
-    }
+    };
 
-    function render_results(): void {
+    const render_results = (): void => {
         const widget_data = poll_data.get_widget_data();
 
         const html = render_widgets_poll_widget_results(widget_data);
@@ -228,9 +228,9 @@ export function activate({
                 const key = $(e.target).attr("data-key")!;
                 submit_vote(key);
             });
-    }
+    };
 
-    const handle_events = function (events: Event[]): void {
+    const handle_events = (events: Event[]): void => {
         for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
         }
@@ -244,4 +244,4 @@ export function activate({
     render_results();
 
     return handle_events;
-}
+};

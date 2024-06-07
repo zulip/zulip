@@ -15,30 +15,25 @@ const default_max_file_size = 5;
 
 const supported_types = ["image/jpeg", "image/png", "image/gif", "image/tiff"];
 
-function is_image_format(file: File): boolean {
+const is_image_format = (file: File): boolean => {
     const type = file.type;
     if (!type) {
         return false;
     }
     return supported_types.includes(type);
-}
+};
 
-export function build_widget(
-    // function returns a jQuery file input object
+export const build_widget = (
     get_file_input: () => JQuery<HTMLInputElement>,
-    // jQuery object to show file name
     $file_name_field: JQuery,
-    // jQuery object for error text
     $input_error: JQuery,
-    // jQuery button to clear last upload choice
     $clear_button: JQuery,
-    // jQuery button to open file dialog
     $upload_button: JQuery,
     $preview_text?: JQuery,
     $preview_image?: JQuery,
     max_file_upload_size = default_max_file_size,
-): UploadWidget {
-    function accept(file: File): void {
+): UploadWidget => {
+    const accept = (file: File): void => {
         $file_name_field.text(file.name);
         $input_error.hide();
         $clear_button.show();
@@ -49,9 +44,9 @@ export function build_widget(
             $preview_image.addClass("upload_widget_image_preview");
             $preview_text.show();
         }
-    }
+    };
 
-    function clear(): void {
+    const clear = (): void => {
         const $control = get_file_input();
         $control.val("");
         $file_name_field.text("");
@@ -60,7 +55,7 @@ export function build_widget(
         if ($preview_text !== undefined) {
             $preview_text.hide();
         }
-    }
+    };
 
     $clear_button.on("click", (e) => {
         clear();
@@ -109,13 +104,13 @@ export function build_widget(
         e.preventDefault();
     });
 
-    function close(): void {
+    const close = (): void => {
         clear();
         $clear_button.off("click");
         $upload_button.off("drop");
         get_file_input().off("change");
         $upload_button.off("click");
-    }
+    };
 
     return {
         // Call back to clear() in situations like adding bots, when
@@ -125,20 +120,17 @@ export function build_widget(
         // so you can release handlers.
         close,
     };
-}
+};
 
-export function build_direct_upload_widget(
-    // function returns a jQuery file input object
+export const build_direct_upload_widget = (
     get_file_input: () => JQuery<HTMLInputElement>,
-    // jQuery object for error text
     $input_error: JQuery,
-    // jQuery button to open file dialog
     $upload_button: JQuery,
     upload_function: UploadFunction,
     max_file_upload_size: number,
-): void {
+): void => {
     // default value of max uploaded file size
-    function accept(): void {
+    const accept = (): void => {
         $input_error.hide();
         const $realm_logo_section = $upload_button.closest(".image_upload_widget");
         if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
@@ -148,12 +140,12 @@ export function build_direct_upload_widget(
         } else {
             upload_function(get_file_input(), null, true);
         }
-    }
+    };
 
-    function clear(): void {
+    const clear = (): void => {
         const $control = get_file_input();
         $control.val("");
-    }
+    };
 
     $upload_button.on("drop", (e) => {
         const files = e.originalEvent?.dataTransfer?.files;
@@ -196,4 +188,4 @@ export function build_direct_upload_widget(
         get_file_input().trigger("click");
         e.preventDefault();
     });
-}
+};

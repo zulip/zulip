@@ -39,16 +39,16 @@ export const presence_info = new Map<number, PresenceStatus>();
 export let presence_last_update_id = -1;
 
 // We keep and export this for testing convenience.
-export function clear_internal_data(): void {
+export const clear_internal_data = (): void => {
     raw_info.clear();
     presence_info.clear();
 
     presence_last_update_id = -1;
-}
+};
 
 const BIG_REALM_COUNT = 250;
 
-export function get_status(user_id: number): PresenceStatus["status"] {
+export const get_status = (user_id: number): PresenceStatus["status"] => {
     if (people.is_my_user_id(user_id)) {
         if (user_settings.presence_enabled) {
             // if the current user is sharing presence, they always see themselves as online.
@@ -61,13 +61,11 @@ export function get_status(user_id: number): PresenceStatus["status"] {
         return presence_info.get(user_id)!.status;
     }
     return "offline";
-}
+};
 
-export function get_user_ids(): number[] {
-    return [...presence_info.keys()];
-}
+export const get_user_ids = (): number[] => [...presence_info.keys()];
 
-export function status_from_raw(raw: RawPresence): PresenceStatus {
+export const status_from_raw = (raw: RawPresence): PresenceStatus => {
     /*
         Example of `raw`:
 
@@ -81,9 +79,7 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     /* Mark users as offline after this many seconds since their last check-in, */
     const offline_threshold_secs = realm.server_presence_offline_threshold_seconds;
 
-    function age(timestamp = 0): number {
-        return raw.server_timestamp - timestamp;
-    }
+    const age = (timestamp = 0): number => raw.server_timestamp - timestamp;
 
     const active_timestamp = raw.active_timestamp;
     const idle_timestamp = raw.idle_timestamp;
@@ -120,13 +116,13 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
         status: "offline",
         last_active,
     };
-}
+};
 
-export function update_info_from_event(
+export const update_info_from_event = (
     user_id: number,
     info: PresenceInfoFromEvent,
     server_timestamp: number,
-): void {
+): void => {
     /*
         Example of `info`:
 
@@ -167,13 +163,13 @@ export function update_info_from_event(
 
     const status = status_from_raw(raw);
     presence_info.set(user_id, status);
-}
+};
 
-export function set_info(
+export const set_info = (
     presences: Record<number, Omit<RawPresence, "server_timestamp">>,
     server_timestamp: number,
     last_update_id: number,
-): void {
+): void => {
     /*
         Example `presences` data:
 
@@ -232,9 +228,9 @@ export function set_info(
         presence_info.set(user_id, status);
     }
     update_info_for_small_realm();
-}
+};
 
-export function update_info_for_small_realm(): void {
+export const update_info_for_small_realm = (): void => {
     if (people.get_active_human_count() >= BIG_REALM_COUNT) {
         // For big realms, we don't want to bloat our buddy
         // lists with lots of long-time-inactive users.
@@ -269,9 +265,9 @@ export function update_info_for_small_realm(): void {
             last_active: undefined,
         });
     }
-}
+};
 
-export function last_active_date(user_id: number): Date | undefined {
+export const last_active_date = (user_id: number): Date | undefined => {
     const info = presence_info.get(user_id);
 
     if (!info?.last_active) {
@@ -279,12 +275,12 @@ export function last_active_date(user_id: number): Date | undefined {
     }
 
     return new Date(info.last_active * 1000);
-}
+};
 
-export function initialize(params: {
+export const initialize = (params: {
     presences: Record<number, Omit<RawPresence, "server_timestamp">>;
     server_timestamp: number;
     presence_last_update_id: number;
-}): void {
+}): void => {
     set_info(params.presences, params.server_timestamp, params.presence_last_update_id);
-}
+};

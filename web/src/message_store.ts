@@ -155,26 +155,21 @@ export type Message = (
           }
     );
 
-export function update_message_cache(message: Message): void {
+export const update_message_cache = (message: Message): void => {
     // You should only call this from message_helper (or in tests).
     stored_messages.set(message.id, message);
-}
+};
 
-export function get_cached_message(message_id: number): Message | undefined {
-    // You should only call this from message_helper.
-    // Use the get() wrapper below for most other use cases.
-    return stored_messages.get(message_id);
-}
+export const get_cached_message = (message_id: number): Message | undefined =>
+    stored_messages.get(message_id);
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     stored_messages.clear();
-}
+};
 
-export function get(message_id: number): Message | undefined {
-    return stored_messages.get(message_id);
-}
+export const get = (message_id: number): Message | undefined => stored_messages.get(message_id);
 
-export function get_pm_emails(message: Message | MessageWithBooleans): string {
+export const get_pm_emails = (message: Message | MessageWithBooleans): string => {
     const user_ids = people.pm_with_user_ids(message) ?? [];
     const emails = user_ids
         .map((user_id) => {
@@ -188,23 +183,21 @@ export function get_pm_emails(message: Message | MessageWithBooleans): string {
         .sort();
 
     return emails.join(", ");
-}
+};
 
-export function get_pm_full_names(user_ids: number[]): string {
+export const get_pm_full_names = (user_ids: number[]): string => {
     user_ids = people.sorted_other_user_ids(user_ids);
     const names = people.get_display_full_names(user_ids).sort();
 
     return names.join(", ");
-}
+};
 
-export function convert_raw_message_to_message_with_booleans(
+export const convert_raw_message_to_message_with_booleans = (
     message: RawMessage,
-): MessageWithBooleans {
+): MessageWithBooleans => {
     const flags = message.flags ?? [];
 
-    function convert_flag(flag_name: string): boolean {
-        return flags.includes(flag_name);
-    }
+    const convert_flag = (flag_name: string): boolean => flags.includes(flag_name);
 
     const converted_flags = {
         unread: !convert_flag("read"),
@@ -237,15 +230,13 @@ export function convert_raw_message_to_message_with_booleans(
         ..._.omit(message, "flags"),
         ...converted_flags,
     };
-}
+};
 
-export function update_booleans(message: Message, flags: string[]): void {
+export const update_booleans = (message: Message, flags: string[]): void => {
     // When we get server flags for local echo or message edits,
     // we are vulnerable to race conditions, so only update flags
     // that are driven by message content.
-    function convert_flag(flag_name: string): boolean {
-        return flags.includes(flag_name);
-    }
+    const convert_flag = (flag_name: string): boolean => flags.includes(flag_name);
 
     message.mentioned =
         convert_flag("mentioned") ||
@@ -255,44 +246,44 @@ export function update_booleans(message: Message, flags: string[]): void {
     message.stream_wildcard_mentioned = convert_flag("stream_wildcard_mentioned");
     message.topic_wildcard_mentioned = convert_flag("topic_wildcard_mentioned");
     message.alerted = convert_flag("has_alert_word");
-}
+};
 
-export function update_sender_full_name(user_id: number, new_name: string): void {
+export const update_sender_full_name = (user_id: number, new_name: string): void => {
     for (const msg of stored_messages.values()) {
         if (msg.sender_id && msg.sender_id === user_id) {
             msg.sender_full_name = new_name;
         }
     }
-}
+};
 
-export function update_small_avatar_url(user_id: number, new_url: string): void {
+export const update_small_avatar_url = (user_id: number, new_url: string): void => {
     for (const msg of stored_messages.values()) {
         if (msg.sender_id && msg.sender_id === user_id) {
             msg.small_avatar_url = new_url;
         }
     }
-}
+};
 
-export function update_stream_name(stream_id: number, new_name: string): void {
+export const update_stream_name = (stream_id: number, new_name: string): void => {
     for (const msg of stored_messages.values()) {
         if (msg.type === "stream" && msg.stream_id === stream_id) {
             msg.display_recipient = new_name;
         }
     }
-}
+};
 
-export function update_status_emoji_info(
+export const update_status_emoji_info = (
     user_id: number,
     new_info: UserStatusEmojiInfo | undefined,
-): void {
+): void => {
     for (const msg of stored_messages.values()) {
         if (msg.sender_id && msg.sender_id === user_id) {
             msg.status_emoji_info = new_info;
         }
     }
-}
+};
 
-export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
+export const reify_message_id = ({old_id, new_id}: {old_id: number; new_id: number}): void => {
     const message = stored_messages.get(old_id);
     if (message !== undefined) {
         message.id = new_id;
@@ -300,4 +291,4 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
         stored_messages.set(new_id, message);
         stored_messages.delete(old_id);
     }
-}
+};

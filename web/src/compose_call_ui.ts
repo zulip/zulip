@@ -17,37 +17,43 @@ const call_response_schema = z.object({
     url: z.string(),
 });
 
-export function update_audio_and_video_chat_button_display(): void {
+export const update_audio_and_video_chat_button_display = (): void => {
     update_audio_chat_button_display();
     update_video_chat_button_display();
-}
+};
 
-export function update_video_chat_button_display(): void {
+export const update_video_chat_button_display = (): void => {
     const show_video_chat_button = compose_call.compute_show_video_chat_button();
     $(".compose-control-buttons-container .video_link").toggle(show_video_chat_button);
     $(".message-edit-feature-group .video_link").toggle(show_video_chat_button);
-}
+};
 
-export function update_audio_chat_button_display(): void {
+export const update_audio_chat_button_display = (): void => {
     const show_audio_chat_button = compose_call.compute_show_audio_chat_button();
     $(".compose-control-buttons-container .audio_link").toggle(show_audio_chat_button);
     $(".message-edit-feature-group .audio_link").toggle(show_audio_chat_button);
-}
+};
 
-function insert_video_call_url(url: string, $target_textarea: JQuery<HTMLTextAreaElement>): void {
+const insert_video_call_url = (
+    url: string,
+    $target_textarea: JQuery<HTMLTextAreaElement>,
+): void => {
     const link_text = $t({defaultMessage: "Join video call."});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, $target_textarea, "block", 1);
-}
+};
 
-function insert_audio_call_url(url: string, $target_textarea: JQuery<HTMLTextAreaElement>): void {
+const insert_audio_call_url = (
+    url: string,
+    $target_textarea: JQuery<HTMLTextAreaElement>,
+): void => {
     const link_text = $t({defaultMessage: "Join voice call."});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, $target_textarea, "block", 1);
-}
+};
 
-export function generate_and_insert_audio_or_video_call_link(
+export const generate_and_insert_audio_or_video_call_link = (
     $target_element: JQuery,
     is_audio_call: boolean,
-): void {
+): void => {
     let $target_textarea: JQuery<HTMLTextAreaElement>;
     let edit_message_id: string | undefined;
     if ($target_element.parents(".message_edit_form").length === 1) {
@@ -74,7 +80,7 @@ export function generate_and_insert_audio_or_video_call_link(
             const xhr = channel.post({
                 url: "/json/calls/zoom/create",
                 data: request,
-                success(res) {
+                success: (res) => {
                     const data = call_response_schema.parse(res);
                     compose_call.video_call_xhrs.delete(key);
                     if (is_audio_call) {
@@ -83,7 +89,7 @@ export function generate_and_insert_audio_or_video_call_link(
                         insert_video_call_url(data.url, $target_textarea);
                     }
                 },
-                error(xhr, status) {
+                error: (xhr, status) => {
                     compose_call.video_call_xhrs.delete(key);
                     let parsed;
                     if (
@@ -130,7 +136,7 @@ export function generate_and_insert_audio_or_video_call_link(
             data: {
                 meeting_name,
             },
-            success(response) {
+            success: (response) => {
                 const data = call_response_schema.parse(response);
                 insert_video_call_url(data.url, $target_textarea);
             },
@@ -164,4 +170,4 @@ export function generate_and_insert_audio_or_video_call_link(
             );
         }
     }
-}
+};

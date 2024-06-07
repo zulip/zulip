@@ -91,7 +91,7 @@ const $array = (array) => {
     return {each};
 };
 
-function set_message_for_message_content($content, value) {
+const set_message_for_message_content = ($content, value) => {
     // no message row found
     if (value === undefined) {
         $content.closest = (closest_opts) => {
@@ -120,7 +120,7 @@ function set_message_for_message_content($content, value) {
         assert.equal(message_id_opt, message_id);
         return value;
     };
-}
+};
 
 const get_content_element = () => {
     const $content = $.create("content-stub");
@@ -140,7 +140,7 @@ const get_content_element = () => {
     // Fend off dumb security bugs by forcing devs to be
     // intentional about HTML manipulation.
     /* istanbul ignore next */
-    function security_violation() {
+    const security_violation = () => {
         throw new Error(`
             Be super careful about HTML manipulation.
 
@@ -148,7 +148,7 @@ const get_content_element = () => {
             functions to validate that calls to html/prepend/append
             use trusted values.
         `);
-    }
+    };
     $content.html = security_violation;
     $content.prepend = security_violation;
     $content.append = security_violation;
@@ -472,7 +472,7 @@ run_test("emoji", () => {
         const text = f.call($emoji);
         assert.equal(":tada:", text);
         called = true;
-        return {contents: () => ({unwrap() {}})};
+        return {contents: () => ({unwrap: () => {}})};
     };
     $content.set_find_results(".emoji", $emoji);
     user_settings.emojiset = "text";
@@ -525,12 +525,12 @@ run_test("spoiler-header-empty-fill", () => {
     assert.equal($appended[1].selector, toggle_button_html);
 });
 
-function assert_clipboard_setup() {
+const assert_clipboard_setup = () => {
     assert.equal(clipboard_args[0], "copy-code-stub");
     const text = clipboard_args[1].text({
         to_$: () => ({
             parent: () => ({
-                siblings(arg) {
+                siblings: (arg) => {
                     assert.equal(arg, "code");
                     return {
                         text: () => "text",
@@ -540,9 +540,9 @@ function assert_clipboard_setup() {
         }),
     });
     assert.equal(text, "text");
-}
+};
 
-function test_code_playground(mock_template, viewing_code) {
+const test_code_playground = (mock_template, viewing_code) => {
     const $content = get_content_element();
     const $hilite = $.create("div.codehilite");
     const $pre = $.create("hilite-pre");
@@ -590,7 +590,7 @@ function test_code_playground(mock_template, viewing_code) {
         $copy_code: $copy_code_button,
         $view_code: $view_code_in_playground,
     };
-}
+};
 
 run_test("code playground none", ({override, mock_template}) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {

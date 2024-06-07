@@ -22,7 +22,7 @@ enum CustomerPlanStatus {
     SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6,
 }
 
-export function create_update_current_cycle_license_request(): void {
+export const create_update_current_cycle_license_request = (): void => {
     $("#current-manual-license-count-update-button .billing-button-text").text("");
     $("#current-manual-license-count-update-button .loader").show();
     helpers.create_ajax_request(
@@ -45,9 +45,9 @@ export function create_update_current_cycle_license_request(): void {
             $("#current-manual-license-count-update-button .billing-button-text").text("Update");
         },
     );
-}
+};
 
-export function create_update_next_cycle_license_request(): void {
+export const create_update_next_cycle_license_request = (): void => {
     $("#next-manual-license-count-update-button .loader").show();
     $("#next-manual-license-count-update-button .billing-button-text").text("");
     helpers.create_ajax_request(
@@ -68,7 +68,7 @@ export function create_update_next_cycle_license_request(): void {
             $("#next-manual-license-count-update-button .billing-button-text").text("Update");
         },
     );
-}
+};
 
 export function initialize(): void {
     $("#update-card-button").on("click", (e) => {
@@ -91,10 +91,10 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    function get_old_and_new_license_count_for_current_cycle(): {
+    const get_old_and_new_license_count_for_current_cycle = (): {
         new_current_manual_license_count: number;
         old_current_manual_license_count: number;
-    } {
+    } => {
         const new_current_manual_license_count: number = Number.parseInt(
             $<HTMLInputElement>("input#current-manual-license-count").val()!,
             10,
@@ -107,12 +107,12 @@ export function initialize(): void {
             new_current_manual_license_count,
             old_current_manual_license_count,
         };
-    }
+    };
 
-    function get_old_and_new_license_count_for_next_cycle(): {
+    const get_old_and_new_license_count_for_next_cycle = (): {
         new_next_manual_license_count: number;
         old_next_manual_license_count: number;
-    } {
+    } => {
         const new_next_manual_license_count: number = Number.parseInt(
             $<HTMLInputElement>("input#next-manual-license-count").val()!,
             10,
@@ -125,7 +125,7 @@ export function initialize(): void {
             new_next_manual_license_count,
             old_next_manual_license_count,
         };
-    }
+    };
 
     $("#current-license-change-form, #next-license-change-form").on("submit", (e) => {
         // We don't want user to accidentally update the license count on pressing enter.
@@ -376,13 +376,13 @@ export function initialize(): void {
             type: "PATCH",
             url: `/json${billing_base_url}/billing/plan`,
             data,
-            success() {
+            success: () => {
                 window.location.replace(
                     `${billing_base_url}/billing/?success_message=` +
                         encodeURIComponent("Billing frequency has been updated."),
                 );
             },
-            error(xhr) {
+            error: (xhr) => {
                 const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
                 if (parsed.success) {
                     $("#org-billing-frequency-change-error").text(parsed.data.msg);

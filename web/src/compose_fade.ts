@@ -77,7 +77,7 @@ type MessageGroup = {
 
 let normal_display = false;
 
-export function set_focused_recipient(msg_type?: "private" | "stream"): void {
+export const set_focused_recipient = (msg_type?: "private" | "stream"): void => {
     if (msg_type === undefined) {
         compose_fade_helper.clear_focused_recipient();
     }
@@ -108,23 +108,23 @@ export function set_focused_recipient(msg_type?: "private" | "stream"): void {
     }
 
     compose_fade_helper.set_focused_recipient(focused_recipient);
-}
+};
 
-function display_messages_normally(): void {
+const display_messages_normally = (): void => {
     message_lists.current?.view.$list.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
-}
+};
 
-function change_fade_state($elt: JQuery, should_fade_group: boolean): void {
+const change_fade_state = ($elt: JQuery, should_fade_group: boolean): void => {
     if (should_fade_group) {
         $elt.addClass("message-fade");
     } else {
         $elt.removeClass("message-fade");
     }
-}
+};
 
-function fade_messages(): void {
+const fade_messages = (): void => {
     if (message_lists.current === undefined) {
         return;
     }
@@ -167,9 +167,9 @@ function fade_messages(): void {
         message_lists.current,
         compose_state.private_message_recipient(),
     );
-}
+};
 
-function do_update_all(): void {
+const do_update_all = (): void => {
     if (compose_fade_helper.want_normal_display()) {
         if (!normal_display) {
             display_messages_normally();
@@ -177,33 +177,33 @@ function do_update_all(): void {
     } else {
         fade_messages();
     }
-}
+};
 
 // This gets called on keyup events, hence the throttling.
 export const update_all = _.debounce(do_update_all, 50);
 
-export function start_compose(msg_type?: "private" | "stream"): void {
+export const start_compose = (msg_type?: "private" | "stream"): void => {
     set_focused_recipient(msg_type);
     do_update_all();
-}
+};
 
-export function clear_compose(): void {
+export const clear_compose = (): void => {
     compose_fade_helper.clear_focused_recipient();
     display_messages_normally();
-}
+};
 
-export function update_message_list(): void {
+export const update_message_list = (): void => {
     if (compose_fade_helper.want_normal_display()) {
         display_messages_normally();
     } else {
         fade_messages();
     }
-}
+};
 
-export function update_rendered_message_groups(
+export const update_rendered_message_groups = (
     message_groups: MessageGroup[],
     get_element: (message_group: MessageGroup) => JQuery,
-): void {
+): void => {
     if (compose_fade_helper.want_normal_display()) {
         return;
     }
@@ -217,4 +217,4 @@ export function update_rendered_message_groups(
         const should_fade = compose_fade_helper.should_fade_message(first_message);
         change_fade_state($elt, should_fade);
     }
-}
+};

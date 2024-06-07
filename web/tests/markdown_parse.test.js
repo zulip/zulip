@@ -16,11 +16,9 @@ const user_map = new Map();
 user_map.set(my_id, "Me Myself");
 user_map.set(105, "greg");
 
-function get_actual_name_from_user_id(user_id) {
-    return user_map.get(user_id);
-}
+const get_actual_name_from_user_id = (user_id) => user_map.get(user_id);
 
-function get_user_id_from_name(name) {
+const get_user_id_from_name = (name) => {
     for (const [user_id, _name] of user_map.entries()) {
         if (name === _name) {
             return user_id;
@@ -29,19 +27,14 @@ function get_user_id_from_name(name) {
 
     /* istanbul ignore next */
     throw new Error(`unexpected name ${name}`);
-}
+};
 
-function is_valid_full_name_and_user_id(name, user_id) {
-    return user_map.has(user_id) && user_map.get(user_id) === name;
-}
+const is_valid_full_name_and_user_id = (name, user_id) =>
+    user_map.has(user_id) && user_map.get(user_id) === name;
 
-function my_user_id() {
-    return my_id;
-}
+const my_user_id = () => my_id;
 
-function is_valid_user_id(user_id) {
-    return user_map.has(user_id);
-}
+const is_valid_user_id = (user_id) => user_map.has(user_id);
 
 const staff_group = {
     id: 201,
@@ -51,15 +44,13 @@ const staff_group = {
 const user_group_map = new Map();
 user_group_map.set(staff_group.name, staff_group);
 
-function get_user_group_from_name(name) {
-    return user_group_map.get(name);
-}
+const get_user_group_from_name = (name) => user_group_map.get(name);
 
-function is_member_of_user_group(user_id, user_group_id) {
+const is_member_of_user_group = (user_id, user_group_id) => {
     assert.equal(user_group_id, staff_group.id);
     assert.equal(user_id, my_id);
     return true;
-}
+};
 
 const social = {
     stream_id: 301,
@@ -69,34 +60,24 @@ const social = {
 const sub_map = new Map();
 sub_map.set(social.name, social);
 
-function get_stream_by_name(name) {
-    return sub_map.get(name);
-}
+const get_stream_by_name = (name) => sub_map.get(name);
 
-function stream_hash(stream_id) {
-    return `stream-${stream_id}`;
-}
+const stream_hash = (stream_id) => `stream-${stream_id}`;
 
-function stream_topic_hash(stream_id, topic) {
-    return `stream-${stream_id}-topic-${topic}`;
-}
+const stream_topic_hash = (stream_id, topic) => `stream-${stream_id}-topic-${topic}`;
 
-function get_emoticon_translations() {
-    return [
-        {regex: /(:\))/g, replacement_text: ":smile:"},
-        {regex: /(<3)/g, replacement_text: ":heart:"},
-    ];
-}
+const get_emoticon_translations = () => [
+    {regex: /(:\))/g, replacement_text: ":smile:"},
+    {regex: /(<3)/g, replacement_text: ":heart:"},
+];
 
 const emoji_map = new Map();
 emoji_map.set("smile", "1f642");
 emoji_map.set("alien", "1f47d");
 
-function get_emoji_codepoint(emoji_name) {
-    return emoji_map.get(emoji_name);
-}
+const get_emoji_codepoint = (emoji_name) => emoji_map.get(emoji_name);
 
-function get_emoji_name(codepoint) {
+const get_emoji_name = (codepoint) => {
     for (const [emoji_name, _codepoint] of emoji_map.entries()) {
         if (codepoint === _codepoint) {
             return emoji_name;
@@ -105,14 +86,12 @@ function get_emoji_name(codepoint) {
 
     /* istanbul ignore next */
     throw new Error(`unexpected codepoint ${codepoint}`);
-}
+};
 
 const realm_emoji_map = new Map();
 realm_emoji_map.set("heart", "/images/emoji/heart.bmp");
 
-function get_realm_emoji_url(emoji_name) {
-    return realm_emoji_map.get(emoji_name);
-}
+const get_realm_emoji_url = (emoji_name) => realm_emoji_map.get(emoji_name);
 
 const regex = /#foo(\d+)(?!\w)/g;
 const linkifier_map = new Map();
@@ -121,9 +100,7 @@ linkifier_map.set(regex, {
     group_number_to_name: {1: "id"},
 });
 
-function get_linkifier_map() {
-    return linkifier_map;
-}
+const get_linkifier_map = () => linkifier_map;
 
 const helper_config = {
     // user stuff
@@ -155,10 +132,10 @@ const helper_config = {
     get_linkifier_map,
 };
 
-function assert_parse(raw_content, expected_content) {
+const assert_parse = (raw_content, expected_content) => {
     const {content} = markdown.parse({raw_content, helper_config});
     assert.equal(content, expected_content);
-}
+};
 
 run_test("basics", () => {
     assert_parse("boring", "<p>boring</p>");
@@ -222,10 +199,10 @@ run_test("linkifiers", () => {
     );
 });
 
-function assert_topic_links(topic, expected_links) {
+const assert_topic_links = (topic, expected_links) => {
     const topic_links = markdown.get_topic_links(topic);
     assert.deepEqual(topic_links, expected_links);
-}
+};
 
 run_test("topic links", () => {
     linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_template: "http://foo.com/{id}"}]);

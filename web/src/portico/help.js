@@ -31,18 +31,14 @@ function register_tabbed_section($tabbed_section) {
 
 // Display the copy-to-clipboard button inside the .codehilite element
 // within the API and Help Center docs using clipboard.js
-function add_copy_to_clipboard_element($codehilite) {
+const add_copy_to_clipboard_element = ($codehilite) => {
     const $copy_button = $("<button>").addClass("copy-codeblock");
     $copy_button.html(copy_to_clipboard_svg());
 
     $($codehilite).append($copy_button);
 
     const clipboard = new ClipboardJS($copy_button[0], {
-        text(copy_element) {
-            // trim to remove trailing whitespace introduced
-            // by additional elements inside <pre>
-            return $(copy_element).siblings("pre").text().trim();
-        },
+        text: (copy_element) => $(copy_element).siblings("pre").text().trim(),
     });
 
     // Show a tippy tooltip when the button is hovered
@@ -74,7 +70,7 @@ function add_copy_to_clipboard_element($codehilite) {
             tooltip_copied.hide();
         }, 1000);
     });
-}
+};
 
 function render_tabbed_sections() {
     $(".tabbed-section").each(function () {

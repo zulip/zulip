@@ -364,14 +364,14 @@ run_test("activate own poll", ({mock_template}) => {
 
     set_widget_find_result("button.poll-question-remove");
 
-    function assert_visibility() {
+    const assert_visibility = () => {
         assert.ok($poll_option_container.visible());
         assert.ok($poll_question_header.visible());
         assert.ok(!$poll_question_container.visible());
         assert.ok($poll_edit_question.visible());
         assert.ok(!$poll_please_wait.visible());
         assert.ok(!$poll_author_help.visible());
-    }
+    };
 
     poll_widget.activate(opts);
 

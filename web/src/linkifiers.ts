@@ -14,14 +14,12 @@ type Linkifier = {
     id: number;
 };
 
-export function get_linkifier_map(): LinkifierMap {
-    return linkifier_map;
-}
+export const get_linkifier_map = (): LinkifierMap => linkifier_map;
 
-function python_to_js_linkifier(
+const python_to_js_linkifier = (
     pattern: string,
     url: string,
-): [RegExp | null, url_template_lib.Template, Record<number, string>] {
+): [RegExp | null, url_template_lib.Template, Record<number, string>] => {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
     const named_group_re = /\(?P<([^>]+?)>/g;
@@ -85,9 +83,9 @@ function python_to_js_linkifier(
     }
     const url_template = url_template_lib.parse(url);
     return [final_regex, url_template, group_number_to_name];
-}
+};
 
-export function update_linkifier_rules(linkifiers: Linkifier[]): void {
+export const update_linkifier_rules = (linkifiers: Linkifier[]): void => {
     linkifier_map.clear();
 
     for (const linkifier of linkifiers) {
@@ -105,8 +103,8 @@ export function update_linkifier_rules(linkifiers: Linkifier[]): void {
             group_number_to_name,
         });
     }
-}
+};
 
-export function initialize(linkifiers: Linkifier[]): void {
+export const initialize = (linkifiers: Linkifier[]): void => {
     update_linkifier_rules(linkifiers);
-}
+};

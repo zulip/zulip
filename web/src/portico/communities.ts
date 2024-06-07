@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-function sync_open_organizations_page_with_current_hash(): void {
+const sync_open_organizations_page_with_current_hash = (): void => {
     const hash = window.location.hash;
     if (!hash || hash === "#all" || hash === "#undefined") {
         $(".eligible_realm").show();
@@ -12,12 +12,12 @@ function sync_open_organizations_page_with_current_hash(): void {
         $(".realm-category").removeClass("selected");
         $(`[data-category="${CSS.escape(hash.slice(1))}"]`).addClass("selected");
     }
-}
+};
 
-function toggle_categories_dropdown(): void {
+const toggle_categories_dropdown = (): void => {
     const $dropdown_list = $(".integration-categories-dropdown .dropdown-list");
     $dropdown_list.slideToggle(250);
-}
+};
 
 // init
 $(() => {

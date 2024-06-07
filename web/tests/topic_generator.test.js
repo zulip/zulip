@@ -17,10 +17,10 @@ const user_topics = mock_esm("../src/user_topics");
 const tg = zrequire("topic_generator");
 
 run_test("streams", ({override}) => {
-    function assert_next_stream(curr_stream, expected) {
+    const assert_next_stream = (curr_stream, expected) => {
         const actual = tg.get_next_stream(curr_stream);
         assert.equal(actual, expected);
-    }
+    };
 
     override(stream_list_sort, "get_streams", () => ["announce", "muted", "devel", "test here"]);
 
@@ -30,10 +30,10 @@ run_test("streams", ({override}) => {
     assert_next_stream("announce", "muted");
     assert_next_stream("test here", "announce");
 
-    function assert_prev_stream(curr_stream, expected) {
+    const assert_prev_stream = (curr_stream, expected) => {
         const actual = tg.get_prev_stream(curr_stream);
         assert.equal(actual, expected);
-    }
+    };
 
     assert_prev_stream(undefined, "test here");
     assert_prev_stream("test here", "devel");
@@ -49,17 +49,12 @@ run_test("topics", ({override}) => {
         ["stream4", ["4a"]],
     ]);
 
-    function has_unread_messages(_stream, topic) {
-        return topic !== "read";
-    }
+    const has_unread_messages = (_stream, topic) => topic !== "read";
 
-    function get_topics(stream) {
-        return topics.get(stream);
-    }
+    const get_topics = (stream) => topics.get(stream);
 
-    function next_topic(curr_stream, curr_topic) {
-        return tg.next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic);
-    }
+    const next_topic = (curr_stream, curr_topic) =>
+        tg.next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic);
 
     assert.deepEqual(next_topic("stream1", "1a"), {stream: "stream1", topic: "1b"});
     assert.deepEqual(next_topic("stream1", undefined), {stream: "stream1", topic: "1a"});
@@ -109,9 +104,9 @@ run_test("topics", ({override}) => {
         "python",
         "followed-devel",
     ]);
-    function mark_topic_as_read(topic) {
+    const mark_topic_as_read = (topic) => {
         topic_has_unreads.delete(topic);
-    }
+    };
     override(unread, "topic_has_any_unread", (_stream_id, topic) => topic_has_unreads.has(topic));
 
     override(user_topics, "is_topic_muted", (_stream_name, topic) => topic === "muted");

@@ -3,7 +3,7 @@ import $ from "jquery";
 const EXTRA_SUBMENU_BOTTOM_PADDING = 16;
 
 $(() => {
-    function on_tab_menu_selection_change(changed_element?: HTMLElement): void {
+    const on_tab_menu_selection_change = (changed_element?: HTMLElement): void => {
         // Pass event to open menu and if it is undefined, we close the menu.
         if (!changed_element) {
             $("#top-menu-submenu-backdrop").css("height", "0px");
@@ -18,15 +18,15 @@ $(() => {
         } else {
             $("#top-menu-submenu-backdrop").css("height", 0);
         }
-    }
+    };
 
-    function on_top_menu_tab_unselect_click(): void {
+    const on_top_menu_tab_unselect_click = (): void => {
         // Close the menu.
         $("#top-menu-tab-close").prop("checked", true);
         on_tab_menu_selection_change();
-    }
+    };
 
-    function update_submenu_height_if_visible(): void {
+    const update_submenu_height_if_visible = (): void => {
         if ($(".top-menu-tab-input:checked").length === 1) {
             const sub_menu_height =
                 $(".top-menu-tab-input:checked ~ .top-menu-submenu").height() ?? 0;
@@ -35,7 +35,7 @@ $(() => {
                 sub_menu_height + EXTRA_SUBMENU_BOTTOM_PADDING,
             );
         }
-    }
+    };
 
     // In case user presses `back` with menu open.
     // See https://github.com/zulip/zulip/pull/24301#issuecomment-1418547337.

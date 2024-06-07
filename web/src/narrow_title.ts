@@ -14,7 +14,7 @@ export let unread_count = 0;
 let pm_count = 0;
 export let narrow_title = "home";
 
-export function compute_narrow_title(filter?: Filter): string {
+export const compute_narrow_title = (filter?: Filter): string => {
     if (filter === undefined) {
         // Views without a message feed in the center pane.
         if (recent_view_util.is_visible()) {
@@ -76,9 +76,9 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     return filter_title;
-}
+};
 
-export function redraw_title(): void {
+export const redraw_title = (): void => {
     // Update window title to reflect unread messages in current view
     const new_title =
         (unread_count ? "(" + unread_count + ") " : "") +
@@ -89,9 +89,9 @@ export function redraw_title(): void {
         "Zulip";
 
     document.title = new_title;
-}
+};
 
-export function update_unread_counts(counts: FullUnreadCountsData): void {
+export const update_unread_counts = (counts: FullUnreadCountsData): void => {
     const new_unread_count = unread.calculate_notifiable_count(counts);
     const new_pm_count = counts.direct_message_count;
     if (new_unread_count === unread_count && new_pm_count === pm_count) {
@@ -111,9 +111,9 @@ export function update_unread_counts(counts: FullUnreadCountsData): void {
 
     // TODO: Add a `window.electron_bridge.updateDirectMessageCount(new_pm_count);` call?
     redraw_title();
-}
+};
 
-export function update_narrow_title(filter?: Filter): void {
+export const update_narrow_title = (filter?: Filter): void => {
     narrow_title = compute_narrow_title(filter);
     redraw_title();
-}
+};

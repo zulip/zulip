@@ -98,7 +98,7 @@ run_test("user_can_change_logo", () => {
     assert.equal(can_change_logo(), false);
 });
 
-function test_policy(label, policy, validation_func) {
+const test_policy = (label, policy, validation_func) => {
     run_test(label, () => {
         current_user.is_admin = true;
         realm[policy] = settings_config.common_policy_values.by_admins_only.code;
@@ -139,7 +139,7 @@ function test_policy(label, policy, validation_func) {
         settings_data.initialize(isaac.date_joined);
         assert.equal(validation_func(), true);
     });
-}
+};
 
 test_policy(
     "user_can_create_private_streams",
@@ -177,7 +177,7 @@ test_policy(
     settings_data.user_can_add_custom_emoji,
 );
 
-function test_message_policy(label, policy, validation_func) {
+const test_message_policy = (label, policy, validation_func) => {
     run_test(label, () => {
         current_user.is_admin = true;
         realm[policy] = settings_config.common_message_policy_values.by_admins_only.code;
@@ -214,7 +214,7 @@ function test_message_policy(label, policy, validation_func) {
         settings_data.initialize(isaac.date_joined);
         assert.equal(validation_func(), true);
     });
-}
+};
 
 test_message_policy(
     "user_can_move_messages_to_another_topic",

@@ -26,19 +26,19 @@ import type {StreamSubscription} from "./sub_store";
 import {INTERACTIVE_HOVER_DELAY} from "./tippyjs";
 import {user_settings} from "./user_settings";
 
-function get_formatted_sub_count(sub_count: number): string {
+const get_formatted_sub_count = (sub_count: number): string => {
     if (sub_count < 1000) {
         return sub_count.toString();
     }
     return new Intl.NumberFormat(user_settings.default_language, {notation: "compact"}).format(
         sub_count,
     );
-}
+};
 
-function total_subscriber_count(
+const total_subscriber_count = (
     current_sub: StreamSubscription | undefined,
     pm_ids_set: Set<number>,
-): number {
+): number => {
     // Includes inactive users who might not show up in the buddy list.
     if (current_sub) {
         return peer_data.get_subscriber_count(current_sub.stream_id, false);
@@ -56,17 +56,12 @@ function total_subscriber_count(
         return pm_ids_list.length + 1;
     }
     return 0;
-}
+};
 
-function should_hide_headers(
+const should_hide_headers = (
     current_sub: StreamSubscription | undefined,
     pm_ids_set: Set<number>,
-): boolean {
-    // If we aren't in a stream/DM view, then there's never "other"
-    // users, so we don't show section headers and only show one
-    // untitled section.
-    return !current_sub && !pm_ids_set.size;
-}
+): boolean => !current_sub && !pm_ids_set.size;
 
 type BuddyListRenderData = {
     current_sub: StreamSubscription | undefined;
@@ -77,7 +72,7 @@ type BuddyListRenderData = {
     hide_headers: boolean;
 };
 
-function get_render_data(): BuddyListRenderData {
+const get_render_data = (): BuddyListRenderData => {
     const current_sub = narrow_state.stream_sub();
     const pm_ids_set = narrow_state.pm_ids_set();
 
@@ -94,7 +89,7 @@ function get_render_data(): BuddyListRenderData {
         total_user_count,
         hide_headers,
     };
-}
+};
 
 class BuddyListConf {
     matching_view_list_selector = "#buddy-list-users-matching-view";

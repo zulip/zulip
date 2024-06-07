@@ -6,22 +6,21 @@ import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import {localstorage} from "./localstorage";
 
-export function get_hotkey_deprecation_notice(
+export const get_hotkey_deprecation_notice = (
     originalHotkey: string,
     replacementHotkey: string,
-): string {
-    return $t_html(
+): string =>
+    $t_html(
         {
             defaultMessage:
                 'We\'ve replaced the "{originalHotkey}" hotkey with "{replacementHotkey}" to make this common shortcut easier to trigger.',
         },
         {originalHotkey, replacementHotkey},
     );
-}
 
 let shown_deprecation_notices: string[] = [];
 
-export function maybe_show_deprecation_notice(key: string): void {
+export const maybe_show_deprecation_notice = (key: string): void => {
     let message;
     const isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
     switch (key) {
@@ -59,7 +58,7 @@ export function maybe_show_deprecation_notice(key: string): void {
             html_heading: $t_html({defaultMessage: "Deprecation notice"}),
             html_body: message,
             html_submit_button: $t_html({defaultMessage: "Got it"}),
-            on_click() {
+            on_click: () => {
                 // Do nothing
             },
             close_on_submit: true,
@@ -75,4 +74,4 @@ export function maybe_show_deprecation_notice(key: string): void {
             );
         }
     }
-}
+};

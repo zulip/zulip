@@ -54,7 +54,7 @@ $(() => {
             new_password1: "password_strength",
         },
         errorElement: "p",
-        errorPlacement($error: JQuery, $element: JQuery) {
+        errorPlacement: ($error: JQuery, $element: JQuery) => {
             // NB: this is called at most once, when the error element
             // is created.
             $element.next(".help-inline.alert.alert-error").remove();
@@ -140,12 +140,12 @@ $(() => {
 
     $("#send_confirm").validate({
         errorElement: "div",
-        errorPlacement($error: JQuery) {
+        errorPlacement: ($error: JQuery) => {
             $(".email-frontend-error").empty();
             $("#send_confirm .alert.email-backend-error").remove();
             $error.appendTo($(".email-frontend-error")).addClass("text-error");
         },
-        success() {
+        success: () => {
             $("#errors").empty();
         },
     });
@@ -161,7 +161,7 @@ $(() => {
         },
     );
 
-    const show_subdomain_section = function (bool: boolean): void {
+    const show_subdomain_section = (bool: boolean): void => {
         const action = bool ? "hide" : "show";
         $("#subdomain_section")[action]();
     };
@@ -173,13 +173,13 @@ $(() => {
     $("#login_form").validate({
         errorClass: "text-error",
         wrapper: "div",
-        submitHandler(form) {
+        submitHandler: (form) => {
             $("#login_form").find(".loader").css("display", "inline-block");
             $("#login_form").find("button .text").hide();
 
             form.submit();
         },
-        invalidHandler() {
+        invalidHandler: () => {
             // this removes all previous errors that were put on screen
             // by the server.
             $("#login_form .alert.alert-error").remove();
@@ -192,7 +192,7 @@ $(() => {
         },
     });
 
-    function check_subdomain_available(subdomain: string): void {
+    const check_subdomain_available = (subdomain: string): void => {
         const url = "/json/realm/subdomain/" + subdomain;
         void $.get(url, (response) => {
             const {msg} = z.object({msg: z.string()}).parse(response);
@@ -201,9 +201,9 @@ $(() => {
                 $("#id_team_subdomain_error_client").show();
             }
         });
-    }
+    };
 
-    function update_full_name_section(): void {
+    const update_full_name_section = (): void => {
         if ($("#source_realm_select").length && $("#source_realm_select").val() !== "") {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();
@@ -220,7 +220,7 @@ $(() => {
             $("#full_name_input_section").show();
             $("#profile_info_section").hide();
         }
-    }
+    };
 
     $("#source_realm_select").on("change", update_full_name_section);
     update_full_name_section();

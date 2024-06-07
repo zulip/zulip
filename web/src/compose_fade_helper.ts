@@ -5,19 +5,18 @@ import * as util from "./util";
 
 let focused_recipient: Recipient | undefined;
 
-export function should_fade_message(message: Message): boolean {
-    return !util.same_recipient(focused_recipient, message);
-}
+export const should_fade_message = (message: Message): boolean =>
+    !util.same_recipient(focused_recipient, message);
 
-export function clear_focused_recipient(): void {
+export const clear_focused_recipient = (): void => {
     focused_recipient = undefined;
-}
+};
 
-export function set_focused_recipient(recipient?: Recipient): void {
+export const set_focused_recipient = (recipient?: Recipient): void => {
     focused_recipient = recipient;
-}
+};
 
-export function want_normal_display(): boolean {
+export const want_normal_display = (): boolean => {
     // If we're not composing show a normal display.
     if (focused_recipient === undefined) {
         return true;
@@ -41,4 +40,4 @@ export function want_normal_display(): boolean {
     }
 
     return focused_recipient.type === "private" && focused_recipient.reply_to === "";
-}
+};

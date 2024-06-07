@@ -4,50 +4,50 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function user_row_selector(page: Page, name: string): Promise<string> {
+const user_row_selector = async (page: Page, name: string): Promise<string> => {
     const user_id = await common.get_user_id_from_name(page, name);
     const selector = `.remove_potential_subscriber[data-user-id="${user_id}"]`;
     return selector;
-}
+};
 
-async function await_user_visible(page: Page, name: string): Promise<void> {
+const await_user_visible = async (page: Page, name: string): Promise<void> => {
     const selector = await user_row_selector(page, name);
     await page.waitForSelector(selector, {visible: true});
-}
+};
 
-async function await_user_hidden(page: Page, name: string): Promise<void> {
+const await_user_hidden = async (page: Page, name: string): Promise<void> => {
     const selector = await user_row_selector(page, name);
     await page.waitForSelector(selector, {hidden: true});
-}
+};
 
-async function add_user_to_stream(page: Page, name: string): Promise<void> {
+const add_user_to_stream = async (page: Page, name: string): Promise<void> => {
     const user_id = await common.get_user_id_from_name(page, name);
     await page.evaluate((user_id) => {
         zulip_test.add_user_id_to_new_stream(user_id);
     }, user_id);
     await await_user_visible(page, name);
-}
+};
 
-async function stream_name_error(page: Page): Promise<string> {
+const stream_name_error = async (page: Page): Promise<string> => {
     await page.waitForSelector("#stream_name_error", {visible: true});
     return await common.get_text_from_selector(page, "#stream_name_error");
-}
+};
 
-async function click_create_new_stream(page: Page): Promise<void> {
+const click_create_new_stream = async (page: Page): Promise<void> => {
     await page.click("#add_new_subscription .create_stream_button");
     await page.waitForSelector(".finalize_create_stream", {visible: true});
 
     // sanity check that desdemona is the initial subsscriber
     await await_user_visible(page, "desdemona");
-}
+};
 
-async function clear_ot_filter_with_backspace(page: Page): Promise<void> {
+const clear_ot_filter_with_backspace = async (page: Page): Promise<void> => {
     await page.click(".add-user-list-filter");
     await page.keyboard.press("Backspace");
     await page.keyboard.press("Backspace");
-}
+};
 
-async function test_user_filter_ui(page: Page): Promise<void> {
+const test_user_filter_ui = async (page: Page): Promise<void> => {
     await page.waitForSelector("form#stream_creation_form", {visible: true});
     // Desdemona should be there by default
     await await_user_visible(page, "desdemona");
@@ -74,9 +74,9 @@ async function test_user_filter_ui(page: Page): Promise<void> {
     await await_user_visible(page, common.fullname.cordelia);
     await await_user_visible(page, "desdemona");
     await await_user_visible(page, common.fullname.othello);
-}
+};
 
-async function create_stream(page: Page): Promise<void> {
+const create_stream = async (page: Page): Promise<void> => {
     await page.waitForSelector('xpath///*[text()="Create channel"]', {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {
         stream_name: "Puppeteer",
@@ -110,34 +110,34 @@ async function create_stream(page: Page): Promise<void> {
             "subscriber-count",
         )} and normalize-space()="3"]`,
     );
-}
+};
 
-async function test_streams_with_empty_names_cannot_be_created(page: Page): Promise<void> {
+const test_streams_with_empty_names_cannot_be_created = async (page: Page): Promise<void> => {
     await page.click("#add_new_subscription .create_stream_button");
     await page.waitForSelector("form#stream_creation_form", {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "  "});
     await page.click("form#stream_creation_form button.finalize_create_stream");
     assert.strictEqual(await stream_name_error(page), "Choose a name for the new channel.");
-}
+};
 
-async function test_streams_with_duplicate_names_cannot_be_created(page: Page): Promise<void> {
+const test_streams_with_duplicate_names_cannot_be_created = async (page: Page): Promise<void> => {
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "Puppeteer"});
     await page.click("form#stream_creation_form button.finalize_create_stream");
     assert.strictEqual(await stream_name_error(page), "A channel with this name already exists.");
 
     const cancel_button_selector = "form#stream_creation_form button.button.white";
     await page.click(cancel_button_selector);
-}
+};
 
-async function test_stream_creation(page: Page): Promise<void> {
+const test_stream_creation = async (page: Page): Promise<void> => {
     await click_create_new_stream(page);
     await test_user_filter_ui(page);
     await create_stream(page);
     await test_streams_with_empty_names_cannot_be_created(page);
     await test_streams_with_duplicate_names_cannot_be_created(page);
-}
+};
 
-async function test_streams_search_feature(page: Page): Promise<void> {
+const test_streams_search_feature = async (page: Page): Promise<void> => {
     assert.strictEqual(await common.get_text_from_selector(page, "#search_stream_name"), "");
     const hidden_streams_selector = ".stream-row.notdisplayed .stream-name";
     assert.strictEqual(
@@ -166,13 +166,13 @@ async function test_streams_search_feature(page: Page): Promise<void> {
         !(await common.get_text_from_selector(page, hidden_streams_selector)).includes("Puppeteer"),
         "Puppeteer is hidden after searching.",
     );
-}
+};
 
-async function subscriptions_tests(page: Page): Promise<void> {
+const subscriptions_tests = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await common.open_streams_modal(page);
     await test_stream_creation(page);
     await test_streams_search_feature(page);
-}
+};
 
 common.run_test(subscriptions_tests);

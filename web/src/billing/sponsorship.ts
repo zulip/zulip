@@ -6,19 +6,19 @@ import * as helpers from "./helpers";
 
 const is_remotely_hosted = $("#sponsorship-form").attr("data-is-remotely-hosted") === "True";
 
-function show_submit_loading_indicator(): void {
+const show_submit_loading_indicator = (): void => {
     $("#sponsorship-button .sponsorship-button-loader").css("display", "inline-block");
     $("#sponsorship-button").prop("disabled", true);
     $("#sponsorship-button .sponsorship-button-text").hide();
-}
+};
 
-function hide_submit_loading_indicator(): void {
+const hide_submit_loading_indicator = (): void => {
     $("#sponsorship-button .sponsorship-button-loader").css("display", "none");
     $("#sponsorship-button").prop("disabled", false);
     $("#sponsorship-button .sponsorship-button-text").show();
-}
+};
 
-function validate_data(data: helpers.FormDataObject): boolean {
+const validate_data = (data: helpers.FormDataObject): boolean => {
     let found_error = false;
     assert(data.description !== undefined);
     if (data.description.trim() === "") {
@@ -43,9 +43,9 @@ function validate_data(data: helpers.FormDataObject): boolean {
         found_error = true;
     }
     return !found_error;
-}
+};
 
-function create_ajax_request(): void {
+const create_ajax_request = (): void => {
     show_submit_loading_indicator();
     const $form = $("#sponsorship-form");
     const data: helpers.FormDataObject = {};
@@ -65,10 +65,10 @@ function create_ajax_request(): void {
         type: "post",
         url: `/json${billing_base_url}/billing/sponsorship`,
         data,
-        success() {
+        success: () => {
             window.location.reload();
         },
-        error(xhr) {
+        error: (xhr) => {
             hide_submit_loading_indicator();
             const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
             if (parsed.success) {
@@ -80,9 +80,9 @@ function create_ajax_request(): void {
             }
         },
     });
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     $("#sponsorship-button").on("click", (e) => {
         if (!helpers.is_valid_input($("#sponsorship-form"))) {
             return;
@@ -91,19 +91,19 @@ export function initialize(): void {
         create_ajax_request();
     });
 
-    function update_discount_details(): void {
+    const update_discount_details = (): void => {
         const selected_org_type =
             $<HTMLSelectElement>("select#organization-type")
                 .find(":selected")
                 .attr("data-string-value") ?? "";
         helpers.update_discount_details(selected_org_type, is_remotely_hosted);
-    }
+    };
 
     update_discount_details();
     $<HTMLSelectElement>("select#organization-type").on("change", () => {
         update_discount_details();
     });
-}
+};
 
 $(() => {
     // Don't preserve scroll position on reload. This allows us to

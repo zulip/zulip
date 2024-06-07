@@ -16,7 +16,7 @@ import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./t
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
-export function initialize(): void {
+export const initialize = (): void => {
     tippy.delegate("body", {
         target: [
             // Ideally this would be `#compose_buttons .button`, but the
@@ -30,7 +30,7 @@ export function initialize(): void {
         // trigger after it closes, which results in tooltip being displayed.
         trigger: "mouseenter",
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -42,7 +42,7 @@ export function initialize(): void {
         // trigger after it closes, which results in tooltip being displayed.
         trigger: "mouseenter",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             const $elem = $(instance.reference);
             const button_type = $elem.attr("data-reply-button-type");
             switch (button_type) {
@@ -76,7 +76,7 @@ export function initialize(): void {
                 }
             }
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -89,7 +89,7 @@ export function initialize(): void {
         // trigger after it closes, which results in tooltip being displayed.
         trigger: "mouseenter",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             const $elem = $(instance.reference);
             const conversation_type = $elem.attr("data-conversation-type");
             if (conversation_type === "direct") {
@@ -110,7 +110,7 @@ export function initialize(): void {
             );
             return undefined;
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -139,7 +139,7 @@ export function initialize(): void {
         // If the button is `.disabled-on-hover`, then we want to show the
         // tooltip instantly, to make it clear to the user that the button
         // is disabled, and why.
-        onTrigger(instance, event) {
+        onTrigger: (instance, event) => {
             assert(event.currentTarget instanceof HTMLElement);
             if (event.currentTarget.classList.contains("disabled-on-hover")) {
                 instance.setProps({delay: INSTANT_HOVER_DELAY});
@@ -153,7 +153,7 @@ export function initialize(): void {
         target: ".send-control-button",
         delay: LONG_HOVER_DELAY,
         placement: "top",
-        onShow(instance) {
+        onShow: (instance) => {
             // Don't show send-area tooltips if the popover is displayed.
             if (popover_menus.is_scheduled_messages_popover_displayed()) {
                 return false;
@@ -184,7 +184,7 @@ export function initialize(): void {
         // Send tooltip when tabbing to the Send button.
         trigger: "mouseenter",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             // Don't show Send button tooltip if the popover is displayed.
             if (popover_menus.is_scheduled_messages_popover_displayed()) {
                 return false;
@@ -202,7 +202,7 @@ export function initialize(): void {
         target: ".narrow_to_compose_recipients",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
-        content() {
+        content: () => {
             const narrow_filter = narrow_state.filter();
             let display_current_view;
             if (narrow_state.is_message_feed_visible()) {
@@ -231,7 +231,7 @@ export function initialize(): void {
 
             return parse_html(render_narrow_to_compose_recipients_tooltip({display_current_view}));
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -245,8 +245,8 @@ export function initialize(): void {
             compose_recipient.get_posting_policy_error_message() ||
             compose_validate.get_disabled_send_tooltip(),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
-}
+};

@@ -28,13 +28,13 @@ stream_data.add_sub(frontend);
 
 run_test("hash_util", () => {
     // Test encode_operand and decode_operand
-    function encode_decode_operand(operator, operand, expected_val) {
+    const encode_decode_operand = (operator, operand, expected_val) => {
         const encode_result = hash_util.encode_operand(operator, operand);
         assert.equal(encode_result, expected_val);
         const new_operand = encode_result;
         const decode_result = hash_util.decode_operand(operator, new_operand);
         assert.equal(decode_result, operand);
-    }
+    };
 
     let operator = "sender";
     let operand = hamlet.email;
@@ -257,9 +257,7 @@ run_test("test_by_conversation_and_time_url", () => {
 });
 
 run_test("test_search_public_streams_notice_url", () => {
-    function get_terms(url) {
-        return hash_util.parse_narrow(url.split("/"));
-    }
+    const get_terms = (url) => hash_util.parse_narrow(url.split("/"));
 
     assert.equal(
         hash_util.search_public_streams_notice_url(get_terms("#narrow/search/abc")),

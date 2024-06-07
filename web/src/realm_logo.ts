@@ -7,7 +7,10 @@ import * as ui_util from "./ui_util";
 import * as upload_widget from "./upload_widget";
 import type {UploadFunction} from "./upload_widget";
 
-export function build_realm_logo_widget(upload_function: UploadFunction, is_night: boolean): void {
+export const build_realm_logo_widget = (
+    upload_function: UploadFunction,
+    is_night: boolean,
+): void => {
     let logo_section_id = "#realm-day-logo-upload-widget";
     let logo_source = realm.realm_logo_source;
 
@@ -21,9 +24,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
     const $file_input_error_elem = $(logo_section_id + " .image_file_input_error");
     const $upload_button_elem = $(logo_section_id + " .image_upload_button");
 
-    const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $file_input_elem.expectOne();
-    };
+    const get_file_input = (): JQuery<HTMLInputElement> => $file_input_elem.expectOne();
 
     if (!current_user.is_admin) {
         return;
@@ -52,13 +53,13 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
         upload_function,
         realm.max_logo_file_size_mib,
     );
-}
+};
 
-function change_logo_delete_button(
+const change_logo_delete_button = (
     logo_source: string,
     $logo_delete_button: JQuery,
     $file_input: JQuery<HTMLInputElement>,
-): void {
+): void => {
     if (logo_source === "U") {
         $logo_delete_button.show();
     } else {
@@ -67,9 +68,9 @@ function change_logo_delete_button(
         // where you try to upload the same image you just deleted.
         $file_input.val("");
     }
-}
+};
 
-export function render(): void {
+export const render = (): void => {
     const $file_input = $<HTMLInputElement>("#realm-day-logo-upload-widget input.image_file_input");
     const $night_file_input = $<HTMLInputElement>(
         "#realm-night-logo-upload-widget input.image_file_input",
@@ -103,12 +104,12 @@ export function render(): void {
         $("#realm-night-logo-upload-widget .image-delete-button"),
         $night_file_input,
     );
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     // render once
     render();
 
     // Rerender the realm-logo when the browser detects color scheme changes.
     ui_util.listener_for_preferred_color_scheme_change(render);
-}
+};

@@ -75,7 +75,7 @@ run_test("settings", ({override}) => {
     channel.del = (payload) => {
         assert.equal(payload.url, "/json/users/me/muted_users/5");
         unmute_user_called = true;
-        return {abort() {}};
+        return {abort: () => {}};
     };
 
     unmute_click_handler.call($unmute_button, event);
@@ -86,7 +86,7 @@ run_test("settings", ({override}) => {
     channel.post = (payload) => {
         assert.equal(payload.url, "/json/users/me/muted_users/5");
         mute_user_called = true;
-        return {abort() {}};
+        return {abort: () => {}};
     };
     muted_users.mute_user(5);
     assert.ok(mute_user_called);

@@ -44,7 +44,7 @@ const upgrade_response_schema = z.object({
     organization_upgrade_successful: z.boolean().optional(),
 });
 
-function update_due_today(schedule: string): void {
+const update_due_today = (schedule: string): void => {
     let num_months = 12;
     if (schedule === "monthly") {
         num_months = 1;
@@ -81,9 +81,9 @@ function update_due_today(schedule: string): void {
         $(".billing-page-selected-schedule-discount").text(page_params.percent_off_monthly_price);
         $(".billing-page-discount").show();
     }
-}
+};
 
-function update_due_today_for_remote_server(start_date: string): void {
+const update_due_today_for_remote_server = (start_date: string): void => {
     const $due_today_for_future_update_wrapper = $("#due-today-for-future-update-wrapper");
     if ($due_today_for_future_update_wrapper.length === 0) {
         // Only present legacy remote server page.
@@ -102,9 +102,9 @@ function update_due_today_for_remote_server(start_date: string): void {
         $("#org-future-upgrade-button-text-remote-server").hide();
         $("#org-today-upgrade-button-text").show();
     }
-}
+};
 
-function update_license_count(license_count: number): void {
+const update_license_count = (license_count: number): void => {
     $("#upgrade-licenses-change-error").text("");
     if (!license_count || license_count < page_params.seat_count) {
         $("#upgrade-licenses-change-error").text(
@@ -123,9 +123,9 @@ function update_license_count(license_count: number): void {
     current_license_count = license_count;
     ls.set("manual_license_count", license_count);
     update_due_today(selected_schedule);
-}
+};
 
-function restore_manual_license_count(): void {
+const restore_manual_license_count = (): void => {
     const $manual_license_count_input = $("#manual_license_count");
     // Only present on the manual license management page.
     if ($manual_license_count_input.length) {
@@ -135,7 +135,7 @@ function restore_manual_license_count(): void {
             update_license_count(ls_manual_license_count);
         }
     }
-}
+};
 
 export const initialize = (): void => {
     restore_manual_license_count();

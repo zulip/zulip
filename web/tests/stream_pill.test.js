@@ -42,10 +42,10 @@ for (const sub of subs) {
 }
 
 run_test("create_item", () => {
-    function test_create_item(stream_name, current_items, expected_item) {
+    const test_create_item = (stream_name, current_items, expected_item) => {
         const item = stream_pill.create_item_from_stream_name(stream_name, current_items);
         assert.deepEqual(item, expected_item);
-    }
+    };
 
     test_create_item("sweden", [], undefined);
     test_create_item("#sweden", [sweden_pill], undefined);

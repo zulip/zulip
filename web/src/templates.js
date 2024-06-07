@@ -17,10 +17,8 @@ import * as util from "./util";
 // other DOM-ready callbacks that attempt to render templates.
 
 Handlebars.registerHelper({
-    eq(a, b) {
-        return a === b;
-    },
-    and(...args) {
+    eq: (a, b) => a === b,
+    and: (...args) => {
         args.pop(); // Handlebars options
         if (args.length === 0) {
             return true;
@@ -33,7 +31,7 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    or(...args) {
+    or: (...args) => {
         args.pop(); // Handlebars options
         if (args.length === 0) {
             return false;
@@ -46,9 +44,7 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    not(a) {
-        return !a || Handlebars.Utils.isEmpty(a);
-    },
+    not: (a) => !a || Handlebars.Utils.isEmpty(a),
 });
 
 Handlebars.registerHelper("t", function (message) {

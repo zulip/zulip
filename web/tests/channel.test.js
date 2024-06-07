@@ -14,14 +14,14 @@ const xhr_401 = {
 
 let login_to_access_shown = false;
 mock_esm("../src/spectators", {
-    login_to_access() {
+    login_to_access: () => {
         login_to_access_shown = true;
     },
 });
 
 set_global("window", {
     location: {
-        replace() {},
+        replace: () => {},
         href: "http://example.com",
     },
 });
@@ -33,7 +33,7 @@ const default_stub_xhr = {"default-stub-xhr": 0};
 
 const $ = mock_jquery({});
 
-function test_with_mock_ajax(test_params) {
+const test_with_mock_ajax = (test_params) => {
     const {xhr = default_stub_xhr, run_code, check_ajax_options} = test_params;
 
     let ajax_called;
@@ -57,22 +57,22 @@ function test_with_mock_ajax(test_params) {
     run_code();
     assert.ok(ajax_called);
     check_ajax_options(ajax_options);
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         reload_state.clear_for_testing();
         f({override});
     });
-}
+};
 
 test("post", () => {
     test_with_mock_ajax({
-        run_code() {
+        run_code: () => {
             channel.post({url: "/json/endpoint"});
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             assert.equal(options.type, "POST");
             assert.equal(options.dataType, "json");
 
@@ -85,11 +85,11 @@ test("post", () => {
 
 test("patch", () => {
     test_with_mock_ajax({
-        run_code() {
+        run_code: () => {
             channel.patch({url: "/json/endpoint"});
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             assert.equal(options.type, "POST");
             assert.equal(options.data.method, "PATCH");
             assert.equal(options.dataType, "json");
@@ -103,11 +103,11 @@ test("patch", () => {
 
 test("put", () => {
     test_with_mock_ajax({
-        run_code() {
+        run_code: () => {
             channel.put({url: "/json/endpoint"});
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             assert.equal(options.type, "PUT");
             assert.equal(options.dataType, "json");
 
@@ -120,11 +120,11 @@ test("put", () => {
 
 test("delete", () => {
     test_with_mock_ajax({
-        run_code() {
+        run_code: () => {
             channel.del({url: "/json/endpoint"});
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             assert.equal(options.type, "DELETE");
             assert.equal(options.dataType, "json");
 
@@ -137,11 +137,11 @@ test("delete", () => {
 
 test("get", () => {
     test_with_mock_ajax({
-        run_code() {
+        run_code: () => {
             channel.get({url: "/json/endpoint"});
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             assert.equal(options.type, "GET");
             assert.equal(options.dataType, "json");
 
@@ -166,23 +166,23 @@ test("normal_post", () => {
     test_with_mock_ajax({
         xhr: stub_xhr,
 
-        run_code() {
+        run_code: () => {
             channel.post({
                 data,
                 url: "/json/endpoint",
-                success(data, text_status, xhr) {
+                success: (data, text_status, xhr) => {
                     orig_success_called = true;
                     assert.equal(data, "response data");
                     assert.equal(text_status, "success");
                     assert.equal(xhr, stub_xhr);
                 },
-                error() {
+                error: () => {
                     orig_error_called = true;
                 },
             });
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             assert.equal(options.type, "POST");
             assert.equal(options.dataType, "json");
             assert.deepEqual(options.data, data);
@@ -201,7 +201,7 @@ test("patch_with_form_data", () => {
     let appended;
 
     const data = {
-        append(k, v) {
+        append: (k, v) => {
             assert.equal(k, "method");
             assert.equal(v, "PATCH");
             appended = true;
@@ -209,7 +209,7 @@ test("patch_with_form_data", () => {
     };
 
     test_with_mock_ajax({
-        run_code() {
+        run_code: () => {
             channel.patch({
                 data,
                 url: "/json/endpoint",
@@ -218,7 +218,7 @@ test("patch_with_form_data", () => {
             assert.ok(appended);
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             assert.equal(options.type, "POST");
             assert.equal(options.dataType, "json");
 
@@ -232,12 +232,12 @@ test("patch_with_form_data", () => {
 test("authentication_error_401_is_spectator", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
-        run_code() {
+        run_code: () => {
             channel.post({url: "/json/endpoint"});
         },
 
         // is_spectator = true
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             page_params.page_type = "home";
             page_params.is_spectator = true;
 
@@ -252,13 +252,13 @@ test("authentication_error_401_is_spectator", () => {
 test("authentication_error_401_password_change_in_progress", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
-        run_code() {
+        run_code: () => {
             channel.post({url: "/json/endpoint"});
         },
 
         // is_spectator = true
         // password_change_in_progress = true
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             page_params.page_type = "home";
             page_params.is_spectator = true;
             channel.set_password_change_in_progress(true);
@@ -276,12 +276,12 @@ test("authentication_error_401_password_change_in_progress", () => {
 test("authentication_error_401_not_spectator", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
-        run_code() {
+        run_code: () => {
             channel.post({url: "/json/endpoint"});
         },
 
         // is_spectator = false
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             page_params.page_type = "home";
             page_params.is_spectator = false;
 
@@ -300,11 +300,11 @@ test("reload_on_403_error", () => {
             responseJSON: {msg: "CSRF Fehler: etwas", code: "CSRF_FAILED"},
         },
 
-        run_code() {
+        run_code: () => {
             channel.post({url: "/json/endpoint"});
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             let handler_called = false;
             reload_state.set_csrf_failed_handler(() => {
                 handler_called = true;
@@ -324,11 +324,11 @@ test("unexpected_403_response", () => {
             responseText: "unexpected",
         },
 
-        run_code() {
+        run_code: () => {
             channel.post({url: "/json/endpoint"});
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             blueslip.expect("error", "Unexpected 403 response from server");
             options.simulate_error();
         },
@@ -361,22 +361,20 @@ test("while_reloading", () => {
     assert.equal(channel.get({ignore_reload: false}), undefined);
 
     test_with_mock_ajax({
-        run_code() {
+        run_code: () => {
             channel.del({
                 url: "/json/endpoint",
                 ignore_reload: true,
-                /* istanbul ignore next */
-                success() {
+                success: /* istanbul ignore next */ () => {
                     throw new Error("unexpected success");
                 },
-                /* istanbul ignore next */
-                error() {
+                error: /* istanbul ignore next */ () => {
                     throw new Error("unexpected error");
                 },
             });
         },
 
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             blueslip.expect("log", "Ignoring DELETE /json/endpoint response while reloading");
             options.simulate_success();
 
@@ -391,20 +389,20 @@ test("error in callback", () => {
     let error_called = false;
     let raised_error = false;
     test_with_mock_ajax({
-        run_code() {
+        run_code: () => {
             channel.get({
                 url: "/json/endpoint",
-                success() {
+                success: () => {
                     success_called = true;
                     throw new Error("success");
                 },
-                error() {
+                error: () => {
                     error_called = true;
                     throw new Error("failure");
                 },
             });
         },
-        check_ajax_options(options) {
+        check_ajax_options: (options) => {
             try {
                 options.simulate_success();
             } catch (error) {

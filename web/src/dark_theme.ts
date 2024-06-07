@@ -5,7 +5,7 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import {user_settings} from "./user_settings";
 
-export function enable(): void {
+export const enable = (): void => {
     $(":root").removeClass("color-scheme-automatic").addClass("dark-theme");
 
     if (page_params.is_spectator) {
@@ -13,9 +13,9 @@ export function enable(): void {
         ls.set("spectator-theme-preference", "dark");
         user_settings.color_scheme = settings_config.color_scheme_values.night.code;
     }
-}
+};
 
-export function disable(): void {
+export const disable = (): void => {
     $(":root").removeClass("color-scheme-automatic").removeClass("dark-theme");
 
     if (page_params.is_spectator) {
@@ -23,8 +23,8 @@ export function disable(): void {
         ls.set("spectator-theme-preference", "light");
         user_settings.color_scheme = settings_config.color_scheme_values.day.code;
     }
-}
+};
 
-export function default_preference_checker(): void {
+export const default_preference_checker = (): void => {
     $(":root").removeClass("dark-theme").addClass("color-scheme-automatic");
-}
+};

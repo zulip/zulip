@@ -27,35 +27,35 @@ const TIPPY_PROPS: Partial<tippy.Props> = {
     offset: [0, 2],
 };
 
-export function filters_dropdown_options(current_value: string | number | undefined): {
+export const filters_dropdown_options = (
+    current_value: string | number | undefined,
+): {
     unique_id: string;
     name: string;
     description: string;
     bold_current_selection: boolean;
-}[] {
-    return [
-        {
-            unique_id: FILTERS.FOLLOWED_TOPICS,
-            name: $t({defaultMessage: "Followed topics"}),
-            description: $t({defaultMessage: "Only topics you follow"}),
-            bold_current_selection: current_value === FILTERS.FOLLOWED_TOPICS,
-        },
-        {
-            unique_id: FILTERS.UNMUTED_TOPICS,
-            name: $t({defaultMessage: "Standard view"}),
-            description: $t({defaultMessage: "All unmuted topics"}),
-            bold_current_selection: current_value === FILTERS.UNMUTED_TOPICS,
-        },
-        {
-            unique_id: FILTERS.ALL_TOPICS,
-            name: $t({defaultMessage: "All topics"}),
-            description: $t({
-                defaultMessage: "Includes muted channels and topics",
-            }),
-            bold_current_selection: current_value === FILTERS.ALL_TOPICS,
-        },
-    ];
-}
+}[] => [
+    {
+        unique_id: FILTERS.FOLLOWED_TOPICS,
+        name: $t({defaultMessage: "Followed topics"}),
+        description: $t({defaultMessage: "Only topics you follow"}),
+        bold_current_selection: current_value === FILTERS.FOLLOWED_TOPICS,
+    },
+    {
+        unique_id: FILTERS.UNMUTED_TOPICS,
+        name: $t({defaultMessage: "Standard view"}),
+        description: $t({defaultMessage: "All unmuted topics"}),
+        bold_current_selection: current_value === FILTERS.UNMUTED_TOPICS,
+    },
+    {
+        unique_id: FILTERS.ALL_TOPICS,
+        name: $t({defaultMessage: "All topics"}),
+        description: $t({
+            defaultMessage: "Includes muted channels and topics",
+        }),
+        bold_current_selection: current_value === FILTERS.ALL_TOPICS,
+    },
+];
 
 export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     get_options: filters_dropdown_options,
@@ -66,7 +66,7 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     disable_for_spectators: true,
 };
 
-export function show(opts: {
+export const show = (opts: {
     highlight_view_in_left_sidebar: () => void;
     $view: JQuery;
     update_compose: () => void;
@@ -74,7 +74,7 @@ export function show(opts: {
     set_visible: (value: boolean) => void;
     complete_rerender: () => void;
     is_recent_view?: boolean;
-}): void {
+}): void => {
     if (opts.is_visible()) {
         // If we're already visible, E.g. because the user hit Esc
         // while already in the view, do nothing.
@@ -109,9 +109,9 @@ export function show(opts: {
     if (opts.is_recent_view) {
         resize.update_recent_view_filters_height();
     }
-}
+};
 
-export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void}): void {
+export const hide = (opts: {$view: JQuery; set_visible: (value: boolean) => void}): void => {
     const active_element = document.activeElement;
     if (active_element !== null && opts.$view.has(active_element)) {
         $(active_element).trigger("blur");
@@ -133,4 +133,4 @@ export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.
     message_viewport.plan_scroll_to_selected();
-}
+};

@@ -22,18 +22,18 @@ const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const stream_list = zrequire("stream_list");
 
-function expand_sidebar() {
+const expand_sidebar = () => {
     $(".app-main .column-left").addClass("expanded");
-}
+};
 
-function make_cursor_helper() {
+const make_cursor_helper = () => {
     const events = [];
 
     stream_list.__Rewire__("stream_cursor", {
-        reset() {
+        reset: () => {
             events.push("reset");
         },
-        clear() {
+        clear: () => {
             events.push("clear");
         },
     });
@@ -41,26 +41,26 @@ function make_cursor_helper() {
     return {
         events,
     };
-}
+};
 
-function simulate_search_expanded() {
+const simulate_search_expanded = () => {
     // The way we check if the search widget is expanded
     // is kind of awkward.
 
     $(".stream_search_section.notdisplayed").length = 0;
-}
+};
 
-function simulate_search_collapsed() {
+const simulate_search_collapsed = () => {
     $(".stream_search_section.notdisplayed").length = 1;
-}
+};
 
-function toggle_filter() {
+const toggle_filter = () => {
     stream_list.toggle_filter_displayed({preventDefault: noop});
-}
+};
 
-function clear_search_input() {
+const clear_search_input = () => {
     stream_list.clear_search({stopPropagation: noop});
-}
+};
 
 run_test("basics", ({override_rewire}) => {
     let cursor_helper;
@@ -72,24 +72,24 @@ run_test("basics", ({override_rewire}) => {
 
     cursor_helper = make_cursor_helper();
 
-    function verify_expanded() {
+    const verify_expanded = () => {
         assert.ok(!$section.hasClass("notdisplayed"));
         simulate_search_expanded();
-    }
+    };
 
-    function verify_focused() {
+    const verify_focused = () => {
         assert.ok(stream_list.searching());
         assert.ok($input.is_focused());
-    }
+    };
 
-    function verify_collapsed() {
+    const verify_collapsed = () => {
         assert.ok($section.hasClass("notdisplayed"));
         assert.ok(!$input.is_focused());
         assert.ok(!stream_list.searching());
         simulate_search_collapsed();
-    }
+    };
 
-    function verify_list_updated(f) {
+    const verify_list_updated = (f) => {
         let updated;
         override_rewire(stream_list, "update_streams_sidebar", () => {
             updated = true;
@@ -97,7 +97,7 @@ run_test("basics", ({override_rewire}) => {
 
         f();
         assert.ok(updated);
-    }
+    };
 
     // Initiate search (so expand widget).
     stream_list.initiate_search();
@@ -119,7 +119,7 @@ run_test("basics", ({override_rewire}) => {
     verify_expanded();
     verify_focused();
 
-    (function add_some_text_and_collapse() {
+    (() => {
         cursor_helper = make_cursor_helper();
         $input.val("foo");
         verify_list_updated(() => {

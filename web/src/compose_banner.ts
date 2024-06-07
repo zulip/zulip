@@ -9,9 +9,9 @@ import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 
 export let scroll_to_message_banner_message_id: number | null = null;
-export function set_scroll_to_message_banner_message_id(val: number | null): void {
+export const set_scroll_to_message_banner_message_id = (val: number | null): void => {
     scroll_to_message_banner_message_id = val;
-}
+};
 
 // banner types
 export const WARNING = "warning";
@@ -58,39 +58,38 @@ export const CLASSNAMES = {
     user_not_subscribed: "user_not_subscribed",
 };
 
-export function get_compose_banner_container($textarea: JQuery): JQuery {
-    return $textarea.attr("id") === "compose-textarea"
+export const get_compose_banner_container = ($textarea: JQuery): JQuery =>
+    $textarea.attr("id") === "compose-textarea"
         ? $("#compose_banners")
         : $textarea.closest(".message_edit_form").find(".edit_form_banners");
-}
 
 // This function provides a convenient way to add new elements
 // to a banner container. The function accepts a container element
 // as a parameter, to which a banner should be appended.
-export function append_compose_banner_to_banner_list(
+export const append_compose_banner_to_banner_list = (
     $banner: JQuery,
     $list_container: JQuery,
-): void {
+): void => {
     scroll_util.get_content_element($list_container).append($banner);
-}
+};
 
-export function update_or_append_banner(
+export const update_or_append_banner = (
     $banner: JQuery,
     banner_classname: string,
     $list_container: JQuery,
-): void {
+): void => {
     const $existing_banner = $list_container.find(`.${CSS.escape(banner_classname)}`);
     if ($existing_banner.length === 0) {
         append_compose_banner_to_banner_list($banner, $list_container);
     } else {
         $existing_banner.replaceWith($banner);
     }
-}
+};
 
-export function clear_message_sent_banners(
+export const clear_message_sent_banners = (
     include_unmute_banner = true,
     skip_automatic_new_visibility_policy_banner = false,
-): void {
+): void => {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
         if (
             skip_automatic_new_visibility_policy_banner &&
@@ -111,50 +110,50 @@ export function clear_message_sent_banners(
         clear_unmute_topic_notifications();
     }
     scroll_to_message_banner_message_id = null;
-}
+};
 
 // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.
-function hide_compose_spinner(): void {
+const hide_compose_spinner = (): void => {
     $(".compose-submit-button .loader").hide();
     $(".compose-submit-button span").show();
     $(".compose-submit-button").removeClass("disable-btn");
-}
+};
 
-export function clear_errors(): void {
+export const clear_errors = (): void => {
     $(`#compose_banners .${CSS.escape(ERROR)}`).remove();
-}
+};
 
-export function clear_warnings(): void {
+export const clear_warnings = (): void => {
     $(`#compose_banners .${CSS.escape(WARNING)}`).remove();
-}
+};
 
-export function clear_uploads(): void {
+export const clear_uploads = (): void => {
     $("#compose_banners .upload_banner").remove();
-}
+};
 
-export function clear_unmute_topic_notifications(): void {
+export const clear_unmute_topic_notifications = (): void => {
     $(
         `#compose_banners .${CLASSNAMES.unmute_topic_notification
             .split(" ")
             .map((classname) => CSS.escape(classname))
             .join(".")}`,
     ).remove();
-}
+};
 
-export function clear_search_view_banner(): void {
+export const clear_search_view_banner = (): void => {
     $(`#compose_banners .${CSS.escape(CLASSNAMES.search_view)}`).remove();
-}
+};
 
-export function clear_all(): void {
+export const clear_all = (): void => {
     scroll_util.get_content_element($(`#compose_banners`)).empty();
-}
+};
 
-export function show_error_message(
+export const show_error_message = (
     message: string,
     classname: string,
     $container: JQuery,
     $bad_input?: JQuery,
-): void {
+): void => {
     // Important: This API intentionally does not support passing an
     // HTML message; doing so creates unnecessary XSS risk. If you
     // want HTML in your compose banner, use a partial subclassing
@@ -180,9 +179,9 @@ export function show_error_message(
     if ($bad_input !== undefined) {
         $bad_input.trigger("focus").trigger("select");
     }
-}
+};
 
-export function show_stream_does_not_exist_error(stream_name: string): void {
+export const show_stream_does_not_exist_error = (stream_name: string): void => {
     // Remove any existing banners with this warning.
     $(`#compose_banners .${CSS.escape(CLASSNAMES.stream_does_not_exist)}`).remove();
 
@@ -196,9 +195,9 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
 
     // Open stream select dropdown.
     $("#compose_select_recipient_widget").trigger("click");
-}
+};
 
-export function show_stream_not_subscribed_error(sub: StreamSubscription): void {
+export const show_stream_not_subscribed_error = (sub: StreamSubscription): void => {
     const $banner_container = $("#compose_banners");
     if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length) {
         return;
@@ -218,4 +217,4 @@ export function show_stream_not_subscribed_error(sub: StreamSubscription): void 
         hide_close_button: true,
     });
     append_compose_banner_to_banner_list($(new_row_html), $banner_container);
-}
+};

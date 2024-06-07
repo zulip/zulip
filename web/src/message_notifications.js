@@ -14,7 +14,7 @@ import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 
-function get_notification_content(message) {
+const get_notification_content = (message) => {
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
@@ -48,9 +48,9 @@ function get_notification_content(message) {
     }
 
     return content;
-}
+};
 
-function debug_notification_source_value(message) {
+const debug_notification_source_value = (message) => {
     let notification_source;
 
     if (message.type === "private" || message.type === "test-notification") {
@@ -64,9 +64,9 @@ function debug_notification_source_value(message) {
     }
 
     blueslip.debug("Desktop notification from source " + notification_source);
-}
+};
 
-function get_notification_key(message) {
+const get_notification_key = (message) => {
     let key;
 
     if (message.type === "private" || message.type === "test-notification") {
@@ -77,15 +77,14 @@ function get_notification_key(message) {
     }
 
     return key;
-}
+};
 
-function remove_sender_from_list_of_recipients(message) {
-    return `, ${message.display_reply_to}, `
+const remove_sender_from_list_of_recipients = (message) =>
+    `, ${message.display_reply_to}, `
         .replace(`, ${message.sender_full_name}, `, ", ")
         .slice(", ".length, -", ".length);
-}
 
-function get_notification_title(message, msg_count) {
+const get_notification_title = (message, msg_count) => {
     let title = message.sender_full_name;
     let other_recipients;
 
@@ -122,9 +121,9 @@ function get_notification_title(message, msg_count) {
     }
 
     return title;
-}
+};
 
-export function process_notification(notification) {
+export const process_notification = (notification) => {
     const message = notification.message;
     const content = get_notification_content(message);
     const key = get_notification_key(message);
@@ -171,9 +170,9 @@ export function process_notification(notification) {
             });
         }
     }
-}
+};
 
-export function message_is_notifiable(message) {
+export const message_is_notifiable = (message) => {
     // Independent of the user's notification settings, are there
     // properties of the message that unconditionally mean we
     // shouldn't notify about it.
@@ -218,9 +217,9 @@ export function message_is_notifiable(message) {
     // Everything else is on the table; next filter based on notification
     // settings.
     return true;
-}
+};
 
-export function should_send_desktop_notification(message) {
+export const should_send_desktop_notification = (message) => {
     // Always notify for testing notifications.
     if (message.type === "test-notification") {
         return true;
@@ -287,9 +286,9 @@ export function should_send_desktop_notification(message) {
     }
 
     return false;
-}
+};
 
-export function should_send_audible_notification(message) {
+export const should_send_audible_notification = (message) => {
     // If `None` is selected as the notification sound, never send
     // audible notifications regardless of other configuration.
     if (user_settings.notification_sound === "none") {
@@ -357,9 +356,9 @@ export function should_send_audible_notification(message) {
     }
 
     return false;
-}
+};
 
-export function received_messages(messages) {
+export const received_messages = (messages) => {
     for (const message of messages) {
         if (!message_is_notifiable(message)) {
             continue;
@@ -381,9 +380,9 @@ export function received_messages(messages) {
             ui_util.play_audio($("#user-notification-sound-audio")[0]);
         }
     }
-}
+};
 
-export function send_test_notification(content) {
+export const send_test_notification = (content) => {
     received_messages([
         {
             id: Math.random(),
@@ -395,4 +394,4 @@ export function send_test_notification(content) {
             unread: true,
         },
     ]);
-}
+};

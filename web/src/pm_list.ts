@@ -22,25 +22,22 @@ let private_messages_collapsed = false;
 // This keeps track of if we're zoomed in or not.
 let zoomed = false;
 
-function get_private_messages_section_header(): JQuery {
-    return $(
-        ".direct-messages-container #private_messages_section #private_messages_section_header",
-    );
-}
+const get_private_messages_section_header = (): JQuery =>
+    $(".direct-messages-container #private_messages_section #private_messages_section_header");
 
-export function set_count(count: number): void {
+export const set_count = (count: number): void => {
     ui_util.update_unread_count_in_dom(get_private_messages_section_header(), count);
-}
+};
 
-export function close(): void {
+export const close = (): void => {
     private_messages_collapsed = true;
     $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
     $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
 
     update_private_messages();
-}
+};
 
-export function _build_direct_messages_list(): vdom.Tag<PMNode> {
+export const _build_direct_messages_list = (): vdom.Tag<PMNode> => {
     const conversations = pm_list_data.get_conversations();
     const pm_list_info = pm_list_data.get_list_info(zoomed);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
@@ -58,24 +55,22 @@ export function _build_direct_messages_list(): vdom.Tag<PMNode> {
     }
     const dom_ast = pm_list_dom.pm_ul(pm_list_nodes);
     return dom_ast;
-}
+};
 
-function set_dom_to(new_dom: vdom.Tag<PMNode>): void {
+const set_dom_to = (new_dom: vdom.Tag<PMNode>): void => {
     const $container = scroll_util.get_content_element($("#direct-messages-list"));
 
-    function replace_content(html: string): void {
+    const replace_content = (html: string): void => {
         $container.html(html);
-    }
+    };
 
-    function find(): JQuery {
-        return $container.find("ul");
-    }
+    const find = (): JQuery => $container.find("ul");
 
     vdom.update(replace_content, find, new_dom, prior_dom);
     prior_dom = new_dom;
-}
+};
 
-export function update_private_messages(): void {
+export const update_private_messages = (): void => {
     if (private_messages_collapsed) {
         // In the collapsed state, we will still display the current
         // conversation, to preserve the UI invariant that there's
@@ -99,17 +94,17 @@ export function update_private_messages(): void {
     // Make sure to update the left sidebar heights after updating
     // direct messages.
     setTimeout(resize.resize_stream_filters_container, 0);
-}
+};
 
-export function expand(): void {
+export const expand = (): void => {
     private_messages_collapsed = false;
 
     $("#toggle_private_messages_section_icon").addClass("fa-caret-down");
     $("#toggle_private_messages_section_icon").removeClass("fa-caret-right");
     update_private_messages();
-}
+};
 
-export function update_dom_with_unread_counts(counts: FullUnreadCountsData): void {
+export const update_dom_with_unread_counts = (counts: FullUnreadCountsData): void => {
     // In theory, we could support passing the counts object through
     // to pm_list_data, rather than fetching it directly there. But
     // it's not an important optimization, because it's unlikely a
@@ -118,31 +113,31 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
     update_private_messages();
     // This is just the global unread count.
     set_count(counts.direct_message_count);
-}
+};
 
-export function highlight_all_private_messages_view(): void {
+export const highlight_all_private_messages_view = (): void => {
     $(".direct-messages-container").addClass("active_private_messages_section");
-}
+};
 
-function unhighlight_all_private_messages_view(): void {
+const unhighlight_all_private_messages_view = (): void => {
     $(".direct-messages-container").removeClass("active_private_messages_section");
-}
+};
 
-function scroll_pm_into_view($target_li: JQuery): void {
+const scroll_pm_into_view = ($target_li: JQuery): void => {
     const $container = $("#left_sidebar_scroll_container");
     const pm_header_height = $("#private_messages_section_header").outerHeight();
     if ($target_li.length > 0) {
         scroll_util.scroll_element_into_container($target_li, $container, pm_header_height);
     }
-}
+};
 
-function scroll_all_private_into_view(): void {
+const scroll_all_private_into_view = (): void => {
     const $container = $("#left_sidebar_scroll_container");
     const $scroll_element = scroll_util.get_scroll_element($container);
     $scroll_element.scrollTop(0);
-}
+};
 
-export function handle_narrow_activated(filter: Filter): void {
+export const handle_narrow_activated = (filter: Filter): void => {
     const active_filter = filter;
     const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), ["is-dm"]);
     const narrow_to_private_messages_section = active_filter.operands("dm").length !== 0;
@@ -170,20 +165,18 @@ export function handle_narrow_activated(filter: Filter): void {
     } else if (!is_private_messages_in_view) {
         update_private_messages();
     }
-}
+};
 
-export function handle_message_view_deactivated(): void {
+export const handle_message_view_deactivated = (): void => {
     // Since one can renarrow via the keyboard shortcut or similar, we
     // avoid disturbing the zoomed state here.
     unhighlight_all_private_messages_view();
     update_private_messages();
-}
+};
 
-export function is_private_messages_collapsed(): boolean {
-    return private_messages_collapsed;
-}
+export const is_private_messages_collapsed = (): boolean => private_messages_collapsed;
 
-export function toggle_private_messages_section(): void {
+export const toggle_private_messages_section = (): void => {
     // change the state of direct message section depending on
     // the previous state.
     if (private_messages_collapsed) {
@@ -191,25 +184,25 @@ export function toggle_private_messages_section(): void {
     } else {
         close();
     }
-}
+};
 
-function zoom_in(): void {
+const zoom_in = (): void => {
     zoomed = true;
     update_private_messages();
     $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
     $("#streams_list").hide();
     $(".left-sidebar .right-sidebar-items").hide();
-}
+};
 
-function zoom_out(): void {
+const zoom_out = (): void => {
     zoomed = false;
     update_private_messages();
     $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -223,4 +216,4 @@ export function initialize(): void {
 
         zoom_out();
     });
-}
+};

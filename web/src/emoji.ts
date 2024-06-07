@@ -95,15 +95,13 @@ let default_emoji_aliases = new Map<string, string[]>();
 let server_realm_emoji_data: RealmEmojiMap = {};
 
 // We really want to deprecate this, too.
-export function get_server_realm_emoji_data(): RealmEmojiMap {
-    return server_realm_emoji_data;
-}
+export const get_server_realm_emoji_data = (): RealmEmojiMap => server_realm_emoji_data;
 
 let emoticon_translations: EmoticonTranslation[] = [];
 
-function build_emoticon_translations({
+const build_emoticon_translations = ({
     emoticon_conversions,
-}: Pick<ServerUnicodeEmojiData, "emoticon_conversions">): EmoticonTranslation[] {
+}: Pick<ServerUnicodeEmojiData, "emoticon_conversions">): EmoticonTranslation[] => {
     /*
 
     Please keep this as a pure function so that we can
@@ -142,7 +140,7 @@ function build_emoticon_translations({
     }
 
     return translations;
-}
+};
 
 const zulip_emoji = {
     id: "zulip",
@@ -156,23 +154,23 @@ const zulip_emoji = {
     deactivated: false,
 };
 
-export function get_emoji_name(codepoint: string): string | undefined {
+export const get_emoji_name = (codepoint: string): string | undefined => {
     // get_emoji_name('1f384') === 'holiday_tree'
     if (Object.hasOwn(emoji_codes.codepoint_to_name, codepoint)) {
         return emoji_codes.codepoint_to_name[codepoint];
     }
     return undefined;
-}
+};
 
-export function get_emoji_codepoint(emoji_name: string): string | undefined {
+export const get_emoji_codepoint = (emoji_name: string): string | undefined => {
     // get_emoji_codepoint('avocado') === '1f951'
     if (Object.hasOwn(emoji_codes.name_to_codepoint, emoji_name)) {
         return emoji_codes.name_to_codepoint[emoji_name];
     }
     return undefined;
-}
+};
 
-export function get_realm_emoji_url(emoji_name: string): string | undefined {
+export const get_realm_emoji_url = (emoji_name: string): string | undefined => {
     // If the emoji name is a realm emoji, returns the URL for it.
     // Returns undefined for Unicode emoji.
     // get_realm_emoji_url('shrug') === '/user_avatars/2/emoji/images/31.png'
@@ -190,9 +188,9 @@ export function get_realm_emoji_url(emoji_name: string): string | undefined {
     }
 
     return data.emoji_url;
-}
+};
 
-function build_emojis_by_name({
+const build_emojis_by_name = ({
     realm_emojis,
     emoji_catalog,
     get_emoji_name,
@@ -202,7 +200,7 @@ function build_emojis_by_name({
     emoji_catalog: ServerUnicodeEmojiData["emoji_catalog"];
     get_emoji_name: (codepoint: string) => string | undefined;
     default_emoji_aliases: Map<string, string[]>;
-}): Map<string, EmojiDict> {
+}): Map<string, EmojiDict> => {
     // Please keep this as a pure function so that we can
     // eventually share this code with the mobile codebase.
     const map = new Map<string, EmojiDict>();
@@ -241,9 +239,9 @@ function build_emojis_by_name({
     }
 
     return map;
-}
+};
 
-export function update_emojis(realm_emojis: RealmEmojiMap): void {
+export const update_emojis = (realm_emojis: RealmEmojiMap): void => {
     // The settings code still works with the
     // server format of the data.
     server_realm_emoji_data = realm_emojis;
@@ -289,11 +287,11 @@ export function update_emojis(realm_emojis: RealmEmojiMap): void {
         get_emoji_name,
         default_emoji_aliases,
     });
-}
+};
 
 // This function will provide required parameters that would
 // need by template to render an emoji.
-export function get_emoji_details_by_name(emoji_name: string): EmojiRenderingDetails {
+export const get_emoji_details_by_name = (emoji_name: string): EmojiRenderingDetails => {
     // To call this function you must pass an emoji name.
     if (!emoji_name) {
         throw new Error("Emoji name must be passed.");
@@ -320,13 +318,13 @@ export function get_emoji_details_by_name(emoji_name: string): EmojiRenderingDet
         reaction_type: "unicode_emoji",
         emoji_code: codepoint,
     };
-}
+};
 
-export function get_emoji_details_for_rendering(opts: {
+export const get_emoji_details_for_rendering = (opts: {
     emoji_name: string;
     emoji_code: string;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
-}): EmojiRenderingDetails {
+}): EmojiRenderingDetails => {
     if (opts.reaction_type !== "unicode_emoji") {
         const realm_emoji = all_realm_emojis.get(opts.emoji_code);
         if (!realm_emoji) {
@@ -346,15 +344,15 @@ export function get_emoji_details_for_rendering(opts: {
         emoji_code: opts.emoji_code,
         reaction_type: opts.reaction_type,
     };
-}
+};
 
-function build_default_emoji_aliases({
+const build_default_emoji_aliases = ({
     names,
     get_emoji_codepoint,
 }: {
     names: string[];
     get_emoji_codepoint: (name: string) => string | undefined;
-}): Map<string, string[]> {
+}): Map<string, string[]> => {
     // Please keep this as a pure function so that we can
     // eventually share this code with the mobile codebase.
 
@@ -377,9 +375,9 @@ function build_default_emoji_aliases({
     }
 
     return map;
-}
+};
 
-export function initialize(params: EmojiParams): void {
+export const initialize = (params: EmojiParams): void => {
     emoji_codes = params.emoji_codes;
 
     emoticon_translations = build_emoticon_translations({
@@ -392,9 +390,9 @@ export function initialize(params: EmojiParams): void {
     });
 
     update_emojis(params.realm_emoji);
-}
+};
 
-export function get_canonical_name(emoji_name: string): string | undefined {
+export const get_canonical_name = (emoji_name: string): string | undefined => {
     if (active_realm_emojis.has(emoji_name)) {
         return emoji_name;
     }
@@ -405,8 +403,6 @@ export function get_canonical_name(emoji_name: string): string | undefined {
     }
 
     return get_emoji_name(codepoint);
-}
+};
 
-export function get_emoticon_translations(): EmoticonTranslation[] {
-    return emoticon_translations;
-}
+export const get_emoticon_translations = (): EmoticonTranslation[] => emoticon_translations;

@@ -59,7 +59,7 @@ import * as util from "./util";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
 
-export function reset_ui_state(opts) {
+export const reset_ui_state = (opts) => {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
     narrow_banner.hide_empty_narrow_message();
@@ -75,9 +75,9 @@ export function reset_ui_state(opts) {
         skip_automatic_new_visibility_policy_banner = true;
     }
     compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
-}
+};
 
-export function changehash(newhash, trigger) {
+export const changehash = (newhash, trigger) => {
     if (browser_history.state.changing_hash) {
         // If we retargeted the narrow operation because a message was moved,
         // we want to have the current narrow hash in the browser history.
@@ -88,9 +88,9 @@ export function changehash(newhash, trigger) {
     }
     message_viewport.stop_auto_scrolling();
     browser_history.set_hash(newhash);
-}
+};
 
-export function update_hash_to_match_filter(filter, trigger) {
+export const update_hash_to_match_filter = (filter, trigger) => {
     if (browser_history.state.changing_hash && trigger !== "retarget message location") {
         return;
     }
@@ -100,9 +100,9 @@ export function update_hash_to_match_filter(filter, trigger) {
     if (stream_list.is_zoomed_in()) {
         browser_history.update_current_history_state_data({show_more_topics: true});
     }
-}
+};
 
-function create_and_update_message_list(filter, id_info, opts) {
+const create_and_update_message_list = (filter, id_info, opts) => {
     const excludes_muted_topics = filter.excludes_muted_topics();
 
     // Check if we already have a rendered message list for the `filter`.
@@ -184,16 +184,16 @@ function create_and_update_message_list(filter, id_info, opts) {
     // reflect the requested narrow.
     message_lists.update_current_message_list(msg_list);
     return {msg_list, restore_rendered_list};
-}
+};
 
-function handle_post_message_list_change(
+const handle_post_message_list_change = (
     id_info,
     msg_list,
     opts,
     select_immediately,
     select_opts,
     then_select_offset,
-) {
+) => {
     // Important: We need to consider opening the compose box
     // before calling render_message_list_with_selected_message, so that the logic in
     // recenter_view for positioning the currently selected
@@ -217,9 +217,9 @@ function handle_post_message_list_change(
     // It is important to call this after other important updates
     // like narrow filter and compose recipients happen.
     compose_recipient.handle_middle_pane_transition();
-}
+};
 
-export function show(raw_terms, opts) {
+export const show = (raw_terms, opts) => {
     /* Main entry point for switching to a new view / message list.
 
        Supported parameters:
@@ -353,7 +353,7 @@ export function show(raw_terms, opts) {
         if (id_info.target_id && filter.has_operator("channel") && filter.has_operator("topic")) {
             const target_message = message_store.get(id_info.target_id);
 
-            function adjusted_terms_if_moved(raw_terms, message) {
+            const adjusted_terms_if_moved = (raw_terms, message) => {
                 const adjusted_terms = [];
                 let terms_changed = false;
 
@@ -383,7 +383,7 @@ export function show(raw_terms, opts) {
                 }
 
                 return adjusted_terms;
-            }
+            };
 
             if (target_message) {
                 // If we have the target message ID for the narrow in our
@@ -453,7 +453,7 @@ export function show(raw_terms, opts) {
                 // for it.
                 channel.get({
                     url: `/json/messages/${id_info.target_id}`,
-                    success(data) {
+                    success: (data) => {
                         // After the message is fetched, we make the
                         // message locally available and then call
                         // message_view.show recursively, setting a flag to
@@ -464,7 +464,7 @@ export function show(raw_terms, opts) {
                             fetched_target_message: true,
                         });
                     },
-                    error() {
+                    error: () => {
                         // Message doesn't exist or user doesn't have
                         // access to the target message ID. This will
                         // happen, for example, if a user types
@@ -613,7 +613,7 @@ export function show(raw_terms, opts) {
                 }
                 message_fetch.load_messages_for_narrow({
                     anchor,
-                    cont() {
+                    cont: () => {
                         if (!select_immediately) {
                             render_message_list_with_selected_message({
                                 id_info,
@@ -659,9 +659,9 @@ export function show(raw_terms, opts) {
         }
         Sentry.getCurrentHub().popScope();
     }
-}
+};
 
-function min_defined(a, b) {
+const min_defined = (a, b) => {
     if (a === undefined) {
         return b;
     }
@@ -669,9 +669,9 @@ function min_defined(a, b) {
         return a;
     }
     return a < b ? a : b;
-}
+};
 
-function load_local_messages(msg_data) {
+const load_local_messages = (msg_data) => {
     // This little helper loads messages into our narrow message
     // data and returns true unless it's visibly empty.  We use this for
     // cases when our local cache (all_messages_data) has at least
@@ -681,9 +681,9 @@ function load_local_messages(msg_data) {
     msg_data.add_messages(in_msgs);
 
     return !msg_data.visibly_empty();
-}
+};
 
-export function maybe_add_local_messages(opts) {
+export const maybe_add_local_messages = (opts) => {
     // This function determines whether we need to go to the server to
     // fetch messages for the requested narrow, or whether we have the
     // data cached locally to render the narrow correctly without
@@ -836,9 +836,9 @@ export function maybe_add_local_messages(opts) {
     // !can_apply_locally + target_id is a rare combination in the
     // first place, so we don't bother.
     return;
-}
+};
 
-export function render_message_list_with_selected_message(opts) {
+export const render_message_list_with_selected_message = (opts) => {
     if (message_lists.current !== undefined && message_lists.current !== opts.msg_list) {
         // If we navigated away from a view while we were fetching
         // messages for it, don't attempt to move the currently
@@ -885,15 +885,15 @@ export function render_message_list_with_selected_message(opts) {
     }
     unread_ops.process_visible();
     narrow_history.save_narrow_state_and_flush();
-}
+};
 
-export function activate_stream_for_cycle_hotkey(stream_name) {
+export const activate_stream_for_cycle_hotkey = (stream_name) => {
     // This is the common code for A/D hotkeys.
     const filter_expr = [{operator: "channel", operand: stream_name}];
     show(filter_expr, {});
-}
+};
 
-export function stream_cycle_backward() {
+export const stream_cycle_backward = () => {
     const curr_stream = narrow_state.stream_name();
 
     if (!curr_stream) {
@@ -907,9 +907,9 @@ export function stream_cycle_backward() {
     }
 
     activate_stream_for_cycle_hotkey(stream_name);
-}
+};
 
-export function stream_cycle_forward() {
+export const stream_cycle_forward = () => {
     const curr_stream = narrow_state.stream_name();
 
     if (!curr_stream) {
@@ -923,9 +923,9 @@ export function stream_cycle_forward() {
     }
 
     activate_stream_for_cycle_hotkey(stream_name);
-}
+};
 
-export function narrow_to_next_topic(opts = {}) {
+export const narrow_to_next_topic = (opts = {}) => {
     const curr_info = {
         stream: narrow_state.stream_name(),
         topic: narrow_state.topic(),
@@ -939,7 +939,7 @@ export function narrow_to_next_topic(opts = {}) {
 
     if (!next_narrow && opts.only_followed_topics) {
         feedback_widget.show({
-            populate($container) {
+            populate: ($container) => {
                 $container.text(
                     $t({defaultMessage: "You have no unread messages in followed topics."}),
                 );
@@ -951,7 +951,7 @@ export function narrow_to_next_topic(opts = {}) {
 
     if (!next_narrow) {
         feedback_widget.show({
-            populate($container) {
+            populate: ($container) => {
                 $container.text($t({defaultMessage: "You have no more unread topics."}));
             },
             title_text: $t({defaultMessage: "You're done!"}),
@@ -965,16 +965,16 @@ export function narrow_to_next_topic(opts = {}) {
     ];
 
     show(filter_expr, opts);
-}
+};
 
-export function narrow_to_next_pm_string(opts = {}) {
+export const narrow_to_next_pm_string = (opts = {}) => {
     const current_direct_message = narrow_state.pm_ids_string();
 
     const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
 
     if (!next_direct_message) {
         feedback_widget.show({
-            populate($container) {
+            populate: ($container) => {
                 $container.text($t({defaultMessage: "You have no more unread direct messages."}));
             },
             title_text: $t({defaultMessage: "You're done!"}),
@@ -995,9 +995,9 @@ export function narrow_to_next_pm_string(opts = {}) {
     };
 
     show(filter_expr, updated_opts);
-}
+};
 
-export function narrow_by_topic(target_id, opts) {
+export const narrow_by_topic = (target_id, opts) => {
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const original = message_store.get(target_id);
     if (original.type !== "stream") {
@@ -1025,9 +1025,9 @@ export function narrow_by_topic(target_id, opts) {
     ];
     opts = {then_select_id: target_id, ...opts};
     show(search_terms, opts);
-}
+};
 
-export function narrow_by_recipient(target_id, opts) {
+export const narrow_by_recipient = (target_id, opts) => {
     opts = {then_select_id: target_id, ...opts};
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
@@ -1069,9 +1069,9 @@ export function narrow_by_recipient(target_id, opts) {
             );
             break;
     }
-}
+};
 
-export function to_compose_target() {
+export const to_compose_target = () => {
     if (!compose_state.composing()) {
         return;
     }
@@ -1111,9 +1111,9 @@ export function to_compose_target() {
         }
         show([{operator: "dm", operand: util.normalize_recipients(recipient_string)}], opts);
     }
-}
+};
 
-function handle_post_view_change(msg_list, opts) {
+const handle_post_view_change = (msg_list, opts) => {
     const filter = msg_list.data.filter;
     scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
@@ -1133,4 +1133,4 @@ function handle_post_view_change(msg_list, opts) {
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);
     pm_list.handle_narrow_activated(filter);
     activity_ui.build_user_sidebar();
-}
+};

@@ -42,29 +42,29 @@ type StreamWildcardOptions = {
 
 export let wildcard_mention_threshold = 15;
 
-export function set_upload_in_progress(status: boolean): void {
+export const set_upload_in_progress = (status: boolean): void => {
     upload_in_progress = status;
     update_send_button_status();
-}
+};
 
-function set_message_too_long(status: boolean): void {
+const set_message_too_long = (status: boolean): void => {
     message_too_long = status;
     update_send_button_status();
-}
+};
 
-export function set_recipient_disallowed(status: boolean): void {
+export const set_recipient_disallowed = (status: boolean): void => {
     recipient_disallowed = status;
     update_send_button_status();
-}
+};
 
-function update_send_button_status(): void {
+const update_send_button_status = (): void => {
     $(".message-send-controls").toggleClass(
         "disabled-message-send-controls",
         message_too_long || upload_in_progress || recipient_disallowed,
     );
-}
+};
 
-export function get_disabled_send_tooltip(): string {
+export const get_disabled_send_tooltip = (): string => {
     if (message_too_long) {
         return $t(
             {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
@@ -74,9 +74,9 @@ export function get_disabled_send_tooltip(): string {
         return $t({defaultMessage: "Cannot send message while files are being uploaded."});
     }
     return "";
-}
+};
 
-export function needs_subscribe_warning(user_id: number, stream_id: number): boolean {
+export const needs_subscribe_warning = (user_id: number, stream_id: number): boolean => {
     // This returns true if all of these conditions are met:
     //  * the user is valid
     //  * the user is not already subscribed to the stream
@@ -108,9 +108,9 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
     }
 
     return true;
-}
+};
 
-function get_stream_id_for_textarea($textarea: JQuery<HTMLTextAreaElement>): number | undefined {
+const get_stream_id_for_textarea = ($textarea: JQuery<HTMLTextAreaElement>): number | undefined => {
     // Returns the stream ID, if any, associated with the textarea:
     // The recipient of a message being edited, or the target
     // recipient of a message being drafted in the compose box.
@@ -131,12 +131,12 @@ function get_stream_id_for_textarea($textarea: JQuery<HTMLTextAreaElement>): num
     }
 
     return compose_state.stream_id();
-}
+};
 
-export function warn_if_private_stream_is_linked(
+export const warn_if_private_stream_is_linked = (
     linked_stream: StreamSubscription,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): void => {
     const stream_id = get_stream_id_for_textarea($textarea);
 
     if (!stream_id) {
@@ -195,12 +195,12 @@ export function warn_if_private_stream_is_linked(
         });
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
     }
-}
+};
 
-export function warn_if_mentioning_unsubscribed_user(
+export const warn_if_mentioning_unsubscribed_user = (
     mentioned: UserOrMention,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): void => {
     // Disable for Zephyr mirroring realms, since we never have subscriber lists there
     if (realm.realm_is_zephyr_mirror_realm) {
         return;
@@ -247,18 +247,18 @@ export function warn_if_mentioning_unsubscribed_user(
             compose_banner.append_compose_banner_to_banner_list($(new_row_html), $container);
         }
     }
-}
+};
 
 // Called when clearing the compose box and similar contexts to clear
 // the warning for composing to a resolved topic, if present. Also clears
 // the state for whether this warning has already been shown in the
 // current narrow.
-export function clear_topic_resolved_warning(): void {
+export const clear_topic_resolved_warning = (): void => {
     compose_state.set_recipient_viewed_topic_resolved_banner(false);
     $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)}`).remove();
-}
+};
 
-export function warn_if_topic_resolved(topic_changed: boolean): void {
+export const warn_if_topic_resolved = (topic_changed: boolean): void => {
     // This function is called with topic_changed=false on every
     // keypress when typing a message, so it should not do anything
     // expensive in that case.
@@ -309,9 +309,9 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     } else {
         clear_topic_resolved_warning();
     }
-}
+};
 
-export function warn_if_in_search_view(): void {
+export const warn_if_in_search_view = (): void => {
     const filter = narrow_state.filter();
     if (filter && !filter.supports_collapsing_recipients()) {
         const context = {
@@ -327,9 +327,9 @@ export function warn_if_in_search_view(): void {
         const new_row_html = render_compose_banner(context);
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     }
-}
+};
 
-function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
+const show_stream_wildcard_warnings = (opts: StreamWildcardOptions): void => {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
     const stream_name = sub_store.maybe_get_stream_name(opts.stream_id);
     const is_edit_container = opts.$banner_container.closest(".edit_form_banners").length > 0;
@@ -370,18 +370,18 @@ function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
     }
 
     user_acknowledged_stream_wildcard = false;
-}
+};
 
-export function clear_stream_wildcard_warnings($banner_container: JQuery): void {
+export const clear_stream_wildcard_warnings = ($banner_container: JQuery): void => {
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
     $banner_container.find(`.${CSS.escape(classname)}`).remove();
-}
+};
 
-export function set_user_acknowledged_stream_wildcard_flag(value: boolean): void {
+export const set_user_acknowledged_stream_wildcard_flag = (value: boolean): void => {
     user_acknowledged_stream_wildcard = value;
-}
+};
 
-export function get_invalid_recipient_emails(): string[] {
+export const get_invalid_recipient_emails = (): string[] => {
     const private_recipients = util.extract_pm_recipients(
         compose_state.private_message_recipient(),
     );
@@ -390,20 +390,20 @@ export function get_invalid_recipient_emails(): string[] {
     );
 
     return invalid_recipients;
-}
+};
 
-function is_recipient_large_stream(): boolean {
+const is_recipient_large_stream = (): boolean => {
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
         return false;
     }
     return peer_data.get_subscriber_count(stream_id) > wildcard_mention_threshold;
-}
+};
 
-export function topic_participant_count_more_than_threshold(
+export const topic_participant_count_more_than_threshold = (
     stream_id: number,
     topic: string,
-): boolean {
+): boolean => {
     // Topic participants:
     // Users who either sent or reacted to the messages in the topic.
     const participant_ids = new Set();
@@ -440,17 +440,17 @@ export function topic_participant_count_more_than_threshold(
     }
 
     return false;
-}
+};
 
-function is_recipient_large_topic(): boolean {
+const is_recipient_large_topic = (): boolean => {
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
         return false;
     }
     return topic_participant_count_more_than_threshold(stream_id, compose_state.topic());
-}
+};
 
-function wildcard_mention_policy_authorizes_user(): boolean {
+const wildcard_mention_policy_authorizes_user = (): boolean => {
     if (
         realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
@@ -492,21 +492,19 @@ function wildcard_mention_policy_authorizes_user(): boolean {
         return days >= realm.realm_waiting_period_threshold && !current_user.is_guest;
     }
     return !current_user.is_guest;
-}
+};
 
-export function stream_wildcard_mention_allowed(): boolean {
-    return !is_recipient_large_stream() || wildcard_mention_policy_authorizes_user();
-}
+export const stream_wildcard_mention_allowed = (): boolean =>
+    !is_recipient_large_stream() || wildcard_mention_policy_authorizes_user();
 
-export function topic_wildcard_mention_allowed(): boolean {
-    return !is_recipient_large_topic() || wildcard_mention_policy_authorizes_user();
-}
+export const topic_wildcard_mention_allowed = (): boolean =>
+    !is_recipient_large_topic() || wildcard_mention_policy_authorizes_user();
 
-export function set_wildcard_mention_threshold(value: number): void {
+export const set_wildcard_mention_threshold = (value: number): void => {
     wildcard_mention_threshold = value;
-}
+};
 
-export function validate_stream_message_mentions(opts: StreamWildcardOptions): boolean {
+export const validate_stream_message_mentions = (opts: StreamWildcardOptions): boolean => {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
@@ -541,17 +539,17 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     user_acknowledged_stream_wildcard = false;
 
     return true;
-}
+};
 
-export function validate_stream_message_address_info(sub: StreamSubscription): boolean {
+export const validate_stream_message_address_info = (sub: StreamSubscription): boolean => {
     if (sub.subscribed) {
         return true;
     }
     compose_banner.show_stream_not_subscribed_error(sub);
     return false;
-}
+};
 
-function validate_stream_message(scheduling_message: boolean): boolean {
+const validate_stream_message = (scheduling_message: boolean): boolean => {
     const stream_id = compose_state.stream_id();
     const $banner_container = $("#compose_banners");
     if (stream_id === undefined) {
@@ -613,11 +611,11 @@ function validate_stream_message(scheduling_message: boolean): boolean {
     }
 
     return true;
-}
+};
 
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
-function validate_private_message(): boolean {
+const validate_private_message = (): boolean => {
     const user_ids = compose_pm_pill.get_user_ids();
     const $banner_container = $("#compose_banners");
 
@@ -684,9 +682,9 @@ function validate_private_message(): boolean {
     }
 
     return true;
-}
+};
 
-export function check_overflow_text(): number {
+export const check_overflow_text = (): number => {
     // This function is called when typing every character in the
     // compose box, so it's important that it not doing anything
     // expensive.
@@ -721,18 +719,18 @@ export function check_overflow_text(): number {
     }
 
     return text.length;
-}
+};
 
-export function validate_message_length(): boolean {
+export const validate_message_length = (): boolean => {
     if (compose_state.message_content().length > realm.max_message_length) {
         $("textarea#compose-textarea").addClass("flash");
         setTimeout(() => $("textarea#compose-textarea").removeClass("flash"), 1500);
         return false;
     }
     return true;
-}
+};
 
-export function validate(scheduling_message: boolean): boolean {
+export const validate = (scheduling_message: boolean): boolean => {
     const message_content = compose_state.message_content();
     if (/^\s*$/.test(message_content)) {
         $("textarea#compose-textarea").toggleClass("invalid", true);
@@ -758,13 +756,13 @@ export function validate(scheduling_message: boolean): boolean {
         return validate_private_message();
     }
     return validate_stream_message(scheduling_message);
-}
+};
 
-export function convert_mentions_to_silent_in_direct_messages(
+export const convert_mentions_to_silent_in_direct_messages = (
     mention_text: string,
     full_name: string,
     user_id: number,
-): string {
+): string => {
     if (compose_state.get_message_type() !== "private") {
         return mention_text;
     }
@@ -783,4 +781,4 @@ export function convert_mentions_to_silent_in_direct_messages(
 
     const silent_mention_text = people.get_mention_syntax(full_name, user_id, true);
     return silent_mention_text;
-}
+};

@@ -8,13 +8,13 @@ const {run_test} = require("./lib/test");
 const muted_users = zrequire("muted_users");
 const typing_data = zrequire("typing_data");
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         typing_data.clear_for_testing();
         muted_users.set_muted_users([]);
         f({override});
     });
-}
+};
 
 test("basics", () => {
     // The typing_data needs to be robust with lists of
@@ -124,49 +124,49 @@ test("timers", () => {
     const stub_topic = "typing notifications";
     const topic_typing_key = typing_data.get_topic_key(stub_stream_id, stub_topic);
 
-    function set_timeout(f, delay) {
+    const set_timeout = (f, delay) => {
         assert.equal(delay, stub_delay);
         events.f = f;
         events.timer_set = true;
         return stub_timer_id;
-    }
+    };
 
-    function clear_timeout(timer) {
+    const clear_timeout = (timer) => {
         assert.equal(timer, stub_timer_id);
         events.timer_cleared = true;
-    }
+    };
 
-    function reset_events() {
+    const reset_events = () => {
         events.f = undefined;
         events.timer_cleared = false;
         events.timer_set = false;
-    }
+    };
 
-    function kickstart() {
+    const kickstart = () => {
         reset_events();
         typing_data.kickstart_inbound_timer(
             typing_data.get_direct_message_conversation_key(stub_group),
             stub_delay,
             stub_f,
         );
-    }
+    };
 
-    function clear() {
+    const clear = () => {
         reset_events();
         typing_data.clear_inbound_timer(
             typing_data.get_direct_message_conversation_key(stub_group),
         );
-    }
+    };
 
-    function streams_kickstart() {
+    const streams_kickstart = () => {
         reset_events();
         typing_data.kickstart_inbound_timer(topic_typing_key, stub_delay, stub_f);
-    }
+    };
 
-    function streams_clear() {
+    const streams_clear = () => {
         reset_events();
         typing_data.clear_inbound_timer(topic_typing_key);
-    }
+    };
 
     set_global("setTimeout", set_timeout);
     set_global("clearTimeout", clear_timeout);

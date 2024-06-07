@@ -13,35 +13,33 @@ import * as user_sort from "./user_sort";
 let pill_widget;
 let all_users_list_widget;
 
-export function get_principals() {
-    return user_group_create_members_data.get_principals();
-}
+export const get_principals = () => user_group_create_members_data.get_principals();
 
-function redraw_member_list() {
+const redraw_member_list = () => {
     all_users_list_widget.replace_list_data(user_group_create_members_data.sorted_user_ids());
-}
+};
 
-function add_user_ids(user_ids) {
+const add_user_ids = (user_ids) => {
     user_group_create_members_data.add_user_ids(user_ids);
     redraw_member_list();
-}
+};
 
-function add_all_users() {
+const add_all_users = () => {
     const user_ids = user_group_create_members_data.get_all_user_ids();
     add_user_ids(user_ids);
-}
+};
 
-function remove_user_ids(user_ids) {
+const remove_user_ids = (user_ids) => {
     user_group_create_members_data.remove_user_ids(user_ids);
     redraw_member_list();
-}
+};
 
-export function clear_member_list() {
+export const clear_member_list = () => {
     user_group_create_members_data.initialize_with_current_user();
     redraw_member_list();
-}
+};
 
-function build_pill_widget({$parent_container}) {
+const build_pill_widget = ({$parent_container}) => {
     const $pill_container = $parent_container.find(".pill-container");
     const get_potential_members = user_group_create_members_data.get_potential_members;
 
@@ -49,9 +47,9 @@ function build_pill_widget({$parent_container}) {
         $pill_container,
         get_potential_subscribers: get_potential_members,
     });
-}
+};
 
-export function create_handlers($container) {
+export const create_handlers = ($container) => {
     $container.on("click", ".add_all_users_to_user_group", (e) => {
         e.preventDefault();
         add_all_users();
@@ -65,10 +63,10 @@ export function create_handlers($container) {
         remove_user_ids([user_id]);
     });
 
-    function add_users({pill_user_ids}) {
+    const add_users = ({pill_user_ids}) => {
         add_user_ids(pill_user_ids);
         pill_widget.clear();
-    }
+    };
 
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
@@ -77,9 +75,9 @@ export function create_handlers($container) {
         button_selector: ".add_members_container button.add-member-button",
         action: add_users,
     });
-}
+};
 
-export function build_widgets() {
+export const build_widgets = () => {
     const $add_people_container = $("#people_to_add_in_group");
     $add_people_container.html(render_new_user_group_users({}));
 
@@ -99,7 +97,7 @@ export function build_widgets() {
             id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
-        modifier_html(user) {
+        modifier_html: (user) => {
             const item = {
                 email: user.delivery_email,
                 user_id: user.user_id,
@@ -111,13 +109,9 @@ export function build_widgets() {
         },
         filter: {
             $element: $("#people_to_add_in_group .add-user-list-filter"),
-            predicate(user, search_term) {
-                return people.build_person_matcher(search_term)(user);
-            },
+            predicate: (user, search_term) => people.build_person_matcher(search_term)(user),
         },
         $simplebar_container,
-        html_selector(user) {
-            return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
-        },
+        html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
     });
-}
+};

@@ -9,7 +9,7 @@ import type {Message} from "./message_store";
 // We don't need an andSelf() here because we already know
 // that our next element is *not* a message_row, so this
 // isn't going to end up empty unless we're at the bottom or top.
-export function next_visible($message_row: JQuery): JQuery {
+export const next_visible = ($message_row: JQuery): JQuery => {
     if ($message_row === undefined || $message_row.length === 0) {
         return $();
     }
@@ -23,9 +23,9 @@ export function next_visible($message_row: JQuery): JQuery {
         return $();
     }
     return $(".selectable_row", $next_recipient_rows[0]).first();
-}
+};
 
-export function prev_visible($message_row: JQuery): JQuery {
+export const prev_visible = ($message_row: JQuery): JQuery => {
     if ($message_row === undefined || $message_row.length === 0) {
         return $();
     }
@@ -39,17 +39,13 @@ export function prev_visible($message_row: JQuery): JQuery {
         return $();
     }
     return $(".selectable_row", $prev_recipient_rows[0]).last();
-}
+};
 
-export function first_visible(): JQuery {
-    return $(".focused-message-list .selectable_row").first();
-}
+export const first_visible = (): JQuery => $(".focused-message-list .selectable_row").first();
 
-export function last_visible(): JQuery {
-    return $(".focused-message-list .selectable_row").last();
-}
+export const last_visible = (): JQuery => $(".focused-message-list .selectable_row").last();
 
-export function visible_range(start_id: number, end_id: number): JQuery[] {
+export const visible_range = (start_id: number, end_id: number): JQuery[] => {
     /*
         Get all visible rows between start_id
         and end_in, being inclusive on both ends.
@@ -72,13 +68,12 @@ export function visible_range(start_id: number, end_id: number): JQuery[] {
     }
 
     return rows;
-}
+};
 
-export function is_overlay_row($row: JQuery): boolean {
-    return $row.closest(".overlay-message-row").length >= 1;
-}
+export const is_overlay_row = ($row: JQuery): boolean =>
+    $row.closest(".overlay-message-row").length >= 1;
 
-export function id($message_row: JQuery): number {
+export const id = ($message_row: JQuery): number => {
     if (is_overlay_row($message_row)) {
         throw new Error("Drafts and scheduled messages have no message id.");
     }
@@ -94,9 +89,9 @@ export function id($message_row: JQuery): number {
     }
 
     return Number.parseFloat(message_id);
-}
+};
 
-export function local_echo_id($message_row: JQuery): string {
+export const local_echo_id = ($message_row: JQuery): string => {
     const message_id = $message_row.attr("data-message-id");
 
     if (message_id === undefined) {
@@ -108,54 +103,43 @@ export function local_echo_id($message_row: JQuery): string {
     }
 
     return message_id;
-}
+};
 
-export function get_message_id(elem: HTMLElement): number {
+export const get_message_id = (elem: HTMLElement): number => {
     // Gets the message_id for elem, where elem is a DOM
     // element inside a message.  This is typically used
     // in click handlers for things like the reaction button.
     const $row = $(elem).closest(".message_row");
     const message_id = id($row);
     return message_id;
-}
+};
 
-export function get_closest_group(element: string): JQuery {
-    // This gets the closest message row to an element, whether it's
-    // a recipient bar or message.  With our current markup,
-    // this is the most reliable way to do it.
-    return $(element).closest("div.recipient_row");
-}
+export const get_closest_group = (element: string): JQuery =>
+    $(element).closest("div.recipient_row");
 
-export function get_closest_row(element: string): JQuery {
-    return $(element).closest("div.message_row");
-}
+export const get_closest_row = (element: string): JQuery => $(element).closest("div.message_row");
 
-export function first_message_in_group($message_group: JQuery): JQuery {
-    return $("div.message_row", $message_group).first();
-}
+export const first_message_in_group = ($message_group: JQuery): JQuery =>
+    $("div.message_row", $message_group).first();
 
-export function last_message_in_group($message_group: JQuery): JQuery {
-    return $("div.message_row", $message_group).last();
-}
+export const last_message_in_group = ($message_group: JQuery): JQuery =>
+    $("div.message_row", $message_group).last();
 
-export function get_message_recipient_row($message_row: JQuery): JQuery {
-    return $message_row.parent(".recipient_row").expectOne();
-}
+export const get_message_recipient_row = ($message_row: JQuery): JQuery =>
+    $message_row.parent(".recipient_row").expectOne();
 
-export function get_message_recipient_header($message_row: JQuery): JQuery {
-    return $message_row.parent(".recipient_row").find(".message_header").expectOne();
-}
+export const get_message_recipient_header = ($message_row: JQuery): JQuery =>
+    $message_row.parent(".recipient_row").find(".message_header").expectOne();
 
-export function recipient_from_group($message_group: JQuery): Message | undefined {
+export const recipient_from_group = ($message_group: JQuery): Message | undefined => {
     const message_id = id($message_group.children(".message_row").first().expectOne());
     return message_store.get(message_id);
-}
+};
 
-export function is_header_of_row_sticky($recipient_row: JQuery): boolean {
-    return $recipient_row.find(".message_header").hasClass("sticky_header");
-}
+export const is_header_of_row_sticky = ($recipient_row: JQuery): boolean =>
+    $recipient_row.find(".message_header").hasClass("sticky_header");
 
-export function id_for_recipient_row($recipient_row: JQuery): number {
+export const id_for_recipient_row = ($recipient_row: JQuery): number => {
     if (is_header_of_row_sticky($recipient_row)) {
         const msg_id = message_lists.current?.view.sticky_recipient_message_id;
         if (msg_id !== undefined) {
@@ -165,4 +149,4 @@ export function id_for_recipient_row($recipient_row: JQuery): number {
 
     const $msg_row = first_message_in_group($recipient_row);
     return id($msg_row);
-}
+};

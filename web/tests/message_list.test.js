@@ -13,14 +13,12 @@ const {current_user} = require("./lib/zpage_params");
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
 
-const noop = function () {};
+const noop = () => {};
 
 set_global("document", {
-    to_$() {
-        return {
-            trigger() {},
-        };
-    },
+    to_$: () => ({
+        trigger: () => {},
+    }),
 });
 
 const narrow_state = mock_esm("../src/narrow_state");
@@ -98,7 +96,7 @@ run_test("basics", ({override}) => {
 
     // Make sure not rerendered when reselected
     let num_renders = 0;
-    list.rerender = function () {
+    list.rerender = () => {
         num_renders += 1;
     };
     list.reselect_selected_id();
@@ -125,7 +123,7 @@ run_test("basics", ({override}) => {
     list.append(new_messages, true);
     assert.equal(list.last().id, 90);
 
-    list.view.clear_table = function () {};
+    list.view.clear_table = () => {};
 
     list.remove_and_rerender([60]);
     const removed = list.all_messages().filter((msg) => msg.id !== 60);

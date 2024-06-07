@@ -37,7 +37,7 @@ type MessageViewHeaderContext = {
       }
 );
 
-function get_message_view_header_context(filter: Filter | undefined): MessageViewHeaderContext {
+const get_message_view_header_context = (filter: Filter | undefined): MessageViewHeaderContext => {
     if (recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
@@ -119,18 +119,18 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     }
 
     return context;
-}
+};
 
-export function colorize_message_view_header(): void {
+export const colorize_message_view_header = (): void => {
     const filter = narrow_state.filter();
     if (filter === undefined || !filter._sub) {
         return;
     }
     // selecting i instead of .fa because web public streams have custom icon.
     $("#message_view_header a.stream i").css("color", filter._sub.color);
-}
+};
 
-function append_and_display_title_area(context: MessageViewHeaderContext): void {
+const append_and_display_title_area = (context: MessageViewHeaderContext): void => {
     const $message_view_header_elem = $("#message_view_header");
     $message_view_header_elem.html(render_message_view_header(context));
     if (context.stream_settings_link) {
@@ -142,9 +142,9 @@ function append_and_display_title_area(context: MessageViewHeaderContext): void 
         // Update syntax like stream names, emojis, mentions, timestamps.
         rendered_markdown.update_elements($content);
     }
-}
+};
 
-function build_message_view_header(filter: Filter | undefined): void {
+const build_message_view_header = (filter: Filter | undefined): void => {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
@@ -155,23 +155,23 @@ function build_message_view_header(filter: Filter | undefined): void {
         append_and_display_title_area(context);
         search.close_search_bar_and_open_narrow_description();
     }
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     render_title_area();
-}
+};
 
-export function render_title_area(): void {
+export const render_title_area = (): void => {
     const filter = narrow_state.filter();
     build_message_view_header(filter);
-}
+};
 
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed (filter._sub) and rerenders if necessary
-export function maybe_rerender_title_area_for_stream(modified_sub: SettingsSubscription): void {
+export const maybe_rerender_title_area_for_stream = (modified_sub: SettingsSubscription): void => {
     const filter = narrow_state.filter();
     if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
         render_title_area();
     }
-}
+};

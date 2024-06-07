@@ -14,8 +14,7 @@ export const intl = createIntl(
         locale: page_params.request_language,
         defaultLocale: "en",
         messages: "translation_data" in page_params ? page_params.translation_data : {},
-        /* istanbul ignore next */
-        onError(error) {
+        onError: /* istanbul ignore next */ (error) => {
             // Ignore complaints about untranslated strings that were
             // added since the last sync-translations run.
             if (error.code !== IntlErrorCode.MISSING_TRANSLATION) {
@@ -35,11 +34,11 @@ export const default_html_elements = Object.fromEntries(
     ]),
 );
 
-export function $t_html(
+export const $t_html = (
     descriptor: MessageDescriptor,
     values?: Record<string, PrimitiveType | FormatXMLElementFn<string, string>>,
-): string {
-    return intl.formatMessage(descriptor, {
+): string =>
+    intl.formatMessage(descriptor, {
         ...default_html_elements,
         ...Object.fromEntries(
             Object.entries(values ?? {}).map(([key, value]) => [
@@ -48,15 +47,13 @@ export function $t_html(
             ]),
         ),
     });
-}
 
 export let language_list: (typeof page_params & {page_type: "home"})["language_list"];
 
-export function get_language_name(language_code: string): string | undefined {
-    return language_list.find((language) => language.code === language_code)?.name;
-}
+export const get_language_name = (language_code: string): string | undefined =>
+    language_list.find((language) => language.code === language_code)?.name;
 
-export function initialize(language_params: {language_list: typeof language_list}): void {
+export const initialize = (language_params: {language_list: typeof language_list}): void => {
     const language_list_raw = language_params.language_list;
 
     // Limit offered languages to options with percentage translation >= 5%
@@ -71,7 +68,7 @@ export function initialize(language_params: {language_list: typeof language_list
             });
         }
     }
-}
+};
 
 type Language = {
     code: string;
@@ -80,7 +77,7 @@ type Language = {
     selected: boolean;
 };
 
-export function get_language_list_columns(default_language: string): Language[] {
+export const get_language_list_columns = (default_language: string): Language[] => {
     const formatted_list: Language[] = [];
     for (const language of language_list) {
         let name_with_percent = language.name;
@@ -97,4 +94,4 @@ export function get_language_list_columns(default_language: string): Language[] 
         });
     }
     return formatted_list;
-}
+};

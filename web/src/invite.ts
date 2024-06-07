@@ -34,13 +34,13 @@ let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let pills: email_pill.EmailPillWidget;
 
-function reset_error_messages(): void {
+const reset_error_messages = (): void => {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
 
     if (page_params.development_environment) {
         $("#dev_env_msg").hide().text("").removeClass(common.status_classes);
     }
-}
+};
 
 function get_common_invitation_data(): {
     csrfmiddlewaretoken: string;
@@ -102,7 +102,7 @@ function get_common_invitation_data(): {
     return data;
 }
 
-function beforeSend(): void {
+const beforeSend = (): void => {
     reset_error_messages();
     // TODO: You could alternatively parse the emails here, and return errors to
     // the user if they don't match certain constraints (i.e. not real email addresses,
@@ -113,9 +113,9 @@ function beforeSend(): void {
     assert(loading_text !== undefined);
     $("#invite-user-modal .dialog_submit_button").text(loading_text);
     $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
-}
+};
 
-function submit_invitation_form(): void {
+const submit_invitation_form = (): void => {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const $invite_status = $("#dialog_error");
     const data = get_common_invitation_data();
@@ -124,7 +124,7 @@ function submit_invitation_form(): void {
         url: "/json/invites",
         data,
         beforeSend,
-        success() {
+        success: () => {
             const number_of_invites_sent = pills.items().length;
             ui_report.success(
                 $t_html(
@@ -156,7 +156,7 @@ function submit_invitation_form(): void {
                 }
             }
         },
-        error(xhr) {
+        error: (xhr) => {
             const parsed = z
                 .object({
                     result: z.literal("error"),
@@ -202,23 +202,23 @@ function submit_invitation_form(): void {
                 }
             }
         },
-        complete() {
+        complete: () => {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
             $invite_status[0]!.scrollIntoView();
         },
     });
-}
+};
 
-function generate_multiuse_invite(): void {
+const generate_multiuse_invite = (): void => {
     const $invite_status = $("#dialog_error");
     const data = get_common_invitation_data();
     void channel.post({
         url: "/json/invites/multiuse",
         data,
         beforeSend,
-        success(data) {
+        success: (data) => {
             const copy_link_html = copy_invite_link(data);
             ui_report.success(copy_link_html, $invite_status);
             const clipboard = new ClipboardJS("#copy_generated_invite_link");
@@ -234,10 +234,10 @@ function generate_multiuse_invite(): void {
                 );
             });
         },
-        error(xhr) {
+        error: (xhr) => {
             ui_report.error("", xhr, $invite_status);
         },
-        complete() {
+        complete: () => {
             $("#invite-user-modal .dialog_submit_button").text(
                 $t({defaultMessage: "Generate invite link"}),
             );
@@ -246,15 +246,15 @@ function generate_multiuse_invite(): void {
             $invite_status[0]!.scrollIntoView();
         },
     });
-}
+};
 
-export function get_invite_streams(): stream_data.InviteStreamData[] {
+export const get_invite_streams = (): stream_data.InviteStreamData[] => {
     const streams = stream_data.get_invite_stream_data();
     streams.sort((a, b) => util.strcmp(a.name, b.name));
     return streams;
-}
+};
 
-function valid_to(time_valid: number): string {
+const valid_to = (time_valid: number): string => {
     if (!time_valid) {
         return $t({defaultMessage: "Never expires"});
     }
@@ -265,9 +265,9 @@ function valid_to(time_valid: number): string {
     const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
 
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
-}
+};
 
-function get_expiration_time_in_minutes(): number {
+const get_expiration_time_in_minutes = (): number => {
     switch (custom_expiration_time_unit) {
         case "hours":
             return custom_expiration_time_input * 60;
@@ -278,9 +278,9 @@ function get_expiration_time_in_minutes(): number {
         default:
             return custom_expiration_time_input;
     }
-}
+};
 
-function set_expires_on_text(): void {
+const set_expires_on_text = (): void => {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     if ($expires_in.val() === "custom") {
         $("#expires_on").hide();
@@ -289,9 +289,9 @@ function set_expires_on_text(): void {
         $("#expires_on").show();
         $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
     }
-}
+};
 
-function set_custom_time_inputs_visibility(): void {
+const set_custom_time_inputs_visibility = (): void => {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     if ($expires_in.val() === "custom") {
         $("#custom-expiration-time-input").val(custom_expiration_time_input);
@@ -302,9 +302,9 @@ function set_custom_time_inputs_visibility(): void {
     } else {
         $("#custom-invite-expiration-time").hide();
     }
-}
+};
 
-function set_streams_to_join_list_visibility(): void {
+const set_streams_to_join_list_visibility = (): void => {
     const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
     const hide_streams_list =
         realm_has_default_streams &&
@@ -316,9 +316,9 @@ function set_streams_to_join_list_visibility(): void {
         $("#streams_to_add .invite-stream-controls").show();
         $("#invite-stream-checkboxes").show();
     }
-}
+};
 
-function generate_invite_tips_data(): Record<string, boolean> {
+const generate_invite_tips_data = (): Record<string, boolean> => {
     const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
     return {
@@ -328,9 +328,9 @@ function generate_invite_tips_data(): Record<string, boolean> {
         realm_has_user_set_icon: realm_icon_source !== "G",
         realm_has_custom_profile_fields: custom_profile_fields.length > 0,
     };
-}
+};
 
-function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void {
+const open_invite_user_modal = (e: JQuery.ClickEvent<Document, undefined>): void => {
     e.stopPropagation();
     e.preventDefault();
 
@@ -349,7 +349,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
     });
 
-    function invite_user_modal_post_render(): void {
+    const invite_user_modal_post_render = (): void => {
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
         const $pill_container = $("#invitee_emails_container .pill-container");
         pills = input_pill.create({
@@ -378,7 +378,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $(e.target).parent().remove();
         });
 
-        function toggle_invite_submit_button(selected_tab?: string): void {
+        const toggle_invite_submit_button = (selected_tab?: string): void => {
             if (selected_tab === undefined) {
                 selected_tab = $(".invite_users_option_tabs")
                     .find(".selected")
@@ -398,7 +398,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 $button.text($t({defaultMessage: "Generate invite link"}));
                 $button.attr("data-loading-text", $t({defaultMessage: "Generating link..."}));
             }
-        }
+        };
 
         pills.onPillCreate(toggle_invite_submit_button);
         pills.onPillRemove(() => {
@@ -464,7 +464,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 {label: $t({defaultMessage: "Send invite email"}), key: "invite-email-tab"},
                 {label: $t({defaultMessage: "Create invite link"}), key: "invite-link-tab"},
             ],
-            callback(_name, key) {
+            callback: (_name, key) => {
                 switch (key) {
                     case "invite-email-tab":
                         $("#invitee_emails_container").show();
@@ -490,9 +490,9 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         setTimeout(() => {
             $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
         }, 0);
-    }
+    };
 
-    function invite_users(): void {
+    const invite_users = (): void => {
         const is_generate_invite_link =
             $(".invite_users_option_tabs").find(".selected").attr("data-tab-key") ===
             "invite-link-tab";
@@ -501,7 +501,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         } else {
             submit_invitation_form();
         }
-    }
+    };
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Invite users to organization"}),
@@ -513,8 +513,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         post_render: invite_user_modal_post_render,
         always_visible_scrollbar: true,
     });
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     $(document).on("click", ".invite-user-link", open_invite_user_modal);
-}
+};

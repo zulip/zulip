@@ -8,7 +8,7 @@ import {parse_html} from "./ui_util";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
-export function initialize() {
+export const initialize = () => {
     popover_menus.register_popover_menu(".change_visibility_policy", {
         placement: "bottom",
         popperOptions: {
@@ -23,7 +23,7 @@ export function initialize() {
                 },
             ],
         },
-        onShow(instance) {
+        onShow: (instance) => {
             popover_menus.popover_instances.change_visibility_policy = instance;
             popover_menus.on_show_prep(instance);
             const $elt = $(instance.reference).closest(".change_visibility_policy").expectOne();
@@ -40,7 +40,7 @@ export function initialize() {
                 parse_html(render_change_visibility_policy_popover(instance.context)),
             );
         },
-        onMount(instance) {
+        onMount: (instance) => {
             const $popper = $(instance.popper);
             const {stream_id, topic_name} = instance.context;
 
@@ -94,7 +94,7 @@ export function initialize() {
                 );
             });
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             $(instance.reference)
                 .closest(".change_visibility_policy")
                 .expectOne()
@@ -103,4 +103,4 @@ export function initialize() {
             popover_menus.popover_instances.change_visibility_policy = undefined;
         },
     });
-}
+};

@@ -95,11 +95,11 @@ const DEFAULTS = {
 // This function describes (programmatically) how to use the ListWidget.
 // ----------------------------------------------------
 
-export function get_filtered_items<Key, Item>(
+export const get_filtered_items = <Key, Item>(
     value: string,
     list: Key[],
     opts: ListWidgetOpts<Key, Item>,
-): Item[] {
+): Item[] => {
     /*
         This is used by the main object (see `create`),
         but we split it out to make it a bit easier
@@ -130,12 +130,11 @@ export function get_filtered_items<Key, Item>(
     }
 
     return result;
-}
+};
 
-export function alphabetic_sort<Prop extends string>(
-    prop: Prop,
-): SortingFunction<Record<Prop, string>> {
-    return (a, b) => {
+export const alphabetic_sort =
+    <Prop extends string>(prop: Prop): SortingFunction<Record<Prop, string>> =>
+    (a, b) => {
         // The conversion to uppercase helps make the sorting case insensitive.
         const str1 = a[prop].toUpperCase();
         const str2 = b[prop].toUpperCase();
@@ -148,12 +147,10 @@ export function alphabetic_sort<Prop extends string>(
 
         return -1;
     };
-}
 
-export function numeric_sort<Prop extends string>(
-    prop: Prop,
-): SortingFunction<Record<Prop, number>> {
-    return (a, b) => {
+export const numeric_sort =
+    <Prop extends string>(prop: Prop): SortingFunction<Record<Prop, number>> =>
+    (a, b) => {
         const a_prop = a[prop];
         const b_prop = b[prop];
 
@@ -165,7 +162,6 @@ export function numeric_sort<Prop extends string>(
 
         return -1;
     };
-}
 
 type GenericSortKeys = {
     alphabetic: string;
@@ -181,39 +177,34 @@ const generic_sorts: {
     numeric: numeric_sort,
 };
 
-export function generic_sort_functions<
+export const generic_sort_functions = <
     GenericFunc extends keyof GenericSortKeys,
     Prop extends string,
 >(
     generic_func: GenericFunc,
     props: Prop[],
-): Record<string, SortingFunction<Record<Prop, GenericSortKeys[GenericFunc]>>> {
-    return Object.fromEntries(
+): Record<string, SortingFunction<Record<Prop, GenericSortKeys[GenericFunc]>>> =>
+    Object.fromEntries(
         props.map((prop) => [`${prop}_${generic_func}`, generic_sorts[generic_func](prop)]),
     );
-}
 
-function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
-    return (
-        scroll_container.scrollHeight -
-            (scroll_container.scrollTop + scroll_container.clientHeight) <
-        10
-    );
-}
+const is_scroll_position_for_render = (scroll_container: HTMLElement): boolean =>
+    scroll_container.scrollHeight - (scroll_container.scrollTop + scroll_container.clientHeight) <
+    10;
 
-function get_column_count_for_table($table: JQuery): number {
+const get_column_count_for_table = ($table: JQuery): number => {
     let column_count = 0;
     const $thead = $table.find("thead");
     if ($thead.length) {
         column_count = $thead.find("tr").children().length;
     }
     return column_count;
-}
+};
 
-export function render_empty_list_message_if_needed(
+export const render_empty_list_message_if_needed = (
     $container: JQuery,
     filter_value: string,
-): void {
+): void => {
     let empty_list_message = $container.attr("data-empty");
 
     const empty_search_results_message = $container.attr("data-search-results-empty");
@@ -245,7 +236,7 @@ export function render_empty_list_message_if_needed(
     }
 
     $container.append($(empty_list_widget_html));
-}
+};
 
 // @params
 // $container: jQuery object to append to.
@@ -286,11 +277,9 @@ export function create<Key, Item = Key>(
     };
 
     const widget: ListWidget<Key, Item> = {
-        get_current_list() {
-            return meta.filtered_list;
-        },
+        get_current_list: () => meta.filtered_list,
 
-        filter_and_sort() {
+        filter_and_sort: () => {
             meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
 
             if (meta.sorting_function) {
@@ -304,7 +293,7 @@ export function create<Key, Item = Key>(
 
         // Used in case of Multiselect DropdownListWidget to retain
         // previously checked items even after widget redraws.
-        retain_selected_items() {
+        retain_selected_items: () => {
             const items = opts.multiselect;
 
             if (items?.selected_items) {
@@ -323,9 +312,7 @@ export function create<Key, Item = Key>(
         },
 
         // Returns if all available items are rendered.
-        all_rendered() {
-            return meta.offset >= meta.filtered_list.length;
-        },
+        all_rendered: () => meta.offset >= meta.filtered_list.length,
 
         // Reads the provided list (in the scope directly above)
         // and renders the next block of messages automatically
@@ -374,7 +361,7 @@ export function create<Key, Item = Key>(
             }
         },
 
-        render_item(item) {
+        render_item: (item) => {
             if (!opts.html_selector) {
                 // We don't have any way to find the existing item.
                 return;
@@ -397,16 +384,16 @@ export function create<Key, Item = Key>(
             $html_item.replaceWith($(html));
         },
 
-        clear() {
+        clear: () => {
             $container.empty();
             meta.offset = 0;
         },
 
-        set_filter_value(filter_value) {
+        set_filter_value: (filter_value) => {
             meta.filter_value = filter_value;
         },
 
-        set_reverse_mode(reverse_mode) {
+        set_reverse_mode: (reverse_mode) => {
             meta.reverse_mode = reverse_mode;
         },
 
@@ -414,7 +401,7 @@ export function create<Key, Item = Key>(
         // for the sorting_functions map to get the function. In case of generic sort
         // functions like numeric and alphabetic, we pass the string in the given format -
         // "{property}_{numeric|alphabetic}" - e.g. "email_alphabetic" or "age_numeric".
-        set_sorting_function(sorting_function) {
+        set_sorting_function: (sorting_function) => {
             if (typeof sorting_function === "function") {
                 meta.sorting_function = sorting_function;
             } else if (typeof sorting_function === "string") {
@@ -465,7 +452,7 @@ export function create<Key, Item = Key>(
             });
         },
 
-        clear_event_handlers() {
+        clear_event_handlers: () => {
             meta.$scroll_listening_element.off("scroll.list_widget_container");
 
             if (opts.$parent_container) {
@@ -475,34 +462,34 @@ export function create<Key, Item = Key>(
             opts.filter?.$element?.off("input.list_widget_filter");
         },
 
-        increase_rendered_offset() {
+        increase_rendered_offset: () => {
             meta.offset = Math.min(meta.offset + 1, meta.filtered_list.length);
         },
 
-        reduce_rendered_offset() {
+        reduce_rendered_offset: () => {
             meta.offset = Math.max(meta.offset - 1, 0);
         },
 
-        remove_rendered_row(rendered_row) {
+        remove_rendered_row: (rendered_row) => {
             rendered_row.remove();
             // We removed a rendered row, so we need to reduce one offset.
             widget.reduce_rendered_offset();
         },
 
-        clean_redraw() {
+        clean_redraw: () => {
             widget.filter_and_sort();
             widget.clear();
             widget.render(DEFAULTS.INITIAL_RENDER_COUNT);
         },
 
-        hard_redraw() {
+        hard_redraw: () => {
             widget.clean_redraw();
             if (opts.filter?.onupdate) {
                 opts.filter.onupdate();
             }
         },
 
-        insert_rendered_row(item, get_insert_index) {
+        insert_rendered_row: (item, get_insert_index) => {
             // NOTE: Caller should call `filter_and_sort` before calling this function
             // so that `meta.filtered_list` already has the `item`.
             if (meta.filtered_list.length <= 2) {
@@ -544,13 +531,13 @@ export function create<Key, Item = Key>(
             }
         },
 
-        sort(sorting_function, prop) {
+        sort: (sorting_function, prop) => {
             const key = prop ? `${prop}_${sorting_function}` : sorting_function;
             widget.set_sorting_function(key);
             widget.hard_redraw();
         },
 
-        replace_list_data(list, should_redraw = true) {
+        replace_list_data: (list, should_redraw = true) => {
             /*
                 We mostly use this widget for lists where you are
                 not adding or removing rows, so when you do modify
@@ -590,7 +577,7 @@ export function create<Key, Item = Key>(
     return widget;
 }
 
-export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>): void {
+export const handle_sort = <Key, Item>($th: JQuery, list: ListWidget<Key, Item>): void => {
     /*
         one would specify sort parameters like this:
             - name => sort alphabetic.
@@ -624,6 +611,6 @@ export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>)
     // if `prop_name` is defined, it will trigger the generic sort functions,
     // and not if it is undefined.
     list.sort(sort_type, prop_name);
-}
+};
 
 export const default_get_item = <T>(item: T): T => item;

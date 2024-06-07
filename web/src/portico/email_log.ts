@@ -40,7 +40,7 @@ $(() => {
         void channel.post({
             url: "/emails/",
             data,
-            success() {
+            success: () => {
                 $("#smtp_form_status").show();
                 setTimeout(() => {
                     $("#smtp_form_status").hide();

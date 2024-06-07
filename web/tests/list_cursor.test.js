@@ -9,10 +9,10 @@ const $ = require("./lib/zjquery");
 
 const {ListCursor} = zrequire("list_cursor");
 
-function basic_conf({first_key, prev_key, next_key}) {
+const basic_conf = ({first_key, prev_key, next_key}) => {
     const list = {
         scroll_container_selector: "whatever",
-        find_li() {},
+        find_li: () => {},
         first_key,
         prev_key,
         next_key,
@@ -24,7 +24,7 @@ function basic_conf({first_key, prev_key, next_key}) {
     };
 
     return conf;
-}
+};
 
 run_test("misc errors", ({override}) => {
     const conf = basic_conf({
@@ -67,7 +67,7 @@ run_test("single item list", ({override}) => {
 
     const $li_stub = {
         length: 1,
-        addClass() {},
+        addClass: () => {},
     };
 
     override(conf.list, "find_li", () => $li_stub);
@@ -93,9 +93,7 @@ run_test("multiple item list", ({override}) => {
     const cursor = new ListCursor(conf);
     override(cursor, "adjust_scroll", noop);
 
-    function li(key) {
-        return $.create(`item-${key}`, {children: ["stub"]});
-    }
+    const li = (key) => $.create(`item-${key}`, {children: ["stub"]});
 
     const list_items = {
         1: li(1),

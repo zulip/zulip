@@ -28,7 +28,7 @@ const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 
 // Helper test function
-function test_reply_label(expected_label) {
+const test_reply_label = (expected_label) => {
     const label = $("#left_bar_compose_reply_button_big").text();
     const prepend_text_length = "translated: Message ".length;
     assert.equal(
@@ -37,7 +37,7 @@ function test_reply_label(expected_label) {
         "'" + label.slice(prepend_text_length),
         Number("' did not match '") + expected_label + "'",
     );
-}
+};
 
 run_test("reply_label", () => {
     // Mocking up a test message list

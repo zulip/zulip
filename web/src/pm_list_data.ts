@@ -15,7 +15,7 @@ const max_conversations_to_show = 8;
 // Maximum number of conversation threads to show in default view with unreads.
 const max_conversations_to_show_with_unreads = 15;
 
-export function get_active_user_ids_string(): string | undefined {
+export const get_active_user_ids_string = (): string | undefined => {
     const filter = narrow_state.filter();
 
     if (!filter) {
@@ -29,7 +29,7 @@ export function get_active_user_ids_string(): string | undefined {
     }
 
     return people.emails_strings_to_user_ids_string(emails);
-}
+};
 
 type DisplayObject = {
     recipients: string;
@@ -44,7 +44,7 @@ type DisplayObject = {
     is_bot: boolean;
 };
 
-export function get_conversations(): DisplayObject[] {
+export const get_conversations = (): DisplayObject[] => {
     const private_messages = pm_conversations.recent.get();
     const display_objects = [];
 
@@ -101,13 +101,15 @@ export function get_conversations(): DisplayObject[] {
     }
 
     return display_objects;
-}
+};
 
 // Designed to closely match topic_list_data.get_list_info().
-export function get_list_info(zoomed: boolean): {
+export const get_list_info = (
+    zoomed: boolean,
+): {
     conversations_to_be_shown: DisplayObject[];
     more_conversations_unread_count: number;
-} {
+} => {
     const conversations = get_conversations();
 
     if (zoomed || conversations.length <= max_conversations_to_show) {
@@ -119,7 +121,7 @@ export function get_list_info(zoomed: boolean): {
 
     const conversations_to_be_shown = [];
     let more_conversations_unread_count = 0;
-    function should_show_conversation(idx: number, conversation: DisplayObject): boolean {
+    const should_show_conversation = (idx: number, conversation: DisplayObject): boolean => {
         // We always show the active conversation; see the similar
         // comment in topic_list_data.ts.
         if (conversation.is_active) {
@@ -149,7 +151,7 @@ export function get_list_info(zoomed: boolean): {
         // Otherwise, this conversation should only be visible in
         // the unzoomed view.
         return false;
-    }
+    };
     for (const [idx, conversation] of conversations.entries()) {
         if (should_show_conversation(idx, conversation)) {
             conversations_to_be_shown.push(conversation);
@@ -162,4 +164,4 @@ export function get_list_info(zoomed: boolean): {
         conversations_to_be_shown,
         more_conversations_unread_count,
     };
-}
+};

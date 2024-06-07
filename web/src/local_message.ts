@@ -3,14 +3,12 @@ import * as blueslip from "./blueslip";
 
 let max_message_id: number;
 
-function truncate_precision(float: number): number {
-    return Number.parseFloat(float.toFixed(3));
-}
+const truncate_precision = (float: number): number => Number.parseFloat(float.toFixed(3));
 
-export const get_next_id_float = (function () {
+export const get_next_id_float = (() => {
     const already_used = new Set();
 
-    return function (): number | undefined {
+    return (): number | undefined => {
         const local_id_increment = 0.01;
         let latest = all_messages_data.last()?.id ?? max_message_id;
         latest = Math.max(0, latest);
@@ -41,6 +39,6 @@ export const get_next_id_float = (function () {
     };
 })();
 
-export function initialize(params: {max_message_id: number}): void {
+export const initialize = (params: {max_message_id: number}): void => {
     max_message_id = params.max_message_id;
-}
+};

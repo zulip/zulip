@@ -14,9 +14,7 @@ const stream_topic_history = zrequire("stream_topic_history");
 const stream_list_sort = zrequire("stream_list_sort");
 const settings_config = zrequire("settings_config");
 
-function contains_sub(subs, sub) {
-    return subs.some((s) => s.name === sub.name);
-}
+const contains_sub = (subs, sub) => subs.some((s) => s.name === sub.name);
 
 const me = {
     email: "me@zulip.com",
@@ -75,17 +73,17 @@ const muted_pinned = {
     is_muted: true,
 };
 
-function sort_groups(query) {
+const sort_groups = (query) => {
     const streams = stream_data.subscribed_stream_ids();
     return stream_list_sort.sort_groups(streams, query);
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         f(helpers);
     });
-}
+};
 
 test("no_subscribed_streams", () => {
     const sorted = sort_groups("");

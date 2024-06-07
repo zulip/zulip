@@ -798,11 +798,11 @@ type NotificationSettingCheckbox = {
     is_mobile_checkbox: boolean;
 };
 
-export function get_notifications_table_row_data(
+export const get_notifications_table_row_data = (
     notify_settings: PageParamsItem[],
     settings_object: Settings,
-): NotificationSettingCheckbox[] {
-    return general_notifications_table_labels.realm.map((column, index) => {
+): NotificationSettingCheckbox[] =>
+    general_notifications_table_labels.realm.map((column, index) => {
         const setting_name = notify_settings[index];
         if (setting_name === undefined) {
             return {
@@ -830,7 +830,6 @@ export function get_notifications_table_row_data(
         }
         return checkbox;
     });
-}
 
 export type AllNotifications = {
     general_settings: {label: string; notification_settings: NotificationSettingCheckbox[]}[];

@@ -63,40 +63,38 @@ export let code_formatting_button_triggered = false; // true or false
 export let compose_textarea_typeahead: Typeahead<TypeaheadSuggestion> | undefined;
 let full_size_status = false; // true or false
 
-export function set_compose_textarea_typeahead(typeahead: Typeahead<TypeaheadSuggestion>): void {
+export const set_compose_textarea_typeahead = (typeahead: Typeahead<TypeaheadSuggestion>): void => {
     compose_textarea_typeahead = typeahead;
-}
+};
 
-export function set_code_formatting_button_triggered(value: boolean): void {
+export const set_code_formatting_button_triggered = (value: boolean): void => {
     code_formatting_button_triggered = value;
-}
+};
 
 // Some functions to handle the full size status explicitly
-export function set_full_size(is_full: boolean): void {
+export const set_full_size = (is_full: boolean): void => {
     full_size_status = is_full;
     // Show typeahead at bottom of textarea on compose full size.
     if (compose_textarea_typeahead) {
         compose_textarea_typeahead.dropup = !is_full;
     }
-}
+};
 
-export function is_full_size(): boolean {
-    return full_size_status;
-}
+export const is_full_size = (): boolean => full_size_status;
 
-export function autosize_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
+export const autosize_textarea = ($textarea: JQuery<HTMLTextAreaElement>): void => {
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
     if (!is_full_size()) {
         autosize.update($textarea);
     }
-}
+};
 
-export function insert_and_scroll_into_view(
+export const insert_and_scroll_into_view = (
     content: string,
     $textarea: JQuery<HTMLTextAreaElement>,
     replace_all = false,
-): void {
+): void => {
     if (replace_all) {
         setFieldText($textarea[0]!, content);
     } else {
@@ -107,9 +105,9 @@ export function insert_and_scroll_into_view(
     $textarea.trigger("blur");
     $textarea.trigger("focus");
     autosize_textarea($textarea);
-}
+};
 
-function get_focus_area(opts: ComposeTriggeredOptions): string {
+const get_focus_area = (opts: ComposeTriggeredOptions): string => {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
     if (opts.message_type === "stream" && opts.stream_id && !opts.topic) {
@@ -128,12 +126,12 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         return "#compose_select_recipient_widget_wrapper";
     }
     return "#private_message_recipient";
-}
+};
 
 // Export for testing
 export const _get_focus_area = get_focus_area;
 
-export function set_focus(opts: ComposeTriggeredOptions): void {
+export const set_focus = (opts: ComposeTriggeredOptions): void => {
     // Called mainly when opening the compose box or switching the
     // message type to set the focus in the first empty input in the
     // compose box.
@@ -141,12 +139,13 @@ export function set_focus(opts: ComposeTriggeredOptions): void {
         const focus_area = get_focus_area(opts);
         $(focus_area).trigger("focus");
     }
-}
+};
 
-export function smart_insert_inline($textarea: JQuery<HTMLTextAreaElement>, syntax: string): void {
-    function is_space(c: string | undefined): boolean {
-        return c === " " || c === "\t" || c === "\n";
-    }
+export const smart_insert_inline = (
+    $textarea: JQuery<HTMLTextAreaElement>,
+    syntax: string,
+): void => {
+    const is_space = (c: string | undefined): boolean => c === " " || c === "\t" || c === "\n";
 
     const pos = $textarea.caret();
     const before_str = $textarea.val()!.slice(0, pos);
@@ -175,13 +174,13 @@ export function smart_insert_inline($textarea: JQuery<HTMLTextAreaElement>, synt
     }
 
     insert_and_scroll_into_view(syntax, $textarea);
-}
+};
 
-export function smart_insert_block(
+export const smart_insert_block = (
     $textarea: JQuery<HTMLTextAreaElement>,
     syntax: string,
     padding_newlines = 2,
-): void {
+): void => {
     const pos = $textarea.caret();
     const before_str = $textarea.val()!.slice(0, pos);
     const after_str = $textarea.val()!.slice(pos);
@@ -225,14 +224,14 @@ export function smart_insert_block(
     syntax = syntax + "\n".repeat(new_lines_needed_after_count);
 
     insert_and_scroll_into_view(syntax, $textarea);
-}
+};
 
-export function insert_syntax_and_focus(
+export const insert_syntax_and_focus = (
     syntax: string,
     $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
     mode = "inline",
     padding_newlines?: number,
-): void {
+): void => {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert_inline and smart_inline_block.
@@ -252,13 +251,13 @@ export function insert_syntax_and_focus(
     } else if (mode === "block") {
         smart_insert_block($textarea, syntax, padding_newlines);
     }
-}
+};
 
-export function replace_syntax(
+export const replace_syntax = (
     old_syntax: string,
     new_syntax: string,
     $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
-): boolean {
+): boolean => {
     // The following couple lines are needed to later restore the initial
     // logical position of the cursor after the replacement
     const prev_caret = $textarea.caret();
@@ -297,9 +296,9 @@ export function replace_syntax(
 
     // Return if anything was actually replaced.
     return old_text !== new_text;
-}
+};
 
-export function compute_placeholder_text(opts: ComposePlaceholderOptions): string {
+export const compute_placeholder_text = (opts: ComposePlaceholderOptions): string => {
     // Computes clear placeholder text for the compose box, depending
     // on what heading values have already been filled out.
     //
@@ -347,9 +346,9 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
         return $t({defaultMessage: "Message {recipient_names}"}, {recipient_names});
     }
     return DEFAULT_COMPOSE_PLACEHOLDER;
-}
+};
 
-export function set_compose_box_top(set_top: boolean): void {
+export const set_compose_box_top = (set_top: boolean): void => {
     if (set_top) {
         // As `#compose` has `position: fixed` property, we cannot
         // make the compose-box to attain the correct height just by
@@ -361,9 +360,9 @@ export function set_compose_box_top(set_top: boolean): void {
     } else {
         $("#compose").css("top", "");
     }
-}
+};
 
-export function make_compose_box_full_size(): void {
+export const make_compose_box_full_size = (): void => {
     set_full_size(true);
 
     // The autosize should be destroyed for the full size compose
@@ -379,9 +378,9 @@ export function make_compose_box_full_size(): void {
     $(".expand_composebox_button").hide();
     $("#scroll-to-bottom-button-container").removeClass("show");
     $("textarea#compose-textarea").trigger("focus");
-}
+};
 
-export function make_compose_box_original_size(): void {
+export const make_compose_box_original_size = (): void => {
     set_full_size(false);
 
     $("#compose").removeClass("compose-fullscreen");
@@ -396,12 +395,12 @@ export function make_compose_box_original_size(): void {
     $(".collapse_composebox_button").hide();
     $(".expand_composebox_button").show();
     $("textarea#compose-textarea").trigger("focus");
-}
+};
 
-export function handle_keydown(
+export const handle_keydown = (
     event: JQuery.KeyboardEventBase,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): void => {
     if (event.key === "Shift") {
         shift_pressed = true;
     }
@@ -427,29 +426,29 @@ export function handle_keydown(
         autosize_textarea($textarea);
         event.preventDefault();
     }
-}
+};
 
-export function handle_keyup(
+export const handle_keyup = (
     _event: JQuery.KeyboardEventBase,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): void => {
     if (_event?.key === "Shift") {
         shift_pressed = false;
     }
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
-}
+};
 
-export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
+export const cursor_inside_code_block = ($textarea: JQuery<HTMLTextAreaElement>): boolean => {
     // Returns whether the cursor is at a point that would be inside
     // a code block on rendering the textarea content as markdown.
     const cursor_position = $textarea.caret();
     const current_content = $textarea.val()!;
 
     return position_inside_code_block(current_content, cursor_position);
-}
+};
 
-export function position_inside_code_block(content: string, position: number): boolean {
+export const position_inside_code_block = (content: string, position: number): boolean => {
     let unique_insert = "UNIQUEINSERT:" + Math.random();
     while (content.includes(unique_insert)) {
         unique_insert = "UNIQUEINSERT:" + Math.random();
@@ -460,13 +459,13 @@ export function position_inside_code_block(content: string, position: number): b
     const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
     const code_blocks = rendered_html.querySelectorAll("pre > code");
     return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
-}
+};
 
-export function format_text(
+export const format_text = (
     $textarea: JQuery<HTMLTextAreaElement>,
     type: string,
     inserted_content = "",
-): void {
+): void => {
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
@@ -1114,26 +1113,26 @@ export function format_text(
             break;
         }
     }
-}
+};
 
 /* TODO: This functions don't belong in this module, as they have
  * nothing to do with the compose textarea. */
-export function hide_compose_spinner(): void {
+export const hide_compose_spinner = (): void => {
     compose_spinner_visible = false;
     $(".compose-submit-button .loader").hide();
     $(".compose-submit-button .zulip-icon-send").show();
     $(".compose-submit-button").removeClass("disable-btn");
-}
+};
 
-export function show_compose_spinner(): void {
+export const show_compose_spinner = (): void => {
     compose_spinner_visible = true;
     // Always use white spinner.
     loading.show_button_spinner($(".compose-submit-button .loader"), true);
     $(".compose-submit-button .zulip-icon-send").hide();
     $(".compose-submit-button").addClass("disable-btn");
-}
+};
 
-export function get_compose_click_target(element: HTMLElement): Element {
+export const get_compose_click_target = (element: HTMLElement): Element => {
     const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
     if (
         compose_control_buttons_popover &&
@@ -1142,4 +1141,4 @@ export function get_compose_click_target(element: HTMLElement): Element {
         return compose_control_buttons_popover.reference;
     }
     return element;
-}
+};

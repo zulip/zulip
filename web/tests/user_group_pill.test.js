@@ -40,10 +40,10 @@ for (const group of groups) {
 }
 
 run_test("create_item", () => {
-    function test_create_item(group_name, current_items, expected_item) {
+    const test_create_item = (group_name, current_items, expected_item) => {
         const item = user_group_pill.create_item_from_group_name(group_name, current_items);
         assert.deepEqual(item, expected_item);
-    }
+    };
 
     test_create_item(" admins ", [], admins_pill);
     test_create_item("admins", [testers_pill], admins_pill);
@@ -74,11 +74,11 @@ run_test("get_group_ids", () => {
 run_test("append_user_group", () => {
     const items = [admins_pill];
     const widget = {
-        appendValidatedData(group) {
+        appendValidatedData: (group) => {
             assert.deepEqual(group, testers_pill);
             items.push(testers_pill);
         },
-        clear_text() {},
+        clear_text: () => {},
     };
 
     const group = {

@@ -15,7 +15,7 @@ const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 
-const noop = function () {};
+const noop = () => {};
 
 // Define MessageList stuff
 class MessageListView {
@@ -71,7 +71,7 @@ const me = {
 };
 
 // Helper functions:
-function add_initialize_users() {
+const add_initialize_users = () => {
     // Initialize people
     people.init();
 
@@ -82,9 +82,9 @@ function add_initialize_users() {
 
     // Initialize current user
     people.initialize_current_user(me.user_id);
-}
+};
 
-function init_message_list() {
+const init_message_list = () => {
     const filter = new Filter([]);
     const list = new MessageList({
         filter,
@@ -93,21 +93,21 @@ function init_message_list() {
     assert.equal(list.empty(), true);
 
     return list;
-}
+};
 
 // Append message to message_list, also add container to message_lists
-function add_message_with_view(list, messages) {
+const add_message_with_view = (list, messages) => {
     list.append(messages, true);
     for (const message of messages) {
         message_lists.current.view.message_containers.set(message.id, {
             is_hidden: message.is_hidden,
         });
     }
-}
+};
 
 // Function sets page parameters with no time constraints on editing the message.
 // User is assumed to not be an admin.
-function set_page_params_no_edit_restrictions() {
+const set_page_params_no_edit_restrictions = () => {
     page_params.is_spectator = false;
     realm.realm_allow_message_editing = true;
     realm.realm_message_content_edit_limit_seconds = null;
@@ -117,10 +117,10 @@ function set_page_params_no_edit_restrictions() {
     realm.realm_enable_read_receipts = true;
     realm.realm_edit_topic_policy = 5;
     realm.realm_move_messages_within_stream_limit_seconds = null;
-}
+};
 
 // Test init function
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         // Stubs for calculate_timestamp_widths()
         $("<div>").css = noop;
@@ -133,7 +133,7 @@ function test(label, f) {
         message_lists.initialize();
         f(helpers);
     });
-}
+};
 
 // Test functions
 test("my_message_all_actions", () => {

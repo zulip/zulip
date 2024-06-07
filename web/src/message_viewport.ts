@@ -26,23 +26,19 @@ export const height = cached_height.get.bind(cached_height);
 // TODO: This function lets us use the DOM API instead of jquery
 // (<10x faster) for condense.js, but we want to eventually do a
 // bigger of refactor `height` and `width` above to do the same.
-export function max_message_height(): number {
-    return document.querySelector("html")!.offsetHeight * 0.65;
-}
+export const max_message_height = (): number => document.querySelector("html")!.offsetHeight * 0.65;
 
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
 export let last_movement_direction = 1;
 
-export function set_last_movement_direction(value: number): void {
+export const set_last_movement_direction = (value: number): void => {
     last_movement_direction = value;
-}
+};
 
-export function at_rendered_top(): boolean {
-    return scrollTop() <= 0;
-}
+export const at_rendered_top = (): boolean => scrollTop() <= 0;
 
-export function message_viewport_info(): MessageViewportInfo {
+export const message_viewport_info = (): MessageViewportInfo => {
     // Return a structure that tells us details of the viewport
     // accounting for fixed elements like the top navbar.
     //
@@ -69,13 +65,13 @@ export function message_viewport_info(): MessageViewportInfo {
         visible_bottom,
         visible_height,
     };
-}
+};
 
 // Important note: These functions just look at the state of the
 // rendered message feed; messages that are not displayed due to a
 // limited render window or because they have not been fetched from
 // the server are not considered.
-export function at_rendered_bottom(): boolean {
+export const at_rendered_bottom = (): boolean => {
     const bottom = scrollTop() + height();
     // This also includes bottom whitespace.
     const full_height = $scroll_container[0]!.scrollHeight;
@@ -85,12 +81,12 @@ export function at_rendered_bottom(): boolean {
     // and we err on the side of saying that we are at
     // the bottom.
     return bottom + 2 >= full_height;
-}
+};
 
 // This differs from at_rendered_bottom in that it only requires the
 // bottom message to be visible, but you may be able to scroll down
 // further to see the rest of that message.
-export function bottom_rendered_message_visible(): boolean {
+export const bottom_rendered_message_visible = (): boolean => {
     const $last_row = rows.last_visible();
     if ($last_row[0] !== undefined) {
         const message_bottom = $last_row[0].getBoundingClientRect().bottom;
@@ -98,13 +94,12 @@ export function bottom_rendered_message_visible(): boolean {
         return bottom_of_feed > message_bottom;
     }
     return false;
-}
+};
 
-export function is_below_visible_bottom(offset: number): boolean {
-    return offset > scrollTop() + height() - ($("#compose").height() ?? 0);
-}
+export const is_below_visible_bottom = (offset: number): boolean =>
+    offset > scrollTop() + height() - ($("#compose").height() ?? 0);
 
-export function is_scrolled_up(): boolean {
+export const is_scrolled_up = (): boolean => {
     // Let's determine whether the user was already dealing
     // with messages off the screen, which can guide auto
     // scrolling decisions.
@@ -116,9 +111,9 @@ export function is_scrolled_up(): boolean {
     const offset = offset_from_bottom($last_row);
 
     return offset > 0;
-}
+};
 
-export function offset_from_bottom($last_row: JQuery): number {
+export const offset_from_bottom = ($last_row: JQuery): number => {
     // A positive return value here means the last row is
     // below the bottom of the feed (i.e. obscured by the compose
     // box or even further below the bottom).
@@ -126,14 +121,14 @@ export function offset_from_bottom($last_row: JQuery): number {
     const info = message_viewport_info();
 
     return message_bottom - info.visible_bottom;
-}
+};
 
-export function set_message_position(
+export const set_message_position = (
     message_top: number,
     message_height: number,
     viewport_info: MessageViewportInfo,
     ratio: number,
-): void {
+): void => {
     // message_top = offset of the top of a message that you are positioning
     // message_height = height of the message that you are positioning
     // viewport_info = result of calling message_viewport.message_viewport_info
@@ -162,14 +157,14 @@ export function set_message_position(
 
     message_scroll_state.set_update_selection_on_next_scroll(false);
     scrollTop(new_scroll_top);
-}
+};
 
-function in_viewport_or_tall(
+const in_viewport_or_tall = (
     rect: DOMRect,
     top_of_feed: number,
     bottom_of_feed: number,
     require_fully_visible: boolean,
-): boolean {
+): boolean => {
     if (require_fully_visible) {
         return (
             rect.top > top_of_feed && // Message top is in view and
@@ -178,16 +173,16 @@ function in_viewport_or_tall(
         ); // message is tall.
     }
     return rect.bottom > top_of_feed && rect.top < bottom_of_feed;
-}
+};
 
-function add_to_visible<T>(
+const add_to_visible = <T>(
     $candidates: JQuery,
     visible: T[],
     top_of_feed: number,
     bottom_of_feed: number,
     require_fully_visible: boolean,
     row_to_output: ($row: HTMLElement) => T,
-): void {
+): void => {
     for (const row of $candidates) {
         const row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
@@ -197,10 +192,10 @@ function add_to_visible<T>(
             break;
         }
     }
-}
+};
 
 const top_of_feed = new util.CachedValue({
-    compute_value() {
+    compute_value: () => {
         const $header = $("#navbar-fixed-container");
         let visible_top = $header.outerHeight() ?? 0;
 
@@ -213,18 +208,16 @@ const top_of_feed = new util.CachedValue({
 });
 
 const bottom_of_feed = new util.CachedValue({
-    compute_value() {
-        return $("#compose")[0]!.getBoundingClientRect().top;
-    },
+    compute_value: () => $("#compose")[0]!.getBoundingClientRect().top,
 });
 
-function _visible_divs<T>(
+const _visible_divs = <T>(
     $selected_row: JQuery,
     row_min_height: number,
     row_to_output: ($row: HTMLElement) => T,
     div_class: string,
     require_fully_visible: boolean,
-): T[] {
+): T[] => {
     // Note that when using getBoundingClientRect() we are getting offsets
     // relative to the visible window, but when using jQuery's offset() we are
     // getting offsets relative to the full scrollable window. You can't try to
@@ -267,9 +260,9 @@ function _visible_divs<T>(
     );
 
     return visible;
-}
+};
 
-export function visible_groups(require_fully_visible: boolean): HTMLElement[] {
+export const visible_groups = (require_fully_visible: boolean): HTMLElement[] => {
     assert(message_lists.current !== undefined);
     const $selected_row = message_lists.current.selected_row();
     if ($selected_row === undefined || $selected_row.length === 0) {
@@ -278,9 +271,7 @@ export function visible_groups(require_fully_visible: boolean): HTMLElement[] {
 
     const $selected_group = rows.get_message_recipient_row($selected_row);
 
-    function get_row(row: HTMLElement): HTMLElement {
-        return row;
-    }
+    const get_row = (row: HTMLElement): HTMLElement => row;
 
     // Being simplistic about this, the smallest group is about 75 px high.
     return _visible_divs<HTMLElement>(
@@ -290,16 +281,16 @@ export function visible_groups(require_fully_visible: boolean): HTMLElement[] {
         "recipient_row",
         require_fully_visible,
     );
-}
+};
 
-export function visible_messages(require_fully_visible: boolean): Message[] {
+export const visible_messages = (require_fully_visible: boolean): Message[] => {
     assert(message_lists.current !== undefined);
     const $selected_row = message_lists.current.selected_row();
 
-    function row_to_id(row: HTMLElement): Message {
+    const row_to_id = (row: HTMLElement): Message => {
         assert(message_lists.current !== undefined);
         return message_lists.current.get(rows.id($(row)))!;
-    }
+    };
 
     // Being simplistic about this, the smallest message is 25 px high.
     return _visible_divs<Message>(
@@ -309,7 +300,7 @@ export function visible_messages(require_fully_visible: boolean): Message[] {
         "message_row",
         require_fully_visible,
     );
-}
+};
 
 export function scrollTop(): number;
 export function scrollTop(target_scrollTop: number): JQuery;
@@ -353,28 +344,28 @@ export function scrollTop(target_scrollTop?: number): JQuery | number {
     return $ret;
 }
 
-export function stop_auto_scrolling(): void {
+export const stop_auto_scrolling = (): void => {
     if (in_stoppable_autoscroll) {
         $scroll_container.stop();
     }
-}
+};
 
-export function system_initiated_animate_scroll(
+export const system_initiated_animate_scroll = (
     scroll_amount: number,
     update_selection_on_scroll = false,
-): void {
+): void => {
     message_scroll_state.set_update_selection_on_next_scroll(update_selection_on_scroll);
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
     $scroll_container.animate({
         scrollTop: viewport_offset + scroll_amount,
-        always() {
+        always: () => {
             in_stoppable_autoscroll = false;
         },
     });
-}
+};
 
-export function user_initiated_animate_scroll(scroll_amount: number): void {
+export const user_initiated_animate_scroll = (scroll_amount: number): void => {
     message_scroll_state.set_update_selection_on_next_scroll(false);
     in_stoppable_autoscroll = false; // defensive
 
@@ -383,12 +374,12 @@ export function user_initiated_animate_scroll(scroll_amount: number): void {
     $scroll_container.animate({
         scrollTop: viewport_offset + scroll_amount,
     });
-}
+};
 
-export function recenter_view(
+export const recenter_view = (
     $message: JQuery,
     {from_scroll = false, force_center = false} = {},
-): void {
+): void => {
     // BarnOwl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
@@ -424,9 +415,9 @@ export function recenter_view(
     } else if (is_below) {
         set_message_position(message_top, message_height, viewport_info, 1 / 7);
     }
-}
+};
 
-export function maybe_scroll_to_show_message_top(): void {
+export const maybe_scroll_to_show_message_top = (): void => {
     assert(message_lists.current !== undefined);
     // Sets the top of the message to the top of the viewport.
     // Only applies if the top of the message is out of view above the visible area.
@@ -437,15 +428,15 @@ export function maybe_scroll_to_show_message_top(): void {
     if (message_top < viewport_info.visible_top) {
         set_message_position(message_top, message_height, viewport_info, 0);
     }
-}
+};
 
-export function is_message_below_viewport($message_row: JQuery): boolean {
+export const is_message_below_viewport = ($message_row: JQuery): boolean => {
     const info = message_viewport_info();
     const offset = $message_row.get_offset_to_window();
     return offset.top >= info.visible_bottom;
-}
+};
 
-export function keep_pointer_in_view(): void {
+export const keep_pointer_in_view = (): void => {
     assert(message_lists.current !== undefined);
     // See message_viewport.recenter_view() for related logic to keep the pointer onscreen.
     // This function mostly comes into place for mouse scrollers, and it
@@ -464,7 +455,7 @@ export function keep_pointer_in_view(): void {
     const top_threshold = info.visible_top + (1 / 10) * info.visible_height;
     const bottom_threshold = info.visible_top + (9 / 10) * info.visible_height;
 
-    function message_is_far_enough_down(): boolean {
+    const message_is_far_enough_down = (): boolean => {
         if (at_rendered_top()) {
             return true;
         }
@@ -487,16 +478,15 @@ export function keep_pointer_in_view(): void {
 
         // If we got this far, the message is not "in view."
         return false;
-    }
+    };
 
-    function message_is_far_enough_up(): boolean {
-        return at_rendered_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
-    }
+    const message_is_far_enough_up = (): boolean =>
+        at_rendered_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
 
-    function adjust(
+    const adjust = (
         in_view: () => boolean,
         get_next_row: ($message_row: JQuery) => JQuery,
-    ): boolean {
+    ): boolean => {
         // return true only if we make an actual adjustment, so
         // that we know to short circuit the other direction
         if (in_view()) {
@@ -510,39 +500,39 @@ export function keep_pointer_in_view(): void {
             $next_row = $candidate;
         }
         return true;
-    }
+    };
 
     if (!adjust(message_is_far_enough_down, rows.next_visible)) {
         adjust(message_is_far_enough_up, rows.prev_visible);
     }
 
     message_lists.current.select_id(rows.id($next_row), {from_scroll: true});
-}
+};
 
-export function scroll_to_selected(): void {
+export const scroll_to_selected = (): void => {
     assert(message_lists.current !== undefined);
     const $selected_row = message_lists.current.selected_row();
     if ($selected_row && $selected_row.length !== 0) {
         recenter_view($selected_row);
     }
-}
+};
 
 export let scroll_to_selected_planned = false;
 
-export function plan_scroll_to_selected(): void {
+export const plan_scroll_to_selected = (): void => {
     scroll_to_selected_planned = true;
-}
+};
 
-export function maybe_scroll_to_selected(): void {
+export const maybe_scroll_to_selected = (): void => {
     // If we have made a plan to scroll to the selected message but
     // deferred doing so, do so here.
     if (scroll_to_selected_planned) {
         scroll_to_selected();
         scroll_to_selected_planned = false;
     }
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     // This handler must be placed before all resize handlers in our application
     $(window).on("resize", () => {
         cached_width.reset();
@@ -562,4 +552,4 @@ export function initialize(): void {
     $(document).on("message_selected.zulip wheel", () => {
         stop_auto_scrolling();
     });
-}
+};

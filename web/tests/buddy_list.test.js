@@ -23,7 +23,7 @@ const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");
 const people = zrequire("people");
 
-function init_simulated_scrolling() {
+const init_simulated_scrolling = () => {
     const elem = {
         dataset: {},
         scrollTop: 0,
@@ -35,7 +35,7 @@ function init_simulated_scrolling() {
     $("#buddy_list_wrapper_padding").set_height(0);
 
     return elem;
-}
+};
 
 const alice = {
     email: "alice@zulip.com",

@@ -12,7 +12,7 @@ import * as stream_settings_api from "./stream_settings_api";
 
 extend([lchPlugin, mixPlugin]);
 
-export function update_stream_recipient_color($stream_header: JQuery): void {
+export const update_stream_recipient_color = ($stream_header: JQuery): void => {
     if ($stream_header.length) {
         const stream_id = Number.parseInt($stream_header.attr("data-stream-id")!, 10);
         if (!stream_id) {
@@ -24,9 +24,9 @@ export function update_stream_recipient_color($stream_header: JQuery): void {
             .find(".message-header-contents")
             .css("background-color", recipient_bar_color);
     }
-}
+};
 
-export function get_corrected_color(hex_color: string): Colord {
+export const get_corrected_color = (hex_color: string): Colord => {
     // LCH stands for Lightness, Chroma, and Hue.
     // This function restricts Lightness of a color to be between 20 to 75.
     const color = colord(hex_color).toLch();
@@ -38,24 +38,24 @@ export function get_corrected_color(hex_color: string): Colord {
         color.l = max_color_l;
     }
     return colord(color);
-}
+};
 
-export function get_stream_privacy_icon_color(hex_color: string): string {
+export const get_stream_privacy_icon_color = (hex_color: string): string => {
     const corrected_color = get_corrected_color(hex_color);
     if (settings_data.using_dark_theme()) {
         return corrected_color.toHex();
     }
     return corrected_color.darken(0.12).toHex();
-}
+};
 
-export function get_recipient_bar_color(color: string): string {
+export const get_recipient_bar_color = (color: string): string => {
     // Mixes 50% of color to 40% of white (light theme) / black (dark theme).
     const using_dark_theme = settings_data.using_dark_theme();
     color = get_corrected_color(color).toHex();
     return colord(using_dark_theme ? "#000000" : "#f9f9f9")
         .mix(color, using_dark_theme ? 0.38 : 0.22)
         .toHex();
-}
+};
 
 const stream_color_palette = [
     ["a47462", "c2726a", "e4523d", "e7664d", "ee7e4a", "f4ae55"],
@@ -72,12 +72,12 @@ const subscriptions_table_colorpicker_options = {
     change: picker_do_change_color,
 };
 
-export function set_colorpicker_color($colorpicker: JQuery, color: string): void {
+export const set_colorpicker_color = ($colorpicker: JQuery, color: string): void => {
     $colorpicker.spectrum({
         ...subscriptions_table_colorpicker_options,
         color,
     });
-}
+};
 
 export const sidebar_popover_colorpicker_options_full = {
     clickoutFiresChange: false,

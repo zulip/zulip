@@ -21,18 +21,16 @@ let user_group_popover_instance: tippy.Instance | undefined;
 
 type PopoverGroupMember = User & {user_circle_class: string; user_last_seen_time_status: string};
 
-export function hide(): void {
+export const hide = (): void => {
     if (user_group_popover_instance !== undefined) {
         user_group_popover_instance.destroy();
         user_group_popover_instance = undefined;
     }
-}
+};
 
-export function is_open(): boolean {
-    return Boolean(user_group_popover_instance);
-}
+export const is_open = (): boolean => Boolean(user_group_popover_instance);
 
-function get_user_group_popover_items(): JQuery | undefined {
+const get_user_group_popover_items = (): JQuery | undefined => {
     if (user_group_popover_instance === undefined) {
         blueslip.error("Trying to get menu items when user group popover is closed.");
         return undefined;
@@ -45,21 +43,21 @@ function get_user_group_popover_items(): JQuery | undefined {
     }
 
     return $("li:not(.divider):visible a", $popover);
-}
+};
 
-export function handle_keyboard(key: string): void {
+export const handle_keyboard = (key: string): void => {
     const $items = get_user_group_popover_items();
     popover_menus.popover_items_handle_keyboard(key, $items);
-}
+};
 
 // element is the target element to pop off of;
 // the element could be user group pill or mentions in a message;
 // in case of message, message_id is the message id containing it;
 // in case of user group pill, message_id is not used;
-export function toggle_user_group_info_popover(
+export const toggle_user_group_info_popover = (
     element: tippy.ReferenceElement,
     message_id: number | undefined,
-): void {
+): void => {
     if (is_open()) {
         hide();
         return;
@@ -86,7 +84,7 @@ export function toggle_user_group_info_popover(
                     },
                 ],
             },
-            onCreate(instance) {
+            onCreate: (instance) => {
                 if (message_id) {
                     assert(message_lists.current !== undefined);
                     message_lists.current.select_id(message_id);
@@ -103,7 +101,7 @@ export function toggle_user_group_info_popover(
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
             },
-            onHidden() {
+            onHidden: () => {
                 hide();
             },
         },
@@ -111,7 +109,7 @@ export function toggle_user_group_info_popover(
             show_as_overlay_on_mobile: true,
         },
     );
-}
+};
 
 export function register_click_handlers(): void {
     $("#main_div").on("click", ".user-group-mention", function (this: HTMLElement, e) {
@@ -144,35 +142,29 @@ export function register_click_handlers(): void {
     );
 }
 
-function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
-    return (
-        member_ids
-            .map((m: number) => people.get_user_by_id_assert_valid(m))
-            // We need to include inaccessible users here separately, since
-            // we do not include them in active_user_dict, but we want to
-            // show them in the popover as "Unknown user".
-            .filter(
-                (m: User) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user,
-            )
-            .map((p: User) => ({
-                ...p,
-                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-            }))
-    );
-}
+const fetch_group_members = (member_ids: number[]): PopoverGroupMember[] =>
+    member_ids
+        .map((m: number) => people.get_user_by_id_assert_valid(m))
+        // We need to include inaccessible users here separately, since
+        // we do not include them in active_user_dict, but we want to
+        // show them in the popover as "Unknown user".
+        .filter((m: User) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user)
+        .map((p: User) => ({
+            ...p,
+            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+        }));
 
-function sort_group_members(members: PopoverGroupMember[]): PopoverGroupMember[] {
-    return members.sort((a: PopoverGroupMember, b: PopoverGroupMember) =>
+const sort_group_members = (members: PopoverGroupMember[]): PopoverGroupMember[] =>
+    members.sort((a: PopoverGroupMember, b: PopoverGroupMember) =>
         util.strcmp(a.full_name, b.full_name),
     );
-}
 
 // exporting these functions for testing purposes
 export const _test_fetch_group_members = fetch_group_members;
 
 export const _test_sort_group_members = sort_group_members;
 
-export function initialize(): void {
+export const initialize = (): void => {
     register_click_handlers();
-}
+};

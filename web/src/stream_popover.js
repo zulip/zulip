@@ -34,7 +34,7 @@ let stream_popover_instance = null;
 let stream_widget_value;
 let move_topic_to_stream_topic_typeahead;
 
-function get_popover_menu_items(sidebar_elem) {
+const get_popover_menu_items = (sidebar_elem) => {
     if (!sidebar_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
@@ -47,14 +47,14 @@ function get_popover_menu_items(sidebar_elem) {
     }
 
     return $("li:not(.divider):visible > a", $popover);
-}
+};
 
-export function stream_sidebar_menu_handle_keyboard(key) {
+export const stream_sidebar_menu_handle_keyboard = (key) => {
     const items = get_popover_menu_items(stream_popover_instance);
     popover_menus.popover_items_handle_keyboard(key, items);
-}
+};
 
-export function elem_to_stream_id($elem) {
+export const elem_to_stream_id = ($elem) => {
     const stream_id = Number.parseInt($elem.attr("data-stream-id"), 10);
 
     if (stream_id === undefined) {
@@ -62,21 +62,19 @@ export function elem_to_stream_id($elem) {
     }
 
     return stream_id;
-}
+};
 
-export function is_open() {
-    return Boolean(stream_popover_instance);
-}
+export const is_open = () => Boolean(stream_popover_instance);
 
-export function hide_stream_popover() {
+export const hide_stream_popover = () => {
     if (is_open()) {
         ui_util.hide_left_sidebar_menu_icon();
         stream_popover_instance.destroy();
         stream_popover_instance = null;
     }
-}
+};
 
-function stream_popover_sub(e) {
+const stream_popover_sub = (e) => {
     const $elem = $(e.currentTarget).parents("ul");
     const stream_id = elem_to_stream_id($elem);
     const sub = sub_store.get(stream_id);
@@ -85,9 +83,9 @@ function stream_popover_sub(e) {
         return undefined;
     }
     return sub;
-}
+};
 
-function build_stream_popover(opts) {
+const build_stream_popover = (opts) => {
     const {elt, stream_id} = opts;
 
     // This will allow the user to close the popover by clicking
@@ -107,13 +105,13 @@ function build_stream_popover(opts) {
         delay: [100, 0],
         theme: "popover-menu",
         ...left_sidebar_tippy_options,
-        onCreate(instance) {
+        onCreate: (instance) => {
             stream_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("stream-popover-root");
             instance.setContent(ui_util.parse_html(content));
         },
-        onMount(instance) {
+        onMount: (instance) => {
             const $popper = $(instance.popper);
             ui_util.show_left_sidebar_menu_icon(elt);
 
@@ -194,18 +192,18 @@ function build_stream_popover(opts) {
                 e.stopPropagation();
             });
         },
-        onHidden() {
+        onHidden: () => {
             hide_stream_popover();
         },
     });
-}
+};
 
-async function get_message_placement_from_server(
+const get_message_placement_from_server = async (
     current_stream_id,
     topic_name,
     current_message_id,
-) {
-    return new Promise((resolve) => {
+) =>
+    new Promise((resolve) => {
         message_edit.is_message_oldest_or_newest(
             current_stream_id,
             topic_name,
@@ -221,13 +219,12 @@ async function get_message_placement_from_server(
             },
         );
     });
-}
 
-async function get_message_placement_in_conversation(
+const get_message_placement_in_conversation = async (
     current_stream_id,
     topic_name,
     current_message_id,
-) {
+) => {
     assert(message_lists.current !== undefined);
     // First we check if the placement of the message can be determined
     // in the current message list. This allows us to avoid a server call
@@ -311,14 +308,14 @@ async function get_message_placement_in_conversation(
         topic_name,
         current_message_id,
     );
-}
+};
 
-export async function build_move_topic_to_stream_popover(
+export const build_move_topic_to_stream_popover = async (
     current_stream_id,
     topic_name,
     only_topic_edit,
     message,
-) {
+) => {
     const current_stream_name = sub_store.maybe_get_stream_name(current_stream_id);
     const args = {
         topic_name,
@@ -373,15 +370,14 @@ export async function build_move_topic_to_stream_popover(
         );
     }
 
-    function get_params_from_form() {
-        return Object.fromEntries(
+    const get_params_from_form = () =>
+        Object.fromEntries(
             $("#move_topic_form")
                 .serializeArray()
                 .map(({name, value}) => [name, value]),
         );
-    }
 
-    function update_submit_button_disabled_state(select_stream_id) {
+    const update_submit_button_disabled_state = (select_stream_id) => {
         const {current_stream_id, new_topic_name, old_topic_name} = get_params_from_form();
 
         // Unlike most topic comparisons in Zulip, we intentionally do
@@ -394,9 +390,9 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_modal .dialog_submit_button")[0].disabled =
             Number.parseInt(current_stream_id, 10) === Number.parseInt(select_stream_id, 10) &&
             (new_topic_name === undefined || new_topic_name.trim() === old_topic_name.trim());
-    }
+    };
 
-    function move_topic() {
+    const move_topic = () => {
         const params = get_params_from_form();
 
         const old_topic_name = params.old_topic_name.trim();
@@ -484,9 +480,9 @@ export async function build_move_topic_to_stream_popover(
                 );
             },
         );
-    }
+    };
 
-    function set_stream_topic_typeahead() {
+    const set_stream_topic_typeahead = () => {
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
         const new_stream_id = Number(stream_widget_value, 10);
         const new_stream_name = sub_store.get(new_stream_id).name;
@@ -496,9 +492,9 @@ export async function build_move_topic_to_stream_popover(
             new_stream_name,
             false,
         );
-    }
+    };
 
-    function render_selected_stream() {
+    const render_selected_stream = () => {
         const stream_id = Number.parseInt(stream_widget_value, 10);
         const stream = stream_data.get_sub_by_id(stream_id);
         if (stream === undefined) {
@@ -510,9 +506,9 @@ export async function build_move_topic_to_stream_popover(
                 render_inline_decorated_stream_name({stream, show_colored_icon: true}),
             );
         }
-    }
+    };
 
-    function move_topic_on_update(event, dropdown) {
+    const move_topic_on_update = (event, dropdown) => {
         stream_widget_value = $(event.currentTarget).attr("data-unique-id");
 
         update_submit_button_disabled_state(stream_widget_value);
@@ -522,9 +518,9 @@ export async function build_move_topic_to_stream_popover(
         dropdown.hide();
         event.preventDefault();
         event.stopPropagation();
-    }
+    };
 
-    function move_topic_post_render() {
+    const move_topic_post_render = () => {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
 
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
@@ -570,13 +566,13 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(stream_widget_value);
         });
-    }
+    };
 
-    function focus_on_move_modal_render() {
+    const focus_on_move_modal_render = () => {
         if (!args.disable_topic_input) {
             ui_util.place_caret_at_end($(".move_messages_edit_topic")[0]);
         }
-    }
+    };
 
     dialog_widget.launch({
         html_heading: modal_heading,
@@ -586,14 +582,14 @@ export async function build_move_topic_to_stream_popover(
         on_click: move_topic,
         loading_spinner: true,
         on_shown: focus_on_move_modal_render,
-        on_hidden() {
+        on_hidden: () => {
             move_topic_to_stream_topic_typeahead = undefined;
         },
         post_render: move_topic_post_render,
     });
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
         const elt = e.currentTarget;
         const $stream_li = $(elt).parents("li");
@@ -618,4 +614,4 @@ export function initialize() {
 
         e.stopPropagation();
     });
-}
+};

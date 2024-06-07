@@ -46,10 +46,10 @@ import * as user_status_ui from "./user_status_ui";
 
 let current_user_sidebar_user_id;
 
-export function confirm_mute_user(user_id) {
-    function on_click() {
+export const confirm_mute_user = (user_id) => {
+    const on_click = () => {
         muted_users.mute_user(user_id);
-    }
+    };
 
     const html_body = render_confirm_mute_user({
         user_name: people.get_full_name(user_id),
@@ -61,7 +61,7 @@ export function confirm_mute_user(user_id) {
         html_body,
         on_click,
     });
-}
+};
 
 class PopoverMenu {
     constructor() {
@@ -102,7 +102,7 @@ export const user_sidebar = new PopoverMenu();
 export const message_user_card = new PopoverMenu();
 export const user_card = new PopoverMenu();
 
-function popover_items_handle_keyboard_with_overrides(key, $items) {
+const popover_items_handle_keyboard_with_overrides = (key, $items) => {
     /* Variant of popover_items_handle_keyboard with somewhat hacky
      * logic for opening the manage menu. */
     if (!$items) {
@@ -124,7 +124,7 @@ function popover_items_handle_keyboard_with_overrides(key, $items) {
 
             const previously_defined_on_mount = manage_menu.instance.props.onMount;
             manage_menu.instance.setProps({
-                onMount() {
+                onMount: () => {
                     // We're monkey patching the onMount method here to ensure we start
                     // focusing on the item after the popover is mounted to the DOM;
                     // otherwise, it won't work correctly.
@@ -155,9 +155,9 @@ function popover_items_handle_keyboard_with_overrides(key, $items) {
 
     /* Otherwise, use the base implementation */
     popover_menus.popover_items_handle_keyboard(key, $items);
-}
+};
 
-function get_popover_classname(popover) {
+const get_popover_classname = (popover) => {
     const popovers = {
         user_sidebar: "user-sidebar-popover-root",
         message_user_card: "message-user-card-popover-root",
@@ -165,7 +165,7 @@ function get_popover_classname(popover) {
     };
 
     return popovers[popover];
-}
+};
 
 user_sidebar.hide = function () {
     PopoverMenu.prototype.hide.call(this);
@@ -179,41 +179,34 @@ const user_card_popovers = {
     user_card,
 };
 
-export function any_active() {
-    return Object.values(user_card_popovers).some((instance) => instance.is_open());
-}
+export const any_active = () =>
+    Object.values(user_card_popovers).some((instance) => instance.is_open());
 
-export function hide_all_instances() {
+export const hide_all_instances = () => {
     for (const key in user_card_popovers) {
         if (user_card_popovers[key].hide) {
             user_card_popovers[key].hide();
         }
     }
-}
+};
 
-export function hide_all_user_card_popovers() {
+export const hide_all_user_card_popovers = () => {
     hide_all_instances();
-}
+};
 
-export function clear_for_testing() {
+export const clear_for_testing = () => {
     message_user_card.instance = undefined;
     user_card.instance = undefined;
     manage_menu.instance = undefined;
-}
+};
 
-function elem_to_user_id($elem) {
-    return Number.parseInt($elem.attr("data-user-id"), 10);
-}
+const elem_to_user_id = ($elem) => Number.parseInt($elem.attr("data-user-id"), 10);
 
-function clipboard_enable(arg) {
-    // arg is a selector or element
-    // We extract this function for testing purpose.
-    return new ClipboardJS(arg);
-}
+const clipboard_enable = (arg) => new ClipboardJS(arg);
 
 // Functions related to user card popover.
 
-export function toggle_user_card_popover(element, user) {
+export const toggle_user_card_popover = (element, user) => {
     show_user_card_popover(
         user,
         $(element),
@@ -223,14 +216,14 @@ export function toggle_user_card_popover(element, user) {
         "user_card",
         "right",
     );
-}
+};
 
-function get_user_card_popover_data(
+const get_user_card_popover_data = (
     user,
     has_message_context,
     is_sender_popover,
     private_msg_class,
-) {
+) => {
     const is_me = people.is_my_user_id(user.user_id);
 
     let invisible_mode = false;
@@ -307,9 +300,9 @@ function get_user_card_popover_data(
     }
 
     return args;
-}
+};
 
-function show_user_card_popover(
+const show_user_card_popover = (
     user,
     $popover_element,
     is_sender_popover,
@@ -318,7 +311,7 @@ function show_user_card_popover(
     template_class,
     popover_placement,
     on_mount,
-) {
+) => {
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
@@ -343,7 +336,7 @@ function show_user_card_popover(
         {
             placement: popover_placement,
             arrow: false,
-            onCreate(instance) {
+            onCreate: (instance) => {
                 instance.setContent(ui_util.parse_html(popover_html));
                 user_card_popovers[template_class].instance = instance;
 
@@ -361,10 +354,10 @@ function show_user_card_popover(
                     ),
                 );
             },
-            onHidden() {
+            onHidden: () => {
                 user_card_popovers[template_class].hide();
             },
-            onMount(instance) {
+            onMount: (instance) => {
                 if (on_mount) {
                     on_mount(instance);
                 }
@@ -400,9 +393,9 @@ function show_user_card_popover(
             show_as_overlay_on_mobile: true,
         },
     );
-}
+};
 
-function copy_email_handler(e) {
+const copy_email_handler = (e) => {
     const $email_el = $(e.trigger.parentElement);
     const $copy_icon = $email_el.find("i");
 
@@ -418,7 +411,7 @@ function copy_email_handler(e) {
         email_textnode.nodeValue = $copy_icon.attr("data-clipboard-text");
     }, 1500);
     e.clearSelection();
-}
+};
 
 function init_email_clipboard() {
     /*
@@ -476,7 +469,7 @@ function load_medium_avatar(user, $elt) {
 
 // Functions related to manage menu popover.
 
-function toggle_user_card_popover_manage_menu(element, user) {
+const toggle_user_card_popover_manage_menu = (element, user) => {
     const is_me = people.is_my_user_id(user.user_id);
     const is_muted = muted_users.is_user_muted(user.user_id);
     const is_system_bot = user.is_system_bot;
@@ -493,19 +486,19 @@ function toggle_user_card_popover_manage_menu(element, user) {
 
     popover_menus.toggle_popover_menu(element, {
         placement: "bottom",
-        onCreate(instance) {
+        onCreate: (instance) => {
             manage_menu.instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("manage-menu-popover-root");
             instance.setContent(ui_util.parse_html(render_user_card_popover_manage_menu(args)));
         },
-        onHidden() {
+        onHidden: () => {
             manage_menu.hide();
         },
     });
-}
+};
 
-export function get_user_card_popover_manage_menu_items() {
+export const get_user_card_popover_manage_menu_items = () => {
     if (!manage_menu.is_open()) {
         blueslip.error("Trying to get menu items when manage menu popover is closed.");
         return undefined;
@@ -518,14 +511,14 @@ export function get_user_card_popover_manage_menu_items() {
     }
 
     return $(".user-card-popover-manage-menu li:not(.divider):visible a", $popover);
-}
+};
 
 // Functions related to message user card popover.
 
 // element is the target element to pop off of
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
-function toggle_user_card_popover_for_message(element, user, message, on_mount) {
+const toggle_user_card_popover_for_message = (element, user, message, on_mount) => {
     const $elt = $(element);
     if (!message_user_card.is_open()) {
         if (user === undefined) {
@@ -551,11 +544,11 @@ function toggle_user_card_popover_for_message(element, user, message, on_mount) 
             on_mount,
         );
     }
-}
+};
 
 // This function serves as the entry point for toggling
 // the user card popover via keyboard shortcut.
-export function toggle_sender_info() {
+export const toggle_sender_info = () => {
     if (message_user_card.is_open()) {
         // We need to call the hide method here because
         // the event wasn't triggered by the mouse.
@@ -580,9 +573,9 @@ export function toggle_sender_info() {
             focus_user_card_popover_item();
         }
     });
-}
+};
 
-function focus_user_card_popover_item() {
+const focus_user_card_popover_item = () => {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_user_card_popover_for_message_items();
@@ -592,9 +585,9 @@ function focus_user_card_popover_item() {
     } else {
         popover_menus.focus_first_popover_item($items);
     }
-}
+};
 
-function get_user_card_popover_for_message_items() {
+const get_user_card_popover_for_message_items = () => {
     if (!message_user_card.is_open()) {
         blueslip.error("Trying to get menu items when message user card popover is closed.");
         return undefined;
@@ -607,11 +600,11 @@ function get_user_card_popover_for_message_items() {
     }
 
     return $("li:not(.divider):visible a", $popover);
-}
+};
 
 // Functions related to the user card popover in the user sidebar.
 
-function toggle_sidebar_user_card_popover($target) {
+const toggle_sidebar_user_card_popover = ($target) => {
     const user_id = elem_to_user_id($target.find("a"));
     const user = people.get_by_user_id(user_id);
 
@@ -642,7 +635,7 @@ function toggle_sidebar_user_card_popover($target) {
     );
 
     current_user_sidebar_user_id = user.user_id;
-}
+};
 
 function register_click_handlers() {
     $("#main_div").on("click", ".sender_name, .inline_profile_picture", function (e) {
@@ -733,7 +726,7 @@ function register_click_handlers() {
             status_text: "",
             emoji_name: "",
             emoji_code: "",
-            success() {
+            success: () => {
                 $(".user-card-popover-actions #status_message").empty();
             },
         });
@@ -744,19 +737,19 @@ function register_click_handlers() {
         hide_all();
         e.stopPropagation();
         e.preventDefault();
-        function handle_confirm() {
+        const handle_confirm = () => {
             const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
             channel.post({
                 url,
-                success() {
+                success: () => {
                     dialog_widget.close();
                 },
-                error(xhr) {
+                error: (xhr) => {
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
                     dialog_widget.hide_dialog_spinner();
                 },
             });
-        }
+        };
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
@@ -827,14 +820,14 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    function open_user_status_modal(e) {
+    const open_user_status_modal = (e) => {
         hide_all();
 
         user_status_ui.open_user_status_modal();
 
         e.stopPropagation();
         e.preventDefault();
-    }
+    };
 
     $("body").on("click", ".update_status_text", open_user_status_modal);
 
@@ -905,18 +898,17 @@ function register_click_handlers() {
         toggle_user_card_popover_manage_menu(e.target, user);
     });
     new ClipboardJS(".copy-custom-field-url", {
-        text(trigger) {
-            return $(trigger)
+        text: (trigger) =>
+            $(trigger)
                 .closest(".custom-user-url-field")
                 .find(".custom-profile-fields-link")
-                .attr("href");
-        },
+                .attr("href"),
     }).on("success", (e) => {
         show_copied_confirmation(e.trigger);
     });
 }
 
-export function initialize() {
+export const initialize = () => {
     register_click_handlers();
     clipboard_enable(".copy_mention_syntax");
-}
+};

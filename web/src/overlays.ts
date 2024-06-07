@@ -22,62 +22,45 @@ let open_overlay_name: string | undefined;
 const pre_open_hooks: Hook[] = [];
 const pre_close_hooks: Hook[] = [];
 
-function reset_state(): void {
+const reset_state = (): void => {
     active_overlay = undefined;
     open_overlay_name = undefined;
-}
+};
 
-export function register_pre_open_hook(func: Hook): void {
+export const register_pre_open_hook = (func: Hook): void => {
     pre_open_hooks.push(func);
-}
+};
 
-export function register_pre_close_hook(func: Hook): void {
+export const register_pre_close_hook = (func: Hook): void => {
     pre_close_hooks.push(func);
-}
+};
 
-function call_hooks(func_list: Hook[]): void {
+const call_hooks = (func_list: Hook[]): void => {
     for (const element of func_list) {
         element();
     }
-}
+};
 
-export function any_active(): boolean {
-    return Boolean(open_overlay_name);
-}
+export const any_active = (): boolean => Boolean(open_overlay_name);
 
-export function info_overlay_open(): boolean {
-    return open_overlay_name === "informationalOverlays";
-}
+export const info_overlay_open = (): boolean => open_overlay_name === "informationalOverlays";
 
-export function settings_open(): boolean {
-    return open_overlay_name === "settings";
-}
+export const settings_open = (): boolean => open_overlay_name === "settings";
 
-export function streams_open(): boolean {
-    return open_overlay_name === "subscriptions";
-}
+export const streams_open = (): boolean => open_overlay_name === "subscriptions";
 
-export function groups_open(): boolean {
-    return open_overlay_name === "group_subscriptions";
-}
+export const groups_open = (): boolean => open_overlay_name === "group_subscriptions";
 
-export function lightbox_open(): boolean {
-    return open_overlay_name === "lightbox";
-}
+export const lightbox_open = (): boolean => open_overlay_name === "lightbox";
 
-export function drafts_open(): boolean {
-    return open_overlay_name === "drafts";
-}
+export const drafts_open = (): boolean => open_overlay_name === "drafts";
 
-export function scheduled_messages_open(): boolean {
-    return open_overlay_name === "scheduled";
-}
+export const scheduled_messages_open = (): boolean => open_overlay_name === "scheduled";
 
-export function message_edit_history_open(): boolean {
-    return open_overlay_name === "message_edit_history";
-}
+export const message_edit_history_open = (): boolean =>
+    open_overlay_name === "message_edit_history";
 
-export function open_overlay(opts: OverlayOptions): void {
+export const open_overlay = (opts: OverlayOptions): void => {
     call_hooks(pre_open_hooks);
 
     if (!opts.name || !opts.$overlay || !opts.on_close) {
@@ -106,7 +89,7 @@ export function open_overlay(opts: OverlayOptions): void {
     open_overlay_name = opts.name;
     active_overlay = {
         $element: opts.$overlay,
-        close_handler() {
+        close_handler: () => {
             opts.on_close();
             reset_state();
         },
@@ -119,9 +102,9 @@ export function open_overlay(opts: OverlayOptions): void {
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
     $("#navbar-fixed-container").attr("aria-hidden", "true");
-}
+};
 
-export function close_overlay(name: string): void {
+export const close_overlay = (name: string): void => {
     call_hooks(pre_close_hooks);
 
     if (name !== open_overlay_name) {
@@ -148,24 +131,24 @@ export function close_overlay(name: string): void {
 
     active_overlay.close_handler();
     overlay_util.enable_scrolling();
-}
+};
 
-export function close_active(): void {
+export const close_active = (): void => {
     if (!open_overlay_name) {
         blueslip.warn("close_active() called without checking any_active()");
         return;
     }
 
     close_overlay(open_overlay_name);
-}
+};
 
-export function close_for_hash_change(): void {
+export const close_for_hash_change = (): void => {
     if (open_overlay_name) {
         close_overlay(open_overlay_name);
     }
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     $("body").on("click", "div.overlay, div.overlay .exit", (e) => {
         let $target = $(e.target);
 
@@ -194,4 +177,4 @@ export function initialize(): void {
         e.preventDefault();
         e.stopPropagation();
     });
-}
+};

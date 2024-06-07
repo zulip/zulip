@@ -9,7 +9,7 @@ const email = "alice@test.example.com";
 const organization_name = "Awesome Organization";
 const host = "zulipdev.com:9981";
 
-async function realm_creation_tests(page: Page): Promise<void> {
+const realm_creation_tests = async (page: Page): Promise<void> => {
     await page.goto("http://" + host + "/new/");
 
     // submit the email for realm creation.
@@ -79,6 +79,6 @@ async function realm_creation_tests(page: Page): Promise<void> {
 
     // Updating common.realm_url because we are redirecting to it when logging out.
     common.set_realm_url(page.url());
-}
+};
 
 common.run_test(realm_creation_tests);

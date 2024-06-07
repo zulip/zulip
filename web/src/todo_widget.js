@@ -220,7 +220,7 @@ export class TaskData {
     }
 }
 
-export function activate({$elem, callback, extra_data, message}) {
+export const activate = ({$elem, callback, extra_data, message}) => {
     const parse_result = todo_widget_extra_data_schema.safeParse(extra_data);
     if (!parse_result.success) {
         blueslip.warn("invalid todo extra data", parse_result.error.issues);
@@ -238,12 +238,12 @@ export function activate({$elem, callback, extra_data, message}) {
         report_error_function: blueslip.warn,
     });
 
-    function update_edit_controls() {
+    const update_edit_controls = () => {
         const has_title = $elem.find("input.todo-task-list-title").val().trim() !== "";
         $elem.find("button.todo-task-list-title-check").toggle(has_title);
-    }
+    };
 
-    function render_task_list_title() {
+    const render_task_list_title = () => {
         const task_list_title = task_data.get_task_list_title();
         const input_mode = task_data.get_input_mode();
         const can_edit = is_my_task_list && !input_mode;
@@ -254,23 +254,23 @@ export function activate({$elem, callback, extra_data, message}) {
         update_edit_controls();
 
         $elem.find(".todo-task-list-title-bar").toggle(input_mode);
-    }
+    };
 
-    function start_editing() {
+    const start_editing = () => {
         task_data.set_input_mode();
 
         const task_list_title = task_data.get_task_list_title();
         $elem.find("input.todo-task-list-title").val(task_list_title);
         render_task_list_title();
         $elem.find("input.todo-task-list-title").trigger("focus");
-    }
+    };
 
-    function abort_edit() {
+    const abort_edit = () => {
         task_data.clear_input_mode();
         render_task_list_title();
-    }
+    };
 
-    function submit_task_list_title() {
+    const submit_task_list_title = () => {
         const $task_list_title_input = $elem.find("input.todo-task-list-title");
         let new_task_list_title = $task_list_title_input.val().trim();
         const old_task_list_title = task_data.get_task_list_title();
@@ -293,9 +293,9 @@ export function activate({$elem, callback, extra_data, message}) {
         // Broadcast the new task list title to our peers.
         const data = task_data.handle.new_task_list_title.outbound(new_task_list_title);
         callback(data);
-    }
+    };
 
-    function build_widget() {
+    const build_widget = () => {
         const html = render_widgets_todo_widget();
         $elem.html(html);
 
@@ -355,9 +355,9 @@ export function activate({$elem, callback, extra_data, message}) {
             const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
         });
-    }
+    };
 
-    function render_results() {
+    const render_results = () => {
         const widget_data = task_data.get_widget_data();
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
@@ -381,9 +381,9 @@ export function activate({$elem, callback, extra_data, message}) {
             const data = task_data.handle.strike.outbound(key);
             callback(data);
         });
-    }
+    };
 
-    const handle_events = function (events) {
+    const handle_events = (events) => {
         for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
         }
@@ -397,4 +397,4 @@ export function activate({$elem, callback, extra_data, message}) {
     render_results();
 
     return handle_events;
-}
+};

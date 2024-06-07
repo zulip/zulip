@@ -40,7 +40,7 @@ import * as timerender from "./timerender";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
-function same_day(earlier_msg, later_msg) {
+const same_day = (earlier_msg, later_msg) => {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
@@ -49,23 +49,23 @@ function same_day(earlier_msg, later_msg) {
         later_msg.msg.timestamp * 1000,
         timerender.display_time_zone,
     );
-}
+};
 
-function same_sender(a, b) {
+const same_sender = (a, b) => {
     if (a === undefined || b === undefined) {
         return false;
     }
     return util.same_sender(a.msg, b.msg);
-}
+};
 
-function same_recipient(a, b) {
+const same_recipient = (a, b) => {
     if (a === undefined || b === undefined) {
         return false;
     }
     return util.same_recipient(a.msg, b.msg);
-}
+};
 
-function analyze_edit_history(message, last_edit_timestr) {
+const analyze_edit_history = (message, last_edit_timestr) => {
     // Returns a dict of booleans that describe the message's history:
     //   * edited: if the message has had its content edited
     //   * moved: if the message has had its stream/topic edited
@@ -115,33 +115,33 @@ function analyze_edit_history(message, last_edit_timestr) {
         edited = true;
     }
     return {edited, moved, resolve_toggled};
-}
+};
 
-function render_group_display_date(group, message_container) {
+const render_group_display_date = (group, message_container) => {
     const time = new Date(message_container.msg.timestamp * 1000);
     const date_element = timerender.render_date(time)[0];
 
     group.date = date_element.outerHTML;
-}
+};
 
-function update_group_date(group, message_container, prev) {
+const update_group_date = (group, message_container, prev) => {
     // Mark whether we should display a date marker because this
     // message has a different date than the previous one.
     group.date_unchanged = same_day(message_container, prev);
-}
+};
 
-function clear_group_date(group) {
+const clear_group_date = (group) => {
     group.date_unchanged = false;
-}
+};
 
-function clear_message_date_divider(msg) {
+const clear_message_date_divider = (msg) => {
     // see update_message_date_divider for how
     // these get set
     msg.want_date_divider = false;
     msg.date_divider_html = undefined;
-}
+};
 
-function update_message_date_divider(opts) {
+const update_message_date_divider = (opts) => {
     const prev_msg_container = opts.prev_msg_container;
     const curr_msg_container = opts.curr_msg_container;
 
@@ -154,14 +154,14 @@ function update_message_date_divider(opts) {
 
     curr_msg_container.want_date_divider = true;
     curr_msg_container.date_divider_html = timerender.render_date(curr_time)[0].outerHTML;
-}
+};
 
-function set_timestr(message_container) {
+const set_timestr = (message_container) => {
     const time = new Date(message_container.msg.timestamp * 1000);
     message_container.timestr = timerender.stringify_time(time);
-}
+};
 
-function set_topic_edit_properties(group, message) {
+const set_topic_edit_properties = (group, message) => {
     group.always_visible_topic_edit = false;
     group.on_hover_topic_edit = false;
 
@@ -181,9 +181,9 @@ function set_topic_edit_properties(group, message) {
     } else {
         group.on_hover_topic_edit = true;
     }
-}
+};
 
-function get_users_for_recipient_row(message) {
+const get_users_for_recipient_row = (message) => {
     const user_ids = people.pm_with_user_ids(message);
     const users = user_ids.map((user_id) => {
         let full_name;
@@ -198,12 +198,11 @@ function get_users_for_recipient_row(message) {
         };
     });
 
-    function compare_by_name(a, b) {
-        return a.full_name < b.full_name ? -1 : a.full_name > b.full_name ? 1 : 0;
-    }
+    const compare_by_name = (a, b) =>
+        a.full_name < b.full_name ? -1 : a.full_name > b.full_name ? 1 : 0;
 
     return users.sort(compare_by_name);
-}
+};
 
 let message_id_to_focus_after_processing_message_events = {
     id: undefined,
@@ -211,15 +210,15 @@ let message_id_to_focus_after_processing_message_events = {
     selectionEnd: undefined,
 };
 
-function reset_restore_message_edit_focus_state() {
+const reset_restore_message_edit_focus_state = () => {
     message_id_to_focus_after_processing_message_events = {
         id: undefined,
         selectionStart: undefined,
         selectionEnd: undefined,
     };
-}
+};
 
-function capture_user_message_editing_state() {
+const capture_user_message_editing_state = () => {
     if (document.activeElement?.classList.contains("message_edit_content")) {
         message_id_to_focus_after_processing_message_events = {
             id: rows.get_message_id(document.activeElement),
@@ -229,9 +228,9 @@ function capture_user_message_editing_state() {
     } else {
         reset_restore_message_edit_focus_state();
     }
-}
+};
 
-function maybe_restore_focus_to_message_edit_form() {
+const maybe_restore_focus_to_message_edit_form = () => {
     if (
         // It is possible that selected message might not be the one
         // user was editing but is less likely the case. It makes
@@ -264,9 +263,9 @@ function maybe_restore_focus_to_message_edit_form() {
         );
         reset_restore_message_edit_focus_state();
     }, 0);
-}
+};
 
-function populate_group_from_message_container(group, message_container) {
+const populate_group_from_message_container = (group, message_container) => {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
 
@@ -314,7 +313,7 @@ function populate_group_from_message_container(group, message_container) {
 
     set_topic_edit_properties(group, message_container.msg);
     render_group_display_date(group, message_container);
-}
+};
 
 export class MessageListView {
     // MessageListView is the module responsible for rendering a
@@ -1714,7 +1713,7 @@ export class MessageListView {
            who are about to be scrolled out of view are not acceptable. */
         const partially_hidden_header_position = visible_top - 1;
 
-        function is_sticky(header) {
+        const is_sticky = (header) => {
             // header has a box-shadow of `1px` at top but since it doesn't impact
             // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
@@ -1733,7 +1732,7 @@ export class MessageListView {
                date on any of them. Which header is chosen will depend on which
                comes first when iterating on the headers. */
             return 0;
-        }
+        };
 
         const $headers = this.$list.find(".message_header");
         const iterable_headers = $headers.toArray();

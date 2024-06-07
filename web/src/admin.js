@@ -72,7 +72,7 @@ const admin_settings_label = {
     }),
 };
 
-function insert_tip_box() {
+const insert_tip_box = () => {
     if (current_user.is_admin) {
         return;
     }
@@ -86,9 +86,9 @@ function insert_tip_box() {
         .not("#admin-bot-list")
         .not("#admin-invites-list")
         .prepend($(tip_box_html));
-}
+};
 
-function get_realm_level_notification_settings(options) {
+const get_realm_level_notification_settings = (options) => {
     const all_notifications_settings = settings_config.all_notifications(
         realm_user_settings_defaults,
     );
@@ -102,9 +102,9 @@ function get_realm_level_notification_settings(options) {
     options.notification_settings = all_notifications_settings.settings;
     options.show_push_notifications_tooltip =
         all_notifications_settings.show_push_notifications_tooltip;
-}
+};
 
-export function build_page() {
+export const build_page = () => {
     const options = {
         custom_profile_field_types: realm.custom_profile_field_types,
         full_name: current_user.full_name,
@@ -274,12 +274,12 @@ export function build_page() {
 
         tippy.default($("#realm_can_access_all_users_group_widget_container")[0], opts);
     }
-}
+};
 
-export function launch(section) {
+export const launch = (section) => {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
     settings_panel_menu.org_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("organization");
-}
+};

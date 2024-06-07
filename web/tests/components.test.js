@@ -9,7 +9,7 @@ const blueslip = require("./lib/zblueslip");
 
 let env;
 
-function make_tab(i) {
+const make_tab = (i) => {
     const $self = {};
 
     assert.equal(env.tabs.length, i);
@@ -58,9 +58,9 @@ function make_tab(i) {
     env.tabs.push($self);
 
     return $self;
-}
+};
 
-const ind_tab = (function () {
+const ind_tab = (() => {
     const $self = {};
 
     $self.stub = true;
@@ -84,7 +84,7 @@ const ind_tab = (function () {
     return $self;
 })();
 
-function make_switcher() {
+const make_switcher = () => {
     const $self = {};
 
     $self.stub = true;
@@ -113,7 +113,7 @@ function make_switcher() {
     };
 
     return $self;
-}
+};
 
 mock_jquery((sel) => {
     if (sel.stub) {
@@ -124,14 +124,14 @@ mock_jquery((sel) => {
     switch (sel) {
         case "<div>":
             return {
-                addClass(className) {
+                addClass: (className) => {
                     if (className === "tab-switcher") {
                         return env.switcher;
                     }
 
                     assert.equal(className, "ind-tab");
                     return {
-                        attr(attributes) {
+                        attr: (attributes) => {
                             const tab_id = attributes["data-tab-id"];
                             assert.deepEqual(
                                 attributes,
@@ -190,7 +190,7 @@ run_test("basics", () => {
             {label: $t({defaultMessage: "Search filters"}), key: "search-operators"},
         ],
         html_class: "stream_sorter_toggle",
-        callback(name, key) {
+        callback: (name, key) => {
             assert.equal(callback_args, undefined);
             callback_args = [name, key];
 

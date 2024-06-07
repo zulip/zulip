@@ -29,7 +29,7 @@ let waiting_for_ack = new Map();
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
 // avoid sending duplicate requests.
-function show_retry_spinner($row) {
+const show_retry_spinner = ($row) => {
     const $retry_spinner = $row.find(".refresh-failed-message");
 
     if (!$retry_spinner.hasClass("rotating")) {
@@ -37,9 +37,9 @@ function show_retry_spinner($row) {
         return false;
     }
     return true;
-}
+};
 
-function hide_retry_spinner($row) {
+const hide_retry_spinner = ($row) => {
     const $retry_spinner = $row.find(".refresh-failed-message");
 
     if ($retry_spinner.hasClass("rotating")) {
@@ -47,9 +47,9 @@ function hide_retry_spinner($row) {
         return false;
     }
     return true;
-}
+};
 
-function show_message_failed(message_id, failed_msg) {
+const show_message_failed = (message_id, failed_msg) => {
     // Failed to send message, so display inline retry/cancel
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         $row.find(".slow-send-spinner").addClass("hidden");
@@ -57,21 +57,21 @@ function show_message_failed(message_id, failed_msg) {
         $failed_div.toggleClass("hide", false);
         $failed_div.find(".failed_text").attr("title", failed_msg);
     });
-}
+};
 
-function show_failed_message_success(message_id) {
+const show_failed_message_success = (message_id) => {
     // Previously failed message succeeded
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         $row.find(".message_failed").toggleClass("hide", true);
     });
-}
+};
 
-function failed_message_success(message_id) {
+const failed_message_success = (message_id) => {
     message_store.get(message_id).failed_request = false;
     show_failed_message_success(message_id);
-}
+};
 
-function resend_message(message, $row, {on_send_message_success, send_message}) {
+const resend_message = (message, $row, {on_send_message_success, send_message}) => {
     message.content = message.raw_content;
     if (show_retry_spinner($row)) {
         // retry already in in progress
@@ -80,7 +80,7 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
 
     message.resend = true;
 
-    function on_success(data) {
+    const on_success = (data) => {
         const message_id = data.id;
         message.locally_echoed = true;
 
@@ -90,20 +90,20 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
 
         // Resend succeeded, so mark as no longer failed
         failed_message_success(message_id);
-    }
+    };
 
-    function on_error(response, _server_error_code) {
+    const on_error = (response, _server_error_code) => {
         message_send_error(message.id, response);
         setTimeout(() => {
             hide_retry_spinner($row);
         }, 300);
         blueslip.log("Manual resend of message failed");
-    }
+    };
 
     send_message(message, on_success, on_error);
-}
+};
 
-export function build_display_recipient(message) {
+export const build_display_recipient = (message) => {
     if (message.type === "stream") {
         return stream_data.get_stream_name_from_id(message.stream_id);
     }
@@ -164,9 +164,9 @@ export function build_display_recipient(message) {
         });
     }
     return display_recipient;
-}
+};
 
-export function insert_local_message(message_request, local_id_float, insert_new_messages) {
+export const insert_local_message = (message_request, local_id_float, insert_new_messages) => {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
@@ -202,13 +202,11 @@ export function insert_local_message(message_request, local_id_float, insert_new
     waiting_for_ack.set(message.local_id, message);
 
     return message;
-}
+};
 
-export function is_slash_command(content) {
-    return !content.startsWith("/me") && content.startsWith("/");
-}
+export const is_slash_command = (content) => !content.startsWith("/me") && content.startsWith("/");
 
-export function try_deliver_locally(message_request, insert_new_messages) {
+export const try_deliver_locally = (message_request, insert_new_messages) => {
     // Checks if the message request can be locally echoed, and if so,
     // adds a local echoed copy of the message to appropriate message lists.
     //
@@ -253,9 +251,9 @@ export function try_deliver_locally(message_request, insert_new_messages) {
 
     const message = insert_local_message(message_request, local_id_float, insert_new_messages);
     return message;
-}
+};
 
-export function edit_locally(message, request) {
+export const edit_locally = (message, request) => {
     // Responsible for doing the rendering work of locally editing the
     // content of a message.  This is used in several code paths:
     // * Editing a message where a message was locally echoed but
@@ -333,9 +331,9 @@ export function edit_locally(message, request) {
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
     return message;
-}
+};
 
-export function reify_message_id(local_id, server_id) {
+export const reify_message_id = (local_id, server_id) => {
     const message = waiting_for_id.get(local_id);
     waiting_for_id.delete(local_id);
 
@@ -355,9 +353,9 @@ export function reify_message_id(local_id, server_id) {
     update_message_lists(opts);
     compose_notifications.reify_message_id(opts);
     recent_view_data.reify_message_id_if_available(opts);
-}
+};
 
-export function update_message_lists({old_id, new_id}) {
+export const update_message_lists = ({old_id, new_id}) => {
     if (all_messages_data !== undefined) {
         all_messages_data.change_message_id(old_id, new_id);
     }
@@ -365,9 +363,9 @@ export function update_message_lists({old_id, new_id}) {
         msg_list.change_message_id(old_id, new_id);
         msg_list.view.change_message_id(old_id, new_id);
     }
-}
+};
 
-export function process_from_server(messages) {
+export const process_from_server = (messages) => {
     const msgs_to_rerender = [];
     const non_echo_messages = [];
 
@@ -430,31 +428,31 @@ export function process_from_server(messages) {
     }
 
     return non_echo_messages;
-}
+};
 
-export function _patch_waiting_for_ack(data) {
+export const _patch_waiting_for_ack = (data) => {
     // Only for testing
     waiting_for_ack = data;
-}
+};
 
-export function message_send_error(message_id, error_response) {
+export const message_send_error = (message_id, error_response) => {
     // Error sending message, show inline
     const message = message_store.get(message_id);
     message.failed_request = true;
     message.show_slow_send_spinner = false;
 
     show_message_failed(message_id, error_response);
-}
+};
 
-function abort_message(message) {
+const abort_message = (message) => {
     // Remove in all lists in which it exists
     all_messages_data.remove([message.id]);
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
     }
-}
+};
 
-export function display_slow_send_loading_spinner(message) {
+export const display_slow_send_loading_spinner = (message) => {
     const $rows = message_lists.all_rendered_row_for_message_id(message.id);
     if (message.locally_echoed && !message.failed_request) {
         message.show_slow_send_spinner = true;
@@ -464,7 +462,7 @@ export function display_slow_send_loading_spinner(message) {
         // message's HTML gets replaced once the message is
         // successfully sent.
     }
-}
+};
 
 export function initialize({on_send_message_success, send_message}) {
     function on_failed_action(selector, callback) {

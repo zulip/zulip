@@ -31,9 +31,9 @@ look at `people_errors.test.js` for actual usage of this module.
 
 run_test("basics", () => {
     // Let's create a sample piece of code to test:
-    function throw_an_error() {
+    const throw_an_error = () => {
         blueslip.error("world");
-    }
+    };
 
     // Since the error 'world' is not being expected, blueslip will
     // throw an error.
@@ -66,9 +66,9 @@ run_test("basics", () => {
     // warnings shouldn't stop the code execution, and thus, the
     // behaviour is slightly different.
 
-    function throw_a_warning() {
+    const throw_a_warning = () => {
         blueslip.warn("world");
-    }
+    };
 
     assert.throws(throw_a_warning);
     // Again, we do not expect this particular warning so blueslip.reset should complain.

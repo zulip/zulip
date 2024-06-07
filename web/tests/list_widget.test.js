@@ -26,7 +26,7 @@ mock_jquery((arg) => {
         addClass() {
             return this;
         },
-        replace(regex, string) {
+        replace: (regex, string) => {
             arg = arg.replace(regex, string);
         },
         html: () => arg,
@@ -43,7 +43,7 @@ const ListWidget = zrequire("list_widget");
 // it.  This is a good time to read set_up_event_handlers
 // in the real code.
 
-function make_container() {
+const make_container = () => {
     const $container = {};
     $container.attr = noop;
     $container.empty = noop;
@@ -56,9 +56,9 @@ function make_container() {
     };
 
     return $container;
-}
+};
 
-function make_scroll_container() {
+const make_scroll_container = () => {
     const $scroll_container = {};
     $scroll_container[0] = {};
 
@@ -80,9 +80,9 @@ function make_scroll_container() {
     $scroll_container.is = () => false;
 
     return $scroll_container;
-}
+};
 
-function make_sort_container() {
+const make_sort_container = () => {
     const $sort_container = {};
 
     $sort_container.cleared = false;
@@ -99,9 +99,9 @@ function make_sort_container() {
     };
 
     return $sort_container;
-}
+};
 
-function make_filter_element() {
+const make_filter_element = () => {
     const $element = {};
 
     $element.cleared = false;
@@ -117,9 +117,9 @@ function make_filter_element() {
     };
 
     return $element;
-}
+};
 
-function make_search_input() {
+const make_search_input = () => {
     const $element = {};
 
     // Allow ourselves to be wrapped by $(...) and
@@ -138,11 +138,9 @@ function make_search_input() {
     };
 
     return $element;
-}
+};
 
-function div(item) {
-    return "<div>" + item + "</div>";
-}
+const div = (item) => "<div>" + item + "</div>";
 
 run_test("scrolling", () => {
     const $container = make_container();
@@ -250,7 +248,7 @@ run_test("filtering", () => {
             $element: $search_input,
             predicate: (item, value) => item.includes(value),
         },
-        modifier_html(item, filter_value) {
+        modifier_html: (item, filter_value) => {
             last_filter_value = filter_value;
             return div(item);
         },
@@ -298,7 +296,7 @@ run_test("no filtering", () => {
     const opts = {
         modifier_html: (item) => div(item),
         $simplebar_container: $scroll_container,
-        callback_after_render() {
+        callback_after_render: () => {
             callback_called = true;
         },
         get_item: (item) => item,
@@ -311,13 +309,13 @@ run_test("no filtering", () => {
     assert.deepEqual($container.$appended_data.html(), expected_html);
 });
 
-function sort_button(opts) {
+const sort_button = (opts) => {
     // The complications here are due to needing to find
     // the list via complicated HTML assumptions. Also, we
     // don't have any abstraction for the button and its
     // siblings other than direct jQuery actions.
 
-    function attr(name) {
+    const attr = (name) => {
         switch (name) {
             case "data-sort":
                 return opts.sort_type;
@@ -327,14 +325,12 @@ function sort_button(opts) {
             default:
                 throw new Error("unknown attribute: " + name);
         }
-    }
+    };
 
-    function lookup(sel, value) {
-        return (selector) => {
-            assert.equal(sel, selector);
-            return value;
-        };
-    }
+    const lookup = (sel, value) => (selector) => {
+        assert.equal(sel, selector);
+        return value;
+    };
 
     const classList = new Set();
 
@@ -343,15 +339,15 @@ function sort_button(opts) {
         closest: lookup(".progressive-table-wrapper", {
             data: lookup("list-widget", opts.list_name),
         }),
-        addClass(cls) {
+        addClass: (cls) => {
             classList.add(cls);
         },
         hasClass: (cls) => classList.has(cls),
-        removeClass(cls) {
+        removeClass: (cls) => {
             classList.delete(cls);
         },
         siblings: lookup(".active", {
-            removeClass(cls) {
+            removeClass: (cls) => {
                 assert.equal(cls, "active");
                 $button.siblings_deactivated = true;
             },
@@ -361,7 +357,7 @@ function sort_button(opts) {
     };
 
     return $button;
-}
+};
 
 run_test("wire up filter element", () => {
     const lst = ["alice", "JESSE", "moses", "scott", "Sean", "Xavier"];
@@ -418,9 +414,7 @@ run_test("sorting", () => {
         $simplebar_container: $scroll_container,
     };
 
-    function html_for(people) {
-        return people.map((item) => opts.modifier_html(item)).join("");
-    }
+    const html_for = (people) => people.map((item) => opts.modifier_html(item)).join("");
 
     ListWidget.create($container, list, opts);
 
@@ -501,13 +495,9 @@ run_test("custom sort", () => {
 
     const list = [n42, n43, n44];
 
-    function sort_by_x(a, b) {
-        return a.x - b.x;
-    }
+    const sort_by_x = (a, b) => a.x - b.x;
 
-    function sort_by_product(a, b) {
-        return a.x * a.y - b.x * b.y;
-    }
+    const sort_by_product = (a, b) => a.x * a.y - b.x * b.y;
 
     const widget = ListWidget.create($container, list, {
         name: "custom-sort-list",
@@ -527,9 +517,7 @@ run_test("custom sort", () => {
     assert.deepEqual($container.$appended_data.html(), "(1, 43)(4, 11)(6, 7)");
 
     // We can sort without registering the function, too.
-    function sort_by_y(a, b) {
-        return a.y - b.y;
-    }
+    const sort_by_y = (a, b) => a.y - b.y;
 
     widget.sort(sort_by_y);
     assert.deepEqual($container.$appended_data.html(), "(6, 7)(4, 11)(1, 43)");
@@ -547,8 +535,8 @@ run_test("clear_event_handlers", () => {
     const opts = {
         name: "list-we-create-twice",
         $parent_container: $sort_container,
-        modifier_html() {},
-        get_item() {},
+        modifier_html: () => {},
+        get_item: () => {},
         filter: {
             $element: $filter_element,
             predicate: /* istanbul ignore next */ () => true,
@@ -604,7 +592,7 @@ run_test("replace_list_data w/filter update", () => {
         get_item: (item) => item,
         filter: {
             predicate: (n) => n % 2 === 0,
-            onupdate() {
+            onupdate: () => {
                 num_updates += 1;
             },
         },
@@ -689,7 +677,7 @@ run_test("render item", () => {
             // Return a JQuery stub for the original HTML.
             // We want this to be called when we replace
             // the existing HTML with newly rendered HTML.
-            replaceWith($element) {
+            replaceWith: ($element) => {
                 assert.equal(new_html, $element.html());
                 called = true;
                 $container.$appended_data.replace(regex, new_html);
@@ -743,7 +731,7 @@ run_test("render item", () => {
     const widget_2 = ListWidget.create($container, list, {
         name: "replace-list",
         modifier_html: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
-        get_item(item) {
+        get_item: (item) => {
             get_item_called = true;
             return item;
         },
@@ -785,24 +773,22 @@ run_test("Multiselect dropdown retain_selected_items", () => {
     // We essentially create fake jQuery functions
     // whose return value are stored in objects so that
     // they can be later asserted with expected values.
-    function DropdownItem(element) {
+    const DropdownItem = (element) => {
         const temp = {};
 
-        function length() {
+        const length = () => {
             if (element) {
                 return true;
             }
             /* istanbul ignore next */
             return false;
-        }
+        };
 
-        function find(tag) {
-            return ListItem(tag, temp);
-        }
+        const find = (tag) => ListItem(tag, temp);
 
-        function addClass(cls) {
+        const addClass = (cls) => {
             temp.appended_class = cls;
-        }
+        };
 
         temp.element = element;
         return {
@@ -810,23 +796,23 @@ run_test("Multiselect dropdown retain_selected_items", () => {
             find,
             addClass,
         };
-    }
+    };
 
-    function ListItem(element, temp) {
-        function expectOne() {
+    const ListItem = (element, temp) => {
+        const expectOne = () => {
             data_rendered.push(temp);
             return ListItem(element, temp);
-        }
+        };
 
-        function prepend($data) {
+        const prepend = ($data) => {
             temp.prepended_data = $data.html();
-        }
+        };
 
         return {
             expectOne,
             prepend,
         };
-    }
+    };
 
     const widget = ListWidget.create($container, list, {
         name: "replace-list",

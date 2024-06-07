@@ -14,19 +14,18 @@ import * as browser_history from "./browser_history";
 import * as modals from "./modals";
 import {realm} from "./state_data";
 
-export function current_hash_as_next(): string {
-    return `next=/${encodeURIComponent(window.location.hash)}`;
-}
+export const current_hash_as_next = (): string =>
+    `next=/${encodeURIComponent(window.location.hash)}`;
 
-export function build_login_link(): string {
+export const build_login_link = (): string => {
     let login_link = "/login/?" + current_hash_as_next();
     if (page_params.development_environment) {
         login_link = "/devlogin/?" + current_hash_as_next();
     }
     return login_link;
-}
+};
 
-export function login_to_access(empty_narrow?: boolean): void {
+export const login_to_access = (empty_narrow?: boolean): void => {
     // Hide all overlays, popover and go back to the previous hash if the
     // hash has changed.
     const login_link = build_login_link();
@@ -45,8 +44,8 @@ export function login_to_access(empty_narrow?: boolean): void {
 
     modals.open("login_to_access_modal", {
         autoremove: true,
-        on_hide() {
+        on_hide: () => {
             browser_history.return_to_web_public_hash();
         },
     });
-}
+};

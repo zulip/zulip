@@ -60,7 +60,7 @@ const bot_data_params = {
     ],
 };
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
@@ -70,7 +70,7 @@ function test(label, f) {
         assert.equal(bot_data.get(314).full_name, "Outgoing webhook");
         f({override});
     });
-}
+};
 
 test("test_basics", () => {
     people.add_active_user(fred);
@@ -116,7 +116,7 @@ test("test_basics", () => {
         extra: "This field should be ignored",
     };
 
-    (function test_add() {
+    (() => {
         bot_data.add(test_bot);
         const bot = bot_data.get(43);
         const services = bot_data.get_services(43);
@@ -137,7 +137,7 @@ test("test_basics", () => {
         assert.equal(undefined, bot.extra);
     })();
 
-    (function test_update() {
+    (() => {
         bot_data.add(test_bot);
 
         let bot = bot_data.get(43);
@@ -169,7 +169,7 @@ test("test_basics", () => {
         assert.ok(bot_data.get(43).is_active);
     })();
 
-    (function test_embedded_bot_update() {
+    (() => {
         bot_data.add(test_embedded_bot);
         const bot_id = 143;
         const services = bot_data.get_services(bot_id);
@@ -182,13 +182,13 @@ test("test_basics", () => {
         assert.equal("embedded bot service", services[0].service_name);
     })();
 
-    (function test_all_user_ids() {
+    (() => {
         const all_ids = bot_data.all_user_ids();
         all_ids.sort();
         assert.deepEqual(all_ids, [143, 314, 42, 43]);
     })();
 
-    (function test_delete() {
+    (() => {
         let bot;
 
         bot_data.add({...test_bot, is_active: true});
@@ -201,7 +201,7 @@ test("test_basics", () => {
         assert.equal(bot, undefined);
     })();
 
-    (function test_get_editable() {
+    (() => {
         bot_data.add({...test_bot, user_id: 44, owner_id: me.user_id, is_active: true});
         bot_data.add({
             ...test_bot,
@@ -222,7 +222,7 @@ test("test_basics", () => {
         assert.deepEqual(["bot1@zulip.com", "bot2@zulip.com"], editable_bots);
     })();
 
-    (function test_get_all_bots_for_current_user() {
+    (() => {
         const bots = bot_data.get_all_bots_for_current_user();
 
         assert.equal(bots.length, 2);
@@ -230,7 +230,7 @@ test("test_basics", () => {
         assert.equal(bots[1].email, "bot2@zulip.com");
     })();
 
-    (function test_get_number_of_bots_owned_by_user() {
+    (() => {
         const bots_owned_by_user = bot_data.get_all_bots_owned_by_user(3);
 
         assert.equal(bots_owned_by_user[0].email, "bot3@zulip.com");

@@ -15,12 +15,12 @@ user_settings.twenty_four_hour_time = true;
 
 const timerender = zrequire("timerender");
 
-function get_date(time_ISO, DOW) {
+const get_date = (time_ISO, DOW) => {
     const time = new Date(time_ISO);
     // DOW helps the test reader to know the DOW of the current date being tested.
     assert.equal(new Intl.DateTimeFormat("en-US", {weekday: "long"}).format(time), DOW);
     return time;
-}
+};
 
 const date_2017 = get_date("2017-05-18T07:12:53.000Z", "Thursday");
 
@@ -500,11 +500,11 @@ run_test("last_seen_status_from_date", () => {
     let base_date = new Date(2016, 2, 1, 0, 30);
     MockDate.set(base_date.getTime());
 
-    function assert_same(duration, expected_status) {
+    const assert_same = (duration, expected_status) => {
         const past_date = add(base_date, duration);
         const actual_status = timerender.last_seen_status_from_date(past_date, base_date);
         assert.equal(actual_status, expected_status);
-    }
+    };
 
     assert_same({minutes: -30}, $t({defaultMessage: "Active 30 minutes ago"}));
 
@@ -554,11 +554,11 @@ run_test("relative_time_string_from_date", () => {
     let base_date = new Date(2016, 2, 1, 0, 30);
     MockDate.set(base_date.getTime());
 
-    function assert_same(duration, expected_status) {
+    const assert_same = (duration, expected_status) => {
         const past_date = add(base_date, duration);
         const actual_status = timerender.relative_time_string_from_date(past_date);
         assert.equal(actual_status, expected_status);
-    }
+    };
 
     assert_same({seconds: -20}, $t({defaultMessage: "Just now"}));
 

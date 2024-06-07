@@ -20,9 +20,7 @@ set_global("to_$", () => $window_stub);
 $(window).idle = noop;
 
 const _document = {
-    hasFocus() {
-        return true;
-    },
+    hasFocus: () => true,
 };
 
 const channel = mock_esm("../src/channel");
@@ -103,7 +101,7 @@ const $alice_stub = $.create("alice stub");
 const $fred_stub = $.create("fred stub");
 
 const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
-function add_sub_and_set_as_current_narrow(sub) {
+const add_sub_and_set_as_current_narrow = (sub) => {
     stream_data.add_sub(sub);
     const filter = new Filter([{operator: "stream", operand: sub.name}]);
     message_lists.set_current({
@@ -111,9 +109,9 @@ function add_sub_and_set_as_current_narrow(sub) {
             filter,
         },
     });
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         user_settings.presence_enabled = true;
         // Simulate a small window by having the
@@ -148,7 +146,7 @@ function test(label, f) {
 
         presence.clear_internal_data();
     });
-}
+};
 
 run_test("reload_defaults", () => {
     activity.clear_for_testing();
@@ -258,12 +256,12 @@ test("presence_list_full_update", ({override, mock_template}) => {
     assert.equal(presence_rows[0].user_id, me.user_id);
 });
 
-function simulate_right_column_buddy_list() {
+const simulate_right_column_buddy_list = () => {
     $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("right-sidebar").addClass("column-right");
     };
-}
+};
 
 test("direct_message_update_dom_counts", () => {
     const $count = $.create("alice-unread-count");
@@ -322,12 +320,12 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 
     let narrowed;
 
-    function narrow_by_email(email) {
+    const narrow_by_email = (email) => {
         assert.equal(email, "alice@zulip.com");
         narrowed = true;
-    }
+    };
 
-    function init() {
+    const init = () => {
         $.clear_all_elements();
         stub_buddy_list_elements();
 
@@ -339,26 +337,26 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         buddy_list.populate({
             all_user_ids: [me.user_id, alice.user_id, fred.user_id],
         });
-    }
+    };
 
-    (function test_filter_keys() {
+    (() => {
         init();
         activity_ui.user_cursor.go_to(alice.user_id);
         filter_key_handlers.ArrowDown();
         filter_key_handlers.ArrowUp();
     })();
 
-    (function test_click_filter() {
+    (() => {
         init();
         const e = {
-            stopPropagation() {},
+            stopPropagation: () => {},
         };
 
         const handler = $("input.user-list-filter").get_on_handler("focus");
         handler(e);
     })();
 
-    (function test_click_header_filter() {
+    (() => {
         init();
         const e = {};
         const handler = $("#userlist-header").get_on_handler("click");
@@ -370,7 +368,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         handler(e);
     })();
 
-    (function test_enter_key() {
+    (() => {
         init();
 
         $("input.user-list-filter").val("al");
@@ -384,7 +382,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         filter_key_handlers.Enter();
     })();
 
-    (function test_click_handler() {
+    (() => {
         init();
         // We wire up the click handler in click_handlers.js,
         // so this just tests the called function.
@@ -393,7 +391,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         assert.ok(narrowed);
     })();
 
-    (function test_blur_filter() {
+    (() => {
         init();
         const e = {};
         const handler = $("input.user-list-filter").get_on_handler("blur");
@@ -486,10 +484,10 @@ test("render_empty_user_list_message", ({override, mock_template}) => {
 
     let $appended_data;
     override(buddy_list, "$container", {
-        append($data) {
+        append: ($data) => {
             $appended_data = $data;
         },
-        attr(name) {
+        attr: (name) => {
             assert.equal(name, "data-search-results-empty");
             return empty_list_message;
         },
@@ -764,7 +762,7 @@ test("initialize", ({override, mock_template}) => {
         }
     });
 
-    function clear() {
+    const clear = () => {
         $.clear_all_elements();
         buddy_list.$users_matching_view_container = $("#buddy-list-users-matching-view");
         buddy_list.$users_matching_view_container.append = noop;
@@ -774,7 +772,7 @@ test("initialize", ({override, mock_template}) => {
         mock_template("empty_list_widget_for_list.hbs", false, () => "<empty-list-stub>");
         clear_buddy_list(buddy_list);
         page_params.presences = {};
-    }
+    };
 
     clear();
 
@@ -798,7 +796,7 @@ test("initialize", ({override, mock_template}) => {
     });
 
     activity.initialize();
-    activity_ui.initialize({narrow_by_email() {}});
+    activity_ui.initialize({narrow_by_email: () => {}});
     payload.success({
         zephyr_mirror_active: true,
         presences: {},
@@ -823,7 +821,7 @@ test("initialize", ({override, mock_template}) => {
 
     $(window).off("focus");
     activity.initialize();
-    activity_ui.initialize({narrow_by_email() {}});
+    activity_ui.initialize({narrow_by_email: () => {}});
     payload.success({
         zephyr_mirror_active: false,
         presences: {},
@@ -847,14 +845,14 @@ test("initialize", ({override, mock_template}) => {
 test("electron_bridge", ({override_rewire}) => {
     override_rewire(activity, "send_presence_to_server", noop);
 
-    function with_bridge_idle(bridge_idle, f) {
+    const with_bridge_idle = (bridge_idle, f) => {
         with_overrides(({override}) => {
             override(window, "electron_bridge", {
                 get_idle_on_system: () => bridge_idle,
             });
             return f();
         });
-    }
+    };
 
     with_bridge_idle(true, () => {
         activity.mark_client_idle();

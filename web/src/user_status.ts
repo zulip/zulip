@@ -43,13 +43,13 @@ const user_status_param_schema = z.record(z.string(), user_status_schema);
 const user_info = new Map<number, string>();
 const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
 
-export function server_update_status(opts: {
+export const server_update_status = (opts: {
     status_text: string;
     emoji_name: string;
     emoji_code: string;
     reaction_type?: string;
     success?: () => void;
-}): void {
+}): void => {
     void channel.post({
         url: "/json/users/me/status",
         data: {
@@ -58,50 +58,47 @@ export function server_update_status(opts: {
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
         },
-        success() {
+        success: () => {
             if (opts.success) {
                 opts.success();
             }
         },
     });
-}
+};
 
-export function server_invisible_mode_on(): void {
+export const server_invisible_mode_on = (): void => {
     void channel.patch({
         url: "/json/settings",
         data: {
             presence_enabled: false,
         },
     });
-}
+};
 
-export function server_invisible_mode_off(): void {
+export const server_invisible_mode_off = (): void => {
     void channel.patch({
         url: "/json/settings",
         data: {
             presence_enabled: true,
         },
     });
-}
+};
 
-export function get_status_text(user_id: number): string | undefined {
-    return user_info.get(user_id);
-}
+export const get_status_text = (user_id: number): string | undefined => user_info.get(user_id);
 
-export function set_status_text(opts: {user_id: number; status_text: string}): void {
+export const set_status_text = (opts: {user_id: number; status_text: string}): void => {
     if (!opts.status_text) {
         user_info.delete(opts.user_id);
         return;
     }
 
     user_info.set(opts.user_id, opts.status_text);
-}
+};
 
-export function get_status_emoji(user_id: number): UserStatusEmojiInfo | undefined {
-    return user_status_emoji_info.get(user_id);
-}
+export const get_status_emoji = (user_id: number): UserStatusEmojiInfo | undefined =>
+    user_status_emoji_info.get(user_id);
 
-export function set_status_emoji(event: UserStatusEvent): void {
+export const set_status_emoji = (event: UserStatusEvent): void => {
     const opts = user_status_event_schema.parse(event);
 
     if (!opts.emoji_name) {
@@ -117,9 +114,9 @@ export function set_status_emoji(event: UserStatusEvent): void {
             reaction_type: opts.reaction_type,
         }),
     });
-}
+};
 
-export function initialize(params: {user_status: unknown}): void {
+export const initialize = (params: {user_status: unknown}): void => {
     user_info.clear();
 
     const user_status = user_status_param_schema.parse(params.user_status);
@@ -139,4 +136,4 @@ export function initialize(params: {user_status: unknown}): void {
             });
         }
     }
-}
+};

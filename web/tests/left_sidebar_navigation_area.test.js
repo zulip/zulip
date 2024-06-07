@@ -7,7 +7,7 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 mock_esm("../src/resize", {
-    resize_stream_filters_container() {},
+    resize_stream_filters_container: () => {},
 });
 
 const scheduled_messages = mock_esm("../src/scheduled_messages");
@@ -70,13 +70,13 @@ run_test("narrowing", () => {
 });
 
 run_test("update_count_in_dom", () => {
-    function make_elem($elem, count_selector) {
+    const make_elem = ($elem, count_selector) => {
         const $count = $(count_selector);
         $elem.set_find_results(".unread_count", $count);
         $count.set_parent($elem);
 
         return $elem;
-    }
+    };
 
     const counts = {
         mentioned_message_count: 222,

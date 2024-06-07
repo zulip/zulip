@@ -8,7 +8,7 @@ const {run_test} = require("./lib/test");
 const {user_settings} = require("./lib/zpage_params");
 
 const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
-    update_starred_count() {},
+    update_starred_count: () => {},
 });
 const message_store = zrequire("message_store");
 const starred_messages = zrequire("starred_messages");

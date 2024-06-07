@@ -8,15 +8,15 @@ import * as message_lists from "./message_lists";
 import * as rows from "./rows";
 
 let $current_message_hover;
-export function message_unhover() {
+export const message_unhover = () => {
     if ($current_message_hover === undefined) {
         return;
     }
     $current_message_hover.find("span.edit_content").empty();
     $current_message_hover = undefined;
-}
+};
 
-export function message_hover($message_row) {
+export const message_hover = ($message_row) => {
     const id = rows.id($message_row);
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(id);
@@ -51,7 +51,7 @@ export function message_hover($message_row) {
     } else if (args.can_move_message) {
         $edit_content.attr("data-tooltip-template-id", "move-message-tooltip-template");
     }
-}
+};
 
 export function initialize() {
     $("#main_div").on("mouseover", ".message-list .message_row", function () {
@@ -73,7 +73,7 @@ export function initialize() {
         $row.removeClass("sender_info_hovered");
     });
 
-    function handle_video_preview_mouseenter($elem) {
+    const handle_video_preview_mouseenter = ($elem) => {
         // Set image height and css vars for play button position, if not done already
         const setPosition = !$elem.data("entered-before");
         if (setPosition) {
@@ -88,7 +88,7 @@ export function initialize() {
             $elem.data("entered-before", true);
         }
         $elem.addClass("fa fa-play");
-    }
+    };
 
     $("#main_div").on("mouseenter", ".youtube-video a", function () {
         handle_video_preview_mouseenter($(this));

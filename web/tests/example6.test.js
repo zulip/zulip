@@ -17,14 +17,12 @@ run_test("explore make_stub", ({override}) => {
     // Let's say you have to test the following code.
 
     const app = {
-        /* istanbul ignore next */
-        notify_server_of_deposit(deposit_amount) {
+        notify_server_of_deposit: /* istanbul ignore next */ (deposit_amount) => {
             // simulate difficulty
             throw new Error(`We cannot report this value without wifi: ${deposit_amount}`);
         },
 
-        /* istanbul ignore next */
-        pop_up_fancy_confirmation_screen(deposit_amount, label) {
+        pop_up_fancy_confirmation_screen: /* istanbul ignore next */ (deposit_amount, label) => {
             // simulate difficulty
             throw new Error(`We cannot make a ${label} dialog for amount ${deposit_amount}`);
         },
@@ -32,11 +30,11 @@ run_test("explore make_stub", ({override}) => {
 
     let balance = 40;
 
-    function deposit_paycheck(paycheck_amount) {
+    const deposit_paycheck = (paycheck_amount) => {
         balance += paycheck_amount;
         app.notify_server_of_deposit(paycheck_amount);
         app.pop_up_fancy_confirmation_screen(paycheck_amount, "paycheck");
-    }
+    };
 
     // Our deposit_paycheck should be easy to unit test for its
     // core functionality (updating your balance), but the side

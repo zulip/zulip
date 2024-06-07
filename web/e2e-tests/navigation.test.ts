@@ -4,19 +4,19 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function navigate_using_left_sidebar(page: Page, click_target: string): Promise<void> {
+const navigate_using_left_sidebar = async (page: Page, click_target: string): Promise<void> => {
     console.log("Visiting #" + click_target);
     await page.click(`#left-sidebar a[href='#${CSS.escape(click_target)}']`);
     await page.waitForSelector(`#message_feed_container`, {visible: true});
-}
+};
 
-async function open_menu(page: Page): Promise<void> {
+const open_menu = async (page: Page): Promise<void> => {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
-}
+};
 
-async function navigate_to_settings(page: Page): Promise<void> {
+const navigate_to_settings = async (page: Page): Promise<void> => {
     console.log("Navigating to settings");
 
     await common.open_personal_menu(page);
@@ -35,9 +35,9 @@ async function navigate_to_settings(page: Page): Promise<void> {
     await page.click("#settings_page .content-wrapper .exit");
     // Wait until the overlay is completely closed.
     await page.waitForSelector("#settings_overlay_container", {hidden: true});
-}
+};
 
-async function navigate_to_subscriptions(page: Page): Promise<void> {
+const navigate_to_subscriptions = async (page: Page): Promise<void> => {
     console.log("Navigate to subscriptions");
 
     await open_menu(page);
@@ -51,9 +51,9 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
     await page.click("#subscription_overlay .exit");
     // Wait until the overlay is completely closed.
     await page.waitForSelector("#subscription_overlay", {hidden: true});
-}
+};
 
-async function navigate_to_private_messages(page: Page): Promise<void> {
+const navigate_to_private_messages = async (page: Page): Promise<void> => {
     console.log("Navigate to direct messages");
 
     const all_private_messages_icon = "#show_all_private_messages";
@@ -61,9 +61,9 @@ async function navigate_to_private_messages(page: Page): Promise<void> {
     await page.click(all_private_messages_icon);
 
     await page.waitForSelector("#message_view_header .fa-envelope", {visible: true});
-}
+};
 
-async function test_reload_hash(page: Page): Promise<void> {
+const test_reload_hash = async (page: Page): Promise<void> => {
     const initial_page_load_time = await page.evaluate(() => zulip_test.page_load_time);
     assert(initial_page_load_time !== undefined);
     console.log(`initial load time: ${initial_page_load_time}`);
@@ -85,9 +85,9 @@ async function test_reload_hash(page: Page): Promise<void> {
 
     const hash = await page.evaluate(() => window.location.hash);
     assert.strictEqual(hash, initial_hash, "Hash not preserved.");
-}
+};
 
-async function navigation_tests(page: Page): Promise<void> {
+const navigation_tests = async (page: Page): Promise<void> => {
     await common.log_in(page);
 
     await navigate_to_settings(page);
@@ -118,6 +118,6 @@ async function navigation_tests(page: Page): Promise<void> {
             "message-header-stream-settings-button",
         )} and normalize-space()="Verona"]`,
     );
-}
+};
 
 common.run_test(navigation_tests);

@@ -22,12 +22,12 @@ import * as recent_view_util from "./recent_view_util";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
 
-export function respond_to_message(opts: {
+export const respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
     reply_type?: "personal";
     trigger?: string;
-}): void {
+}): void => {
     let message;
     let msg_type: "private" | "stream";
     if (recent_view_util.is_visible()) {
@@ -152,14 +152,14 @@ export function respond_to_message(opts: {
         is_reply: true,
         keep_composebox_empty: opts.keep_composebox_empty,
     });
-}
+};
 
-export function reply_with_mention(opts: {
+export const reply_with_mention = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
     reply_type?: "personal";
     trigger?: string;
-}): void {
+}): void => {
     assert(message_lists.current !== undefined);
     respond_to_message({
         ...opts,
@@ -168,9 +168,11 @@ export function reply_with_mention(opts: {
     const message = message_lists.current.selected_message();
     const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
     compose_ui.insert_syntax_and_focus(mention);
-}
+};
 
-export function selection_within_message_id(selection = window.getSelection()): number | undefined {
+export const selection_within_message_id = (
+    selection = window.getSelection(),
+): number | undefined => {
     // Returns the message_id if the selection is entirely within a message,
     // otherwise returns undefined.
     assert(selection !== null);
@@ -182,13 +184,16 @@ export function selection_within_message_id(selection = window.getSelection()): 
         return start_id;
     }
     return undefined;
-}
+};
 
-function get_quote_target(opts: {message_id?: number; quote_content?: string}): {
+const get_quote_target = (opts: {
+    message_id?: number;
+    quote_content?: string;
+}): {
     message_id: number;
     message: Message;
     quote_content: string | undefined;
-} {
+} => {
     assert(message_lists.current !== undefined);
     let message_id;
     let quote_content;
@@ -217,15 +222,15 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string}): 
     // we quote that entire message.
     quote_content ??= message.raw_content;
     return {message_id, message, quote_content};
-}
+};
 
-export function quote_and_reply(opts: {
+export const quote_and_reply = (opts: {
     message_id: number;
     quote_content?: string;
     keep_composebox_empty?: boolean;
     reply_type?: "personal";
     trigger?: string;
-}): void {
+}): void => {
     const {message_id, message, quote_content} = get_quote_target(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
@@ -252,7 +257,7 @@ export function quote_and_reply(opts: {
 
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 
-    function replace_content(message: Message, raw_content: string): void {
+    const replace_content = (message: Message, raw_content: string): void => {
         // Final message looks like:
         //     @_**Iago|5** [said](link to message):
         //     ```quote
@@ -271,7 +276,7 @@ export function quote_and_reply(opts: {
 
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
         compose_ui.autosize_textarea($textarea);
-    }
+    };
 
     if (message && quote_content) {
         replace_content(message, quote_content);
@@ -280,14 +285,14 @@ export function quote_and_reply(opts: {
 
     void channel.get({
         url: "/json/messages/" + message_id,
-        success(raw_data) {
+        success: (raw_data) => {
             const data = z.object({raw_content: z.string()}).parse(raw_data);
             replace_content(message, data.raw_content);
         },
     });
-}
+};
 
-function extract_range_html(range: Range, preserve_ancestors = false): string {
+const extract_range_html = (range: Range, preserve_ancestors = false): string => {
     // Returns the html of the range as a string, optionally preserving 2
     // levels of ancestors.
     const temp_div = document.createElement("div");
@@ -313,9 +318,9 @@ function extract_range_html(range: Range, preserve_ancestors = false): string {
     outer_container.append(container_clone);
     temp_div.append(outer_container);
     return temp_div.innerHTML;
-}
+};
 
-function get_range_intersection_with_element(range: Range, element: Node): Range {
+const get_range_intersection_with_element = (range: Range, element: Node): Range => {
     // Returns a new range that is a subset of range and is inside element.
     const intersection = document.createRange();
     intersection.selectNodeContents(element);
@@ -329,9 +334,9 @@ function get_range_intersection_with_element(range: Range, element: Node): Range
     }
 
     return intersection;
-}
+};
 
-export function get_message_selection(selection = window.getSelection()): string {
+export const get_message_selection = (selection = window.getSelection()): string => {
     assert(selection !== null);
     let selected_message_content_raw = "";
 
@@ -374,10 +379,10 @@ export function get_message_selection(selection = window.getSelection()): string
     }
     selected_message_content_raw = selected_message_content_raw.trim();
     return selected_message_content_raw;
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     $("body").on("click", ".compose_reply_button", () => {
         respond_to_message({trigger: "reply button"});
     });
-}
+};

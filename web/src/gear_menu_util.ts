@@ -1,7 +1,7 @@
 import {$t} from "./i18n";
 import {realm} from "./state_data";
 
-export function version_display_string(): string {
+export const version_display_string = (): string => {
     const version = realm.zulip_version;
     const is_fork = realm.zulip_merge_base && realm.zulip_merge_base !== version;
 
@@ -31,4 +31,4 @@ export function version_display_string(): string {
 
     const display_version = version.replace(/\+git.*/, "").replace(/-dev.*/, "-dev");
     return $t({defaultMessage: "Zulip Server {display_version}"}, {display_version});
-}
+};

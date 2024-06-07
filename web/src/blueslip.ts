@@ -51,42 +51,44 @@ class Logger {
 
 const logger = new Logger();
 
-export function get_log(): string[] {
-    return logger.get_log();
-}
+export const get_log = (): string[] => logger.get_log();
 
-function build_arg_list(msg: string, more_info?: unknown): [string, string?, unknown?] {
+const build_arg_list = (msg: string, more_info?: unknown): [string, string?, unknown?] => {
     const args: [string, string?, unknown?] = [msg];
     if (more_info !== undefined) {
         args.push("\nAdditional information: ", more_info);
     }
     return args;
-}
+};
 
-export function debug(msg: string, more_info?: unknown): void {
+export const debug = (msg: string, more_info?: unknown): void => {
     const args = build_arg_list(msg, more_info);
     logger.debug(...args);
-}
+};
 
-export function log(msg: string, more_info?: unknown): void {
+export const log = (msg: string, more_info?: unknown): void => {
     const args = build_arg_list(msg, more_info);
     logger.log(...args);
-}
+};
 
-export function info(msg: string, more_info?: unknown): void {
+export const info = (msg: string, more_info?: unknown): void => {
     const args = build_arg_list(msg, more_info);
     logger.info(...args);
-}
+};
 
-export function warn(msg: string, more_info?: unknown): void {
+export const warn = (msg: string, more_info?: unknown): void => {
     const args = build_arg_list(msg, more_info);
     logger.warn(...args);
     if (page_params.development_environment) {
         console.trace();
     }
-}
+};
 
-export function error(msg: string, more_info?: object | undefined, original_error?: unknown): void {
+export const error = (
+    msg: string,
+    more_info?: object | undefined,
+    original_error?: unknown,
+): void => {
     // Log the Sentry error before the console warning, so we don't
     // end up with a doubled message in the Sentry logs.
     Sentry.setContext("more_info", more_info ?? null);
@@ -105,7 +107,7 @@ export function error(msg: string, more_info?: object | undefined, original_erro
     }
     // This function returns to its caller in production!  To raise a
     // fatal error even in production, use throw new Error(…) instead.
-}
+};
 
 // Install a window-wide onerror handler in development to display the stacktraces, to make them
 // hard to miss

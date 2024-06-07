@@ -50,13 +50,13 @@ export const all_visibility_policies = {
     FOLLOWED: 3,
 };
 
-export function update_user_topics(
+export const update_user_topics = (
     stream_id: number,
     stream_name: string,
     topic: string,
     visibility_policy: number,
     date_updated: number,
-): void {
+): void => {
     let sub_dict = all_user_topics.get(stream_id);
     if (visibility_policy === all_visibility_policies.INHERIT && sub_dict) {
         sub_dict.delete(topic);
@@ -68,33 +68,29 @@ export function update_user_topics(
         const time = get_time_from_date_muted(date_updated);
         sub_dict.set(topic, {date_updated: time, visibility_policy, stream_name});
     }
-}
+};
 
-export function get_topic_visibility_policy(stream_id: number, topic: string): number | false {
+export const get_topic_visibility_policy = (stream_id: number, topic: string): number | false => {
     if (stream_id === undefined) {
         return false;
     }
     const sub_dict = all_user_topics.get(stream_id);
     return sub_dict?.get(topic)?.visibility_policy ?? all_visibility_policies.INHERIT;
-}
+};
 
-export function is_topic_followed(stream_id: number, topic: string): boolean {
-    return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.FOLLOWED;
-}
+export const is_topic_followed = (stream_id: number, topic: string): boolean =>
+    get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.FOLLOWED;
 
-export function is_topic_unmuted(stream_id: number, topic: string): boolean {
-    return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.UNMUTED;
-}
+export const is_topic_unmuted = (stream_id: number, topic: string): boolean =>
+    get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.UNMUTED;
 
-export function is_topic_muted(stream_id: number, topic: string): boolean {
-    return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.MUTED;
-}
+export const is_topic_muted = (stream_id: number, topic: string): boolean =>
+    get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.MUTED;
 
-export function is_topic_unmuted_or_followed(stream_id: number, topic: string): boolean {
-    return is_topic_unmuted(stream_id, topic) || is_topic_followed(stream_id, topic);
-}
+export const is_topic_unmuted_or_followed = (stream_id: number, topic: string): boolean =>
+    is_topic_unmuted(stream_id, topic) || is_topic_followed(stream_id, topic);
 
-export function get_user_topics_for_visibility_policy(visibility_policy: number): UserTopic[] {
+export const get_user_topics_for_visibility_policy = (visibility_policy: number): UserTopic[] => {
     const topics: UserTopic[] = [];
     for (const [stream_id, sub_dict] of all_user_topics) {
         for (const topic of sub_dict.keys()) {
@@ -114,9 +110,9 @@ export function get_user_topics_for_visibility_policy(visibility_policy: number)
         }
     }
     return topics;
-}
+};
 
-export function set_user_topic_visibility_policy(
+export const set_user_topic_visibility_policy = (
     stream_id: number,
     topic: string,
     visibility_policy: number,
@@ -125,7 +121,7 @@ export function set_user_topic_visibility_policy(
     $status_element?: JQuery,
     success_cb?: () => void,
     error_cb?: () => void,
-): void {
+): void => {
     const data = {
         stream_id,
         topic,
@@ -142,7 +138,7 @@ export function set_user_topic_visibility_policy(
     void channel.post({
         url: "/json/user_topics",
         data,
-        success() {
+        success: () => {
             if (success_cb) {
                 success_cb();
             }
@@ -179,13 +175,13 @@ export function set_user_topic_visibility_policy(
             if (visibility_policy === all_visibility_policies.MUTED) {
                 const stream_name = sub_store.maybe_get_stream_name(stream_id);
                 feedback_widget.show({
-                    populate($container) {
+                    populate: ($container) => {
                         const rendered_html = render_topic_muted({});
                         $container.html(rendered_html);
                         $container.find(".stream").text(stream_name ?? "");
                         $container.find(".topic").text(topic);
                     },
-                    on_undo() {
+                    on_undo: () => {
                         set_user_topic_visibility_policy(
                             stream_id,
                             topic,
@@ -197,21 +193,24 @@ export function set_user_topic_visibility_policy(
                 });
             }
         },
-        error() {
+        error: () => {
             if (error_cb) {
                 error_cb();
             }
         },
     });
-}
+};
 
-export function set_visibility_policy_for_element($elt: JQuery, visibility_policy: number): void {
+export const set_visibility_policy_for_element = (
+    $elt: JQuery,
+    visibility_policy: number,
+): void => {
     const stream_id = Number.parseInt($elt.attr("data-stream-id")!, 10);
     const topic = $elt.attr("data-topic-name")!;
     set_user_topic_visibility_policy(stream_id, topic, visibility_policy);
-}
+};
 
-export function set_user_topic(user_topic: ServerUserTopic): void {
+export const set_user_topic = (user_topic: ServerUserTopic): void => {
     const stream_id = user_topic.stream_id;
     const topic = user_topic.topic_name;
     const date_updated = user_topic.last_updated;
@@ -224,18 +223,18 @@ export function set_user_topic(user_topic: ServerUserTopic): void {
     }
 
     update_user_topics(stream_id, stream_name, topic, user_topic.visibility_policy, date_updated);
-}
+};
 
-export function set_user_topics(user_topics: ServerUserTopic[]): void {
+export const set_user_topics = (user_topics: ServerUserTopic[]): void => {
     all_user_topics.clear();
 
     for (const user_topic of user_topics) {
         set_user_topic(user_topic);
     }
-}
+};
 
-export function initialize(params: {user_topics: ServerUserTopic[]}): void {
+export const initialize = (params: {user_topics: ServerUserTopic[]}): void => {
     const user_topics = user_topic_schema.array().parse(params.user_topics);
 
     set_user_topics(user_topics);
-}
+};

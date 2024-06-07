@@ -18,61 +18,48 @@ let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
 
-export function set_recipient_edited_manually(flag: boolean): void {
+export const set_recipient_edited_manually = (flag: boolean): void => {
     recipient_edited_manually = flag;
-}
+};
 
-export function is_recipient_edited_manually(): boolean {
-    return recipient_edited_manually;
-}
+export const is_recipient_edited_manually = (): boolean => recipient_edited_manually;
 
-export function set_is_content_unedited_restored_draft(flag: boolean): void {
+export const set_is_content_unedited_restored_draft = (flag: boolean): void => {
     is_content_unedited_restored_draft = flag;
-}
+};
 
-export function get_is_content_unedited_restored_draft(): boolean {
-    return is_content_unedited_restored_draft;
-}
+export const get_is_content_unedited_restored_draft = (): boolean =>
+    is_content_unedited_restored_draft;
 
-export function set_last_focused_compose_type_input(element: HTMLTextAreaElement): void {
+export const set_last_focused_compose_type_input = (element: HTMLTextAreaElement): void => {
     last_focused_compose_type_input = element;
-}
+};
 
-export function get_last_focused_compose_type_input(): HTMLTextAreaElement | undefined {
-    return last_focused_compose_type_input;
-}
+export const get_last_focused_compose_type_input = (): HTMLTextAreaElement | undefined =>
+    last_focused_compose_type_input;
 
-export function set_message_type(msg_type: "stream" | "private" | undefined): void {
+export const set_message_type = (msg_type: "stream" | "private" | undefined): void => {
     message_type = msg_type;
-}
+};
 
-export function get_message_type(): "stream" | "private" | undefined {
-    return message_type;
-}
+export const get_message_type = (): "stream" | "private" | undefined => message_type;
 
-export function set_recipient_viewed_topic_resolved_banner(flag: boolean): void {
+export const set_recipient_viewed_topic_resolved_banner = (flag: boolean): void => {
     recipient_viewed_topic_resolved_banner = flag;
-}
+};
 
-export function has_recipient_viewed_topic_resolved_banner(): boolean {
-    return recipient_viewed_topic_resolved_banner;
-}
+export const has_recipient_viewed_topic_resolved_banner = (): boolean =>
+    recipient_viewed_topic_resolved_banner;
 
-export function composing(): boolean {
-    // This is very similar to get_message_type(), but it returns
-    // a boolean.
-    return Boolean(message_type);
-}
+export const composing = (): boolean => Boolean(message_type);
 
-function get_or_set(
-    input_selector: string,
-    keep_leading_whitespace?: boolean,
-    no_trim?: boolean,
-): (newval?: string) => string {
-    // We can't hoist the assignment of '$elem' out of this lambda,
-    // because the DOM element might not exist yet when get_or_set
-    // is called.
-    return function (newval) {
+const get_or_set =
+    (
+        input_selector: string,
+        keep_leading_whitespace?: boolean,
+        no_trim?: boolean,
+    ): ((newval?: string) => string) =>
+    (newval) => {
         const $elem = $<HTMLInputElement | HTMLTextAreaElement>(input_selector);
         const oldval = $elem.val()!;
         if (newval !== undefined) {
@@ -85,7 +72,6 @@ function get_or_set(
         }
         return oldval.trim();
     };
-}
 
 // selected_recipient_id is the current state for the stream picker widget:
 // "" -> stream message but no stream is selected
@@ -94,40 +80,38 @@ function get_or_set(
 export let selected_recipient_id: number | "direct" | "" = "";
 export const DIRECT_MESSAGE_ID = "direct";
 
-export function set_selected_recipient_id(recipient_id: number | "direct" | ""): void {
+export const set_selected_recipient_id = (recipient_id: number | "direct" | ""): void => {
     selected_recipient_id = recipient_id;
-}
+};
 
-export function stream_id(): number | undefined {
+export const stream_id = (): number | undefined => {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return stream_id;
     }
     return undefined;
-}
+};
 
-export function stream_name(): string {
+export const stream_name = (): string => {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return sub_store.maybe_get_stream_name(stream_id) ?? "";
     }
     return "";
-}
+};
 
-export function set_stream_id(stream_id: number | ""): void {
+export const set_stream_id = (stream_id: number | ""): void => {
     set_selected_recipient_id(stream_id);
-}
+};
 
-export function set_compose_recipient_id(recipient_id: number | "direct"): void {
+export const set_compose_recipient_id = (recipient_id: number | "direct"): void => {
     set_selected_recipient_id(recipient_id);
-}
+};
 
 // TODO: Break out setter and getter into their own functions.
 export const topic = get_or_set("input#stream_message_recipient_topic");
 
-export function empty_topic_placeholder(): string {
-    return $t({defaultMessage: "(no topic)"});
-}
+export const empty_topic_placeholder = (): string => $t({defaultMessage: "(no topic)"});
 
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
@@ -135,14 +119,14 @@ export const message_content = get_or_set("textarea#compose-textarea", true);
 
 const untrimmed_message_content = get_or_set("textarea#compose-textarea", true, true);
 
-function cursor_at_start_of_whitespace_in_compose(): boolean {
+const cursor_at_start_of_whitespace_in_compose = (): boolean => {
     const cursor_position = $("textarea#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
-}
+};
 
-export function focus_in_empty_compose(
+export const focus_in_empty_compose = (
     consider_start_of_whitespace_message_empty = false,
-): boolean {
+): boolean => {
     // A user trying to press arrow keys in an empty compose is mostly
     // likely trying to navigate messages. This helper function
     // decides whether the compose box is empty for this purpose.
@@ -183,7 +167,7 @@ export function focus_in_empty_compose(
     }
 
     return false;
-}
+};
 
 export function private_message_recipient(): string;
 export function private_message_recipient(value: string): undefined;
@@ -195,27 +179,23 @@ export function private_message_recipient(value?: string): string | undefined {
     return compose_pm_pill.get_emails();
 }
 
-export function has_message_content(): boolean {
-    return message_content() !== "";
-}
+export const has_message_content = (): boolean => message_content() !== "";
 
-export function has_novel_message_content(): boolean {
-    return message_content() !== "" && !get_is_content_unedited_restored_draft();
-}
+export const has_novel_message_content = (): boolean =>
+    message_content() !== "" && !get_is_content_unedited_restored_draft();
 
 const MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT = 2;
-export function has_savable_message_content(): boolean {
-    return message_content().length > MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT;
-}
+export const has_savable_message_content = (): boolean =>
+    message_content().length > MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT;
 
-export function has_full_recipient(): boolean {
+export const has_full_recipient = (): boolean => {
     if (message_type === "stream") {
         return stream_id() !== undefined && topic() !== "";
     }
     return private_message_recipient() !== "";
-}
+};
 
-export function update_email(user_id: number, new_email: string): void {
+export const update_email = (user_id: number, new_email: string): void => {
     let reply_to = private_message_recipient();
 
     if (!reply_to) {
@@ -225,17 +205,15 @@ export function update_email(user_id: number, new_email: string): void {
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
     private_message_recipient(reply_to);
-}
+};
 
 let _can_restore_drafts = true;
-export function prevent_draft_restoring(): void {
+export const prevent_draft_restoring = (): void => {
     _can_restore_drafts = false;
-}
+};
 
-export function allow_draft_restoring(): void {
+export const allow_draft_restoring = (): void => {
     _can_restore_drafts = true;
-}
+};
 
-export function can_restore_drafts(): boolean {
-    return _can_restore_drafts;
-}
+export const can_restore_drafts = (): boolean => _can_restore_drafts;

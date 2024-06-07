@@ -37,23 +37,23 @@ import {user_settings} from "./user_settings";
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
 
-function maybe_hide_recent_view() {
+const maybe_hide_recent_view = () => {
     if (recent_view_util.is_visible()) {
         recent_view_ui.hide();
         return true;
     }
     return false;
-}
+};
 
-function maybe_hide_inbox() {
+const maybe_hide_inbox = () => {
     if (inbox_util.is_visible()) {
         inbox_ui.hide();
         return true;
     }
     return false;
-}
+};
 
-function show_all_message_view() {
+const show_all_message_view = () => {
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
@@ -63,16 +63,13 @@ function show_all_message_view() {
         then_select_id: history.state?.narrow_pointer,
         then_select_offset: history.state?.narrow_offset,
     });
-}
+};
 
-function is_somebody_else_profile_open() {
-    return (
-        user_profile.get_user_id_if_user_profile_modal_open() !== undefined &&
-        user_profile.get_user_id_if_user_profile_modal_open() !== people.my_current_user_id()
-    );
-}
+const is_somebody_else_profile_open = () =>
+    user_profile.get_user_id_if_user_profile_modal_open() !== undefined &&
+    user_profile.get_user_id_if_user_profile_modal_open() !== people.my_current_user_id();
 
-export function set_hash_to_home_view(triggered_by_escape_key = false) {
+export const set_hash_to_home_view = (triggered_by_escape_key = false) => {
     const current_hash = window.location.hash;
     if (current_hash === "") {
         // Empty hash for home view is always valid.
@@ -111,9 +108,9 @@ export function set_hash_to_home_view(triggered_by_escape_key = false) {
         browser_history.set_hash("");
         hashchanged(false);
     }
-}
+};
 
-function show_home_view() {
+const show_home_view = () => {
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
@@ -145,10 +142,10 @@ function show_home_view() {
             window.location.hash = user_settings.web_home_view;
         }
     }
-}
+};
 
 // Returns true if this function performed a narrow
-function do_hashchange_normal(from_reload) {
+const do_hashchange_normal = (from_reload) => {
     message_viewport.stop_auto_scrolling();
 
     // NB: In Firefox, window.location.hash is URI-decoded.
@@ -252,9 +249,9 @@ function do_hashchange_normal(from_reload) {
             show_home_view();
     }
     return false;
-}
+};
 
-function do_hashchange_overlay(old_hash) {
+const do_hashchange_overlay = (old_hash) => {
     if (old_hash === undefined) {
         // The user opened the app with an overlay hash; we need to
         // show the user's home view behind it.
@@ -471,9 +468,9 @@ function do_hashchange_overlay(old_hash) {
             user_profile.show_user_profile(user);
         }
     }
-}
+};
 
-function hashchanged(from_reload, e) {
+const hashchanged = (from_reload, e) => {
     const current_hash = window.location.hash;
     const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : browser_history.old_hash());
     const is_hash_web_public_compatible = browser_history.update_web_public_hash(current_hash);
@@ -512,9 +509,9 @@ function hashchanged(from_reload, e) {
     const ret = do_hashchange_normal(from_reload);
     browser_history.state.changing_hash = false;
     return ret;
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     // We don't want browser to restore the scroll
     // position of the new hash in the current hash.
     window.history.scrollRestoration = "manual";
@@ -523,4 +520,4 @@ export function initialize() {
         hashchanged(false, e.originalEvent);
     });
     hashchanged(true);
-}
+};

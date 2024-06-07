@@ -14,7 +14,7 @@ import * as unread_ui from "./unread_ui";
 import * as user_topics from "./user_topics";
 import type {ServerUserTopic} from "./user_topics";
 
-function should_add_topic_update_delay(visibility_policy: number): boolean | undefined {
+const should_add_topic_update_delay = (visibility_policy: number): boolean | undefined => {
     // If topic visibility related popovers are active, add a delay to all methods that
     // hide the topic on mute. This allows the switching animations to complete before the
     // popover is force closed due to the reference element being removed from view.
@@ -29,9 +29,9 @@ function should_add_topic_update_delay(visibility_policy: number): boolean | und
     const is_topic_narrow = narrow_state.narrowed_by_topic_reply();
 
     return is_topic_muted && is_relevant_popover_open && !is_inbox_view && !is_topic_narrow;
-}
+};
 
-export function handle_topic_updates(user_topic_event: ServerUserTopic): void {
+export const handle_topic_updates = (user_topic_event: ServerUserTopic): void => {
     // Update the UI after changes in topic visibility policies.
     user_topics.set_user_topic(user_topic_event);
 
@@ -79,9 +79,9 @@ export function handle_topic_updates(user_topic_event: ServerUserTopic): void {
             }
         }
     }, 0);
-}
+};
 
-export function toggle_topic_visibility_policy(message: Message): void {
+export const toggle_topic_visibility_policy = (message: Message): void => {
     if (message.type !== "stream") {
         return;
     }
@@ -115,4 +115,4 @@ export function toggle_topic_visibility_policy(message: Message): void {
             );
         }
     }
-}
+};

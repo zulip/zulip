@@ -33,19 +33,16 @@ export type Suggestion = {
 
 export const max_num_of_search_results = 12;
 
-function channel_matches_query(channel_name: string, q: string): boolean {
-    return common.phrase_match(q, channel_name);
-}
+const channel_matches_query = (channel_name: string, q: string): boolean =>
+    common.phrase_match(q, channel_name);
 
-function make_person_highlighter(query: string): (person: User) => string {
+const make_person_highlighter = (query: string): ((person: User) => string) => {
     const highlight_query = typeahead_helper.make_query_highlighter(query);
 
-    return function (person: User): string {
-        return highlight_query(person.full_name);
-    };
-}
+    return (person: User): string => highlight_query(person.full_name);
+};
 
-function highlight_person(person: User, highlighter: (person: User) => string): UserPillItem {
+const highlight_person = (person: User, highlighter: (person: User) => string): UserPillItem => {
     const avatar_url = people.small_avatar_url_for_person(person);
     const highlighted_name = highlighter(person);
 
@@ -56,9 +53,9 @@ function highlight_person(person: User, highlighter: (person: User) => string): 
         img_src: avatar_url,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
     };
-}
+};
 
-function match_criteria(terms: NarrowTerm[], criteria: TermPattern[]): boolean {
+const match_criteria = (terms: NarrowTerm[], criteria: TermPattern[]): boolean => {
     const filter = new Filter(terms);
     return criteria.some((cr) => {
         if (cr.operand !== undefined) {
@@ -66,14 +63,14 @@ function match_criteria(terms: NarrowTerm[], criteria: TermPattern[]): boolean {
         }
         return filter.has_operator(cr.operator);
     });
-}
+};
 
-function check_validity(
+const check_validity = (
     last: NarrowTerm,
     terms: NarrowTerm[],
     valid: string[],
     incompatible_patterns: TermPattern[],
-): boolean {
+): boolean => {
     // valid: list of strings valid for the last operator
     // incompatible_patterns: list of terms incompatible for any previous terms except last.
     if (!valid.includes(last.operator)) {
@@ -83,16 +80,14 @@ function check_validity(
         return false;
     }
     return true;
-}
+};
 
-function format_as_suggestion(terms: NarrowTerm[]): Suggestion {
-    return {
-        description_html: Filter.search_description_as_html(terms),
-        search_string: Filter.unparse(terms),
-    };
-}
+const format_as_suggestion = (terms: NarrowTerm[]): Suggestion => ({
+    description_html: Filter.search_description_as_html(terms),
+    search_string: Filter.unparse(terms),
+});
 
-function compare_by_huddle(huddle_emails: string[]): (person1: User, person2: User) => number {
+const compare_by_huddle = (huddle_emails: string[]): ((person1: User, person2: User) => number) => {
     const user_ids = huddle_emails.slice(0, -1).flatMap((person) => {
         const user = people.get_by_email(person);
         return user?.user_id ?? [];
@@ -104,7 +99,7 @@ function compare_by_huddle(huddle_emails: string[]): (person1: User, person2: Us
         huddle_dict.set(huddle, i + 1);
     }
 
-    return function (person1: User, person2: User): number {
+    return (person1: User, person2: User): number => {
         const huddle1 = people.concat_huddle(user_ids, person1.user_id);
         const huddle2 = people.concat_huddle(user_ids, person2.user_id);
         // If not in the dict, assign an arbitrarily high index
@@ -117,9 +112,9 @@ function compare_by_huddle(huddle_emails: string[]): (person1: User, person2: Us
         }
         return typeahead_helper.compare_by_pms(person1, person2);
     };
-}
+};
 
-function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+const get_channel_suggestions = (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
     // For users with "stream" in their muscle memory, still
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
@@ -159,9 +154,9 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     });
 
     return objs;
-}
+};
 
-function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+const get_group_suggestions = (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
     // For users with "pm-with" in their muscle memory, still
     // have group direct message suggestions with "dm:" operator.
     if (!check_validity(last, terms, ["dm", "pm-with"], [{operator: "channel"}])) {
@@ -234,16 +229,16 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     });
 
     return suggestions;
-}
+};
 
-function make_people_getter(last: NarrowTerm): () => User[] {
+const make_people_getter = (last: NarrowTerm): (() => User[]) => {
     let persons: User[];
 
     /* The next function will be called between 0 and 4
        times for each keystroke in a search, but we will
        only do real work one time.
     */
-    return function (): User[] {
+    return (): User[] => {
         if (persons !== undefined) {
             return persons;
         }
@@ -262,15 +257,15 @@ function make_people_getter(last: NarrowTerm): () => User[] {
         persons.sort(typeahead_helper.compare_by_pms);
         return persons;
     };
-}
+};
 
 // Possible args for autocomplete_operator: dm, pm-with, sender, from, dm-including
-function get_person_suggestions(
+const get_person_suggestions = (
     people_getter: () => User[],
     last: NarrowTerm,
     terms: NarrowTerm[],
     autocomplete_operator: string,
-): Suggestion[] {
+): Suggestion[] => {
     if ((last.operator === "is" && last.operand === "dm") || last.operator === "pm-with") {
         // Interpret "is:dm" or "pm-with:" operator as equivalent to "dm:".
         last = {operator: "dm", operand: "", negated: false};
@@ -343,24 +338,24 @@ function get_person_suggestions(
     });
 
     return objs;
-}
+};
 
-function get_default_suggestion(terms: NarrowTerm[]): Suggestion {
+const get_default_suggestion = (terms: NarrowTerm[]): Suggestion => {
     // Here we return the canonical suggestion for the query that the
     // user typed. (The caller passes us the parsed query as "terms".)
     if (terms.length === 0) {
         return {description_html: "", search_string: ""};
     }
     return format_as_suggestion(terms);
-}
+};
 
-export function get_topic_suggestions_from_candidates({
+export const get_topic_suggestions_from_candidates = ({
     candidate_topics,
     guess,
 }: {
     candidate_topics: string[];
     guess: string;
-}): string[] {
+}): string[] => {
     // This function is exported for unit testing purposes.
     const max_num_topics = 10;
 
@@ -390,9 +385,9 @@ export function get_topic_suggestions_from_candidates({
     }
 
     return topics;
-}
+};
 
-function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+const get_topic_suggestions = (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
     const incompatible_patterns = [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
@@ -487,9 +482,9 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         const terms = [...suggest_terms, topic_term];
         return format_as_suggestion(terms);
     });
-}
+};
 
-function get_term_subset_suggestions(terms: NarrowTerm[]): Suggestion[] {
+const get_term_subset_suggestions = (terms: NarrowTerm[]): Suggestion[] => {
     // For channel:a topic:b search:c, suggest:
     //  channel:a topic:b
     //  channel:a
@@ -505,13 +500,13 @@ function get_term_subset_suggestions(terms: NarrowTerm[]): Suggestion[] {
     }
 
     return suggestions;
-}
+};
 
-function get_special_filter_suggestions(
+const get_special_filter_suggestions = (
     last: NarrowTerm,
     terms: NarrowTerm[],
     suggestions: (Suggestion & {incompatible_patterns: TermPattern[]})[],
-): Suggestion[] {
+): Suggestion[] => {
     const is_search_operand_negated = last.operator === "search" && last.operand.startsWith("-");
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated terms.
@@ -546,9 +541,9 @@ function get_special_filter_suggestions(
     const filtered_suggestions = suggestions.map(({incompatible_patterns, ...s}) => s);
 
     return filtered_suggestions;
-}
+};
 
-function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+const get_channels_filter_suggestions = (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
     let search_string = "channels:public";
     // show "channels:public" option for users who
     // have "streams" in their muscle memory
@@ -570,8 +565,8 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
-}
-function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+};
+const get_is_filter_suggestions = (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
     const suggestions = [
         {
             search_string: "is:dm",
@@ -616,9 +611,9 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
-}
+};
 
-function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+const get_has_filter_suggestions = (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
     const suggestions = [
         {
             search_string: "has:link",
@@ -637,9 +632,9 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
-}
+};
 
-function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+const get_sent_by_me_suggestions = (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
     const last_string = Filter.unparse([last]).toLowerCase();
     const negated =
         last.negated === true || (last.operator === "search" && last.operand.startsWith("-"));
@@ -673,9 +668,9 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
         ];
     }
     return [];
-}
+};
 
-function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
+const get_operator_suggestions = (last: NarrowTerm): Suggestion[] => {
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory
     if (last.operator === "is" && common.phrase_match(last.operand, "private")) {
         const is_dm = format_as_suggestion([
@@ -722,7 +717,7 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
         const op = [{operator: choice, operand: "", negated}];
         return format_as_suggestion(op);
     });
-}
+};
 
 class Attacher {
     result: Suggestion[] = [];
@@ -762,7 +757,7 @@ class Attacher {
     }
 }
 
-export function get_search_result(query: string): Suggestion[] {
+export const get_search_result = (query: string): Suggestion[] => {
     let suggestion: Suggestion;
 
     // search_terms correspond to the terms for the query in the input.
@@ -824,13 +819,10 @@ export function get_search_result(query: string): Suggestion[] {
     // only make one people_getter to avoid duplicate work
     const people_getter = make_people_getter(last);
 
-    function get_people(
-        flavor: string,
-    ): (last: NarrowTerm, base_terms: NarrowTerm[]) => Suggestion[] {
-        return function (last: NarrowTerm, base_terms: NarrowTerm[]): Suggestion[] {
-            return get_person_suggestions(people_getter, last, base_terms, flavor);
-        };
-    }
+    const get_people =
+        (flavor: string): ((last: NarrowTerm, base_terms: NarrowTerm[]) => Suggestion[]) =>
+        (last: NarrowTerm, base_terms: NarrowTerm[]): Suggestion[] =>
+            get_person_suggestions(people_getter, last, base_terms, flavor);
 
     // Remember to update the spectator list when changing this.
     let filterers = [
@@ -875,20 +867,24 @@ export function get_search_result(query: string): Suggestion[] {
     }
 
     return attacher.result.slice(0, max_items);
-}
+};
 
-export function get_suggestions(query: string): {
+export const get_suggestions = (
+    query: string,
+): {
     strings: string[];
     lookup_table: Map<string, Suggestion>;
-} {
+} => {
     const result = get_search_result(query);
     return finalize_search_result(result);
-}
+};
 
-export function finalize_search_result(result: Suggestion[]): {
+export const finalize_search_result = (
+    result: Suggestion[],
+): {
     strings: string[];
     lookup_table: Map<string, Suggestion>;
-} {
+} => {
     for (const sug of result) {
         const first = sug.description_html.charAt(0).toUpperCase();
         sug.description_html = first + sug.description_html.slice(1);
@@ -907,4 +903,4 @@ export function finalize_search_result(result: Suggestion[]): {
         strings,
         lookup_table,
     };
-}
+};

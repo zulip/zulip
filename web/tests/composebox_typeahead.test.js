@@ -12,7 +12,7 @@ let autosize_called;
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 const compose_ui = mock_esm("../src/compose_ui", {
-    autosize_textarea() {
+    autosize_textarea: () => {
         autosize_called = true;
     },
     cursor_inside_code_block: () => false,
@@ -61,41 +61,29 @@ const ct = composebox_typeahead;
 // broadcast-mentions/persons/groups.
 ct.__Rewire__("max_num_items", 15);
 
-function user_item(user) {
-    return {type: "user", user};
-}
+const user_item = (user) => ({type: "user", user});
 
-function broadcast_item(user) {
-    return {type: "broadcast", user};
-}
+const broadcast_item = (user) => ({type: "broadcast", user});
 
-function slash_item(slash) {
-    return {
-        ...slash,
-        type: "slash",
-    };
-}
+const slash_item = (slash) => ({
+    ...slash,
+    type: "slash",
+});
 
-function stream_item(stream) {
-    return {
-        ...stream,
-        type: "stream",
-    };
-}
+const stream_item = (stream) => ({
+    ...stream,
+    type: "stream",
+});
 
-function user_group_item(item) {
-    return {
-        ...item,
-        type: "user_group",
-    };
-}
+const user_group_item = (item) => ({
+    ...item,
+    type: "user_group",
+});
 
-function language_item(language) {
-    return {
-        language,
-        type: "syntax",
-    };
-}
+const language_item = (language) => ({
+    language,
+    type: "syntax",
+});
 
 run_test("verify wildcard mentions typeahead for stream message", () => {
     compose_state.set_message_type("stream");
@@ -321,9 +309,8 @@ const emoji_list = composebox_typeahead.emoji_collection.map((emoji) => ({
     type: "emoji",
 }));
 const emoji_list_by_name = new Map(emoji_list.map((emoji) => [emoji.emoji_name, emoji]));
-function emoji_objects(emoji_names) {
-    return emoji_names.map((emoji_name) => emoji_list_by_name.get(emoji_name));
-}
+const emoji_objects = (emoji_names) =>
+    emoji_names.map((emoji_name) => emoji_list_by_name.get(emoji_name));
 
 const ali = {
     email: "ali@zulip.com",
@@ -474,7 +461,7 @@ const sorted_user_list = [
     othello_item,
 ];
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         people.init();
         user_groups.init();
@@ -502,7 +489,7 @@ function test(label, f) {
 
         f(helpers);
     });
-}
+};
 
 test("topics_seen_for", ({override, override_rewire}) => {
     override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
@@ -827,9 +814,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.ok(warned_for_stream_link);
 });
 
-function sorted_names_from(subs) {
-    return subs.map((sub) => sub.name).sort();
-}
+const sorted_names_from = (subs) => subs.map((sub) => sub.name).sort();
 
 const sweden_topics_to_show = ["<&>", "even more ice", "furniture", "ice", "kronor", "more ice"];
 
@@ -840,13 +825,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     let cleared = false;
     let appended_names = [];
     override(input_pill, "create", () => ({
-        clear_text() {
+        clear_text: () => {
             cleared = true;
         },
         items: () => pill_items,
-        onPillCreate() {},
-        onPillRemove() {},
-        appendValidatedData(item) {
+        onPillCreate: () => {},
+        onPillRemove: () => {},
+        appendValidatedData: (item) => {
             appended_names.push(item.display_value);
         },
     }));
@@ -965,10 +950,10 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ];
                 assert.deepEqual(actual_value, expected_value);
 
-                function matcher(query, person) {
+                const matcher = (query, person) => {
                     query = typeahead.clean_query_lowercase(query);
                     return typeahead_helper.query_matches_person(query, person);
-                }
+                };
 
                 let query;
                 query = "el"; // Matches both "othELlo" and "cordELia"
@@ -1013,14 +998,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 deactivated_user.delivery_email = "other@zulip.com";
                 assert.equal(matcher(query, deactivated_user_item), true);
 
-                function sorter(query, people) {
-                    return typeahead_helper.sort_recipients({
+                const sorter = (query, people) =>
+                    typeahead_helper.sort_recipients({
                         users: people,
                         query,
                         current_stream_id: compose_state.stream_id(),
                         current_topic: compose_state.topic(),
                     });
-                }
 
                 // The sorter's output has the items that match the query from the
                 // beginning first, and then the rest of them in REVERSE order of
@@ -1253,9 +1237,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
     user_settings.enter_sends = false;
     let compose_finish_called = false;
-    function finish() {
+    const finish = () => {
         compose_finish_called = true;
-    }
+    };
 
     ct.initialize({
         on_enter_send: finish,
@@ -1419,14 +1403,14 @@ test("begins_typeahead", ({override, override_rewire}) => {
         type: "input",
     };
 
-    function get_values(input, rest) {
+    const get_values = (input, rest) => {
         // Stub out split_at_cursor that uses $(':focus')
         override_rewire(ct, "split_at_cursor", () => [input, rest]);
         const values = ct.get_candidates(input, input_element);
         return values;
-    }
+    };
 
-    function assert_typeahead_equals(input, rest, reference) {
+    const assert_typeahead_equals = (input, rest, reference) => {
         // Usage:
         // assert_typeahead_equals('#some', reference); => '#some|'
         // assert_typeahead_equals('#some', 'thing', reference) => '#some|thing'
@@ -1437,9 +1421,9 @@ test("begins_typeahead", ({override, override_rewire}) => {
         }
         const values = get_values(input, rest);
         assert.deepEqual(values, reference);
-    }
+    };
 
-    function assert_typeahead_starts_with(input, rest, reference) {
+    const assert_typeahead_starts_with = (input, rest, reference) => {
         if (reference === undefined) {
             reference = rest;
             rest = "";
@@ -1447,7 +1431,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         const values = get_values(input, rest);
         assert.ok(reference.length > 0);
         assert.deepEqual(values.slice(0, reference.length), reference);
-    }
+    };
 
     assert_typeahead_equals("test", []);
     assert_typeahead_equals("test one two", []);
@@ -1459,9 +1443,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // Make sure that the last token is the one we read.
     assert_typeahead_equals("~~~ @zulip", []); // zulip isn't set up as a user group
     assert_typeahead_equals("@zulip :ta", emoji_objects(["tada", "stadium"]));
-    function language_objects(languages) {
-        return languages.map((language) => language_item(language));
-    }
+    const language_objects = (languages) => languages.map((language) => language_item(language));
     assert_typeahead_equals(
         "#foo\n~~~py",
         language_objects([
@@ -1498,12 +1480,11 @@ test("begins_typeahead", ({override, override_rewire}) => {
         call_center, // "folks working in support"
     ];
     const mention_everyone = broadcast_item(ct.broadcast_mentions()[1]);
-    function mentions_with_silent_marker(mentions, is_silent) {
-        return mentions.map((item) => ({
+    const mentions_with_silent_marker = (mentions, is_silent) =>
+        mentions.map((item) => ({
             ...item,
             is_silent,
         }));
-    }
     assert_typeahead_equals("@", mentions_with_silent_marker(users_and_all_mention, false));
     // The user we're testing for is only allowed to do silent mentions of groups
     assert_typeahead_equals("@", mentions_with_silent_marker(users_and_all_mention, false));
@@ -1782,12 +1763,11 @@ test("begins_typeahead", ({override, override_rewire}) => {
 
     // topic_list
     // includes "more ice"
-    function typed_topics(topics) {
-        return topics.map((topic) => ({
+    const typed_topics = (topics) =>
+        topics.map((topic) => ({
             type: "topic_list",
             topic,
         }));
-    }
     assert_typeahead_equals("#**Sweden>more ice", typed_topics(["more ice", "even more ice"]));
     assert_typeahead_equals("#**Sweden>totally new topic", typed_topics(["totally new topic"]));
 
@@ -1919,12 +1899,11 @@ test("content_highlighter_html", ({override_rewire}) => {
     assert.ok(th_render_slash_command_called);
 });
 
-function possibly_silent_list(list, is_silent) {
-    return list.map((item) => ({
+const possibly_silent_list = (list, is_silent) =>
+    list.map((item) => ({
         ...item,
         is_silent,
     }));
-}
 
 test("filter_and_sort_mentions (normal)", () => {
     compose_state.set_message_type("stream");
@@ -1988,28 +1967,28 @@ test("typeahead_results", () => {
         mobile_stream,
     ];
 
-    function assert_emoji_matches(input, expected) {
+    const assert_emoji_matches = (input, expected) => {
         const matcher = typeahead.get_emoji_matcher(input);
         const returned = emoji_list.filter((item) => matcher(item));
         assert.deepEqual(returned, expected);
-    }
+    };
 
-    function assert_mentions_matches(input, expected) {
+    const assert_mentions_matches = (input, expected) => {
         const is_silent = false;
         const returned = ct.filter_and_sort_mentions(is_silent, input);
         assert.deepEqual(returned, expected);
-    }
-    function assert_stream_matches(input, expected) {
+    };
+    const assert_stream_matches = (input, expected) => {
         const matcher = ct.get_stream_or_user_group_matcher(input);
         const returned = stream_list.filter((item) => matcher(item));
         assert.deepEqual(returned, expected);
-    }
+    };
 
-    function assert_slash_matches(input, expected) {
+    const assert_slash_matches = (input, expected) => {
         const matcher = ct.get_slash_matcher(input);
         const returned = composebox_typeahead.all_slash_commands.filter((item) => matcher(item));
         assert.deepEqual(returned, expected);
-    }
+    };
     assert_emoji_matches("da", [
         {
             emoji_name: "panda_face",
@@ -2067,12 +2046,10 @@ test("typeahead_results", () => {
     assert_emoji_matches("notaemoji", []);
 
     // Autocomplete user mentions by user name.
-    function not_silent(item) {
-        return {
-            ...item,
-            is_silent: false,
-        };
-    }
+    const not_silent = (item) => ({
+        ...item,
+        is_silent: false,
+    });
     assert_mentions_matches("cordelia", [not_silent(cordelia_item)]);
     assert_mentions_matches("cordelia, le", [not_silent(cordelia_item)]);
     assert_mentions_matches("cordelia, le ", []);

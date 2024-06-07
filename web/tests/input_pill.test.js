@@ -23,7 +23,7 @@ set_global("getSelection", () => ({
 
 const input_pill = zrequire("input_pill");
 
-function pill_html(value, img_src, status_emoji_info) {
+const pill_html = (value, img_src, status_emoji_info) => {
     const has_image = img_src !== undefined;
     const has_status = status_emoji_info !== undefined;
 
@@ -42,7 +42,7 @@ function pill_html(value, img_src, status_emoji_info) {
     }
 
     return require("../templates/input_pill.hbs")(opts);
-}
+};
 
 run_test("basics", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
@@ -88,7 +88,7 @@ run_test("basics", ({mock_template}) => {
     assert.deepEqual(widget.items(), [item]);
 });
 
-function set_up() {
+const set_up = () => {
     const items = {
         blue: {
             display_value: "BLUE",
@@ -132,7 +132,7 @@ function set_up() {
         items,
         $container,
     };
-}
+};
 
 run_test("copy from pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
@@ -156,7 +156,7 @@ run_test("copy from pill", ({mock_template}) => {
 
     const originalEvent = new ClipboardEvent();
     originalEvent.clipboardData = {
-        setData(format, text) {
+        setData: (format, text) => {
             assert.equal(format, "text/plain");
             copied_text = text;
         },
@@ -190,7 +190,7 @@ run_test("paste to input", ({mock_template}) => {
 
     const originalEvent = new ClipboardEvent();
     originalEvent.clipboardData = {
-        getData(format) {
+        getData: (format) => {
             assert.equal(format, "text/plain");
             return paste_text;
         },
@@ -233,25 +233,25 @@ run_test("arrows on pills", ({mock_template}) => {
 
     const key_handler = $container.get_on_handler("keydown", ".pill");
 
-    function test_key(c) {
+    const test_key = (c) => {
         key_handler({
             key: c,
         });
-    }
+    };
 
     let prev_focused = false;
     let next_focused = false;
 
     const $pill_stub = {
         prev: () => ({
-            trigger(type) {
+            trigger: (type) => {
                 if (type === "focus") {
                     prev_focused = true;
                 }
             },
         }),
         next: () => ({
-            trigger(type) {
+            trigger: (type) => {
                 if (type === "focus") {
                     next_focused = true;
                 }
@@ -290,7 +290,7 @@ run_test("left arrow on input", ({mock_template}) => {
 
     $container.set_find_results(".pill", {
         last: () => ({
-            trigger(type) {
+            trigger: (type) => {
                 if (type === "focus") {
                     last_pill_focused = true;
                 }
@@ -429,11 +429,9 @@ run_test("insert_remove", ({mock_template}) => {
     assert.equal(widget.is_pending(), false);
 
     let color_removed;
-    function set_colored_removed_func(color) {
-        return () => {
-            color_removed = color;
-        };
-    }
+    const set_colored_removed_func = (color) => () => {
+        color_removed = color;
+    };
 
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
@@ -460,7 +458,7 @@ run_test("insert_remove", ({mock_template}) => {
     let next_pill_focused = false;
 
     const $next_pill_stub = {
-        trigger(type) {
+        trigger: (type) => {
             if (type === "focus") {
                 next_pill_focused = true;
             }
@@ -511,7 +509,7 @@ run_test("exit button on pill", ({mock_template}) => {
     let next_pill_focused = false;
 
     const $next_pill_stub = {
-        trigger(type) {
+        trigger: (type) => {
             if (type === "focus") {
                 next_pill_focused = true;
             }
@@ -525,7 +523,7 @@ run_test("exit button on pill", ({mock_template}) => {
 
     const exit_button_stub = {
         to_$: () => ({
-            closest(sel) {
+            closest: (sel) => {
                 assert.equal(sel, ".pill");
                 return $curr_pill_stub;
             },
@@ -560,7 +558,7 @@ run_test("misc things", () => {
 
     const input_stub = {
         to_$: () => ({
-            removeClass(cls) {
+            removeClass: (cls) => {
                 assert.equal(cls, "shake");
                 shake_class_removed = true;
             },

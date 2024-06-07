@@ -25,39 +25,37 @@ export const state: {
         : null,
 };
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     state.is_internal_change = false;
     state.hash_before_overlay = null;
     state.old_hash = "#";
-}
+};
 
-export function old_hash(): string {
-    return state.old_hash;
-}
+export const old_hash = (): string => state.old_hash;
 
-export function set_hash_before_overlay(hash: string): void {
+export const set_hash_before_overlay = (hash: string): void => {
     state.hash_before_overlay = hash;
-}
+};
 
-export function update_web_public_hash(hash: string): boolean {
+export const update_web_public_hash = (hash: string): boolean => {
     // Returns true if hash is web-public compatible.
     if (hash_parser.is_spectator_compatible(hash)) {
         state.spectator_old_hash = hash;
         return true;
     }
     return false;
-}
+};
 
-export function save_old_hash(): boolean {
+export const save_old_hash = (): boolean => {
     state.old_hash = window.location.hash;
 
     const was_internal_change = state.is_internal_change;
     state.is_internal_change = false;
 
     return was_internal_change;
-}
+};
 
-export function update(new_hash: string): void {
+export const update = (new_hash: string): void => {
     const old_hash = window.location.hash;
 
     if (!new_hash.startsWith("#")) {
@@ -77,34 +75,34 @@ export function update(new_hash: string): void {
     state.old_hash = old_hash;
     state.is_internal_change = true;
     window.location.hash = new_hash;
-}
+};
 
-export function exit_overlay(): void {
+export const exit_overlay = (): void => {
     if (hash_parser.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const new_hash = state.hash_before_overlay || `#${user_settings.web_home_view}`;
         update(new_hash);
     }
-}
+};
 
-export function go_to_location(hash: string): void {
+export const go_to_location = (hash: string): void => {
     // Call this function when you WANT the hashchanged
     // function to run.
     window.location.hash = hash;
-}
+};
 
-export function update_hash_internally_if_required(hash: string): void {
+export const update_hash_internally_if_required = (hash: string): void => {
     if (window.location.hash !== hash) {
         update(hash);
     }
-}
+};
 
-export function return_to_web_public_hash(): void {
+export const return_to_web_public_hash = (): void => {
     window.location.hash = state.spectator_old_hash ?? `#${user_settings.web_home_view}`;
-}
+};
 
-export function get_full_url(hash: string): string {
+export const get_full_url = (hash: string): string => {
     const location = window.location;
 
     if (!hash.startsWith("#") && hash !== "") {
@@ -122,9 +120,9 @@ export function get_full_url(hash: string): string {
     // Build a full URL to not have same origin problems
     const url = location.protocol + "//" + location.host + pathname + hash;
     return url;
-}
+};
 
-export function set_hash(hash: string): void {
+export const set_hash = (hash: string): void => {
     if (hash === window.location.hash) {
         // Avoid adding duplicate entries in browser history.
         return;
@@ -153,7 +151,7 @@ export function set_hash(hash: string): void {
         blueslip.error("browser does not support pushState");
         window.location.hash = hash;
     }
-}
+};
 
 type StateData = {
     narrow_pointer?: number;
@@ -161,7 +159,7 @@ type StateData = {
     show_more_topics?: boolean;
 };
 
-export function update_current_history_state_data(new_data: StateData): void {
+export const update_current_history_state_data = (new_data: StateData): void => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const current_state = history.state as StateData | null;
     const current_state_data = {
@@ -171,4 +169,4 @@ export function update_current_history_state_data(new_data: StateData): void {
     };
     const state_data = {...current_state_data, ...new_data};
     history.replaceState(state_data, "", window.location.href);
-}
+};

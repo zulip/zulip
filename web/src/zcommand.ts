@@ -31,7 +31,7 @@ const data_schema = z.object({
     msg: z.string(),
 });
 
-export function send(opts: {command: string; on_success?: (data: unknown) => void}): void {
+export const send = (opts: {command: string; on_success?: (data: unknown) => void}): void => {
     const command = opts.command;
     const on_success = opts.on_success;
     const data = {
@@ -41,18 +41,18 @@ export function send(opts: {command: string; on_success?: (data: unknown) => voi
     void channel.post({
         url: "/json/zcommand",
         data,
-        success(data) {
+        success: (data) => {
             if (on_success) {
                 on_success(data);
             }
         },
-        error() {
+        error: () => {
             tell_user("server did not respond");
         },
     });
-}
+};
 
-export function tell_user(msg: string): void {
+export const tell_user = (msg: string): void => {
     // This is a bit hacky, but we don't have a super easy API now
     // for just telling users stuff.
     compose_banner.show_error_message(
@@ -60,23 +60,23 @@ export function tell_user(msg: string): void {
         compose_banner.CLASSNAMES.generic_compose_error,
         $("#compose_banners"),
     );
-}
+};
 
-export function switch_to_light_theme(): void {
+export const switch_to_light_theme = (): void => {
     send({
         command: "/day",
-        on_success(data) {
+        on_success: (data) => {
             const clean_data = data_schema.parse(data);
             requestAnimationFrame(() => {
                 dark_theme.disable();
                 message_lists.update_recipient_bar_background_color();
             });
             feedback_widget.show({
-                populate($container) {
+                populate: ($container) => {
                     const rendered_msg = markdown.parse_non_message(clean_data.msg);
                     $container.html(rendered_msg);
                 },
-                on_undo() {
+                on_undo: () => {
                     send({
                         command: "/night",
                     });
@@ -86,23 +86,23 @@ export function switch_to_light_theme(): void {
             });
         },
     });
-}
+};
 
-export function switch_to_dark_theme(): void {
+export const switch_to_dark_theme = (): void => {
     send({
         command: "/night",
-        on_success(data) {
+        on_success: (data) => {
             const clean_data = data_schema.parse(data);
             requestAnimationFrame(() => {
                 dark_theme.enable();
                 message_lists.update_recipient_bar_background_color();
             });
             feedback_widget.show({
-                populate($container) {
+                populate: ($container) => {
                     const rendered_msg = markdown.parse_non_message(clean_data.msg);
                     $container.html(rendered_msg);
                 },
-                on_undo() {
+                on_undo: () => {
                     send({
                         command: "/day",
                     });
@@ -112,9 +112,9 @@ export function switch_to_dark_theme(): void {
             });
         },
     });
-}
+};
 
-export function process(message_content: string): boolean {
+export const process = (message_content: string): boolean => {
     const content = message_content.trim();
 
     if (content === "/ping") {
@@ -122,7 +122,7 @@ export function process(message_content: string): boolean {
 
         send({
             command: content,
-            on_success() {
+            on_success: () => {
                 const end_time = new Date();
                 let diff = end_time.getTime() - start_time.getTime();
                 diff = Math.round(diff);
@@ -149,4 +149,4 @@ export function process(message_content: string): boolean {
     // if we don't see an actual zcommand, so that compose.js
     // knows this is a normal message.
     return false;
-}
+};

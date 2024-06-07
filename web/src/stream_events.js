@@ -27,13 +27,13 @@ import * as user_profile from "./user_profile";
 // however, they are only called after a manual override, so
 // doing so is unnecessary with the current code.  Ideally, we'd do a
 // refactor to address that, however.
-function update_stream_setting(sub, value, setting) {
+const update_stream_setting = (sub, value, setting) => {
     const $setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id)}`);
     $setting_checkbox.prop("checked", value);
     sub[setting] = value;
-}
+};
 
-export function update_property(stream_id, property, value, other_values) {
+export const update_property = (stream_id, property, value, other_values) => {
     const sub = sub_store.get(stream_id);
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
@@ -107,12 +107,12 @@ export function update_property(stream_id, property, value, other_values) {
                 value,
             });
     }
-}
+};
 
 // Add yourself to a stream we already know about client-side.
 // It's likely we should be passing in the full sub object from the caller/backend,
 // but for now we just pass in the subscribers and color (things likely to be different).
-export function mark_subscribed(sub, subscribers, color) {
+export const mark_subscribed = (sub, subscribers, color) => {
     if (sub === undefined) {
         blueslip.error("Undefined sub passed to mark_subscribed");
         return;
@@ -159,9 +159,9 @@ export function mark_subscribed(sub, subscribers, color) {
     stream_list.add_sidebar_row(sub);
     stream_list.update_subscribe_to_more_streams_link();
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
-}
+};
 
-export function mark_unsubscribed(sub) {
+export const mark_unsubscribed = (sub) => {
     if (sub === undefined) {
         // We don't know about this stream
         return;
@@ -197,9 +197,9 @@ export function mark_unsubscribed(sub) {
     stream_list.remove_sidebar_row(sub.stream_id);
     stream_list.update_subscribe_to_more_streams_link();
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
-}
+};
 
-export function remove_deactivated_user_from_all_streams(user_id) {
+export const remove_deactivated_user_from_all_streams = (user_id) => {
     const all_subs = stream_data.get_unsorted_subs();
 
     for (const sub of all_subs) {
@@ -208,9 +208,9 @@ export function remove_deactivated_user_from_all_streams(user_id) {
             stream_settings_ui.update_subscribers_ui(sub);
         }
     }
-}
+};
 
-export function process_subscriber_update(user_ids, stream_ids) {
+export const process_subscriber_update = (user_ids, stream_ids) => {
     for (const stream_id of stream_ids) {
         const sub = sub_store.get(stream_id);
         stream_settings_ui.update_subscribers_ui(sub);
@@ -219,4 +219,4 @@ export function process_subscriber_update(user_ids, stream_ids) {
     if (stream_ids.includes(narrow_state.stream_id())) {
         activity_ui.build_user_sidebar();
     }
-}
+};

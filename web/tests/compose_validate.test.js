@@ -64,22 +64,22 @@ const welcome_bot = {
 
 people.add_cross_realm_user(welcome_bot);
 
-function test_ui(label, f) {
+const test_ui = (label, f) => {
     // The sloppy_$ flag lets us reuse setup from prior tests.
     run_test(label, (helpers) => {
         $("textarea#compose-textarea").val("some message");
         f(helpers);
     });
-}
+};
 
-function stub_message_row($textarea) {
+const stub_message_row = ($textarea) => {
     const $stub = $.create("message_row_stub");
     $textarea.closest = (selector) => {
         assert.equal(selector, ".message_row");
         $stub.length = 0;
         return $stub;
     };
-}
+};
 
 test_ui("validate_stream_message_address_info", ({mock_template}) => {
     mock_banners();
@@ -113,7 +113,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 });
 
 test_ui("validate", ({mock_template}) => {
-    function initialize_pm_pill() {
+    const initialize_pm_pill = () => {
         $.clear_all_elements();
 
         $("#compose-send-button").prop("disabled", false);
@@ -135,11 +135,11 @@ test_ui("validate", ({mock_template}) => {
         mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
 
         mock_banners();
-    }
+    };
 
-    function add_content_to_compose_box() {
+    const add_content_to_compose_box = () => {
         $("textarea#compose-textarea").val("foobarfoobar");
-    }
+    };
 
     // test validating direct messages
     compose_state.set_message_type("private");
@@ -614,13 +614,13 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
         return "<banner-stub>";
     });
 
-    function test_noop_case(invite_only) {
+    const test_noop_case = (invite_only) => {
         banner_rendered = false;
         compose_state.set_message_type("stream");
         denmark.invite_only = invite_only;
         compose_validate.warn_if_private_stream_is_linked(denmark, $textarea);
         assert.ok(!banner_rendered);
-    }
+    };
 
     test_noop_case(false);
     // invite_only=true and current compose stream subscribers are a subset
@@ -681,7 +681,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         return "<banner-stub>";
     });
 
-    function test_noop_case(is_private, is_zephyr_mirror, type) {
+    const test_noop_case = (is_private, is_zephyr_mirror, type) => {
         new_banner_rendered = false;
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
@@ -689,7 +689,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         mentioned_details.type = type;
         compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
         assert.ok(!new_banner_rendered);
-    }
+    };
 
     test_noop_case(true, false, "user");
     test_noop_case(false, true, "user");

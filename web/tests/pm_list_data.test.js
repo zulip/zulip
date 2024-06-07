@@ -66,31 +66,31 @@ people.add_active_user(iago);
 people.add_active_user(bot_test);
 people.initialize_current_user(me.user_id);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         message_lists.set_current(undefined);
         pm_conversations.clear_for_testing();
         f(helpers);
     });
-}
+};
 
-function set_pm_with_filter(emails) {
+const set_pm_with_filter = (emails) => {
     const active_filter = new Filter([{operator: "dm", operand: emails}]);
     message_lists.set_current({
         data: {
             filter: active_filter,
         },
     });
-}
+};
 
-function check_list_info(list, length, more_unread, recipients_array) {
+const check_list_info = (list, length, more_unread, recipients_array) => {
     assert.deepEqual(list.conversations_to_be_shown.length, length);
     assert.deepEqual(list.more_conversations_unread_count, more_unread);
     assert.deepEqual(
         list.conversations_to_be_shown.map((conversation) => conversation.recipients),
         recipients_array,
     );
-}
+};
 
 test("get_conversations", ({override}) => {
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);

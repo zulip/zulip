@@ -44,11 +44,9 @@ const george = {
     user_id: 103,
 };
 
-function contains_sub(subs, sub) {
-    return subs.some((s) => s.name === sub.name);
-}
+const contains_sub = (subs, sub) => subs.some((s) => s.name === sub.name);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         peer_data.clear_for_testing();
         stream_data.clear_subscriptions();
@@ -59,7 +57,7 @@ function test(label, f) {
 
         f({override});
     });
-}
+};
 
 test("unsubscribe", () => {
     const devel = {name: "devel", subscribed: false, stream_id: 1};
@@ -100,10 +98,10 @@ test("subscribers", () => {
 
     const stream_id = sub.stream_id;
 
-    function potential_subscriber_ids() {
+    const potential_subscriber_ids = () => {
         const users = peer_data.potential_subscribers(stream_id);
         return users.map((u) => u.user_id).sort();
-    }
+    };
 
     assert.deepEqual(potential_subscriber_ids(), [
         me.user_id,
@@ -250,7 +248,7 @@ test("get_subscriber_count", () => {
 });
 
 test("is_subscriber_subset", () => {
-    function make_sub(stream_id, user_ids) {
+    const make_sub = (stream_id, user_ids) => {
         const sub = {
             stream_id,
             name: `stream ${stream_id}`,
@@ -258,7 +256,7 @@ test("is_subscriber_subset", () => {
         stream_data.add_sub(sub);
         peer_data.set_subscribers(sub.stream_id, user_ids);
         return sub;
-    }
+    };
 
     const sub_a = make_sub(301, [1, 2]);
     const sub_b = make_sub(302, [2, 3]);

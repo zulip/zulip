@@ -33,17 +33,17 @@ import * as zcommand from "./zcommand";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
-export function clear_invites() {
+export const clear_invites = () => {
     $(
         `#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
     ).remove();
-}
+};
 
-export function clear_private_stream_alert() {
+export const clear_private_stream_alert = () => {
     $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.private_stream_warning)}`).remove();
-}
+};
 
-export function clear_preview_area() {
+export const clear_preview_area = () => {
     $("textarea#compose-textarea").show();
     $("textarea#compose-textarea").trigger("focus");
     $("#compose .undo_markdown_preview").hide();
@@ -56,9 +56,9 @@ export function clear_preview_area() {
     // so here we are re-enabling those compose_control_buttons
     $("#compose").removeClass("preview_mode");
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
-}
+};
 
-export function show_preview_area() {
+export const show_preview_area = () => {
     // Disable unneeded compose_control_buttons as we don't
     // need them in preview mode.
     $("#compose").addClass("preview_mode");
@@ -76,9 +76,9 @@ export function show_preview_area() {
         $("#compose .preview_content"),
         content,
     );
-}
+};
 
-export function create_message_object(message_content = compose_state.message_content()) {
+export const create_message_object = (message_content = compose_state.message_content()) => {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
     if (topic === "") {
@@ -118,9 +118,9 @@ export function create_message_object(message_content = compose_state.message_co
         message.to = stream_id;
     }
     return message;
-}
+};
 
-export function clear_compose_box() {
+export const clear_compose_box = () => {
     /* Before clearing the compose box, we reset it to the
      * default/normal size. Note that for locally echoed messages, we
      * will have already done this action before echoing the message
@@ -141,9 +141,9 @@ export function clear_compose_box() {
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
     $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
-}
+};
 
-export function send_message_success(request, data) {
+export const send_message_success = (request, data) => {
     if (!request.locally_echoed) {
         clear_compose_box();
     }
@@ -167,9 +167,9 @@ export function send_message_success(request, data) {
             compose_notifications.notify_unmute(muted_narrow, request.stream_id, request.topic);
         }
     }
-}
+};
 
-export function send_message(request = create_message_object()) {
+export const send_message = (request = create_message_object()) => {
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
@@ -209,11 +209,11 @@ export function send_message(request = create_message_object()) {
     request.locally_echoed = locally_echoed;
     request.resend = false;
 
-    function success(data) {
+    const success = (data) => {
         send_message_success(request, data);
-    }
+    };
 
-    function error(response, server_error_code) {
+    const error = (response, server_error_code) => {
         // Error callback for failed message send attempts.
         if (!locally_echoed) {
             if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
@@ -255,7 +255,7 @@ export function send_message(request = create_message_object()) {
         const draft = drafts.draft_model.getDraft(request.draft_id);
         draft.is_sending_saving = false;
         drafts.draft_model.editDraft(request.draft_id, draft);
-    }
+    };
 
     transmit.send_message(request, success, error);
     server_events.assert_get_events_running(
@@ -268,9 +268,9 @@ export function send_message(request = create_message_object()) {
         // taking a longtime to send.
         setTimeout(() => echo.display_slow_send_loading_spinner(message), 5000);
     }
-}
+};
 
-export function enter_with_preview_open(ctrl_pressed = false) {
+export const enter_with_preview_open = (ctrl_pressed = false) => {
     if (
         (user_settings.enter_sends && !ctrl_pressed) ||
         (!user_settings.enter_sends && ctrl_pressed)
@@ -281,12 +281,12 @@ export function enter_with_preview_open(ctrl_pressed = false) {
         // Otherwise, we return to the normal compose state.
         clear_preview_area();
     }
-}
+};
 
 // Common entrypoint for asking the server to send the message
 // currently drafted in the compose box, including for scheduled
 // messages.
-export function finish(scheduling_message = false) {
+export const finish = (scheduling_message = false) => {
     if (compose_ui.compose_spinner_visible) {
         // Avoid sending a message twice in parallel in races where
         // the user clicks the `Send` button very quickly twice or
@@ -325,17 +325,17 @@ export function finish(scheduling_message = false) {
     }
     do_post_send_tasks();
     return true;
-}
+};
 
-export function do_post_send_tasks() {
+export const do_post_send_tasks = () => {
     clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger("compose_finished.zulip");
-}
+};
 
-export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
-    function show_preview(rendered_content, raw_content) {
+export const render_and_show_preview = ($preview_spinner, $preview_content_box, content) => {
+    const show_preview = (rendered_content, raw_content) => {
         // content is passed to check for status messages ("/me ...")
         // and will be undefined in case of errors
         let rendered_preview_html;
@@ -352,7 +352,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
 
         $preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
         rendered_markdown.update_elements($preview_content_box);
-    }
+    };
 
     if (content.length === 0) {
         show_preview($t_html({defaultMessage: "Nothing to preview"}));
@@ -374,13 +374,13 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
         channel.post({
             url: "/json/messages/render",
             data: {content},
-            success(response_data) {
+            success: (response_data) => {
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }
                 show_preview(response_data.rendered, content);
             },
-            error() {
+            error: () => {
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }
@@ -388,9 +388,9 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
             },
         });
     }
-}
+};
 
-function schedule_message_to_custom_date() {
+const schedule_message_to_custom_date = () => {
     const compose_message_object = create_message_object();
 
     const deliver_at = scheduled_messages.get_formatted_selected_send_later_time();
@@ -420,7 +420,7 @@ function schedule_message_to_custom_date() {
     });
 
     const $banner_container = $("#compose_banners");
-    const success = function (data) {
+    const success = (data) => {
         drafts.draft_model.deleteDraft(draft_id);
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
@@ -431,7 +431,7 @@ function schedule_message_to_custom_date() {
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
     };
 
-    const error = function (xhr) {
+    const error = (xhr) => {
         const response = channel.xhr_error_message("Error sending message", xhr);
         compose_ui.hide_compose_spinner();
         compose_banner.show_error_message(
@@ -451,4 +451,4 @@ function schedule_message_to_custom_date() {
         success,
         error,
     });
-}
+};

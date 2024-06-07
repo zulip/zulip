@@ -83,7 +83,7 @@ const bot_with_owner = {
     bot_owner_full_name: "Human Myself",
 };
 
-function add_canned_users() {
+const add_canned_users = () => {
     people.add_active_user(alice);
     people.add_active_user(bot);
     people.add_active_user(bot_with_owner);
@@ -92,9 +92,9 @@ function add_canned_users() {
     people.add_active_user(mark);
     people.add_active_user(old_user);
     people.add_active_user(selma);
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         user_settings.presence_enabled = true;
         compose_fade_helper.clear_focused_recipient();
@@ -111,14 +111,14 @@ function test(label, f) {
 
         presence.clear_internal_data();
     });
-}
+};
 
-function set_presence(user_id, status) {
+const set_presence = (user_id, status) => {
     presence.presence_info.set(user_id, {
         status,
         last_active: 9999,
     });
-}
+};
 
 test("user_circle, level", () => {
     add_canned_users();

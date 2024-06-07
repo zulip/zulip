@@ -27,7 +27,7 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
     ),
 };
 
-function retrieve_search_query_data(): SearchData {
+const retrieve_search_query_data = (): SearchData => {
     // when search bar contains multiple filters, only retrieve search queries
     const current_filter = narrow_state.filter();
     assert(current_filter !== undefined);
@@ -68,9 +68,9 @@ function retrieve_search_query_data(): SearchData {
     }
 
     return search_string_result;
-}
+};
 
-function pick_empty_narrow_banner(): NarrowBannerData {
+const pick_empty_narrow_banner = (): NarrowBannerData => {
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
@@ -252,7 +252,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     return SPECTATOR_STREAM_NARROW_BANNER;
                 }
 
-                function can_toggle_narrowed_stream(): boolean | undefined {
+                const can_toggle_narrowed_stream = (): boolean | undefined => {
                     const stream_name = narrow_state.stream_name();
 
                     if (!stream_name) {
@@ -261,7 +261,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
 
                     const stream_sub = stream_data.get_sub(first_operand);
                     return stream_sub && stream_data.can_toggle_subscription(stream_sub);
-                }
+                };
 
                 if (can_toggle_narrowed_stream()) {
                     return default_banner;
@@ -408,14 +408,14 @@ function pick_empty_narrow_banner(): NarrowBannerData {
         }
     }
     return default_banner;
-}
+};
 
-export function show_empty_narrow_message(): void {
+export const show_empty_narrow_message = (): void => {
     $(".empty_feed_notice_main").empty();
     const rendered_narrow_banner = narrow_error(pick_empty_narrow_banner());
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
-}
+};
 
-export function hide_empty_narrow_message(): void {
+export const hide_empty_narrow_message = (): void => {
     $(".empty_feed_notice_main").empty();
-}
+};

@@ -27,21 +27,21 @@ run_test("initialize", () => {
 
     let total_emoji_in_categories = 0;
 
-    function assert_emoji_category(ele, icon, num) {
+    const assert_emoji_category = (ele, icon, num) => {
         assert.equal(ele.icon, icon);
         assert.equal(ele.emojis.length, num);
-        function check_emojis(val) {
+        const check_emojis = (val) => {
             for (const this_emoji of ele.emojis) {
                 assert.equal(this_emoji.is_realm_emoji, val);
             }
-        }
+        };
         if (ele.name === "Custom") {
             check_emojis(true);
         } else {
             check_emojis(false);
             total_emoji_in_categories += ele.emojis.length;
         }
-    }
+    };
     const popular_emoji_count = 6;
     const zulip_emoji_count = 1;
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 195);

@@ -30,9 +30,9 @@ export let old_unreads_missing = false;
 // it is simpler and we as a client are not expected to.
 export let first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
 
-export function clear_old_unreads_missing(): void {
+export const clear_old_unreads_missing = (): void => {
     old_unreads_missing = false;
-}
+};
 
 export const unread_mentions_counter = new Set<number>();
 export const direct_message_with_mention_count = new Set();
@@ -597,7 +597,7 @@ class UnreadTopicCounter {
 }
 const unread_topic_counter = new UnreadTopicCounter();
 
-function add_message_to_unread_mention_topics(message_id: number): void {
+const add_message_to_unread_mention_topics = (message_id: number): void => {
     const message = message_store.get(message_id);
     if (message?.type !== "stream") {
         return;
@@ -609,9 +609,9 @@ function add_message_to_unread_mention_topics(message_id: number): void {
     } else {
         unread_mention_topics.set(topic_key, new Set([message_id]));
     }
-}
+};
 
-function remove_message_from_unread_mention_topics(message_id: number): void {
+const remove_message_from_unread_mention_topics = (message_id: number): void => {
     const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
     if (!stream_topic) {
         // Direct messages and messages that were already not unread
@@ -621,9 +621,9 @@ function remove_message_from_unread_mention_topics(message_id: number): void {
     const {stream_id, topic} = stream_topic;
     const topic_key = recent_view_util.get_topic_key(stream_id, topic);
     unread_mention_topics.get(topic_key)?.delete(message_id);
-}
+};
 
-export function clear_and_populate_unread_mention_topics(): void {
+export const clear_and_populate_unread_mention_topics = (): void => {
     // The unread_mention_topics is an important data structure for
     // efficiently querying whether a given stream/topic pair contains
     // unread mentions.
@@ -655,35 +655,30 @@ export function clear_and_populate_unread_mention_topics(): void {
             unread_mention_topics.set(topic_key, new Set([message_id]));
         }
     }
-}
+};
 
-export function message_unread(message: Message): boolean {
+export const message_unread = (message: Message): boolean => {
     if (message === undefined) {
         return false;
     }
     return message.unread;
-}
+};
 
-export function get_read_message_ids(message_ids: number[]): number[] {
-    return message_ids.filter((message_id) => !unread_messages.has(message_id));
-}
+export const get_read_message_ids = (message_ids: number[]): number[] =>
+    message_ids.filter((message_id) => !unread_messages.has(message_id));
 
-export function get_unread_message_ids(message_ids: number[]): number[] {
-    return message_ids.filter((message_id) => unread_messages.has(message_id));
-}
+export const get_unread_message_ids = (message_ids: number[]): number[] =>
+    message_ids.filter((message_id) => unread_messages.has(message_id));
 
-export function get_unread_messages(messages: Message[]): Message[] {
-    return messages.filter((message) => unread_messages.has(message.id));
-}
+export const get_unread_messages = (messages: Message[]): Message[] =>
+    messages.filter((message) => unread_messages.has(message.id));
 
-export function get_unread_message_count(): number {
-    return unread_messages.size;
-}
+export const get_unread_message_count = (): number => unread_messages.size;
 
-export function update_unread_topics(
+export const update_unread_topics = (
     msg: Message & {type: "stream"},
     event: UpdateMessageEvent,
-): void {
+): void => {
     const new_topic = util.get_edit_event_topic(event);
     const {new_stream_id} = event;
 
@@ -702,12 +697,12 @@ export function update_unread_topics(
         stream_id: new_stream_id ?? msg.stream_id,
         topic: new_topic ?? msg.topic,
     });
-}
+};
 
-export function process_loaded_messages(
+export const process_loaded_messages = (
     messages: Message[],
     expect_no_new_unreads = false,
-): boolean {
+): boolean => {
     // Process a set of messages that we have full copies of from the
     // server for whether any are unread but not tracked as such by
     // our data structures. This can occur due to old_unreads_missing,
@@ -758,7 +753,7 @@ export function process_loaded_messages(
     }
 
     return any_untracked_unread_messages;
-}
+};
 
 type UnreadMessageData = {
     id: number;
@@ -777,7 +772,7 @@ type UnreadMessageData = {
       }
 );
 
-export function process_unread_message(message: UnreadMessageData): void {
+export const process_unread_message = (message: UnreadMessageData): void => {
     // The `message` here just needs to require certain fields. For example,
     // the "message" may actually be constructed from a Zulip event that doesn't
     // include fields like "content".  The caller must verify that the message
@@ -800,12 +795,12 @@ export function process_unread_message(message: UnreadMessageData): void {
     }
 
     update_message_for_mention(message);
-}
+};
 
-export function update_message_for_mention(
+export const update_message_for_mention = (
     message: UnreadMessageData,
     content_edited = false,
-): boolean {
+): boolean => {
     // Returns true if this is a stream message whose content was
     // changed, and thus the caller might need to trigger a rerender
     // of UI elements displaying whether the message's topic contains
@@ -845,9 +840,9 @@ export function update_message_for_mention(
         return true;
     }
     return false;
-}
+};
 
-export function mark_as_read(message_id: number): void {
+export const mark_as_read = (message_id: number): void => {
     // We don't need to check anything about the message, since all
     // the following methods are cheap and work fine even if message_id
     // was never set to unread.
@@ -866,9 +861,9 @@ export function mark_as_read(message_id: number): void {
     if (message) {
         message.unread = false;
     }
-}
+};
 
-export function declare_bankruptcy(): void {
+export const declare_bankruptcy = (): void => {
     // Only used in tests.
     unread_direct_message_counter.clear();
     unread_topic_counter.clear();
@@ -876,15 +871,13 @@ export function declare_bankruptcy(): void {
     direct_message_with_mention_count.clear();
     unread_messages.clear();
     unread_mention_topics.clear();
-}
+};
 
-export function get_unread_pm(): DirectMessageCountInfoWithLatestMsgId {
-    return unread_direct_message_counter.get_counts_with_latest_msg_id();
-}
+export const get_unread_pm = (): DirectMessageCountInfoWithLatestMsgId =>
+    unread_direct_message_counter.get_counts_with_latest_msg_id();
 
-export function get_unread_topics(): UnreadTopicCounts {
-    return unread_topic_counter.get_counts_per_topic();
-}
+export const get_unread_topics = (): UnreadTopicCounts =>
+    unread_topic_counter.get_counts_per_topic();
 
 export type FullUnreadCountsData = {
     direct_message_count: number;
@@ -903,7 +896,7 @@ export type FullUnreadCountsData = {
 // Return a data structure with various counts.  This function should be
 // pretty cheap, even if you don't care about all the counts, and you
 // should strive to keep it free of side effects on globals or DOM.
-export function get_counts(): FullUnreadCountsData {
+export const get_counts = (): FullUnreadCountsData => {
     const update_first_unmuted_message_id = true;
     // Reset the first_unread_unmuted_message_id, to ensure it is always capture the
     // minimum of current unread messages between topics and DMs.
@@ -927,10 +920,10 @@ export function get_counts(): FullUnreadCountsData {
         pm_count: pm_res.pm_dict,
         home_unread_messages: topic_res.stream_unread_messages + pm_res.total_count,
     };
-}
+};
 
 // Saves us from calling to get_counts() when we can avoid it.
-export function calculate_notifiable_count(res: FullUnreadCountsData): number {
+export const calculate_notifiable_count = (res: FullUnreadCountsData): number => {
     let new_message_count = 0;
 
     const only_show_dm_mention =
@@ -968,96 +961,78 @@ export function calculate_notifiable_count(res: FullUnreadCountsData): number {
         new_message_count = res.home_unread_messages;
     }
     return new_message_count;
-}
+};
 
-export function get_notifiable_count(): number {
+export const get_notifiable_count = (): number => {
     const res = get_counts();
     return calculate_notifiable_count(res);
-}
+};
 
-export function unread_count_info_for_stream(stream_id: number): StreamCountInfo {
-    return unread_topic_counter.get_stream_count_info(stream_id);
-}
+export const unread_count_info_for_stream = (stream_id: number): StreamCountInfo =>
+    unread_topic_counter.get_stream_count_info(stream_id);
 
-export function num_unread_for_topic(stream_id: number, topic_name: string): number {
-    return unread_topic_counter.get(stream_id, topic_name);
-}
+export const num_unread_for_topic = (stream_id: number, topic_name: string): number =>
+    unread_topic_counter.get(stream_id, topic_name);
 
-export function stream_has_any_unread_mentions(stream_id: number): boolean {
+export const stream_has_any_unread_mentions = (stream_id: number): boolean => {
     // This function is somewhat inefficient and thus should not be
     // called in loops, since runs in O(total unread mentions) time.
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
     return streams_with_mentions.has(stream_id);
-}
+};
 
-export function stream_has_any_unmuted_mentions(stream_id: number): boolean {
+export const stream_has_any_unmuted_mentions = (stream_id: number): boolean => {
     // This function is somewhat inefficient and thus should not be
     // called in loops, since runs in O(total unread mentions) time.
     const streams_with_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     return streams_with_mentions.has(stream_id);
-}
+};
 
-export function topic_has_any_unread_mentions(stream_id: number, topic: string): boolean {
+export const topic_has_any_unread_mentions = (stream_id: number, topic: string): boolean => {
     // Because this function is called in a loop for every displayed
     // Recent Conversations row, it's important for it to run in O(1) time.
     const topic_key = stream_id + ":" + topic.toLowerCase();
     return (unread_mention_topics.get(topic_key)?.size ?? 0) > 0;
-}
+};
 
-export function topic_has_any_unread(stream_id: number, topic: string): boolean {
-    return unread_topic_counter.topic_has_any_unread(stream_id, topic);
-}
+export const topic_has_any_unread = (stream_id: number, topic: string): boolean =>
+    unread_topic_counter.topic_has_any_unread(stream_id, topic);
 
-export function get_topics_with_unread_mentions(stream_id: number): Set<string> {
-    return unread_topic_counter.get_topics_with_unread_mentions(stream_id);
-}
+export const get_topics_with_unread_mentions = (stream_id: number): Set<string> =>
+    unread_topic_counter.get_topics_with_unread_mentions(stream_id);
 
-export function num_unread_for_user_ids_string(user_ids_string: string): number {
-    return unread_direct_message_counter.num_unread(user_ids_string);
-}
+export const num_unread_for_user_ids_string = (user_ids_string: string): number =>
+    unread_direct_message_counter.num_unread(user_ids_string);
 
-export function get_msg_ids_for_stream(stream_id: number): number[] {
-    return unread_topic_counter.get_msg_ids_for_stream(stream_id);
-}
+export const get_msg_ids_for_stream = (stream_id: number): number[] =>
+    unread_topic_counter.get_msg_ids_for_stream(stream_id);
 
-export function get_msg_ids_for_topic(stream_id: number, topic_name: string): number[] {
-    return unread_topic_counter.get_msg_ids_for_topic(stream_id, topic_name);
-}
+export const get_msg_ids_for_topic = (stream_id: number, topic_name: string): number[] =>
+    unread_topic_counter.get_msg_ids_for_topic(stream_id, topic_name);
 
-export function get_msg_ids_for_user_ids_string(user_ids_string: string): number[] {
-    return unread_direct_message_counter.get_msg_ids_for_user_ids_string(user_ids_string);
-}
+export const get_msg_ids_for_user_ids_string = (user_ids_string: string): number[] =>
+    unread_direct_message_counter.get_msg_ids_for_user_ids_string(user_ids_string);
 
-export function get_msg_ids_for_private(): number[] {
-    return unread_direct_message_counter.get_msg_ids();
-}
+export const get_msg_ids_for_private = (): number[] => unread_direct_message_counter.get_msg_ids();
 
-export function get_msg_ids_for_mentions(): number[] {
+export const get_msg_ids_for_mentions = (): number[] => {
     const ids = [...unread_mentions_counter];
 
     return util.sorted_ids(ids);
-}
+};
 
-export function get_all_msg_ids(): number[] {
+export const get_all_msg_ids = (): number[] => {
     const ids = [...unread_messages];
 
     return util.sorted_ids(ids);
-}
+};
 
-export function get_missing_topics(opts: {
+export const get_missing_topics = (opts: {
     stream_id: number;
     topic_dict: FoldDict<TopicHistoryEntry>;
-}): {pretty_name: string; message_id: number}[] {
-    return unread_topic_counter.get_missing_topics(opts);
-}
+}): {pretty_name: string; message_id: number}[] => unread_topic_counter.get_missing_topics(opts);
 
-export function get_msg_ids_for_starred(): number[] {
-    // This is here for API consistency sake--we never
-    // have unread starred messages.  (Some day we may ironically
-    // want to make starring the same as mark-as-unread, but
-    // for now starring === reading.)
-    return [];
-}
+export const get_msg_ids_for_starred = (): number[] => [];
 
 type UnreadStreamInfo = {
     stream_id: number;
@@ -1088,7 +1063,7 @@ type UnreadMessagesParams = {
     };
 };
 
-export function initialize(params: UnreadMessagesParams): void {
+export const initialize = (params: UnreadMessagesParams): void => {
     const unread_msgs = params.unread_msgs;
 
     old_unreads_missing = unread_msgs.old_unreads_missing;
@@ -1124,4 +1099,4 @@ export function initialize(params: UnreadMessagesParams): void {
     for (const message_id of unread_msgs.mentions) {
         unread_messages.add(message_id);
     }
-}
+};

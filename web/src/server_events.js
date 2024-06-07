@@ -31,15 +31,12 @@ const get_events_params = {};
 
 let event_queue_expired = false;
 
-function get_events_success(events) {
+const get_events_success = (events) => {
     let messages = [];
     const update_message_events = [];
     const post_message_events = [];
 
-    const clean_event = function clean_event(event) {
-        // Only log a whitelist of the event to remove private data
-        return _.pick(event, "id", "type", "op");
-    };
+    const clean_event = (event) => _.pick(event, "id", "type", "op");
 
     for (const event of events) {
         try {
@@ -63,7 +60,7 @@ function get_events_success(events) {
     // called in the default case.  The goal of this split is to avoid
     // contributors needing to read or understand the complex and
     // rarely modified logic for non-normal events.
-    const dispatch_event = function dispatch_event(event) {
+    const dispatch_event = (event) => {
         switch (event.type) {
             case "message": {
                 const msg = event.message;
@@ -142,19 +139,19 @@ function get_events_success(events) {
     for (const event of post_message_events) {
         server_events_dispatch.dispatch_normal_event(event);
     }
-}
+};
 
-function show_ui_connection_error() {
+const show_ui_connection_error = () => {
     ui_report.show_error($("#connection-error"));
     $("#connection-error").addClass("get-events-error");
-}
+};
 
-function hide_ui_connection_error() {
+const hide_ui_connection_error = () => {
     ui_report.hide_error($("#connection-error"));
     $("#connection-error").removeClass("get-events-error");
-}
+};
 
-function get_events({dont_block = false} = {}) {
+const get_events = ({dont_block = false} = {}) => {
     if (reload_state.is_in_progress()) {
         return;
     }
@@ -195,7 +192,7 @@ function get_events({dont_block = false} = {}) {
         url: "/json/events",
         data: get_events_params,
         timeout: event_queue_longpoll_timeout_seconds * 1000,
-        success(data) {
+        success: (data) => {
             watchdog.set_suspect_offline(false);
             try {
                 get_events_xhr = undefined;
@@ -208,7 +205,7 @@ function get_events({dont_block = false} = {}) {
             }
             get_events_timeout = setTimeout(get_events, 0);
         },
-        error(xhr, error_type) {
+        error: (xhr, error_type) => {
             try {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
@@ -263,31 +260,31 @@ function get_events({dont_block = false} = {}) {
             get_events_timeout = setTimeout(get_events, retry_delay_secs * 1000);
         },
     });
-}
+};
 
-export function assert_get_events_running(error_message) {
+export const assert_get_events_running = (error_message) => {
     if (get_events_xhr === undefined && get_events_timeout === undefined) {
         restart_get_events({dont_block: true});
         blueslip.error(error_message);
     }
-}
+};
 
-export function restart_get_events(options) {
+export const restart_get_events = (options) => {
     get_events(options);
-}
+};
 
-export function force_get_events() {
+export const force_get_events = () => {
     get_events_timeout = setTimeout(get_events, 0);
-}
+};
 
-export function finished_initial_fetch() {
+export const finished_initial_fetch = () => {
     waiting_on_initial_fetch = false;
     get_events_success([]);
     // Destroy loading indicator after we added fetched messages.
     loading.destroy_indicator($("#page_loading_indicator"));
-}
+};
 
-export function initialize(params) {
+export const initialize = (params) => {
     queue_id = params.queue_id;
     last_event_id = params.last_event_id;
     event_queue_longpoll_timeout_seconds = params.event_queue_longpoll_timeout_seconds;
@@ -303,9 +300,9 @@ export function initialize(params) {
         restart_get_events({dont_block: true});
     });
     get_events();
-}
+};
 
-function cleanup_event_queue() {
+const cleanup_event_queue = () => {
     // Submit a request to the server to clean up our event queue
     if (event_queue_expired || page_params.no_event_queue) {
         return;
@@ -318,7 +315,7 @@ function cleanup_event_queue() {
         data: {queue_id},
         ignore_reload: true,
     });
-}
+};
 
 // For unit testing
 export const _get_events_success = get_events_success;

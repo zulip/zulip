@@ -17,13 +17,13 @@ import * as unread_ops from "./unread_ops";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
-export function initialize() {
+export const initialize = () => {
     popover_menus.register_popover_menu(
         "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
         {
             theme: "popover-menu",
             ...popover_menus.left_sidebar_tippy_options,
-            onShow(instance) {
+            onShow: (instance) => {
                 popover_menus.popover_instances.topics_menu = instance;
                 ui_util.show_left_sidebar_menu_icon(instance.reference);
                 popover_menus.on_show_prep(instance);
@@ -55,7 +55,7 @@ export function initialize() {
                     ui_util.parse_html(render_left_sidebar_topic_actions_popover(instance.context)),
                 );
             },
-            onMount(instance) {
+            onMount: (instance) => {
                 const $popper = $(instance.popper);
                 const {stream_id, topic_name} = instance.context;
 
@@ -133,7 +133,7 @@ export function initialize() {
                         html_heading: $t_html({defaultMessage: "Delete topic"}),
                         help_link: "/help/delete-a-topic",
                         html_body,
-                        on_click() {
+                        on_click: () => {
                             message_edit.delete_topic(stream_id, topic_name);
                         },
                     });
@@ -166,11 +166,11 @@ export function initialize() {
                     },
                 );
             },
-            onHidden(instance) {
+            onHidden: (instance) => {
                 instance.destroy();
                 popover_menus.popover_instances.topics_menu = undefined;
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
     );
-}
+};

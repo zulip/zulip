@@ -26,7 +26,7 @@ let jquery_function;
 const template_path = path.resolve(__dirname, "../../templates");
 
 /* istanbul ignore next */
-function need_to_mock_template_error(filename) {
+const need_to_mock_template_error = (filename) => {
     const fn = path.relative(template_path, filename);
 
     return `
@@ -63,9 +63,9 @@ function need_to_mock_template_error(filename) {
             });
         });
     `;
-}
+};
 
-function load(request, parent, isMain) {
+const load = (request, parent, isMain) => {
     let module;
 
     const filename = Module._resolveFilename(request, parent, isMain);
@@ -87,9 +87,9 @@ function load(request, parent, isMain) {
         "__Rewire__" in module
     ) {
         /* istanbul ignore next */
-        function error_immutable() {
+        const error_immutable = () => {
             throw new Error(`${filename} is an immutable ES module`);
-        }
+        };
         return new Proxy(module, {
             defineProperty: error_immutable,
             deleteProperty: error_immutable,
@@ -100,10 +100,11 @@ function load(request, parent, isMain) {
     }
 
     return module;
-}
+};
 
-function template_stub({filename, actual_render}) {
-    return function render(...args) {
+const template_stub =
+    ({filename, actual_render}) =>
+    (...args) => {
         // If our template is being rendered as a partial, always
         // use the actual implementation.
         if (in_mid_render) {
@@ -136,7 +137,6 @@ function template_stub({filename, actual_render}) {
 
         return f(data);
     };
-}
 
 exports.start = () => {
     assert.equal(actual_load, undefined, "namespace.start was called twice in a row.");
@@ -245,7 +245,7 @@ exports.unmock_module = (module_path, {callsite = callsites()[1]} = {}) => {
     used_module_mocks.delete(filename);
 };
 
-exports.set_global = function (name, val) {
+exports.set_global = (name, val) => {
     assert.notEqual(val, null, `We try to avoid using null in our codebase.`);
 
     if (!(name in old_globals)) {
@@ -258,7 +258,7 @@ exports.set_global = function (name, val) {
     return val;
 };
 
-exports.zrequire = function (short_fn) {
+exports.zrequire = (short_fn) => {
     assert.notEqual(
         short_fn,
         "templates",
@@ -276,7 +276,7 @@ exports.zrequire = function (short_fn) {
 const webPath = path.resolve(__dirname, "../..") + path.sep;
 const testsLibPath = __dirname + path.sep;
 
-exports.complain_about_unused_mocks = function () {
+exports.complain_about_unused_mocks = () => {
     for (const filename of module_mocks.keys()) {
         /* istanbul ignore if */
         if (!used_module_mocks.has(filename)) {
@@ -285,7 +285,7 @@ exports.complain_about_unused_mocks = function () {
     }
 };
 
-exports.finish = function () {
+exports.finish = () => {
     /*
         Handle cleanup tasks after we've run one module.
 
@@ -380,7 +380,7 @@ exports.with_overrides = function (test_function) {
         });
     };
 
-    const disallow = function (obj, prop) {
+    const disallow = (obj, prop) => {
         override(
             obj,
             prop,
@@ -433,7 +433,7 @@ exports.with_overrides = function (test_function) {
         });
     };
 
-    const disallow_rewire = function (obj, prop) {
+    const disallow_rewire = (obj, prop) => {
         // This is deprecated because it relies on the slow
         // babel-plugin-rewire-ts plugin.
 

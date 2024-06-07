@@ -8,7 +8,7 @@ import * as keydown_util from "./keydown_util";
 // dependencies other than jQuery.
 
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
-export function place_caret_at_end(el: HTMLElement): void {
+export const place_caret_at_end = (el: HTMLElement): void => {
     el.focus();
     if (el instanceof HTMLInputElement) {
         el.setSelectionRange(el.value.length, el.value.length);
@@ -20,7 +20,7 @@ export function place_caret_at_end(el: HTMLElement): void {
         sel?.removeAllRanges();
         sel?.addRange(range);
     }
-}
+};
 
 export function replace_emoji_with_text($element: JQuery): void {
     $element
@@ -49,7 +49,7 @@ export function change_katex_to_raw_latex($element: JQuery): void {
     });
 }
 
-export function is_user_said_paragraph($element: JQuery): boolean {
+export const is_user_said_paragraph = ($element: JQuery): boolean => {
     // Irrespective of language, the user said paragraph has these exact elements:
     // 1. A user mention
     // 2. A same server message link ("said")
@@ -70,15 +70,14 @@ export function is_user_said_paragraph($element: JQuery): boolean {
         .replace($user_mention.text(), "")
         .replace($message_link.text(), "");
     return remaining_text.trim() === ":";
-}
+};
 
-export function get_collapsible_status_array($elements: JQuery): boolean[] {
-    return [...$elements].map(
+export const get_collapsible_status_array = ($elements: JQuery): boolean[] =>
+    [...$elements].map(
         (element) => $(element).is("blockquote") || is_user_said_paragraph($(element)),
     );
-}
 
-export function potentially_collapse_quotes($element: JQuery): boolean {
+export const potentially_collapse_quotes = ($element: JQuery): boolean => {
     const $children = $element.children();
     const collapsible_status = get_collapsible_status_array($children);
 
@@ -101,24 +100,24 @@ export function potentially_collapse_quotes($element: JQuery): boolean {
         }
     }
     return true;
-}
+};
 
-export function blur_active_element(): void {
+export const blur_active_element = (): void => {
     // this blurs anything that may perhaps be actively focused on.
     if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
     }
-}
+};
 
-export function convert_enter_to_click(e: JQuery.KeyDownEvent): void {
+export const convert_enter_to_click = (e: JQuery.KeyDownEvent): void => {
     if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
         e.stopPropagation();
         $(e.currentTarget).trigger("click");
     }
-}
+};
 
-export function update_unread_count_in_dom($unread_count_elem: JQuery, count: number): void {
+export const update_unread_count_in_dom = ($unread_count_elem: JQuery, count: number): void => {
     // This function is used to update unread count in top left corner
     // elements.
     const $unread_count_span = $unread_count_elem.find(".unread_count");
@@ -131,12 +130,12 @@ export function update_unread_count_in_dom($unread_count_elem: JQuery, count: nu
 
     $unread_count_span.removeClass("hide");
     $unread_count_span.text(count);
-}
+};
 
-export function update_unread_mention_info_in_dom(
+export const update_unread_mention_info_in_dom = (
     $unread_mention_info_elem: JQuery,
     stream_has_any_unread_mention_messages: boolean,
-): void {
+): void => {
     const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
     if (!stream_has_any_unread_mention_messages) {
         $unread_mention_info_span.hide();
@@ -146,7 +145,7 @@ export function update_unread_mention_info_in_dom(
 
     $unread_mention_info_span.show();
     $unread_mention_info_span.text("@");
-}
+};
 
 /**
  * Parse HTML and return a DocumentFragment.
@@ -156,11 +155,11 @@ export function update_unread_mention_info_in_dom(
  * templates; violating this expectation will introduce bugs that are
  * likely to be security vulnerabilities.
  */
-export function parse_html(html: string): DocumentFragment {
+export const parse_html = (html: string): DocumentFragment => {
     const template = document.createElement("template");
     template.innerHTML = html;
     return template.content;
-}
+};
 
 /*
  * Handle permission denied to play audio by the browser.
@@ -169,7 +168,7 @@ export function parse_html(html: string): DocumentFragment {
  * any interactive trigger like a button. See
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play for more details.
  */
-export async function play_audio(elem: HTMLVideoElement): Promise<void> {
+export const play_audio = async (elem: HTMLVideoElement): Promise<void> => {
     try {
         await elem.play();
     } catch (error) {
@@ -178,9 +177,9 @@ export async function play_audio(elem: HTMLVideoElement): Promise<void> {
         }
         blueslip.debug(`Unable to play audio. ${error.name}: ${error.message}`);
     }
-}
+};
 
-export function listener_for_preferred_color_scheme_change(callback: () => void): void {
+export const listener_for_preferred_color_scheme_change = (callback: () => void): void => {
     const media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
     // MediaQueryList.addEventListener is missing in Safari < 14
     const listener = (): void => {
@@ -193,14 +192,14 @@ export function listener_for_preferred_color_scheme_change(callback: () => void)
     } else {
         media_query_list.addListener(listener);
     }
-}
+};
 
 // Keep the menu icon over which the popover is based off visible.
-export function show_left_sidebar_menu_icon(element: HTMLElement): void {
+export const show_left_sidebar_menu_icon = (element: HTMLElement): void => {
     $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
-}
+};
 
 // Remove the class from element when popover is closed
-export function hide_left_sidebar_menu_icon(): void {
+export const hide_left_sidebar_menu_icon = (): void => {
     $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
-}
+};

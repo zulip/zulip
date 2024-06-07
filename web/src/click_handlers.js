@@ -98,7 +98,7 @@ export function initialize() {
         initialize_long_tap();
     }
 
-    function is_clickable_message_element($target) {
+    const is_clickable_message_element = ($target) => {
         // This function defines all the elements within a message
         // body that have UI behavior other than starting a reply.
 
@@ -158,7 +158,7 @@ export function initialize() {
         }
 
         return false;
-    }
+    };
 
     const select_message_function = function (e) {
         if (is_clickable_message_element($(e.target))) {
@@ -455,7 +455,7 @@ export function initialize() {
 
     // RECIPIENT BARS
 
-    function get_row_id_for_narrowing(narrow_link_elem) {
+    const get_row_id_for_narrowing = (narrow_link_elem) => {
         const $group = rows.get_closest_group(narrow_link_elem);
         const msg_id = rows.id_for_recipient_row($group);
 
@@ -466,7 +466,7 @@ export function initialize() {
             return selected.id;
         }
         return nearest.id;
-    }
+    };
 
     $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
@@ -503,7 +503,7 @@ export function initialize() {
     });
 
     // Doesn't show tooltip on touch devices.
-    function do_render_buddy_list_tooltip(
+    const do_render_buddy_list_tooltip = (
         $elem,
         title_data,
         get_target_node,
@@ -511,7 +511,7 @@ export function initialize() {
         subtree = false,
         parent_element_to_append = null,
         is_custom_observer_needed = true,
-    ) {
+    ) => {
         let placement = "left";
         let observer;
         if (window.innerWidth < media_breakpoints_num.md) {
@@ -533,13 +533,13 @@ export function initialize() {
             arrow: true,
             placement,
             showOnCreate: true,
-            onHidden(instance) {
+            onHidden: (instance) => {
                 instance.destroy();
                 if (is_custom_observer_needed) {
                     observer.disconnect();
                 }
             },
-            onShow(instance) {
+            onShow: (instance) => {
                 if (!is_custom_observer_needed) {
                     return;
                 }
@@ -548,7 +548,7 @@ export function initialize() {
                 const target_node = get_target_node(instance);
                 // We only need to know if any of the `li` elements were removed.
                 const config = {attributes: false, childList: true, subtree};
-                const callback = function (mutationsList) {
+                const callback = (mutationsList) => {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
                         if (check_reference_removed(mutation, instance)) {
@@ -561,7 +561,7 @@ export function initialize() {
             },
             appendTo: () => parent_element_to_append || document.body,
         });
-    }
+    };
 
     // BUDDY LIST TOOLTIPS (not displayed on touch devices)
     $(".buddy-list-section").on("mouseenter", ".selectable_sidebar_block", (e) => {
@@ -571,16 +571,10 @@ export function initialize() {
         const title_data = buddy_data.get_title_data(user_id_string, false);
 
         // `target_node` is the `ul` element since it stays in DOM even after updates.
-        function get_target_node() {
-            return $(e.target).parents(".buddy-list-section")[0];
-        }
+        const get_target_node = () => $(e.target).parents(".buddy-list-section")[0];
 
-        function check_reference_removed(mutation, instance) {
-            return Array.prototype.includes.call(
-                mutation.removedNodes,
-                instance.reference.parentElement,
-            );
-        }
+        const check_reference_removed = (mutation, instance) =>
+            Array.prototype.includes.call(mutation.removedNodes, instance.reference.parentElement);
 
         do_render_buddy_list_tooltip(
             $elem.parent(),
@@ -622,17 +616,14 @@ export function initialize() {
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
 
         // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
-        function get_target_node() {
-            return document.querySelector("#left_sidebar_scroll_container");
-        }
+        const get_target_node = () => document.querySelector("#left_sidebar_scroll_container");
 
         // Whole list is just replaced, so we need to check for that.
-        function check_reference_removed(mutation, instance) {
-            return Array.prototype.includes.call(
+        const check_reference_removed = (mutation, instance) =>
+            Array.prototype.includes.call(
                 mutation.removedNodes,
                 $(instance.reference).parents(".dm-list")[0],
             );
-        }
 
         const check_subtree = true;
         do_render_buddy_list_tooltip(
@@ -731,7 +722,7 @@ export function initialize() {
         browser_history.go_to_location(target);
     });
 
-    function handle_compose_click(e) {
+    const handle_compose_click = (e) => {
         const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
         if ($target.is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")) {
@@ -756,7 +747,7 @@ export function initialize() {
         if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {
             return;
         }
-    }
+    };
 
     $("body").on("click", "#compose-content", handle_compose_click);
 

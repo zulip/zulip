@@ -64,14 +64,14 @@ import * as user_group_popover from "./user_group_popover";
 import {user_settings} from "./user_settings";
 import * as user_topics_ui from "./user_topics_ui";
 
-function do_narrow_action(action) {
+const do_narrow_action = (action) => {
     if (message_lists.current === undefined) {
         return false;
     }
 
     action(message_lists.current.selected_id(), {trigger: "hotkey"});
     return true;
-}
+};
 
 // For message actions and user profile menu.
 const menu_dropdown_hotkeys = new Set(["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"]);
@@ -196,7 +196,7 @@ const keypress_mappings = {
     122: {name: "zoom_to_message_near", message_view_only: true}, // 'z'
 };
 
-export function get_keydown_hotkey(e) {
+export const get_keydown_hotkey = (e) => {
     let hotkey;
 
     if (e.altKey) {
@@ -240,17 +240,17 @@ export function get_keydown_hotkey(e) {
     }
 
     return keydown_either_mappings[e.which];
-}
+};
 
-export function get_keypress_hotkey(e) {
+export const get_keypress_hotkey = (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) {
         return undefined;
     }
 
     return keypress_mappings[e.which];
-}
+};
 
-export function processing_text() {
+export const processing_text = () => {
     const $focused_elt = $(":focus");
     return (
         $focused_elt.is("input") ||
@@ -260,14 +260,12 @@ export function processing_text() {
         $focused_elt.attr("id") === "compose-send-button" ||
         $focused_elt.parents(".dropdown-list-container").length >= 1
     );
-}
+};
 
-export function in_content_editable_widget(e) {
-    return $(e.target).is(".editable-section");
-}
+export const in_content_editable_widget = (e) => $(e.target).is(".editable-section");
 
 // Returns true if we handled it, false if the browser should.
-export function process_escape_key(e) {
+export const process_escape_key = (e) => {
     if (
         recent_view_ui.is_in_focus() &&
         // This will return false if `e.target` is not
@@ -390,9 +388,9 @@ export function process_escape_key(e) {
     }
 
     return false;
-}
+};
 
-function handle_popover_events(event_name) {
+const handle_popover_events = (event_name) => {
     const popover_menu_visible_instance = popover_menus.get_visible_instance();
 
     if (popover_menu_visible_instance) {
@@ -439,10 +437,10 @@ function handle_popover_events(event_name) {
     }
 
     return false;
-}
+};
 
 // Returns true if we handled it, false if the browser should.
-export function process_enter_key(e) {
+export const process_enter_key = (e) => {
     if (popovers.any_active() && $(e.target).hasClass("navigate-link-on-enter")) {
         // If a popover is open and we pressed Enter on a menu item,
         // call click directly on the item to navigate to the `href`.
@@ -573,9 +571,9 @@ export function process_enter_key(e) {
 
     compose_reply.respond_to_message({trigger: "hotkey enter"});
     return true;
-}
+};
 
-export function process_ctrl_enter_key() {
+export const process_ctrl_enter_key = () => {
     if ($("#preview_message_area").is(":visible")) {
         const ctrl_pressed = true;
         compose.enter_with_preview_open(ctrl_pressed);
@@ -583,9 +581,9 @@ export function process_ctrl_enter_key() {
     }
 
     return false;
-}
+};
 
-export function process_tab_key() {
+export const process_tab_key = () => {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -612,9 +610,9 @@ export function process_tab_key() {
     }
 
     return false;
-}
+};
 
-export function process_shift_tab_key() {
+export const process_shift_tab_key = () => {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -653,12 +651,12 @@ export function process_shift_tab_key() {
     }
 
     return false;
-}
+};
 
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
-export function process_hotkey(e, hotkey) {
+export const process_hotkey = (e, hotkey) => {
     const event_name = hotkey.name;
 
     // This block needs to be before the `Tab` handler.
@@ -1223,7 +1221,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     return false;
-}
+};
 
 /* We register both a keydown and a keypress function because
    we want to intercept PgUp/PgDn, Esc, etc, and process them
@@ -1235,24 +1233,24 @@ export function process_hotkey(e, hotkey) {
    so we bail in .keydown if the event is a letter or number and
    instead just let keypress go for it. */
 
-export function process_keydown(e) {
+export const process_keydown = (e) => {
     activity.set_new_user_input(true);
     const hotkey = get_keydown_hotkey(e);
     if (!hotkey) {
         return false;
     }
     return process_hotkey(e, hotkey);
-}
+};
 
-export function process_keypress(e) {
+export const process_keypress = (e) => {
     const hotkey = get_keypress_hotkey(e);
     if (!hotkey) {
         return false;
     }
     return process_hotkey(e, hotkey);
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     $(document).on("keydown", (e) => {
         if (process_keydown(e)) {
             e.preventDefault();
@@ -1264,4 +1262,4 @@ export function initialize() {
             e.preventDefault();
         }
     });
-}
+};

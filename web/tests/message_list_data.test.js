@@ -11,30 +11,26 @@ const muted_users = zrequire("muted_users");
 const {MessageListData} = zrequire("../src/message_list_data");
 const {Filter} = zrequire("filter");
 
-function make_msg(msg_id) {
-    return {
-        id: msg_id,
-        type: "stream",
-        unread: true,
-        topic: "whatever",
-    };
-}
+const make_msg = (msg_id) => ({
+    id: msg_id,
+    type: "stream",
+    unread: true,
+    topic: "whatever",
+});
 
-function make_msgs(msg_ids) {
-    return msg_ids.map((msg_id) => make_msg(msg_id));
-}
+const make_msgs = (msg_ids) => msg_ids.map((msg_id) => make_msg(msg_id));
 
-function assert_contents(mld, msg_ids) {
+const assert_contents = (mld, msg_ids) => {
     const msgs = mld.all_messages();
     assert.deepEqual(msgs, make_msgs(msg_ids));
-}
+};
 
-function assert_msg_ids(messages, msg_ids) {
+const assert_msg_ids = (messages, msg_ids) => {
     assert.deepEqual(
         msg_ids,
         messages.map((message) => message.id),
     );
-}
+};
 
 run_test("basics", () => {
     const mld = new MessageListData({

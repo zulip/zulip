@@ -10,7 +10,7 @@ type Collision = {
     node: string;
 };
 
-export function check_duplicate_ids(): {collisions: Collision[]; total_collisions: number} {
+export const check_duplicate_ids = (): {collisions: Collision[]; total_collisions: number} => {
     const ids = new Set<string>();
     const collisions: Collision[] = [];
     let total_collisions = 0;
@@ -41,7 +41,7 @@ export function check_duplicate_ids(): {collisions: Collision[]; total_collision
         collisions,
         total_collisions,
     };
-}
+};
 
 /* An IterationProfiler is used for profiling parts of looping
  * constructs (like a for loop or _.each).  You mark sections of the

@@ -17,9 +17,9 @@ export const notice_memory: NoticeMemory = new Map();
 export let NotificationAPI: typeof ElectronBridgeNotification | typeof Notification | undefined;
 
 // Used for testing
-export function set_notification_api(n: typeof NotificationAPI): void {
+export const set_notification_api = (n: typeof NotificationAPI): void => {
     NotificationAPI = n;
-}
+};
 
 class ElectronBridgeNotification extends EventTarget {
     title: string;
@@ -69,43 +69,40 @@ if (window.electron_bridge?.new_notification) {
     NotificationAPI = window.Notification;
 }
 
-export function get_notifications(): NoticeMemory {
-    return notice_memory;
-}
+export const get_notifications = (): NoticeMemory => notice_memory;
 
-export function initialize(): void {
+export const initialize = (): void => {
     $(window).on("focus", () => {
         for (const notice_mem_entry of notice_memory.values()) {
             notice_mem_entry.obj.close();
         }
         notice_memory.clear();
     });
-}
+};
 
-export function permission_state(): string {
+export const permission_state = (): string => {
     if (NotificationAPI === undefined) {
         // act like notifications are blocked if they do not have access to
         // the notification API.
         return "denied";
     }
     return NotificationAPI.permission;
-}
+};
 
-export function close_notification(message: Message): void {
+export const close_notification = (message: Message): void => {
     for (const [key, notice_mem_entry] of notice_memory) {
         if (notice_mem_entry.message_id === message.id) {
             notice_mem_entry.obj.close();
             notice_memory.delete(key);
         }
     }
-}
+};
 
-export function granted_desktop_notifications_permission(): boolean {
-    return NotificationAPI?.permission === "granted";
-}
+export const granted_desktop_notifications_permission = (): boolean =>
+    NotificationAPI?.permission === "granted";
 
-export function request_desktop_notifications_permission(): void {
+export const request_desktop_notifications_permission = (): void => {
     if (NotificationAPI) {
         void NotificationAPI.requestPermission();
     }
-}
+};

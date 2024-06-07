@@ -12,22 +12,21 @@ export type Context = {
     on_delete: () => void;
 };
 
-export function row_with_focus(context: Context): JQuery {
+export const row_with_focus = (context: Context): JQuery => {
     const $focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`);
     return $focused_item.parent(`.${CSS.escape(context.row_item_selector)}`);
-}
+};
 
-export function activate_element(elem: HTMLElement, context: Context): void {
+export const activate_element = (elem: HTMLElement, context: Context): void => {
     $(`.${CSS.escape(context.box_item_selector)}`).removeClass("active");
     elem.classList.add("active");
     elem.focus();
-}
+};
 
-export function get_focused_element_id(context: Context): string | undefined {
-    return row_with_focus(context).attr(context.id_attribute_name);
-}
+export const get_focused_element_id = (context: Context): string | undefined =>
+    row_with_focus(context).attr(context.id_attribute_name);
 
-export function focus_on_sibling_element(context: Context): void {
+export const focus_on_sibling_element = (context: Context): void => {
     const $next_row = row_after_focus(context);
     const $prev_row = row_before_focus(context);
     let elem_to_be_focused_id: string | undefined;
@@ -45,9 +44,9 @@ export function focus_on_sibling_element(context: Context): void {
         assert($new_focus_element[0].children[0] instanceof HTMLElement);
         activate_element($new_focus_element[0].children[0], context);
     }
-}
+};
 
-export function modals_handle_events(event_key: string, context: Context): void {
+export const modals_handle_events = (event_key: string, context: Context): void => {
     initialize_focus(event_key, context);
 
     // This detects up arrow key presses when the overlay
@@ -69,9 +68,9 @@ export function modals_handle_events(event_key: string, context: Context): void 
     if (event_key === "enter") {
         context.on_enter();
     }
-}
+};
 
-export function set_initial_element(element_id: string, context: Context): void {
+export const set_initial_element = (element_id: string, context: Context): void => {
     if (element_id) {
         const $current_element = get_element_by_id(element_id, context);
         const focus_element = $current_element[0]!.children[0];
@@ -79,9 +78,9 @@ export function set_initial_element(element_id: string, context: Context): void 
         activate_element(focus_element, context);
         $(`.${CSS.escape(context.items_list_selector)}`)[0]!.scrollTop = 0;
     }
-}
+};
 
-function row_before_focus(context: Context): JQuery {
+const row_before_focus = (context: Context): JQuery => {
     const $focused_row = row_with_focus(context);
     const $prev_row = $focused_row.prev(`.${CSS.escape(context.row_item_selector)}:visible`);
     // The draft modal can have two sub-sections. This handles the edge case
@@ -96,9 +95,9 @@ function row_before_focus(context: Context): JQuery {
     }
 
     return $prev_row;
-}
+};
 
-function row_after_focus(context: Context): JQuery {
+const row_after_focus = (context: Context): JQuery => {
     const $focused_row = row_with_focus(context);
     const $next_row = $focused_row.next(`.${CSS.escape(context.row_item_selector)}:visible`);
     // The draft modal can have two sub-sections. This handles the edge case
@@ -112,9 +111,9 @@ function row_after_focus(context: Context): JQuery {
         return $("#other-drafts").children(".overlay-message-row:visible").first();
     }
     return $next_row;
-}
+};
 
-function initialize_focus(event_name: string, context: Context): void {
+const initialize_focus = (event_name: string, context: Context): void => {
     // If an item is not focused in modal, then focus the last item
     // if up_arrow is clicked or the first item if down_arrow is clicked.
     if (
@@ -135,9 +134,9 @@ function initialize_focus(event_name: string, context: Context): void {
     const focus_element = $element[0]!.children[0];
     assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
-}
+};
 
-function scroll_to_element($element: JQuery, context: Context): void {
+const scroll_to_element = ($element: JQuery, context: Context): void => {
     if ($element[0] === undefined) {
         return;
     }
@@ -175,8 +174,7 @@ function scroll_to_element($element: JQuery, context: Context): void {
         // -4 is the min dist from the bottom that will require extra scrolling.
         $items_list[0]!.scrollTop += $items_list[0]!.clientHeight / 2;
     }
-}
+};
 
-function get_element_by_id(id: number | string, context: Context): JQuery {
-    return $(`[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id.toString())}']`);
-}
+const get_element_by_id = (id: number | string, context: Context): JQuery =>
+    $(`[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id.toString())}']`);

@@ -201,10 +201,12 @@ export const state_data_schema = current_user_schema
 export let current_user: z.infer<typeof current_user_schema>;
 export let realm: z.infer<typeof realm_schema>;
 
-export function set_current_user(initial_current_user: z.infer<typeof current_user_schema>): void {
+export const set_current_user = (
+    initial_current_user: z.infer<typeof current_user_schema>,
+): void => {
     current_user = initial_current_user;
-}
+};
 
-export function set_realm(initial_realm: z.infer<typeof realm_schema>): void {
+export const set_realm = (initial_realm: z.infer<typeof realm_schema>): void => {
     realm = initial_realm;
-}
+};

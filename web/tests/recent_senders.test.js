@@ -8,7 +8,7 @@ const {run_test} = require("./lib/test");
 let next_id = 0;
 const messages = new Map();
 
-function make_stream_message({stream_id, topic, sender_id}) {
+const make_stream_message = ({stream_id, topic, sender_id}) => {
     next_id += 1;
 
     const message = {
@@ -21,7 +21,7 @@ function make_stream_message({stream_id, topic, sender_id}) {
     messages.set(message.id, message);
 
     return message;
-}
+};
 
 mock_esm("../src/message_store", {
     get: (message_id) => messages.get(message_id),
@@ -31,22 +31,22 @@ people.initialize_current_user(1);
 const rs = zrequire("recent_senders");
 zrequire("message_util.ts");
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         messages.clear();
         next_id = 0;
         rs.clear_for_testing();
         f({override});
     });
-}
+};
 
 test("IdTracker", () => {
     const id_tracker = new rs.IdTracker();
 
-    function test_add(id, expected_max_id) {
+    const test_add = (id, expected_max_id) => {
         id_tracker.add(id);
         assert.equal(id_tracker.max_id(), expected_max_id);
-    }
+    };
 
     test_add(5, 5);
     test_add(7, 7);
@@ -55,10 +55,10 @@ test("IdTracker", () => {
     test_add(12, 12);
     test_add(11, 12);
 
-    function test_remove(id, expected_max_id) {
+    const test_remove = (id, expected_max_id) => {
         id_tracker.remove(id);
         assert.equal(id_tracker.max_id(), expected_max_id);
-    }
+    };
 
     test_remove(10, 12);
     test_remove(999999, 12); // bogus id has no effect

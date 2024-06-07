@@ -103,32 +103,22 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
     // of the `this` arg in the `Function.prototype.bind` use in the prototype.
     const funcs = {
         // return the value of the contenteditable input form.
-        value(input_elem: HTMLElement) {
-            return input_elem.textContent ?? "";
-        },
+        value: (input_elem: HTMLElement) => input_elem.textContent ?? "",
 
         // clear the value of the input form.
-        clear(input_elem: HTMLElement) {
+        clear: (input_elem: HTMLElement) => {
             input_elem.textContent = "";
         },
 
-        clear_text() {
+        clear_text: () => {
             store.$input.text("");
         },
 
-        getCurrentText() {
-            return store.$input.text();
-        },
+        getCurrentText: () => store.$input.text(),
 
-        is_pending() {
-            // This function returns true if we have text
-            // in out widget that hasn't been turned into
-            // pills.  We use it to decide things like
-            // whether we're ready to send typing indicators.
-            return store.$input.text().trim() !== "";
-        },
+        is_pending: () => store.$input.text().trim() !== "",
 
-        create_item(text: string) {
+        create_item: (text: string) => {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
 
@@ -142,7 +132,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData(item: InputPillItem<T>) {
+        appendValidatedData: (item: InputPillItem<T>) => {
             if (!item.display_value) {
                 blueslip.error("no display_value returned");
                 return;
@@ -221,7 +211,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // from the DOM, removes it from the array and returns it.
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
-        removePill(element: HTMLElement) {
+        removePill: (element: HTMLElement) => {
             const idx = store.pills.findIndex((pill) => pill.$element[0] === element);
 
             if (idx !== -1) {
@@ -248,7 +238,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // If quiet is a truthy value, the event handler associated with the
         // pill will not be evaluated. This is useful when using clear to reset
         // the pills.
-        removeLastPill(quiet?: boolean) {
+        removeLastPill: (quiet?: boolean) => {
             const pill = store.pills.pop();
 
             if (pill) {
@@ -267,7 +257,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             this.clear(store.$input[0]!);
         },
 
-        insertManyPills(pills: string | string[]) {
+        insertManyPills: (pills: string | string[]) => {
             if (typeof pills === "string") {
                 pills = pills.split(/,/g).map((pill) => pill.trim());
             }
@@ -293,19 +283,14 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             return drafts.length === 0;
         },
 
-        getByElement(element: HTMLElement) {
-            return store.pills.find((pill) => pill.$element[0] === element);
-        },
+        getByElement: (element: HTMLElement) =>
+            store.pills.find((pill) => pill.$element[0] === element),
 
-        _get_pills_for_testing() {
-            return store.pills;
-        },
+        _get_pills_for_testing: () => store.pills,
 
-        items() {
-            return store.pills.map((pill) => pill.item);
-        },
+        items: () => store.pills.map((pill) => pill.item),
 
-        createPillonPaste() {
+        createPillonPaste: () => {
             if (store.createPillonPaste !== undefined) {
                 store.createPillonPaste();
                 return undefined;
@@ -466,19 +451,19 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         getCurrentText: funcs.getCurrentText.bind(funcs),
         items: funcs.items.bind(funcs),
 
-        onPillCreate(callback) {
+        onPillCreate: (callback) => {
             store.onPillCreate = callback;
         },
 
-        onPillRemove(callback) {
+        onPillRemove: (callback) => {
             store.onPillRemove = callback;
         },
 
-        onTextInputHook(callback) {
+        onTextInputHook: (callback) => {
             store.onTextInputHook = callback;
         },
 
-        createPillonPaste(callback) {
+        createPillonPaste: (callback) => {
             store.createPillonPaste = callback;
         },
 

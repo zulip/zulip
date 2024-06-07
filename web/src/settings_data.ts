@@ -5,10 +5,10 @@ import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 
 let user_join_date: Date;
-export function initialize(current_user_join_date: Date): void {
+export const initialize = (current_user_join_date: Date): void => {
     // We keep the `user_join_date` as the present day's date if the user is a spectator
     user_join_date = current_user_join_date;
-}
+};
 
 /*
     This is a close cousin of settings_config,
@@ -20,7 +20,7 @@ export function initialize(current_user_join_date: Date): void {
     about page_params and settings_config details.
 */
 
-export function user_can_change_name(): boolean {
+export const user_can_change_name = (): boolean => {
     if (current_user.is_admin) {
         return true;
     }
@@ -28,9 +28,9 @@ export function user_can_change_name(): boolean {
         return false;
     }
     return true;
-}
+};
 
-export function user_can_change_avatar(): boolean {
+export const user_can_change_avatar = (): boolean => {
     if (current_user.is_admin) {
         return true;
     }
@@ -38,9 +38,9 @@ export function user_can_change_avatar(): boolean {
         return false;
     }
     return true;
-}
+};
 
-export function user_can_change_email(): boolean {
+export const user_can_change_email = (): boolean => {
     if (current_user.is_admin) {
         return true;
     }
@@ -48,13 +48,12 @@ export function user_can_change_email(): boolean {
         return false;
     }
     return true;
-}
+};
 
-export function user_can_change_logo(): boolean {
-    return current_user.is_admin && realm.zulip_plan_is_not_limited;
-}
+export const user_can_change_logo = (): boolean =>
+    current_user.is_admin && realm.zulip_plan_is_not_limited;
 
-function user_has_permission(policy_value: number): boolean {
+const user_has_permission = (policy_value: number): boolean => {
     /* At present, nobody and by_owners_only is not present in
      * common_policy_values, but we include a check for it here,
      * so that code using create_web_public_stream_policy_values
@@ -113,9 +112,9 @@ function user_has_permission(policy_value: number): boolean {
     const user_join_days =
         (current_datetime.getTime() - person_date_joined.getTime()) / 1000 / 86400;
     return user_join_days >= realm.realm_waiting_period_threshold;
-}
+};
 
-export function user_can_invite_users_by_email(): boolean {
+export const user_can_invite_users_by_email = (): boolean => {
     if (
         realm.realm_invite_to_realm_policy ===
         settings_config.email_invite_to_realm_policy_values.nobody.code
@@ -123,9 +122,9 @@ export function user_can_invite_users_by_email(): boolean {
         return false;
     }
     return user_has_permission(realm.realm_invite_to_realm_policy);
-}
+};
 
-export function user_can_create_multiuse_invite(): boolean {
+export const user_can_create_multiuse_invite = (): boolean => {
     if (!current_user.user_id) {
         return false;
     }
@@ -133,37 +132,32 @@ export function user_can_create_multiuse_invite(): boolean {
         realm.realm_create_multiuse_invite_group,
         current_user.user_id,
     );
-}
+};
 
-export function user_can_subscribe_other_users(): boolean {
-    return user_has_permission(realm.realm_invite_to_stream_policy);
-}
+export const user_can_subscribe_other_users = (): boolean =>
+    user_has_permission(realm.realm_invite_to_stream_policy);
 
-export function user_can_create_private_streams(): boolean {
-    return user_has_permission(realm.realm_create_private_stream_policy);
-}
+export const user_can_create_private_streams = (): boolean =>
+    user_has_permission(realm.realm_create_private_stream_policy);
 
-export function user_can_create_public_streams(): boolean {
-    return user_has_permission(realm.realm_create_public_stream_policy);
-}
+export const user_can_create_public_streams = (): boolean =>
+    user_has_permission(realm.realm_create_public_stream_policy);
 
-export function user_can_create_web_public_streams(): boolean {
+export const user_can_create_web_public_streams = (): boolean => {
     if (!realm.server_web_public_streams_enabled || !realm.realm_enable_spectator_access) {
         return false;
     }
 
     return user_has_permission(realm.realm_create_web_public_stream_policy);
-}
+};
 
-export function user_can_move_messages_between_streams(): boolean {
-    return user_has_permission(realm.realm_move_messages_between_streams_policy);
-}
+export const user_can_move_messages_between_streams = (): boolean =>
+    user_has_permission(realm.realm_move_messages_between_streams_policy);
 
-export function user_can_edit_user_groups(): boolean {
-    return user_has_permission(realm.realm_user_group_edit_policy);
-}
+export const user_can_edit_user_groups = (): boolean =>
+    user_has_permission(realm.realm_user_group_edit_policy);
 
-export function can_edit_user_group(group_id: number): boolean {
+export const can_edit_user_group = (group_id: number): boolean => {
     if (!current_user.user_id) {
         return false;
     }
@@ -180,21 +174,18 @@ export function can_edit_user_group(group_id: number): boolean {
     }
 
     return user_groups.is_direct_member_of(current_user.user_id, group_id);
-}
+};
 
-export function user_can_add_custom_emoji(): boolean {
-    return user_has_permission(realm.realm_add_custom_emoji_policy);
-}
+export const user_can_add_custom_emoji = (): boolean =>
+    user_has_permission(realm.realm_add_custom_emoji_policy);
 
-export function user_can_move_messages_to_another_topic(): boolean {
-    return user_has_permission(realm.realm_edit_topic_policy);
-}
+export const user_can_move_messages_to_another_topic = (): boolean =>
+    user_has_permission(realm.realm_edit_topic_policy);
 
-export function user_can_delete_own_message(): boolean {
-    return user_has_permission(realm.realm_delete_own_message_policy);
-}
+export const user_can_delete_own_message = (): boolean =>
+    user_has_permission(realm.realm_delete_own_message_policy);
 
-export function should_mask_unread_count(sub_muted: boolean): boolean {
+export const should_mask_unread_count = (sub_muted: boolean): boolean => {
     if (
         user_settings.web_stream_unreads_count_display_policy ===
         settings_config.web_stream_unreads_count_display_policy_values.no_streams.code
@@ -210,9 +201,9 @@ export function should_mask_unread_count(sub_muted: boolean): boolean {
     }
 
     return false;
-}
+};
 
-export function using_dark_theme(): boolean {
+export const using_dark_theme = (): boolean => {
     if (user_settings.color_scheme === settings_config.color_scheme_values.night.code) {
         return true;
     }
@@ -225,16 +216,12 @@ export function using_dark_theme(): boolean {
         return true;
     }
     return false;
-}
+};
 
-export function user_email_not_configured(): boolean {
-    // The following should also be true in the only circumstance
-    // under which we expect this condition to be possible:
-    // realm.demo_organization_scheduled_deletion_date
-    return current_user.is_owner && current_user.delivery_email === "";
-}
+export const user_email_not_configured = (): boolean =>
+    current_user.is_owner && current_user.delivery_email === "";
 
-export function bot_type_id_to_string(type_id: number): string | undefined {
+export const bot_type_id_to_string = (type_id: number): string | undefined => {
     const bot_type = page_params.bot_types.find((bot_type) => bot_type.type_id === type_id);
 
     if (bot_type === undefined) {
@@ -242,9 +229,9 @@ export function bot_type_id_to_string(type_id: number): string | undefined {
     }
 
     return bot_type.name;
-}
+};
 
-export function user_can_access_all_other_users(): boolean {
+export const user_can_access_all_other_users = (): boolean => {
     if (!current_user.user_id) {
         return true;
     }
@@ -253,14 +240,16 @@ export function user_can_access_all_other_users(): boolean {
         realm.realm_can_access_all_users_group,
         current_user.user_id,
     );
-}
+};
 
 /* istanbul ignore next */
-export function get_request_data_for_stream_privacy(selected_val: string): {
+export const get_request_data_for_stream_privacy = (
+    selected_val: string,
+): {
     is_private: boolean;
     history_public_to_subscribers: boolean;
     is_web_public: boolean;
-} {
+} => {
     switch (selected_val) {
         case settings_config.stream_privacy_policy_values.public.code: {
             return {
@@ -291,4 +280,4 @@ export function get_request_data_for_stream_privacy(selected_val: string): {
             };
         }
     }
-}
+};

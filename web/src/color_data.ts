@@ -34,13 +34,13 @@ const stream_colors = [
 // bias toward "early" colors.
 export const colors = _.shuffle(stream_colors);
 
-export function reset(): void {
+export const reset = (): void => {
     unused_colors = [...colors];
-}
+};
 
 reset();
 
-export function claim_color(color: string): void {
+export const claim_color = (color: string): void => {
     const i = unused_colors.indexOf(color);
 
     if (i < 0) {
@@ -52,19 +52,19 @@ export function claim_color(color: string): void {
     if (unused_colors.length === 0) {
         reset();
     }
-}
+};
 
-export function claim_colors(subs: {color: string}[]): void {
+export const claim_colors = (subs: {color: string}[]): void => {
     const colors = new Set(subs.map((sub) => sub.color));
     for (const color of colors) {
         claim_color(color);
     }
-}
+};
 
-export function pick_color(): string {
+export const pick_color = (): string => {
     const color = unused_colors[0]!;
 
     claim_color(color);
 
     return color;
-}
+};

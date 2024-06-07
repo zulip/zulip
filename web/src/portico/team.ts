@@ -88,15 +88,15 @@ type ContributorData = {
 // if a user leaves and then revisits the same tab.
 const loaded_tabs: string[] = [];
 
-function calculate_total_commits(contributor: Contributor): number {
+const calculate_total_commits = (contributor: Contributor): number => {
     let commits = 0;
     for (const repo_name of all_repository_names) {
         commits += contributor[repo_name] ?? 0;
     }
     return commits;
-}
+};
 
-function get_profile_url(contributor: Contributor, tab_name?: string): string | undefined {
+const get_profile_url = (contributor: Contributor, tab_name?: string): string | undefined => {
     if (contributor.github_username) {
         return `https://github.com/${contributor.github_username}`;
     }
@@ -117,23 +117,22 @@ function get_profile_url(contributor: Contributor, tab_name?: string): string | 
     }
 
     return undefined;
-}
+};
 
-function get_display_name(contributor: Contributor): string {
+const get_display_name = (contributor: Contributor): string => {
     if (contributor.github_username) {
         return "@" + contributor.github_username;
     }
     return contributor.name;
-}
+};
 
-function exclude_bot_contributors(contributor: Contributor): boolean {
-    return contributor.github_username !== "dependabot[bot]";
-}
+const exclude_bot_contributors = (contributor: Contributor): boolean =>
+    contributor.github_username !== "dependabot[bot]";
 
 // TODO (for v2 of /team/ contributors):
 //   - Make tab header responsive.
 //   - Display full name instead of GitHub username.
-export default function render_tabs(contributors: Contributor[]): void {
+const render_tabs = (contributors: Contributor[]): void => {
     const template = _.template($("#contributors-template").html());
     const count_template = _.template($("#count-template").html());
     const total_count_template = _.template($("#total-count-template").html());
@@ -231,4 +230,5 @@ export default function render_tabs(contributors: Contributor[]): void {
             }
         });
     }
-}
+};
+export default render_tabs;
