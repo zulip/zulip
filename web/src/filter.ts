@@ -1261,6 +1261,17 @@ export class Filter {
         return false;
     }
 
+    is_conversation_view_with_near(): boolean {
+        const term_type = this.sorted_term_types();
+        if (
+            _.isEqual(term_type, ["channel", "topic", "near"]) ||
+            _.isEqual(term_type, ["dm", "near"])
+        ) {
+            return true;
+        }
+        return false;
+    }
+
     excludes_muted_topics(): boolean {
         return (
             // not narrowed to a topic

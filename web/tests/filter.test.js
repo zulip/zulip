@@ -181,6 +181,7 @@ test("basics", () => {
     assert.ok(filter.can_bucket_by("channel"));
     assert.ok(filter.can_bucket_by("channel", "topic"));
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view_with_near());
 
     // If our only channel operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a channel operator, because we don't
@@ -295,6 +296,22 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
+
+    terms = [
+        {operator: "dm", operand: "joe@example.com"},
+        {operator: "near", operand: 17},
+    ];
+    filter = new Filter(terms);
+    assert.ok(filter.is_non_huddle_pm());
+    assert.ok(filter.contains_only_private_messages());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view_with_near());
 
     terms = [{operator: "dm", operand: "joe@example.com,jack@example.com"}];
     filter = new Filter(terms);
@@ -305,6 +322,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
 
     // "pm-with" was renamed to "dm"
     terms = [{operator: "pm-with", operand: "joe@example.com"}];
@@ -376,6 +394,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
 
     // "stream" was renamed to "channel"
     terms = [
@@ -393,6 +412,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
