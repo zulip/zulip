@@ -24,7 +24,7 @@ let zoomed = false;
 
 function get_private_messages_section_header(): JQuery {
     return $(
-        ".direct-messages-container #private_messages_section #private_messages_section_header",
+        ".direct-messages-container #direct-messages-section #private_messages_section_header",
     );
 }
 
