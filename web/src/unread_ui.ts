@@ -23,6 +23,10 @@ export function register_update_unread_counts_hook(f: UpdateUnreadCountsHook): v
     update_unread_counts_hooks.push(f);
 }
 
+function set_mark_read_on_scroll_state_banner(template: string): void {
+    $("#mark_read_on_scroll_state_banner").html(template);
+}
+
 export function update_unread_banner(): void {
     if (message_lists.current === undefined) {
         return;
@@ -34,17 +38,15 @@ export function update_unread_banner(): void {
         user_settings.web_mark_read_on_scroll_policy ===
         web_mark_read_on_scroll_policy_values.never.code
     ) {
-        $("#mark_read_on_scroll_state_banner").html(render_mark_as_read_disabled_banner());
+        set_mark_read_on_scroll_state_banner(render_mark_as_read_disabled_banner());
     } else if (
         user_settings.web_mark_read_on_scroll_policy ===
             web_mark_read_on_scroll_policy_values.conversation_only.code &&
         !is_conversation_view
     ) {
-        $("#mark_read_on_scroll_state_banner").html(
-            render_mark_as_read_only_in_conversation_view(),
-        );
+        set_mark_read_on_scroll_state_banner(render_mark_as_read_only_in_conversation_view());
     } else {
-        $("#mark_read_on_scroll_state_banner").html(render_mark_as_read_turned_off_banner());
+        set_mark_read_on_scroll_state_banner(render_mark_as_read_turned_off_banner());
         if (message_lists.current.can_mark_messages_read_without_setting()) {
             hide_unread_banner();
         }
