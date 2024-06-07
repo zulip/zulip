@@ -325,7 +325,7 @@ li.show-more-topics {
     }
 }
 
-.active_private_messages_section {
+.active-direct-messages-section {
     background-color: hsl(202deg 56% 91%);
 
     #private_messages_section {

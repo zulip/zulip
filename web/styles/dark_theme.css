@@ -372,7 +372,7 @@
         color: inherit;
     }
 
-    .active_private_messages_section {
+    .active-direct-messages-section {
         background-color: hsl(199deg 33% 46% / 20%);
     }
 
