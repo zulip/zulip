@@ -281,7 +281,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         html_submit_button: $t_html({defaultMessage: "Copy URL"}),
         html_exit_button: $t_html({defaultMessage: "Close"}),
         on_click() {
-            return;
+            // Do nothing
         },
         post_render: generate_integration_url_post_render,
     });

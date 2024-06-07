@@ -60,7 +60,7 @@ export function maybe_show_deprecation_notice(key: string): void {
             html_body: message,
             html_submit_button: $t_html({defaultMessage: "Got it"}),
             on_click() {
-                return;
+                // Do nothing
             },
             close_on_submit: true,
             focus_submit_on_open: true,

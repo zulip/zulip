@@ -79,10 +79,10 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         return edited_messages_ids;
     },
     on_enter() {
-        return;
+        // Do nothing
     },
     on_delete() {
-        return;
+        // Do nothing
     },
 };
 
