@@ -27,15 +27,6 @@ const TIPPY_PROPS: Partial<tippy.Props> = {
     offset: [0, 2],
 };
 
-export const COMMON_DROPDOWN_WIDGET_PARAMS = {
-    get_options: filters_dropdown_options,
-    tippy_props: TIPPY_PROPS,
-    unique_id_type: dropdown_widget.DataTypes.STRING,
-    hide_search_box: true,
-    bold_current_selection: true,
-    disable_for_spectators: true,
-};
-
 export function filters_dropdown_options(current_value: string | number | undefined): {
     unique_id: string;
     name: string;
@@ -65,6 +56,15 @@ export function filters_dropdown_options(current_value: string | number | undefi
         },
     ];
 }
+
+export const COMMON_DROPDOWN_WIDGET_PARAMS = {
+    get_options: filters_dropdown_options,
+    tippy_props: TIPPY_PROPS,
+    unique_id_type: dropdown_widget.DataTypes.STRING,
+    hide_search_box: true,
+    bold_current_selection: true,
+    disable_for_spectators: true,
+};
 
 export function show(opts: {
     highlight_view_in_left_sidebar: () => void;
