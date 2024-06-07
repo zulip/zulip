@@ -22,8 +22,8 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 263**:
 
-* `POST /users/me/presence`: A new `last_update_id`
-  parameter can be given, instructing
+* [`POST /users/me/presence`](/api/update-presence):
+  A new `last_update_id` parameter can be given, instructing
   the server to only fetch presence data with `last_update_id`
   greater than the value provided. The server also provides
   a `presence_last_update_id` field in the response, which
@@ -38,10 +38,10 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /register`](/api/register-queue): The response now also
   includes a `presence_last_update_id` field, with the same
-  meaning as described above for `/users/me/presence`.
+  meaning as described above for [`/users/me/presence`](/api/update-presence).
   In the same way, the retrieved value can be passed when
-  querying `/users/me/presence` to avoid re-fetching of already
-  known data.
+  querying [`/users/me/presence`](/api/update-presence) to avoid
+  re-fetching of already known data.
 
 **Feature level 262**:
 
@@ -798,7 +798,7 @@ No changes; feature level used for Zulip 7.0 release.
 
 **Feature level 178**
 
-* `POST /users/me/presence`,
+* [`POST /users/me/presence`](/api/update-presence),
   [`GET /users/<user_id_or_email>/presence`](/api/get-user-presence),
   [`GET /realm/presence`](/api/get-presence),
   [`POST /register`](/api/register-queue),

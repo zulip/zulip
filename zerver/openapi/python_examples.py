@@ -238,14 +238,18 @@ def get_user_status(client: Client) -> None:
 
 @openapi_test_function("/users/me/presence:post")
 def update_presence(client: Client) -> None:
-    # This endpoint is not documented yet. So, we are not validating the schema here.
+    # {code_example|start}
+    # Update your presence.
     request = {
         "status": "active",
         "ping_only": False,
         "new_user_input": False,
+        "last_update_id": -1,
     }
     result = client.update_presence(request)
+    # {code_example|end}
     validate_response_result(result)
+    validate_against_openapi_schema(result, "/users/me/presence", "post", "200")
 
 
 @openapi_test_function("/users:post")
