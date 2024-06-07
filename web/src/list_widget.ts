@@ -18,7 +18,7 @@ type ListWidgetMeta<Key, Item = Key> = {
     filtered_list: Item[];
     reverse_mode: boolean;
     $scroll_container: JQuery;
-    $scroll_listening_element: JQuery | JQuery<Window>;
+    $scroll_listening_element: JQuery<HTMLElement | Window>;
 };
 
 // This type ensures the mutually exclusive nature of the predicate and filterer options.
@@ -46,7 +46,7 @@ type ListWidgetOpts<Key, Item = Key> = {
     callback_after_render?: () => void;
     post_scroll__pre_render_callback?: () => void;
     get_min_load_count?: (rendered_count: number, load_count: number) => number;
-    is_scroll_position_for_render?: (scroll_container: HTMLElement) => boolean;
+    is_scroll_position_for_render?: () => boolean;
     filter?: ListWidgetFilterOpts<Item>;
     multiselect?: {
         selected_items: Key[];
@@ -262,7 +262,7 @@ export function create<Key, Item = Key>(
         old_widget.clear_event_handlers();
     }
 
-    let $scroll_listening_element: JQuery | JQuery<Window> = opts.$simplebar_container;
+    let $scroll_listening_element: JQuery<HTMLElement | Window> = opts.$simplebar_container;
     if ($scroll_listening_element.is("html")) {
         // When `$scroll_container` is the entire page (`html`),
         // scroll events are fired on `window/document`, so we need to
@@ -430,23 +430,23 @@ export function create<Key, Item = Key>(
         set_up_event_handlers() {
             // on scroll of the nearest scrolling container, if it hits the bottom
             // of the container then fetch a new block of items and render them.
-            meta.$scroll_listening_element.on(
-                "scroll.list_widget_container",
-                function (this: HTMLElement) {
-                    if (opts.post_scroll__pre_render_callback) {
-                        opts.post_scroll__pre_render_callback();
-                    }
+            meta.$scroll_listening_element.on("scroll.list_widget_container", function () {
+                if (opts.post_scroll__pre_render_callback) {
+                    opts.post_scroll__pre_render_callback();
+                }
 
-                    if (opts.is_scroll_position_for_render === undefined) {
-                        opts.is_scroll_position_for_render = is_scroll_position_for_render;
-                    }
+                let should_render;
+                if (opts.is_scroll_position_for_render === undefined) {
+                    assert(!(this instanceof Window));
+                    should_render = is_scroll_position_for_render(this);
+                } else {
+                    should_render = opts.is_scroll_position_for_render();
+                }
 
-                    const should_render = opts.is_scroll_position_for_render(this);
-                    if (should_render) {
-                        widget.render();
-                    }
-                },
-            );
+                if (should_render) {
+                    widget.render();
+                }
+            });
 
             if (opts.$parent_container) {
                 opts.$parent_container.on(
@@ -466,11 +466,6 @@ export function create<Key, Item = Key>(
         },
 
         clear_event_handlers() {
-            // Since `$scroll_listening_element` is of type `JQuery | JQuery<Window>` instead
-            // of just `JQuery`, Typescript is expecting `off` to be called on
-            // TypeEventHandlers<HTMLElement, any, any, any> which is confusing.
-            //
-            // @ts-expect-error Maybe JQuery<Window>.TypeEventHandlers is not defined?
             meta.$scroll_listening_element.off("scroll.list_widget_container");
 
             if (opts.$parent_container) {

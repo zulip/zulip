@@ -60,6 +60,7 @@ function make_container() {
 
 function make_scroll_container() {
     const $scroll_container = {};
+    $scroll_container[0] = {};
 
     $scroll_container.cleared = false;
 
@@ -68,7 +69,7 @@ function make_scroll_container() {
     $scroll_container.on = (ev, f) => {
         assert.equal(ev, "scroll.list_widget_container");
         $scroll_container.call_scroll = () => {
-            f.call($scroll_container);
+            f.call($scroll_container[0]);
         };
     };
 
@@ -171,9 +172,9 @@ run_test("scrolling", () => {
     assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry so it forces a scroll action.
-    $scroll_container.scrollTop = 180;
-    $scroll_container.clientHeight = 100;
-    $scroll_container.scrollHeight = 260;
+    $scroll_container[0].scrollTop = 180;
+    $scroll_container[0].clientHeight = 100;
+    $scroll_container[0].scrollHeight = 260;
 
     // Scrolling gets the next two elements from the list into
     // our widget.
@@ -223,9 +224,9 @@ run_test("not_scrolling", () => {
     assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry.
-    $scroll_container.scrollTop = 180;
-    $scroll_container.clientHeight = 100;
-    $scroll_container.scrollHeight = 260;
+    $scroll_container[0].scrollTop = 180;
+    $scroll_container[0].clientHeight = 100;
+    $scroll_container[0].scrollHeight = 260;
 
     // Since `should_render` is always false, no elements will be
     // added regardless of scrolling.
