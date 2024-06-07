@@ -490,6 +490,7 @@ class UserPresenceTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", {"status": "idle"}, subdomain="zephyr")
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["presences"], {})
+        self.assertEqual(response_dict["presence_last_update_id"], -1)
 
     def test_mirror_presence(self) -> None:
         """Zephyr mirror realms find out the status of their mirror bot"""

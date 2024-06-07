@@ -213,10 +213,10 @@ def get_presences_for_realm(
     slim_presence: bool,
     last_update_id_fetched_by_client: Optional[int],
     requesting_user_profile: UserProfile,
-) -> Tuple[Dict[str, Dict[str, Dict[str, Any]]], Optional[int]]:
+) -> Tuple[Dict[str, Dict[str, Dict[str, Any]]], int]:
     if realm.presence_disabled:
         # Return an empty dict if presence is disabled in this realm
-        return defaultdict(dict), None
+        return defaultdict(dict), -1
 
     return get_presence_dict_by_realm(
         realm,
