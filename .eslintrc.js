@@ -1,5 +1,7 @@
 "use strict";
 
+const confusingBrowserGlobals = require("confusing-browser-globals");
+
 module.exports = {
     root: true,
     env: {
@@ -89,6 +91,7 @@ module.exports = {
         "no-octal-escape": "error",
         "no-plusplus": "error",
         "no-proto": "error",
+        "no-restricted-globals": ["error", ...confusingBrowserGlobals],
         "no-return-assign": "error",
         "no-script-url": "error",
         "no-self-compare": "error",
