@@ -62,6 +62,6 @@ export function toggle_org_setting_collapse() {
     // If current tab is about to be collapsed, go to default tab.
     const $current_tab = $(".org-settings-list .active");
     if ($current_tab.hasClass("hide-org-settings")) {
-        $(location).attr("href", "/#organization/organization-profile");
+        window.location.href = "/#organization/organization-profile";
     }
 }

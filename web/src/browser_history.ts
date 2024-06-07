@@ -1,4 +1,4 @@
-// TODO: Rewrite this module to use history.pushState.
+// TODO: Rewrite this module to use window.history.pushState.
 
 import * as blueslip from "./blueslip";
 import * as hash_parser from "./hash_parser";
@@ -129,10 +129,10 @@ export function set_hash(hash: string): void {
         // Avoid adding duplicate entries in browser history.
         return;
     }
-    if (history.pushState) {
+    if (window.history.pushState) {
         const url = get_full_url(hash);
         try {
-            history.pushState(null, "", url);
+            window.history.pushState(null, "", url);
             update_web_public_hash(hash);
         } catch (error) {
             if (error instanceof TypeError) {
@@ -163,12 +163,12 @@ type StateData = {
 
 export function update_current_history_state_data(new_data: StateData): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const current_state = history.state as StateData | null;
+    const current_state = window.history.state as StateData | null;
     const current_state_data = {
         narrow_pointer: current_state?.narrow_pointer,
         narrow_offset: current_state?.narrow_offset,
         show_more_topics: current_state?.show_more_topics,
     };
     const state_data = {...current_state_data, ...new_data};
-    history.replaceState(state_data, "", window.location.href);
+    window.history.replaceState(state_data, "", window.location.href);
 }

@@ -90,7 +90,7 @@ if (page_params.server_sentry_dsn) {
                     return {
                         ...context,
                         metadata: {source: "custom"},
-                        name: normalize_path(location.pathname, sentry_key === "www"),
+                        name: normalize_path(window.location.pathname, sentry_key === "www"),
                     };
                 },
                 shouldCreateSpanForRequest,

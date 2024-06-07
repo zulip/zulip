@@ -133,7 +133,7 @@
     <script nonce="{{ csp_nonce }}">
         document.addEventListener('DOMContentLoaded', function () {
             function reload() {
-                location.reload(true);
+                window.location.reload(true);
             }
             document.querySelectorAll('.reload-lnk').forEach(lnk => lnk.addEventListener('click', reload));
         });
