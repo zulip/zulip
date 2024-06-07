@@ -23,8 +23,12 @@ export function register_update_unread_counts_hook(f: UpdateUnreadCountsHook): v
     update_unread_counts_hooks.push(f);
 }
 
-function set_mark_read_on_scroll_state_banner(template: string): void {
-    $("#mark_read_on_scroll_state_banner").html(template);
+function set_mark_read_on_scroll_state_banner(banner_html: string): void {
+    $("#mark_read_on_scroll_state_banner").html(banner_html);
+    // This place holder is essential since hiding the unread banner would reduce
+    // scrollable place, shifting the message list downward if the scrollbar is
+    // at bottom.
+    $("#mark_read_on_scroll_state_banner_place_holder").html(banner_html);
 }
 
 export function update_unread_banner(): void {
@@ -34,6 +38,8 @@ export function update_unread_banner(): void {
 
     const filter = narrow_state.filter();
     const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
+    toggle_dummy_banner(false);
+
     if (
         user_settings.web_mark_read_on_scroll_policy ===
         web_mark_read_on_scroll_policy_values.never.code
@@ -53,10 +59,14 @@ export function update_unread_banner(): void {
     }
 }
 
+function toggle_dummy_banner(state: boolean): void {
+    $("#mark_read_on_scroll_state_banner_place_holder").toggleClass("hide", !state);
+    $("#mark_read_on_scroll_state_banner_place_holder").toggleClass("invisible", state);
+}
+
 export function hide_unread_banner(): void {
-    // Use visibility instead of hide() to prevent messages on the screen from
-    // shifting vertically.
-    $("#mark_read_on_scroll_state_banner").toggleClass("invisible", true);
+    $("#mark_read_on_scroll_state_banner").toggleClass("hide", true);
+    toggle_dummy_banner(true);
 }
 
 export function reset_unread_banner(): void {
@@ -66,7 +76,8 @@ export function reset_unread_banner(): void {
 
 export function notify_messages_remain_unread(): void {
     if (!user_closed_unread_banner) {
-        $("#mark_read_on_scroll_state_banner").toggleClass("invisible", false);
+        $("#mark_read_on_scroll_state_banner").toggleClass("hide", false);
+        toggle_dummy_banner(false);
     }
 }
 
