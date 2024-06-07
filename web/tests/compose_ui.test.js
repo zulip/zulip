@@ -280,7 +280,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     override(
         hash_util,
         "by_conversation_and_time_url",
-        () => "https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado",
+        () => "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado",
     );
 
     override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
@@ -356,7 +356,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
-                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n" +
+                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n" +
                     "```quote\n" +
                     `${quote_text}\n` +
                     "```",
