@@ -10,6 +10,7 @@
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Set up your account](/help/set-up-your-account)
 * [Introduction to topics](/help/introduction-to-topics)
+* [Starting a new topic](/help/introduction-to-topics#how-to-start-a-new-topic)
 * [Finding a conversation to read](/help/finding-a-conversation-to-read)
 * [Reading conversations](/help/reading-conversations)
 * [Starting a new direct message](/help/starting-a-new-direct-message)
