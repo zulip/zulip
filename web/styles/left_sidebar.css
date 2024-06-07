@@ -335,10 +335,6 @@ li.show-more-topics {
     #direct-messages-list {
         border-radius: 0 0 4px 4px;
     }
-
-    #more_private_messages_sidebar_title {
-        font-weight: 600;
-    }
 }
 
 :not(.active-sub-filter) {
@@ -1374,10 +1370,6 @@ li.topic-list-item {
 
     &.direct-messages-container ul.dm-list {
         margin-bottom: $bottom_scrolling_buffer;
-    }
-
-    #more_private_messages_sidebar_title {
-        display: inline;
     }
 
     #hide-more-direct-messages {
