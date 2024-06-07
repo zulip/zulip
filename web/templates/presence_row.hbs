@@ -14,8 +14,10 @@
                     <span class="status-text">{{status_text}}</span>
                 </div>
             {{else}}
-                {{> user_full_name}}
-                {{> status_emoji status_emoji_info}}
+                <div class="user-name-and-status-emoji">
+                    {{> user_full_name}}
+                    {{> status_emoji status_emoji_info}}
+                </div>
             {{/if}}
         </a>
         <span class="unread_count {{#unless num_unread}}hide{{/unless}}">{{#if num_unread}}{{num_unread}}{{/if}}</span>
