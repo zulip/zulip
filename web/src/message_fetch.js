@@ -55,6 +55,16 @@ const consts = {
     recent_view_minimum_load_more_fetch_size: 50000,
 };
 
+export function load_messages_around_anchor(anchor, cont, msg_list_data) {
+    load_messages({
+        anchor,
+        num_before: consts.narrowed_view_backward_batch_size,
+        num_after: consts.narrowed_view_forward_batch_size,
+        msg_list_data,
+        cont,
+    });
+}
+
 function process_result(data, opts) {
     let messages = data.messages;
 

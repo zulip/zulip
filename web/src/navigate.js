@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
 import * as message_lists from "./message_lists";
+import * as message_view from "./message_view";
 import * as message_viewport from "./message_viewport";
 import * as unread_ops from "./unread_ops";
 
@@ -46,20 +47,11 @@ export function down(with_centering = false) {
 }
 
 export function to_home() {
-    assert(message_lists.current !== undefined);
-    message_viewport.set_last_movement_direction(-1);
-    const first_message = message_lists.current.first();
-    assert(first_message !== undefined);
-    message_lists.current.select_id(first_message.id, {then_scroll: true, from_scroll: true});
+    message_view.fast_track_current_msg_list_to_anchor("oldest");
 }
 
 export function to_end() {
-    assert(message_lists.current !== undefined);
-    const last_message = message_lists.current.last();
-    assert(last_message !== undefined);
-    message_viewport.set_last_movement_direction(1);
-    message_lists.current.select_id(last_message.id, {then_scroll: true, from_scroll: true});
-    unread_ops.process_visible();
+    message_view.fast_track_current_msg_list_to_anchor("newest");
 }
 
 function amount_to_paginate() {
