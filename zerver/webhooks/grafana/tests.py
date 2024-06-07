@@ -6,8 +6,7 @@ class GrafanaHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/grafana?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "grafana"
 
-    # Note: Include a test function per each distinct message condition your integration supports
-    def test_alert(self) -> None:
+    def test_alert_v7(self) -> None:
         expected_topic_name = "[Alerting] Test notification"
         expected_message = """
 :alert: **ALERTING**
@@ -22,15 +21,14 @@ Someone is testing the alert notification within grafana.
 [Click to view visualization](https://grafana.com/assets/img/blog/mixed_styles.png)
 """.strip()
 
-        # use fixture named helloworld_hello
         self.check_webhook(
-            "alert",
+            "alert_v7",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_no_data_alert(self) -> None:
+    def test_no_data_alert_v7(self) -> None:
         expected_topic_name = "[Alerting] No Data alert"
         expected_message = """
 :alert: **ALERTING**
@@ -41,15 +39,14 @@ The panel has no data.
 
 """.strip()
 
-        # use fixture named helloworld_hello
         self.check_webhook(
-            "no_data_alert",
+            "no_data_alert_v7",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_no_message_alert(self) -> None:
+    def test_no_message_alert_v7(self) -> None:
         expected_topic_name = "[Alerting] No Message alert"
         expected_message = """
 :alert: **ALERTING**
@@ -59,16 +56,14 @@ The panel has no data.
 **A-series:** 21.573108436586445
 """.strip()
 
-        # use fixture named helloworld_hello
         self.check_webhook(
-            "no_message_alert",
+            "no_message_alert_v7",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
-    # Note: Include a test function per each distinct message condition your integration supports
-    def test_alert_ok(self) -> None:
+    def test_alert_ok_v7(self) -> None:
         expected_topic_name = "[Ok] Test notification"
         expected_message = """
 :squared_ok: **OK**
@@ -82,16 +77,14 @@ Someone is testing the alert notification within grafana.
 [Click to view visualization](https://grafana.com/assets/img/blog/mixed_styles.png)
 """.strip()
 
-        # use fixture named helloworld_hello
         self.check_webhook(
-            "alert_ok",
+            "alert_ok_v7",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
-    # Note: Include a test function per each distinct message condition your integration supports
-    def test_alert_paused(self) -> None:
+    def test_alert_paused_v7(self) -> None:
         expected_topic_name = "[Paused] Test notification"
         expected_message = """
 :info: **PAUSED**
@@ -104,16 +97,14 @@ Someone is testing the alert notification within grafana.
 [Click to view visualization](https://grafana.com/assets/img/blog/mixed_styles.png)
 """.strip()
 
-        # use fixture named helloworld_hello
         self.check_webhook(
-            "alert_paused",
+            "alert_paused_v7",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
-    # Note: Include a test function per each distinct message condition your integration supports
-    def test_alert_pending(self) -> None:
+    def test_alert_pending_v7(self) -> None:
         expected_topic_name = "[Pending] Test notification"
         expected_message = """
 :info: **PENDING**
@@ -130,13 +121,13 @@ Someone is testing the alert notification within grafana.
 
         # use fixture named helloworld_hello
         self.check_webhook(
-            "alert_pending",
+            "alert_pending_v7",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_alert_new(self) -> None:
+    def test_alert_v8(self) -> None:
         expected_topic_name = "[RESOLVED:1]"
         expected_message = """
 :checkbox: **RESOLVED**
@@ -161,13 +152,13 @@ Annotations:
 """.strip()
 
         self.check_webhook(
-            "alert_new",
+            "alert_v8",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_alert_new_multiple(self) -> None:
+    def test_alert_multiple_v8(self) -> None:
         expected_topic_name = "[FIRING:2]"
         expected_message = """
 :alert: **FIRING**
@@ -205,7 +196,7 @@ Annotations:
 """.strip()
 
         self.check_webhook(
-            "alert_new_multiple",
+            "alert_multiple_v8",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
