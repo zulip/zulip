@@ -49,6 +49,7 @@ export type UserSettings = (StreamNotificationSettings &
     presence_enabled: boolean;
     realm_name_in_email_notifications_policy: number;
     receives_typing_notifications: boolean;
+    web_left_sidebar_unreads_count_summary: boolean;
     send_private_typing_notifications: boolean;
     send_read_receipts: boolean;
     send_stream_typing_notifications: boolean;

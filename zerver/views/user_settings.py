@@ -234,6 +234,9 @@ def json_change_settings(
         json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
         default=None,
     ),
+    web_left_sidebar_unreads_count_summary: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     timezone: Optional[str] = REQ(str_validator=check_timezone, default=None),
     email_notifications_batching_period_seconds: Optional[int] = REQ(
         json_validator=check_int, default=None

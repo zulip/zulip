@@ -575,6 +575,9 @@ export const preferences_settings_labels = {
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
     web_font_size_px: $t({defaultMessage: "Message-area font size (px)"}),
     web_line_height_percent: $t({defaultMessage: "Message-area line height (%)"}),
+    web_left_sidebar_unreads_count_summary: $t({
+        defaultMessage: "Show unread count summaries in the left sidebar",
+    }),
 };
 
 export const notification_settings_labels = {
