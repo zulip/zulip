@@ -174,7 +174,7 @@ function create_and_update_message_list(filter, id_info, opts) {
     // workflow we have which calls `message_view.show` after hash is updated.
     if (opts.change_hash) {
         update_hash_to_match_filter(filter, opts.trigger);
-        opts.show_more_topics = history.state?.show_more_topics ?? false;
+        opts.show_more_topics = window.history.state?.show_more_topics ?? false;
     }
 
     // Show the new set of messages. It is important to set message_lists.current to

@@ -207,7 +207,7 @@ $(document).on("click", ".pricing-tab", function () {
         $(".subheader-filler").attr("colspan", plans_columns_count);
     }
 
-    history.pushState(null, null, `#${id}`);
+    window.history.pushState(null, null, `#${id}`);
 });
 
 $(document).on("click", ".comparison-tab", function () {

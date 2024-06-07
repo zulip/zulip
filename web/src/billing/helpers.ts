@@ -87,10 +87,14 @@ export function create_ajax_request(
             $(form_error).hide();
             $(form_success).show();
             if (["autopay", "invoice"].includes(form_name)) {
-                if ("pushState" in history) {
-                    history.pushState("", document.title, location.pathname + location.search);
+                if ("pushState" in window.history) {
+                    window.history.pushState(
+                        "",
+                        document.title,
+                        window.location.pathname + window.location.search,
+                    );
                 } else {
-                    location.hash = "";
+                    window.location.hash = "";
                 }
             }
             success_callback(response);

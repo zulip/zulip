@@ -762,7 +762,7 @@ export function exclude_me_from_string(user_ids_string: string): string {
 }
 
 export function format_small_avatar_url(raw_url: string): string {
-    const url = new URL(raw_url, location.origin);
+    const url = new URL(raw_url, window.location.origin);
     url.search += (url.search ? "&" : "") + "s=50";
     return url.href;
 }
@@ -843,7 +843,7 @@ export function small_avatar_url_for_person(person: User): string {
 function medium_gravatar_url_for_email(email: string): string {
     const hash = md5(email.toLowerCase());
     const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
-    const url = new URL(avatar_url, location.origin);
+    const url = new URL(avatar_url, window.location.origin);
     url.search += (url.search ? "&" : "") + "s=500";
     return url.href;
 }

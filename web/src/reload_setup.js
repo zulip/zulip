@@ -10,11 +10,11 @@ import * as message_view from "./message_view";
 // done before the first call to get_events
 
 export function initialize() {
-    // location.hash should be e.g. `#reload:12345123412312`
-    if (!location.hash.startsWith("#reload:")) {
+    // window.location.hash should be e.g. `#reload:12345123412312`
+    if (!window.location.hash.startsWith("#reload:")) {
         return;
     }
-    const hash_fragment = location.hash.slice("#".length);
+    const hash_fragment = window.location.hash.slice("#".length);
     const trigger = "reload";
 
     // Using the token, recover the saved pre-reload data from local

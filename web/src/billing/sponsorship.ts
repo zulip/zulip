@@ -111,8 +111,8 @@ $(() => {
     // form otherwise the sponsorship pending message is partially
     // hidden due to browser preserving scroll position.
     // https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration
-    if (history.scrollRestoration) {
-        history.scrollRestoration = "manual";
+    if (window.history.scrollRestoration) {
+        window.history.scrollRestoration = "manual";
     }
 
     initialize();

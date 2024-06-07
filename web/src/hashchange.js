@@ -60,8 +60,8 @@ function show_all_message_view() {
     message_view.show([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
-        then_select_id: history.state?.narrow_pointer,
-        then_select_offset: history.state?.narrow_offset,
+        then_select_id: window.history.state?.narrow_pointer,
+        then_select_offset: window.history.state?.narrow_offset,
     });
 }
 
@@ -192,7 +192,7 @@ function do_hashchange_normal(from_reload) {
                 }
             }
 
-            const data_for_hash = history.state;
+            const data_for_hash = window.history.state;
             if (data_for_hash) {
                 narrow_opts.then_select_id = data_for_hash.narrow_pointer;
                 narrow_opts.then_select_offset = data_for_hash.narrow_offset;
@@ -281,7 +281,7 @@ function do_hashchange_overlay(old_hash) {
         if (base === "organization") {
             settings_panel_object = settings_panel_menu.org_settings;
         }
-        history.replaceState(
+        window.history.replaceState(
             null,
             "",
             browser_history.get_full_url(base + "/" + settings_panel_object.current_tab()),
@@ -300,7 +300,7 @@ function do_hashchange_overlay(old_hash) {
         // not match the window.location.hash, then we also reset the
         // base string we're tracking for the hash.
         if (valid_hash !== window.location.hash) {
-            history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            window.history.replaceState(null, "", browser_history.get_full_url(valid_hash));
             section = hash_parser.get_current_hash_section();
             base = hash_parser.get_current_hash_category();
         }
@@ -309,7 +309,7 @@ function do_hashchange_overlay(old_hash) {
     if (base === "groups") {
         const valid_hash = hash_util.validate_group_settings_hash(window.location.hash);
         if (valid_hash !== window.location.hash) {
-            history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            window.history.replaceState(null, "", browser_history.get_full_url(valid_hash));
             section = hash_parser.get_current_hash_section();
         }
     }
