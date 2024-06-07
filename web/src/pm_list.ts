@@ -121,11 +121,11 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
 }
 
 export function highlight_all_private_messages_view(): void {
-    $(".direct-messages-container").addClass("active_private_messages_section");
+    $(".direct-messages-container").addClass("active-direct-messages-section");
 }
 
 function unhighlight_all_private_messages_view(): void {
-    $(".direct-messages-container").removeClass("active_private_messages_section");
+    $(".direct-messages-container").removeClass("active-direct-messages-section");
 }
 
 function scroll_pm_into_view($target_li: JQuery): void {
