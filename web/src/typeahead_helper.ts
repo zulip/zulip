@@ -40,6 +40,17 @@ export type CombinedPillItem =
     | InputPillItem<UserGroupPill>
     | InputPillItem<StreamPill>;
 
+export type TypeaheadOptions = {
+    user: boolean;
+    user_group?: boolean;
+    stream?: boolean;
+    user_source?: () => User[];
+    exclude_bots?: boolean;
+    update_func?: () => void;
+};
+
+export type SetupTypeahead = ($input: JQuery) => void;
+
 export function build_highlight_regex(query: string): RegExp {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
     return regex;

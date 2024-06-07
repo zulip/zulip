@@ -1280,47 +1280,9 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
     );
 }
 
-export function initialize({
-    on_enter_send,
-}: {
-    on_enter_send: (scheduling_message?: boolean) => boolean | undefined;
-}): void {
-    // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").on("keydown", (e) => {
-        handle_keydown(e, on_enter_send);
-    });
-    $("form#send_message_form").on("keyup", handle_keyup);
-
-    const stream_message_typeahead_input: TypeaheadInputElement = {
-        $element: $("input#stream_message_recipient_topic"),
-        type: "input",
-    };
-    new Typeahead(stream_message_typeahead_input, {
-        source(): string[] {
-            return topics_seen_for(compose_state.stream_id());
-        },
-        items: 3,
-        highlighter_html(item: string): string {
-            return typeahead_helper.render_typeahead_item({primary: item});
-        },
-        sorter(items: string[], query: string): string[] {
-            const sorted = typeahead_helper.sorter(query, items, (x) => x);
-            if (sorted.length > 0 && !sorted.includes(query)) {
-                sorted.unshift(query);
-            }
-            return sorted;
-        },
-        option_label(matching_items: string[], item: string): string | false {
-            if (!matching_items.includes(item)) {
-                return `<em>${$t({defaultMessage: "New"})}</em>`;
-            }
-            return false;
-        },
-        header_html: render_topic_typeahead_hint,
-    });
-
+export function initialize_pm_typeahead($element: JQuery): void {
     const private_message_typeahead_input: TypeaheadInputElement = {
-        $element: $("#private_message_recipient"),
+        $element,
         type: "contenteditable",
     };
     new Typeahead(private_message_typeahead_input, {
@@ -1363,6 +1325,49 @@ export function initialize({
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
+}
+
+export function initialize({
+    on_enter_send,
+}: {
+    on_enter_send: (scheduling_message?: boolean) => boolean | undefined;
+}): void {
+    // These handlers are at the "form" level so that they are called after typeahead
+    $("form#send_message_form").on("keydown", (e) => {
+        handle_keydown(e, on_enter_send);
+    });
+    $("form#send_message_form").on("keyup", handle_keyup);
+
+    const stream_message_typeahead_input: TypeaheadInputElement = {
+        $element: $("input#stream_message_recipient_topic"),
+        type: "input",
+    };
+    new Typeahead(stream_message_typeahead_input, {
+        source(): string[] {
+            return topics_seen_for(compose_state.stream_id());
+        },
+        items: 3,
+        highlighter_html(item: string): string {
+            return typeahead_helper.render_typeahead_item({primary: item});
+        },
+        sorter(items: string[], query: string): string[] {
+            const sorted = typeahead_helper.sorter(query, items, (x) => x);
+            if (sorted.length > 0 && !sorted.includes(query)) {
+                sorted.unshift(query);
+            }
+            return sorted;
+        },
+        option_label(matching_items: string[], item: string): string | false {
+            if (!matching_items.includes(item)) {
+                return `<em>${$t({defaultMessage: "New"})}</em>`;
+            }
+            return false;
+        },
+        header_html: render_topic_typeahead_hint,
+    });
+
+    compose_pm_pill.widget.addSetupTypeahead(initialize_pm_typeahead);
+    initialize_pm_typeahead($("#private_message_recipient"));
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
 }

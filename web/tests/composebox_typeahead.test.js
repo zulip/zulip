@@ -849,6 +849,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         appendValidatedData(item) {
             appended_names.push(item.display_value);
         },
+        addSetupTypeahead(_) {},
     }));
     compose_pm_pill.initialize({
         on_pill_create_or_remove: compose_recipient.update_placeholder_text,
