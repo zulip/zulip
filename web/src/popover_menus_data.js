@@ -25,7 +25,7 @@ import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
-export function get_actions_popover_content_context(message_id) {
+export const get_actions_popover_content_context = (message_id) => {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(message_id);
     const message_container = message_lists.current.view.message_containers.get(message.id);
@@ -90,10 +90,10 @@ export function get_actions_popover_content_context(message_id) {
     const should_display_delete_option = message_edit.get_deletability(message) && not_spectator;
     const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
 
-    function is_add_reaction_icon_visible() {
+    const is_add_reaction_icon_visible = () => {
         const $message_row = message_lists.current.get_row(message_id);
         return $message_row.find(".message_controls .reaction_button").is(":visible");
-    }
+    };
 
     // Since we only display msg actions and star icons on windows smaller than
     // `media_breakpoints.sm_min`, we need to include the reaction button in the
@@ -117,9 +117,9 @@ export function get_actions_popover_content_context(message_id) {
         should_display_read_receipts_option,
         should_display_quote_and_reply,
     };
-}
+};
 
-export function get_topic_popover_content_context({stream_id, topic_name, url}) {
+export const get_topic_popover_content_context = ({stream_id, topic_name, url}) => {
     const sub = sub_store.get(stream_id);
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
@@ -146,9 +146,9 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         visibility_policy,
         all_visibility_policies,
     };
-}
+};
 
-export function get_change_visibility_policy_popover_content_context(stream_id, topic_name) {
+export const get_change_visibility_policy_popover_content_context = (stream_id, topic_name) => {
     const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic_name);
     const sub = sub_store.get(stream_id);
     const all_visibility_policies = user_topics.all_visibility_policies;
@@ -161,9 +161,9 @@ export function get_change_visibility_policy_popover_content_context(stream_id, 
         topic_unmuted,
         all_visibility_policies,
     };
-}
+};
 
-export function get_personal_menu_content_context() {
+export const get_personal_menu_content_context = () => {
     const my_user_id = current_user.user_id;
     const invisible_mode = !user_settings.presence_enabled;
     const status_text = user_status.get_status_text(my_user_id);
@@ -193,9 +193,9 @@ export function get_personal_menu_content_context() {
         user_color_scheme: user_settings.color_scheme,
         color_scheme_values: settings_config.color_scheme_values,
     };
-}
+};
 
-export function get_gear_menu_content_context() {
+export const get_gear_menu_content_context = () => {
     const user_has_billing_access = current_user.is_billing_admin || current_user.is_owner;
     const is_plan_standard = realm.realm_plan_type === 3;
     const is_plan_plus = realm.realm_plan_type === 10;
@@ -231,4 +231,4 @@ export function get_gear_menu_content_context() {
         sponsorship_pending: page_params.sponsorship_pending,
         user_has_billing_access,
     };
-}
+};

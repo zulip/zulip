@@ -70,11 +70,10 @@ export type StreamSubscription = PartialBy<
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();
 
-export function get(stream_id: number): StreamSubscription | undefined {
-    return subs_by_stream_id.get(stream_id);
-}
+export const get = (stream_id: number): StreamSubscription | undefined =>
+    subs_by_stream_id.get(stream_id);
 
-export function validate_stream_ids(stream_ids: number[]): number[] {
+export const validate_stream_ids = (stream_ids: number[]): number[] => {
     const good_ids = [];
     const bad_ids = [];
 
@@ -91,23 +90,23 @@ export function validate_stream_ids(stream_ids: number[]): number[] {
     }
 
     return good_ids;
-}
+};
 
-export function clear(): void {
+export const clear = (): void => {
     subs_by_stream_id.clear();
-}
+};
 
-export function delete_sub(stream_id: number): void {
+export const delete_sub = (stream_id: number): void => {
     subs_by_stream_id.delete(stream_id);
-}
+};
 
-export function add_hydrated_sub(stream_id: number, sub: StreamSubscription): void {
+export const add_hydrated_sub = (stream_id: number, sub: StreamSubscription): void => {
     // The only code that should call this directly is
     // in stream_data.js. Grep there to find callers.
     subs_by_stream_id.set(stream_id, sub);
-}
+};
 
-export function maybe_get_stream_name(stream_id: number): string | undefined {
+export const maybe_get_stream_name = (stream_id: number): string | undefined => {
     if (!stream_id) {
         return undefined;
     }
@@ -118,4 +117,4 @@ export function maybe_get_stream_name(stream_id: number): string | undefined {
     }
 
     return stream.name;
-}
+};

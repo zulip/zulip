@@ -7,7 +7,7 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 mock_esm("tippy.js", {
-    default(arg) {
+    default: (arg) => {
         arg._tippy = {setContent: noop};
         return arg._tippy;
     },
@@ -181,25 +181,25 @@ run_test("show password", () => {
 
     $(password_selector)[0] = noop;
 
-    function set_attribute(type) {
+    const set_attribute = (type) => {
         $("#id_password").attr("type", type);
-    }
+    };
 
-    function check_assertion(type, present_class, absent_class) {
+    const check_assertion = (type, present_class, absent_class) => {
         assert.equal($("#id_password").attr("type"), type);
         assert.ok($(password_selector).hasClass(present_class));
         assert.ok(!$(password_selector).hasClass(absent_class));
-    }
+    };
 
     const click_ev = {
-        preventDefault() {},
-        stopPropagation() {},
+        preventDefault: () => {},
+        stopPropagation: () => {},
     };
 
     const key_ev = {
         key: "Enter",
-        preventDefault() {},
-        stopPropagation() {},
+        preventDefault: () => {},
+        stopPropagation: () => {},
     };
 
     set_attribute("password");

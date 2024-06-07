@@ -75,14 +75,14 @@ inaccessible_user.is_inaccessible_user = true;
 
 people.initialize_current_user(me.user_id);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         realm.server_presence_offline_threshold_seconds = OFFLINE_THRESHOLD_SECS;
         user_settings.presence_enabled = true;
         presence.clear_internal_data();
         f(helpers);
     });
-}
+};
 
 test("my user", () => {
     assert.equal(presence.get_status(me.user_id), "active");

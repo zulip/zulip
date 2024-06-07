@@ -199,13 +199,13 @@ stream_data.add_sub(amp_stream);
 markdown.initialize(markdown_config.get_helpers());
 linkifiers.initialize(example_realm_linkifiers);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         page_params.realm_users = [];
         linkifiers.update_linkifier_rules(example_realm_linkifiers);
         f(helpers);
     });
-}
+};
 
 test("markdown_detection", () => {
     const no_markup = [
@@ -957,9 +957,8 @@ test("backend_only_linkifiers", () => {
 test("translate_emoticons_to_names", () => {
     const get_emoticon_translations = emoji.get_emoticon_translations;
 
-    function translate_emoticons_to_names(src) {
-        return markdown.translate_emoticons_to_names({src, get_emoticon_translations});
-    }
+    const translate_emoticons_to_names = (src) =>
+        markdown.translate_emoticons_to_names({src, get_emoticon_translations});
 
     // Simple test
     const test_text = "Testing :)";
@@ -1039,7 +1038,7 @@ test("missing unicode emojis", ({override}) => {
 test("katex_throws_unexpected_exceptions", ({override_rewire}) => {
     const message = {raw_content: "$$a$$"};
     override_rewire(markdown, "katex", {
-        renderToString() {
+        renderToString: () => {
             throw new Error("some-exception");
         },
     });

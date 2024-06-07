@@ -19,16 +19,15 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 
-function add_choice_row($widget: JQuery): void {
+const add_choice_row = ($widget: JQuery): void => {
     if ($widget.closest(".choice-row").next().hasClass("choice-row")) {
         return;
     }
     create_choice_row();
-}
+};
 
-function get_chosen_default_streams(): Set<number> {
-    // Return the set of stream id's of streams chosen in the default stream modal.
-    return new Set(
+const get_chosen_default_streams = (): Set<number> =>
+    new Set(
         // Note: We selectively map through the dropdown elements that contain the
         // `data-stream-id` attribute to avoid adding an element with undefined value
         //  into the returned `Set`.
@@ -36,9 +35,8 @@ function get_chosen_default_streams(): Set<number> {
             .map((_i, elem) => Number($(elem).attr("data-stream-id")))
             .get(),
     );
-}
 
-function create_choice_row(): void {
+const create_choice_row = (): void => {
     const $container = $("#default-stream-choices");
     const value = settings_profile_fields.get_value_for_new_option($container);
     const stream_dropdown_widget_name = `select_default_stream_${value}`;
@@ -46,15 +44,15 @@ function create_choice_row(): void {
     $container.append($(row_html));
 
     // List of non-default streams that are not yet selected.
-    function get_options(): {name: string; unique_id: number}[] {
+    const get_options = (): {name: string; unique_id: number}[] => {
         const chosen_default_streams = get_chosen_default_streams();
 
         return stream_data
             .get_non_default_stream_names()
             .filter((e) => !chosen_default_streams.has(e.unique_id));
-    }
+    };
 
-    function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
+    const item_click_callback = (event: JQuery.ClickEvent, dropdown: tippy.Instance): void => {
         const $selected_stream = $(event.currentTarget);
         const selected_stream_name = $selected_stream.attr("data-name")!;
         const selected_stream_id = Number.parseInt($selected_stream.attr("data-unique-id")!, 10);
@@ -69,7 +67,7 @@ function create_choice_row(): void {
         $("#add-default-stream-modal .dialog_submit_button").prop("disabled", false);
         event.stopPropagation();
         event.preventDefault();
-    }
+    };
 
     new dropdown_widget.DropdownWidget({
         widget_name: stream_dropdown_widget_name,
@@ -80,17 +78,17 @@ function create_choice_row(): void {
             placement: "bottom-start",
         },
     }).setup();
-}
+};
 
 const meta = {
     loaded: false,
 };
 
-export function reset(): void {
+export const reset = (): void => {
     meta.loaded = false;
-}
+};
 
-export function maybe_disable_widgets(): void {
+export const maybe_disable_widgets = (): void => {
     if (current_user.is_admin) {
         return;
     }
@@ -98,9 +96,9 @@ export function maybe_disable_widgets(): void {
     $(".organization-box [data-name='default-channels-list']")
         .find("input:not(.search), button, select")
         .prop("disabled", true);
-}
+};
 
-export function build_default_stream_table(): void {
+export const build_default_stream_table = (): void => {
     const $table = $("#admin_default_streams_table").expectOne();
 
     const stream_ids = stream_data.get_default_stream_ids();
@@ -109,18 +107,15 @@ export function build_default_stream_table(): void {
     ListWidget.create($table, subs, {
         name: "default_streams_list",
         get_item: ListWidget.default_get_item,
-        modifier_html(item) {
-            return render_admin_default_streams_list({
+        modifier_html: (item) =>
+            render_admin_default_streams_list({
                 stream: item,
                 can_modify: current_user.is_admin,
-            });
-        },
+            }),
         filter: {
             $element: $table.closest(".settings-section").find<HTMLInputElement>("input.search"),
-            predicate(item, query) {
-                return item.name.toLowerCase().includes(query.toLowerCase());
-            },
-            onupdate() {
+            predicate: (item, query) => item.name.toLowerCase().includes(query.toLowerCase()),
+            onupdate: () => {
                 scroll_util.reset_scrollbar($table);
             },
         },
@@ -133,32 +128,32 @@ export function build_default_stream_table(): void {
     });
 
     loading.destroy_indicator($("#admin_page_default_streams_loading_indicator"));
-}
+};
 
-export function update_default_streams_table(): void {
+export const update_default_streams_table = (): void => {
     if (["organization", "settings"].includes(hash_parser.get_current_hash_category())) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         build_default_stream_table();
     }
-}
+};
 
-export function delete_default_stream(
+export const delete_default_stream = (
     stream_id: number,
     $default_stream_row: JQuery,
     $alert_element: JQuery,
-): void {
+): void => {
     void channel.del({
         url: "/json/default_streams?" + $.param({stream_id}),
-        error(xhr) {
+        error: (xhr) => {
             ui_report.generic_row_button_error(xhr, $alert_element);
         },
-        success() {
+        success: () => {
             $default_stream_row.remove();
         },
     });
-}
+};
 
-function delete_choice_row(e: JQuery.ClickEvent): void {
+const delete_choice_row = (e: JQuery.ClickEvent): void => {
     const $row = $(e.currentTarget).parent();
     $row.remove();
 
@@ -167,12 +162,12 @@ function delete_choice_row(e: JQuery.ClickEvent): void {
         "disabled",
         $(".choice-row").length <= 1,
     );
-}
+};
 
-function show_add_default_streams_modal(): void {
+const show_add_default_streams_modal = (): void => {
     const html_body = render_add_default_streams();
 
-    function add_default_streams(e: JQuery.ClickEvent): void {
+    const add_default_streams = (e: JQuery.ClickEvent): void => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -181,19 +176,19 @@ function show_add_default_streams_modal(): void {
         let successful_requests = 0;
         const chosen_streams = get_chosen_default_streams();
 
-        function make_default_stream_request(stream_id: number): void {
+        const make_default_stream_request = (stream_id: number): void => {
             const data = {stream_id};
             void channel.post({
                 url: "/json/default_streams",
                 data,
-                success() {
+                success: () => {
                     successful_requests = successful_requests + 1;
 
                     if (successful_requests === chosen_streams.size) {
                         dialog_widget.close();
                     }
                 },
-                error(xhr) {
+                error: (xhr) => {
                     ui_report.error(
                         $t_html({defaultMessage: "Failed adding one or more channels."}),
                         xhr,
@@ -202,19 +197,19 @@ function show_add_default_streams_modal(): void {
                     dialog_widget.hide_dialog_spinner();
                 },
             });
-        }
+        };
 
         for (const chosen_stream of chosen_streams) {
             make_default_stream_request(chosen_stream);
         }
-    }
+    };
 
-    function default_stream_post_render(): void {
+    const default_stream_post_render = (): void => {
         $("#add-default-stream-modal .dialog_submit_button").prop("disabled", true);
 
         create_choice_row();
         $("#default-stream-choices").on("click", "button.delete-choice", delete_choice_row);
-    }
+    };
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Add default channels"}),
@@ -226,12 +221,12 @@ function show_add_default_streams_modal(): void {
         on_click: add_default_streams,
         post_render: default_stream_post_render,
     });
-}
+};
 
-export function set_up(): void {
+export const set_up = (): void => {
     build_page();
     maybe_disable_widgets();
-}
+};
 
 export function build_page(): void {
     meta.loaded = true;

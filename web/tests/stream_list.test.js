@@ -18,7 +18,7 @@ let stream_has_any_unread_mentions;
 
 const topic_list = mock_esm("../src/topic_list");
 const scroll_util = mock_esm("../src/scroll_util", {
-    scroll_element_into_container() {},
+    scroll_element_into_container: () => {},
     get_scroll_element: ($element) => $element,
 });
 mock_esm("../src/unread", {
@@ -56,7 +56,7 @@ let pinned_subheader_flag = false;
 let active_subheader_flag = false;
 let inactive_subheader_flag = false;
 
-function create_devel_sidebar_row({mock_template}) {
+const create_devel_sidebar_row = ({mock_template}) => {
     const $devel_count = $.create("devel-count");
     const $subscription_block = $.create("devel-block");
     const $devel_unread_mention_info = $.create("devel-unread-mention-info");
@@ -77,9 +77,9 @@ function create_devel_sidebar_row({mock_template}) {
     stream_list.create_sidebar_row(devel);
     assert.equal($devel_count.text(), "42");
     assert.equal($devel_unread_mention_info.text(), "");
-}
+};
 
-function create_social_sidebar_row({mock_template}) {
+const create_social_sidebar_row = ({mock_template}) => {
     const $social_count = $.create("social-count");
     const $subscription_block = $.create("social-block");
     const $social_unread_mention_info = $.create("social-unread-mention-info");
@@ -100,9 +100,9 @@ function create_social_sidebar_row({mock_template}) {
     stream_list.create_sidebar_row(social);
     assert.equal($social_count.text(), "99");
     assert.equal($social_unread_mention_info.text(), "@");
-}
+};
 
-function create_stream_subheader({mock_template}) {
+const create_stream_subheader = ({mock_template}) => {
     mock_template("streams_subheader.hbs", false, (data) => {
         if (data.subheader_name === "translated: Pinned") {
             pinned_subheader_flag = true;
@@ -116,15 +116,15 @@ function create_stream_subheader({mock_template}) {
         inactive_subheader_flag = true;
         return "<inactive-subheader-stub>";
     });
-}
+};
 
-function test_ui(label, f) {
+const test_ui = (label, f) => {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();
         f(helpers);
     });
-}
+};
 
 test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
     // Make a couple calls to create_sidebar_row() and make sure they
@@ -249,11 +249,11 @@ test_ui("pinned_streams_never_inactive", ({override_rewire, mock_template}) => {
     assert.ok(!$devel_sidebar.hasClass("inactive_stream"));
 });
 
-function add_row(sub) {
+const add_row = (sub) => {
     stream_data.add_sub(sub);
     const row = {
-        update_whether_active() {},
-        get_li() {
+        update_whether_active: () => {},
+        get_li: () => {
             const html = "<" + sub.name + "-sidebar-row-stub>";
             const $obj = $(html);
 
@@ -263,9 +263,9 @@ function add_row(sub) {
         },
     };
     stream_list.stream_sidebar.set_row(sub.stream_id, row);
-}
+};
 
-function initialize_stream_data() {
+const initialize_stream_data = () => {
     // pinned streams
     const develSub = {
         name: "devel",
@@ -323,11 +323,9 @@ function initialize_stream_data() {
     add_row(carSub);
 
     stream_list.build_stream_list();
-}
+};
 
-function elem($obj) {
-    return {to_$: () => $obj};
-}
+const elem = ($obj) => ({to_$: () => $obj});
 
 test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     const $label1 = $.create("label1 stub");
@@ -355,12 +353,10 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     const $stream_li1 = $.create("stream1 stub");
     const $stream_li2 = $.create("stream2 stub");
 
-    function make_attr(arg) {
-        return (sel) => {
-            assert.equal(sel, "data-stream-id");
-            return arg;
-        };
-    }
+    const make_attr = (arg) => (sel) => {
+        assert.equal(sel, "data-stream-id");
+        return arg;
+    };
 
     $stream_li1.attr = make_attr("42");
     $stream_li1.hide();
@@ -378,7 +374,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;
     $stream_li1.children = () => ({
-        append($element) {
+        append: ($element) => {
             assert.equal($element.selector, "<filter-topics-stub>");
             filter_topics_appended = true;
         },
@@ -460,20 +456,20 @@ test_ui("narrowing", ({mock_template}) => {
 });
 
 test_ui("focusout_user_filter", () => {
-    stream_list.set_event_handlers({narrow_on_stream_click() {}});
+    stream_list.set_event_handlers({narrow_on_stream_click: () => {}});
     const e = {};
     const click_handler = $(".stream-list-filter").get_on_handler("focusout");
     click_handler(e);
 });
 
 test_ui("focus_user_filter", () => {
-    stream_list.set_event_handlers({narrow_on_stream_click() {}});
+    stream_list.set_event_handlers({narrow_on_stream_click: () => {}});
 
     initialize_stream_data();
     stream_list.build_stream_list();
 
     const e = {
-        stopPropagation() {},
+        stopPropagation: () => {},
     };
     const click_handler = $(".stream-list-filter").get_on_handler("click");
     click_handler(e);

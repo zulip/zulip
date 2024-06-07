@@ -28,25 +28,23 @@ const alice = {
 people.init();
 people.add_active_user(alice);
 
-function set_filter(terms) {
+const set_filter = (terms) => {
     const filter = new Filter(terms);
     message_lists.set_current({
         data: {
             filter,
         },
     });
-}
+};
 
-function assert_unread_info(expected) {
+const assert_unread_info = (expected) => {
     assert.deepEqual(
         narrow_state.get_first_unread_info(message_lists.current?.data.filter),
         expected,
     );
-}
+};
 
-function candidate_ids() {
-    return narrow_state._possible_unread_message_ids();
-}
+const candidate_ids = () => narrow_state._possible_unread_message_ids();
 
 run_test("get_unread_ids", () => {
     unread.declare_bankruptcy();

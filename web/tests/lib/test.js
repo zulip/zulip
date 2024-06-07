@@ -21,7 +21,7 @@ exports.noop = () => {};
 
 exports.suite = [];
 
-async function execute_test(label, f, opts) {
+const execute_test = async (label, f, opts) => {
     const {sloppy_$} = opts || {};
 
     /* istanbul ignore if */
@@ -52,7 +52,7 @@ async function execute_test(label, f, opts) {
     }
     // defensively reset blueslip after each test.
     zblueslip.reset();
-}
+};
 
 exports.run_test = (label, f, opts) => {
     exports.suite.push(() => execute_test(label, f, opts));

@@ -42,15 +42,15 @@ let tippy_args;
 let tippy_show_called;
 let tippy_destroy_called;
 mock_esm("tippy.js", {
-    default(sel, opts) {
+    default: (sel, opts) => {
         assert.equal(sel, tippy_sel);
         assert.deepEqual(opts, tippy_args);
         return [
             {
-                show() {
+                show: () => {
                     tippy_show_called = true;
                 },
-                destroy() {
+                destroy: () => {
                     tippy_destroy_called = true;
                 },
             },
@@ -95,13 +95,13 @@ const short_msg = {
     drafts_version: 1,
 };
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         $("#draft_overlay").css = noop;
         window.localStorage.clear();
         f(helpers);
     });
-}
+};
 
 // There were some buggy drafts that had their topics
 // renamed to `undefined` in #23238.
@@ -205,7 +205,7 @@ test("snapshot_message", ({override, override_rewire}) => {
 
     let curr_draft;
 
-    function set_compose_state() {
+    const set_compose_state = () => {
         compose_state.set_message_type(curr_draft.type);
         compose_state.message_content(curr_draft.content);
         if (curr_draft.type === "private") {
@@ -215,7 +215,7 @@ test("snapshot_message", ({override, override_rewire}) => {
         }
         compose_state.topic(curr_draft.topic);
         compose_state.private_message_recipient(curr_draft.private_message_recipient);
-    }
+    };
 
     const stream = {
         stream_id: draft_1.stream_id,
@@ -407,11 +407,11 @@ test("rename_stream_recipient", ({override_rewire}) => {
     ls.set("drafts", data);
 
     const draft_model = drafts.draft_model;
-    function assert_draft(draft_id, stream_id, topic_name) {
+    const assert_draft = (draft_id, stream_id, topic_name) => {
         const draft = draft_model.getDraft(draft_id);
         assert.equal(draft.topic, topic_name);
         assert.equal(draft.stream_id, stream_id);
-    }
+    };
 
     // There are no drafts in B>b, so moving messages from there doesn't change drafts
     drafts.rename_stream_recipient(stream_B.stream_id, "b", undefined, "c");
@@ -459,13 +459,9 @@ test("delete_all_drafts", ({override_rewire}) => {
 
 test("format_drafts", ({override, override_rewire, mock_template}) => {
     override_rewire(stream_data, "get_color", () => "#FFFFFF");
-    function feb12() {
-        return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
-    }
+    const feb12 = () => new Date(1549958107000);
 
-    function date(offset) {
-        return feb12().setDate(offset);
-    }
+    const date = (offset) => feb12().setDate(offset);
 
     const draft_1 = {
         topic: "topic",
@@ -626,13 +622,9 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
 test("filter_drafts", ({override, override_rewire, mock_template}) => {
     override_rewire(stream_data, "get_color", () => "#FFFFFF");
-    function feb12() {
-        return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
-    }
+    const feb12 = () => new Date(1549958107000);
 
-    function date(offset) {
-        return feb12().setDate(offset);
-    }
+    const date = (offset) => feb12().setDate(offset);
 
     const stream_draft_1 = {
         topic: "topic",

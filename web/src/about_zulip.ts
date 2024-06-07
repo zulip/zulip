@@ -8,11 +8,11 @@ import {show_copied_confirmation} from "./copied_tooltip";
 import * as overlays from "./overlays";
 import {realm} from "./state_data";
 
-export function launch(): void {
+export const launch = (): void => {
     overlays.open_overlay({
         name: "about-zulip",
         $overlay: $("#about-zulip"),
-        on_close() {
+        on_close: () => {
             browser_history.exit_overlay();
         },
     });
@@ -26,13 +26,13 @@ export function launch(): void {
     zulip_merge_base_clipboard.on("success", () => {
         show_copied_confirmation($("#about-zulip .fa-copy.zulip-merge-base")[0]!);
     });
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     const rendered_about_zulip = render_about_zulip({
         zulip_version: realm.zulip_version,
         zulip_merge_base: realm.zulip_merge_base,
         is_fork: realm.zulip_merge_base && realm.zulip_merge_base !== realm.zulip_version,
     });
     $("#about-zulip-modal-container").append($(rendered_about_zulip));
-}
+};

@@ -32,7 +32,7 @@ import * as util from "./util";
     is being displayed.
 */
 
-export function get_user_id_for_mention_button(elem: HTMLElement): "*" | number | undefined {
+export const get_user_id_for_mention_button = (elem: HTMLElement): "*" | number | undefined => {
     const user_id_string = $(elem).attr("data-user-id");
     // Handle legacy Markdown that was rendered before we cut
     // over to using data-user-id.
@@ -54,15 +54,15 @@ export function get_user_id_for_mention_button(elem: HTMLElement): "*" | number 
         }
     }
     return undefined;
-}
+};
 
-function get_user_group_id_for_mention_button(elem: HTMLElement): number {
+const get_user_group_id_for_mention_button = (elem: HTMLElement): number => {
     const user_group_id = $(elem).attr("data-user-group-id");
     assert(user_group_id !== undefined);
     return Number.parseInt(user_group_id, 10);
-}
+};
 
-function get_message_for_message_content($content: JQuery): Message | undefined {
+const get_message_for_message_content = ($content: JQuery): Message | undefined => {
     // TODO: This selector is designed to exclude drafts/scheduled
     // messages. Arguably those settings should be unconditionally
     // marked with user-mention-me, but rows.id doesn't support
@@ -75,14 +75,14 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
     }
     const message_id = rows.id($message_row);
     return message_store.get(message_id);
-}
+};
 
 // Helper function to update a mentioned user's name.
-export function set_name_in_mention_element(
+export const set_name_in_mention_element = (
     element: HTMLElement,
     name: string,
     user_id?: number,
-): void {
+): void => {
     if (user_id !== undefined && people.should_add_guest_user_indicator(user_id)) {
         let display_text;
         if (!$(element).hasClass("silent")) {
@@ -99,7 +99,7 @@ export function set_name_in_mention_element(
     } else {
         $(element).text("@" + name);
     }
-}
+};
 
 export const update_elements = ($content: JQuery): void => {
     // Set the rtl class if the text has an rtl direction
@@ -313,7 +313,7 @@ export const update_elements = ($content: JQuery): void => {
         }
         const $copy_button = $buttonContainer.find(".copy_codeblock");
         const clipboard = new ClipboardJS($copy_button[0]!, {
-            text(copy_element) {
+            text: (copy_element) => {
                 const $code = $(copy_element).parent().siblings("code");
                 return $code.text();
             },

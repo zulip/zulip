@@ -96,7 +96,7 @@ export let INACCESSIBLE_USER_NAME: string;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
-export function init(): void {
+export const init = (): void => {
     // The following three dicts point to the same objects
     // (all people we've seen), but people_dict can have duplicate
     // keys related to email changes.  We want to deprecate
@@ -117,36 +117,34 @@ export function init(): void {
     duplicate_full_name_data = new FoldDict();
 
     INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
-}
+};
 
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
-export function split_to_ints(lst: string): number[] {
-    return lst.split(",").map((s) => Number.parseInt(s, 10));
-}
+export const split_to_ints = (lst: string): number[] =>
+    lst.split(",").map((s) => Number.parseInt(s, 10));
 
-export function get_users_from_ids(user_ids: number[]): User[] {
-    return user_ids.map((user_id) => get_by_user_id(user_id));
-}
+export const get_users_from_ids = (user_ids: number[]): User[] =>
+    user_ids.map((user_id) => get_by_user_id(user_id));
 
 // Use this function only when you are sure that user_id is valid.
-export function get_by_user_id(user_id: number): User {
+export const get_by_user_id = (user_id: number): User => {
     const person = people_by_user_id_dict.get(user_id);
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
-}
+};
 
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
-export function maybe_get_user_by_id(user_id: number, ignore_missing = false): User | undefined {
+export const maybe_get_user_by_id = (user_id: number, ignore_missing = false): User | undefined => {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
         blueslip.error("Unknown user_id in maybe_get_user_by_id", {user_id});
         return undefined;
     }
     return people_by_user_id_dict.get(user_id);
-}
+};
 
-export function validate_user_ids(user_ids: number[]): number[] {
+export const validate_user_ids = (user_ids: number[]): number[] => {
     const good_ids = [];
     const bad_ids = [];
 
@@ -163,9 +161,9 @@ export function validate_user_ids(user_ids: number[]): number[] {
     }
 
     return good_ids;
-}
+};
 
-export function get_by_email(email: string): User | undefined {
+export const get_by_email = (email: string): User | undefined => {
     const person = people_dict.get(email);
 
     if (!person) {
@@ -179,9 +177,9 @@ export function get_by_email(email: string): User | undefined {
     }
 
     return person;
-}
+};
 
-export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
+export const get_bot_owner_user = (user: User & {is_bot: true}): User | undefined => {
     const owner_id = user.bot_owner_id;
 
     if (owner_id === undefined || owner_id === null) {
@@ -190,16 +188,13 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
     }
 
     return get_user_by_id_assert_valid(owner_id);
-}
+};
 
-export function can_admin_user(user: User): boolean {
-    return (
-        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === current_user.user_id) ||
-        is_my_user_id(user.user_id)
-    );
-}
+export const can_admin_user = (user: User): boolean =>
+    (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === current_user.user_id) ||
+    is_my_user_id(user.user_id);
 
-export function id_matches_email_operand(user_id: number, email: string): boolean {
+export const id_matches_email_operand = (user_id: number, email: string): boolean => {
     const person = get_by_email(email);
 
     if (!person) {
@@ -210,9 +205,9 @@ export function id_matches_email_operand(user_id: number, email: string): boolea
     }
 
     return person.user_id === user_id;
-}
+};
 
-export function update_email(user_id: number, new_email: string): void {
+export const update_email = (user_id: number, new_email: string): void => {
     const person = get_by_user_id(user_id);
     person.email = new_email;
     people_dict.set(new_email, person);
@@ -220,16 +215,16 @@ export function update_email(user_id: number, new_email: string): void {
     // For legacy reasons we don't delete the old email
     // keys in our dictionaries, so that reverse lookups
     // still work correctly.
-}
+};
 
-export function get_visible_email(user: User): string {
+export const get_visible_email = (user: User): string => {
     if (user.delivery_email) {
         return user.delivery_email;
     }
     return user.email;
-}
+};
 
-export function get_user_id(email: string): number | undefined {
+export const get_user_id = (email: string): number | undefined => {
     const person = get_by_email(email);
     if (person === undefined) {
         blueslip.error("Unknown email for get_user_id", {email});
@@ -242,9 +237,9 @@ export function get_user_id(email: string): number | undefined {
     }
 
     return user_id;
-}
+};
 
-export function is_known_user_id(user_id: number): boolean {
+export const is_known_user_id = (user_id: number): boolean => {
     /*
     We may get a user_id from mention syntax that we don't
     know about if a user includes some random number in
@@ -262,15 +257,15 @@ export function is_known_user_id(user_id: number): boolean {
         return false;
     }
     return true;
-}
+};
 
-function sort_numerically(user_ids: number[]): number[] {
+const sort_numerically = (user_ids: number[]): number[] => {
     user_ids.sort((a, b) => a - b);
 
     return user_ids;
-}
+};
 
-export function huddle_string(message: Message): string | undefined {
+export const huddle_string = (message: Message): string | undefined => {
     if (message.type !== "private") {
         return undefined;
     }
@@ -292,9 +287,9 @@ export function huddle_string(message: Message): string | undefined {
     user_ids = sort_numerically(user_ids);
 
     return user_ids.join(",");
-}
+};
 
-export function user_ids_string_to_emails_string(user_ids_string: string): string | undefined {
+export const user_ids_string_to_emails_string = (user_ids_string: string): string | undefined => {
     const user_ids = split_to_ints(user_ids_string);
 
     let emails = util.try_parse_as_truthy(
@@ -314,15 +309,15 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
     emails.sort();
 
     return emails.join(",");
-}
+};
 
-export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
+export const user_ids_string_to_ids_array = (user_ids_string: string): number[] => {
     const user_ids = user_ids_string.length === 0 ? [] : user_ids_string.split(",");
     const ids = user_ids.map(Number);
     return ids;
-}
+};
 
-export function get_participants_from_user_ids_string(user_ids_string: string): Set<number> {
+export const get_participants_from_user_ids_string = (user_ids_string: string): Set<number> => {
     // Convert to set to ensure there are no duplicate ids.
     const user_ids = new Set(user_ids_string_to_ids_array(user_ids_string));
     // For group or 1:1 direct messages, the user_ids_string contains
@@ -332,9 +327,9 @@ export function get_participants_from_user_ids_string(user_ids_string: string): 
     // which is take care of by user_ids being a `Set`.
     user_ids.add(my_user_id);
     return user_ids;
-}
+};
 
-export function emails_strings_to_user_ids_array(emails_string: string): number[] | undefined {
+export const emails_strings_to_user_ids_array = (emails_string: string): number[] | undefined => {
     const user_ids_string = emails_strings_to_user_ids_string(emails_string);
     if (user_ids_string === undefined) {
         return undefined;
@@ -342,9 +337,9 @@ export function emails_strings_to_user_ids_array(emails_string: string): number[
 
     const user_ids_array = user_ids_string_to_ids_array(user_ids_string);
     return user_ids_array;
-}
+};
 
-export function reply_to_to_user_ids_string(emails_string: string): string | undefined {
+export const reply_to_to_user_ids_string = (emails_string: string): string | undefined => {
     // This is basically emails_strings_to_user_ids_string
     // without blueslip warnings, since it can be called with
     // invalid data.
@@ -364,10 +359,10 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
     user_ids = sort_numerically(user_ids);
 
     return user_ids.join(",");
-}
+};
 
-export function emails_to_full_names_string(emails: string[]): string {
-    return emails
+export const emails_to_full_names_string = (emails: string[]): string =>
+    emails
         .map((email) => {
             email = email.trim();
             const person = get_by_email(email);
@@ -377,9 +372,8 @@ export function emails_to_full_names_string(emails: string[]): string {
             return INACCESSIBLE_USER_NAME;
         })
         .join(", ");
-}
 
-export function get_user_time(user_id: number): string | undefined {
+export const get_user_time = (user_id: number): string | undefined => {
     const user_timezone = get_by_user_id(user_id).timezone;
     if (user_timezone) {
         try {
@@ -395,19 +389,19 @@ export function get_user_time(user_id: number): string | undefined {
         }
     }
     return undefined;
-}
+};
 
-export function get_user_type(user_id: number): string | undefined {
+export const get_user_type = (user_id: number): string | undefined => {
     const user_profile = get_by_user_id(user_id);
     return settings_config.user_role_map.get(user_profile.role);
-}
+};
 
-export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
+export const emails_strings_to_user_ids_string = (emails_string: string): string | undefined => {
     const emails = emails_string.split(",");
     return email_list_to_user_ids_string(emails);
-}
+};
 
-export function email_list_to_user_ids_string(emails: string[]): string | undefined {
+export const email_list_to_user_ids_string = (emails: string[]): string | undefined => {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
@@ -423,13 +417,12 @@ export function email_list_to_user_ids_string(emails: string[]): string | undefi
     user_ids = sort_numerically(user_ids);
 
     return user_ids.join(",");
-}
+};
 
-export function get_full_names_for_poll_option(user_ids: number[]): string {
-    return get_display_full_names(user_ids).join(", ");
-}
+export const get_full_names_for_poll_option = (user_ids: number[]): string =>
+    get_display_full_names(user_ids).join(", ");
 
-export function get_display_full_name(user_id: number): string {
+export const get_display_full_name = (user_id: number): string => {
     const person = get_user_by_id_assert_valid(user_id);
 
     if (muted_users.is_user_muted(user_id)) {
@@ -445,27 +438,28 @@ export function get_display_full_name(user_id: number): string {
     }
 
     return person.full_name;
-}
+};
 
-export function get_display_full_names(user_ids: number[]): string[] {
-    return user_ids.map((user_id) => get_display_full_name(user_id));
-}
+export const get_display_full_names = (user_ids: number[]): string[] =>
+    user_ids.map((user_id) => get_display_full_name(user_id));
 
-export function get_full_name(user_id: number): string {
+export const get_full_name = (user_id: number): string => {
     const person = get_by_user_id(user_id);
     return person.full_name;
-}
+};
 
-function _calc_user_and_other_ids(user_ids_string: string): {
+const _calc_user_and_other_ids = (
+    user_ids_string: string,
+): {
     user_ids: number[];
     other_ids: number[];
-} {
+} => {
     const user_ids = split_to_ints(user_ids_string);
     const other_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
     return {user_ids, other_ids};
-}
+};
 
-export function get_recipients(user_ids_string: string): string {
+export const get_recipients = (user_ids_string: string): string => {
     // See message_store.get_pm_full_names() for a similar function.
 
     const {other_ids} = _calc_user_and_other_ids(user_ids_string);
@@ -477,9 +471,11 @@ export function get_recipients(user_ids_string: string): string {
 
     const names = get_display_full_names(other_ids).sort();
     return names.join(", ");
-}
+};
 
-export function pm_reply_user_string(message: Message | MessageWithBooleans): string | undefined {
+export const pm_reply_user_string = (
+    message: Message | MessageWithBooleans,
+): string | undefined => {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
@@ -487,9 +483,9 @@ export function pm_reply_user_string(message: Message | MessageWithBooleans): st
     }
 
     return user_ids.join(",");
-}
+};
 
-export function pm_reply_to(message: Message): string | undefined {
+export const pm_reply_to = (message: Message): string | undefined => {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
@@ -510,9 +506,9 @@ export function pm_reply_to(message: Message): string | undefined {
     const reply_to = emails.join(",");
 
     return reply_to;
-}
+};
 
-export function sorted_other_user_ids(user_ids: number[]): number[] {
+export const sorted_other_user_ids = (user_ids: number[]): number[] => {
     // This excludes your own user id unless you're the only user
     // (i.e. you sent a message to yourself).
 
@@ -527,9 +523,9 @@ export function sorted_other_user_ids(user_ids: number[]): number[] {
     user_ids = sort_numerically(user_ids);
 
     return user_ids;
-}
+};
 
-export function concat_huddle(user_ids: number[], user_id: number): string {
+export const concat_huddle = (user_ids: number[], user_id: number): string => {
     /*
         We assume user_ids and user_id have already
         been validated by the caller.
@@ -539,9 +535,9 @@ export function concat_huddle(user_ids: number[], user_id: number): string {
     */
     const sorted_ids = sort_numerically([...user_ids, user_id]);
     return sorted_ids.join(",");
-}
+};
 
-export function pm_lookup_key_from_user_ids(user_ids: number[]): string {
+export const pm_lookup_key_from_user_ids = (user_ids: number[]): string => {
     /*
         The server will sometimes include our own user id
         in keys for direct messages, but we only want our
@@ -549,14 +545,14 @@ export function pm_lookup_key_from_user_ids(user_ids: number[]): string {
     */
     user_ids = sorted_other_user_ids(user_ids);
     return user_ids.join(",");
-}
+};
 
-export function pm_lookup_key(user_ids_string: string): string {
+export const pm_lookup_key = (user_ids_string: string): string => {
     const user_ids = split_to_ints(user_ids_string);
     return pm_lookup_key_from_user_ids(user_ids);
-}
+};
 
-export function all_user_ids_in_pm(message: Message): number[] | undefined {
+export const all_user_ids_in_pm = (message: Message): number[] | undefined => {
     if (message.type !== "private") {
         return undefined;
     }
@@ -575,9 +571,9 @@ export function all_user_ids_in_pm(message: Message): number[] | undefined {
 
     user_ids = sort_numerically(user_ids);
     return user_ids;
-}
+};
 
-export function pm_with_user_ids(message: Message | MessageWithBooleans): number[] | undefined {
+export const pm_with_user_ids = (message: Message | MessageWithBooleans): number[] | undefined => {
     if (message.type !== "private") {
         return undefined;
     }
@@ -595,9 +591,9 @@ export function pm_with_user_ids(message: Message | MessageWithBooleans): number
     const user_ids = message.display_recipient.map((recip) => recip.id);
 
     return sorted_other_user_ids(user_ids);
-}
+};
 
-export function pm_perma_link(message: Message): string | undefined {
+export const pm_perma_link = (message: Message): string | undefined => {
     const user_ids = all_user_ids_in_pm(message);
 
     if (!user_ids) {
@@ -615,9 +611,9 @@ export function pm_perma_link(message: Message): string | undefined {
     const slug = user_ids.join(",") + "-" + suffix;
     const url = "#narrow/dm/" + slug;
     return url;
-}
+};
 
-export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
+export const pm_with_url = (message: Message | MessageWithBooleans): string | undefined => {
     const user_ids = pm_with_user_ids(message);
 
     if (user_ids?.[0] === undefined) {
@@ -641,13 +637,13 @@ export function pm_with_url(message: Message | MessageWithBooleans): string | un
     const slug = user_ids.join(",") + "-" + suffix;
     const url = "#narrow/dm/" + slug;
     return url;
-}
+};
 
-export function update_email_in_reply_to(
+export const update_email_in_reply_to = (
     reply_to: string,
     user_id: number,
     new_email: string,
-): string {
+): string => {
     // We try to replace an old email with a new email in a reply_to,
     // but we try to avoid changing the reply_to if we don't have to,
     // and we don't warn on any errors.
@@ -673,9 +669,9 @@ export function update_email_in_reply_to(
     });
 
     return emails.join(",");
-}
+};
 
-export function pm_with_operand_ids(operand: string): number[] | undefined {
+export const pm_with_operand_ids = (operand: string): number[] | undefined => {
     let emails = operand.split(",");
     emails = emails.map((email) => email.trim());
     let persons = util.try_parse_as_truthy(emails.map((email) => people_dict.get(email)));
@@ -696,9 +692,9 @@ export function pm_with_operand_ids(operand: string): number[] | undefined {
     user_ids = sort_numerically(user_ids);
 
     return user_ids;
-}
+};
 
-export function emails_to_slug(emails_string: string): string | undefined {
+export const emails_to_slug = (emails_string: string): string | undefined => {
     let slug = reply_to_to_user_ids_string(emails_string);
 
     if (!slug) {
@@ -719,9 +715,9 @@ export function emails_to_slug(emails_string: string): string | undefined {
     }
 
     return slug;
-}
+};
 
-export function slug_to_emails(slug: string): string | undefined {
+export const slug_to_emails = (slug: string): string | undefined => {
     /*
         It's not super important to be flexible about
         direct message related slugs, since you would
@@ -742,9 +738,9 @@ export function slug_to_emails(slug: string): string | undefined {
     }
     /* istanbul ignore next */
     return undefined;
-}
+};
 
-export function exclude_me_from_string(user_ids_string: string): string {
+export const exclude_me_from_string = (user_ids_string: string): string => {
     // Exclude me from a user_ids_string UNLESS I'm the
     // only one in it.
     let user_ids = split_to_ints(user_ids_string);
@@ -759,45 +755,45 @@ export function exclude_me_from_string(user_ids_string: string): string {
     user_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
 
     return user_ids.join(",");
-}
+};
 
-export function format_small_avatar_url(raw_url: string): string {
+export const format_small_avatar_url = (raw_url: string): string => {
     const url = new URL(raw_url, location.origin);
     url.search += (url.search ? "&" : "") + "s=50";
     return url.href;
-}
+};
 
-export function sender_is_bot(message: Message): boolean {
+export const sender_is_bot = (message: Message): boolean => {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
         return person.is_bot;
     }
     return false;
-}
+};
 
-export function sender_is_guest(message: Message): boolean {
+export const sender_is_guest = (message: Message): boolean => {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
         return person.is_guest;
     }
     return false;
-}
+};
 
-export function is_valid_bot_user(user_id: number): boolean {
+export const is_valid_bot_user = (user_id: number): boolean => {
     const user = maybe_get_user_by_id(user_id, true);
     return user?.is_bot ?? false;
-}
+};
 
-export function should_add_guest_user_indicator(user_id: number): boolean {
+export const should_add_guest_user_indicator = (user_id: number): boolean => {
     if (!realm.realm_enable_guest_user_indicator) {
         return false;
     }
 
     const user = get_by_user_id(user_id);
     return user.is_guest;
-}
+};
 
-export function user_can_direct_message(recipient_ids_string: string): boolean {
+export const user_can_direct_message = (recipient_ids_string: string): boolean => {
     // Common function for checking if a user can send a direct
     // message to the target user (or group of users) represented by a
     // user ids string.
@@ -819,16 +815,16 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
         return false;
     }
     return true;
-}
+};
 
-function gravatar_url_for_email(email: string): string {
+const gravatar_url_for_email = (email: string): string => {
     const hash = md5(email.toLowerCase());
     const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
     const small_avatar_url = format_small_avatar_url(avatar_url);
     return small_avatar_url;
-}
+};
 
-export function small_avatar_url_for_person(person: User): string {
+export const small_avatar_url_for_person = (person: User): string => {
     if (person.avatar_url) {
         return format_small_avatar_url(person.avatar_url);
     }
@@ -838,17 +834,17 @@ export function small_avatar_url_for_person(person: User): string {
     }
 
     return format_small_avatar_url(`/avatar/${person.user_id}`);
-}
+};
 
-function medium_gravatar_url_for_email(email: string): string {
+const medium_gravatar_url_for_email = (email: string): string => {
     const hash = md5(email.toLowerCase());
     const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
     const url = new URL(avatar_url, location.origin);
     url.search += (url.search ? "&" : "") + "s=500";
     return url.href;
-}
+};
 
-export function medium_avatar_url_for_person(person: User): string {
+export const medium_avatar_url_for_person = (person: User): string => {
     /* Unlike the small avatar URL case, we don't generally have a
      * medium avatar URL included in person objects. So only have the
      * gravatar and server endpoints here. */
@@ -865,9 +861,9 @@ export function medium_avatar_url_for_person(person: User): string {
     // metadata. Long term, we should clean up that possibility, but
     // until it is, we fallback to using a version number of 0.
     return `/avatar/${person.user_id}/medium?version=${person.avatar_version ?? 0}`;
-}
+};
 
-export function sender_info_for_recent_view_row(sender_ids: number[]): SenderInfo[] {
+export const sender_info_for_recent_view_row = (sender_ids: number[]): SenderInfo[] => {
     const senders_info = [];
     for (const id of sender_ids) {
         // TODO: Better handling for optional values w/o the assertion.
@@ -880,9 +876,9 @@ export function sender_info_for_recent_view_row(sender_ids: number[]): SenderInf
         senders_info.push(sender);
     }
     return senders_info;
-}
+};
 
-export function small_avatar_url(message: Message): string {
+export const small_avatar_url = (message: Message): string => {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
     // us avoid unnecessary network trips.  (For user-uploaded avatars,
@@ -932,9 +928,9 @@ export function small_avatar_url(message: Message): string {
     }
 
     return gravatar_url_for_email(email);
-}
+};
 
-export function is_valid_email_for_compose(email: string): boolean {
+export const is_valid_email_for_compose = (email: string): boolean => {
     if (is_cross_realm_email(email)) {
         return true;
     }
@@ -947,19 +943,17 @@ export function is_valid_email_for_compose(email: string): boolean {
     // we allow deactivated users in compose so that
     // one can attempt to reply to threads that contained them.
     return true;
-}
+};
 
-export function is_valid_bulk_emails_for_compose(emails: string[]): boolean {
-    // Returns false if at least one of the emails is invalid.
-    return emails.every((email) => {
+export const is_valid_bulk_emails_for_compose = (emails: string[]): boolean =>
+    emails.every((email) => {
         if (!is_valid_email_for_compose(email)) {
             return false;
         }
         return true;
     });
-}
 
-export function is_active_user_for_popover(user_id: number): boolean {
+export const is_active_user_for_popover = (user_id: number): boolean => {
     // For popover menus, we include cross-realm bots as active
     // users.
 
@@ -977,9 +971,9 @@ export function is_active_user_for_popover(user_id: number): boolean {
     }
 
     return false;
-}
+};
 
-export function is_current_user_only_owner(): boolean {
+export const is_current_user_only_owner = (): boolean => {
     if (!current_user.is_owner) {
         return false;
     }
@@ -990,9 +984,9 @@ export function is_current_user_only_owner(): boolean {
         }
     }
     return true;
-}
+};
 
-export function filter_all_persons(pred: (person: User) => boolean): User[] {
+export const filter_all_persons = (pred: (person: User) => boolean): User[] => {
     const ret = [];
     for (const person of people_by_user_id_dict.values()) {
         if (person.is_inaccessible_user) {
@@ -1004,9 +998,9 @@ export function filter_all_persons(pred: (person: User) => boolean): User[] {
         }
     }
     return ret;
-}
+};
 
-export function filter_all_users(pred: (person: User) => boolean): User[] {
+export const filter_all_users = (pred: (person: User) => boolean): User[] => {
     const ret = [];
     for (const person of active_user_dict.values()) {
         if (pred(person)) {
@@ -1014,14 +1008,11 @@ export function filter_all_users(pred: (person: User) => boolean): User[] {
         }
     }
     return ret;
-}
+};
 
-export function get_realm_users(): User[] {
-    // includes humans and bots from your realm
-    return [...active_user_dict.values()];
-}
+export const get_realm_users = (): User[] => [...active_user_dict.values()];
 
-export function get_realm_active_human_users(): User[] {
+export const get_realm_active_human_users = (): User[] => {
     // includes ONLY humans from your realm
     const humans = [];
 
@@ -1032,9 +1023,9 @@ export function get_realm_active_human_users(): User[] {
     }
 
     return humans;
-}
+};
 
-export function get_realm_active_human_user_ids(): number[] {
+export const get_realm_active_human_user_ids = (): number[] => {
     const human_ids = [];
 
     for (const user of active_user_dict.values()) {
@@ -1044,9 +1035,9 @@ export function get_realm_active_human_user_ids(): number[] {
     }
 
     return human_ids;
-}
+};
 
-export function get_non_active_human_ids(): number[] {
+export const get_non_active_human_ids = (): number[] => {
     const human_ids = [];
 
     for (const user of non_active_user_dict.values()) {
@@ -1056,9 +1047,9 @@ export function get_non_active_human_ids(): number[] {
     }
 
     return human_ids;
-}
+};
 
-export function get_bot_ids(): number[] {
+export const get_bot_ids = (): number[] => {
     const bot_ids = [];
 
     for (const user of people_by_user_id_dict.values()) {
@@ -1068,9 +1059,9 @@ export function get_bot_ids(): number[] {
     }
 
     return bot_ids;
-}
+};
 
-export function get_active_human_count(): number {
+export const get_active_human_count = (): number => {
     let count = 0;
     for (const person of active_user_dict.values()) {
         if (!person.is_bot) {
@@ -1078,26 +1069,21 @@ export function get_active_human_count(): number {
         }
     }
     return count;
-}
+};
 
-export function get_active_user_ids(): number[] {
-    // This includes active users and active bots.
-    return [...active_user_dict.keys()];
-}
+export const get_active_user_ids = (): number[] => [...active_user_dict.keys()];
 
-export function get_non_active_realm_users(): User[] {
-    return [...non_active_user_dict.values()];
-}
+export const get_non_active_realm_users = (): User[] => [...non_active_user_dict.values()];
 
-export function is_cross_realm_email(email: string): boolean {
+export const is_cross_realm_email = (email: string): boolean => {
     const person = get_by_email(email);
     if (!person) {
         return false;
     }
     return cross_realm_dict.has(person.user_id);
-}
+};
 
-export function get_recipient_count(person: User | PseudoMentionUser): number {
+export const get_recipient_count = (person: User | PseudoMentionUser): number => {
     // We can have fake person objects like the "all"
     // pseudo-person in at-mentions.  They will have
     // the pm_recipient_count on the object itself.
@@ -1121,22 +1107,22 @@ export function get_recipient_count(person: User | PseudoMentionUser): number {
     const count = pm_recipient_count_dict.get(person.user_id);
 
     return count ?? 0;
-}
+};
 
-export function incr_recipient_count(user_id: number): void {
+export const incr_recipient_count = (user_id: number): void => {
     const old_count = pm_recipient_count_dict.get(user_id) ?? 0;
     pm_recipient_count_dict.set(user_id, old_count + 1);
-}
+};
 
-export function clear_recipient_counts_for_testing(): void {
+export const clear_recipient_counts_for_testing = (): void => {
     pm_recipient_count_dict.clear();
-}
+};
 
-export function set_recipient_count_for_testing(user_id: number, count: number): void {
+export const set_recipient_count_for_testing = (user_id: number, count: number): void => {
     pm_recipient_count_dict.set(user_id, count);
-}
+};
 
-export function get_message_people(): User[] {
+export const get_message_people = (): User[] => {
     /*
         message_people are roughly the people who have
         actually sent messages that are currently
@@ -1161,17 +1147,17 @@ export function get_message_people(): User[] {
     );
 
     return message_people ?? [];
-}
+};
 
-export function get_active_message_people(): User[] {
+export const get_active_message_people = (): User[] => {
     const message_people = get_message_people();
     const active_message_people = message_people.filter((item) =>
         active_user_dict.has(item.user_id),
     );
     return active_message_people;
-}
+};
 
-export function get_people_for_search_bar(query: string): User[] {
+export const get_people_for_search_bar = (query: string): User[] => {
     const pred = build_person_matcher(query);
 
     const message_people = get_message_people().filter((user) => !user.is_inaccessible_user);
@@ -1183,14 +1169,14 @@ export function get_people_for_search_bar(query: string): User[] {
     }
 
     return filter_all_persons(pred);
-}
+};
 
-export function build_termlet_matcher(termlet: string): (user: User) => boolean {
+export const build_termlet_matcher = (termlet: string): ((user: User) => boolean) => {
     termlet = termlet.trim();
 
     const is_ascii = /^[a-z]+$/.test(termlet);
 
-    return function (user: User): boolean {
+    return (user: User): boolean => {
         let full_name = user.full_name;
         // Only ignore diacritics if the query is plain ascii
         if (is_ascii) {
@@ -1203,15 +1189,15 @@ export function build_termlet_matcher(termlet: string): (user: User) => boolean 
 
         return names.some((name) => name.startsWith(termlet));
     };
-}
+};
 
-export function build_person_matcher(query: string): (user: User) => boolean {
+export const build_person_matcher = (query: string): ((user: User) => boolean) => {
     query = query.trim();
 
     const termlets = query.toLowerCase().split(/\s+/);
     const termlet_matchers = termlets.map((termlet) => build_termlet_matcher(termlet));
 
-    return function (user: User): boolean {
+    return (user: User): boolean => {
         const email = user.email.toLowerCase();
 
         if (email.startsWith(query)) {
@@ -1220,9 +1206,12 @@ export function build_person_matcher(query: string): (user: User) => boolean {
 
         return termlet_matchers.every((matcher) => matcher(user));
     };
-}
+};
 
-export function filter_people_by_search_terms(users: User[], search_string: string): Set<number> {
+export const filter_people_by_search_terms = (
+    users: User[],
+    search_string: string,
+): Set<number> => {
     let search_terms = search_string.toLowerCase().split(/[,|]+/);
     search_terms = search_terms.map((s) => s.trim());
 
@@ -1244,7 +1233,7 @@ export function filter_people_by_search_terms(users: User[], search_string: stri
     }
 
     return filtered_users;
-}
+};
 
 export const is_valid_full_name_and_user_id = (full_name: string, user_id: number): boolean => {
     /*
@@ -1282,7 +1271,7 @@ export const get_actual_name_from_user_id = (user_id: number): string | undefine
     return person.full_name;
 };
 
-export function get_user_id_from_name(full_name: string): number | undefined {
+export const get_user_id_from_name = (full_name: string): number | undefined => {
     // get_user_id_from_name('Alice Smith') === 42
 
     /*
@@ -1318,13 +1307,13 @@ export function get_user_id_from_name(full_name: string): number | undefined {
     }
 
     return person.user_id;
-}
+};
 
-export function track_duplicate_full_name(
+export const track_duplicate_full_name = (
     full_name: string,
     user_id: number,
     to_remove?: boolean,
-): void {
+): void => {
     let ids: Set<number>;
     if (duplicate_full_name_data.has(full_name)) {
         // TODO: Better handling for optional values w/o the assertion.
@@ -1339,15 +1328,15 @@ export function track_duplicate_full_name(
         ids.delete(user_id);
     }
     duplicate_full_name_data.set(full_name, ids);
-}
+};
 
-export function is_duplicate_full_name(full_name: string): boolean {
+export const is_duplicate_full_name = (full_name: string): boolean => {
     const ids = duplicate_full_name_data.get(full_name);
 
     return ids !== undefined && ids.size > 1;
-}
+};
 
-export function get_mention_syntax(full_name: string, user_id?: number, silent = false): string {
+export const get_mention_syntax = (full_name: string, user_id?: number, silent = false): string => {
     let mention = "";
     if (silent) {
         mention += "@_**";
@@ -1372,13 +1361,12 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     }
     mention += "**";
     return mention;
-}
+};
 
-function full_name_matches_wildcard_mention(full_name: string): boolean {
-    return ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
-}
+const full_name_matches_wildcard_mention = (full_name: string): boolean =>
+    ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
 
-export function _add_user(person: User): void {
+export const _add_user = (person: User): void => {
     /*
         This is common code to add any user, even
         users who may be deactivated or outside
@@ -1403,13 +1391,13 @@ export function _add_user(person: User): void {
     track_duplicate_full_name(person.full_name, person.user_id);
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
-}
+};
 
-export function add_active_user(person: User): void {
+export const add_active_user = (person: User): void => {
     active_user_dict.set(person.user_id, person);
     _add_user(person);
     non_active_user_dict.delete(person.user_id);
-}
+};
 
 export const is_person_active = (user_id: number): boolean => {
     if (!people_by_user_id_dict.has(user_id)) {
@@ -1423,22 +1411,22 @@ export const is_person_active = (user_id: number): boolean => {
     return active_user_dict.has(user_id);
 };
 
-export function add_cross_realm_user(person: CrossRealmBot): void {
+export const add_cross_realm_user = (person: CrossRealmBot): void => {
     if (!people_dict.has(person.email)) {
         _add_user(person);
     }
     cross_realm_dict.set(person.user_id, person);
-}
+};
 
-export function deactivate(person: User): void {
+export const deactivate = (person: User): void => {
     // We don't fully remove a person from all of our data
     // structures, because deactivated users can be part
     // of somebody's direct message list.
     active_user_dict.delete(person.user_id);
     non_active_user_dict.set(person.user_id, person);
-}
+};
 
-export function remove_inaccessible_user(user_id: number): void {
+export const remove_inaccessible_user = (user_id: number): void => {
     // We do not track inaccessible users in active_user_dict.
     active_user_dict.delete(user_id);
 
@@ -1446,9 +1434,9 @@ export function remove_inaccessible_user(user_id: number): void {
     const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
-}
+};
 
-export function report_late_add(user_id: number, email: string): void {
+export const report_late_add = (user_id: number, email: string): void => {
     // If the events system is not running, then it is expected that
     // we will fetch messages from the server that were sent by users
     // who don't exist in our users data set. This can happen because
@@ -1462,63 +1450,51 @@ export function report_late_add(user_id: number, email: string): void {
     } else {
         blueslip.error("Added user late", {user_id, email});
     }
-}
+};
 
-export function make_user(user_id: number, email: string, full_name: string): User {
-    // Used to create fake user objects for users who we see via some
-    // API call, such as fetching a message sent by the user, before
-    // we receive a full user object for the user via the events
-    // system.
-    //
-    // This function is an ugly hack in that it makes up a lot of
-    // values, but usually thesefake user objects only persist for
-    // less than a second before being replaced by a real user when
-    // the events system receives the user-created event for the new
-    // or newly visible user.
-    return {
-        user_id,
-        email,
-        full_name,
-        role: settings_config.user_role_values.member.code,
-        is_active: true,
-        is_admin: false,
-        is_owner: false,
-        is_guest: false,
-        is_bot: false,
-        is_moderator: false,
-        is_billing_admin: false,
-        // We explicitly don't set `avatar_url` for fake person objects so that fallback code
-        // will ask the server or compute a gravatar URL only once we need the avatar URL,
-        // it's important for performance that we not hash every user's email to get gravatar URLs.
-        avatar_version: 0,
-        timezone: "",
-        date_joined: "",
-        delivery_email: null,
-        profile_data: {},
-        bot_type: null,
-        // This may lead to cases where this field is set to
-        // true for an accessible user also and such user would
-        // not be shown in the right sidebar for some time till
-        // the user's correct data is received from the server.
-        is_inaccessible_user: !settings_data.user_can_access_all_other_users(),
+export const make_user = (user_id: number, email: string, full_name: string): User => ({
+    user_id,
+    email,
+    full_name,
+    role: settings_config.user_role_values.member.code,
+    is_active: true,
+    is_admin: false,
+    is_owner: false,
+    is_guest: false,
+    is_bot: false,
+    is_moderator: false,
+    is_billing_admin: false,
+    // We explicitly don't set `avatar_url` for fake person objects so that fallback code
+    // will ask the server or compute a gravatar URL only once we need the avatar URL,
+    // it's important for performance that we not hash every user's email to get gravatar URLs.
+    avatar_version: 0,
+    timezone: "",
+    date_joined: "",
+    delivery_email: null,
+    profile_data: {},
+    bot_type: null,
+    // This may lead to cases where this field is set to
+    // true for an accessible user also and such user would
+    // not be shown in the right sidebar for some time till
+    // the user's correct data is received from the server.
+    is_inaccessible_user: !settings_data.user_can_access_all_other_users(),
 
-        // This property allows us to distinguish actual server person
-        // objects from fake person objects generated by this function.
-        is_missing_server_data: true,
-    };
-}
+    // This property allows us to distinguish actual server person
+    // objects from fake person objects generated by this function.
+    is_missing_server_data: true,
+});
 
-export function add_inaccessible_user(user_id: number): User {
+export const add_inaccessible_user = (user_id: number): User => {
     const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
     return unknown_user;
-}
+};
 
-export function get_user_by_id_assert_valid(
+export const get_user_by_id_assert_valid = (
     user_id: number,
     allow_missing_user = !settings_data.user_can_access_all_other_users(),
-): User {
+): User => {
     if (!allow_missing_user) {
         return get_by_user_id(user_id);
     }
@@ -1528,9 +1504,9 @@ export function get_user_by_id_assert_valid(
         person = add_inaccessible_user(user_id);
     }
     return person;
-}
+};
 
-function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser[] {
+const get_involved_people = (message: MessageWithBooleans): DisplayRecipientUser[] => {
     let involved_people: DisplayRecipientUser[] = [];
 
     if (message.type === "stream") {
@@ -1551,9 +1527,9 @@ function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser
     }
 
     return involved_people;
-}
+};
 
-export function extract_people_from_message(message: MessageWithBooleans): void {
+export const extract_people_from_message = (message: MessageWithBooleans): void => {
     const involved_people = get_involved_people(message);
 
     // Add new people involved in this message to the people list
@@ -1572,55 +1548,38 @@ export function extract_people_from_message(message: MessageWithBooleans): void 
 
         _add_user(make_user(user_id, person.email, person.full_name));
     }
-}
+};
 
-function safe_lower(s?: string | null): string {
-    return (s ?? "").toLowerCase();
-}
+const safe_lower = (s?: string | null): string => (s ?? "").toLowerCase();
 
-export function matches_user_settings_search(person: User, value: string): boolean {
+export const matches_user_settings_search = (person: User, value: string): boolean => {
     const email = person.delivery_email;
 
     return safe_lower(person.full_name).includes(value) || safe_lower(email).includes(value);
-}
+};
 
-function matches_user_settings_role(person: User, role_code: number): boolean {
+const matches_user_settings_role = (person: User, role_code: number): boolean => {
     if (role_code === 0 || role_code === person.role) {
         return true;
     }
     return false;
-}
+};
 
 type SettingsUsersFilterQuery = {
     text_search: string;
     role_code: number;
 };
 
-export function predicate_for_user_settings_filters(
+export const predicate_for_user_settings_filters = (
     person: User,
     query: SettingsUsersFilterQuery,
-): boolean {
-    /*
-        TODO: For text_search:
-              For large realms, we can optimize this a couple
-              different ways.  For realms that don't show
-              emails, we can make a simpler filter predicate
-              that works solely with full names.  And we can
-              also consider two-pass filters that try more
-              stingy criteria first, such as exact prefix
-              matches, before widening the search.
+): boolean =>
+    matches_user_settings_search(person, query.text_search) &&
+    matches_user_settings_role(person, query.role_code);
 
-              See #13554 for more context.
-    */
-    return (
-        matches_user_settings_search(person, query.text_search) &&
-        matches_user_settings_role(person, query.role_code)
-    );
-}
-
-export function maybe_incr_recipient_count(
+export const maybe_incr_recipient_count = (
     message: MessageWithBooleans & {sent_by_me: boolean},
-): void {
+): void => {
     if (message.type !== "private") {
         return;
     }
@@ -1644,9 +1603,9 @@ export function maybe_incr_recipient_count(
         const user_id = recip.id;
         incr_recipient_count(user_id);
     }
-}
+};
 
-export function set_full_name(person_obj: User, new_full_name: string): void {
+export const set_full_name = (person_obj: User, new_full_name: string): void => {
     if (people_by_name_dict.has(person_obj.full_name)) {
         people_by_name_dict.delete(person_obj.full_name);
     }
@@ -1656,12 +1615,12 @@ export function set_full_name(person_obj: User, new_full_name: string): void {
     people_by_name_dict.set(new_full_name, person_obj);
     person_obj.full_name = new_full_name;
     person_obj.name_with_diacritics_removed = undefined;
-}
+};
 
-export function set_custom_profile_field_data(
+export const set_custom_profile_field_data = (
     user_id: number,
     field: {id: number} & ProfileDatum,
-): void {
+): void => {
     if (field.id === undefined) {
         blueslip.error("Trying to set undefined field id");
         return;
@@ -1671,58 +1630,56 @@ export function set_custom_profile_field_data(
         value: field.value,
         rendered_value: field.rendered_value,
     };
-}
+};
 
-export function is_current_user(email?: string | null): boolean {
+export const is_current_user = (email?: string | null): boolean => {
     if (email === null || email === undefined || page_params.is_spectator) {
         return false;
     }
 
     return email.toLowerCase() === my_current_email().toLowerCase();
-}
+};
 
-export function initialize_current_user(user_id: number): void {
+export const initialize_current_user = (user_id: number): void => {
     my_user_id = user_id;
-}
+};
 
-export function my_full_name(): string {
+export const my_full_name = (): string => {
     const person = get_by_user_id(my_user_id);
     return person.full_name;
-}
+};
 
-export function my_current_email(): string {
+export const my_current_email = (): string => {
     const person = get_by_user_id(my_user_id);
     return person.email;
-}
+};
 
-export function my_current_user_id(): number {
-    return my_user_id;
-}
+export const my_current_user_id = (): number => my_user_id;
 
-export function my_custom_profile_data(field_id: number): ProfileDatum | null | undefined {
+export const my_custom_profile_data = (field_id: number): ProfileDatum | null | undefined => {
     if (field_id === undefined) {
         blueslip.error("Undefined field id");
         return undefined;
     }
     return get_custom_profile_data(my_user_id, field_id);
-}
+};
 
-export function get_custom_profile_data(
+export const get_custom_profile_data = (
     user_id: number,
     field_id: number,
-): ProfileDatum | null | undefined {
+): ProfileDatum | null | undefined => {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
         return null;
     }
     return profile_data[field_id];
-}
+};
 
-export function get_custom_fields_by_type(
+export const get_custom_fields_by_type = (
     user_id: number,
     field_type: number,
-): (ProfileDatum | undefined)[] | null {
+): (ProfileDatum | undefined)[] | null => {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
@@ -1735,17 +1692,13 @@ export function get_custom_fields_by_type(
         }
     }
     return filteredProfileData;
-}
+};
 
-export function is_my_user_id(user_id: number): boolean {
-    return user_id === my_user_id;
-}
+export const is_my_user_id = (user_id: number): boolean => user_id === my_user_id;
 
-export function compare_by_name(a: User, b: User): number {
-    return util.strcmp(a.full_name, b.full_name);
-}
+export const compare_by_name = (a: User, b: User): number => util.strcmp(a.full_name, b.full_name);
 
-export function sort_but_pin_current_user_on_top(users: User[]): void {
+export const sort_but_pin_current_user_on_top = (users: User[]): void => {
     const my_user = get_by_user_id(my_user_id);
     if (users.includes(my_user)) {
         users.splice(users.indexOf(my_user), 1);
@@ -1754,9 +1707,9 @@ export function sort_but_pin_current_user_on_top(users: User[]): void {
     } else {
         users.sort(compare_by_name);
     }
-}
+};
 
-export function initialize(my_user_id: number, params: PeopleParams): void {
+export const initialize = (my_user_id: number, params: PeopleParams): void => {
     for (const person of params.realm_users) {
         add_active_user(person);
     }
@@ -1771,4 +1724,4 @@ export function initialize(my_user_id: number, params: PeopleParams): void {
     }
 
     initialize_current_user(my_user_id);
-}
+};

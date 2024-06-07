@@ -10,7 +10,7 @@ import * as server_events from "./server_events";
 import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 
-export function send_message(request, on_success, error) {
+export const send_message = (request, on_success, error) => {
     if (!request.resend) {
         sent_messages.start_tracking_message({
             local_id: request.local_id,
@@ -24,7 +24,7 @@ export function send_message(request, on_success, error) {
         channel.post({
             url: "/json/messages",
             data: request,
-            success: function success(data) {
+            success: (data) => {
                 // Call back to our callers to do things like closing the compose
                 // box, turning off spinners, reifying locally echoed messages and
                 // displaying visibility policy related compose banners.
@@ -57,7 +57,7 @@ export function send_message(request, on_success, error) {
                     }, 5000);
                 }
             },
-            error(xhr, error_type) {
+            error: (xhr, error_type) => {
                 if (error_type !== "timeout" && reload_state.is_pending()) {
                     // The error might be due to the server changing
                     reload.initiate({
@@ -75,9 +75,9 @@ export function send_message(request, on_success, error) {
     } finally {
         Sentry.getCurrentHub().popScope();
     }
-}
+};
 
-export function reply_message(opts) {
+export const reply_message = (opts) => {
     // This code does an application-triggered reply to a message (as
     // opposed to the user themselves doing it).  Its only use case
     // for now is experimental widget-aware bots, so treat this as
@@ -88,19 +88,19 @@ export function reply_message(opts) {
     const message = opts.message;
     let content = opts.content;
 
-    function success() {
+    const success = () => {
         // TODO: If server response comes back before the message event,
         //       we could show it earlier, although that creates some
         //       complexity.  For now do nothing.  (Note that send_message
         //       already handles things like reporting times to the server.)
-    }
+    };
 
-    function error(_response, _server_error_code) {
+    const error = (_response, _server_error_code) => {
         // TODO: In our current use case, which is widgets, to meaningfully
         //       handle errors, we would want the widget to provide some
         //       kind of callback to us so it can do some appropriate UI.
         //       For now do nothing.
-    }
+    };
 
     const locally_echoed = false;
     const local_id = sent_messages.get_new_local_id();
@@ -144,4 +144,4 @@ export function reply_message(opts) {
     }
 
     blueslip.error("unknown message type", {message, content});
-}
+};

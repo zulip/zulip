@@ -15,7 +15,7 @@ export type RealmPlayground = {
 const map_language_to_playground_info = new Map<string, RealmPlayground[]>();
 const map_pygments_pretty_name_to_aliases = new Map<string, string[]>();
 
-export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
+export const update_playgrounds = (playgrounds_data: RealmPlayground[]): void => {
     map_language_to_playground_info.clear();
 
     for (const data of playgrounds_data) {
@@ -31,15 +31,14 @@ export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
             map_language_to_playground_info.set(data.pygments_language, [element_to_push]);
         }
     }
-}
+};
 
-export function get_playground_info_for_languages(lang: string): RealmPlayground[] | undefined {
-    return map_language_to_playground_info.get(lang);
-}
+export const get_playground_info_for_languages = (lang: string): RealmPlayground[] | undefined =>
+    map_language_to_playground_info.get(lang);
 
-function sort_pygments_pretty_names_by_priority(
+const sort_pygments_pretty_names_by_priority = (
     comparator_func: (a: string, b: string) => number,
-): void {
+): void => {
     const priority_sorted_pygments_data = Object.entries(pygments_data.langs).sort(([a], [b]) =>
         comparator_func(a, b),
     );
@@ -53,7 +52,7 @@ function sort_pygments_pretty_names_by_priority(
             map_pygments_pretty_name_to_aliases.set(pretty_name, [alias]);
         }
     }
-}
+};
 
 // This gets the candidate list for showing autocomplete for a code block in
 // the composebox. The candidate list will include pygments data as well as any
@@ -62,16 +61,16 @@ function sort_pygments_pretty_names_by_priority(
 // May return duplicates, since it's common for playground languages
 // to also be pygments languages! retain_unique_language_aliases will
 // deduplicate them.
-export function get_pygments_typeahead_list_for_composebox(): string[] {
+export const get_pygments_typeahead_list_for_composebox = (): string[] => {
     const playground_pygment_langs = [...map_language_to_playground_info.keys()];
     const pygment_langs = Object.keys(pygments_data.langs);
 
     return [...playground_pygment_langs, ...pygment_langs];
-}
+};
 
 // This gets the candidate list for showing autocomplete in settings when
 // adding a new Code Playground.
-export function get_pygments_typeahead_list_for_settings(query: string): Map<string, string> {
+export const get_pygments_typeahead_list_for_settings = (query: string): Map<string, string> => {
     const language_labels = new Map<string, string>();
 
     // Adds a typeahead that allows selecting a custom language, by adding a
@@ -94,15 +93,15 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
     }
 
     return language_labels;
-}
+};
 
-export function initialize({
+export const initialize = ({
     playground_data,
     pygments_comparator_func,
 }: {
     playground_data: RealmPlayground[];
     pygments_comparator_func: (a: string, b: string) => number;
-}): void {
+}): void => {
     update_playgrounds(playground_data);
     sort_pygments_pretty_names_by_priority(pygments_comparator_func);
-}
+};

@@ -50,21 +50,21 @@ const isaac = {
 
 const unknown_user = people.make_user(1500, "unknown@example.com", "Unknown user");
 
-function initialize() {
+const initialize = () => {
     people.init();
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
     muted_users.set_muted_users([]);
 
     people._add_user(unknown_user);
-}
+};
 
-function test_people(label, f) {
+const test_people = (label, f) => {
     run_test(label, (helpers) => {
         initialize();
         f(helpers);
     });
-}
+};
 
 /*
     TEST SETUP NOTES:
@@ -272,9 +272,7 @@ const invalid_user = {
     unknown_local_echo_user: true,
 };
 
-function get_all_persons() {
-    return people.filter_all_persons(() => true);
-}
+const get_all_persons = () => people.filter_all_persons(() => true);
 
 test_people("basics", ({override}) => {
     const persons = get_all_persons();
@@ -1363,12 +1361,11 @@ test_people("get_active_message_people", () => {
 test_people("huddle_string", () => {
     assert.equal(people.huddle_string({type: "stream"}), undefined);
 
-    function huddle(user_ids) {
-        return people.huddle_string({
+    const huddle = (user_ids) =>
+        people.huddle_string({
             type: "private",
             display_recipient: user_ids.map((id) => ({id})),
         });
-    }
 
     people.add_active_user(maria);
     people.add_active_user(bob);

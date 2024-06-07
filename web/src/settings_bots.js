@@ -28,21 +28,19 @@ const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
 const EMBEDDED_BOT_TYPE = "4";
 
-function add_bot_row(info) {
+const add_bot_row = (info) => {
     const $row = $(render_bot_avatar_row(info));
     if (info.is_active) {
         $("#active_bots_list").append($row);
     } else {
         $("#inactive_bots_list").append($row);
     }
-}
+};
 
-function is_local_part(value) {
-    // Adapted from Django's EmailValidator
-    return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
-}
+const is_local_part = (value) =>
+    /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
 
-export function render_bots() {
+export const render_bots = () => {
     $("#active_bots_list").empty();
     $("#inactive_bots_list").empty();
 
@@ -74,19 +72,18 @@ export function render_bots() {
 
     list_widget.render_empty_list_message_if_needed($("#active_bots_list"));
     list_widget.render_empty_list_message_if_needed($("#inactive_bots_list"));
-}
+};
 
-export function generate_zuliprc_url(bot_id) {
+export const generate_zuliprc_url = (bot_id) => {
     const bot = bot_data.get(bot_id);
     const data = generate_zuliprc_content(bot);
     return encode_zuliprc_as_url(data);
-}
+};
 
-export function encode_zuliprc_as_url(zuliprc) {
-    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
-}
+export const encode_zuliprc_as_url = (zuliprc) =>
+    "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 
-export function generate_zuliprc_content(bot) {
+export const generate_zuliprc_content = (bot) => {
     let token;
     // For outgoing webhooks, include the token in the zuliprc.
     // It's needed for authenticating to the Botserver.
@@ -105,22 +102,19 @@ export function generate_zuliprc_content(bot) {
         // Some tools would not work in files without a trailing new line.
         "\n"
     );
-}
+};
 
-export function generate_botserverrc_content(email, api_key, token) {
-    return (
-        "[]" +
-        "\nemail=" +
-        email +
-        "\nkey=" +
-        api_key +
-        "\nsite=" +
-        realm.realm_url +
-        "\ntoken=" +
-        token +
-        "\n"
-    );
-}
+export const generate_botserverrc_content = (email, api_key, token) =>
+    "[]" +
+    "\nemail=" +
+    email +
+    "\nkey=" +
+    api_key +
+    "\nsite=" +
+    realm.realm_url +
+    "\ntoken=" +
+    token +
+    "\n";
 
 export const bot_creation_policy_values = {
     admins_only: {
@@ -139,7 +133,7 @@ export const bot_creation_policy_values = {
     },
 };
 
-export function can_create_new_bots() {
+export const can_create_new_bots = () => {
     if (current_user.is_admin) {
         return true;
     }
@@ -149,9 +143,9 @@ export function can_create_new_bots() {
     }
 
     return realm.realm_bot_creation_policy !== bot_creation_policy_values.admins_only.code;
-}
+};
 
-export function update_bot_settings_tip($tip_container, for_org_settings) {
+export const update_bot_settings_tip = ($tip_container, for_org_settings) => {
     if (
         !current_user.is_admin &&
         realm.realm_bot_creation_policy === bot_creation_policy_values.everyone.code
@@ -171,9 +165,9 @@ export function update_bot_settings_tip($tip_container, for_org_settings) {
     });
     $tip_container.show();
     $tip_container.html(rendered_tip);
-}
+};
 
-function update_add_bot_button() {
+const update_add_bot_button = () => {
     if (can_create_new_bots()) {
         $("#bot-settings .add-a-new-bot").show();
         $("#admin-bot-list .add-new-bots").show();
@@ -188,14 +182,14 @@ function update_add_bot_button() {
             $("#admin-bot-list .manage-your-bots").show();
         }
     }
-}
+};
 
-export function update_bot_permissions_ui() {
+export const update_bot_permissions_ui = () => {
     update_bot_settings_tip($("#admin-bot-settings-tip"), true);
     update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     update_add_bot_button();
     $("#id_realm_bot_creation_policy").val(realm.realm_bot_creation_policy);
-}
+};
 
 export function add_a_new_bot() {
     const html_body = render_add_new_bot_form({
@@ -244,18 +238,18 @@ export function add_a_new_bot() {
             cache: false,
             processData: false,
             contentType: false,
-            success() {
+            success: () => {
                 create_avatar_widget.clear();
                 dialog_widget.close();
             },
-            error(xhr) {
+            error: (xhr) => {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
                 dialog_widget.hide_dialog_spinner();
             },
         });
     }
 
-    function set_up_form_fields() {
+    const set_up_form_fields = () => {
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
@@ -292,9 +286,9 @@ export function add_a_new_bot() {
             const selected_bot = $("#select_service_name").val();
             $(`[name*='${CSS.escape(selected_bot)}']`).show();
         });
-    }
+    };
 
-    function validate_input() {
+    const validate_input = () => {
         const bot_short_name = $("#create_bot_short_name").val();
 
         if (is_local_part(bot_short_name)) {
@@ -308,7 +302,7 @@ export function add_a_new_bot() {
             $("#dialog_error"),
         );
         return false;
-    }
+    };
 
     dialog_widget.launch({
         form_id: "create_bot_form",
@@ -347,7 +341,7 @@ export function set_up() {
             {label: $t({defaultMessage: "Active bots"}), key: "active-bots"},
             {label: $t({defaultMessage: "Inactive bots"}), key: "inactive-bots"},
         ],
-        callback(_name, key) {
+        callback: (_name, key) => {
             $(".bots_section").hide();
             $(`[data-bot-settings-section="${CSS.escape(key)}"]`).show();
         },
@@ -361,10 +355,10 @@ export function set_up() {
     $("#active_bots_list").on("click", "button.deactivate_bot", (e) => {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
 
-        function handle_confirm() {
+        const handle_confirm = () => {
             const url = "/json/bots/" + encodeURIComponent(bot_id);
             const opts = {
-                success_continuation() {
+                success_continuation: () => {
                     const $row = $(e.currentTarget).closest("li");
                     $row.hide("slow", () => {
                         $row.remove();
@@ -372,7 +366,7 @@ export function set_up() {
                 },
             };
             dialog_widget.submit_api_request(channel.del, url, {}, opts);
-        }
+        };
         user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
     });
 
@@ -381,18 +375,18 @@ export function set_up() {
         e.stopPropagation();
         e.preventDefault();
 
-        function handle_confirm() {
+        const handle_confirm = () => {
             channel.post({
                 url: "/json/users/" + encodeURIComponent(user_id) + "/reactivate",
-                success() {
+                success: () => {
                     dialog_widget.close();
                 },
-                error(xhr) {
+                error: (xhr) => {
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
                     dialog_widget.hide_dialog_spinner();
                 },
             });
-        }
+        };
 
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
@@ -401,12 +395,12 @@ export function set_up() {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         channel.post({
             url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
-            success(data) {
+            success: (data) => {
                 const $row = $(e.currentTarget).closest("li");
                 $row.find(".bot-card-api-key").find(".value").text(data.api_key);
                 $row.find(".bot-card-api-key-error").hide();
             },
-            error(xhr) {
+            error: (xhr) => {
                 if (xhr.responseJSON?.msg) {
                     const $row = $(e.currentTarget).closest("li");
                     $row.find(".bot-card-api-key-error").text(xhr.responseJSON.msg).show();
@@ -446,7 +440,7 @@ export function set_up() {
     });
 
     const clipboard = new ClipboardJS("#copy_zuliprc", {
-        text(trigger) {
+        text: (trigger) => {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot-card-info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);

@@ -20,7 +20,7 @@ export type PMNode =
           more_conversations_unread_count: number;
       };
 
-export function keyed_pm_li(conversation: PMListConversation): vdom.Node<PMNode> {
+export const keyed_pm_li = (conversation: PMListConversation): vdom.Node<PMNode> => {
     const render = (): string => render_pm_list_item(conversation);
 
     const eq = (other: PMNode): boolean =>
@@ -35,11 +35,11 @@ export function keyed_pm_li(conversation: PMListConversation): vdom.Node<PMNode>
         type: "conversation",
         conversation,
     };
-}
+};
 
-export function more_private_conversations_li(
+export const more_private_conversations_li = (
     more_conversations_unread_count: number,
-): vdom.Node<PMNode> {
+): vdom.Node<PMNode> => {
     const render = (): string =>
         render_more_private_conversations({more_conversations_unread_count});
 
@@ -59,9 +59,9 @@ export function more_private_conversations_li(
         type: "more_items",
         more_conversations_unread_count,
     };
-}
+};
 
-export function pm_ul(nodes: vdom.Node<PMNode>[]): vdom.Tag<PMNode> {
+export const pm_ul = (nodes: vdom.Node<PMNode>[]): vdom.Tag<PMNode> => {
     const attrs: [string, string][] = [
         ["class", "dm-list"],
         ["data-name", "private"],
@@ -70,4 +70,4 @@ export function pm_ul(nodes: vdom.Node<PMNode>[]): vdom.Tag<PMNode> {
         attrs,
         keyed_nodes: nodes,
     });
-}
+};

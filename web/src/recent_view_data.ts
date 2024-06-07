@@ -11,7 +11,7 @@ export const conversations = new Map<string, ConversationData>();
 // For stream messages, key is stream-id:topic.
 // For pms, key is the user IDs to whom the message is being sent.
 
-export function process_message(msg: Message): boolean {
+export const process_message = (msg: Message): boolean => {
     // Important: This function must correctly handle processing a
     // given message more than once; this happens during the loading
     // process because of how recent_view_message_list_data duplicates
@@ -51,20 +51,15 @@ export function process_message(msg: Message): boolean {
         conversation_data_updated = true;
     }
     return conversation_data_updated;
-}
+};
 
-function get_sorted_conversations(): Map<string | undefined, ConversationData> {
-    // Sort all recent conversations by last message time.
-    return new Map(
-        [...conversations.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id),
-    );
-}
+const get_sorted_conversations = (): Map<string | undefined, ConversationData> =>
+    new Map([...conversations.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id));
 
-export function get_conversations(): Map<string | undefined, ConversationData> {
-    return get_sorted_conversations();
-}
+export const get_conversations = (): Map<string | undefined, ConversationData> =>
+    get_sorted_conversations();
 
-export function reify_message_id_if_available(opts: {old_id: number; new_id: number}): boolean {
+export const reify_message_id_if_available = (opts: {old_id: number; new_id: number}): boolean => {
     // We don't need to reify the message_id of the conversation
     // if a new message arrives in the conversation from another user,
     // since it replaces the last_msg_id of the conversation which
@@ -76,4 +71,4 @@ export function reify_message_id_if_available(opts: {old_id: number; new_id: num
         }
     }
     return false;
-}
+};

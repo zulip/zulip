@@ -6,7 +6,7 @@ import * as blueslip from "./blueslip";
 import {zform_widget_extra_data_schema} from "./submessage";
 import * as transmit from "./transmit";
 
-export function activate(opts) {
+export const activate = (opts) => {
     const self = {};
 
     const $outer_elem = opts.$elem;
@@ -18,7 +18,7 @@ export function activate(opts) {
     }
     const {data} = parse_result;
 
-    function make_choices(data) {
+    const make_choices = (data) => {
         // Assign idx values to each of our choices so that
         // our template can create data-idx values for our
         // JS code to use later.
@@ -46,18 +46,18 @@ export function activate(opts) {
         });
 
         return $elem;
-    }
+    };
 
-    function render() {
+    const render = () => {
         let rendered_widget;
 
         if (data.type === "choices") {
             rendered_widget = make_choices(data);
             $outer_elem.html(rendered_widget);
         }
-    }
+    };
 
-    self.handle_events = function (events) {
+    self.handle_events = (events) => {
         if (events) {
             blueslip.info("unexpected");
         }
@@ -67,4 +67,4 @@ export function activate(opts) {
     render();
 
     return self;
-}
+};

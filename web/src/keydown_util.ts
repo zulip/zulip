@@ -7,10 +7,10 @@ export const vim_down = "j";
 export const vim_up = "k";
 export const vim_right = "l";
 
-export function handle(opts: {
+export const handle = (opts: {
     $elem: JQuery;
     handlers: Record<string, (() => boolean) | undefined>;
-}): void {
+}): void => {
     opts.$elem.on("keydown", (e) => {
         if (e.altKey || e.ctrlKey || e.shiftKey) {
             return;
@@ -28,9 +28,9 @@ export function handle(opts: {
             e.stopPropagation();
         }
     });
-}
+};
 
-export function is_enter_event(event: JQuery.KeyboardEventBase): boolean {
+export const is_enter_event = (event: JQuery.KeyboardEventBase): boolean => {
     // In addition to checking whether the key pressed was an Enter
     // key, we need to check whether the keypress was part of an IME
     // composing session, such as selecting a character using a
@@ -39,4 +39,4 @@ export function is_enter_event(event: JQuery.KeyboardEventBase): boolean {
     // https://developer.mozilla.org/en-US/docs/Glossary/Input_method_editor
     const isComposing = event.originalEvent?.isComposing ?? false;
     return !isComposing && event.key === "Enter";
-}
+};

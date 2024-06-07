@@ -12,7 +12,7 @@ const stream_dict = new Map<number, PerStreamHistory>();
 const fetched_stream_ids = new Set<number>();
 const request_pending_stream_ids = new Set<number>();
 
-export function all_topics_in_cache(sub: StreamSubscription): boolean {
+export const all_topics_in_cache = (sub: StreamSubscription): boolean => {
     // Checks whether this browser's cache of contiguous messages
     // (used to locally render narrows) in all_messages_data has all
     // messages from a given stream, and thus all historical topics
@@ -43,9 +43,9 @@ export function all_topics_in_cache(sub: StreamSubscription): boolean {
     // cache.
     const first_cached_message = all_messages_data.first();
     return first_cached_message!.id <= sub.first_message_id;
-}
+};
 
-export function is_complete_for_stream_id(stream_id: number): boolean {
+export const is_complete_for_stream_id = (stream_id: number): boolean => {
     if (fetched_stream_ids.has(stream_id)) {
         return true;
     }
@@ -65,9 +65,9 @@ export function is_complete_for_stream_id(stream_id: number): boolean {
     }
 
     return in_cache;
-}
+};
 
-export function stream_has_topics(stream_id: number): boolean {
+export const stream_has_topics = (stream_id: number): boolean => {
     if (!stream_dict.has(stream_id)) {
         return false;
     }
@@ -76,7 +76,7 @@ export function stream_has_topics(stream_id: number): boolean {
     assert(history !== undefined);
 
     return history.has_topics();
-}
+};
 
 export type TopicHistoryEntry =
     | {
@@ -246,12 +246,12 @@ export class PerStreamHistory {
     }
 }
 
-export function remove_messages(opts: {
+export const remove_messages = (opts: {
     stream_id: number;
     topic_name: string;
     num_messages: number;
     max_removed_msg_id: number;
-}): void {
+}): void => {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
     const num_messages = opts.num_messages;
@@ -289,9 +289,9 @@ export function remove_messages(opts: {
     if (history.max_message_id <= max_removed_msg_id) {
         history.max_message_id = message_util.get_max_message_id_in_stream(stream_id);
     }
-}
+};
 
-export function find_or_create(stream_id: number): PerStreamHistory {
+export const find_or_create = (stream_id: number): PerStreamHistory => {
     let history = stream_dict.get(stream_id);
 
     if (!history) {
@@ -300,13 +300,13 @@ export function find_or_create(stream_id: number): PerStreamHistory {
     }
 
     return history;
-}
+};
 
-export function add_message(opts: {
+export const add_message = (opts: {
     stream_id: number;
     message_id: number;
     topic_name: string;
-}): void {
+}): void => {
     const stream_id = opts.stream_id;
     const message_id = opts.message_id;
     const topic_name = opts.topic_name;
@@ -314,45 +314,42 @@ export function add_message(opts: {
     const history = find_or_create(stream_id);
 
     history.add_or_update(topic_name, message_id);
-}
+};
 
-export function add_history(stream_id: number, server_history: ServerTopicHistoryEntry[]): void {
+export const add_history = (stream_id: number, server_history: ServerTopicHistoryEntry[]): void => {
     const history = find_or_create(stream_id);
     history.add_history(server_history);
     fetched_stream_ids.add(stream_id);
-}
+};
 
-export function has_history_for(stream_id: number): boolean {
-    return fetched_stream_ids.has(stream_id);
-}
+export const has_history_for = (stream_id: number): boolean => fetched_stream_ids.has(stream_id);
 
-export function get_recent_topic_names(stream_id: number): string[] {
+export const get_recent_topic_names = (stream_id: number): string[] => {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
-}
+};
 
-export function get_max_message_id(stream_id: number): number {
+export const get_max_message_id = (stream_id: number): number => {
     const history = find_or_create(stream_id);
 
     return history.get_max_message_id();
-}
+};
 
-export function reset(): void {
+export const reset = (): void => {
     // This is only used by tests.
     stream_dict.clear();
     fetched_stream_ids.clear();
     request_pending_stream_ids.clear();
-}
+};
 
-export function is_request_pending_for(stream_id: number): boolean {
-    return request_pending_stream_ids.has(stream_id);
-}
+export const is_request_pending_for = (stream_id: number): boolean =>
+    request_pending_stream_ids.has(stream_id);
 
-export function add_request_pending_for(stream_id: number): void {
+export const add_request_pending_for = (stream_id: number): void => {
     request_pending_stream_ids.add(stream_id);
-}
+};
 
-export function remove_request_pending_for(stream_id: number): void {
+export const remove_request_pending_for = (stream_id: number): void => {
     request_pending_stream_ids.delete(stream_id);
-}
+};

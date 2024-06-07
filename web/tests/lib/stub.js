@@ -7,17 +7,17 @@ const {strict: assert} = require("assert");
 // to it.  To use stubs as something more like "spies," use something
 // like set_global() to override your namespace.
 
-exports.make_stub = function () {
+exports.make_stub = () => {
     const self = {};
     self.num_calls = 0;
 
-    self.f = function (...args) {
+    self.f = (...args) => {
         self.last_call_args = args;
         self.num_calls += 1;
         return true;
     };
 
-    self.get_args = function (...param_names) {
+    self.get_args = (...param_names) => {
         const result = {};
 
         for (const [i, name] of param_names.entries()) {
@@ -30,7 +30,7 @@ exports.make_stub = function () {
     return self;
 };
 
-(function test_ourselves() {
+(() => {
     const stub = exports.make_stub();
     stub.f("blue", 42);
     assert.equal(stub.num_calls, 1);

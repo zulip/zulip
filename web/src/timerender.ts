@@ -21,15 +21,15 @@ export let display_time_zone = new Intl.DateTimeFormat().resolvedOptions().timeZ
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     next_timerender_id = 0;
-}
+};
 
 // Exported for testing only; we do not support live-updating the time zone.
-export function set_display_time_zone(time_zone: string): void {
+export const set_display_time_zone = (time_zone: string): void => {
     display_time_zone = time_zone;
     formatter_map.clear();
-}
+};
 
 type DateFormat = "weekday" | "dayofyear" | "weekday_dayofyear_year" | "dayofyear_year";
 type DateWithTimeFormat =
@@ -51,10 +51,10 @@ type DateOrTimeFormat = DateFormat | TimeFormat | DateWithTimeFormat;
 // for any formats that display the name for a month/weekday, but
 // possibly in more subtle ways for languages with different
 // punctuation schemes for date and times.
-export function get_format_options_for_type(
+export const get_format_options_for_type = (
     type: DateOrTimeFormat,
     is_twenty_four_hour_time: boolean,
-): Intl.DateTimeFormatOptions {
+): Intl.DateTimeFormatOptions => {
     const time_format_options: Intl.DateTimeFormatOptions = is_twenty_four_hour_time
         ? {hourCycle: "h23", hour: "2-digit", minute: "2-digit"}
         : {
@@ -105,17 +105,17 @@ export function get_format_options_for_type(
         default:
             throw new Error("Wrong format provided.");
     }
-}
+};
 
 // Common function for all date/time rendering in the project. Handles
 // localization using the user's configured locale and the
 // twenty_four_hour_time setting.
 //
 // See get_format_options_for_type for details on the supported formats.
-export function get_localized_date_or_time_for_format(
+export const get_localized_date_or_time_for_format = (
     date: Date | number,
     format: DateOrTimeFormat,
-): string {
+): string => {
     const is_twenty_four_hour_time = user_settings.twenty_four_hour_time;
     const format_key = `${user_settings.default_language}:${is_twenty_four_hour_time}:${format}`;
 
@@ -129,10 +129,10 @@ export function get_localized_date_or_time_for_format(
         );
     }
     return formatter_map.get(format_key)!.format(date);
-}
+};
 
 // Exported for tests only.
-export function get_tz_with_UTC_offset(time: number | Date): string {
+export const get_tz_with_UTC_offset = (time: number | Date): string => {
     let timezone = new Intl.DateTimeFormat(user_settings.default_language, {
         timeZone: display_time_zone,
         timeZoneName: "short",
@@ -158,7 +158,7 @@ export function get_tz_with_UTC_offset(time: number | Date): string {
         return timezone + " " + tz_UTC_offset;
     }
     return tz_UTC_offset;
-}
+};
 
 // Given a Date object 'time', returns an object:
 // {
@@ -174,7 +174,7 @@ export type TimeRender = {
     needs_update: boolean;
 };
 
-export function render_now(time: Date, today = new Date()): TimeRender {
+export const render_now = (time: Date, today = new Date()): TimeRender => {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used for tippy tooltip
@@ -209,10 +209,10 @@ export function render_now(time: Date, today = new Date()): TimeRender {
         formal_time_str,
         needs_update,
     };
-}
+};
 
 // Relative time rendering for use in most screens like Recent conversations.
-export function relative_time_string_from_date(date: Date): string {
+export const relative_time_string_from_date = (date: Date): string => {
     const current_date = new Date();
     const minutes = differenceInMinutes(current_date, date);
     if (minutes <= 2) {
@@ -247,7 +247,7 @@ export function relative_time_string_from_date(date: Date): string {
         return get_localized_date_or_time_for_format(date, "dayofyear");
     }
     return get_localized_date_or_time_for_format(date, "dayofyear_year");
-}
+};
 
 // Relative time logic variant use in the buddy list, where every
 // string has "Active" init. This is hard to deduplicate with
@@ -255,7 +255,7 @@ export function relative_time_string_from_date(date: Date): string {
 // word order.
 //
 // Current date is passed as an argument for unit testing
-export function last_seen_status_from_date(last_active_date: Date): string {
+export const last_seen_status_from_date = (last_active_date: Date): string => {
     const current_date = new Date();
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes < 60) {
@@ -303,7 +303,7 @@ export function last_seen_status_from_date(last_active_date: Date): string {
             ),
         },
     );
-}
+};
 
 // List of the dates that need to be updated when the day changes.
 // Each timestamp is represented as a list of length 2:
@@ -319,7 +319,7 @@ let update_list: UpdateEntry[] = [];
 // Represented as a Date with hour, minute, second, millisecond 0.
 let last_update: Date;
 
-export function initialize(): void {
+export const initialize = (): void => {
     if (
         display_time_zone === undefined || // https://bugs.chromium.org/p/chromium/issues/detail?id=1487920
         display_time_zone === "Etc/Unknown" // https://bugs.chromium.org/p/chromium/issues/detail?id=1473422
@@ -333,18 +333,18 @@ export function initialize(): void {
     }
 
     last_update = start_of_day(new Date(), display_time_zone);
-}
+};
 
-function maybe_add_update_list_entry(entry: UpdateEntry): void {
+const maybe_add_update_list_entry = (entry: UpdateEntry): void => {
     if (entry.needs_update) {
         update_list.push(entry);
     }
-}
+};
 
-function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
+const render_date_span = ($elem: JQuery, rendered_time: TimeRender): JQuery => {
     $elem.text(rendered_time.time_str);
     return $elem.attr("data-tippy-content", rendered_time.formal_time_str);
-}
+};
 
 // Given an Date object 'time', return a DOM node that initially
 // displays the human-formatted date, and is updated automatically as
@@ -353,7 +353,7 @@ function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-export function render_date(time: Date): JQuery {
+export const render_date = (time: Date): JQuery => {
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
     const rendered_time = render_now(time);
@@ -365,25 +365,24 @@ export function render_date(time: Date): JQuery {
         time,
     });
     return $node;
-}
+};
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
-export function format_markdown_time(time: number | Date): string {
-    return get_localized_date_or_time_for_format(time, "weekday_dayofyear_year_time");
-}
+export const format_markdown_time = (time: number | Date): string =>
+    get_localized_date_or_time_for_format(time, "weekday_dayofyear_year_time");
 
-export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragment | string {
+export const get_markdown_time_tooltip = (reference: HTMLElement): DocumentFragment | string => {
     if (reference instanceof HTMLTimeElement) {
         const time = parseISO(reference.dateTime);
         const tz_offset_str = get_tz_with_UTC_offset(time);
         return parse_html(render_markdown_time_tooltip({tz_offset_str}));
     }
     return "";
-}
+};
 
 // This isn't expected to be called externally except manually for
 // testing purposes.
-export function update_timestamps(): void {
+export const update_timestamps = (): void => {
     const today = start_of_day(new Date(), display_time_zone);
     if (!isEqual(today, last_update)) {
         const to_process = update_list;
@@ -411,23 +410,21 @@ export function update_timestamps(): void {
 
         last_update = today;
     }
-}
+};
 
 setInterval(update_timestamps, 60 * 1000);
 
 // Transform a Unix timestamp into a ISO 8601 formatted date string.
 //   Example: 1978-10-31T13:37:42Z
-export function get_full_time(timestamp: number): string {
-    return formatISO(timestamp * 1000);
-}
+export const get_full_time = (timestamp: number): string => formatISO(timestamp * 1000);
 
-function get_current_time_to_hour(): Date {
+const get_current_time_to_hour = (): Date => {
     const timestamp = new Date();
     timestamp.setMinutes(0, 0);
     return timestamp;
-}
+};
 
-export function get_timestamp_for_flatpickr(timestring?: string): Date {
+export const get_timestamp_for_flatpickr = (timestring?: string): Date => {
     let timestamp;
 
     // timestring is undefined when first opening the picker from the
@@ -447,13 +444,12 @@ export function get_timestamp_for_flatpickr(timestring?: string): Date {
         }
     }
     return timestamp;
-}
+};
 
-export function stringify_time(time: number | Date): string {
-    return get_localized_date_or_time_for_format(time, "time");
-}
+export const stringify_time = (time: number | Date): string =>
+    get_localized_date_or_time_for_format(time, "time");
 
-export function format_time_modern(time: number | Date, today = new Date()): string {
+export const format_time_modern = (time: number | Date, today = new Date()): string => {
     const hours = differenceInHours(today, time);
     const days_old = difference_in_calendar_days(today, time, display_time_zone);
 
@@ -471,11 +467,11 @@ export function format_time_modern(time: number | Date, today = new Date()): str
     }
 
     return get_localized_date_or_time_for_format(time, "dayofyear_year");
-}
+};
 
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".
-export function absolute_time(timestamp: number): string {
+export const absolute_time = (timestamp: number): string => {
     const today = new Date();
     const date = new Date(timestamp);
     const is_older_year = today.getFullYear() - date.getFullYear() > 0;
@@ -484,22 +480,22 @@ export function absolute_time(timestamp: number): string {
         date,
         is_older_year ? "dayofyear_year_time" : "dayofyear_time",
     );
-}
+};
 
 // Pass time_format="time" to not include seconds in the time format.
-export function get_full_datetime(time: Date, time_format: TimeFormat = "time_sec"): string {
+export const get_full_datetime = (time: Date, time_format: TimeFormat = "time_sec"): string => {
     const date_string = get_localized_date_or_time_for_format(time, "dayofyear_year");
     const time_string = get_localized_date_or_time_for_format(time, time_format);
     return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
-}
+};
 
 // Preferred variant for displaying a full datetime to users in
 // contexts like tooltips, where the time was already displayed to the
 // user in a less precise format.
-export function get_full_datetime_clarification(
+export const get_full_datetime_clarification = (
     time: Date,
     time_format: TimeFormat = "time_sec",
-): string {
+): string => {
     const date_string = time.toLocaleDateString(user_settings.default_language, {
         timeZone: display_time_zone,
     });
@@ -510,16 +506,16 @@ export function get_full_datetime_clarification(
     time_string = time_string + " " + tz_offset_str;
 
     return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
-}
+};
 
 type TimeLimitSetting = {
     value: number;
     unit: string;
 };
 
-export function get_time_limit_setting_in_appropriate_unit(
+export const get_time_limit_setting_in_appropriate_unit = (
     time_limit_in_seconds: number,
-): TimeLimitSetting {
+): TimeLimitSetting => {
     const time_limit_in_minutes = Math.floor(time_limit_in_seconds / 60);
     if (time_limit_in_minutes < 60) {
         return {value: time_limit_in_minutes, unit: "minute"};
@@ -532,9 +528,9 @@ export function get_time_limit_setting_in_appropriate_unit(
 
     const time_limit_in_days = Math.floor(time_limit_in_hours / 24);
     return {value: time_limit_in_days, unit: "day"};
-}
+};
 
-export function should_display_profile_incomplete_alert(timestamp: number): boolean {
+export const should_display_profile_incomplete_alert = (timestamp: number): boolean => {
     const today = new Date(Date.now());
     const time = new Date(timestamp);
     const days_old = difference_in_calendar_days(today, time, display_time_zone);
@@ -543,4 +539,4 @@ export function should_display_profile_incomplete_alert(timestamp: number): bool
         return true;
     }
     return false;
-}
+};

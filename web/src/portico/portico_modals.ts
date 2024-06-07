@@ -4,11 +4,9 @@ import assert from "minimalistic-assert";
 
 import * as blueslip from "../blueslip";
 
-function is_open(): boolean {
-    return $(".micromodal").hasClass("modal--open");
-}
+const is_open = (): boolean => $(".micromodal").hasClass("modal--open");
 
-function active_modal(): string | undefined {
+const active_modal = (): string | undefined => {
     if (!is_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
         return undefined;
@@ -16,9 +14,9 @@ function active_modal(): string | undefined {
 
     const $micromodal = $(".micromodal.modal--open");
     return `#${CSS.escape($micromodal.attr("id")!)}`;
-}
+};
 
-export function close_active(): void {
+export const close_active = (): void => {
     if (!is_open()) {
         blueslip.warn("close_active() called without checking is_open()");
         return;
@@ -26,9 +24,9 @@ export function close_active(): void {
 
     const $micromodal = $(".micromodal.modal--open");
     Micromodal.close(CSS.escape($micromodal.attr("id") ?? ""));
-}
+};
 
-export function open(modal_id: string, recursive_call_count = 0): void {
+export const open = (modal_id: string, recursive_call_count = 0): void => {
     if (modal_id === undefined) {
         blueslip.error("Undefined id was passed into open");
         return;
@@ -112,9 +110,9 @@ export function open(modal_id: string, recursive_call_count = 0): void {
         disableFocus: true,
         openClass: "modal--opening",
     });
-}
+};
 
-export function close(modal_id: string): void {
+export const close = (modal_id: string): void => {
     if (modal_id === undefined) {
         blueslip.error("Undefined id was passed into close");
         return;
@@ -133,4 +131,4 @@ export function close(modal_id: string): void {
     blueslip.debug("close modal: " + modal_id);
 
     Micromodal.close(modal_id);
-}
+};

@@ -46,7 +46,7 @@ type TypingEvent = {
       }
 );
 
-function get_users_typing_for_narrow(): number[] {
+const get_users_typing_for_narrow = (): number[] => {
     if (narrow_state.narrowed_by_topic_reply()) {
         const current_stream_id = narrow_state.stream_id();
         const current_topic = narrow_state.topic();
@@ -85,9 +85,9 @@ function get_users_typing_for_narrow(): number[] {
     }
     // Get all users typing (in all direct message conversations with current user)
     return typing_data.get_all_direct_message_typists();
-}
+};
 
-export function render_notifications_for_narrow(): void {
+export const render_notifications_for_narrow = (): void => {
     const user_ids = get_users_typing_for_narrow();
     const users_typing = user_ids
         .map((user_id) => people.get_user_by_id_assert_valid(user_id))
@@ -105,9 +105,9 @@ export function render_notifications_for_narrow(): void {
         );
         $("#typing_notifications").show();
     }
-}
+};
 
-function get_key(event: TypingEvent): string {
+const get_key = (event: TypingEvent): string => {
     if (event.message_type === "stream") {
         return typing_data.get_topic_key(event.stream_id, event.topic);
     }
@@ -117,9 +117,9 @@ function get_key(event: TypingEvent): string {
         return typing_data.get_direct_message_conversation_key(recipients);
     }
     throw new Error("Invalid typing notification type", event);
-}
+};
 
-export function hide_notification(event: TypingEvent): void {
+export const hide_notification = (event: TypingEvent): void => {
     const key = get_key(event);
     typing_data.clear_inbound_timer(key);
 
@@ -128,9 +128,9 @@ export function hide_notification(event: TypingEvent): void {
     if (removed) {
         render_notifications_for_narrow();
     }
-}
+};
 
-export function display_notification(event: TypingEvent): void {
+export const display_notification = (event: TypingEvent): void => {
     const sender_id = event.sender.user_id;
 
     const key = get_key(event);
@@ -145,9 +145,9 @@ export function display_notification(event: TypingEvent): void {
             hide_notification(event);
         },
     );
-}
+};
 
-export function disable_typing_notification(): void {
+export const disable_typing_notification = (): void => {
     typing_data.clear_typing_data();
     render_notifications_for_narrow();
-}
+};

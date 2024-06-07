@@ -14,27 +14,23 @@ import type {UserGroupPillData} from "./user_group_pill";
 import * as user_pill from "./user_pill";
 import type {UserPillData, UserPillWidget} from "./user_pill";
 
-function person_matcher(query: string, item: UserPillData): boolean {
-    return (
-        people.is_known_user_id(item.user.user_id) &&
-        typeahead_helper.query_matches_person(query, item)
-    );
-}
+const person_matcher = (query: string, item: UserPillData): boolean =>
+    people.is_known_user_id(item.user.user_id) &&
+    typeahead_helper.query_matches_person(query, item);
 
-function group_matcher(query: string, item: UserGroupPillData): boolean {
-    return typeahead_helper.query_matches_name(query, item);
-}
+const group_matcher = (query: string, item: UserGroupPillData): boolean =>
+    typeahead_helper.query_matches_name(query, item);
 
 type TypeaheadItem = UserGroupPillData | StreamPillData | UserPillData;
 
-export function set_up_user(
+export const set_up_user = (
     $input: JQuery,
     pills: UserPillWidget,
     opts: {
         exclude_bots?: boolean;
         update_func?: () => void;
     },
-): void {
+): void => {
     const exclude_bots = opts.exclude_bots;
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $input,
@@ -43,25 +39,22 @@ export function set_up_user(
     new Typeahead(bootstrap_typeahead_input, {
         items: 5,
         dropup: true,
-        source(_query: string): UserPillData[] {
-            return user_pill.typeahead_source(pills, exclude_bots);
-        },
-        highlighter_html(item: UserPillData, _query: string): string {
-            return typeahead_helper.render_person(item);
-        },
-        matcher(item: UserPillData, query: string): boolean {
+        source: (_query: string): UserPillData[] => user_pill.typeahead_source(pills, exclude_bots),
+        highlighter_html: (item: UserPillData, _query: string): string =>
+            typeahead_helper.render_person(item),
+        matcher: (item: UserPillData, query: string): boolean => {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
             return person_matcher(query, item);
         },
-        sorter(matches: UserPillData[], query: string): UserPillData[] {
+        sorter: (matches: UserPillData[], query: string): UserPillData[] => {
             const users = matches.filter((match) => people.is_known_user_id(match.user.user_id));
             return typeahead_helper.sort_recipients({users, query}).map((item) => {
                 assert(item.type === "user");
                 return item;
             });
         },
-        updater(item: UserPillData, _query: string): undefined {
+        updater: (item: UserPillData, _query: string): undefined => {
             if (people.is_known_user_id(item.user.user_id)) {
                 user_pill.append_user(item.user, pills);
             }
@@ -70,9 +63,9 @@ export function set_up_user(
         },
         stopAdvance: true,
     });
-}
+};
 
-export function set_up_combined(
+export const set_up_combined = (
     $input: JQuery,
     pills: CombinedPillContainer,
     opts: {
@@ -83,7 +76,7 @@ export function set_up_combined(
         exclude_bots?: boolean;
         update_func?: () => void;
     },
-): void {
+): void => {
     if (!opts.user && !opts.user_group && !opts.stream) {
         blueslip.error("Unspecified possible item types");
         return;
@@ -101,7 +94,7 @@ export function set_up_combined(
     new Typeahead(bootstrap_typeahead_input, {
         items: 5,
         dropup: true,
-        source(query: string): TypeaheadItem[] {
+        source: (query: string): TypeaheadItem[] => {
             let source: TypeaheadItem[] = [];
             if (include_streams(query)) {
                 // If query starts with # we expect,
@@ -129,7 +122,7 @@ export function set_up_combined(
             }
             return source;
         },
-        highlighter_html(item: TypeaheadItem, query: string): string {
+        highlighter_html: (item: TypeaheadItem, query: string): string => {
             if (include_streams(query) && item.type === "stream") {
                 return typeahead_helper.render_stream(item);
             }
@@ -145,7 +138,7 @@ export function set_up_combined(
             assert(item.type === "user");
             return typeahead_helper.render_person(item);
         },
-        matcher(item: TypeaheadItem, query: string): boolean {
+        matcher: (item: TypeaheadItem, query: string): boolean => {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
 
@@ -164,7 +157,7 @@ export function set_up_combined(
             }
             return matches;
         },
-        sorter(matches: TypeaheadItem[], query: string): TypeaheadItem[] {
+        sorter: (matches: TypeaheadItem[], query: string): TypeaheadItem[] => {
             if (include_streams(query)) {
                 const stream_matches: StreamPillData[] = [];
                 for (const match of matches) {
@@ -201,7 +194,7 @@ export function set_up_combined(
                 max_num_items: undefined,
             });
         },
-        updater(item: TypeaheadItem, query: string): undefined {
+        updater: (item: TypeaheadItem, query: string): undefined => {
             if (include_streams(query) && item.type === "stream") {
                 stream_pill.append_stream(item, pills);
             } else if (include_user_groups && item.type === "user_group") {
@@ -221,4 +214,4 @@ export function set_up_combined(
         },
         stopAdvance: true,
     });
-}
+};

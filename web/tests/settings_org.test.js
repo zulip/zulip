@@ -28,7 +28,7 @@ const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
 const dropdown_widget = zrequire("dropdown_widget");
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = noop;
         current_user.is_admin = false;
@@ -40,7 +40,7 @@ function test(label, f) {
         settings_org.reset();
         f(helpers);
     });
-}
+};
 
 test("unloaded", () => {
     // This test mostly gets us line coverage, and makes
@@ -51,7 +51,7 @@ test("unloaded", () => {
     settings_org.populate_auth_methods();
 });
 
-function createSaveButtons(subsection) {
+const createSaveButtons = (subsection) => {
     const $stub_save_button_header = $(`#org-${CSS.escape(subsection)}`);
     const $save_button_controls = $(".save-button-controls");
     const $stub_save_button = $(".save-discard-widget-button.save-button");
@@ -91,9 +91,9 @@ function createSaveButtons(subsection) {
         $save_button_controls,
         $save_button_text: $stub_save_button_text,
     };
-}
+};
 
-function test_submit_settings_form(override, submit_form) {
+const test_submit_settings_form = (override, submit_form) => {
     Object.assign(realm, {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
         realm_add_custom_emoji_policy: settings_config.common_policy_values.by_admins_only.code,
@@ -212,9 +212,9 @@ function test_submit_settings_form(override, submit_form) {
     assert.equal(stubs.props.hidden, true);
     assert.equal($save_button.attr("data-status"), "saved");
     assert.equal(stubs.$save_button_text.text(), "translated: Saved");
-}
+};
 
-function test_change_save_button_state() {
+const test_change_save_button_state = () => {
     const {
         $save_button_controls,
         $save_button_text,
@@ -261,9 +261,9 @@ function test_change_save_button_state() {
         assert.equal($save_button.attr("data-status"), "failed");
         assert.equal($save_button_text.text(), "translated: Save changes");
     }
-}
+};
 
-function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
+const test_upload_realm_icon = (override, upload_realm_logo_or_icon) => {
     const file_input = [{files: ["image1.png", "image2.png"]}];
 
     let posted;
@@ -277,9 +277,9 @@ function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
 
     upload_realm_logo_or_icon(file_input, null, true);
     assert.ok(posted);
-}
+};
 
-function test_extract_property_name() {
+const test_extract_property_name = () => {
     $("#id_realm_allow_message_editing").attr("id", "id_realm_allow_message_editing");
     assert.equal(
         settings_components.extract_property_name($("#id_realm_allow_message_editing")),
@@ -302,9 +302,9 @@ function test_extract_property_name() {
         settings_components.extract_property_name($("#id-realm-allow-message-deleting")),
         "realm_allow_message_deleting",
     );
-}
+};
 
-function test_sync_realm_settings() {
+const test_sync_realm_settings = () => {
     {
         /* Test invalid settings property sync */
         const $property_elem = $("#id_realm_invalid_settings_property");
@@ -315,7 +315,7 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("invalid_settings_property");
     }
 
-    function test_common_policy(property_name) {
+    const test_common_policy = (property_name) => {
         const $property_elem = $(`#id_realm_${CSS.escape(property_name)}`);
         $property_elem.length = 1;
         $property_elem.attr("id", `id_realm_${CSS.escape(property_name)}`);
@@ -332,7 +332,7 @@ function test_sync_realm_settings() {
             settings_org.sync_realm_settings(property_name);
             assert.equal($property_elem.val(), policy_value.code);
         }
-    }
+    };
 
     test_common_policy("create_private_stream_policy");
     test_common_policy("create_public_stream_policy");
@@ -387,9 +387,9 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("emails_restricted_to_domains");
         assert.equal($("#id_realm_org_join_restrictions").val(), "no_restriction");
     }
-}
+};
 
-function test_parse_time_limit() {
+const test_parse_time_limit = () => {
     const $elem = $("#id_realm_message_content_edit_limit_minutes");
     const test_function = (value, expected_value = value) => {
         $elem.val(value);
@@ -419,9 +419,9 @@ function test_parse_time_limit() {
     test_function("201.1");
     test_function("501.15", "501.1");
     test_function("501.34", "501.3");
-}
+};
 
-function test_discard_changes_button(discard_changes) {
+const test_discard_changes_button = (discard_changes) => {
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
@@ -486,7 +486,7 @@ function test_discard_changes_button(discard_changes) {
     assert.equal($msg_delete_limit_setting.val(), "120");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
     assert.ok(props.hidden);
-}
+};
 
 test("set_up", ({override, override_rewire}) => {
     realm.realm_available_video_chat_providers = {

@@ -38,12 +38,12 @@ type TopicChoiceState = {
     items: TopicInfo[];
 };
 
-function choose_topics(
+const choose_topics = (
     stream_id: number,
     topic_names: string[],
     zoomed: boolean,
     topic_choice_state: TopicChoiceState,
-): void {
+): void => {
     for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
@@ -61,7 +61,7 @@ function choose_topics(
         );
 
         if (!zoomed) {
-            function should_show_topic(topics_selected: number): boolean {
+            const should_show_topic = (topics_selected: number): boolean => {
                 // This function exists just for readability, to
                 // avoid long chained conditionals to determine
                 // which topics to include.
@@ -100,7 +100,7 @@ function choose_topics(
                 // unzoomed view.  We might display its unread
                 // count in "show all topics" if it is not muted.
                 return false;
-            }
+            };
 
             const show_topic = should_show_topic(topic_choice_state.topics_selected);
             if (!show_topic) {
@@ -138,7 +138,7 @@ function choose_topics(
 
         topic_choice_state.items.push(topic_info);
     }
-}
+};
 
 type TopicListInfo = {
     items: TopicInfo[];
@@ -148,11 +148,11 @@ type TopicListInfo = {
     more_topics_unread_count_muted: boolean;
 };
 
-export function get_list_info(
+export const get_list_info = (
     stream_id: number,
     zoomed: boolean,
     search_term: string,
-): TopicListInfo {
+): TopicListInfo => {
     const narrowed_topic = narrow_state.topic();
     const topic_choice_state: TopicChoiceState = {
         items: [],
@@ -225,4 +225,4 @@ export function get_list_info(
             topic_choice_state.more_topics_have_muted_unread_mention_messages,
         more_topics_unread_count_muted: false,
     };
-}
+};

@@ -18,11 +18,11 @@ const read_receipts_api_response_schema = z.object({
     user_ids: z.array(z.number()),
 });
 
-export function show_user_list(message_id: number): void {
+export const show_user_list = (message_id: number): void => {
     $("#read-receipts-modal-container").html(render_read_receipts_modal({message_id}));
     modals.open("read_receipts_modal", {
         autoremove: true,
-        on_shown() {
+        on_shown: () => {
             const message = message_store.get(message_id);
             assert(message !== undefined, "message is undefined");
 
@@ -38,7 +38,7 @@ export function show_user_list(message_id: number): void {
                 loading.make_indicator($("#read_receipts_modal .loading_indicator"));
                 void channel.get({
                     url: `/json/messages/${message_id}/read_receipts`,
-                    success(raw_data) {
+                    success: (raw_data) => {
                         const $modal = $("#read_receipts_modal").filter(
                             "[data-message-id=" + message_id + "]",
                         );
@@ -92,7 +92,7 @@ export function show_user_list(message_id: number): void {
                             new SimpleBar($("#read_receipts_modal .modal__content")[0]!);
                         }
                     },
-                    error(xhr) {
+                    error: (xhr) => {
                         ui_report.error("", xhr, $("#read_receipts_error"));
                         loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
                     },
@@ -100,8 +100,8 @@ export function show_user_list(message_id: number): void {
             }
         },
     });
-}
+};
 
-export function hide_user_list(): void {
+export const hide_user_list = (): void => {
     modals.close_if_open("read_receipts_modal");
-}
+};

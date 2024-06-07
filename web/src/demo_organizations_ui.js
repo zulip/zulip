@@ -13,7 +13,7 @@ import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import {current_user, realm} from "./state_data";
 
-export function insert_demo_organization_warning() {
+export const insert_demo_organization_warning = () => {
     const days_remaining = get_demo_organization_deadline_days_remaining();
     const rendered_demo_organization_warning = render_demo_organization_warning({
         is_demo_organization: realm.demo_organization_scheduled_deletion_date,
@@ -21,7 +21,7 @@ export function insert_demo_organization_warning() {
         days_remaining,
     });
     $(".organization-box").find(".settings-section").prepend($(rendered_demo_organization_warning));
-}
+};
 
 export function handle_demo_organization_conversion() {
     $(".convert-demo-organization-button").on("click", () => {
@@ -39,7 +39,7 @@ export function handle_demo_organization_conversion() {
             realm_org_type_values: settings_org.get_org_type_dropdown_options(),
         });
 
-        function demo_organization_conversion_post_render() {
+        const demo_organization_conversion_post_render = () => {
             const $convert_submit_button = $(
                 "#demo-organization-conversion-modal .dialog_submit_button",
             );
@@ -63,9 +63,9 @@ export function handle_demo_organization_conversion() {
                     );
                 });
             }
-        }
+        };
 
-        function submit_subdomain() {
+        const submit_subdomain = () => {
             const $string_id = $("#new_subdomain");
             const $organization_type = $("#add_organization_type");
             const data = {
@@ -73,12 +73,12 @@ export function handle_demo_organization_conversion() {
                 org_type: $organization_type.val(),
             };
             const opts = {
-                success_continuation(data) {
+                success_continuation: (data) => {
                     window.location.href = data.realm_url;
                 },
             };
             dialog_widget.submit_api_request(channel.patch, "/json/realm", data, opts);
-        }
+        };
 
         dialog_widget.launch({
             html_heading: $t({defaultMessage: "Make organization permanent"}),

@@ -10,7 +10,10 @@ type Playground = {
     url_template: string;
 };
 
-async function _add_playground_and_return_status(page: Page, payload: Playground): Promise<string> {
+const _add_playground_and_return_status = async (
+    page: Page,
+    payload: Playground,
+): Promise<string> => {
     await page.waitForSelector(".admin-playground-form", {visible: true});
     // Let's first ensure that the success/failure status from an earlier step has disappeared.
     const admin_playground_status_selector = "div#admin-playground-status";
@@ -41,9 +44,9 @@ async function _add_playground_and_return_status(page: Page, payload: Playground
         admin_playground_status_selector,
     );
     return admin_playground_status;
-}
+};
 
-async function test_successful_playground_creation(page: Page): Promise<void> {
+const test_successful_playground_creation = async (page: Page): Promise<void> => {
     const payload = {
         pygments_language: "Python",
         playground_name: "Python3 playground",
@@ -67,9 +70,9 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
         await common.get_text_from_selector(page, ".playground_row span.playground_url_template"),
         "https://python.example.com?code={code}",
     );
-}
+};
 
-async function test_invalid_playground_parameters(page: Page): Promise<void> {
+const test_invalid_playground_parameters = async (page: Page): Promise<void> => {
     const payload = {
         pygments_language: "Python",
         playground_name: "Python3 playground",
@@ -82,9 +85,9 @@ async function test_invalid_playground_parameters(page: Page): Promise<void> {
     payload.pygments_language = "py!@%&";
     status = await _add_playground_and_return_status(page, payload);
     assert.strictEqual(status, "Failed: Invalid characters in pygments language");
-}
+};
 
-async function test_successful_playground_deletion(page: Page): Promise<void> {
+const test_successful_playground_deletion = async (page: Page): Promise<void> => {
     await page.click(".playground_row button.delete");
 
     await common.wait_for_micromodal_to_open(page);
@@ -92,9 +95,9 @@ async function test_successful_playground_deletion(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(".playground_row", {hidden: true});
-}
+};
 
-async function playground_test(page: Page): Promise<void> {
+const playground_test = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await common.manage_organization(page);
     await page.click("li[data-section='playground-settings']");
@@ -102,6 +105,6 @@ async function playground_test(page: Page): Promise<void> {
     await test_successful_playground_creation(page);
     await test_invalid_playground_parameters(page);
     await test_successful_playground_deletion(page);
-}
+};
 
 common.run_test(playground_test);

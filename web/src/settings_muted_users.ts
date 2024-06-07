@@ -16,7 +16,7 @@ type MutedUserItem = {
     date_muted_str: string;
 };
 
-export function populate_list(): void {
+export const populate_list = (): void => {
     const all_muted_users = muted_users.get_muted_users().map((user) => {
         const muted_user = people.get_user_by_id_assert_valid(user.id);
         return {
@@ -33,15 +33,11 @@ export function populate_list(): void {
     ListWidget.create<MutedUserItem>($muted_users_table, all_muted_users, {
         name: "muted-users-list",
         get_item: ListWidget.default_get_item,
-        modifier_html(muted_user) {
-            return render_muted_user_ui_row({muted_user});
-        },
+        modifier_html: (muted_user) => render_muted_user_ui_row({muted_user}),
         filter: {
             $element: $search_input,
-            predicate(item, value) {
-                return item.user_name.toLocaleLowerCase().includes(value);
-            },
-            onupdate() {
+            predicate: (item, value) => item.user_name.toLocaleLowerCase().includes(value),
+            onupdate: () => {
                 scroll_util.reset_scrollbar(
                     $muted_users_table.closest(".progressive-table-wrapper"),
                 );
@@ -54,7 +50,7 @@ export function populate_list(): void {
         $parent_container: $("#muted-user-settings"),
         $simplebar_container: $("#muted-user-settings .progressive-table-wrapper"),
     });
-}
+};
 
 export function set_up(): void {
     loaded = true;
@@ -69,6 +65,6 @@ export function set_up(): void {
     populate_list();
 }
 
-export function reset(): void {
+export const reset = (): void => {
     loaded = false;
-}
+};

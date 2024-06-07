@@ -26,15 +26,13 @@ export const max_size_before_shrinking = 600;
 
 let is_searching_users = false;
 
-export function get_is_searching_users(): boolean {
-    return is_searching_users;
-}
+export const get_is_searching_users = (): boolean => is_searching_users;
 
-export function set_is_searching_users(val: boolean): void {
+export const set_is_searching_users = (val: boolean): void => {
     is_searching_users = val;
-}
+};
 
-export function get_user_circle_class(user_id: number): string {
+export const get_user_circle_class = (user_id: number): string => {
     const status = presence.get_status(user_id);
 
     switch (status) {
@@ -45,9 +43,9 @@ export function get_user_circle_class(user_id: number): string {
         default:
             return "user_circle_empty";
     }
-}
+};
 
-export function level(user_id: number): number {
+export const level = (user_id: number): number => {
     // Put current user at the top, unless we're in a user search view.
     if (people.is_my_user_id(user_id) && !is_searching_users) {
         return 0;
@@ -63,13 +61,13 @@ export function level(user_id: number): number {
         default:
             return 3;
     }
-}
+};
 
-export function user_matches_narrow(
+export const user_matches_narrow = (
     user_id: number,
     pm_ids: Set<number>,
     stream_id?: number | null,
-): boolean {
+): boolean => {
     if (stream_id) {
         return stream_data.is_user_subscribed(stream_id, user_id);
     }
@@ -77,14 +75,14 @@ export function user_matches_narrow(
         return pm_ids.has(user_id) || people.is_my_user_id(user_id);
     }
     return false;
-}
+};
 
-export function compare_function(
+export const compare_function = (
     a: number,
     b: number,
     current_sub: StreamSubscription | undefined,
     pm_ids: Set<number>,
-): number {
+): number => {
     const a_would_receive_message = user_matches_narrow(a, pm_ids, current_sub?.stream_id);
     const b_would_receive_message = user_matches_narrow(b, pm_ids, current_sub?.stream_id);
     if (a_would_receive_message && !b_would_receive_message) {
@@ -109,21 +107,20 @@ export function compare_function(
     const full_name_b = person_b ? person_b.full_name : "";
 
     return util.strcmp(full_name_a, full_name_b);
-}
+};
 
-export function sort_users(user_ids: number[]): number[] {
+export const sort_users = (user_ids: number[]): number[] => {
     // TODO sort by unread count first, once we support that
     const current_sub = narrow_state.stream_sub();
     const pm_ids_set = narrow_state.pm_ids_set();
     user_ids.sort((a, b) => compare_function(a, b, current_sub, pm_ids_set));
     return user_ids;
-}
+};
 
-function get_num_unread(user_id: number): number {
-    return unread.num_unread_for_user_ids_string(user_id.toString());
-}
+const get_num_unread = (user_id: number): number =>
+    unread.num_unread_for_user_ids_string(user_id.toString());
 
-export function user_last_seen_time_status(user_id: number): string {
+export const user_last_seen_time_status = (user_id: number): string => {
     const status = presence.get_status(user_id);
     if (status === "active") {
         return $t({defaultMessage: "Active now"});
@@ -151,7 +148,7 @@ export function user_last_seen_time_status(user_id: number): string {
         return $t({defaultMessage: "Active more than 2 weeks ago"});
     }
     return timerender.last_seen_status_from_date(last_active_date);
-}
+};
 
 export type BuddyUserInfo = {
     href: string;
@@ -171,7 +168,7 @@ export type BuddyUserInfo = {
     faded?: boolean;
 };
 
-export function info_for(user_id: number): BuddyUserInfo {
+export const info_for = (user_id: number): BuddyUserInfo => {
     const user_circle_class = get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
 
@@ -196,9 +193,9 @@ export function info_for(user_id: number): BuddyUserInfo {
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
     };
-}
+};
 
-export function get_title_data(
+export const get_title_data = (
     user_ids_string: string,
     is_group: boolean,
 ): {
@@ -206,7 +203,7 @@ export function get_title_data(
     second_line: string | undefined;
     third_line: string;
     show_you?: boolean;
-} {
+} => {
     if (is_group) {
         // For groups, just return a string with recipient names.
         return {
@@ -266,24 +263,21 @@ export function get_title_data(
         third_line: "",
         show_you: is_my_user,
     };
-}
+};
 
-export function get_item(user_id: number): BuddyUserInfo {
+export const get_item = (user_id: number): BuddyUserInfo => {
     const info = info_for(user_id);
     return info;
-}
+};
 
-export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
+export const get_items_for_users = (user_ids: number[]): BuddyUserInfo[] => {
     const user_info = user_ids.map((user_id) => info_for(user_id));
     return user_info;
-}
+};
 
-function user_is_recently_active(user_id: number): boolean {
-    // return true if the user has a green/orange circle
-    return level(user_id) <= 2;
-}
+const user_is_recently_active = (user_id: number): boolean => level(user_id) <= 2;
 
-function maybe_shrink_list(user_ids: number[], user_filter_text: string): number[] {
+const maybe_shrink_list = (user_ids: number[], user_filter_text: string): number[] => {
     if (user_ids.length <= max_size_before_shrinking) {
         return user_ids;
     }
@@ -305,9 +299,9 @@ function maybe_shrink_list(user_ids: number[], user_filter_text: string): number
     );
 
     return user_ids;
-}
+};
 
-function filter_user_ids(user_filter_text: string, user_ids: number[]): number[] {
+const filter_user_ids = (user_filter_text: string, user_ids: number[]): number[] => {
     // This first filter is for whether the user is eligible to be
     // displayed in the right sidebar at all.
     user_ids = user_ids.filter((user_id) => {
@@ -341,9 +335,9 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
     // If a query is present in "Search people", we return matches.
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
     return [...people.filter_people_by_search_terms(persons, user_filter_text)];
-}
+};
 
-function get_filtered_user_id_list(user_filter_text: string): number[] {
+const get_filtered_user_id_list = (user_filter_text: string): number[] => {
     let base_user_id_list;
 
     if (user_filter_text) {
@@ -372,17 +366,14 @@ function get_filtered_user_id_list(user_filter_text: string): number[] {
 
     const user_ids = filter_user_ids(user_filter_text, base_user_id_list);
     return user_ids;
-}
+};
 
-export function get_filtered_and_sorted_user_ids(user_filter_text: string): number[] {
+export const get_filtered_and_sorted_user_ids = (user_filter_text: string): number[] => {
     let user_ids;
     user_ids = get_filtered_user_id_list(user_filter_text);
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
     return sort_users(user_ids);
-}
+};
 
-export function matches_filter(user_filter_text: string, user_id: number): boolean {
-    // This is a roundabout way of checking a user if you look
-    // too hard at it, but it should be fine for now.
-    return filter_user_ids(user_filter_text, [user_id]).length === 1;
-}
+export const matches_filter = (user_filter_text: string, user_id: number): boolean =>
+    filter_user_ids(user_filter_text, [user_id]).length === 1;

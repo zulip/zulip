@@ -22,14 +22,12 @@ import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
-export function set_count(count: number): void {
+export const set_count = (count: number): void => {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
-}
+};
 
-function getTimestamp(): number {
-    return Date.now();
-}
+const getTimestamp = (): number => Date.now();
 
 const CURRENT_DRAFT_VERSION = 1;
 
@@ -88,13 +86,13 @@ const possibly_buggy_draft_schema = z.intersection(
 const drafts_schema = z.record(z.string(), draft_schema);
 const possibly_buggy_drafts_schema = z.record(z.string(), possibly_buggy_draft_schema);
 
-export const draft_model = (function () {
+export const draft_model = (() => {
     // the key that the drafts are stored under.
     const KEY = "drafts";
     const ls = localstorage();
     let fixed_buggy_drafts = false;
 
-    function get(): Record<string, LocalStorageDraft> {
+    const get = (): Record<string, LocalStorageDraft> => {
         let drafts = ls.get(KEY);
         if (drafts === undefined) {
             return {};
@@ -106,9 +104,9 @@ export const draft_model = (function () {
         }
 
         return drafts_schema.parse(drafts);
-    }
+    };
 
-    function fix_buggy_drafts(): void {
+    const fix_buggy_drafts = (): void => {
         const drafts = ls.get(KEY);
         const parsed_drafts = possibly_buggy_drafts_schema.parse(drafts);
         const valid_drafts: Record<string, LocalStorageDraft> = {};
@@ -151,26 +149,24 @@ export const draft_model = (function () {
         ls.set(KEY, valid_drafts);
         set_count(Object.keys(valid_drafts).length);
         fixed_buggy_drafts = true;
-    }
+    };
 
-    function getDraft(id: string): LocalStorageDraft | false {
-        return get()[id] ?? false;
-    }
+    const getDraft = (id: string): LocalStorageDraft | false => get()[id] ?? false;
 
-    function getDraftCount(): number {
+    const getDraftCount = (): number => {
         const drafts = get();
         return Object.keys(drafts).length;
-    }
+    };
 
-    function save(drafts: Record<string, LocalStorageDraft>, update_count = true): void {
+    const save = (drafts: Record<string, LocalStorageDraft>, update_count = true): void => {
         ls.set(KEY, drafts);
         if (update_count) {
             set_count(Object.keys(drafts).length);
             update_compose_draft_count();
         }
-    }
+    };
 
-    function addDraft(draft: LocalStorageDraft, update_count = true): string {
+    const addDraft = (draft: LocalStorageDraft, update_count = true): string => {
         const drafts = get();
 
         // use the base16 of the current time + a random string to reduce
@@ -181,15 +177,14 @@ export const draft_model = (function () {
         save(drafts, update_count);
 
         return id;
-    }
+    };
 
-    function editDraft(id: string, draft: LocalStorageDraft): boolean {
+    const editDraft = (id: string, draft: LocalStorageDraft): boolean => {
         const drafts = get();
         let changed = false;
 
-        function check_if_equal(draft_a: LocalStorageDraft, draft_b: LocalStorageDraft): boolean {
-            return _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
-        }
+        const check_if_equal = (draft_a: LocalStorageDraft, draft_b: LocalStorageDraft): boolean =>
+            _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
 
         const old_draft = drafts[id];
         if (old_draft !== undefined) {
@@ -198,16 +193,16 @@ export const draft_model = (function () {
             save(drafts);
         }
         return changed;
-    }
+    };
 
-    function deleteDraft(id: string): void {
+    const deleteDraft = (id: string): void => {
         const drafts = get();
 
         // TODO(typescript) rework this to store the draft data in a map.
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete drafts[id];
         save(drafts);
-    }
+    };
 
     return {
         get,
@@ -219,7 +214,7 @@ export const draft_model = (function () {
     };
 })();
 
-export function update_compose_draft_count(): void {
+export const update_compose_draft_count = (): void => {
     const $count_container = $(".compose-drafts-count-container");
     const $count_ele = $count_container.find(".compose-drafts-count");
     if (!compose_state.has_full_recipient()) {
@@ -235,21 +230,21 @@ export function update_compose_draft_count(): void {
         $count_ele.text("");
         $count_container.hide();
     }
-}
+};
 
-export function sync_count(): void {
+export const sync_count = (): void => {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
-}
+};
 
-export function delete_all_drafts(): void {
+export const delete_all_drafts = (): void => {
     const drafts = draft_model.get();
     for (const [id] of Object.entries(drafts)) {
         draft_model.deleteDraft(id);
     }
-}
+};
 
-export function confirm_delete_all_drafts(): void {
+export const confirm_delete_all_drafts = (): void => {
     const html_body = render_confirm_delete_all_drafts();
 
     confirm_dialog.launch({
@@ -257,14 +252,14 @@ export function confirm_delete_all_drafts(): void {
         html_body,
         on_click: delete_all_drafts,
     });
-}
+};
 
-export function rename_stream_recipient(
+export const rename_stream_recipient = (
     old_stream_id: number,
     old_topic: string,
     new_stream_id: number,
     new_topic: string,
-): void {
+): void => {
     for (const [draft_id, draft] of Object.entries(draft_model.get())) {
         if (draft.type !== "stream" || draft.stream_id === undefined) {
             continue;
@@ -286,9 +281,9 @@ export function rename_stream_recipient(
             draft_model.editDraft(draft_id, draft);
         }
     }
-}
+};
 
-export function snapshot_message(): LocalStorageDraft | undefined {
+export const snapshot_message = (): LocalStorageDraft | undefined => {
     if (!compose_state.composing() || !compose_state.has_savable_message_content()) {
         // If you aren't in the middle of composing the body of a
         // message or the message is shorter than 2 characters long, don't try to snapshot.
@@ -321,7 +316,7 @@ export function snapshot_message(): LocalStorageDraft | undefined {
         is_sending_saving: false,
         drafts_version: CURRENT_DRAFT_VERSION,
     };
-}
+};
 
 type ComposeArguments =
     | {
@@ -336,7 +331,7 @@ type ComposeArguments =
           content: string;
       };
 
-export function restore_message(draft: LocalStorageDraft): ComposeArguments {
+export const restore_message = (draft: LocalStorageDraft): ComposeArguments => {
     // This is kinda the inverse of snapshot_message, and
     // we are essentially making a deep copy of the draft,
     // being explicit about which fields we send to the compose
@@ -359,9 +354,9 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
         private_message_recipient: recipient_emails.join(","),
         content: draft.content,
     };
-}
+};
 
-function draft_notify(): void {
+const draft_notify = (): void => {
     // Display a tooltip to notify the user about the saved draft.
     const instance = tippy.default(".top_left_drafts .unread_count", {
         content: $t({defaultMessage: "Saved as draft"}),
@@ -369,23 +364,23 @@ function draft_notify(): void {
         placement: "right",
     })[0]!;
     instance.show();
-    function remove_instance(): void {
+    const remove_instance = (): void => {
         instance.destroy();
-    }
+    };
     setTimeout(remove_instance, 3000);
-}
+};
 
-function maybe_notify(no_notify: boolean): void {
+const maybe_notify = (no_notify: boolean): void => {
     if (!no_notify) {
         draft_notify();
     }
-}
+};
 
 export let compose_draft_id: string | undefined;
 
-export function set_compose_draft_id(draft_id: string | undefined): void {
+export const set_compose_draft_id = (draft_id: string | undefined): void => {
     compose_draft_id = draft_id;
-}
+};
 
 type UpdateDraftOptions = {
     no_notify?: boolean;
@@ -393,7 +388,7 @@ type UpdateDraftOptions = {
     is_sending_saving?: boolean;
 };
 
-export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
+export const update_draft = (opts: UpdateDraftOptions = {}): string | undefined => {
     const draft_id = compose_draft_id;
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
@@ -436,15 +431,15 @@ export function update_draft(opts: UpdateDraftOptions = {}): string | undefined 
     maybe_notify(no_notify);
 
     return new_draft_id;
-}
+};
 
 export const DRAFT_LIFETIME = 30;
 
-export function current_recipient_data(): {
+export const current_recipient_data = (): {
     stream_name: string | undefined;
     topic: string | undefined;
     private_recipients: string | undefined;
-} {
+} => {
     // Prioritize recipients from the compose box first. If the compose
     // box isn't open, just return data from the current narrow.
     if (!compose_state.composing()) {
@@ -475,11 +470,11 @@ export function current_recipient_data(): {
         topic: undefined,
         private_recipients: undefined,
     };
-}
+};
 
-export function filter_drafts_by_compose_box_and_recipient(
+export const filter_drafts_by_compose_box_and_recipient = (
     drafts = draft_model.get(),
-): Record<string, LocalStorageDraft> {
+): Record<string, LocalStorageDraft> => {
     const {stream_name, topic, private_recipients} = current_recipient_data();
     const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;
     const narrow_drafts_ids = [];
@@ -521,11 +516,11 @@ export function filter_drafts_by_compose_box_and_recipient(
         }
     }
     return _.pick(drafts, narrow_drafts_ids);
-}
+};
 
-export function get_last_restorable_draft_based_on_compose_state():
+export const get_last_restorable_draft_based_on_compose_state = ():
     | LocalStorageDraftWithId
-    | undefined {
+    | undefined => {
     const current_drafts = draft_model.get();
     const drafts_map_for_compose_state = filter_drafts_by_compose_box_and_recipient(current_drafts);
     const drafts_for_compose_state = Object.entries(drafts_map_for_compose_state).map(
@@ -538,9 +533,9 @@ export function get_last_restorable_draft_based_on_compose_state():
         .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
         .filter((draft) => !draft.is_sending_saving && draft.drafts_version >= 1)
         .pop();
-}
+};
 
-export function remove_old_drafts(): void {
+export const remove_old_drafts = (): void => {
     const old_date = subDays(new Date(), DRAFT_LIFETIME).getTime();
     const drafts = draft_model.get();
     for (const [id, draft] of Object.entries(drafts)) {
@@ -548,7 +543,7 @@ export function remove_old_drafts(): void {
             draft_model.deleteDraft(id);
         }
     }
-}
+};
 
 type FormattedDraft =
     | {
@@ -572,7 +567,7 @@ type FormattedDraft =
           time_stamp: string;
       };
 
-export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | undefined {
+export const format_draft = (draft: LocalStorageDraftWithId): FormattedDraft | undefined => {
     const id = draft.id;
     const time = new Date(draft.updatedAt);
     let invite_only = false;
@@ -644,9 +639,9 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         time_stamp,
         ...markdown_data,
     };
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     remove_old_drafts();
 
     // It's possible that drafts will get still have
@@ -664,8 +659,8 @@ export function initialize(): void {
     window.addEventListener("beforeunload", () => {
         update_draft();
     });
-}
+};
 
-export function initialize_ui(): void {
+export const initialize_ui = (): void => {
     set_count(draft_model.getDraftCount());
-}
+};

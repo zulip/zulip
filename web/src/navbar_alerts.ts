@@ -25,10 +25,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-const show_step: ($process: JQuery, step: number) => void = function (
-    $process: JQuery,
-    step: number,
-) {
+const show_step: ($process: JQuery, step: number) => void = ($process: JQuery, step: number) => {
     $process
         .find("[data-step]")
         .hide()
@@ -36,11 +33,10 @@ const show_step: ($process: JQuery, step: number) => void = function (
         .show();
 };
 
-const get_step = function ($process: JQuery): number {
-    return Number($process.find("[data-step]:visible").attr("data-step"));
-};
+const get_step = ($process: JQuery): number =>
+    Number($process.find("[data-step]:visible").attr("data-step"));
 
-export function should_show_notifications(ls: LocalStorage): boolean {
+export const should_show_notifications = (ls: LocalStorage): boolean => {
     // if the user said to never show banner on this computer again, it will
     // be stored as `true` so we want to negate that.
     if (localstorage.supported() && ls.get("dontAskForNotifications") === true) {
@@ -60,9 +56,9 @@ export function should_show_notifications(ls: LocalStorage): boolean {
         // if permission is allowed to be requested (e.g. not in "denied" state).
         desktop_notifications.permission_state() !== "denied"
     );
-}
+};
 
-export function should_show_server_upgrade_notification(ls: LocalStorage): boolean {
+export const should_show_server_upgrade_notification = (ls: LocalStorage): boolean => {
     // We do not show the server upgrade nag for a week after the user
     // clicked "dismiss".
     if (!localstorage.supported() || ls.get("lastUpgradeNagDismissalTime") === undefined) {
@@ -78,9 +74,9 @@ export function should_show_server_upgrade_notification(ls: LocalStorage): boole
 
     // show the notification only if the time duration is completed.
     return Date.now() > upgrade_nag_dismissal_duration;
-}
+};
 
-export function maybe_show_empty_required_profile_fields_alert(): void {
+export const maybe_show_empty_required_profile_fields_alert = (): void => {
     const $navbar_alert = $("#navbar_alerts_wrapper").children(".alert").first();
     const empty_required_profile_fields_exist = realm.custom_profile_fields
         .map((f) => ({
@@ -101,16 +97,16 @@ export function maybe_show_empty_required_profile_fields_alert(): void {
             rendered_alert_content_html: render_empty_required_profile_fields(),
         });
     }
-}
+};
 
-export function dismiss_upgrade_nag(ls: LocalStorage): void {
+export const dismiss_upgrade_nag = (ls: LocalStorage): void => {
     $(".alert[data-process='server-needs-upgrade'").hide();
     if (localstorage.supported()) {
         ls.set("lastUpgradeNagDismissalTime", Date.now());
     }
-}
+};
 
-export function check_profile_incomplete(): boolean {
+export const check_profile_incomplete = (): boolean => {
     if (!current_user.is_admin) {
         return false;
     }
@@ -128,9 +124,9 @@ export function check_profile_incomplete(): boolean {
         return true;
     }
     return false;
-}
+};
 
-export function show_profile_incomplete(is_profile_incomplete: boolean): void {
+export const show_profile_incomplete = (is_profile_incomplete: boolean): void => {
     if (is_profile_incomplete) {
         // Note that this will be a noop unless we'd already displayed
         // the notice in this session.  This seems OK, given that
@@ -139,16 +135,16 @@ export function show_profile_incomplete(is_profile_incomplete: boolean): void {
     } else {
         $("[data-process='profile-incomplete']").hide();
     }
-}
+};
 
-export function get_demo_organization_deadline_days_remaining(): number {
+export const get_demo_organization_deadline_days_remaining = (): number => {
     const now = Date.now();
     assert(realm.demo_organization_scheduled_deletion_date !== undefined);
     const deadline = realm.demo_organization_scheduled_deletion_date * 1000;
     const day = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
     const days_remaining = Math.round(Math.abs(deadline - now) / day);
     return days_remaining;
-}
+};
 
 export function initialize(): void {
     const ls = localstorage();
@@ -263,11 +259,11 @@ export function initialize(): void {
     });
 }
 
-export function open(args: {
+export const open = (args: {
     data_process: string;
     rendered_alert_content_html: string;
     custom_class?: string | undefined;
-}): void {
+}): void => {
     const rendered_alert_wrapper_html = render_navbar_alert_wrapper(args);
 
     // Note: We only support one alert being rendered at a time; as a
@@ -276,4 +272,4 @@ export function open(args: {
     // to have more than one alert visible at a time.
     $("#navbar_alerts_wrapper").html(rendered_alert_wrapper_html);
     $(window).trigger("resize");
-}
+};

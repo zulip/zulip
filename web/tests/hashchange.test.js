@@ -159,15 +159,15 @@ run_test("people_slugs", () => {
     assert.deepEqual(narrow, [{operator: "pm-with", operand: "alice@example.com", negated: false}]);
 });
 
-function test_helper({override, override_rewire, change_tab}) {
+const test_helper = ({override, override_rewire, change_tab}) => {
     let events = [];
     let narrow_terms;
 
-    function stub(module, func_name) {
+    const stub = (module, func_name) => {
         module[func_name] = () => {
             events.push([module, func_name]);
         };
-    }
+    };
 
     stub(admin, "launch");
     stub(admin, "build_page");
@@ -192,15 +192,15 @@ function test_helper({override, override_rewire, change_tab}) {
     }
 
     return {
-        clear_events() {
+        clear_events: () => {
             events = [];
         },
-        assert_events(expected_events) {
+        assert_events: (expected_events) => {
             assert.deepEqual(events, expected_events);
         },
         get_narrow_terms: () => narrow_terms,
     };
-}
+};
 
 run_test("hash_interactions", ({override, override_rewire}) => {
     $window_stub = $.create("window-stub");

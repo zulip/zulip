@@ -11,17 +11,15 @@ import * as settings_sections from "./settings_sections";
 export let normal_settings;
 export let org_settings;
 
-export function mobile_deactivate_section() {
+export const mobile_deactivate_section = () => {
     const $settings_overlay_container = $("#settings_overlay_container");
     $settings_overlay_container.find(".right").removeClass("show");
     $settings_overlay_container.find(".settings-header.mobile").removeClass("slide-left");
-}
+};
 
-function two_column_mode() {
-    return $("#settings_overlay_container").css("--single-column") === undefined;
-}
+const two_column_mode = () => $("#settings_overlay_container").css("--single-column") === undefined;
 
-function set_settings_header(key) {
+const set_settings_header = (key) => {
     const selected_tab_key = $("#settings_page .tab-switcher .selected").data("tab-key");
     let header_prefix = $t_html({defaultMessage: "Personal settings"});
     if (selected_tab_key === "organization") {
@@ -42,7 +40,7 @@ function set_settings_header(key) {
                 " sidebar list. Please add it.",
         );
     }
-}
+};
 
 export class SettingsPanelMenu {
     constructor(opts) {
@@ -179,7 +177,7 @@ export class SettingsPanelMenu {
     }
 }
 
-export function initialize() {
+export const initialize = () => {
     normal_settings = new SettingsPanelMenu({
         $main_elem: $(".normal-settings-list"),
         hash_prefix: "settings/",
@@ -188,19 +186,19 @@ export function initialize() {
         $main_elem: $(".org-settings-list"),
         hash_prefix: "organization/",
     });
-}
+};
 
-export function show_normal_settings() {
+export const show_normal_settings = () => {
     org_settings.hide();
     normal_settings.show();
-}
+};
 
-export function show_org_settings() {
+export const show_org_settings = () => {
     normal_settings.hide();
     org_settings.show();
-}
+};
 
-export function set_key_handlers(toggler) {
+export const set_key_handlers = (toggler) => {
     normal_settings.set_key_handlers(toggler);
     org_settings.set_key_handlers(toggler);
-}
+};

@@ -9,9 +9,7 @@ mock_jquery((selector) => {
     switch (selector) {
         case "input#stream_message_recipient_topic":
             return {
-                val() {
-                    return "lunch";
-                },
+                val: () => "lunch",
             };
         /* istanbul ignore next */
         default:

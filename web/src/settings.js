@@ -25,7 +25,7 @@ import {user_settings} from "./user_settings";
 
 export let settings_label;
 
-function setup_settings_label() {
+const setup_settings_label = () => {
     settings_label = {
         // settings_notification
         presence_enabled: $t({
@@ -45,24 +45,24 @@ function setup_settings_label() {
         ...settings_config.notification_settings_labels,
         ...settings_config.preferences_settings_labels,
     };
-}
+};
 
-function get_parsed_date_of_joining() {
+const get_parsed_date_of_joining = () => {
     const user_date_joined = people.get_by_user_id(current_user.user_id, false).date_joined;
     return timerender.get_localized_date_or_time_for_format(
         parseISO(user_date_joined),
         "dayofyear_year",
     );
-}
+};
 
-function user_can_change_password() {
+const user_can_change_password = () => {
     if (settings_data.user_email_not_configured()) {
         return false;
     }
     return realm.realm_email_auth_enabled;
-}
+};
 
-export function update_lock_icon_in_sidebar() {
+export const update_lock_icon_in_sidebar = () => {
     if (current_user.is_owner) {
         $(".org-settings-list .locked").hide();
         return;
@@ -82,9 +82,9 @@ export function update_lock_icon_in_sidebar() {
     if (settings_data.user_can_add_custom_emoji()) {
         $(".org-settings-list li[data-section='emoji-settings'] .locked").hide();
     }
-}
+};
 
-export function build_page() {
+export const build_page = () => {
     setup_settings_label();
 
     const rendered_settings_tab = render_settings_tab({
@@ -144,28 +144,28 @@ export function build_page() {
 
     settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     $(".settings-box").html(rendered_settings_tab);
-}
+};
 
-export function open_settings_overlay() {
+export const open_settings_overlay = () => {
     overlays.open_overlay({
         name: "settings",
         $overlay: $("#settings_overlay_container"),
-        on_close() {
+        on_close: () => {
             browser_history.exit_overlay();
             flatpickr.close_all();
         },
     });
-}
+};
 
-export function launch(section) {
+export const launch = (section) => {
     settings_sections.reset_sections();
 
     open_settings_overlay();
     settings_panel_menu.normal_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("settings");
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     const rendered_settings_overlay = render_settings_overlay({
         is_owner: current_user.is_owner,
         is_admin: current_user.is_admin,
@@ -192,4 +192,4 @@ export function initialize() {
         // overlay and subsequently close any open modal.
         modals.close_active();
     });
-}
+};

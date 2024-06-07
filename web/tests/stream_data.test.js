@@ -49,7 +49,7 @@ const moderators_group = {
     direct_subgroup_ids: new Set([1]),
 };
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         current_user.is_admin = false;
         page_params.realm_users = [];
@@ -61,7 +61,7 @@ function test(label, f) {
         user_groups.initialize({realm_user_groups: [admins_group, moderators_group]});
         f(helpers);
     });
-}
+};
 
 test("basics", () => {
     const denmark = {
@@ -317,7 +317,7 @@ test("renames", () => {
 });
 
 test("admin_options", () => {
-    function make_sub() {
+    const make_sub = () => {
         const sub = {
             subscribed: false,
             color: "blue",
@@ -331,15 +331,12 @@ test("admin_options", () => {
         };
         stream_data.add_sub(sub);
         return sub;
-    }
+    };
 
-    function is_realm_admin(sub) {
-        return stream_settings_data.get_sub_for_settings(sub).is_realm_admin;
-    }
+    const is_realm_admin = (sub) => stream_settings_data.get_sub_for_settings(sub).is_realm_admin;
 
-    function can_change_stream_permissions(sub) {
-        return stream_settings_data.get_sub_for_settings(sub).can_change_stream_permissions;
-    }
+    const can_change_stream_permissions = (sub) =>
+        stream_settings_data.get_sub_for_settings(sub).can_change_stream_permissions;
 
     // non-admins can't do anything
     current_user.is_admin = false;
@@ -838,7 +835,7 @@ test("creator_id", () => {
 });
 
 test("initialize", () => {
-    function get_params() {
+    const get_params = () => {
         const params = {};
 
         params.subscriptions = [
@@ -865,11 +862,11 @@ test("initialize", () => {
         params.realm_default_streams = [];
 
         return params;
-    }
+    };
 
-    function initialize() {
+    const initialize = () => {
         stream_data.initialize(get_params());
-    }
+    };
 
     realm.realm_new_stream_announcements_stream_id = -1;
 

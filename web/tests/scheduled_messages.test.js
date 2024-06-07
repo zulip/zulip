@@ -53,7 +53,7 @@ const per_day_stamps = {
     },
 };
 
-function get_expected_send_opts(day, expecteds) {
+const get_expected_send_opts = (day, expecteds) => {
     const modal_opts = {
         send_later_tomorrow: {
             tomorrow_nine_am: {
@@ -103,7 +103,7 @@ function get_expected_send_opts(day, expecteds) {
     }
 
     return modal_opts;
-}
+};
 
 run_test("scheduled_modal_opts", () => {
     // Sunday thru Saturday
@@ -148,13 +148,13 @@ run_test("should_update_send_later_options", () => {
     start_of_the_day.setHours(0, 0);
     assert.ok(compose_send_menu_popover.should_update_send_later_options(start_of_the_day));
 
-    function get_minutes_to_hour(minutes) {
+    const get_minutes_to_hour = (minutes) => {
         const date = new Date();
         date.setHours(4);
         date.setMinutes(minutes);
         date.setSeconds(0);
         return date;
-    }
+    };
 
     // We should rerender if it is 5 minutes before the hour
     for (let minute = 0; minute < 60; minute += 1) {

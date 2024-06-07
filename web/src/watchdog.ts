@@ -9,13 +9,11 @@ let watchdog_time = Date.now();
 // system when coming back from unsuspend.
 let suspect_offline = false;
 
-export function set_suspect_offline(suspected: boolean): void {
+export const set_suspect_offline = (suspected: boolean): void => {
     suspect_offline = suspected;
-}
+};
 
-export function suspects_user_is_offline(): boolean {
-    return suspect_offline;
-}
+export const suspects_user_is_offline = (): boolean => suspect_offline;
 
 /*
     Our watchdog code checks every 5 seconds to make sure that we
@@ -27,7 +25,7 @@ export function suspects_user_is_offline(): boolean {
     to reset ourselves accordingly.
 */
 
-export function check_for_unsuspend(): void {
+export const check_for_unsuspend = (): void => {
     const new_time = Date.now();
     if (new_time - watchdog_time > 20000) {
         // 20 seconds.
@@ -51,10 +49,10 @@ export function check_for_unsuspend(): void {
         }
     }
     watchdog_time = new_time;
-}
+};
 
-export function on_unsuspend(f: () => void): void {
+export const on_unsuspend = (f: () => void): void => {
     unsuspend_callbacks.push(f);
-}
+};
 
 setInterval(check_for_unsuspend, 5000);

@@ -29,15 +29,15 @@ const emojis = [
     })),
 ];
 
-function emoji_matches(query) {
+const emoji_matches = (query) => {
     const matcher = typeahead.get_emoji_matcher(query);
     return emojis.filter((emoji) => matcher(emoji));
-}
+};
 
-function assert_emoji_matches(query, expected) {
+const assert_emoji_matches = (query, expected) => {
     const names = emoji_matches(query).map((emoji) => emoji.emoji_name);
     assert.deepEqual(names.sort(), expected);
-}
+};
 
 run_test("get_emoji_matcher: nonmatches", () => {
     assert_emoji_matches("notaemoji", []);
@@ -62,9 +62,9 @@ run_test("matches literal unicode emoji", () => {
 });
 
 run_test("get_emoji_matcher: spaces equivalent to underscores", () => {
-    function assert_equivalent(query) {
+    const assert_equivalent = (query) => {
         assert.deepEqual(emoji_matches(query), emoji_matches(query.replace(" ", "_")));
-    }
+    };
     assert_equivalent("da ");
     assert_equivalent("panda ");
     assert_equivalent("japanese post ");
@@ -170,9 +170,8 @@ run_test("triage: prioritise word boundary matches to arbitrary substring matche
     );
 });
 
-function sort_emojis(emojis, query) {
-    return typeahead.sort_emojis(emojis, query).map((emoji) => emoji.emoji_name);
-}
+const sort_emojis = (emojis, query) =>
+    typeahead.sort_emojis(emojis, query).map((emoji) => emoji.emoji_name);
 
 run_test("sort_emojis: th", () => {
     const emoji_list = [

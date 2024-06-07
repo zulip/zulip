@@ -2,35 +2,31 @@ import * as message_store from "./message_store";
 
 export const starred_ids = new Set<number>();
 
-export function initialize(starred_messages_params: {starred_messages: number[]}): void {
+export const initialize = (starred_messages_params: {starred_messages: number[]}): void => {
     starred_ids.clear();
 
     for (const id of starred_messages_params.starred_messages) {
         starred_ids.add(id);
     }
-}
+};
 
-export function add(ids: number[]): void {
+export const add = (ids: number[]): void => {
     for (const id of ids) {
         starred_ids.add(id);
     }
-}
+};
 
-export function remove(ids: number[]): void {
+export const remove = (ids: number[]): void => {
     for (const id of ids) {
         starred_ids.delete(id);
     }
-}
+};
 
-export function get_count(): number {
-    return starred_ids.size;
-}
+export const get_count = (): number => starred_ids.size;
 
-export function get_starred_msg_ids(): number[] {
-    return [...starred_ids];
-}
+export const get_starred_msg_ids = (): number[] => [...starred_ids];
 
-export function get_count_in_topic(stream_id?: number, topic?: string): number {
+export const get_count_in_topic = (stream_id?: number, topic?: string): number => {
     if (stream_id === undefined || topic === undefined) {
         return 0;
     }
@@ -60,4 +56,4 @@ export function get_count_in_topic(stream_id?: number, topic?: string): number {
     });
 
     return messages.length;
-}
+};

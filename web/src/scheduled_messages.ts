@@ -36,7 +36,7 @@ export const scheduled_messages_data = new Map<number, ScheduledMessage>();
 
 let selected_send_later_timestamp: number | undefined;
 
-function compute_send_times(now = new Date()): Record<TimeKey, number> {
+const compute_send_times = (now = new Date()): Record<TimeKey, number> => {
     const send_times: Record<string, number> = {};
 
     const today = new Date(now);
@@ -58,45 +58,45 @@ function compute_send_times(now = new Date()): Record<TimeKey, number> {
     // next Monday at 9am
     send_times.monday_nine_am = monday.setHours(9, 0, 0, 0);
     return send_times;
-}
+};
 
-export function add_scheduled_messages(scheduled_messages: ScheduledMessage[]): void {
+export const add_scheduled_messages = (scheduled_messages: ScheduledMessage[]): void => {
     for (const scheduled_message of scheduled_messages) {
         scheduled_messages_data.set(scheduled_message.scheduled_message_id, scheduled_message);
     }
-}
+};
 
-export function remove_scheduled_message(scheduled_message_id: number): void {
+export const remove_scheduled_message = (scheduled_message_id: number): void => {
     if (scheduled_messages_data.has(scheduled_message_id)) {
         scheduled_messages_data.delete(scheduled_message_id);
     }
-}
+};
 
-export function update_scheduled_message(scheduled_message: ScheduledMessage): void {
+export const update_scheduled_message = (scheduled_message: ScheduledMessage): void => {
     if (!scheduled_messages_data.has(scheduled_message.scheduled_message_id)) {
         return;
     }
 
     scheduled_messages_data.set(scheduled_message.scheduled_message_id, scheduled_message);
-}
+};
 
-export function delete_scheduled_message(scheduled_msg_id: number, success?: () => void): void {
+export const delete_scheduled_message = (scheduled_msg_id: number, success?: () => void): void => {
     void channel.del({
         url: "/json/scheduled_messages/" + scheduled_msg_id,
         success,
     });
-}
+};
 
-export function get_count(): number {
-    return scheduled_messages_data.size;
-}
+export const get_count = (): number => scheduled_messages_data.size;
 
-export function get_filtered_send_opts(date: Date): {
+export const get_filtered_send_opts = (
+    date: Date,
+): {
     possible_send_later_today: SendOption | false;
     send_later_tomorrow: SendOption;
     possible_send_later_monday: SendOption | false;
     send_later_custom: {text: string};
-} {
+} => {
     const send_times = compute_send_times(date);
 
     const day = date.getDay(); // Starts with 0 for Sunday.
@@ -201,32 +201,32 @@ export function get_filtered_send_opts(date: Date): {
         possible_send_later_monday,
         send_later_custom,
     };
-}
+};
 
-export function get_selected_send_later_timestamp(): number | undefined {
+export const get_selected_send_later_timestamp = (): number | undefined => {
     if (!selected_send_later_timestamp) {
         return undefined;
     }
     return selected_send_later_timestamp;
-}
+};
 
-export function get_formatted_selected_send_later_time(): string | undefined {
+export const get_formatted_selected_send_later_time = (): string | undefined => {
     if (!selected_send_later_timestamp) {
         return undefined;
     }
     return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
-}
+};
 
-export function set_selected_schedule_timestamp(timestamp: number): void {
+export const set_selected_schedule_timestamp = (timestamp: number): void => {
     selected_send_later_timestamp = timestamp;
-}
+};
 
-export function reset_selected_schedule_timestamp(): void {
+export const reset_selected_schedule_timestamp = (): void => {
     selected_send_later_timestamp = undefined;
-}
+};
 
-export function initialize(scheduled_messages_params: {
+export const initialize = (scheduled_messages_params: {
     scheduled_messages: ScheduledMessage[];
-}): void {
+}): void => {
     add_scheduled_messages(scheduled_messages_params.scheduled_messages);
-}
+};

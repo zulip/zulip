@@ -15,16 +15,9 @@ const typing_status = zrequire("../shared/src/typing_status");
 const TYPING_STARTED_WAIT_PERIOD = 10000;
 const TYPING_STOPPED_WAIT_PERIOD = 5000;
 
-function make_time(secs) {
-    // make times semi-realistic
-    return 1000000 + 1000 * secs;
-}
+const make_time = (secs) => 1000000 + 1000 * secs;
 
-function returns_time(secs) {
-    return function () {
-        return make_time(secs);
-    };
-}
+const returns_time = (secs) => () => make_time(secs);
 
 run_test("basics", ({override, override_rewire}) => {
     assert.equal(typing_status.state, null);
@@ -36,37 +29,37 @@ run_test("basics", ({override, override_rewire}) => {
     // Start setting up more testing state.
     const events = {};
 
-    function set_timeout(f, delay) {
+    const set_timeout = (f, delay) => {
         assert.equal(delay, 5000);
         events.idle_callback = f;
         return "idle_timer_stub";
-    }
+    };
 
-    function clear_timeout() {
+    const clear_timeout = () => {
         events.timer_cleared = true;
-    }
+    };
 
     set_global("setTimeout", set_timeout);
     set_global("clearTimeout", clear_timeout);
 
-    function notify_server_start(recipient) {
+    const notify_server_start = (recipient) => {
         assert.deepStrictEqual(recipient, {message_type: "direct", ids: [1, 2]});
         events.started = true;
-    }
+    };
 
-    function notify_server_stop(recipient) {
+    const notify_server_stop = (recipient) => {
         assert.deepStrictEqual(recipient, {message_type: "direct", ids: [1, 2]});
         events.stopped = true;
-    }
+    };
 
-    function clear_events() {
+    const clear_events = () => {
         events.idle_callback = undefined;
         events.started = false;
         events.stopped = false;
         events.timer_cleared = false;
-    }
+    };
 
-    function call_handler(new_recipient) {
+    const call_handler = (new_recipient) => {
         clear_events();
         typing_status.update(
             worker,
@@ -74,7 +67,7 @@ run_test("basics", ({override, override_rewire}) => {
             TYPING_STARTED_WAIT_PERIOD,
             TYPING_STOPPED_WAIT_PERIOD,
         );
-    }
+    };
 
     worker = {
         get_current_time: returns_time(5),
@@ -329,37 +322,37 @@ run_test("stream_messages", ({override_rewire}) => {
     let worker = {};
     const events = {};
 
-    function set_timeout(f, delay) {
+    const set_timeout = (f, delay) => {
         assert.equal(delay, 5000);
         events.idle_callback = f;
         return "idle_timer_stub";
-    }
+    };
 
-    function clear_timeout() {
+    const clear_timeout = () => {
         events.timer_cleared = true;
-    }
+    };
 
     set_global("setTimeout", set_timeout);
     set_global("clearTimeout", clear_timeout);
 
-    function notify_server_start(recipient) {
+    const notify_server_start = (recipient) => {
         assert.deepStrictEqual(recipient, {message_type: "stream", stream_id: 3, topic: "test"});
         events.started = true;
-    }
+    };
 
-    function notify_server_stop(recipient) {
+    const notify_server_stop = (recipient) => {
         assert.deepStrictEqual(recipient, {message_type: "stream", stream_id: 3, topic: "test"});
         events.stopped = true;
-    }
+    };
 
-    function clear_events() {
+    const clear_events = () => {
         events.idle_callback = undefined;
         events.started = false;
         events.stopped = false;
         events.timer_cleared = false;
-    }
+    };
 
-    function call_handler(new_recipient) {
+    const call_handler = (new_recipient) => {
         clear_events();
         typing_status.update(
             worker,
@@ -367,7 +360,7 @@ run_test("stream_messages", ({override_rewire}) => {
             TYPING_STARTED_WAIT_PERIOD,
             TYPING_STOPPED_WAIT_PERIOD,
         );
-    }
+    };
 
     worker = {
         get_current_time: returns_time(5),

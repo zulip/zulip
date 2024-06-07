@@ -6,7 +6,11 @@ import * as channel from "./channel";
 import type {Message} from "./message_store";
 import * as starred_messages from "./starred_messages";
 
-export function send_flag_update_for_messages(msg_ids: number[], flag: string, op: string): void {
+export const send_flag_update_for_messages = (
+    msg_ids: number[],
+    flag: string,
+    op: string,
+): void => {
     void channel.post({
         url: "/json/messages/flags",
         data: {
@@ -15,13 +19,13 @@ export function send_flag_update_for_messages(msg_ids: number[], flag: string, o
             op,
         },
     });
-}
+};
 export const _unread_batch_size = 1000;
 
-export const send_read = (function () {
+export const send_read = (() => {
     let queue: Message[] = [];
     let start: DebouncedFunc<() => void>;
-    function server_request(): void {
+    const server_request = (): void => {
         // Wait for server IDs before sending flags
         const real_msgs = queue.filter((msg) => !msg.locally_echoed);
         const real_msg_ids = real_msgs.map((msg) => msg.id);
@@ -39,7 +43,7 @@ export const send_read = (function () {
         void channel.post({
             url: "/json/messages/flags",
             data: {messages: JSON.stringify(real_msg_ids_batch), op: "add", flag: "read"},
-            success() {
+            success: () => {
                 const batch_set = new Set(real_msg_ids_batch);
                 queue = queue.filter((message) => !batch_set.has(message.id));
 
@@ -48,38 +52,38 @@ export const send_read = (function () {
                 }
             },
         });
-    }
+    };
 
     start = _.throttle(server_request, 1000);
 
-    function add(messages: Message[]): void {
+    const add = (messages: Message[]): void => {
         queue = [...queue, ...messages];
         start();
-    }
+    };
 
     return add;
 })();
 
-export function mark_as_read(message_ids: number[]): void {
+export const mark_as_read = (message_ids: number[]): void => {
     send_flag_update_for_messages(message_ids, "read", "add");
-}
+};
 
-export function mark_as_unread(message_ids: number[]): void {
+export const mark_as_unread = (message_ids: number[]): void => {
     send_flag_update_for_messages(message_ids, "read", "remove");
-}
+};
 
-export function save_collapsed(message: Message): void {
+export const save_collapsed = (message: Message): void => {
     send_flag_update_for_messages([message.id], "collapsed", "add");
-}
+};
 
-export function save_uncollapsed(message: Message): void {
+export const save_uncollapsed = (message: Message): void => {
     send_flag_update_for_messages([message.id], "collapsed", "remove");
-}
+};
 
-export function unstar_all_messages(): void {
+export const unstar_all_messages = (): void => {
     const starred_msg_ids = starred_messages.get_starred_msg_ids();
     send_flag_update_for_messages(starred_msg_ids, "starred", "remove");
-}
+};
 
 // While we're parsing message objects, our code only looks at the
 // IDs. TODO: Use a shared zod schema for parsing messages if/when
@@ -92,7 +96,7 @@ const message_response_schema = z.object({
     ),
 });
 
-export function unstar_all_messages_in_topic(stream_id: number, topic: string): void {
+export const unstar_all_messages_in_topic = (stream_id: number, topic: string): void => {
     const data = {
         anchor: "newest",
         // In the unlikely event the user has >1000 starred messages
@@ -111,11 +115,11 @@ export function unstar_all_messages_in_topic(stream_id: number, topic: string): 
     void channel.get({
         url: "/json/messages",
         data,
-        success(raw_data) {
+        success: (raw_data) => {
             const data = message_response_schema.parse(raw_data);
             const messages = data.messages;
             const starred_message_ids = messages.map((message) => message.id);
             send_flag_update_for_messages(starred_message_ids, "starred", "remove");
         },
     });
-}
+};

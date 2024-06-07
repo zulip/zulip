@@ -42,7 +42,7 @@ const narrow_title = mock_esm("../src/narrow_title");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
 const pm_list = mock_esm("../src/pm_list");
 const reactions = mock_esm("../src/reactions", {
-    generate_clean_reactions() {},
+    generate_clean_reactions: () => {},
 });
 const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
@@ -77,13 +77,13 @@ const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const stream_list_sort = mock_esm("../src/stream_list_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
-    update_announce_stream_option() {},
+    update_announce_stream_option: () => {},
 });
 const submessage = mock_esm("../src/submessage");
 mock_esm("../src/left_sidebar_navigation_area", {
-    update_starred_count() {},
-    update_scheduled_messages_row() {},
-    handle_home_view_changed() {},
+    update_starred_count: () => {},
+    update_scheduled_messages_row: () => {},
+    handle_home_view_changed: () => {},
 });
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
@@ -131,9 +131,9 @@ const onboarding_steps = zrequire("onboarding_steps");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 
-function dispatch(ev) {
+const dispatch = (ev) => {
     server_events_dispatch.dispatch_normal_event(ev);
-}
+};
 
 const me = {
     email: "me@example.com",
@@ -154,12 +154,12 @@ const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
 emoji.initialize({realm_emoji, emoji_codes});
 
-function assert_same(actual, expected) {
+const assert_same = (actual, expected) => {
     // This helper prevents us from getting false positives
     // where actual and expected are both undefined.
     assert.notEqual(expected, undefined);
     assert.deepEqual(actual, expected);
-}
+};
 
 run_test("alert_words", ({override}) => {
     alert_words.initialize({alert_words: []});
@@ -449,15 +449,15 @@ run_test("realm settings", ({override}) => {
     override(navbar_alerts, "check_profile_incomplete", noop);
     override(navbar_alerts, "show_profile_incomplete", noop);
 
-    function test_electron_dispatch(event, fake_send_event) {
+    const test_electron_dispatch = (event, fake_send_event) => {
         with_overrides(({override}) => {
             override(electron_bridge, "send_event", fake_send_event);
             dispatch(event);
         });
-    }
+    };
 
     // realm
-    function test_realm_boolean(event, parameter_name) {
+    const test_realm_boolean = (event, parameter_name) => {
         realm[parameter_name] = true;
         event = {...event};
         event.value = false;
@@ -467,9 +467,9 @@ run_test("realm settings", ({override}) => {
         event.value = true;
         dispatch(event);
         assert.equal(realm[parameter_name], true);
-    }
+    };
 
-    function test_realm_integer(event, parameter_name) {
+    const test_realm_integer = (event, parameter_name) => {
         realm[parameter_name] = 1;
         event = {...event};
         event.value = 2;
@@ -485,7 +485,7 @@ run_test("realm settings", ({override}) => {
         event.value = 1;
         dispatch(event);
         assert.equal(realm[parameter_name], 1);
-    }
+    };
 
     let update_called = false;
     let event = event_fixtures.realm__update__create_private_stream_policy;

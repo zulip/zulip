@@ -7,7 +7,7 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
-mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
+mock_esm("../src/spoilers", {hide_spoilers_in_notification: () => {}});
 
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
@@ -50,7 +50,7 @@ user_topics.update_user_topics(
     user_topics.all_visibility_policies.FOLLOWED,
 );
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         current_user.is_admin = false;
         page_params.realm_users = [];
@@ -63,7 +63,7 @@ function test(label, f) {
         user_settings.notification_sound = "ding";
         f(helpers);
     });
-}
+};
 
 test("message_is_notifiable", () => {
     // A notification is sent if both message_is_notifiable(message)
@@ -341,8 +341,8 @@ test("message_is_notifiable", () => {
 });
 
 test("basic_notifications", () => {
-    $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap() {}})})});
-    $("<div>").set_find_results("span.katex", {each() {}});
+    $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap: () => {}})})});
+    $("<div>").set_find_results("span.katex", {each: () => {}});
     $("<div>").children = () => [];
 
     let n; // Object for storing all notification data for assertions.

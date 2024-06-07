@@ -18,7 +18,7 @@ const STATES = {
     CONDENSED: "condensed",
 };
 
-function restore_views_state(): void {
+const restore_views_state = (): void => {
     if (page_params.is_spectator) {
         // Spectators should always see the expanded view.
         return;
@@ -29,18 +29,18 @@ function restore_views_state(): void {
     if (views_state === STATES.CONDENSED) {
         toggle_condensed_navigation_area();
     }
-}
+};
 
-function save_state(state: string): void {
+const save_state = (state: string): void => {
     ls.set(ls_key, state);
-}
+};
 
-export function update_starred_count(count: number): void {
+export const update_starred_count = (count: number): void => {
     const $starred_li = $(".top_left_starred_messages");
     ui_util.update_unread_count_in_dom($starred_li, count);
-}
+};
 
-export function update_scheduled_messages_row(): void {
+export const update_scheduled_messages_row = (): void => {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
     if (count > 0) {
@@ -49,12 +49,12 @@ export function update_scheduled_messages_row(): void {
         $scheduled_li.removeClass("show-with-scheduled-messages");
     }
     ui_util.update_unread_count_in_dom($scheduled_li, count);
-}
+};
 
-export function update_dom_with_unread_counts(
+export const update_dom_with_unread_counts = (
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
-): void {
+): void => {
     // Note that direct message counts are handled in pm_list.ts.
 
     // mentioned/home views have simple integer counts
@@ -71,24 +71,24 @@ export function update_dom_with_unread_counts(
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
     }
-}
+};
 
 // TODO: Rewrite how we handle activation of narrows when doing the redesign.
 // We don't want to adjust class for all the buttons when switching narrows.
 
-function remove($elem: JQuery): void {
+const remove = ($elem: JQuery): void => {
     $elem.removeClass("active-filter active-sub-filter");
-}
+};
 
-function deselect_top_left_corner_items(): void {
+const deselect_top_left_corner_items = (): void => {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
     remove($(".top_left_recent_view"));
     remove($(".top_left_inbox"));
-}
+};
 
-export function handle_narrow_activated(filter: Filter): void {
+export const handle_narrow_activated = (filter: Filter): void => {
     deselect_top_left_corner_items();
 
     let ops: string[];
@@ -114,9 +114,9 @@ export function handle_narrow_activated(filter: Filter): void {
             $filter_li.addClass("active-filter");
         }
     }
-}
+};
 
-function toggle_condensed_navigation_area(): void {
+const toggle_condensed_navigation_area = (): void => {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
     if ($views_label_container.hasClass("showing-expanded-navigation")) {
@@ -135,56 +135,56 @@ function toggle_condensed_navigation_area(): void {
         save_state(STATES.EXPANDED);
     }
     resize.resize_stream_filters_container();
-}
+};
 
-export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
+export const animate_mention_changes = ($li: JQuery, new_mention_count: number): void => {
     if (new_mention_count > last_mention_count) {
         do_new_messages_animation($li);
     }
     last_mention_count = new_mention_count;
-}
+};
 
-function do_new_messages_animation($li: JQuery): void {
+const do_new_messages_animation = ($li: JQuery): void => {
     $li.addClass("new_messages");
-    function mid_animation(): void {
+    const mid_animation = (): void => {
         $li.removeClass("new_messages");
         $li.addClass("new_messages_fadeout");
-    }
-    function end_animation(): void {
+    };
+    const end_animation = (): void => {
         $li.removeClass("new_messages_fadeout");
-    }
+    };
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
-}
+};
 
-export function highlight_inbox_view(): void {
+export const highlight_inbox_view = (): void => {
     deselect_top_left_corner_items();
 
     $(".top_left_inbox").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
-}
+};
 
-export function highlight_recent_view(): void {
+export const highlight_recent_view = (): void => {
     deselect_top_left_corner_items();
 
     $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
-}
+};
 
-export function highlight_all_messages_view(): void {
+export const highlight_all_messages_view = (): void => {
     deselect_top_left_corner_items();
 
     $(".top_left_all_messages").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
-}
+};
 
-function handle_home_view_order(home_view: string): void {
+const handle_home_view_order = (home_view: string): void => {
     // Remove class and tabindex from current home view
     const $current_home_view = $(".selected-home-view");
     $current_home_view.removeClass("selected-home-view");
@@ -209,9 +209,9 @@ function handle_home_view_order(home_view: string): void {
         $inbox_rows.find("a").attr("tabindex", 0);
     }
     update_dom_with_unread_counts(res, true);
-}
+};
 
-export function handle_home_view_changed(new_home_view: string): void {
+export const handle_home_view_changed = (new_home_view: string): void => {
     const $recent_view_sidebar_menu_icon = $(".recent-view-sidebar-menu-icon");
     const $all_messages_sidebar_menu_icon = $(".all-messages-sidebar-menu-icon");
     if (new_home_view === settings_config.web_home_view_values.all_messages.code) {
@@ -226,9 +226,9 @@ export function handle_home_view_changed(new_home_view: string): void {
         $all_messages_sidebar_menu_icon.removeClass("hide");
     }
     handle_home_view_order(new_home_view);
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     update_scheduled_messages_row();
     restore_views_state();
 
@@ -240,4 +240,4 @@ export function initialize(): void {
             toggle_condensed_navigation_area();
         },
     );
-}
+};

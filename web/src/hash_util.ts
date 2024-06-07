@@ -13,15 +13,15 @@ import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
 import * as util from "./util";
 
-export function build_reload_url(): string {
+export const build_reload_url = (): string => {
     let hash = window.location.hash;
     if (hash.length !== 0 && hash.startsWith("#")) {
         hash = hash.slice(1);
     }
     return "+oldhash=" + encodeURIComponent(hash);
-}
+};
 
-export function encode_operand(operator: string, operand: string): string {
+export const encode_operand = (operator: string, operand: string): string => {
     if (
         operator === "group-pm-with" ||
         operator === "dm-including" ||
@@ -40,17 +40,17 @@ export function encode_operand(operator: string, operand: string): string {
     }
 
     return internal_url.encodeHashComponent(operand);
-}
+};
 
-export function encode_stream_name(operand: string): string {
+export const encode_stream_name = (operand: string): string => {
     // stream_data prefixes the stream id, but it does not do the
     // URI encoding piece
     operand = stream_data.name_to_slug(operand);
 
     return internal_url.encodeHashComponent(operand);
-}
+};
 
-export function decode_operand(operator: string, operand: string): string {
+export const decode_operand = (operator: string, operand: string): string => {
     if (
         operator === "group-pm-with" ||
         operator === "dm-including" ||
@@ -71,22 +71,18 @@ export function decode_operand(operator: string, operand: string): string {
     }
 
     return operand;
-}
+};
 
-export function by_stream_url(stream_id: number): string {
-    // Wrapper for web use of internal_url.by_stream_url
-    return internal_url.by_stream_url(stream_id, sub_store.maybe_get_stream_name);
-}
+export const by_stream_url = (stream_id: number): string =>
+    internal_url.by_stream_url(stream_id, sub_store.maybe_get_stream_name);
 
-export function by_stream_topic_url(stream_id: number, topic: string): string {
-    // Wrapper for web use of internal_url.by_stream_topic_url
-    return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
-}
+export const by_stream_topic_url = (stream_id: number, topic: string): string =>
+    internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
 
 // Encodes a term list into the
 // corresponding hash: the # component
 // of the narrow URL
-export function search_terms_to_hash(terms?: NarrowTerm[]): string {
+export const search_terms_to_hash = (terms?: NarrowTerm[]): string => {
     // Note: This does not return the correct hash for combined feed, recent and inbox view.
     // These views can have multiple hashes that lead to them, so this function cannot support them.
     let hash = "#";
@@ -110,26 +106,20 @@ export function search_terms_to_hash(terms?: NarrowTerm[]): string {
     }
 
     return hash;
-}
+};
 
-export function by_sender_url(reply_to: string): string {
-    return search_terms_to_hash([{operator: "sender", operand: reply_to}]);
-}
+export const by_sender_url = (reply_to: string): string =>
+    search_terms_to_hash([{operator: "sender", operand: reply_to}]);
 
-export function pm_with_url(reply_to: string): string {
+export const pm_with_url = (reply_to: string): string => {
     const slug = people.emails_to_slug(reply_to);
     return "#narrow/dm/" + slug;
-}
+};
 
-export function huddle_with_url(user_ids_string: string): string {
-    // This method is convenient for callers
-    // that have already converted emails to a comma-delimited
-    // list of user_ids.  We should be careful to keep this
-    // consistent with hash_util.decode_operand.
-    return "#narrow/dm/" + user_ids_string + "-group";
-}
+export const huddle_with_url = (user_ids_string: string): string =>
+    "#narrow/dm/" + user_ids_string + "-group";
 
-export function by_conversation_and_time_url(message: Message): string {
+export const by_conversation_and_time_url = (message: Message): string => {
     const absolute_url =
         window.location.protocol +
         "//" +
@@ -144,19 +134,19 @@ export function by_conversation_and_time_url(message: Message): string {
     }
 
     return absolute_url + people.pm_perma_link(message) + suffix;
-}
+};
 
-export function group_edit_url(group: UserGroup, right_side_tab: string): string {
+export const group_edit_url = (group: UserGroup, right_side_tab: string): string => {
     const hash = `#groups/${group.id}/${internal_url.encodeHashComponent(group.name)}/${right_side_tab}`;
     return hash;
-}
+};
 
-export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
+export const search_public_streams_notice_url = (terms: NarrowTerm[]): string => {
     const public_operator = {operator: "channels", operand: "public"};
     return search_terms_to_hash([public_operator, ...terms]);
-}
+};
 
-export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
+export const parse_narrow = (hash: string[]): NarrowTerm[] | undefined => {
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
@@ -186,27 +176,24 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
         terms.push({negated, operator, operand});
     }
     return terms;
-}
+};
 
-export function channels_settings_edit_url(
+export const channels_settings_edit_url = (
     sub: StreamSubscription,
     right_side_tab: string,
-): string {
-    return `#channels/${sub.stream_id}/${internal_url.encodeHashComponent(
-        sub.name,
-    )}/${right_side_tab}`;
-}
+): string =>
+    `#channels/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}/${right_side_tab}`;
 
-export function channels_settings_section_url(section = "subscribed"): string {
+export const channels_settings_section_url = (section = "subscribed"): string => {
     const valid_section_values = new Set(["new", "subscribed", "all", "notsubscribed"]);
     if (!valid_section_values.has(section)) {
         blueslip.warn("invalid section for channels settings: " + section);
         return "#channels/subscribed";
     }
     return `#channels/${section}`;
-}
+};
 
-export function validate_channels_settings_hash(hash: string): string {
+export const validate_channels_settings_hash = (hash: string): string => {
     const hash_components = hash.slice(1).split(/\//);
     const section = hash_components[1];
 
@@ -242,9 +229,9 @@ export function validate_channels_settings_hash(hash: string): string {
     }
 
     return channels_settings_section_url(section);
-}
+};
 
-export function validate_group_settings_hash(hash: string): string {
+export const validate_group_settings_hash = (hash: string): string => {
     const hash_components = hash.slice(1).split(/\//);
     const section = hash_components[1];
 
@@ -284,4 +271,4 @@ export function validate_group_settings_hash(hash: string): string {
         return "#groups/your";
     }
     return hash;
-}
+};

@@ -71,7 +71,7 @@ export function toggle(opts: {
     };
 
     // Returns false if the requested tab is disabled.
-    function select_tab(idx: number): boolean {
+    const select_tab = (idx: number): boolean => {
         const $elem = meta.$ind_tab.eq(idx);
         if ($elem.hasClass("disabled")) {
             return false;
@@ -89,9 +89,9 @@ export function toggle(opts: {
             $elem.trigger("focus");
         }
         return true;
-    }
+    };
 
-    function maybe_go_left(): boolean {
+    const maybe_go_left = (): boolean => {
         // Select the first non-disabled tab to the left, if any.
         let i = 1;
         while (meta.idx - i >= 0) {
@@ -101,9 +101,9 @@ export function toggle(opts: {
             i += 1;
         }
         return false;
-    }
+    };
 
-    function maybe_go_right(): boolean {
+    const maybe_go_right = (): boolean => {
         // Select the first non-disabled tab to the right, if any.
         let i = 1;
         while (meta.idx + i <= opts.values.length - 1) {
@@ -113,7 +113,7 @@ export function toggle(opts: {
             i += 1;
         }
         return false;
-    }
+    };
 
     meta.$ind_tab.on("click", function () {
         const idx = Number($(this).attr("data-tab-id"));
@@ -138,7 +138,7 @@ export function toggle(opts: {
         maybe_go_left,
         maybe_go_right,
 
-        disable_tab(name: string) {
+        disable_tab: (name: string) => {
             const value = opts.values.find((o) => o.key === name);
             if (!value) {
                 blueslip.warn("Incorrect tab name given.");
@@ -149,7 +149,7 @@ export function toggle(opts: {
             meta.$ind_tab.eq(idx).addClass("disabled");
         },
 
-        enable_tab(name: string) {
+        enable_tab: (name: string) => {
             const value = opts.values.find((o) => o.key === name);
             if (!value) {
                 blueslip.warn("Incorrect tab name given.");
@@ -160,7 +160,7 @@ export function toggle(opts: {
             meta.$ind_tab.eq(idx).removeClass("disabled");
         },
 
-        value() {
+        value: () => {
             if (meta.idx >= 0) {
                 return opts.values[meta.idx]!.label;
             }
@@ -168,12 +168,10 @@ export function toggle(opts: {
             return undefined;
         },
 
-        get() {
-            return $component;
-        },
+        get: () => $component,
         // go through the process of finding the correct tab for a given name,
         // and when found, select that one and provide the proper callback.
-        goto(name: string) {
+        goto: (name: string) => {
             const value = opts.values.find((o) => o.label === name || o.key === name);
             if (!value) {
                 blueslip.warn("Incorrect tab name given.");

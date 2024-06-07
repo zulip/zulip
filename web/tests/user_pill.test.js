@@ -57,7 +57,7 @@ const inaccessible_user_item = {
 
 let pill_widget = {};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         people.init();
         people.add_active_user(alice);
@@ -65,13 +65,13 @@ function test(label, f) {
         pill_widget = {};
         f({override});
     });
-}
+};
 
 test("create_item", () => {
-    function test_create_item(email, current_items, expected_item, pill_config) {
+    const test_create_item = (email, current_items, expected_item, pill_config) => {
         const item = user_pill.create_item_from_email(email, current_items, pill_config);
         assert.deepEqual(item, expected_item);
-    }
+    };
 
     realm.realm_is_zephyr_mirror_realm = true;
 
@@ -105,17 +105,17 @@ test("append", () => {
     let appended;
     let cleared;
 
-    function fake_append(opts) {
+    const fake_append = (opts) => {
         appended = true;
         assert.equal(opts.email, isaac.email);
         assert.equal(opts.display_value, isaac.full_name);
         assert.equal(opts.user_id, isaac.user_id);
         assert.equal(opts.img_src, isaac_item.img_src);
-    }
+    };
 
-    function fake_clear() {
+    const fake_clear = () => {
         cleared = true;
-    }
+    };
 
     pill_widget.appendValidatedData = fake_append;
     pill_widget.clear_text = fake_clear;

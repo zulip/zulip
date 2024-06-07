@@ -13,11 +13,11 @@ const scroll_util = mock_esm("../src/scroll_util", {
 });
 
 mock_esm("../src/hash_util", {
-    by_stream_url() {},
+    by_stream_url: () => {},
 });
 
 mock_esm("../src/browser_history", {
-    update() {},
+    update: () => {},
 });
 
 mock_esm("../src/hash_parser", {
@@ -183,14 +183,14 @@ run_test("redraw_left_panel", ({mock_template}) => {
     // sanity check it's not set to active
     assert.ok(!$denmark_row.hasClass("active"));
 
-    function test_filter(params, expected_streams) {
+    const test_filter = (params, expected_streams) => {
         $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
         const stream_ids = stream_settings_ui.redraw_left_panel(params);
         assert.deepEqual(
             stream_ids,
             expected_streams.map((sub) => sub.stream_id),
         );
-    }
+    };
 
     // Search with single keyword
     test_filter({input: "Po", show_subscribed: false, show_not_subscribed: false}, [

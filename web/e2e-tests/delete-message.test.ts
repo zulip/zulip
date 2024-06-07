@@ -4,7 +4,7 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function click_delete_and_return_last_msg_id(page: Page): Promise<string> {
+const click_delete_and_return_last_msg_id = async (page: Page): Promise<string> => {
     const msg = (await page.$$(".message-list .message_row")).at(-1);
     assert.ok(msg !== undefined);
     const id = await (await msg.getProperty("id")).jsonValue();
@@ -18,9 +18,9 @@ async function click_delete_and_return_last_msg_id(page: Page): Promise<string> 
     await page.waitForSelector(".delete_message", {visible: true});
     await page.click(".delete_message");
     return id;
-}
+};
 
-async function delete_message_test(page: Page): Promise<void> {
+const delete_message_test = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
@@ -41,6 +41,6 @@ async function delete_message_test(page: Page): Promise<void> {
 
     await page.waitForSelector(`#${CSS.escape(last_message_id)}`, {hidden: true});
     assert.equal((await page.$$(".message-list .message_row")).length, messages_quantity - 1);
-}
+};
 
 common.run_test(delete_message_test);

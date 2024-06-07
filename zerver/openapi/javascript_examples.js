@@ -9,7 +9,7 @@
   that the documented examples are all correct, runnable code.
 */
 
-const examples_handler = function () {
+const examples_handler = () => {
     const config = {
         username: process.env.ZULIP_USERNAME,
         apiKey: process.env.ZULIP_API_KEY,
@@ -32,7 +32,7 @@ const examples_handler = function () {
     const generate_validation_data = async (client, example) => {
         let count = 0;
         const console = {
-            log(result) {
+            log: (result) => {
                 response_data.push(make_result_object(example, result, count));
                 count += 1;
             },

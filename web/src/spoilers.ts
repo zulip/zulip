@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-function collapse_spoiler($spoiler: JQuery): void {
+const collapse_spoiler = ($spoiler: JQuery): void => {
     const spoiler_height = $spoiler.height() ?? 0;
 
     // Set height to rendered height on next frame, then to zero on following
@@ -13,9 +13,9 @@ function collapse_spoiler($spoiler: JQuery): void {
             $spoiler.height("0px");
         });
     });
-}
+};
 
-function expand_spoiler($spoiler: JQuery): void {
+const expand_spoiler = ($spoiler: JQuery): void => {
     // Normally, the height of the spoiler block is not defined absolutely on
     // the `spoiler-content-open` class, but just set to `auto` (i.e. the height
     // of the content). CSS animations do not work with properties set to
@@ -33,7 +33,7 @@ function expand_spoiler($spoiler: JQuery): void {
         // This keeps things working if, e.g., the viewport is resized
         $spoiler.height("");
     });
-}
+};
 
 export const hide_spoilers_in_notification = ($content: JQuery): JQuery => {
     $content.find(".spoiler-block").each((_i, elem) => {

@@ -47,9 +47,7 @@ require("@babel/register")({
 Sentry.addTracingExtensions();
 
 // Create a helper function to avoid sneaky delays in tests.
-function immediate(f) {
-    return () => f();
-}
+const immediate = (f) => () => f();
 
 // Find the files we need to run.
 const files = process.argv.slice(2);
@@ -57,7 +55,7 @@ assert.notEqual(files.length, 0, "No tests found");
 
 // Set up our namespace helpers.
 const window = new Proxy(global, {
-    set(_obj, prop, value) {
+    set: (_obj, prop, value) => {
         namespace.set_global(prop, value);
         return true;
     },
@@ -65,17 +63,14 @@ const window = new Proxy(global, {
 
 const ls_container = new Map();
 const localStorage = {
-    getItem(key) {
-        return ls_container.get(key);
-    },
-    setItem(key, val) {
+    getItem: (key) => ls_container.get(key),
+    setItem: (key, val) => {
         ls_container.set(key, val);
     },
-    /* istanbul ignore next */
-    removeItem(key) {
+    removeItem: /* istanbul ignore next */ (key) => {
         ls_container.delete(key);
     },
-    clear() {
+    clear: () => {
         ls_container.clear();
     },
 };
@@ -83,11 +78,11 @@ const localStorage = {
 // Set up Handlebars
 handlebars.hook_require();
 
-const noop = function () {};
+const noop = () => {};
 
 require("../../src/templates"); // register Zulip extensions
 
-async function run_one_module(file) {
+const run_one_module = async (file) => {
     zjquery.clear_initialize_function();
     zjquery.clear_all_elements();
     console.info("running test " + path.basename(file, ".test.js"));
@@ -98,7 +93,7 @@ async function run_one_module(file) {
         await f();
     }
     namespace.complain_about_unused_mocks();
-}
+};
 
 test.set_verbose(files.length === 1);
 

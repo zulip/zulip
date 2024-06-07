@@ -15,7 +15,7 @@ const pill_config: InputPillConfig = {
     exclude_inaccessible_users: true,
 };
 
-export function initialize_pill(): UserPillWidget {
+export const initialize_pill = (): UserPillWidget => {
     const $container = $("#private_message_recipient").parent();
 
     const pill = input_pill.create({
@@ -26,13 +26,13 @@ export function initialize_pill(): UserPillWidget {
     });
 
     return pill;
-}
+};
 
-export function initialize({
+export const initialize = ({
     on_pill_create_or_remove,
 }: {
     on_pill_create_or_remove: () => void;
-}): void {
+}): void => {
     widget = initialize_pill();
 
     widget.onPillCreate(() => {
@@ -43,47 +43,42 @@ export function initialize({
     widget.onPillRemove(() => {
         on_pill_create_or_remove();
     });
-}
+};
 
-export function clear(): void {
+export const clear = (): void => {
     widget.clear();
-}
+};
 
-export function set_from_typeahead(person: User): void {
+export const set_from_typeahead = (person: User): void => {
     user_pill.append_person({
         pill_widget: widget,
         person,
     });
-}
+};
 
-export function set_from_emails(value: string): void {
+export const set_from_emails = (value: string): void => {
     // value is something like "alice@example.com,bob@example.com"
     clear();
     widget.appendValue(value);
-}
+};
 
-export function get_user_ids(): number[] {
-    return user_pill.get_user_ids(widget);
-}
+export const get_user_ids = (): number[] => user_pill.get_user_ids(widget);
 
-export function has_unconverted_data(): boolean {
-    return user_pill.has_unconverted_data(widget);
-}
+export const has_unconverted_data = (): boolean => user_pill.has_unconverted_data(widget);
 
-export function get_user_ids_string(): string {
+export const get_user_ids_string = (): string => {
     const user_ids = get_user_ids();
     const sorted_user_ids = util.sorted_ids(user_ids);
     const user_ids_string = sorted_user_ids.join(",");
     return user_ids_string;
-}
+};
 
-export function get_emails(): string {
+export const get_emails = (): string => {
     // return something like "alice@example.com,bob@example.com"
     const user_ids = get_user_ids();
     const emails = user_ids.map((id) => people.get_by_user_id(id).email).join(",");
     return emails;
-}
+};
 
-export function filter_taken_users(persons: User[]): User[] {
-    return user_pill.filter_taken_users(persons, widget);
-}
+export const filter_taken_users = (persons: User[]): User[] =>
+    user_pill.filter_taken_users(persons, widget);

@@ -55,7 +55,7 @@ const consts = {
     recent_view_minimum_load_more_fetch_size: 50000,
 };
 
-function process_result(data, opts) {
+const process_result = (data, opts) => {
     let messages = data.messages;
 
     messages = messages.map((message) => message_helper.process_new_message(message));
@@ -109,9 +109,9 @@ function process_result(data, opts) {
     if (opts.cont !== undefined) {
         opts.cont(data, opts);
     }
-}
+};
 
-function get_messages_success(data, opts) {
+const get_messages_success = (data, opts) => {
     const update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
     const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
@@ -156,14 +156,14 @@ function get_messages_success(data, opts) {
     }
 
     process_result(data, opts);
-}
+};
 
 // This function modifies the data.narrow filters to use integer IDs
 // instead of strings if it is supported. We currently don't set or
 // convert user emails to user IDs directly in the Filter code
 // because doing so breaks the app in various modules that expect a
 // string of user emails.
-function handle_operators_supporting_id_based_api(data) {
+const handle_operators_supporting_id_based_api = (data) => {
     const operators_supporting_ids = new Set(["dm", "pm-with"]);
     const operators_supporting_id = new Set([
         "id",
@@ -211,9 +211,9 @@ function handle_operators_supporting_id_based_api(data) {
 
     data.narrow = JSON.stringify(data.narrow);
     return data;
-}
+};
 
-export function load_messages(opts, attempt = 1) {
+export const load_messages = (opts, attempt = 1) => {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -295,14 +295,14 @@ export function load_messages(opts, attempt = 1) {
     channel.get({
         url: "/json/messages",
         data,
-        success(data) {
+        success: (data) => {
             if (!$("#connection-error").hasClass("get-events-error")) {
                 ui_report.hide_error($("#connection-error"));
             }
 
             get_messages_success(data, opts);
         },
-        error(xhr) {
+        error: (xhr) => {
             if (xhr.status === 400 && !$("#connection-error").hasClass("get-events-error")) {
                 // We successfully reached the server, so hide the
                 // connection error notice, even if the request failed
@@ -371,9 +371,9 @@ export function load_messages(opts, attempt = 1) {
             }, delay_secs * 1000);
         },
     });
-}
+};
 
-export function load_messages_for_narrow(opts) {
+export const load_messages_for_narrow = (opts) => {
     load_messages({
         anchor: opts.anchor,
         num_before: consts.narrow_before,
@@ -381,18 +381,18 @@ export function load_messages_for_narrow(opts) {
         msg_list: opts.msg_list,
         cont: opts.cont,
     });
-}
+};
 
-export function get_backfill_anchor(msg_list_data) {
+export const get_backfill_anchor = (msg_list_data) => {
     const oldest_msg = msg_list_data.first_including_muted();
     if (oldest_msg) {
         return oldest_msg.id;
     }
 
     return "first_unread";
-}
+};
 
-export function get_frontfill_anchor(msg_list) {
+export const get_frontfill_anchor = (msg_list) => {
     const last_msg = msg_list.data.last_including_muted();
 
     if (last_msg) {
@@ -423,9 +423,9 @@ export function get_frontfill_anchor(msg_list) {
     // * When the first browser window's `GET /messages` request finishes,
     //   this code path will be reached.
     return "oldest";
-}
+};
 
-export function maybe_load_older_messages(opts) {
+export const maybe_load_older_messages = (opts) => {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
     // than what the browsers originally fetched.
@@ -474,9 +474,9 @@ export function maybe_load_older_messages(opts) {
             ? consts.recent_view_fetch_more_batch_size
             : consts.narrowed_view_backward_batch_size,
     });
-}
+};
 
-export function do_backfill(opts) {
+export const do_backfill = (opts) => {
     const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
     const anchor = get_backfill_anchor(msg_list_data);
 
@@ -489,15 +489,15 @@ export function do_backfill(opts) {
         num_after: 0,
         msg_list: opts.msg_list,
         msg_list_data: opts.msg_list_data,
-        cont() {
+        cont: () => {
             if (opts.cont) {
                 opts.cont();
             }
         },
     });
-}
+};
 
-export function maybe_load_newer_messages(opts) {
+export const maybe_load_newer_messages = (opts) => {
     // This function gets called when you scroll to the bottom
     // of your window, and you want to get messages newer
     // than what the browsers originally fetched.
@@ -511,7 +511,7 @@ export function maybe_load_newer_messages(opts) {
 
     const anchor = get_frontfill_anchor(msg_list);
 
-    function load_more(_data, args) {
+    const load_more = (_data, args) => {
         if (
             args.fetch_again &&
             message_lists.current !== undefined &&
@@ -519,7 +519,7 @@ export function maybe_load_newer_messages(opts) {
         ) {
             maybe_load_newer_messages({msg_list: message_lists.current});
         }
-    }
+    };
 
     load_messages({
         anchor,
@@ -528,18 +528,18 @@ export function maybe_load_newer_messages(opts) {
         msg_list,
         cont: load_more,
     });
-}
+};
 
-export function set_initial_pointer_and_offset({narrow_pointer, narrow_offset}) {
+export const set_initial_pointer_and_offset = ({narrow_pointer, narrow_offset}) => {
     initial_narrow_pointer = narrow_pointer;
     initial_narrow_offset = narrow_offset;
-}
+};
 
-export function initialize(finished_initial_fetch) {
+export const initialize = (finished_initial_fetch) => {
     const fetch_target_day_timestamp =
         Date.now() / 1000 - consts.target_days_of_history * 24 * 60 * 60;
     // get the initial message list
-    function load_more(data) {
+    const load_more = (data) => {
         if (first_messages_fetch) {
             // See server_events.js for this callback.
             // Start processing server events.
@@ -582,7 +582,7 @@ export function initialize(finished_initial_fetch) {
                 cont: load_more,
             });
         }, consts.catch_up_backfill_delay);
-    }
+    };
 
     // Since `all_messages_data` contains continuous message history
     // which always contains the latest message, it makes sense for
@@ -603,4 +603,4 @@ export function initialize(finished_initial_fetch) {
         msg_list_data: all_messages_data,
         cont: load_more,
     });
-}
+};

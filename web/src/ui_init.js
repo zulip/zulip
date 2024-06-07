@@ -158,20 +158,20 @@ import * as widgets from "./widgets";
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
 
-function initialize_bottom_whitespace() {
+const initialize_bottom_whitespace = () => {
     $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
-}
+};
 
-function initialize_navbar() {
+const initialize_navbar = () => {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
         user_avatar: current_user.avatar_url_medium,
     });
 
     $("#header-container").html(rendered_navbar);
-}
+};
 
-function initialize_compose_box() {
+const initialize_compose_box = () => {
     $("#compose-container").append(
         $(
             render_compose({
@@ -186,11 +186,11 @@ function initialize_compose_box() {
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
     common.adjust_mac_kbd_tags(".open_enter_sends_dialog kbd");
-}
+};
 
-function initialize_message_feed_errors() {
+const initialize_message_feed_errors = () => {
     $("#message_feed_errors_container").html(render_message_feed_errors());
-}
+};
 
 export function initialize_kitchen_sink_stuff() {
     // TODO:
@@ -358,7 +358,7 @@ export function initialize_kitchen_sink_stuff() {
     }
 }
 
-function initialize_unread_ui() {
+const initialize_unread_ui = () => {
     unread_ui.register_update_unread_counts_hook((counts) =>
         activity_ui.update_dom_with_unread_counts(counts),
     );
@@ -378,9 +378,9 @@ function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
-}
+};
 
-export function initialize_everything(state_data) {
+export const initialize_everything = (state_data) => {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
@@ -459,7 +459,7 @@ export function initialize_everything(state_data) {
               `stream_data` in `state_data` itself
     */
 
-    function pop_fields(...fields) {
+    const pop_fields = (...fields) => {
         const result = {};
 
         for (const field of fields) {
@@ -468,7 +468,7 @@ export function initialize_everything(state_data) {
         }
 
         return result;
-    }
+    };
 
     const alert_words_params = pop_fields("alert_words");
 
@@ -729,13 +729,13 @@ export function initialize_everything(state_data) {
     realm_logo.initialize();
     message_lists.initialize();
     recent_view_ui.initialize({
-        on_click_participant(avatar_element, participant_user_id) {
+        on_click_participant: (avatar_element, participant_user_id) => {
             const user = people.get_by_user_id(participant_user_id);
             user_card_popover.toggle_user_card_popover(avatar_element, user);
         },
         on_mark_pm_as_read: unread_ops.mark_pm_as_read,
         on_mark_topic_as_read: unread_ops.mark_topic_as_read,
-        maybe_load_older_messages(first_unread_message_id) {
+        maybe_load_older_messages: (first_unread_message_id) => {
             recent_view_ui.set_backfill_in_progress(true);
             message_fetch.maybe_load_older_messages({
                 msg_list_data: all_messages_data,
@@ -770,7 +770,7 @@ export function initialize_everything(state_data) {
     stream_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();
     stream_list.initialize({
-        on_stream_click(stream_id, trigger) {
+        on_stream_click: (stream_id, trigger) => {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
@@ -838,7 +838,7 @@ export function initialize_everything(state_data) {
     audible_notifications.initialize();
     compose_notifications.initialize({
         on_click_scroll_to_selected: message_viewport.scroll_to_selected,
-        on_narrow_to_recipient(message_id) {
+        on_narrow_to_recipient: (message_id) => {
             message_view.narrow_by_topic(message_id, {trigger: "compose_notification"});
         },
     });
@@ -858,7 +858,7 @@ export function initialize_everything(state_data) {
     initialize_unread_ui();
     activity.initialize();
     activity_ui.initialize({
-        narrow_by_email(email) {
+        narrow_by_email: (email) => {
             message_view.show(
                 [
                     {
@@ -884,7 +884,7 @@ export function initialize_everything(state_data) {
     personal_menu_popover.initialize();
     pm_list.initialize();
     topic_list.initialize({
-        on_topic_click(stream_id, topic) {
+        on_topic_click: (stream_id, topic) => {
             const sub = sub_store.get(stream_id);
             message_view.show(
                 [
@@ -907,7 +907,7 @@ export function initialize_everything(state_data) {
     desktop_integration.initialize();
 
     $("#app-loading").addClass("loaded");
-}
+};
 
 $(async () => {
     if (page_params.is_spectator) {
@@ -926,11 +926,11 @@ $(async () => {
         channel.post({
             url: "/json/register",
             data,
-            success(response_data) {
+            success: (response_data) => {
                 const state_data = state_data_schema.parse(response_data);
                 initialize_everything(state_data);
             },
-            error() {
+            error: () => {
                 $("#app-loading-middle-content").hide();
                 $("#app-loading-bottom-content").hide();
                 $(".app").hide();

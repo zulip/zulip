@@ -4,7 +4,7 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function trigger_edit_last_message(page: Page): Promise<void> {
+const trigger_edit_last_message = async (page: Page): Promise<void> => {
     const msg = (await page.$$(".message-list .message_row")).at(-1);
     assert.ok(msg !== undefined);
     const id = await (await msg.getProperty("id")).jsonValue();
@@ -18,18 +18,18 @@ async function trigger_edit_last_message(page: Page): Promise<void> {
     await page.waitForSelector(".popover_edit_message", {visible: true});
     await page.click(".popover_edit_message");
     await page.waitForSelector(".message_edit_content", {visible: true});
-}
+};
 
-async function edit_stream_message(page: Page, content: string): Promise<void> {
+const edit_stream_message = async (page: Page, content: string): Promise<void> => {
     await trigger_edit_last_message(page);
 
     await common.clear_and_type(page, ".message_edit_content", content);
     await page.click(".message_edit_save");
 
     await common.wait_for_fully_processed_message(page, content);
-}
+};
 
-async function test_stream_message_edit(page: Page): Promise<void> {
+const test_stream_message_edit = async (page: Page): Promise<void> => {
     await common.send_message(page, "stream", {
         stream_name: "Verona",
         topic: "edits",
@@ -40,9 +40,9 @@ async function test_stream_message_edit(page: Page): Promise<void> {
 
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [["Verona > edits", ["test edited"]]]);
-}
+};
 
-async function test_edit_message_with_slash_me(page: Page): Promise<void> {
+const test_edit_message_with_slash_me = async (page: Page): Promise<void> => {
     const last_message_xpath = `(//*[${common.has_class_x("message-list")}]//*[${common.has_class_x(
         "messagebox",
     )}])[last()]`;
@@ -75,9 +75,9 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
             "sender_name",
         )} and normalize-space()="Desdemona"]`,
     );
-}
+};
 
-async function test_edit_private_message(page: Page): Promise<void> {
+const test_edit_private_message = async (page: Page): Promise<void> => {
     await common.send_message(page, "private", {
         recipient: "cordelia@zulip.com",
         content: "test editing pm",
@@ -92,9 +92,9 @@ async function test_edit_private_message(page: Page): Promise<void> {
     await common.check_messages_sent(page, message_list_id, [
         ["You and Cordelia, Lear's daughter", ["test edited pm"]],
     ]);
-}
+};
 
-async function edit_tests(page: Page): Promise<void> {
+const edit_tests = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector(".message-list .message_row", {visible: true});
@@ -102,6 +102,6 @@ async function edit_tests(page: Page): Promise<void> {
     await test_stream_message_edit(page);
     await test_edit_message_with_slash_me(page);
     await test_edit_private_message(page);
-}
+};
 
 common.run_test(edit_tests);

@@ -19,35 +19,35 @@ This library implements two related, similar concepts:
 
 */
 
-function show_more_link($row: JQuery): void {
+const show_more_link = ($row: JQuery): void => {
     $row.find(".message_condenser").hide();
     $row.find(".message_expander").show();
-}
+};
 
-function show_condense_link($row: JQuery): void {
+const show_condense_link = ($row: JQuery): void => {
     $row.find(".message_expander").hide();
     $row.find(".message_condenser").show();
-}
+};
 
-function condense_row($row: JQuery): void {
+const condense_row = ($row: JQuery): void => {
     const $content = $row.find(".message_content");
     $content.addClass("condensed");
     show_more_link($row);
-}
+};
 
-function uncondense_row($row: JQuery): void {
+const uncondense_row = ($row: JQuery): void => {
     const $content = $row.find(".message_content");
     $content.removeClass("condensed");
     show_condense_link($row);
-}
+};
 
-export function uncollapse(message: Message): void {
+export const uncollapse = (message: Message): void => {
     // Uncollapse a message, restoring the condensed message "Show more" or
     // "Show less" button if necessary.
     message.collapsed = false;
     message_flags.save_uncollapsed(message);
 
-    const process_row = function process_row($row: JQuery): void {
+    const process_row = ($row: JQuery): void => {
         const $content = $row.find(".message_content");
         $content.removeClass("collapsed");
 
@@ -74,9 +74,9 @@ export function uncollapse(message: Message): void {
             process_row($rendered_row);
         }
     }
-}
+};
 
-export function collapse(message: Message): void {
+export const collapse = (message: Message): void => {
     message.collapsed = true;
 
     if (message.locally_echoed) {
@@ -89,7 +89,7 @@ export function collapse(message: Message): void {
 
     message_flags.save_collapsed(message);
 
-    const process_row = function process_row($row: JQuery): void {
+    const process_row = ($row: JQuery): void => {
         $row.find(".message_content").addClass("collapsed");
         show_more_link($row);
     };
@@ -100,9 +100,9 @@ export function collapse(message: Message): void {
             process_row($rendered_row);
         }
     }
-}
+};
 
-export function toggle_collapse(message: Message): void {
+export const toggle_collapse = (message: Message): void => {
     if (message.is_me_message) {
         // Disabled temporarily because /me messages don't have a
         // styling for collapsing /me messages (they only recently
@@ -145,40 +145,36 @@ export function toggle_collapse(message: Message): void {
             collapse(message);
         }
     }
-}
+};
 
-function get_message_height(elem: HTMLElement): number {
-    // This needs to be very fast. This function runs hundreds of times
-    // when displaying a message feed view that has hundreds of message
-    // history, which ideally should render in <100ms.
-    return $(elem).find(".message_content")[0]!.scrollHeight;
-}
+const get_message_height = (elem: HTMLElement): number =>
+    $(elem).find(".message_content")[0]!.scrollHeight;
 
-export function hide_message_expander($row: JQuery): void {
+export const hide_message_expander = ($row: JQuery): void => {
     if ($row.find(".could-be-condensed").length !== 0) {
         $row.find(".message_expander").hide();
     }
-}
+};
 
-export function hide_message_condenser($row: JQuery): void {
+export const hide_message_condenser = ($row: JQuery): void => {
     if ($row.find(".could-be-condensed").length !== 0) {
         $row.find(".message_condenser").hide();
     }
-}
+};
 
-export function show_message_expander($row: JQuery): void {
+export const show_message_expander = ($row: JQuery): void => {
     if ($row.find(".could-be-condensed").length !== 0) {
         $row.find(".message_expander").show();
     }
-}
+};
 
-export function show_message_condenser($row: JQuery): void {
+export const show_message_condenser = ($row: JQuery): void => {
     if ($row.find(".could-be-condensed").length !== 0) {
         $row.find(".message_condenser").show();
     }
-}
+};
 
-export function condense_and_collapse(elems: JQuery): void {
+export const condense_and_collapse = (elems: JQuery): void => {
     if (message_lists.current === undefined) {
         return;
     }
@@ -256,7 +252,7 @@ export function condense_and_collapse(elems: JQuery): void {
             $(elem).find(".message_expander").show();
         }
     }
-}
+};
 
 export function initialize(): void {
     $("#message_feed_container").on("click", ".message_expander", function (this: HTMLElement, e) {

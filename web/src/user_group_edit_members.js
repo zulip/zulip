@@ -22,35 +22,35 @@ export let pill_widget;
 let current_group_id;
 let member_list_widget;
 
-function get_potential_members() {
+const get_potential_members = () => {
     const group = user_groups.get_user_group_from_id(current_group_id);
-    function is_potential_member(person) {
+    const is_potential_member = (person) => {
         // user  verbose style filter to have room
         // to add more potential checks easily.
         if (group.members.has(person.user_id)) {
             return false;
         }
         return true;
-    }
+    };
 
     return people.filter_all_users(is_potential_member);
-}
+};
 
-function get_user_group_members(group) {
+const get_user_group_members = (group) => {
     const member_ids = [...group.members];
     const active_member_ids = member_ids.filter((user_id) => people.is_person_active(user_id));
     return people.get_users_from_ids(active_member_ids);
-}
+};
 
-export function update_member_list_widget(group) {
+export const update_member_list_widget = (group) => {
     assert(group.id === current_group_id, "Unexpected group rerendering members list");
     const users = get_user_group_members(group);
     people.sort_but_pin_current_user_on_top(users);
     member_list_widget.replace_list_data(users);
-}
+};
 
-function format_member_list_elem(person) {
-    return render_user_group_member_list_entry({
+const format_member_list_elem = (person) =>
+    render_user_group_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === current_user.user_id,
@@ -59,9 +59,8 @@ function format_member_list_elem(person) {
         for_user_group_members: true,
         img_src: people.small_avatar_url_for_person(person),
     });
-}
 
-function make_list_widget({$parent_container, name, users}) {
+const make_list_widget = ({$parent_container, name, users}) => {
     people.sort_but_pin_current_user_on_top(users);
 
     const $list_container = $parent_container.find(".member_table");
@@ -78,12 +77,10 @@ function make_list_widget({$parent_container, name, users}) {
             id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
-        modifier_html(item) {
-            return format_member_list_elem(item);
-        },
+        modifier_html: (item) => format_member_list_elem(item),
         filter: {
             $element: $parent_container.find(".search"),
-            predicate(person, value) {
+            predicate: (person, value) => {
                 const matcher = people.build_person_matcher(value);
                 const match = matcher(person);
 
@@ -92,9 +89,9 @@ function make_list_widget({$parent_container, name, users}) {
         },
         $simplebar_container,
     });
-}
+};
 
-export function enable_member_management({group, $parent_container}) {
+export const enable_member_management = ({group, $parent_container}) => {
     const group_id = group.id;
 
     const $pill_container = $parent_container.find(".pill-container");
@@ -116,15 +113,15 @@ export function enable_member_management({group, $parent_container}) {
         name: "user_group_members",
         users: get_user_group_members(group),
     });
-}
+};
 
-function show_user_group_membership_request_result({
+const show_user_group_membership_request_result = ({
     message,
     add_class,
     remove_class,
     already_added_users,
     ignored_deactivated_users,
-}) {
+}) => {
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
     ).expectOne();
@@ -140,9 +137,9 @@ function show_user_group_membership_request_result({
     if (remove_class) {
         $user_group_subscription_req_result_elem.removeClass(remove_class);
     }
-}
+};
 
-export function edit_user_group_membership({group, added = [], removed = [], success, error}) {
+export const edit_user_group_membership = ({group, added = [], removed = [], success, error}) => {
     channel.post({
         url: "/json/user_groups/" + group.id + "/members",
         data: {
@@ -152,9 +149,9 @@ export function edit_user_group_membership({group, added = [], removed = [], suc
         success,
         error,
     });
-}
+};
 
-function add_new_members({pill_user_ids}) {
+const add_new_members = ({pill_user_ids}) => {
     const group = user_groups.get_user_group_from_id(current_group_id);
     if (!group) {
         return;
@@ -218,7 +215,7 @@ function add_new_members({pill_user_ids}) {
     }
     const user_ids = [...user_id_set];
 
-    function invite_success() {
+    const invite_success = () => {
         pill_widget.clear();
         show_user_group_membership_request_result({
             message: $t({defaultMessage: "Added successfully."}),
@@ -227,9 +224,9 @@ function add_new_members({pill_user_ids}) {
             already_added_users: ignored_already_added_users,
             ignored_deactivated_users,
         });
-    }
+    };
 
-    function invite_failure(xhr) {
+    const invite_failure = (xhr) => {
         let message = "Failed to add user!";
         if (xhr.responseJSON?.msg) {
             message = xhr.responseJSON.msg;
@@ -239,7 +236,7 @@ function add_new_members({pill_user_ids}) {
             add_class: "text-error",
             remove_class: "text-success",
         });
-    }
+    };
 
     edit_user_group_membership({
         group,
@@ -247,15 +244,15 @@ function add_new_members({pill_user_ids}) {
         success: invite_success,
         error: invite_failure,
     });
-}
+};
 
-function remove_member({group_id, target_user_id, $list_entry}) {
+const remove_member = ({group_id, target_user_id, $list_entry}) => {
     const group = user_groups.get_user_group_from_id(current_group_id);
     if (!group) {
         return;
     }
 
-    function removal_success() {
+    const removal_success = () => {
         if (group_id !== current_group_id) {
             blueslip.info("Response for subscription removal came too late.");
             return;
@@ -268,24 +265,24 @@ function remove_member({group_id, target_user_id, $list_entry}) {
             add_class: "text-success",
             remove_class: "text-remove",
         });
-    }
+    };
 
-    function removal_failure() {
+    const removal_failure = () => {
         show_user_group_membership_request_result({
             message: $t({defaultMessage: "Error removing user from this group."}),
             add_class: "text-error",
             remove_class: "text-success",
         });
-    }
+    };
 
-    function do_remove_user_from_group() {
+    const do_remove_user_from_group = () => {
         edit_user_group_membership({
             group,
             removed: [target_user_id],
             success: removal_success,
             error: removal_failure,
         });
-    }
+    };
 
     if (people.is_my_user_id(target_user_id) && !current_user.is_admin) {
         const html_body = render_leave_user_group_modal({
@@ -303,9 +300,9 @@ function remove_member({group_id, target_user_id, $list_entry}) {
     }
 
     do_remove_user_from_group();
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
         $parent_container: $("#groups_overlay_container"),
@@ -327,4 +324,4 @@ export function initialize() {
             remove_member({group_id, target_user_id, $list_entry});
         },
     );
-}
+};

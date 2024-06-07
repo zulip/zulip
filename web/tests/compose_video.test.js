@@ -12,10 +12,10 @@ const channel = mock_esm("../src/channel");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_ui = mock_esm("../src/compose_ui");
 mock_esm("../src/resize", {
-    watch_manual_resize() {},
+    watch_manual_resize: () => {},
 });
 set_global("document", {
-    querySelector() {},
+    querySelector: () => {},
 });
 set_global("navigator", {});
 set_global(
@@ -28,7 +28,7 @@ set_global(
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_setup = zrequire("compose_setup");
 
-function stub_out_video_calls() {
+const stub_out_video_calls = () => {
     const $elem = $(".compose-control-buttons-container .video_link");
     $elem.toggle = (show) => {
         /* istanbul ignore if */
@@ -38,7 +38,7 @@ function stub_out_video_calls() {
             $elem.hide();
         }
     };
-}
+};
 
 const realm_available_video_chat_providers = {
     disabled: {
@@ -59,12 +59,12 @@ const realm_available_video_chat_providers = {
     },
 };
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         realm.realm_available_video_chat_providers = realm_available_video_chat_providers;
         f(helpers);
     });
-}
+};
 
 test("videos", ({override}) => {
     realm.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
@@ -73,13 +73,13 @@ test("videos", ({override}) => {
 
     compose_setup.initialize();
 
-    (function test_no_provider_video_link_compose_clicked() {
+    (() => {
         const $textarea = $.create("target-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
-            preventDefault() {},
-            stopPropagation() {},
+            preventDefault: () => {},
+            stopPropagation: () => {},
         };
 
         const handler = $("body").get_on_handler("click", ".video_link");
@@ -91,7 +91,7 @@ test("videos", ({override}) => {
         });
     })();
 
-    (function test_jitsi_video_link_compose_clicked() {
+    (() => {
         let syntax_to_insert;
         let called = false;
 
@@ -99,8 +99,8 @@ test("videos", ({override}) => {
         $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
-            preventDefault() {},
-            stopPropagation() {},
+            preventDefault: () => {},
+            stopPropagation: () => {},
             target: {
                 to_$: () => $textarea,
             },
@@ -147,7 +147,7 @@ test("videos", ({override}) => {
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
-    (function test_zoom_video_and_audio_links_compose_clicked() {
+    (() => {
         let syntax_to_insert;
         let called = false;
 
@@ -155,8 +155,8 @@ test("videos", ({override}) => {
         $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
-            preventDefault() {},
-            stopPropagation() {},
+            preventDefault: () => {},
+            stopPropagation: () => {},
             target: {
                 to_$: () => $textarea,
             },
@@ -185,7 +185,7 @@ test("videos", ({override}) => {
                 msg: "",
                 url: "example.zoom.com",
             });
-            return {abort() {}};
+            return {abort: () => {}};
         };
 
         $("textarea#compose-textarea").val("");
@@ -203,7 +203,7 @@ test("videos", ({override}) => {
         assert.match(syntax_to_insert, audio_link_regex);
     })();
 
-    (function test_bbb_video_link_compose_clicked() {
+    (() => {
         let syntax_to_insert;
         let called = false;
 
@@ -211,8 +211,8 @@ test("videos", ({override}) => {
         $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
-            preventDefault() {},
-            stopPropagation() {},
+            preventDefault: () => {},
+            stopPropagation: () => {},
             target: {
                 to_$: () => $textarea,
             },

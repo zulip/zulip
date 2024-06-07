@@ -6,7 +6,10 @@ import type {Message} from "./message_store";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
-export function do_unread_count_updates(messages: Message[], expect_no_new_unreads = false): void {
+export const do_unread_count_updates = (
+    messages: Message[],
+    expect_no_new_unreads = false,
+): void => {
     const any_new_unreads = unread.process_loaded_messages(messages, expect_no_new_unreads);
 
     if (any_new_unreads) {
@@ -14,13 +17,13 @@ export function do_unread_count_updates(messages: Message[], expect_no_new_unrea
         // only happen if we found any unread messages justifying it.
         unread_ui.update_unread_counts();
     }
-}
+};
 
-export function add_messages(
+export const add_messages = (
     messages: Message[],
     msg_list: MessageList,
     append_to_view_opts: {messages_are_new: boolean},
-): RenderInfo | undefined {
+): RenderInfo | undefined => {
     if (!messages) {
         return undefined;
     }
@@ -28,19 +31,17 @@ export function add_messages(
     const render_info = msg_list.add_messages(messages, append_to_view_opts);
 
     return render_info;
-}
+};
 
-export function add_old_messages(
+export const add_old_messages = (
     messages: Message[],
     msg_list: MessageList,
-): RenderInfo | undefined {
-    return add_messages(messages, msg_list, {messages_are_new: false});
-}
+): RenderInfo | undefined => add_messages(messages, msg_list, {messages_are_new: false});
 
-export function add_new_messages(
+export const add_new_messages = (
     messages: Message[],
     msg_list: MessageList,
-): RenderInfo | undefined {
+): RenderInfo | undefined => {
     if (!msg_list.data.fetch_status.has_found_newest()) {
         // We don't render newly received messages for the message list,
         // if we haven't found the latest messages to be displayed in the
@@ -50,9 +51,9 @@ export function add_new_messages(
         return undefined;
     }
     return add_messages(messages, msg_list, {messages_are_new: true});
-}
+};
 
-export function add_new_messages_data(
+export const add_new_messages_data = (
     messages: Message[],
     msg_list_data: MessageListData,
 ):
@@ -61,7 +62,7 @@ export function add_new_messages_data(
           bottom_messages: Message[];
           interior_messages: Message[];
       }
-    | undefined {
+    | undefined => {
     if (!msg_list_data.fetch_status.has_found_newest()) {
         // The reasoning in add_new_messages applies here as well;
         // we're trying to maintain a data structure that's a
@@ -71,10 +72,10 @@ export function add_new_messages_data(
         return undefined;
     }
     return msg_list_data.add_messages(messages);
-}
+};
 
-export function get_messages_in_topic(stream_id: number, topic: string): Message[] {
-    return all_messages_data
+export const get_messages_in_topic = (stream_id: number, topic: string): Message[] =>
+    all_messages_data
         .all_messages()
         .filter(
             (x) =>
@@ -82,9 +83,8 @@ export function get_messages_in_topic(stream_id: number, topic: string): Message
                 x.stream_id === stream_id &&
                 x.topic.toLowerCase() === topic.toLowerCase(),
         );
-}
 
-export function get_max_message_id_in_stream(stream_id: number): number {
+export const get_max_message_id_in_stream = (stream_id: number): number => {
     let max_message_id = 0;
     for (const msg of all_messages_data.all_messages()) {
         if (msg.type === "stream" && msg.stream_id === stream_id && msg.id > max_message_id) {
@@ -92,9 +92,11 @@ export function get_max_message_id_in_stream(stream_id: number): number {
         }
     }
     return max_message_id;
-}
+};
 
-export function get_topics_for_message_ids(message_ids: number[]): Map<string, [number, string]> {
+export const get_topics_for_message_ids = (
+    message_ids: number[],
+): Map<string, [number, string]> => {
     const topics = new Map<string, [number, string]>(); // key = stream_id:topic
     for (const msg_id of message_ids) {
         // message_store still has data on deleted messages when this runs.
@@ -111,4 +113,4 @@ export function get_topics_for_message_ids(message_ids: number[]): Map<string, [
         }
     }
     return topics;
-}
+};

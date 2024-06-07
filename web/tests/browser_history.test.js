@@ -12,14 +12,14 @@ window.location.hash = "#bogus";
 
 const browser_history = zrequire("browser_history");
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (...args) => {
         user_settings.web_home_view = "recent";
         window.location.hash = "#bogus";
         browser_history.clear_for_testing();
         f(...args);
     });
-}
+};
 
 test("basics", () => {
     const hash1 = "#settings/profile";

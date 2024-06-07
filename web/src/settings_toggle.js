@@ -6,20 +6,20 @@ import * as settings_panel_menu from "./settings_panel_menu";
 
 let toggler;
 
-export function highlight_toggle(tab_name) {
+export const highlight_toggle = (tab_name) => {
     if (toggler) {
         toggler.goto(tab_name);
     }
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
             {label: $t({defaultMessage: "Personal"}), key: "settings"},
             {label: $t({defaultMessage: "Organization"}), key: "organization"},
         ],
-        callback(_name, key) {
+        callback: (_name, key) => {
             if (key === "organization") {
                 settings_panel_menu.show_org_settings();
             } else {
@@ -31,10 +31,10 @@ export function initialize() {
     settings_panel_menu.set_key_handlers(toggler);
 
     toggler.get().appendTo("#settings_overlay_container .tab-container");
-}
+};
 
 // Handles the collapse/reveal of some tabs in the org settings for non-admins.
-export function toggle_org_setting_collapse() {
+export const toggle_org_setting_collapse = () => {
     const is_collapsed = $(".collapse-org-settings").hasClass("hide-org-settings");
     const show_fewer_settings_text = $t({defaultMessage: "Show fewer"});
     const show_more_settings_text = $t({defaultMessage: "Show more"});
@@ -64,4 +64,4 @@ export function toggle_org_setting_collapse() {
     if ($current_tab.hasClass("hide-org-settings")) {
         $(location).attr("href", "/#organization/organization-profile");
     }
-}
+};

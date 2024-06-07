@@ -1,15 +1,15 @@
 import assert from "minimalistic-assert";
 
-function get_new_rand(old_random_int: number, max: number): number {
+const get_new_rand = (old_random_int: number, max: number): number => {
     assert(max >= 2);
     const random_int = Math.floor(Math.random() * max);
     return random_int === old_random_int ? get_new_rand(random_int, max) : random_int;
-}
+};
 
-function get_random_item_from_array<T>(array: T[]): T {
+const get_random_item_from_array = <T>(array: T[]): T => {
     assert(array.length >= 1);
     return array[Math.floor(Math.random() * array.length)]!;
-}
+};
 
 const current_client_logo_class_names = new Set([
     "client-logos__logo_akamai",
@@ -31,7 +31,7 @@ const future_client_logo_class_names = new Set([
     "client-logos__logo_asciidoc",
 ]);
 let current_client_logo_class_names_index = 0;
-function update_client_logo(): void {
+const update_client_logo = (): void => {
     if (document.hidden) {
         return;
     }
@@ -52,6 +52,6 @@ function update_client_logo(): void {
     client_logo_elt.className = next_logo_class;
     current_client_logo_class_names.add(next_logo_class);
     future_client_logo_class_names.add(current_logo_class);
-}
+};
 
 setInterval(update_client_logo, 2500);

@@ -5,11 +5,11 @@ import * as blueslip from "./blueslip";
 export let next_local_id = 0;
 export const messages = new Map<string, MessageState>();
 
-export function get_new_local_id(): string {
+export const get_new_local_id = (): string => {
     next_local_id += 1;
     const local_id = next_local_id;
     return "loc-" + local_id.toString();
-}
+};
 
 export class MessageState {
     local_id: string;
@@ -74,7 +74,7 @@ export class MessageState {
     }
 }
 
-export function start_tracking_message(opts: {local_id: string; locally_echoed: boolean}): void {
+export const start_tracking_message = (opts: {local_id: string; locally_echoed: boolean}): void => {
     const local_id = opts.local_id;
 
     if (!opts.local_id) {
@@ -90,9 +90,9 @@ export function start_tracking_message(opts: {local_id: string; locally_echoed: 
     const state = new MessageState(opts);
 
     messages.set(local_id, state);
-}
+};
 
-export function get_message_state(local_id: string): MessageState | undefined {
+export const get_message_state = (local_id: string): MessageState | undefined => {
     const state = messages.get(local_id);
 
     if (!state) {
@@ -100,26 +100,26 @@ export function get_message_state(local_id: string): MessageState | undefined {
     }
 
     return state;
-}
+};
 
-export function start_send(local_id: string): Sentry.Transaction | undefined {
+export const start_send = (local_id: string): Sentry.Transaction | undefined => {
     const state = get_message_state(local_id);
     if (!state) {
         return undefined;
     }
 
     return state.start_send();
-}
+};
 
-export function mark_disparity(local_id: string): void {
+export const mark_disparity = (local_id: string): void => {
     const state = get_message_state(local_id);
     if (!state) {
         return;
     }
     state.mark_disparity();
-}
+};
 
-export function report_event_received(local_id: string): void {
+export const report_event_received = (local_id: string): void => {
     if (local_id === undefined) {
         return;
     }
@@ -129,4 +129,4 @@ export function report_event_received(local_id: string): void {
     }
 
     state.report_event_received();
-}
+};

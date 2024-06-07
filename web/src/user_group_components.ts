@@ -5,7 +5,7 @@ import * as settings_components from "./settings_components";
 import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
 
-export function setup_permissions_dropdown(group: UserGroup, for_group_creation: boolean): void {
+export const setup_permissions_dropdown = (group: UserGroup, for_group_creation: boolean): void => {
     let widget_name: string;
     let default_id: number;
     if (for_group_creation) {
@@ -23,7 +23,7 @@ export function setup_permissions_dropdown(group: UserGroup, for_group_creation:
                 "can_mention_group",
                 "group",
             ),
-        item_click_callback(event, dropdown) {
+        item_click_callback: (event, dropdown) => {
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
@@ -41,7 +41,7 @@ export function setup_permissions_dropdown(group: UserGroup, for_group_creation:
         },
         default_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        on_mount_callback(dropdown) {
+        on_mount_callback: (dropdown) => {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
@@ -51,4 +51,4 @@ export function setup_permissions_dropdown(group: UserGroup, for_group_creation:
         settings_components.set_can_mention_group_widget(can_mention_group_widget);
     }
     can_mention_group_widget.setup();
-}
+};

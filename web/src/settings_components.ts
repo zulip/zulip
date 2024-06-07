@@ -31,9 +31,9 @@ type SettingOptionValue = {
 
 type SettingOptionValueWithKey = SettingOptionValue & {key: string};
 
-export function get_sorted_options_list(
+export const get_sorted_options_list = (
     option_values_object: Record<string, SettingOptionValue>,
-): SettingOptionValueWithKey[] {
+): SettingOptionValueWithKey[] => {
     const options_list: SettingOptionValueWithKey[] = Object.entries(option_values_object).map(
         ([key, value]) => ({...value, key}),
     );
@@ -60,7 +60,7 @@ export function get_sorted_options_list(
     }
     options_list.sort(comparator);
     return options_list;
-}
+};
 
 type MessageTimeLimitSetting =
     | "realm_message_content_edit_limit_seconds"
@@ -68,7 +68,7 @@ type MessageTimeLimitSetting =
     | "realm_move_messages_within_stream_limit_seconds"
     | "realm_message_content_delete_limit_seconds";
 
-export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetting): string {
+export const get_realm_time_limits_in_minutes = (property: MessageTimeLimitSetting): string => {
     const setting_value = realm[property];
     if (setting_value === null) {
         // This represents "Anytime" case.
@@ -79,7 +79,7 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
         val = (setting_value / 60).toFixed(0);
     }
     return val;
-}
+};
 
 type RealmSetting = typeof realm;
 type RealmSettingProperties = keyof RealmSetting | "realm_org_join_restrictions";
@@ -93,9 +93,9 @@ type StreamSettingProperties = keyof StreamSubscription | "stream_privacy" | "is
 
 type valueof<T> = T[keyof T];
 
-export function get_realm_settings_property_value(
+export const get_realm_settings_property_value = (
     property_name: RealmSettingProperties,
-): valueof<RealmSetting> {
+): valueof<RealmSetting> => {
     if (property_name === "realm_org_join_restrictions") {
         if (realm.realm_emails_restricted_to_domains) {
             return "only_selected_domain";
@@ -110,12 +110,12 @@ export function get_realm_settings_property_value(
         return JSON.stringify(realm_authentication_methods_to_boolean_dict());
     }
     return realm[property_name];
-}
+};
 
-export function get_stream_settings_property_value(
+export const get_stream_settings_property_value = (
     property_name: StreamSettingProperties,
     sub: StreamSubscription,
-): valueof<StreamSubscription> {
+): valueof<StreamSubscription> => {
     if (property_name === "stream_privacy") {
         return stream_data.get_stream_privacy_policy(sub.stream_id);
     }
@@ -123,29 +123,27 @@ export function get_stream_settings_property_value(
         return stream_data.is_default_stream_id(sub.stream_id);
     }
     return sub[property_name];
-}
+};
 
-export function get_group_property_value(
+export const get_group_property_value = (
     property_name: keyof UserGroup,
     group: UserGroup,
-): valueof<UserGroup> {
-    return group[property_name];
-}
+): valueof<UserGroup> => group[property_name];
 
-export function get_custom_profile_property_value(
+export const get_custom_profile_property_value = (
     property_name: keyof CustomProfileField,
     custom_profile_field: CustomProfileField,
-): valueof<CustomProfileField> {
+): valueof<CustomProfileField> => {
     const value = custom_profile_field[property_name];
     if (property_name === "display_in_profile_summary" && value === undefined) {
         return false;
     }
     return value;
-}
+};
 
-export function get_realm_default_setting_property_value(
+export const get_realm_default_setting_property_value = (
     property_name: RealmUserSettingDefaultProperties,
-): valueof<RealmUserSettingDefaultType> {
+): valueof<RealmUserSettingDefaultType> => {
     if (property_name === "twenty_four_hour_time") {
         return JSON.stringify(realm_user_settings_defaults.twenty_four_hour_time);
     }
@@ -156,10 +154,10 @@ export function get_realm_default_setting_property_value(
         return realm_user_settings_defaults.email_notifications_batching_period_seconds;
     }
     return realm_user_settings_defaults[property_name];
-}
+};
 
-export function realm_authentication_methods_to_boolean_dict(): Record<string, boolean> {
-    return Object.fromEntries(
+export const realm_authentication_methods_to_boolean_dict = (): Record<string, boolean> =>
+    Object.fromEntries(
         Object.entries(realm.realm_authentication_methods)
             .sort()
             .map(([auth_method_name, auth_method_info]) => [
@@ -167,9 +165,11 @@ export function realm_authentication_methods_to_boolean_dict(): Record<string, b
                 auth_method_info.enabled,
             ]),
     );
-}
 
-export function extract_property_name($elem: JQuery, for_realm_default_settings?: boolean): string {
+export const extract_property_name = (
+    $elem: JQuery,
+    for_realm_default_settings?: boolean,
+): string => {
     const elem_id = $elem.attr("id");
     assert(elem_id !== undefined);
     if (for_realm_default_settings) {
@@ -195,11 +195,11 @@ export function extract_property_name($elem: JQuery, for_realm_default_settings?
     }
 
     return /^id_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1]!;
-}
+};
 
-export function get_subsection_property_elements($subsection: JQuery): HTMLElement[] {
-    return [...$subsection.find(".prop-element")];
-}
+export const get_subsection_property_elements = ($subsection: JQuery): HTMLElement[] => [
+    ...$subsection.find(".prop-element"),
+];
 
 type simple_dropdown_realm_settings = Pick<
     typeof realm,
@@ -217,41 +217,41 @@ type simple_dropdown_realm_settings = Pick<
     | "realm_org_type"
 >;
 
-export function set_property_dropdown_value(
+export const set_property_dropdown_value = (
     property_name: keyof simple_dropdown_realm_settings,
-): void {
+): void => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const property_value = get_realm_settings_property_value(
         property_name,
     ) as valueof<simple_dropdown_realm_settings>;
     $(`#id_${CSS.escape(property_name)}`).val(property_value);
-}
+};
 
-export function change_element_block_display_property(
+export const change_element_block_display_property = (
     elem_id: string,
     show_element: boolean,
-): void {
+): void => {
     const $elem = $(`#${CSS.escape(elem_id)}`);
     if (show_element) {
         $elem.parent().show();
     } else {
         $elem.parent().hide();
     }
-}
+};
 
-export function is_video_chat_provider_jitsi_meet(): boolean {
+export const is_video_chat_provider_jitsi_meet = (): boolean => {
     const video_chat_provider_id = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#id_realm_video_chat_provider").val()!,
         10,
     );
     const jitsi_meet_id = realm.realm_available_video_chat_providers.jitsi_meet.id;
     return video_chat_provider_id === jitsi_meet_id;
-}
+};
 
-function get_jitsi_server_url_setting_value(
+const get_jitsi_server_url_setting_value = (
     $input_elem: JQuery<HTMLSelectElement>,
     for_api_data = true,
-): string | null {
+): string | null => {
     // If the video chat provider dropdown is not set to Jitsi, we return
     // `realm_jitsi_server_url` to indicate that the property remains unchanged.
     // This ensures the appropriate state of the save button and prevents the
@@ -273,9 +273,9 @@ function get_jitsi_server_url_setting_value(
         return $custom_input_elem.val()!;
     }
     return JSON.stringify($custom_input_elem.val());
-}
+};
 
-export function update_custom_value_input(property_name: MessageTimeLimitSetting): void {
+export const update_custom_value_input = (property_name: MessageTimeLimitSetting): void => {
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
     const custom_input_elem_id = $dropdown_elem
         .parent()
@@ -289,11 +289,11 @@ export function update_custom_value_input(property_name: MessageTimeLimitSetting
             get_realm_time_limits_in_minutes(property_name),
         );
     }
-}
+};
 
-export function get_time_limit_dropdown_setting_value(
+export const get_time_limit_dropdown_setting_value = (
     property_name: MessageTimeLimitSetting,
-): string {
+): string => {
     const value = realm[property_name];
     if (value === null) {
         return "any_time";
@@ -305,9 +305,9 @@ export function get_time_limit_dropdown_setting_value(
     }
 
     return "custom_period";
-}
+};
 
-export function set_time_limit_setting(property_name: MessageTimeLimitSetting): void {
+export const set_time_limit_setting = (property_name: MessageTimeLimitSetting): void => {
     const dropdown_elem_val = get_time_limit_dropdown_setting_value(property_name);
     $(`#id_${CSS.escape(property_name)}`).val(dropdown_elem_val);
 
@@ -320,9 +320,9 @@ export function set_time_limit_setting(property_name: MessageTimeLimitSetting): 
         $custom_input.attr("id")!,
         dropdown_elem_val === "custom_period",
     );
-}
+};
 
-function check_valid_number_input(input_value: string, keep_number_as_float = false): number {
+const check_valid_number_input = (input_value: string, keep_number_as_float = false): number => {
     // This check is important to make sure that inputs like "24a" are
     // considered invalid and this function returns NaN for such inputs.
     // Number.parseInt and Number.parseFloat will convert strings like
@@ -336,12 +336,12 @@ function check_valid_number_input(input_value: string, keep_number_as_float = fa
     }
 
     return Number.parseInt(input_value, 10);
-}
+};
 
-function get_message_retention_setting_value(
+const get_message_retention_setting_value = (
     $input_elem: JQuery<HTMLSelectElement>,
     for_api_data = true,
-): string | number | null {
+): string | number | null => {
     const select_elem_val = $input_elem.val();
     if (select_elem_val === "unlimited") {
         if (!for_api_data) {
@@ -365,7 +365,7 @@ function get_message_retention_setting_value(
         return settings_config.retain_message_forever;
     }
     return check_valid_number_input(custom_input_val);
-}
+};
 
 export const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
 export type SelectFieldData = z.output<typeof select_field_data_schema>;
@@ -414,7 +414,9 @@ export const external_account_field_schema = z.object({
 
 export type ExternalAccountFieldData = z.output<typeof external_account_field_schema>;
 
-function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
+const read_external_account_field_data = (
+    $profile_field_form: JQuery,
+): ExternalAccountFieldData => {
     const field_data: ExternalAccountFieldData = {
         subtype: $profile_field_form
             .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
@@ -426,15 +428,15 @@ function read_external_account_field_data($profile_field_form: JQuery): External
             .val()!;
     }
     return field_data;
-}
+};
 
 export type FieldData = SelectFieldData | ExternalAccountFieldData;
 
-export function read_field_data_from_form(
+export const read_field_data_from_form = (
     field_type_id: number,
     $profile_field_form: JQuery,
     old_field_data: unknown,
-): FieldData | undefined {
+): FieldData | undefined => {
     const field_types = realm.custom_profile_field_types;
 
     // Only read field data if we are creating a select field
@@ -445,9 +447,9 @@ export function read_field_data_from_form(
         return read_external_account_field_data($profile_field_form);
     }
     return undefined;
-}
+};
 
-function get_field_data_input_value($input_elem: JQuery): string | undefined {
+const get_field_data_input_value = ($input_elem: JQuery): string | undefined => {
     const $profile_field_form = $input_elem.closest(".profile-field-form");
     const profile_field_id = Number.parseInt(
         $($profile_field_form).attr("data-profile-field-id")!,
@@ -461,7 +463,7 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
         JSON.parse(field.field_data),
     );
     return JSON.stringify(proposed_value);
-}
+};
 
 export let default_code_language_widget: DropdownWidget | null = null;
 export let new_stream_announcements_stream_widget: DropdownWidget | null = null;
@@ -473,9 +475,9 @@ export let can_access_all_users_group_widget: DropdownWidget | null = null;
 export let can_mention_group_widget: DropdownWidget | null = null;
 export let new_group_can_mention_group_widget: DropdownWidget | null = null;
 
-export function get_widget_for_dropdown_list_settings(
+export const get_widget_for_dropdown_list_settings = (
     property_name: string,
-): DropdownWidget | null {
+): DropdownWidget | null => {
     switch (property_name) {
         case "realm_new_stream_announcements_stream_id":
             return new_stream_announcements_stream_widget;
@@ -497,54 +499,54 @@ export function get_widget_for_dropdown_list_settings(
             blueslip.error("No dropdown list widget for property", {property_name});
             return null;
     }
-}
+};
 
-export function set_default_code_language_widget(widget: DropdownWidget): void {
+export const set_default_code_language_widget = (widget: DropdownWidget): void => {
     default_code_language_widget = widget;
-}
+};
 
-export function set_new_stream_announcements_stream_widget(widget: DropdownWidget): void {
+export const set_new_stream_announcements_stream_widget = (widget: DropdownWidget): void => {
     new_stream_announcements_stream_widget = widget;
-}
+};
 
-export function set_signup_announcements_stream_widget(widget: DropdownWidget): void {
+export const set_signup_announcements_stream_widget = (widget: DropdownWidget): void => {
     signup_announcements_stream_widget = widget;
-}
+};
 
-export function set_zulip_update_announcements_stream_widget(widget: DropdownWidget): void {
+export const set_zulip_update_announcements_stream_widget = (widget: DropdownWidget): void => {
     zulip_update_announcements_stream_widget = widget;
-}
+};
 
-export function set_create_multiuse_invite_group_widget(widget: DropdownWidget): void {
+export const set_create_multiuse_invite_group_widget = (widget: DropdownWidget): void => {
     create_multiuse_invite_group_widget = widget;
-}
+};
 
-export function set_can_remove_subscribers_group_widget(widget: DropdownWidget): void {
+export const set_can_remove_subscribers_group_widget = (widget: DropdownWidget): void => {
     can_remove_subscribers_group_widget = widget;
-}
+};
 
-export function set_can_access_all_users_group_widget(widget: DropdownWidget): void {
+export const set_can_access_all_users_group_widget = (widget: DropdownWidget): void => {
     can_access_all_users_group_widget = widget;
-}
+};
 
-export function set_can_mention_group_widget(widget: DropdownWidget): void {
+export const set_can_mention_group_widget = (widget: DropdownWidget): void => {
     can_mention_group_widget = widget;
-}
+};
 
-export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
+export const set_new_group_can_mention_group_widget = (widget: DropdownWidget): void => {
     new_group_can_mention_group_widget = widget;
-}
+};
 
-export function set_dropdown_list_widget_setting_value(
+export const set_dropdown_list_widget_setting_value = (
     property_name: string,
     value: number | string,
-): void {
+): void => {
     const widget = get_widget_for_dropdown_list_settings(property_name);
     assert(widget !== null);
     widget.render(value);
-}
+};
 
-export function get_dropdown_list_widget_setting_value($input_elem: JQuery): number | string {
+export const get_dropdown_list_widget_setting_value = ($input_elem: JQuery): number | string => {
     const widget_name = extract_property_name($input_elem);
     const setting_widget = get_widget_for_dropdown_list_settings(widget_name);
     assert(setting_widget !== null);
@@ -553,7 +555,7 @@ export function get_dropdown_list_widget_setting_value($input_elem: JQuery): num
     assert(setting_value !== undefined);
 
     return setting_value;
-}
+};
 
 export function change_save_button_state($element: JQuery, state: string): void {
     function show_hide_element(
@@ -649,19 +651,19 @@ export function change_save_button_state($element: JQuery, state: string): void 
     });
 }
 
-function get_input_type($input_elem: JQuery, input_type?: string): string {
+const get_input_type = ($input_elem: JQuery, input_type?: string): string => {
     if (input_type !== undefined && ["boolean", "string", "number"].includes(input_type)) {
         return input_type;
     }
     input_type = $input_elem.attr("data-setting-widget-type");
     assert(input_type !== undefined);
     return input_type;
-}
+};
 
-export function get_input_element_value(
+export const get_input_element_value = (
     input_elem: HTMLElement,
     input_type?: string,
-): boolean | number | string | null | undefined {
+): boolean | number | string | null | undefined => {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
     let input_value;
@@ -712,12 +714,12 @@ export function get_input_element_value(
         default:
             return undefined;
     }
-}
+};
 
-export function set_input_element_value(
+export const set_input_element_value = (
     $input_elem: JQuery,
     value: number | string | boolean,
-): void {
+): void => {
     const input_type = get_input_type($input_elem, typeof value);
     if (input_type) {
         if (input_type === "boolean") {
@@ -734,9 +736,9 @@ export function set_input_element_value(
         property: extract_property_name($input_elem),
     });
     return;
-}
+};
 
-export function get_auth_method_list_data(): Record<string, boolean> {
+export const get_auth_method_list_data = (): Record<string, boolean> => {
     const new_auth_methods: Record<string, boolean> = {};
     const $auth_method_rows = $("#id_realm_authentication_methods").find("div.method_row");
 
@@ -747,17 +749,17 @@ export function get_auth_method_list_data(): Record<string, boolean> {
     }
 
     return new_auth_methods;
-}
+};
 
-export function parse_time_limit($elem: JQuery<HTMLInputElement>): number {
+export const parse_time_limit = ($elem: JQuery<HTMLInputElement>): number => {
     const time_limit_in_minutes = check_valid_number_input($elem.val()!, true);
     return Math.floor(time_limit_in_minutes * 60);
-}
+};
 
-function get_time_limit_setting_value(
+const get_time_limit_setting_value = (
     $input_elem: JQuery<HTMLSelectElement>,
     for_api_data = true,
-): string | number | null {
+): string | number | null => {
     const select_elem_val = $input_elem.val()!;
 
     if (select_elem_val === "any_time") {
@@ -793,9 +795,9 @@ function get_time_limit_setting_value(
     }
 
     return parse_time_limit($custom_input_elem);
-}
+};
 
-export function check_realm_settings_property_changed(elem: HTMLElement): boolean {
+export const check_realm_settings_property_changed = (elem: HTMLElement): boolean => {
     const $elem = $(elem);
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -843,12 +845,12 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             }
     }
     return current_val !== proposed_val;
-}
+};
 
-export function check_stream_settings_property_changed(
+export const check_stream_settings_property_changed = (
     elem: HTMLElement,
     sub: StreamSubscription,
-): boolean {
+): boolean => {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const property_name = extract_property_name($elem) as StreamSettingProperties;
@@ -873,9 +875,9 @@ export function check_stream_settings_property_changed(
             }
     }
     return current_val !== proposed_val;
-}
+};
 
-export function check_group_property_changed(elem: HTMLElement, group: UserGroup): boolean {
+export const check_group_property_changed = (elem: HTMLElement, group: UserGroup): boolean => {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const property_name = extract_property_name($elem) as keyof UserGroup;
@@ -893,12 +895,12 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
             }
     }
     return current_val !== proposed_val;
-}
+};
 
-export function check_custom_profile_property_changed(
+export const check_custom_profile_property_changed = (
     elem: HTMLElement,
     custom_profile_field: CustomProfileField,
-): boolean {
+): boolean => {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const property_name = extract_property_name($elem) as keyof CustomProfileField;
@@ -912,9 +914,9 @@ export function check_custom_profile_property_changed(
         blueslip.error("Element refers to unknown property", {property_name});
     }
     return current_val !== proposed_val;
-}
+};
 
-export function check_realm_default_settings_property_changed(elem: HTMLElement): boolean {
+export const check_realm_default_settings_property_changed = (elem: HTMLElement): boolean => {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const property_name = extract_property_name($elem, true) as RealmUserSettingDefaultProperties;
@@ -937,12 +939,14 @@ export function check_realm_default_settings_property_changed(elem: HTMLElement)
             }
     }
     return current_val !== proposed_val;
-}
+};
 
-function get_request_data_for_org_join_restrictions(selected_val: string): {
+const get_request_data_for_org_join_restrictions = (
+    selected_val: string,
+): {
     disallow_disposable_email_addresses: boolean;
     emails_restricted_to_domains: boolean;
-} {
+} => {
     switch (selected_val) {
         case "only_selected_domain": {
             return {
@@ -963,11 +967,11 @@ function get_request_data_for_org_join_restrictions(selected_val: string): {
             };
         }
     }
-}
+};
 
-export function populate_data_for_realm_settings_request(
+export const populate_data_for_realm_settings_request = (
     $subsection_elem: JQuery,
-): Record<string, string | boolean | number> {
+): Record<string, string | boolean | number> => {
     let data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
@@ -1006,12 +1010,12 @@ export function populate_data_for_realm_settings_request(
         }
     }
     return data;
-}
+};
 
-export function populate_data_for_stream_settings_request(
+export const populate_data_for_stream_settings_request = (
     $subsection_elem: JQuery,
     sub: StreamSubscription,
-): Record<string, string | boolean | number> {
+): Record<string, string | boolean | number> => {
     let data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
@@ -1034,12 +1038,12 @@ export function populate_data_for_stream_settings_request(
         }
     }
     return data;
-}
+};
 
-export function populate_data_for_group_request(
+export const populate_data_for_group_request = (
     $subsection_elem: JQuery,
     group: UserGroup,
-): Record<string, string | boolean | number> {
+): Record<string, string | boolean | number> => {
     const data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
@@ -1056,12 +1060,12 @@ export function populate_data_for_group_request(
         }
     }
     return data;
-}
+};
 
-export function populate_data_for_custom_profile_field_request(
+export const populate_data_for_custom_profile_field_request = (
     $subsection_elem: JQuery,
     custom_profile_field: CustomProfileField,
-): Record<string, string | boolean | number> {
+): Record<string, string | boolean | number> => {
     const data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
@@ -1075,11 +1079,11 @@ export function populate_data_for_custom_profile_field_request(
         }
     }
     return data;
-}
+};
 
-export function populate_data_for_default_realm_settings_request(
+export const populate_data_for_default_realm_settings_request = (
     $subsection_elem: JQuery,
-): Record<string, string | boolean | number> {
+): Record<string, string | boolean | number> => {
     const data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
@@ -1094,9 +1098,9 @@ export function populate_data_for_default_realm_settings_request(
     }
 
     return data;
-}
+};
 
-function switching_to_private(properties_elements: HTMLElement[]): boolean {
+const switching_to_private = (properties_elements: HTMLElement[]): boolean => {
     for (const elem of properties_elements) {
         const $elem = $(elem);
         const property_name = extract_property_name($elem);
@@ -1107,9 +1111,9 @@ function switching_to_private(properties_elements: HTMLElement[]): boolean {
         return proposed_val === "invite-only-public-history" || proposed_val === "invite-only";
     }
     return false;
-}
+};
 
-export function save_discard_realm_settings_widget_status_handler($subsection: JQuery): void {
+export const save_discard_realm_settings_widget_status_handler = ($subsection: JQuery): void => {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
@@ -1120,12 +1124,12 @@ export function save_discard_realm_settings_widget_status_handler($subsection: J
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
     change_save_button_state($save_btn_controls, button_state);
-}
+};
 
-export function save_discard_stream_settings_widget_status_handler(
+export const save_discard_stream_settings_widget_status_handler = (
     $subsection: JQuery,
     sub: StreamSubscription,
-): void {
+): void => {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
@@ -1166,12 +1170,12 @@ export function save_discard_stream_settings_widget_status_handler(
     } else {
         $("#stream_permission_settings .stream-permissions-warning-banner").empty();
     }
-}
+};
 
-export function save_discard_group_widget_status_handler(
+export const save_discard_group_widget_status_handler = (
     $subsection: JQuery,
     group: UserGroup,
-): void {
+): void => {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
@@ -1181,11 +1185,11 @@ export function save_discard_group_widget_status_handler(
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
     change_save_button_state($save_btn_controls, button_state);
-}
+};
 
-export function save_discard_default_realm_settings_widget_status_handler(
+export const save_discard_default_realm_settings_widget_status_handler = (
     $subsection: JQuery,
-): void {
+): void => {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
@@ -1196,12 +1200,12 @@ export function save_discard_default_realm_settings_widget_status_handler(
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
     change_save_button_state($save_btn_controls, button_state);
-}
+};
 
-function check_maximum_valid_value(
+const check_maximum_valid_value = (
     $custom_input_elem: JQuery<HTMLInputElement>,
     property_name: string,
-): boolean {
+): boolean => {
     let setting_value = Number.parseInt($custom_input_elem.val()!, 10);
     if (
         property_name === "realm_message_content_edit_limit_seconds" ||
@@ -1211,9 +1215,9 @@ function check_maximum_valid_value(
         setting_value = parse_time_limit($custom_input_elem);
     }
     return setting_value <= MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE;
-}
+};
 
-function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
+const should_disable_save_button_for_jitsi_server_url_setting = (): boolean => {
     if (!is_video_chat_provider_jitsi_meet()) {
         return false;
     }
@@ -1227,11 +1231,11 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
         $dropdown_elem.val()!.toString() === "custom" &&
         !util.is_valid_url($custom_input_elem.val()!, true)
     );
-}
+};
 
-function should_disable_save_button_for_time_limit_settings(
+const should_disable_save_button_for_time_limit_settings = (
     time_limit_settings: HTMLElement[],
-): boolean {
+): boolean => {
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
         const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>("select:not([multiple])");
@@ -1267,9 +1271,9 @@ function should_disable_save_button_for_time_limit_settings(
     }
 
     return disable_save_btn;
-}
+};
 
-function enable_or_disable_save_button($subsection_elem: JQuery): void {
+const enable_or_disable_save_button = ($subsection_elem: JQuery): void => {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
 
     let disable_save_btn = false;
@@ -1299,13 +1303,13 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
     }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
-}
+};
 
-export function initialize_disable_btn_hint_popover(
+export const initialize_disable_btn_hint_popover = (
     $btn_wrapper: JQuery,
     hint_text: string | undefined,
     opts: Partial<tippy.Props>,
-): void {
+): void => {
     const tippy_opts: Partial<tippy.Props> = {
         animation: false,
         hideOnClick: false,
@@ -1319,4 +1323,4 @@ export function initialize_disable_btn_hint_popover(
         tippy_opts.content = hint_text;
     }
     tippy.default($btn_wrapper[0]!, tippy_opts);
-}
+};

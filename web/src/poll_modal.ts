@@ -3,11 +3,11 @@ import SortableJS from "sortablejs";
 
 import render_poll_modal_option from "../templates/poll_modal_option.hbs";
 
-function create_option_row($last_option_row_input: JQuery): void {
+const create_option_row = ($last_option_row_input: JQuery): void => {
     const row_html = render_poll_modal_option();
     const $row_container = $last_option_row_input.closest(".simplebar-content");
     $row_container.append($(row_html));
-}
+};
 
 function add_option_row(this: HTMLElement): void {
     // if the option triggering the input event e is not the last,
@@ -26,7 +26,7 @@ function delete_option_row(this: HTMLElement): void {
     $row.remove();
 }
 
-export function poll_options_setup(): void {
+export const poll_options_setup = (): void => {
     const $poll_options_list = $("#add-poll-form .poll-options-list");
     const $submit_button = $("#add-poll-modal .dialog_submit_button");
     const $question_input = $<HTMLInputElement>("#add-poll-form input#poll-question-input");
@@ -47,7 +47,7 @@ export function poll_options_setup(): void {
     // setTimeout is needed to here to give time for simplebar to initialise
     setTimeout(() => {
         SortableJS.create($("#add-poll-form .poll-options-list .simplebar-content")[0]!, {
-            onUpdate() {
+            onUpdate: () => {
                 // Do nothing on drag; the order is only processed on submission.
             },
             // We don't want the last (empty) row to be draggable, as a new row
@@ -56,7 +56,7 @@ export function poll_options_setup(): void {
             preventOnFilter: false,
         });
     }, 0);
-}
+};
 
 export function frame_poll_message_content(): string {
     const question = $<HTMLInputElement>("input#poll-question-input").val()!.trim();

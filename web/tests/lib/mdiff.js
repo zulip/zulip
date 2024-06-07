@@ -15,7 +15,7 @@
 
 const difflib = require("difflib");
 
-function apply_color(input_string, changes) {
+const apply_color = (input_string, changes) => {
     let previous_index = 0;
     let processed_string = input_string.slice(0, 2);
     input_string = input_string.slice(2);
@@ -37,7 +37,7 @@ function apply_color(input_string, changes) {
 
     processed_string += input_string.slice(previous_index);
     return processed_string;
-}
+};
 
 /**
  * The library difflib produces diffs that look as follows:
@@ -51,7 +51,7 @@ function apply_color(input_string, changes) {
  * colored versions, where the question-mark lines are removed, replaced with
  * directions to add appropriate color to the lines that they annotate.
  */
-function parse_questionmark_line(questionmark_line) {
+const parse_questionmark_line = (questionmark_line) => {
     let current_sequence = ""; // Either "^", "-", "+", or ""
     let beginning_index = 0;
     let index = 0;
@@ -93,9 +93,9 @@ function parse_questionmark_line(questionmark_line) {
     add_change();
 
     return changes_list;
-}
+};
 
-function diff_strings(string_0, string_1) {
+const diff_strings = (string_0, string_1) => {
     let output_lines = [];
     let ndiff_output = "";
     let changes_list = [];
@@ -120,7 +120,7 @@ function diff_strings(string_0, string_1) {
     );
 
     return output_lines.join("\n");
-}
+};
 
 module.exports = {diff_strings};
 

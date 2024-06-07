@@ -52,26 +52,26 @@ const meta = {
     loaded: false,
 };
 
-export function reset(): void {
+export const reset = (): void => {
     meta.loaded = false;
-}
+};
 
-function failed_listing_invites(xhr: JQuery.jqXHR): void {
+const failed_listing_invites = (xhr: JQuery.jqXHR): void => {
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
     ui_report.error(
         $t_html({defaultMessage: "Error listing invites"}),
         xhr,
         $("#invites-field-status"),
     );
-}
+};
 
-function add_invited_as_text(invites: Invite[]): void {
+const add_invited_as_text = (invites: Invite[]): void => {
     for (const data of invites) {
         data.invited_as_text = settings_config.user_role_map.get(data.invited_as);
     }
-}
+};
 
-function sort_invitee(a: Invite, b: Invite): number {
+const sort_invitee = (a: Invite, b: Invite): number => {
     // multi-invite links don't have an email field,
     // so we set them to empty strings to let them
     // sort to the top
@@ -79,9 +79,9 @@ function sort_invitee(a: Invite, b: Invite): number {
     const str2 = b.is_multiuse ? "" : b.email.toUpperCase();
 
     return util.strcmp(str1, str2);
-}
+};
 
-function populate_invites(invites_data: {invites: Invite[]}): void {
+const populate_invites = (invites_data: {invites: Invite[]}): void => {
     if (!meta.loaded) {
         return;
     }
@@ -92,7 +92,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
     ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
         get_item: ListWidget.default_get_item,
-        modifier_html(item) {
+        modifier_html: (item) => {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
             if (item.expiry_date !== null) {
                 item.expiry_date_absolute_time = timerender.absolute_time(item.expiry_date * 1000);
@@ -111,7 +111,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
             $element: $invites_table
                 .closest(".settings-section")
                 .find<HTMLInputElement>("input.search"),
-            predicate(item, value) {
+            predicate: (item, value) => {
                 const referrer = people.get_by_user_id(item.invited_by_user_id);
                 const referrer_email = referrer.email;
                 const referrer_name = referrer.full_name;
@@ -139,9 +139,9 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
     });
 
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
-}
+};
 
-function do_revoke_invite({
+const do_revoke_invite = ({
     $row,
     invite_id,
     is_multiuse,
@@ -149,7 +149,7 @@ function do_revoke_invite({
     $row: JQuery;
     invite_id: string;
     is_multiuse: string;
-}): void {
+}): void => {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const modal_is_multiuse = $(".dialog_submit_button").attr("data-is-multiuse");
     const $revoke_button = $row.find("button.revoke");
@@ -172,16 +172,16 @@ function do_revoke_invite({
     }
     void channel.del({
         url,
-        error(xhr) {
+        error: (xhr) => {
             ui_report.generic_row_button_error(xhr, $revoke_button);
         },
-        success() {
+        success: () => {
             $row.remove();
         },
     });
-}
+};
 
-function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}): void {
+const do_resend_invite = ({$row, invite_id}: {$row: JQuery; invite_id: string}): void => {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const $resend_button = $row.find("button.resend");
 
@@ -198,17 +198,17 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
     $resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     void channel.post({
         url: "/json/invites/" + invite_id + "/resend",
-        error(xhr) {
+        error: (xhr) => {
             ui_report.generic_row_button_error(xhr, $resend_button);
         },
-        success() {
+        success: () => {
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
         },
     });
-}
+};
 
-export function set_up(initialize_event_handlers = true): void {
+export const set_up = (initialize_event_handlers = true): void => {
     meta.loaded = true;
 
     // create loading indicators
@@ -218,13 +218,13 @@ export function set_up(initialize_event_handlers = true): void {
     void channel.get({
         url: "/json/invites",
         timeout: 10 * 1000,
-        success(raw_data) {
+        success: (raw_data) => {
             const data = z.object({invites: z.array(invite_schema)}).parse(raw_data);
             on_load_success(data, initialize_event_handlers);
         },
         error: failed_listing_invites,
     });
-}
+};
 
 export function on_load_success(
     invites_data: {invites: Invite[]},
@@ -257,7 +257,7 @@ export function on_load_success(
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
-            on_click() {
+            on_click: () => {
                 do_revoke_invite({$row, invite_id, is_multiuse});
             },
         });
@@ -280,7 +280,7 @@ export function on_load_success(
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Resend invitation?"}),
             html_body,
-            on_click() {
+            on_click: () => {
                 do_resend_invite({$row, invite_id});
             },
         });
@@ -289,7 +289,7 @@ export function on_load_success(
     });
 }
 
-export function update_invite_users_setting_tip(): void {
+export const update_invite_users_setting_tip = (): void => {
     if (settings_data.user_can_invite_users_by_email() && !current_user.is_admin) {
         $(".invite-user-settings-tip").hide();
         return;
@@ -339,9 +339,9 @@ export function update_invite_users_setting_tip(): void {
     }
     $(".invite-user-settings-tip").show();
     $(".invite-user-settings-tip").text(tip_text);
-}
+};
 
-export function update_invite_user_panel(): void {
+export const update_invite_user_panel = (): void => {
     update_invite_users_setting_tip();
     if (
         !settings_data.user_can_invite_users_by_email() &&
@@ -351,4 +351,4 @@ export function update_invite_user_panel(): void {
     } else {
         $("#admin-invites-list .invite-user-link").show();
     }
-}
+};

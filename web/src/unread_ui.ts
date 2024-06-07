@@ -19,11 +19,11 @@ let user_closed_unread_banner = false;
 type UpdateUnreadCountsHook = (counts: FullUnreadCountsData, skip_animations: boolean) => void;
 const update_unread_counts_hooks: UpdateUnreadCountsHook[] = [];
 
-export function register_update_unread_counts_hook(f: UpdateUnreadCountsHook): void {
+export const register_update_unread_counts_hook = (f: UpdateUnreadCountsHook): void => {
     update_unread_counts_hooks.push(f);
-}
+};
 
-export function update_unread_banner(): void {
+export const update_unread_banner = (): void => {
     if (message_lists.current === undefined) {
         return;
     }
@@ -49,33 +49,33 @@ export function update_unread_banner(): void {
             hide_unread_banner();
         }
     }
-}
+};
 
-export function hide_unread_banner(): void {
+export const hide_unread_banner = (): void => {
     // Use visibility instead of hide() to prevent messages on the screen from
     // shifting vertically.
     $("#mark_read_on_scroll_state_banner").toggleClass("invisible", true);
-}
+};
 
-export function reset_unread_banner(): void {
+export const reset_unread_banner = (): void => {
     hide_unread_banner();
     user_closed_unread_banner = false;
-}
+};
 
-export function notify_messages_remain_unread(): void {
+export const notify_messages_remain_unread = (): void => {
     if (!user_closed_unread_banner) {
         $("#mark_read_on_scroll_state_banner").toggleClass("invisible", false);
     }
-}
+};
 
-export function set_count_toggle_button($elem: JQuery, count: number): JQuery {
+export const set_count_toggle_button = ($elem: JQuery, count: number): JQuery => {
     if (count === 0) {
         return $elem.hide();
     }
     return $elem.show();
-}
+};
 
-export function update_unread_counts(skip_animations = false): void {
+export const update_unread_counts = (skip_animations = false): void => {
     // Pure computation:
     const res = unread.get_counts();
 
@@ -89,9 +89,9 @@ export function update_unread_counts(skip_animations = false): void {
 
     // Set the unread indicator on the toggle for the left sidebar
     set_count_toggle_button($("#streamlist-toggle-unreadcount"), res.home_unread_messages);
-}
+};
 
-export function should_display_bankruptcy_banner(): boolean {
+export const should_display_bankruptcy_banner = (): boolean => {
     // Until we've handled possibly declaring bankruptcy, don't show
     // unread counts since they only consider messages that are loaded
     // client side and may be different from the numbers reported by
@@ -112,13 +112,13 @@ export function should_display_bankruptcy_banner(): boolean {
     }
 
     return false;
-}
+};
 
-export function initialize({
+export const initialize = ({
     notify_server_messages_read,
 }: {
     notify_server_messages_read: (unread_messages: Message[]) => void;
-}): void {
+}): void => {
     const skip_animations = true;
     update_unread_counts(skip_animations);
     $("body").on("click", "#mark_view_read", () => {
@@ -148,4 +148,4 @@ export function initialize({
     // the banner, to avoid scroll position jumps when it is shown/hidden.
     update_unread_banner();
     hide_unread_banner();
-}
+};

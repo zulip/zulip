@@ -1,11 +1,11 @@
 import $ from "jquery";
 
-export function update_padding(opts: {
+export const update_padding = (opts: {
     content_selector: string;
     padding_selector: string;
     total_rows: number;
     shown_rows: number;
-}): void {
+}): void => {
     const $content = $(opts.content_selector);
     const $padding = $(opts.padding_selector);
     const total_rows = opts.total_rows;
@@ -28,4 +28,4 @@ export function update_padding(opts: {
 
     $padding.height(new_padding_height);
     $padding.width(1);
-}
+};

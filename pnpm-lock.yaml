@@ -398,6 +398,9 @@ importers:
       eslint-plugin-no-jquery:
         specifier: ^2.7.0
         version: 2.7.0(patch_hash=3o6vd4atcpz6wln5ovpbrt3cea)(eslint@8.57.0)
+      eslint-plugin-prefer-arrow-functions:
+        specifier: ^3.3.2
+        version: 3.3.2(eslint@8.57.0)
       eslint-plugin-unicorn:
         specifier: ^53.0.0
         version: 53.0.0(eslint@8.57.0)
@@ -3602,6 +3605,11 @@ packages:
     resolution: {integrity: sha512-Aeg7dA6GTH1AcWLlBtWNzOU9efK5KpNi7b0EhBO0o0M+awyzguUUo8gF6hXGjQ9n5h8/uRtYv9zOqQkeC5CG0w==}
     peerDependencies:
       eslint: '>=2.3.0'
+
+  eslint-plugin-prefer-arrow-functions@3.3.2:
+    resolution: {integrity: sha512-XRGsga9cK6pZ48IA2PM2PABBlWshRYhkofkQxcWzCM0YlDnal2hrQKsuz0FqtBHimJpgEXGgHUko3KrOayxlOQ==}
+    peerDependencies:
+      eslint: '>=5.0.0'
 
   eslint-plugin-unicorn@53.0.0:
     resolution: {integrity: sha512-kuTcNo9IwwUCfyHGwQFOK/HjJAYzbODHN3wP0PgqbW+jbXqpNWxNVpVhj2tO9SixBwuAdmal8rVcWKBxwFnGuw==}
@@ -11170,6 +11178,10 @@ snapshots:
       - supports-color
 
   eslint-plugin-no-jquery@2.7.0(patch_hash=3o6vd4atcpz6wln5ovpbrt3cea)(eslint@8.57.0):
+    dependencies:
+      eslint: 8.57.0
+
+  eslint-plugin-prefer-arrow-functions@3.3.2(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
 

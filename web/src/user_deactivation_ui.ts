@@ -15,18 +15,18 @@ import * as people from "./people";
 import {invite_schema} from "./settings_invites";
 import {realm} from "./state_data";
 
-export function confirm_deactivation(
+export const confirm_deactivation = (
     user_id: number,
     handle_confirm: () => void,
     loading_spinner: boolean,
-): void {
+): void => {
     // Knowing the number of invites requires making this request. If the request fails,
     // we won't have the accurate number of invites. So, we don't show the modal if the
     // request fails.
     void channel.get({
         url: "/json/invites",
         timeout: 10 * 1000,
-        success(raw_data) {
+        success: (raw_data) => {
             const data = z.object({invites: z.array(invite_schema)}).parse(raw_data);
 
             let number_of_invites_by_user = 0;
@@ -51,7 +51,7 @@ export function confirm_deactivation(
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
-            function set_email_field_visibility(dialog_widget_id: string): void {
+            const set_email_field_visibility = (dialog_widget_id: string): void => {
                 const $modal = $(`#${dialog_widget_id}`);
                 const $send_email_checkbox = $modal.find(".send_email");
                 const $email_field = $modal.find(".email_field");
@@ -64,7 +64,7 @@ export function confirm_deactivation(
                         $email_field.hide();
                     }
                 });
-            }
+            };
 
             dialog_widget.launch({
                 html_heading: $t_html(
@@ -81,13 +81,13 @@ export function confirm_deactivation(
             });
         },
     });
-}
+};
 
-export function confirm_bot_deactivation(
+export const confirm_bot_deactivation = (
     bot_id: number,
     handle_confirm: () => void,
     loading_spinner: boolean,
-): void {
+): void => {
     const bot = people.get_by_user_id(bot_id);
     const html_body = render_settings_deactivation_bot_modal();
 
@@ -99,13 +99,13 @@ export function confirm_bot_deactivation(
         on_click: handle_confirm,
         loading_spinner,
     });
-}
+};
 
-export function confirm_reactivation(
+export const confirm_reactivation = (
     user_id: number,
     handle_confirm: () => void,
     loading_spinner: boolean,
-): void {
+): void => {
     const user = people.get_by_user_id(user_id);
     const opts: {
         username: string;
@@ -136,4 +136,4 @@ export function confirm_reactivation(
         on_click: handle_confirm,
         loading_spinner,
     });
-}
+};

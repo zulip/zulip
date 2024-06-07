@@ -210,14 +210,14 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             $search_query_box.off("blur");
         }
         return {
-            lookup() {
+            lookup: () => {
                 typeahead_forced_open = true;
             },
         };
     });
 
     search.initialize({
-        on_narrow_search(raw_terms, options) {
+        on_narrow_search: (raw_terms, options) => {
             assert.deepEqual(raw_terms, terms);
             assert.deepEqual(options, {trigger: "search"});
         },
@@ -235,7 +235,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     let ev = {
         type: "keydown",
         which: 15,
-        preventDefault() {
+        preventDefault: () => {
             default_prevented = true;
         },
     };

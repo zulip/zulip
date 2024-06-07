@@ -17,15 +17,15 @@ export let is_using_input_method = false;
 
 let search_typeahead: Typeahead<string>;
 
-export function set_search_bar_text(text: string): void {
+export const set_search_bar_text = (text: string): void => {
     $("#search_query").val(text);
-}
+};
 
-function get_search_bar_text(): string {
+const get_search_bar_text = (): string => {
     const val = $<HTMLInputElement>("#search_query").val();
     assert(val !== undefined);
     return val;
-}
+};
 
 // TODO/typescript: Add the rest of the options when converting narrow.js to typescript.
 type NarrowSearchOptions = {
@@ -34,10 +34,10 @@ type NarrowSearchOptions = {
 
 type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => void;
 
-function narrow_or_search_for_term(
+const narrow_or_search_for_term = (
     search_string: string,
     {on_narrow_search}: {on_narrow_search: OnNarrowSearch},
-): string {
+): string => {
     if (search_string === "") {
         exit_search({keep_search_narrow_open: true});
         return "";
@@ -61,9 +61,9 @@ function narrow_or_search_for_term(
     // so leave the current text in.
     $search_query_box.trigger("blur");
     return get_search_bar_text();
-}
+};
 
-export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): void {
+export const initialize = ({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): void => {
     const $search_query_box = $<HTMLInputElement>("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -79,7 +79,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
         type: "input",
     };
     search_typeahead = new Typeahead(bootstrap_typeahead_input, {
-        source(query: string): string[] {
+        source: (query: string): string[] => {
             const suggestions = search_suggestion.get_suggestions(query);
             // Update our global search_map hash
             search_map = suggestions.lookup_table;
@@ -89,33 +89,28 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
-        highlighter_html(item: string): string {
+        highlighter_html: (item: string): string => {
             const obj = search_map.get(item);
             return render_search_list_item(obj);
         },
-        matcher(): boolean {
-            return true;
-        },
-        updater(search_string: string): string {
-            return narrow_or_search_for_term(search_string, {on_narrow_search});
-        },
-        sorter(items: string[]): string[] {
-            return items;
-        },
+        matcher: (): boolean => true,
+        updater: (search_string: string): string =>
+            narrow_or_search_for_term(search_string, {on_narrow_search}),
+        sorter: (items: string[]): string[] => items,
         advanceKeyCodes: [8],
 
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
-        on_escape() {
+        on_escape: () => {
             exit_search({keep_search_narrow_open: false});
         },
         tabIsEnter: false,
-        openInputFieldOnKeyUp(): void {
+        openInputFieldOnKeyUp: (): void => {
             if ($(".navbar-search.expanded").length === 0) {
                 open_search_bar_and_close_narrow_description();
             }
         },
-        closeInputFieldOnHide(): void {
+        closeInputFieldOnHide: (): void => {
             // Don't close the search bar if the user has changed
             // the text from the default, they might accidentally
             // click away and not want to lose it.
@@ -212,9 +207,9 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
             e.stopPropagation();
         }
     });
-}
+};
 
-export function initiate_search(): void {
+export const initiate_search = (): void => {
     open_search_bar_and_close_narrow_description();
 
     // Open the typeahead after opening the search bar, so that we don't
@@ -222,27 +217,27 @@ export function initiate_search(): void {
     // before the search bar expands and then wider it expands.
     search_typeahead.lookup(false);
     $("#search_query").trigger("select");
-}
+};
 
 // This is what the default searchbox text would be for this narrow,
 // NOT what might be currently displayed there. We can use this both
 // to set the initial text and to see if the user has changed it.
-function get_initial_search_string(): string {
+const get_initial_search_string = (): string => {
     let search_string = narrow_state.search_string();
     if (search_string !== "" && !narrow_state.filter()?.is_keyword_search()) {
         // saves the user a keystroke for quick searches
         search_string = search_string + " ";
     }
     return search_string;
-}
+};
 
 // we rely entirely on this function to ensure
 // the searchbar has the right text.
-function reset_searchbox_text(): void {
+const reset_searchbox_text = (): void => {
     set_search_bar_text(get_initial_search_string());
-}
+};
 
-function exit_search(opts: {keep_search_narrow_open: boolean}): void {
+const exit_search = (opts: {keep_search_narrow_open: boolean}): void => {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
@@ -256,9 +251,9 @@ function exit_search(opts: {keep_search_narrow_open: boolean}): void {
     }
     $("#search_query").trigger("blur");
     $(".app").trigger("focus");
-}
+};
 
-export function open_search_bar_and_close_narrow_description(): void {
+export const open_search_bar_and_close_narrow_description = (): void => {
     // Preserve user input if they've already started typing, but
     // otherwise fill the input field with the text terms for
     // the current narrow.
@@ -268,9 +263,9 @@ export function open_search_bar_and_close_narrow_description(): void {
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
-}
+};
 
-export function close_search_bar_and_open_narrow_description(): void {
+export const close_search_bar_and_open_narrow_description = (): void => {
     // Hide the dropdown before closing the search bar. We do this
     // to avoid being in a situation where the typeahead gets narrow
     // in width as the search bar closes, which doesn't look great.
@@ -279,4 +274,4 @@ export function close_search_bar_and_open_narrow_description(): void {
     set_search_bar_text("");
     $(".navbar-search").removeClass("expanded");
     $("#message_view_header").removeClass("hidden");
-}
+};

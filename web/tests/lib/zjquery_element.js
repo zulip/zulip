@@ -4,10 +4,10 @@ const {strict: assert} = require("assert");
 
 const FakeEvent = require("./zjquery_event");
 
-const noop = function () {};
+const noop = () => {};
 
 // TODO: convert this to a true class
-function FakeElement(selector, opts) {
+const FakeElement = (selector, opts) => {
     let html = "never-been-set";
     let text = "never-been-set";
     let value;
@@ -29,52 +29,45 @@ function FakeElement(selector, opts) {
                 yield $self[i];
             }
         },
-        addClass(class_name) {
+        addClass: (class_name) => {
             classes.set(class_name, true);
             return $self;
         },
-        append(arg) {
+        append: (arg) => {
             html = html + arg;
             return $self;
         },
-        attr(name, val) {
+        attr: (name, val) => {
             if (val === undefined) {
                 return attrs.get(name);
             }
             attrs.set(name, val);
             return $self;
         },
-        data(name, val) {
+        data: (name, val) => {
             if (val === undefined) {
                 return attrs.get("data-" + name);
             }
             attrs.set("data-" + name, val);
             return $self;
         },
-        delay() {
-            return $self;
-        },
+        delay: () => $self,
         /* istanbul ignore next */
-        debug() {
-            return {
-                value,
-                shown,
-                selector,
-            };
-        },
-        empty(arg) {
+        debug: () => ({
+            value,
+            shown,
+            selector,
+        }),
+        empty: (arg) => {
             if (arg === undefined) {
                 find_results.clear();
                 html = "";
             }
             return $self;
         },
-        expectOne() {
-            // silently do nothing
-            return $self;
-        },
+        expectOne: () => $self,
         fadeTo: noop,
-        find(child_selector) {
+        find: (child_selector) => {
             const $child = find_results.get(child_selector);
             if ($child) {
                 return $child;
@@ -99,28 +92,24 @@ function FakeElement(selector, opts) {
 
                 `);
         },
-        get_on_handler(name, child_selector) {
-            return event_store.get_on_handler(name, child_selector);
-        },
-        hasClass(class_name) {
-            return classes.has(class_name);
-        },
-        height() {
+        get_on_handler: (name, child_selector) => event_store.get_on_handler(name, child_selector),
+        hasClass: (class_name) => classes.has(class_name),
+        height: () => {
             assert.notEqual(height, undefined, `Please call $("${selector}").set_height`);
             return height;
         },
-        hide() {
+        hide: () => {
             shown = false;
             return $self;
         },
-        html(arg) {
+        html: (arg) => {
             if (arg !== undefined) {
                 html = arg;
                 return $self;
             }
             return html;
         },
-        is(arg) {
+        is: (arg) => {
             switch (arg) {
                 case ":visible":
                     return shown;
@@ -131,34 +120,26 @@ function FakeElement(selector, opts) {
                     throw new Error("zjquery does not support this is() call");
             }
         },
-        is_focused() {
-            // is_focused is not a jQuery thing; this is
-            // for our testing
-            return event_store.is_focused();
-        },
-        off(...args) {
+        is_focused: () => event_store.is_focused(),
+        off: (...args) => {
             event_store.off(...args);
             return $self;
         },
-        offset() {
-            return {
-                top: 0,
-                left: 0,
-            };
-        },
-        on(...args) {
+        offset: () => ({
+            top: 0,
+            left: 0,
+        }),
+        on: (...args) => {
             event_store.on(...args);
             return $self;
         },
         /* istanbul ignore next */
-        one(...args) {
+        one: (...args) => {
             event_store.one(...args);
             return $self;
         },
-        parent() {
-            return $my_parent;
-        },
-        parents(parents_selector) {
+        parent: () => $my_parent,
+        parents: (parents_selector) => {
             const $result = parents_result.get(parents_selector);
             assert.ok(
                 $result,
@@ -166,22 +147,22 @@ function FakeElement(selector, opts) {
             );
             return $result;
         },
-        prepend(arg) {
+        prepend: (arg) => {
             html = arg + html;
             return $self;
         },
-        prop(name, val) {
+        prop: (name, val) => {
             if (val === undefined) {
                 return properties.get(name);
             }
             properties.set(name, val);
             return $self;
         },
-        removeAttr(name) {
+        removeAttr: (name) => {
             attrs.delete(name);
             return $self;
         },
-        removeClass(class_names) {
+        removeClass: (class_names) => {
             class_names = class_names.split(" ");
             for (const class_name of class_names) {
                 classes.delete(class_name);
@@ -189,7 +170,7 @@ function FakeElement(selector, opts) {
             return $self;
         },
         /* istanbul ignore next */
-        remove() {
+        remove: () => {
             throw new Error(`
                 We don't support remove in zjquery.
 
@@ -200,7 +181,7 @@ function FakeElement(selector, opts) {
             `);
         },
         removeData: noop,
-        set_find_results(find_selector, $jquery_object) {
+        set_find_results: (find_selector, $jquery_object) => {
             assert.notEqual(
                 $jquery_object,
                 undefined,
@@ -208,20 +189,20 @@ function FakeElement(selector, opts) {
             );
             find_results.set(find_selector, $jquery_object);
         },
-        set_height(fake_height) {
+        set_height: (fake_height) => {
             height = fake_height;
         },
-        set_parent($parent_elem) {
+        set_parent: ($parent_elem) => {
             $my_parent = $parent_elem;
         },
-        set_parents_result(selector, $result) {
+        set_parents_result: (selector, $result) => {
             parents_result.set(selector, $result);
         },
-        show() {
+        show: () => {
             shown = true;
             return $self;
         },
-        text(...args) {
+        text: (...args) => {
             if (args.length !== 0) {
                 if (args[0] !== undefined) {
                     text = args[0].toString();
@@ -230,12 +211,12 @@ function FakeElement(selector, opts) {
             }
             return text;
         },
-        toggle(show) {
+        toggle: (show) => {
             assert.ok([true, false].includes(show));
             shown = show;
             return $self;
         },
-        toggleClass(class_name, add) {
+        toggleClass: (class_name, add) => {
             if (add) {
                 classes.set(class_name, true);
             } else {
@@ -243,20 +224,18 @@ function FakeElement(selector, opts) {
             }
             return $self;
         },
-        trigger(ev) {
+        trigger: (ev) => {
             event_store.trigger($self, ev);
             return $self;
         },
-        val(...args) {
+        val: (...args) => {
             if (args.length === 0) {
                 return value || "";
             }
             [value] = args;
             return $self;
         },
-        visible() {
-            return shown;
-        },
+        visible: () => shown,
     };
 
     if (opts.children) {
@@ -284,7 +263,7 @@ function FakeElement(selector, opts) {
     $self.__zjquery = true;
 
     return $self;
-}
+};
 
 function make_event_store(selector) {
     /*
@@ -303,7 +282,7 @@ function make_event_store(selector) {
     let focused = false;
 
     const self = {
-        get_on_handler(name, child_selector) {
+        get_on_handler: (name, child_selector) => {
             let handler;
 
             if (child_selector === undefined) {
@@ -322,7 +301,7 @@ function make_event_store(selector) {
             return handler;
         },
 
-        off(event_name, ...args) {
+        off: (event_name, ...args) => {
             if (args.length === 0) {
                 on_functions.delete(event_name);
                 return;
@@ -336,7 +315,7 @@ function make_event_store(selector) {
             throw new Error("zjquery does not support this call sequence");
         },
 
-        on(event_name, ...args) {
+        on: (event_name, ...args) => {
             // parameters will either be
             //    (event_name, handler) or
             //    (event_name, sel, handler)
@@ -381,7 +360,7 @@ function make_event_store(selector) {
             });
         },
 
-        trigger($element, ev, data) {
+        trigger: ($element, ev, data) => {
             if (typeof ev === "string") {
                 ev = new FakeEvent(ev);
             }
@@ -407,9 +386,7 @@ function make_event_store(selector) {
             }
         },
 
-        is_focused() {
-            return focused;
-        },
+        is_focused: () => focused,
     };
 
     return self;

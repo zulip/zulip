@@ -1,15 +1,15 @@
 import $ from "jquery";
 
-export function initialize(): void {
+export const initialize = (): void => {
     $("#server-deactivate-form").validate({
-        submitHandler(form) {
+        submitHandler: (form) => {
             $("#server-deactivate-form").find(".loader").css("display", "inline-block");
             $("#server-deactivate-button .server-deactivate-button-text").hide();
 
             form.submit();
         },
     });
-}
+};
 
 $(() => {
     initialize();

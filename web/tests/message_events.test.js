@@ -38,7 +38,7 @@ const denmark = {
 };
 stream_data.add_sub(denmark);
 
-function test_helper(side_effects) {
+const test_helper = (side_effects) => {
     const events = [];
 
     for (const [module, field] of side_effects) {
@@ -54,7 +54,7 @@ function test_helper(side_effects) {
     };
 
     return self;
-}
+};
 
 run_test("update_messages", () => {
     const raw_message = {

@@ -28,7 +28,7 @@ emojisets.set("text", emojisets.get("google")!);
 
 let current_emojiset: EmojiSet | undefined;
 
-async function fetch_emojiset(name: string, url: string): Promise<void> {
+const fetch_emojiset = async (name: string, url: string): Promise<void> => {
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 10000; // 10 seconds
 
@@ -76,9 +76,9 @@ async function fetch_emojiset(name: string, url: string): Promise<void> {
             }
         }
     }
-}
+};
 
-export async function select(name: string): Promise<void> {
+export const select = async (name: string): Promise<void> => {
     const new_emojiset = emojisets.get(name);
     if (new_emojiset === current_emojiset) {
         return;
@@ -95,9 +95,9 @@ export async function select(name: string): Promise<void> {
     }
     new_emojiset.css.use();
     current_emojiset = new_emojiset;
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     void select(user_settings.emojiset);
 
     // Load the octopus image in the background, so that the browser
@@ -107,4 +107,4 @@ export function initialize(): void {
     // TODO: We should probably just make this work just like the Zulip emoji.
     const octopus_image = new Image();
     octopus_image.src = octopus_url;
-}
+};

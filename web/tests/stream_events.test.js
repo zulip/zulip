@@ -23,13 +23,13 @@ const message_lists = mock_esm("../src/message_lists", {
     current: undefined,
 });
 const message_view_header = mock_esm("../src/message_view_header", {
-    maybe_rerender_title_area_for_stream() {},
+    maybe_rerender_title_area_for_stream: () => {},
 });
 mock_esm("../src/recent_view_ui", {
-    complete_rerender() {},
+    complete_rerender: () => {},
 });
 mock_esm("../src/settings_notifications", {
-    update_page() {},
+    update_page: () => {},
 });
 mock_esm("../src/overlays", {
     streams_open: () => true,
@@ -78,21 +78,21 @@ const frontend = {
     invite_only: false,
 };
 
-function narrow_to_frontend() {
+const narrow_to_frontend = () => {
     const filter = new Filter([{operator: "stream", operand: "frontend"}]);
     message_lists.current = {
         data: {
             filter,
         },
     };
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         f(helpers);
     });
-}
+};
 
 test("update_property", ({override}) => {
     override(compose_recipient, "possibly_update_stream_name_in_compose", noop);
@@ -142,9 +142,7 @@ test("update_property", ({override}) => {
         assert.equal(args.val, true);
     }
 
-    function checkbox_for(property) {
-        return $(`#${CSS.escape(property)}_${CSS.escape(stream_id)}`);
-    }
+    const checkbox_for = (property) => $(`#${CSS.escape(property)}_${CSS.escape(stream_id)}`);
 
     // Test desktop notifications
     stream_events.update_property(stream_id, "desktop_notifications", true);

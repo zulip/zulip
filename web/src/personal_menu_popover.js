@@ -14,7 +14,7 @@ import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
-export function initialize() {
+export const initialize = () => {
     popover_menus.register_popover_menu("#personal-menu", {
         theme: "popover-menu",
         placement: "bottom",
@@ -33,7 +33,7 @@ export function initialize() {
                 },
             ],
         },
-        onMount(instance) {
+        onMount: (instance) => {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.personal_menu = instance;
 
@@ -47,7 +47,7 @@ export function initialize() {
                 channel.patch({
                     url: "/json/settings",
                     data: {color_scheme: new_theme_code},
-                    error() {
+                    error: () => {
                         // NOTE: The additional delay allows us to visually communicate
                         // that an error occurred due to which we are reverting back
                         // to the previously used value.
@@ -70,7 +70,7 @@ export function initialize() {
                     status_text: "",
                     emoji_name: "",
                     emoji_code: "",
-                    success() {
+                    success: () => {
                         popover_menus.hide_current_popover_if_visible(instance);
                     },
                 });
@@ -115,20 +115,20 @@ export function initialize() {
             });
             instance.popperInstance.update();
         },
-        onShow(instance) {
+        onShow: (instance) => {
             const args = popover_menus_data.get_personal_menu_content_context();
             instance.setContent(parse_html(render_navbar_personal_menu_popover(args)));
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
             popover_menus.popover_instances.personal_menu = undefined;
         },
     });
-}
+};
 
-export function toggle() {
+export const toggle = () => {
     // NOTE: Since to open personal menu, you need to click on your avatar (which calls
     // tippyjs.hideAll()), or go via gear menu if using hotkeys, we don't need to
     // call tippyjs.hideAll() for it.
     $("#personal-menu").trigger("click");
-}
+};

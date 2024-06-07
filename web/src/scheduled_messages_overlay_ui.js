@@ -15,7 +15,7 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
 export const keyboard_handling_context = {
-    get_items_ids() {
+    get_items_ids: () => {
         const scheduled_messages_ids = [];
         const sorted_messages = sort_scheduled_messages(scheduled_messages.scheduled_messages_data);
         for (const message of sorted_messages) {
@@ -49,18 +49,18 @@ export const keyboard_handling_context = {
     id_attribute_name: "data-scheduled-message-id",
 };
 
-function sort_scheduled_messages(scheduled_messages) {
+const sort_scheduled_messages = (scheduled_messages) => {
     const sorted_messages = [...scheduled_messages.values()].sort(
         (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
     );
     return sorted_messages;
-}
+};
 
-export function handle_keyboard_events(event_key) {
+export const handle_keyboard_events = (event_key) => {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
-}
+};
 
-function format(scheduled_messages) {
+const format = (scheduled_messages) => {
     const formatted_msgs = [];
     const sorted_messages = sort_scheduled_messages(scheduled_messages);
     for (const msg of sorted_messages) {
@@ -84,14 +84,14 @@ function format(scheduled_messages) {
         formatted_msgs.push(msg_render_context);
     }
     return formatted_msgs;
-}
+};
 
-export function launch() {
+export const launch = () => {
     $("#scheduled_messages_overlay_container").html(render_scheduled_messages_overlay());
     overlays.open_overlay({
         name: "scheduled",
         $overlay: $("#scheduled_messages_overlay"),
-        on_close() {
+        on_close: () => {
             browser_history.exit_overlay();
         },
     });
@@ -104,9 +104,9 @@ export function launch() {
 
     const first_element_id = keyboard_handling_context.get_items_ids()[0];
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
-}
+};
 
-export function rerender() {
+export const rerender = () => {
     if (!overlays.scheduled_messages_open()) {
         return;
     }
@@ -116,17 +116,17 @@ export function rerender() {
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.find(".scheduled-message-row").remove();
     $messages_list.append($(rendered_list));
-}
+};
 
-export function remove_scheduled_message_id(scheduled_msg_id) {
+export const remove_scheduled_message_id = (scheduled_msg_id) => {
     if (overlays.scheduled_messages_open()) {
         $(
             `#scheduled_messages_overlay .scheduled-message-row[data-scheduled-message-id=${scheduled_msg_id}]`,
         ).remove();
     }
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
         let scheduled_msg_id = $(e.currentTarget)
             .closest(".scheduled-message-row")
@@ -151,4 +151,4 @@ export function initialize() {
     $("body").on("focus", ".overlay-message-info-box", (e) => {
         messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
     });
-}
+};

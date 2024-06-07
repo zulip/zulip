@@ -8,12 +8,9 @@ import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
 
-export function filter(): Filter | undefined {
-    // `Recent Conversations` and `Inbox` return undefined;
-    return message_lists.current?.data.filter;
-}
+export const filter = (): Filter | undefined => message_lists.current?.data.filter;
 
-export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
+export const search_terms = (current_filter: Filter | undefined = filter()): NarrowTerm[] => {
     if (current_filter === undefined) {
         if (page_params.narrow !== undefined) {
             return new Filter(page_params.narrow).terms();
@@ -21,43 +18,35 @@ export function search_terms(current_filter: Filter | undefined = filter()): Nar
         return new Filter([]).terms();
     }
     return current_filter.terms();
-}
+};
 
-export function is_message_feed_visible(): boolean {
-    // It's important that `message_lists.current` is the
-    // source of truth for this since during the initial app load,
-    // `message_lists.current` is `undefined` and we don't want
-    // to return `true` if we haven't loaded the message feed yet.
-    return message_lists.current !== undefined;
-}
+export const is_message_feed_visible = (): boolean => message_lists.current !== undefined;
 
-export function update_email(
+export const update_email = (
     user_id: number,
     new_email: string,
     current_filter: Filter | undefined = filter(),
-): void {
+): void => {
     if (current_filter !== undefined) {
         current_filter.update_email(user_id, new_email);
     }
-}
+};
 
 /* Search terms we should send to the server. */
-export function public_search_terms(
+export const public_search_terms = (
     current_filter: Filter | undefined = filter(),
-): NarrowTerm[] | undefined {
+): NarrowTerm[] | undefined => {
     if (current_filter === undefined) {
         return undefined;
     }
     return current_filter.public_terms();
-}
+};
 
-export function search_string(filter?: Filter): string {
-    return Filter.unparse(search_terms(filter));
-}
+export const search_string = (filter?: Filter): string => Filter.unparse(search_terms(filter));
 
 // Collect terms which appear only once into a map,
 // and discard those which appear more than once.
-function collect_single(terms: NarrowTerm[]): Map<string, string> {
+const collect_single = (terms: NarrowTerm[]): Map<string, string> => {
     const seen = new Set<string>();
     const result = new Map<string, string>();
 
@@ -72,7 +61,7 @@ function collect_single(terms: NarrowTerm[]): Map<string, string> {
     }
 
     return result;
-}
+};
 
 // Modify default compose parameters (stream etc.) based on
 // the current narrowed view.
@@ -80,11 +69,11 @@ function collect_single(terms: NarrowTerm[]): Map<string, string> {
 // This logic is here and not in the 'compose' module because
 // it will get more complicated as we add things to the narrow
 // search term language.
-export function set_compose_defaults(): {
+export const set_compose_defaults = (): {
     stream_id?: number;
     topic?: string;
     private_message_recipient?: string;
-} {
+} => {
     const opts: {stream_id?: number; topic?: string; private_message_recipient?: string} = {};
     const single = collect_single(search_terms());
 
@@ -114,9 +103,9 @@ export function set_compose_defaults(): {
         opts.private_message_recipient = private_message_recipient;
     }
     return opts;
-}
+};
 
-export function stream_name(current_filter: Filter | undefined = filter()): string | undefined {
+export const stream_name = (current_filter: Filter | undefined = filter()): string | undefined => {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -129,11 +118,11 @@ export function stream_name(current_filter: Filter | undefined = filter()): stri
         return stream_data.get_name(name);
     }
     return undefined;
-}
+};
 
-export function stream_sub(
+export const stream_sub = (
     current_filter: Filter | undefined = filter(),
-): StreamSubscription | undefined {
+): StreamSubscription | undefined => {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -147,17 +136,17 @@ export function stream_sub(
     const sub = stream_data.get_sub_by_name(name);
 
     return sub;
-}
+};
 
-export function stream_id(filter?: Filter): number | undefined {
+export const stream_id = (filter?: Filter): number | undefined => {
     const sub = stream_sub(filter);
     if (sub === undefined) {
         return undefined;
     }
     return sub.stream_id;
-}
+};
 
-export function topic(current_filter: Filter | undefined = filter()): string | undefined {
+export const topic = (current_filter: Filter | undefined = filter()): string | undefined => {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -166,9 +155,9 @@ export function topic(current_filter: Filter | undefined = filter()): string | u
         return operands[0];
     }
     return undefined;
-}
+};
 
-export function pm_ids_string(filter?: Filter): string | undefined {
+export const pm_ids_string = (filter?: Filter): string | undefined => {
     // If you are narrowed to a group direct message with
     // users 4, 5, and 99, this will return "4,5,99"
     const emails_string = pm_emails_string(filter);
@@ -180,17 +169,17 @@ export function pm_ids_string(filter?: Filter): string | undefined {
     const user_ids_string = people.reply_to_to_user_ids_string(emails_string);
 
     return user_ids_string;
-}
+};
 
-export function pm_ids_set(filter?: Filter): Set<number> {
+export const pm_ids_set = (filter?: Filter): Set<number> => {
     const ids_string = pm_ids_string(filter);
     const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
     return new Set(pm_ids_list);
-}
+};
 
-export function pm_emails_string(
+export const pm_emails_string = (
     current_filter: Filter | undefined = filter(),
-): string | undefined {
+): string | undefined => {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -201,11 +190,11 @@ export function pm_emails_string(
     }
 
     return operands[0];
-}
+};
 
-export function get_first_unread_info(
+export const get_first_unread_info = (
     current_filter: Filter | undefined = filter(),
-): {flavor: "cannot_compute" | "not_found"} | {flavor: "found"; msg_id: number} {
+): {flavor: "cannot_compute" | "not_found"} | {flavor: "found"; msg_id: number} => {
     if (current_filter === undefined) {
         // we don't yet support the all-messages view
         blueslip.error("unexpected call to get_first_unread_info");
@@ -245,11 +234,11 @@ export function get_first_unread_info(
         flavor: "found",
         msg_id,
     };
-}
+};
 
-export function _possible_unread_message_ids(
+export const _possible_unread_message_ids = (
     current_filter: Filter | undefined = filter(),
-): number[] | undefined {
+): number[] | undefined => {
     // This function currently only returns valid results for
     // certain types of narrows, mostly left sidebar narrows.
     // For more complicated narrows we may return undefined.
@@ -312,26 +301,26 @@ export function _possible_unread_message_ids(
     }
 
     return undefined;
-}
+};
 
 // Are we narrowed to direct messages: the direct message feed or a
 // specific direct message conversation.
-export function narrowed_to_pms(current_filter: Filter | undefined = filter()): boolean {
+export const narrowed_to_pms = (current_filter: Filter | undefined = filter()): boolean => {
     if (current_filter === undefined) {
         return false;
     }
     return current_filter.has_operator("dm") || current_filter.has_operand("is", "dm");
-}
+};
 
-export function narrowed_by_pm_reply(current_filter: Filter | undefined = filter()): boolean {
+export const narrowed_by_pm_reply = (current_filter: Filter | undefined = filter()): boolean => {
     if (current_filter === undefined) {
         return false;
     }
     const terms = current_filter.terms();
     return terms.length === 1 && current_filter.has_operator("dm");
-}
+};
 
-export function narrowed_by_topic_reply(current_filter: Filter | undefined = filter()): boolean {
+export const narrowed_by_topic_reply = (current_filter: Filter | undefined = filter()): boolean => {
     if (current_filter === undefined) {
         return false;
     }
@@ -341,24 +330,25 @@ export function narrowed_by_topic_reply(current_filter: Filter | undefined = fil
         current_filter.operands("channel").length === 1 &&
         current_filter.operands("topic").length === 1
     );
-}
+};
 
 // We auto-reply under certain conditions, namely when you're narrowed
 // to a 1:1 or group direct message conversation, and when you're
 // narrowed to some stream/topic pair.
-export function narrowed_by_reply(filter?: Filter): boolean {
-    return narrowed_by_pm_reply(filter) || narrowed_by_topic_reply(filter);
-}
+export const narrowed_by_reply = (filter?: Filter): boolean =>
+    narrowed_by_pm_reply(filter) || narrowed_by_topic_reply(filter);
 
-export function narrowed_by_stream_reply(current_filter: Filter | undefined = filter()): boolean {
+export const narrowed_by_stream_reply = (
+    current_filter: Filter | undefined = filter(),
+): boolean => {
     if (current_filter === undefined) {
         return false;
     }
     const terms = current_filter.terms();
     return terms.length === 1 && current_filter.operands("channel").length === 1;
-}
+};
 
-export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
+export const is_for_stream_id = (stream_id: number, filter?: Filter): boolean => {
     // This is not perfect, since we still track narrows by
     // name, not id, but at least the interface is good going
     // forward.
@@ -369,4 +359,4 @@ export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
     }
 
     return stream_id === narrow_sub.stream_id;
-}
+};

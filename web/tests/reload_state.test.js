@@ -7,12 +7,12 @@ const {run_test} = require("./lib/test");
 
 const reload_state = zrequire("reload_state");
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         reload_state.clear_for_testing();
         f({override});
     });
-}
+};
 
 test("set_state_to_pending", () => {
     assert.ok(!reload_state.is_pending());

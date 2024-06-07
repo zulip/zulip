@@ -14,7 +14,7 @@ const {current_user, page_params, realm, user_settings} = require("./lib/zpage_p
 const settings_config = zrequire("settings_config");
 
 set_global("document", {
-    querySelector() {},
+    querySelector: () => {},
 });
 set_global("navigator", {});
 set_global(
@@ -61,10 +61,10 @@ const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 
-function reset_jquery() {
+const reset_jquery = () => {
     // Avoid leaks.
     $.clear_all_elements();
-}
+};
 
 const new_user = {
     email: "new_user@example.com",
@@ -115,30 +115,30 @@ const social = {
 };
 stream_data.add_sub(social);
 
-function test_ui(label, f) {
+const test_ui = (label, f) => {
     // TODO: initialize data more aggressively.
     run_test(label, f);
-}
+};
 
-function initialize_handlers({override}) {
+const initialize_handlers = ({override}) => {
     override(realm, "realm_available_video_chat_providers", {disabled: {id: 0}});
     override(realm, "realm_video_chat_provider", 0);
     override(resize, "watch_manual_resize", noop);
     compose_setup.initialize();
-}
+};
 
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
 
     let draft_deleted;
     let reify_message_id_checked;
-    function reset() {
+    const reset = () => {
         $("textarea#compose-textarea").val("foobarfoobar");
         $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
         draft_deleted = false;
         reify_message_id_checked = false;
-    }
+    };
 
     reset();
 
@@ -217,13 +217,13 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
     // This is the common setup stuff for all of the four tests.
     let stub_state;
-    function initialize_state_stub_dict() {
+    const initialize_state_stub_dict = () => {
         stub_state = {};
         stub_state.send_msg_called = 0;
         stub_state.get_events_running_called = 0;
         stub_state.reify_message_id_checked = 0;
         return stub_state;
-    }
+    };
 
     const $container = $(".top_left_drafts");
     const $child = $(".unread_count");
@@ -241,7 +241,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     });
 
     // Tests start here.
-    (function test_message_send_success_codepath() {
+    (() => {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
         compose_state.set_message_type("private");
@@ -323,7 +323,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     });
 
     // Tests start here.
-    (function test_param_error_function_passed_from_send_message() {
+    (() => {
         stub_state = initialize_state_stub_dict();
 
         compose.send_message();
@@ -337,7 +337,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(echo_error_msg_checked);
     })();
 
-    (function test_error_codepath_local_id_undefined() {
+    (() => {
         let banner_rendered = false;
         mock_template("compose_banner/compose_banner.hbs", false, (data) => {
             assert.equal(data.classname, "generic_compose_error");
@@ -432,7 +432,7 @@ test_ui("finish", ({override, override_rewire}) => {
         show_button_spinner_called = true;
     });
 
-    (function test_when_compose_validation_fails() {
+    (() => {
         $("textarea#compose-textarea").toggleClass = (classname, value) => {
             assert.equal(classname, "invalid");
             assert.equal(value, true);
@@ -451,7 +451,7 @@ test_ui("finish", ({override, override_rewire}) => {
         assert.ok(show_button_spinner_called);
     })();
 
-    (function test_when_compose_validation_succeed() {
+    (() => {
         // Testing successfully sending of a message.
         $("#compose .undo_markdown_preview").show();
         $("#compose .preview_message_area").show();
@@ -515,15 +515,15 @@ test_ui("initialize", ({override}) => {
 
     assert.ok(resize_watch_manual_resize_checked);
 
-    function set_up_compose_start_mock(expected_opts) {
+    const set_up_compose_start_mock = (expected_opts) => {
         compose_actions_start_checked = false;
         compose_actions_expected_opts = {
             ...expected_opts,
             message_type: "stream",
         };
-    }
+    };
 
-    (function test_page_params_narrow_path() {
+    (() => {
         page_params.narrow = true;
 
         reset_jquery();
@@ -534,7 +534,7 @@ test_ui("initialize", ({override}) => {
         assert.ok(compose_actions_start_checked);
     })();
 
-    (function test_page_params_narrow_topic() {
+    (() => {
         page_params.narrow_topic = "testing";
 
         reset_jquery();
@@ -545,7 +545,7 @@ test_ui("initialize", ({override}) => {
         assert.ok(compose_actions_start_checked);
     })();
 
-    (function test_abort_xhr() {
+    (() => {
         reset_jquery();
         compose_setup.initialize();
 
@@ -599,7 +599,7 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
     let prevent_default_checked = false;
     let compose_finish_checked = false;
     const e = {
-        preventDefault() {
+        preventDefault: () => {
             prevent_default_checked = true;
         },
     };
@@ -620,7 +620,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
     override(rendered_markdown, "update_elements", noop);
 
-    (function test_attach_files_compose_clicked() {
+    (() => {
         const handler = $("#compose").get_on_handler("click", ".compose_upload_file");
         let compose_file_input_clicked = false;
         $("#compose .file_input").on("click", () => {
@@ -636,53 +636,53 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert.ok(compose_file_input_clicked);
     })();
 
-    (function test_markdown_preview_compose_clicked() {
+    (() => {
         // Tests setup
-        function setup_visibilities() {
+        const setup_visibilities = () => {
             $("textarea#compose-textarea").show();
             $("#compose .markdown_preview").show();
             $("#compose .undo_markdown_preview").hide();
             $("#compose .preview_message_area").hide();
             $("#compose").removeClass("preview_mode");
-        }
+        };
 
-        function assert_visibilities() {
+        const assert_visibilities = () => {
             assert.ok(!$("textarea#compose-textarea").visible());
             assert.ok(!$("#compose .markdown_preview").visible());
             assert.ok($("#compose .undo_markdown_preview").visible());
             assert.ok($("#compose .preview_message_area").visible());
             assert.ok($("#compose").hasClass("preview_mode"));
-        }
+        };
 
-        function setup_mock_markdown_contains_backend_only_syntax(msg_content, return_val) {
+        const setup_mock_markdown_contains_backend_only_syntax = (msg_content, return_val) => {
             override(markdown, "contains_backend_only_syntax", (msg) => {
                 assert.equal(msg, msg_content);
                 return return_val;
             });
-        }
+        };
 
-        function setup_mock_markdown_is_status_message(msg_content, return_val) {
+        const setup_mock_markdown_is_status_message = (msg_content, return_val) => {
             override(markdown, "is_status_message", (content) => {
                 assert.equal(content, msg_content);
                 return return_val;
             });
-        }
+        };
 
-        function test_post_success(success_callback) {
+        const test_post_success = (success_callback) => {
             const resp = {
                 rendered: "Server: foobarfoobar",
             };
             success_callback(resp);
             assert.equal($("#compose .preview_content").html(), "Server: foobarfoobar");
-        }
+        };
 
-        function test_post_error(error_callback) {
+        const test_post_error = (error_callback) => {
             error_callback();
             assert.equal(
                 $("#compose .preview_content").html(),
                 "translated HTML: Failed to generate preview",
             );
-        }
+        };
 
         let current_message;
 
@@ -691,7 +691,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             assert.ok(payload.data);
             assert.deepEqual(payload.data.content, current_message);
 
-            function test(func, param) {
+            const test = (func, param) => {
                 let destroy_indicator_called = false;
                 override(loading, "destroy_indicator", ($spinner) => {
                     assert.equal($spinner, $("#compose .markdown_preview_spinner"));
@@ -702,7 +702,7 @@ test_ui("on_events", ({override, override_rewire}) => {
                 func(param);
 
                 assert.ok(destroy_indicator_called);
-            }
+            };
 
             test(test_post_error, payload.error);
             test(test_post_success, payload.success);
@@ -762,7 +762,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert.equal($("#compose .preview_content").html(), "Server: foobarfoobar");
     })();
 
-    (function test_undo_markdown_preview_clicked() {
+    (() => {
         const handler = $("#compose").get_on_handler("click", ".undo_markdown_preview");
 
         $("textarea#compose-textarea").hide();

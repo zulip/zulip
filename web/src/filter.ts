@@ -62,7 +62,10 @@ type Part =
 const CHANNEL_SYNONYM = "stream";
 const CHANNELS_SYNONYM = "streams";
 
-function zephyr_stream_name_match(message: Message & {type: "stream"}, operand: string): boolean {
+const zephyr_stream_name_match = (
+    message: Message & {type: "stream"},
+    operand: string,
+): boolean => {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
     // TODO: hoist the regex compiling out of the closure
@@ -77,9 +80,9 @@ function zephyr_stream_name_match(message: Message & {type: "stream"}, operand: 
     );
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     return related_regexp.test(stream_name);
-}
+};
 
-function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: string): boolean {
+const zephyr_topic_name_match = (message: Message & {type: "stream"}, operand: string): boolean => {
     // Zephyr users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
     // (foo, foo.d, foo.d.d, etc)
     // TODO: hoist the regex compiling out of the closure
@@ -105,9 +108,9 @@ function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: s
     }
 
     return related_regexp.test(message.topic);
-}
+};
 
-function message_in_home(message: Message): boolean {
+const message_in_home = (message: Message): boolean => {
     // The home view contains messages not sent to muted channels,
     // with additional logic for unmuted topics, mentions, and
     // single-channel windows.
@@ -133,9 +136,13 @@ function message_in_home(message: Message): boolean {
         !stream_data.is_muted(message.stream_id) ||
         user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic)
     );
-}
+};
 
-function message_matches_search_term(message: Message, operator: string, operand: string): boolean {
+const message_matches_search_term = (
+    message: Message,
+    operator: string,
+    operand: string,
+): boolean => {
     switch (operator) {
         case "has":
             switch (operand) {
@@ -245,7 +252,7 @@ function message_matches_search_term(message: Message, operator: string, operand
     }
 
     return true; // unknown operators return true (effectively ignored)
-}
+};
 
 export class Filter {
     _terms: NarrowTerm[];
@@ -381,7 +388,7 @@ export class Filter {
         let operand;
         let term;
 
-        function maybe_add_search_terms(): void {
+        const maybe_add_search_terms = (): void => {
             if (search_term.length > 0) {
                 operator = "search";
                 const _operand = search_term.join(" ");
@@ -389,7 +396,7 @@ export class Filter {
                 terms.push(term);
                 search_term = [];
             }
-        }
+        };
 
         // Match all operands that either have no spaces, or are surrounded by
         // quotes, preceded by an optional operator that may have a space after it.

@@ -52,35 +52,35 @@ people.add_active_user(steve);
 people.add_active_user(alice);
 people.initialize_current_user(me.user_id);
 
-function assert_same_terms(result, terms) {
+const assert_same_terms = (result, terms) => {
     // If negated flag is undefined, we explicitly
     // set it to false.
     terms = terms.map(({negated = false, operator, operand}) => ({negated, operator, operand}));
     assert.deepEqual(result, terms);
-}
+};
 
-function get_predicate(raw_terms) {
+const get_predicate = (raw_terms) => {
     const terms = raw_terms.map((op) => ({
         operator: op[0],
         operand: op[1],
     }));
     return new Filter(terms).predicate();
-}
+};
 
-function make_sub(name, stream_id) {
+const make_sub = (name, stream_id) => {
     const sub = {
         name,
         stream_id,
     };
     stream_data.add_sub(sub);
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         f(helpers);
     });
-}
+};
 
 test("basics", () => {
     let terms = [
@@ -395,7 +395,7 @@ test("basics", () => {
     assert.ok(filter.is_conversation_view());
 });
 
-function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
+const assert_not_mark_read_with_has_operands = (additional_terms_to_test) => {
     additional_terms_to_test = additional_terms_to_test || [];
     let has_link_term = [{operator: "has", operand: "link"}];
     let filter = new Filter([...additional_terms_to_test, ...has_link_term]);
@@ -420,8 +420,8 @@ function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
     has_link_term = [{operator: "has", operand: "attachment"}];
     filter = new Filter([...additional_terms_to_test, ...has_link_term]);
     assert.ok(!filter.can_mark_messages_read());
-}
-function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
+};
+const assert_not_mark_read_with_is_operands = (additional_terms_to_test) => {
     additional_terms_to_test = additional_terms_to_test || [];
     let is_operator = [{operator: "is", operand: "starred"}];
     let filter = new Filter([...additional_terms_to_test, ...is_operator]);
@@ -466,9 +466,9 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     is_operator = [{operator: "is", operand: "resolved", negated: true}];
     filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
-}
+};
 
-function assert_not_mark_read_when_searching(additional_terms_to_test) {
+const assert_not_mark_read_when_searching = (additional_terms_to_test) => {
     additional_terms_to_test = additional_terms_to_test || [];
     let search_op = [{operator: "search", operand: "keyword"}];
     let filter = new Filter([...additional_terms_to_test, ...search_op]);
@@ -477,7 +477,7 @@ function assert_not_mark_read_when_searching(additional_terms_to_test) {
     search_op = [{operator: "search", operand: "keyword", negated: true}];
     filter = new Filter([...additional_terms_to_test, ...search_op]);
     assert.ok(!filter.can_mark_messages_read());
-}
+};
 
 test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands();
@@ -984,9 +984,9 @@ test("predicate_basics", ({override}) => {
     // HTML content of message is used to determine if image have link, image or attachment.
     // We are using jquery to parse the html and find existence of relevant tags/elements.
     // In tests we need to stub the calls to jquery so using zjquery's .set_find_results method.
-    function set_find_results_for_msg_content(msg, jquery_selector, results) {
+    const set_find_results_for_msg_content = (msg, jquery_selector, results) => {
         $(`<div>${msg.content}</div>`).set_find_results(jquery_selector, results);
-    }
+    };
 
     const has_link = get_predicate([["has", "link"]]);
     set_find_results_for_msg_content(img_msg, "a", ["stub"]);
@@ -1036,7 +1036,7 @@ test("negated_predicates", () => {
     assert.ok(predicate({}));
 });
 
-function test_mit_exceptions() {
+const test_mit_exceptions = () => {
     const foo_stream_id = 555;
     make_sub("Foo", foo_stream_id);
     let predicate = get_predicate([
@@ -1071,7 +1071,7 @@ function test_mit_exceptions() {
     ];
     predicate = new Filter(terms).predicate();
     assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
-}
+};
 
 test("mit_exceptions", ({override}) => {
     override(realm, "realm_is_zephyr_mirror_realm", true);
@@ -1114,10 +1114,10 @@ test("parse", () => {
     let string;
     let terms;
 
-    function _test() {
+    const _test = () => {
         const result = Filter.parse(string);
         assert_same_terms(result, terms);
-    }
+    };
 
     string = "channel:Foo topic:Bar yo";
     terms = [
@@ -1492,17 +1492,15 @@ test("can_bucket_by", () => {
 });
 
 test("term_type", () => {
-    function assert_term_type(term, expected_term_type) {
+    const assert_term_type = (term, expected_term_type) => {
         assert.equal(Filter.term_type(term), expected_term_type);
-    }
+    };
 
-    function term(operator, operand, negated) {
-        return {
-            operator,
-            operand,
-            negated,
-        };
-    }
+    const term = (operator, operand, negated) => ({
+        operator,
+        operand,
+        negated,
+    });
 
     assert_term_type(term("channels", "public"), "channels-public");
     assert_term_type(term("channel", "whatever"), "channel");
@@ -1513,10 +1511,10 @@ test("term_type", () => {
     assert_term_type(term("has", "link"), "has-link");
     assert_term_type(term("has", "attachment", true), "not-has-attachment");
 
-    function assert_term_sort(in_terms, expected) {
+    const assert_term_sort = (in_terms, expected) => {
         const sorted_terms = Filter.sorted_term_types(in_terms);
         assert.deepEqual(sorted_terms, expected);
-    }
+    };
 
     assert_term_sort(["topic", "channel", "sender"], ["channel", "topic", "sender"]);
 
@@ -1597,62 +1595,62 @@ test("update_email", () => {
     assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
 });
 
-function make_private_sub(name, stream_id) {
+const make_private_sub = (name, stream_id) => {
     const sub = {
         name,
         stream_id,
         invite_only: true,
     };
     stream_data.add_sub(sub);
-}
+};
 
-function make_web_public_sub(name, stream_id) {
+const make_web_public_sub = (name, stream_id) => {
     const sub = {
         name,
         stream_id,
         is_web_public: true,
     };
     stream_data.add_sub(sub);
-}
+};
 
 test("navbar_helpers", () => {
     const stream_id = 43;
     make_sub("Foo", stream_id);
 
     // make sure title has names separated with correct delimiters
-    function properly_separated_names(names) {
+    const properly_separated_names = (names) => {
         const names_internationalized = new Intl.ListFormat("en", {
             style: "long",
             type: "conjunction",
         }).format(names);
         return names_internationalized;
-    }
+    };
 
-    function test_redirect_url_with_search(test_case) {
+    const test_redirect_url_with_search = (test_case) => {
         const terms = [...test_case.terms, {operator: "search", operand: "fizzbuzz"}];
         const filter = new Filter(terms);
         assert.equal(filter.generate_redirect_url(), test_case.redirect_url_with_search);
-    }
+    };
 
-    function test_common_narrow(test_case) {
+    const test_common_narrow = (test_case) => {
         const filter = new Filter(test_case.terms);
         assert.equal(filter.is_common_narrow(), test_case.is_common_narrow);
-    }
+    };
 
-    function test_add_icon_data(test_case) {
+    const test_add_icon_data = (test_case) => {
         const filter = new Filter(test_case.terms);
         let context = {};
         context = filter.add_icon_data(context);
         assert.equal(context.icon, test_case.icon);
         assert.equal(context.zulip_icon, test_case.zulip_icon);
-    }
+    };
 
-    function test_get_title(test_case) {
+    const test_get_title = (test_case) => {
         const filter = new Filter(test_case.terms);
         assert.deepEqual(filter.get_title(), test_case.title);
-    }
+    };
 
-    function test_get_description(test_case) {
+    const test_get_description = (test_case) => {
         const filter = new Filter(test_case.terms);
         const description = filter.get_description();
 
@@ -1664,16 +1662,16 @@ test("navbar_helpers", () => {
         } else {
             assert.strictEqual(description, undefined);
         }
-    }
+    };
 
-    function test_helpers(test_case) {
+    const test_helpers = (test_case) => {
         // debugging tip: add a `console.log(test_case)` here
         test_common_narrow(test_case);
         test_add_icon_data(test_case);
         test_get_title(test_case);
         test_get_description(test_case);
         test_redirect_url_with_search(test_case);
-    }
+    };
 
     const sender = [{operator: "sender", operand: joe.email}];
     const guest_sender = [{operator: "sender", operand: alice.email}];

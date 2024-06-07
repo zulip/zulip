@@ -4,7 +4,7 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function test_mention(page: Page): Promise<void> {
+const test_mention = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector(".message-list .message_row", {visible: true});
@@ -37,6 +37,6 @@ async function test_mention(page: Page): Promise<void> {
     await common.check_messages_sent(page, message_list_id, [
         ["Verona > Test mention all", ["@all"]],
     ]);
-}
+};
 
 common.run_test(test_mention);

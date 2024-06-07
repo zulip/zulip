@@ -41,7 +41,7 @@ const condense = mock_esm("../src/condense");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
-    toggle_emoji_popover() {},
+    toggle_emoji_popover: () => {},
 });
 const gear_menu = mock_esm("../src/gear_menu");
 const lightbox = mock_esm("../src/lightbox");
@@ -97,27 +97,19 @@ const stream_popover = mock_esm("../src/stream_popover", {
 });
 
 message_lists.current = {
-    visibly_empty() {
-        return false;
-    },
-    selected_id() {
-        return 42;
-    },
-    selected_row() {
+    visibly_empty: () => false,
+    selected_id: () => 42,
+    selected_row: () => {
         const $row = $.create("selected-row-stub");
         $row.set_find_results(".message-actions-menu-button", []);
         $row.set_find_results(".emoji-message-control-button-container", {is: () => false});
         return $row;
     },
-    selected_message() {
-        return {
-            sent_by_me: true,
-            flags: ["read", "starred"],
-        };
-    },
-    get_row() {
-        return 101;
-    },
+    selected_message: () => ({
+        sent_by_me: true,
+        flags: ["read", "starred"],
+    }),
+    get_row: () => 101,
 };
 
 const emoji = zrequire("emoji");
@@ -129,34 +121,32 @@ emoji.initialize({
     emoji_codes,
 });
 
-function stubbing(module, func_name_to_stub, test_function) {
+const stubbing = (module, func_name_to_stub, test_function) => {
     with_overrides(({override}) => {
         const stub = make_stub();
         override(module, func_name_to_stub, stub.f);
         test_function(stub);
     });
-}
+};
 
 // Set up defaults for most tests.
 hotkey.__Rewire__("processing_text", () => false);
 
 run_test("mappings", () => {
-    function map_press(which, shiftKey) {
-        return hotkey.get_keypress_hotkey({
+    const map_press = (which, shiftKey) =>
+        hotkey.get_keypress_hotkey({
             which,
             shiftKey,
         });
-    }
 
-    function map_down(which, shiftKey, ctrlKey, metaKey, altKey) {
-        return hotkey.get_keydown_hotkey({
+    const map_down = (which, shiftKey, ctrlKey, metaKey, altKey) =>
+        hotkey.get_keydown_hotkey({
             which,
             shiftKey,
             ctrlKey,
             metaKey,
             altKey,
         });
-    }
 
     // The next assertion protects against an iOS bug where we
     // treat "!" as a hotkey, because iOS sends the wrong code.
@@ -226,7 +216,7 @@ run_test("mappings", () => {
     navigator.platform = "";
 });
 
-function process(s, shiftKey, keydown = false) {
+const process = (s, shiftKey, keydown = false) => {
     const e = {
         which: s.codePointAt(0),
         shiftKey,
@@ -244,28 +234,28 @@ function process(s, shiftKey, keydown = false) {
         console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
         throw error;
     }
-}
+};
 
-function assert_mapping(c, module, func_name, shiftKey, keydown) {
+const assert_mapping = (c, module, func_name, shiftKey, keydown) => {
     stubbing(module, func_name, (stub) => {
         assert.ok(process(c, shiftKey, keydown));
         assert.equal(stub.num_calls, 1);
     });
-}
+};
 
-function assert_unmapped(s) {
+const assert_unmapped = (s) => {
     for (const c of s) {
         assert.equal(process(c), false);
     }
-}
+};
 
-function test_normal_typing() {
+const test_normal_typing = () => {
     assert_unmapped("abcdefghijklmnopqrsuvwxyz");
     assert_unmapped(" ");
     assert_unmapped("[]\\.,;");
     assert_unmapped("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     assert_unmapped('~!@#$%^*()_+{}:"<>');
-}
+};
 
 run_test("allow normal typing when processing text", ({override, override_rewire}) => {
     // Unmapped keys should immediately return false, without
@@ -458,7 +448,7 @@ run_test("motion_keys", () => {
         "+": 187,
     };
 
-    function process(name) {
+    const process = (name) => {
         const e = {
             which: codes[name],
         };
@@ -473,18 +463,18 @@ run_test("motion_keys", () => {
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
             throw error;
         }
-    }
+    };
 
-    function assert_unmapped(name) {
+    const assert_unmapped = (name) => {
         assert.equal(process(name), false);
-    }
+    };
 
-    function assert_mapping(key_name, module, func_name) {
+    const assert_mapping = (key_name, module, func_name) => {
         stubbing(module, func_name, (stub) => {
             assert.ok(process(key_name));
             assert.equal(stub.num_calls, 1);
         });
-    }
+    };
 
     list_util.inside_list = () => false;
     message_lists.current.visibly_empty = () => true;

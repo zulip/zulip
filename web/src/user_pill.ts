@@ -20,11 +20,11 @@ export type UserPillWidget = InputPillContainer<UserPill>;
 
 export type UserPillData = {type: "user"; user: User};
 
-export function create_item_from_email(
+export const create_item_from_email = (
     email: string,
     current_items: CombinedPillItem[],
     pill_config?: InputPillConfig | undefined,
-): InputPillItem<UserPill> | undefined {
+): InputPillItem<UserPill> | undefined => {
     // For normal Zulip use, we need to validate the email for our realm.
     const user = people.get_by_email(email);
 
@@ -84,16 +84,14 @@ export function create_item_from_email(
     }
 
     return item;
-}
+};
 
-export function get_email_from_item(item: InputPillItem<UserPill>): string {
-    return item.email;
-}
+export const get_email_from_item = (item: InputPillItem<UserPill>): string => item.email;
 
-export function append_person(opts: {
+export const append_person = (opts: {
     person: User;
     pill_widget: UserPillWidget | CombinedPillContainer;
-}): void {
+}): void => {
     const person = opts.person;
     const pill_widget = opts.pill_widget;
     const avatar_url = people.small_avatar_url_for_person(person);
@@ -111,14 +109,14 @@ export function append_person(opts: {
 
     pill_widget.appendValidatedData(pill_data);
     pill_widget.clear_text();
-}
+};
 
-export function get_user_ids(pill_widget: UserPillWidget | CombinedPillContainer): number[] {
+export const get_user_ids = (pill_widget: UserPillWidget | CombinedPillContainer): number[] => {
     const items = pill_widget.items();
     return items.flatMap((item) => (item.type === "user" ? item.user_id ?? [] : [])); // be defensive about undefined users
-}
+};
 
-export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
+export const has_unconverted_data = (pill_widget: UserPillWidget): boolean => {
     // This returns true if we either have text that hasn't been
     // turned into pills or email-only pills (for Zephyr).
     if (pill_widget.is_pending()) {
@@ -129,26 +127,26 @@ export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
     const has_unknown_items = items.some((item) => item.user_id === undefined);
 
     return has_unknown_items;
-}
+};
 
-export function typeahead_source(
+export const typeahead_source = (
     pill_widget: UserPillWidget | CombinedPillContainer,
     exclude_bots?: boolean,
-): UserPillData[] {
+): UserPillData[] => {
     const users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
     return filter_taken_users(users, pill_widget).map((user) => ({type: "user", user}));
-}
+};
 
-export function filter_taken_users(
+export const filter_taken_users = (
     items: User[],
     pill_widget: UserPillWidget | CombinedPillContainer,
-): User[] {
+): User[] => {
     const taken_user_ids = get_user_ids(pill_widget);
     items = items.filter((item) => !taken_user_ids.includes(item.user_id));
     return items;
-}
+};
 
-export function append_user(user: User, pills: UserPillWidget | CombinedPillContainer): void {
+export const append_user = (user: User, pills: UserPillWidget | CombinedPillContainer): void => {
     if (user) {
         append_person({
             pill_widget: pills,
@@ -157,12 +155,12 @@ export function append_user(user: User, pills: UserPillWidget | CombinedPillCont
     } else {
         blueslip.warn("Undefined user in function append_user");
     }
-}
+};
 
-export function create_pills(
+export const create_pills = (
     $pill_container: JQuery,
     pill_config?: InputPillConfig | undefined,
-): input_pill.InputPillContainer<UserPill> {
+): input_pill.InputPillContainer<UserPill> => {
     const pills = input_pill.create({
         $container: $pill_container,
         pill_config,
@@ -170,4 +168,4 @@ export function create_pills(
         get_text_from_item: get_email_from_item,
     });
     return pills;
-}
+};

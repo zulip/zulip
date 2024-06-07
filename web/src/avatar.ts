@@ -10,13 +10,11 @@ import {current_user, realm} from "./state_data";
 import * as upload_widget from "./upload_widget";
 import type {UploadFunction, UploadWidget} from "./upload_widget";
 
-export function build_bot_create_widget(): UploadWidget {
+export const build_bot_create_widget = (): UploadWidget => {
     // We have to do strange gyrations with the file input to clear it,
     // where we replace it wholesale, so we generalize the file input with
     // a callback function.
-    const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $("#bot_avatar_file_input");
-    };
+    const get_file_input = (): JQuery<HTMLInputElement> => $("#bot_avatar_file_input");
 
     const $file_name_field = $("#bot_avatar_file");
     const $input_error = $("#bot_avatar_file_input_error");
@@ -33,12 +31,11 @@ export function build_bot_create_widget(): UploadWidget {
         $preview_text,
         $preview_image,
     );
-}
+};
 
-export function build_bot_edit_widget($target: JQuery): UploadWidget {
-    const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $target.find<HTMLInputElement>(".edit_bot_avatar_file_input");
-    };
+export const build_bot_edit_widget = ($target: JQuery): UploadWidget => {
+    const get_file_input = (): JQuery<HTMLInputElement> =>
+        $target.find<HTMLInputElement>(".edit_bot_avatar_file_input");
 
     const $file_name_field = $target.find(".edit_bot_avatar_file");
     const $input_error = $target.find(".edit_bot_avatar_error");
@@ -56,24 +53,23 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
         $preview_text,
         $preview_image,
     );
-}
+};
 
-function display_avatar_delete_complete(): void {
+const display_avatar_delete_complete = (): void => {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
     $("#user-avatar-source").show();
-}
+};
 
-function display_avatar_delete_started(): void {
+const display_avatar_delete_started = (): void => {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
     $("#user-avatar-upload-widget .image-upload-text").hide();
     $("#user-avatar-upload-widget .image-delete-button").hide();
-}
+};
 
-export function build_user_avatar_widget(upload_function: UploadFunction): void {
-    const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
-    };
+export const build_user_avatar_widget = (upload_function: UploadFunction): void => {
+    const get_file_input = (): JQuery<HTMLInputElement> =>
+        $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
 
     if (current_user.avatar_source === "G") {
         $("#user-avatar-upload-widget .image-delete-button").hide();
@@ -89,11 +85,11 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
     $("#user-avatar-upload-widget .image-delete-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        function delete_user_avatar(): void {
+        const delete_user_avatar = (): void => {
             display_avatar_delete_started();
             void channel.del({
                 url: "/json/users/me/avatar",
-                success() {
+                success: () => {
                     display_avatar_delete_complete();
 
                     // Need to clear input because of a small edge case
@@ -101,12 +97,12 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
                     get_file_input().val("");
                     // Rest of the work is done via the user_events -> avatar_url event we will get
                 },
-                error() {
+                error: () => {
                     display_avatar_delete_complete();
                     $("#user-avatar-upload-widget .image-delete-button").show();
                 },
             });
-        }
+        };
         const html_body = render_confirm_delete_user_avatar({});
 
         confirm_dialog.launch({
@@ -123,4 +119,4 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         upload_function,
         realm.max_avatar_file_size_mib,
     );
-}
+};

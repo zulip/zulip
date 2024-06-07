@@ -7,7 +7,7 @@ const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
-const noop = function () {};
+const noop = () => {};
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 
@@ -26,7 +26,7 @@ const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
 
-function override_typeahead_helper(override_rewire) {
+const override_typeahead_helper = (override_rewire) => {
     override_rewire(typeahead_helper, "render_person", () => $fake_rendered_person);
     override_rewire(typeahead_helper, "render_user_group", () => $fake_rendered_group);
     override_rewire(typeahead_helper, "render_stream", () => $fake_rendered_stream);
@@ -37,11 +37,9 @@ function override_typeahead_helper(override_rewire) {
         sort_recipients_called = true;
         return users;
     });
-}
+};
 
-function user_item(user) {
-    return {type: "user", user};
-}
+const user_item = (user) => ({type: "user", user});
 
 const jill = {
     email: "jill@zulip.com",
@@ -74,12 +72,10 @@ for (const person of persons) {
 }
 const person_items = persons.map((person) => user_item(person));
 
-function user_group_item(user_group) {
-    return {
-        ...user_group,
-        type: "user_group",
-    };
-}
+const user_group_item = (user_group) => ({
+    ...user_group,
+    type: "user_group",
+});
 
 const admins = {
     name: "Admins",
@@ -102,12 +98,10 @@ for (const group of groups) {
 }
 const group_items = [admins_item, testers_item];
 
-function stream_item(stream) {
-    return {
-        ...stream,
-        type: "stream",
-    };
-}
+const stream_item = (stream) => ({
+    ...stream,
+    type: "stream",
+});
 
 const denmark = {
     stream_id: 1,
@@ -156,9 +150,9 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
     });
 
     let update_func_called = false;
-    function update_func() {
+    const update_func = () => {
         update_func_called = true;
-    }
+    };
 
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
@@ -175,11 +169,11 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         // test queries
         const person_query = "me";
 
-        (function test_highlighter() {
+        (() => {
             assert.equal(config.highlighter_html(me_item, person_query), $fake_rendered_person);
         })();
 
-        (function test_matcher() {
+        (() => {
             let result;
             result = config.matcher(me_item, person_query);
             assert.ok(result);
@@ -187,13 +181,13 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
             assert.ok(!result);
         })();
 
-        (function test_sorter() {
+        (() => {
             sort_recipients_called = false;
             config.sorter([me_item], person_query);
             assert.ok(sort_recipients_called);
         })();
 
-        (function test_source() {
+        (() => {
             let expected_result = [];
             let actual_result = [];
             const result = config.source(person_query);
@@ -203,11 +197,11 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
             assert.deepEqual(actual_result, expected_result);
         })();
 
-        (function test_updater() {
-            function number_of_pills() {
+        (() => {
+            const number_of_pills = () => {
                 const pills = $pill_widget.items();
                 return pills.length;
-            }
+            };
             assert.equal(number_of_pills(), 0);
             config.updater(me_item, person_query);
             assert.equal(number_of_pills(), 1);
@@ -245,9 +239,9 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     });
 
     let update_func_called = false;
-    function update_func() {
+    const update_func = () => {
         update_func_called = true;
-    }
+    };
 
     let opts = {};
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
@@ -267,7 +261,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         const person_query = "me";
         const group_query = "test";
 
-        (function test_highlighter() {
+        (() => {
             if (opts.stream) {
                 // Test stream highlighter_html for widgets that allow stream pills.
                 assert.equal(
@@ -295,7 +289,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             }
         })();
 
-        (function test_matcher() {
+        (() => {
             let result;
             if (opts.stream) {
                 result = config.matcher(denmark_item, stream_query);
@@ -335,7 +329,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             }
         })();
 
-        (function test_sorter() {
+        (() => {
             if (opts.stream) {
                 sort_streams_called = false;
                 config.sorter([denmark_item], stream_query);
@@ -353,7 +347,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             }
         })();
 
-        (function test_source() {
+        (() => {
             let result;
             if (opts.stream) {
                 result = config.source(stream_query);
@@ -364,9 +358,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
 
             let expected_result = [];
             let actual_result = [];
-            function is_group(item) {
-                return item.members;
-            }
+            const is_group = (item) => item.members;
             result = config.source(person_query);
             actual_result = result
                 .map((item) => {
@@ -397,7 +389,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             assert.deepEqual(actual_result, expected_result);
         })();
 
-        (function test_updater() {
+        (() => {
             if (opts.user && opts.user_group && opts.stream) {
                 // Test it only for the case when all types of pills
                 // are allowed, as it would be difficult to keep track
@@ -405,10 +397,10 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 // times in this test. So this case checks all possible cases handled by
                 // updater in pill_typeahead.
 
-                function number_of_pills() {
+                const number_of_pills = () => {
                     const pills = $pill_widget.items();
                     return pills.length;
-                }
+                };
                 assert.equal(number_of_pills(), 0);
                 config.updater(denmark_item, stream_query);
                 assert.equal(number_of_pills(), 1);
@@ -426,10 +418,10 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         input_pill_typeahead_called = true;
     });
 
-    function test_pill_typeahead(opts) {
+    const test_pill_typeahead = (opts) => {
         pill_typeahead.set_up_combined($fake_input, $pill_widget, opts);
         assert.ok(input_pill_typeahead_called);
-    }
+    };
 
     const all_possible_opts = [
         // These are various possible cases of opts that

@@ -14,9 +14,7 @@ set_global("addEventListener", noop);
 
 const channel = mock_esm("../src/channel");
 mock_esm("../src/reload_state", {
-    is_in_progress() {
-        return false;
-    },
+    is_in_progress: () => false,
 });
 page_params.test_suite = false;
 
@@ -24,27 +22,25 @@ page_params.test_suite = false;
 set_global("pointer", {});
 
 mock_esm("../src/ui_report", {
-    hide_error() {
-        return false;
-    },
+    hide_error: () => false,
 });
 
 mock_esm("../src/stream_events", {
-    update_property() {
+    update_property: () => {
         throw new Error("subs update error");
     },
 });
 
 mock_esm("../src/sent_messages", {
-    report_event_received() {},
+    report_event_received: () => {},
     messages: new Map(),
 });
 
 const message_events = mock_esm("../src/message_events", {
-    insert_new_messages() {
+    insert_new_messages: () => {
         throw new Error("insert error");
     },
-    update_messages() {
+    update_messages: () => {
         throw new Error("update error");
     },
 });

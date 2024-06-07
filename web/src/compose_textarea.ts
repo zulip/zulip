@@ -16,10 +16,10 @@ function set_compose_textarea_handlers(): void {
     });
 }
 
-export function restore_compose_cursor(): void {
+export const restore_compose_cursor = (): void => {
     $("textarea#compose-textarea").trigger("focus").caret(saved_compose_cursor);
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     set_compose_textarea_handlers();
-}
+};

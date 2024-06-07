@@ -15,7 +15,7 @@ import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
-function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
+const get_tooltip_content = (reference: Element): string | Element | DocumentFragment => {
     if (reference instanceof HTMLElement && reference.dataset.tooltipTemplateId !== undefined) {
         const template = document.querySelector<HTMLTemplateElement>(
             `template#${CSS.escape(reference.dataset.tooltipTemplateId)}`,
@@ -27,7 +27,7 @@ function get_tooltip_content(reference: Element): string | Element | DocumentFra
         }
     }
     return "";
-}
+};
 
 // We use different delay settings for tooltips. The default "instant"
 // version has just a tiny bit of delay to create a natural feeling
@@ -162,13 +162,13 @@ export function initialize(): void {
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             const $container = $(instance.popper).find(".views-tooltip-container");
             if ($container.data("view-code") === user_settings.web_home_view) {
                 $container.find(".views-tooltip-home-view-note").removeClass("hide");
             }
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
         popperOptions: {
@@ -192,7 +192,7 @@ export function initialize(): void {
         target: ".draft-selection-tooltip",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             let content = $t({defaultMessage: "Select draft"});
             const $elem = $(instance.reference);
             if ($($elem).parent().find(".draft-selection-checkbox").hasClass("fa-check-square")) {
@@ -205,7 +205,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".delete-selected-drafts-button-container",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             let content = $t({defaultMessage: "Delete all selected drafts"});
             const $elem = $(instance.reference);
             if ($($elem).find(".delete-selected-drafts-button").is(":disabled")) {
@@ -218,7 +218,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: "#add-poll-modal .dialog_submit_button_container",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             const content = $t({defaultMessage: "Please enter a question."});
             const $elem = $(instance.reference);
             // Show tooltip to enter question only if submit button is disabled
@@ -264,7 +264,7 @@ export function initialize(): void {
         ].join(","),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -272,7 +272,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".media-info-wrapper > .media-description > .title",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             const title = $(instance.reference).attr("aria-label");
             if (title === undefined) {
                 return false;
@@ -288,7 +288,7 @@ export function initialize(): void {
             instance.setContent($markup[0]!);
             return undefined;
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -321,7 +321,7 @@ export function initialize(): void {
             defaultMessage: "Only 2 custom profile fields can be displayed on the user card.",
         }),
         appendTo: () => document.body,
-        onTrigger(instance) {
+        onTrigger: (instance) => {
             // Sometimes just removing class is not enough to destroy/remove tooltip, especially in
             // "Add a new custom profile field" form, so here we are manually calling `destroy()`.
             if (!instance.reference.classList.contains("display_in_profile_summary_tooltip")) {
@@ -337,7 +337,7 @@ export function initialize(): void {
                 "Name changes are disabled in this organization. Contact an administrator to change your name.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -346,7 +346,7 @@ export function initialize(): void {
         target: "#change_email_button_container.disabled_setting_tooltip",
         content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -361,7 +361,7 @@ export function initialize(): void {
                 "Because you are the only organization owner, you cannot deactivate your account.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -372,7 +372,7 @@ export function initialize(): void {
             defaultMessage: "Only organization owners may deactivate an organization.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -383,7 +383,7 @@ export function initialize(): void {
             defaultMessage: "Default channels for new users cannot be made private.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -397,7 +397,7 @@ export function initialize(): void {
             defaultMessage: "You can only view channels that you are subscribed to.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -408,7 +408,7 @@ export function initialize(): void {
             defaultMessage: "Private channels cannot be default channels for new users.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -420,7 +420,7 @@ export function initialize(): void {
                 "You do not have permissions to create invite links in this organization.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -434,7 +434,7 @@ export function initialize(): void {
             defaultMessage: "You must configure your email to access this feature.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -446,14 +446,14 @@ export function initialize(): void {
                 "You do not have permissions to send invite emails in this organization.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
 
     tippy.delegate("body", {
         target: ".views-tooltip-target",
-        onShow(instance) {
+        onShow: (instance) => {
             if ($("#toggle-top-left-navigation-area-icon").hasClass("fa-caret-down")) {
                 instance.setContent(
                     $t({
@@ -470,7 +470,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: ".dm-tooltip-target",
-        onShow(instance) {
+        onShow: (instance) => {
             if ($(".direct-messages-container").hasClass("zoom-in")) {
                 return false;
             }
@@ -497,7 +497,7 @@ export function initialize(): void {
                 "You do not have permission to add other users to channels in this organization.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -505,7 +505,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".user_row .actions button",
         trigger: "mouseenter",
-        onShow(instance) {
+        onShow: (instance) => {
             if ($(instance.reference).hasClass("deactivate")) {
                 instance.setContent($t({defaultMessage: "Deactivate"}));
                 return undefined;
@@ -538,11 +538,11 @@ export function initialize(): void {
             those regions.
         */
 
-        onShow() {
+        onShow: () => {
             popovers.hide_all();
         },
 
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -564,7 +564,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: "#move_topic_to_stream_widget_wrapper",
-        onShow(instance) {
+        onShow: (instance) => {
             if ($("#move_topic_to_stream_widget").prop("disabled")) {
                 instance.setContent(
                     $t({
@@ -583,7 +583,7 @@ export function initialize(): void {
         target: "#userlist-header",
         placement: "top",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             const total_user_count = people.get_active_human_count();
             instance.setContent(
                 ui_util.parse_html(render_buddy_list_title_tooltip({total_user_count})),
@@ -596,7 +596,7 @@ export function initialize(): void {
         delay: LONG_HOVER_DELAY,
         placement: "bottom",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             let template = "show-userlist-tooltip-template";
             if ($("#right-sidebar-container").is(":visible")) {
                 template = "hide-userlist-tooltip-template";
@@ -604,7 +604,7 @@ export function initialize(): void {
             $(instance.reference).attr("data-tooltip-template-id", template);
             instance.setContent(get_tooltip_content(instance.reference));
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -613,7 +613,7 @@ export function initialize(): void {
         target: "#realm-logo",
         placement: "right",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             const escape_navigates_to_home_view = user_settings.web_escape_navigates_to_home_view;
             const home_view =
                 settings_config.web_home_view_values[user_settings.web_home_view].description;
@@ -631,7 +631,7 @@ export function initialize(): void {
             defaultMessage: "This profile field is required.",
         }),
         appendTo: () => document.body,
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
         },
     });
@@ -641,7 +641,7 @@ export function initialize(): void {
         trigger: "mouseenter",
         placement: "top",
         appendTo: () => document.body,
-        onShow(instance) {
+        onShow: (instance) => {
             const hotkey_hints = $(instance.reference).attr("data-hotkey-hints");
             if (hotkey_hints) {
                 instance.setContent(hotkey_hints.replace("⇧", "Shift").replaceAll(",", " + "));

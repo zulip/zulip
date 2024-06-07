@@ -225,13 +225,13 @@ export class DropdownWidget {
 
                 // Keyboard handler
                 $popper.on("keydown", (e) => {
-                    function trigger_element_focus($element: JQuery): void {
+                    const trigger_element_focus = ($element: JQuery): void => {
                         e.preventDefault();
                         e.stopPropagation();
                         // When bringing a non-visible element into view, scroll as minimum as possible.
                         $element[0]?.scrollIntoView({block: "nearest"});
                         $element.trigger("focus");
-                    }
+                    };
 
                     const $search_input = $popper.find(".dropdown-list-search-input");
                     assert(this.list_widget !== undefined);
@@ -241,17 +241,17 @@ export class DropdownWidget {
                         return;
                     }
 
-                    function first_item(): JQuery {
+                    const first_item = (): JQuery => {
                         const first_item = list_items[0];
                         assert(first_item !== undefined);
                         return $popper.find(`.list-item[data-unique-id="${first_item.unique_id}"]`);
-                    }
+                    };
 
-                    function last_item(): JQuery {
+                    const last_item = (): JQuery => {
                         const last_item = list_items.at(-1);
                         assert(last_item !== undefined);
                         return $popper.find(`.list-item[data-unique-id="${last_item.unique_id}"]`);
-                    }
+                    };
 
                     const render_all_items_and_focus_last_item = (): void => {
                         assert(this.list_widget !== undefined);

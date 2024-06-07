@@ -9,11 +9,11 @@ import * as sub_store from "./sub_store";
 export let toggler: components.Toggle;
 export let select_tab = "personal";
 
-export function set_select_tab(right_side_tab: string): void {
+export const set_select_tab = (right_side_tab: string): void => {
     select_tab = right_side_tab;
-}
+};
 
-export function setup_toggler(): void {
+export const setup_toggler = (): void => {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
@@ -21,7 +21,7 @@ export function setup_toggler(): void {
             {label: $t({defaultMessage: "Personal"}), key: "personal"},
             {label: $t({defaultMessage: "Subscribers"}), key: "subscribers"},
         ],
-        callback(_name, key) {
+        callback: (_name, key) => {
             $(".stream_section").hide();
             $(`[data-stream-section="${CSS.escape(key)}"]`).show();
             select_tab = key;
@@ -34,4 +34,4 @@ export function setup_toggler(): void {
             }
         },
     });
-}
+};

@@ -195,12 +195,12 @@ export class PanZoomControl {
     }
 }
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     is_open = false;
     asset_map.clear();
-}
+};
 
-export function render_lightbox_media_list(preview_source: string): void {
+export const render_lightbox_media_list = (preview_source: string): void => {
     if (!is_open) {
         const media_list = $(
             ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
@@ -241,9 +241,9 @@ export function render_lightbox_media_list(preview_source: string): void {
             parse_media_data(media);
         }
     }
-}
+};
 
-function display_image(payload: Payload): void {
+const display_image = (payload: Payload): void => {
     render_lightbox_media_list(payload.preview);
 
     $(".player-container, .video-player").hide();
@@ -279,9 +279,9 @@ function display_image(payload: Payload): void {
         // element.
         $(".media-actions .download").hide();
     }
-}
+};
 
-function display_video(payload: Payload): void {
+const display_video = (payload: Payload): void => {
     render_lightbox_media_list(payload.preview);
 
     $(
@@ -342,13 +342,13 @@ function display_video(payload: Payload): void {
     $("#lightbox_overlay .player-container").empty();
     $("#lightbox_overlay .player-container").append($iframe);
     $(".media-actions .open").attr("href", payload.url);
-}
+};
 
-export function build_open_media_function(
+export const build_open_media_function = (
     on_close: (() => void) | undefined,
-): ($media: JQuery) => void {
+): (($media: JQuery) => void) => {
     if (on_close === undefined) {
-        on_close = function () {
+        on_close = () => {
             remove_video_players();
             is_open = false;
             assert(document.activeElement instanceof HTMLElement);
@@ -356,7 +356,7 @@ export function build_open_media_function(
         };
     }
 
-    return function ($media: JQuery): void {
+    return ($media: JQuery): void => {
         // if the asset_map already contains the metadata required to display the
         // asset, just recall that metadata.
         let $preview_src = $media.attr("src")!;
@@ -402,9 +402,9 @@ export function build_open_media_function(
         popovers.hide_all();
         is_open = true;
     };
-}
+};
 
-export function show_from_selected_message(): void {
+export const show_from_selected_message = (): void => {
     const $message_selected = $(".selected_message");
     let $message = $message_selected;
     // This is a function to satisfy eslint unicorn/no-array-callback-reference
@@ -457,10 +457,10 @@ export function show_from_selected_message(): void {
         const open_media = build_open_media_function(undefined);
         open_media($media);
     }
-}
+};
 
 // retrieve the metadata from the DOM and store into the asset_map.
-export function parse_media_data(media: HTMLElement): Payload {
+export const parse_media_data = (media: HTMLElement): Payload => {
     const $media = $(media);
     const preview_src = $media.attr("src")!;
 
@@ -537,22 +537,22 @@ export function parse_media_data(media: HTMLElement): Payload {
 
     asset_map.set(preview_src, payload);
     return payload;
-}
+};
 
-export function prev(): void {
+export const prev = (): void => {
     $(".image-list .image.selected").prev().trigger("click");
-}
+};
 
-export function next(): void {
+export const next = (): void => {
     $(".image-list .image.selected").next().trigger("click");
-}
+};
 
-function remove_video_players(): void {
+const remove_video_players = (): void => {
     // Remove video players from the DOM. Used when closing lightbox
     // so that videos doesn't keep playing in the background.
     $(".player-container iframe").remove();
     $("#lightbox_overlay .video-player").html("");
-}
+};
 
 // this is a block of events that are required for the lightbox to work.
 export function initialize(): void {
@@ -565,7 +565,7 @@ export function initialize(): void {
         $("#lightbox_overlay .image-preview > .zoom-element")[0]!,
     );
 
-    const reset_lightbox_state = function (): void {
+    const reset_lightbox_state = (): void => {
         remove_video_players();
         is_open = false;
         assert(document.activeElement instanceof HTMLElement);

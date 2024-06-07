@@ -33,7 +33,7 @@ const emoji_params = {
 
 emoji.initialize(emoji_params);
 
-function initialize() {
+const initialize = () => {
     const params = {
         user_status: {
             1: {status_text: "in a meeting"},
@@ -46,7 +46,7 @@ function initialize() {
         },
     };
     user_status.initialize(params);
-}
+};
 
 run_test("basics", () => {
     initialize();
@@ -143,7 +143,7 @@ run_test("server", () => {
 
     user_status.server_update_status({
         status_text: "out to lunch",
-        success() {
+        success: () => {
             called = true;
         },
     });

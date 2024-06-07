@@ -8,7 +8,7 @@ import favicon_font_url from "./favicon_font_url!=!url-loader!font-subset-loader
 
 let favicon_state: {image: HTMLImageElement; url: string} | undefined;
 
-function load_and_set_favicon(rendered_favicon: string): void {
+const load_and_set_favicon = (rendered_favicon: string): void => {
     favicon_state = {
         url: URL.createObjectURL(new Blob([rendered_favicon], {type: "image/svg+xml"})),
         image: new Image(),
@@ -18,14 +18,14 @@ function load_and_set_favicon(rendered_favicon: string): void {
     // render the webfont (https://crbug.com/1140920).
     favicon_state.image.src = favicon_state.url;
     favicon_state.image.addEventListener("load", set_favicon);
-}
-function set_favicon(): void {
+};
+const set_favicon = (): void => {
     if (favicon_state === undefined) {
         throw new Error("Programming error: favicon_state must be set.");
     }
     $("#favicon").attr("href", favicon_state.url);
-}
-export function update_favicon(new_message_count: number, pm_count: number): void {
+};
+export const update_favicon = (new_message_count: number, pm_count: number): void => {
     try {
         if (favicon_state !== undefined) {
             favicon_state.image.removeEventListener("load", set_favicon);
@@ -65,4 +65,4 @@ export function update_favicon(new_message_count: number, pm_count: number): voi
     } catch (error) {
         blueslip.error("Failed to update favicon", undefined, error);
     }
-}
+};

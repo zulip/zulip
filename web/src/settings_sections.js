@@ -21,7 +21,7 @@ import * as settings_users from "./settings_users";
 const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();
 
-export function get_group(section) {
+export const get_group = (section) => {
     // Sometimes several sections all share the same code.
 
     switch (section) {
@@ -45,9 +45,9 @@ export function get_group(section) {
         default:
             return section;
     }
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     // personal
     load_func_dict.set("your-account", settings_account.set_up);
     load_func_dict.set("preferences", () => {
@@ -77,9 +77,9 @@ export function initialize() {
         "organization-level-user-defaults",
         settings_realm_user_settings_defaults.set_up,
     );
-}
+};
 
-export function load_settings_section(section) {
+export const load_settings_section = (section) => {
     const group = get_group(section);
 
     if (!load_func_dict.has(group)) {
@@ -98,9 +98,9 @@ export function load_settings_section(section) {
     // Do the real work here!
     load_func();
     loaded_groups.add(group);
-}
+};
 
-export function reset_sections() {
+export const reset_sections = () => {
     loaded_groups.clear();
     settings_emoji.reset();
     settings_exports.reset();
@@ -114,4 +114,4 @@ export function reset_sections() {
     settings_muted_users.reset();
     alert_words_ui.reset();
     // settings_users doesn't need a reset()
-}
+};

@@ -7,7 +7,7 @@ const {run_test} = require("./lib/test");
 
 const {password_quality, password_warning} = zrequire("password_quality");
 
-function password_field(min_length, min_guesses) {
+const password_field = (min_length, min_guesses) => {
     const self = {};
 
     self.attr = (name) => {
@@ -23,14 +23,14 @@ function password_field(min_length, min_guesses) {
     };
 
     return self;
-}
+};
 
 run_test("basics w/progress bar", () => {
     let accepted;
     let password;
     let warning;
 
-    const $bar = (function () {
+    const $bar = (() => {
         const $self = {};
 
         $self.width = (width) => {

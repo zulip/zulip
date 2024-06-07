@@ -19,11 +19,11 @@ export type Tag<T> = {
     opts: Options<T>;
 };
 
-export function eq_array<T>(
+export const eq_array = <T>(
     a: T[] | undefined,
     b: T[] | undefined,
     eq: (a_item: T, b_item: T) => boolean,
-): boolean {
+): boolean => {
     if (a === b) {
         // either both are undefined, or they
         // are referentially equal
@@ -39,16 +39,14 @@ export function eq_array<T>(
     }
 
     return a.every((item, i) => eq(item, b[i]!));
-}
+};
 
-export function ul<T>(opts: Options<T>): Tag<T> {
-    return {
-        tag_name: "ul",
-        opts,
-    };
-}
+export const ul = <T>(opts: Options<T>): Tag<T> => ({
+    tag_name: "ul",
+    opts,
+});
 
-export function render_tag<T>(tag: Tag<T>): string {
+export const render_tag = <T>(tag: Tag<T>): string => {
     /*
         This renders a tag into a string.  It will
         automatically escape attributes, but it's your
@@ -69,13 +67,13 @@ export function render_tag<T>(tag: Tag<T>): string {
 
     const innards = opts.keyed_nodes.map((node) => node.render()).join("\n");
     return start_tag + "\n" + innards + "\n" + end_tag;
-}
+};
 
-export function update_attrs(
+export const update_attrs = (
     $elem: JQuery,
     new_attrs: Iterable<[string, string]>,
     old_attrs: Iterable<[string, string]>,
-): void {
+): void => {
     const new_dict = new Map(new_attrs);
     const old_dict = new Map(old_attrs);
 
@@ -90,14 +88,14 @@ export function update_attrs(
             $elem.removeAttr(k);
         }
     }
-}
+};
 
-export function update<T>(
+export const update = <T>(
     replace_content: (html: string) => void,
     find: () => JQuery,
     new_dom: Tag<T>,
     old_dom: Tag<T> | undefined,
-): void {
+): void => {
     /*
         The update method allows you to continually
         update a "virtual" representation of your DOM,
@@ -149,10 +147,10 @@ export function update<T>(
         For examples of creating vdom objects, look at
         `pm_list_dom.ts`.
     */
-    function do_full_update(): void {
+    const do_full_update = (): void => {
         const rendered_dom = render_tag(new_dom);
         replace_content(rendered_dom);
-    }
+    };
 
     if (old_dom === undefined) {
         do_full_update();
@@ -207,4 +205,4 @@ export function update<T>(
     }
 
     update_attrs(find(), new_opts.attrs, old_opts.attrs);
-}
+};

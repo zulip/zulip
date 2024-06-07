@@ -46,7 +46,7 @@ const meta: FeedbackWidgetMeta = {
 };
 
 const animate = {
-    maybe_close() {
+    maybe_close: () => {
         if (!meta.opened) {
             return;
         }
@@ -60,7 +60,7 @@ const animate = {
             animate.maybe_close();
         }, 100);
     },
-    fadeOut() {
+    fadeOut: () => {
         if (!meta.opened) {
             return;
         }
@@ -80,7 +80,7 @@ const animate = {
             meta.alert_hover_state = false;
         }
     },
-    fadeIn() {
+    fadeIn: () => {
         if (meta.opened) {
             return;
         }
@@ -95,7 +95,7 @@ const animate = {
     },
 };
 
-function set_up_handlers(): void {
+const set_up_handlers = (): void => {
     if (meta.handlers_set) {
         return;
     }
@@ -138,17 +138,15 @@ function set_up_handlers(): void {
         }
         animate.fadeOut();
     });
-}
+};
 
-export function is_open(): boolean {
-    return meta.opened;
-}
+export const is_open = (): boolean => meta.opened;
 
-export function dismiss(): void {
+export const dismiss = (): void => {
     animate.fadeOut();
-}
+};
 
-export function show(opts: FeedbackWidgetOptions): void {
+export const show = (opts: FeedbackWidgetOptions): void => {
     if (!opts.populate) {
         blueslip.error("programmer needs to supply populate callback.");
         return;
@@ -175,4 +173,4 @@ export function show(opts: FeedbackWidgetOptions): void {
     opts.populate(meta.$container.find(".feedback_content"));
 
     animate.fadeIn();
-}
+};

@@ -42,7 +42,7 @@ const channel = mock_esm("../src/channel");
 const message_store = mock_esm("../src/message_store");
 const settings_data = mock_esm("../src/settings_data");
 const spectators = mock_esm("../src/spectators", {
-    login_to_access() {},
+    login_to_access: () => {},
 });
 const message_lists = mock_esm("../src/message_lists", {
     current: {
@@ -106,23 +106,23 @@ people.add_active_user(bob);
 people.add_active_user(cali);
 people.add_active_user(alexus);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         current_user.user_id = alice_user_id;
         f(helpers);
     });
-}
+};
 
-function sample_message_with_clean_reactions() {
+const sample_message_with_clean_reactions = () => {
     const message = {...sample_message};
     convert_reactions_to_clean_reactions(message);
     return message;
-}
+};
 
-function convert_reactions_to_clean_reactions(message) {
+const convert_reactions_to_clean_reactions = (message) => {
     message.clean_reactions = reactions.generate_clean_reactions(message);
     delete message.reactions;
-}
+};
 
 test("basics", () => {
     settings_data.user_can_access_all_other_users = () => true;
@@ -425,22 +425,22 @@ test("prevent_simultaneous_requests_updating_reaction", ({override_rewire}) => {
     assert.equal(stub.num_calls, 1);
 });
 
-function stub_reactions(message_id) {
+const stub_reactions = (message_id) => {
     const $message_reactions = $.create("reactions-stub");
     const $message_row = $.create(`#message-row-1-${CSS.escape(message_id)}`);
     message_lists.all_rendered_row_for_message_id = () => $message_row;
     $message_row.set_find_results(".message_reactions", $message_reactions);
     return $message_reactions;
-}
+};
 
-function stub_reaction(message_id, local_id) {
+const stub_reaction = (message_id, local_id) => {
     const $reaction = $.create("reaction-stub");
     stub_reactions(message_id).set_find_results(
         `[data-reaction-id='${CSS.escape(local_id)}']`,
         $reaction,
     );
     return $reaction;
-}
+};
 
 test("get_vote_text (more than 3 reactions)", () => {
     const user_ids = [5, 6, 7];
@@ -619,7 +619,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
         },
     );
 
-    function test_function_calls(test_params) {
+    const test_function_calls = (test_params) => {
         function_calls = [];
 
         test_params.run_code();
@@ -629,7 +629,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
             new Set(reactions.get_emojis_used_by_user_for_message_id(message.message_id)),
             new Set(test_params.alice_emojis),
         );
-    }
+    };
 
     const alice_8ball_event = {
         message_id: 2001,
@@ -669,7 +669,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
         vote_text: "translated: You",
     };
     test_function_calls({
-        run_code() {
+        run_code: () => {
             reactions.add_reaction(alice_8ball_event);
         },
         expected_function_calls: [
@@ -692,7 +692,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
 
     // Add redundant reaction.
     test_function_calls({
-        run_code() {
+        run_code: () => {
             reactions.add_reaction(alice_8ball_event);
         },
         expected_function_calls: [],
@@ -713,7 +713,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
         vote_text: "translated: You, Bob van Roberts",
     };
     test_function_calls({
-        run_code() {
+        run_code: () => {
             reactions.add_reaction(bob_8ball_event);
         },
         expected_function_calls: [
@@ -748,7 +748,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
         vote_text: "Cali",
     };
     test_function_calls({
-        run_code() {
+        run_code: () => {
             reactions.add_reaction(cali_airplane_event);
         },
         expected_function_calls: [
@@ -771,7 +771,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
     });
 
     test_function_calls({
-        run_code() {
+        run_code: () => {
             reactions.remove_reaction(bob_8ball_event);
         },
         expected_function_calls: [
@@ -794,7 +794,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
     });
 
     test_function_calls({
-        run_code() {
+        run_code: () => {
             reactions.remove_reaction(alice_8ball_event);
         },
         expected_function_calls: [
@@ -829,7 +829,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
 
     // Test redundant remove.
     test_function_calls({
-        run_code() {
+        run_code: () => {
             reactions.remove_reaction(alice_8ball_event);
         },
         expected_function_calls: [],
@@ -1221,12 +1221,12 @@ test("remove last user", ({override, override_rewire}) => {
     override(message_store, "get", () => message);
     override_rewire(reactions, "remove_reaction_from_view", noop);
 
-    function assert_names(names) {
+    const assert_names = (names) => {
         assert.deepEqual(
             reactions.get_message_reactions(message).map((r) => r.emoji_name),
             names,
         );
-    }
+    };
 
     assert_names(["smile", "frown", "tada", "rocket", "wave", "inactive_realm_emoji"]);
 

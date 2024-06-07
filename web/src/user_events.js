@@ -26,7 +26,7 @@ import {current_user, realm} from "./state_data";
 import * as stream_events from "./stream_events";
 import * as user_profile from "./user_profile";
 
-export const update_person = function update(person) {
+export const update_person = (person) => {
     const person_obj = people.maybe_get_user_by_id(person.user_id);
 
     if (!person_obj) {

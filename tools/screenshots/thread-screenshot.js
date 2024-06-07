@@ -29,7 +29,7 @@ if (options.imagePath === undefined) {
 }
 
 // TODO: Refactor to share code with web/e2e-tests/realm-creation.test.ts
-async function run() {
+const run = async () => {
     const browser = await puppeteer.launch({
         args: [
             "--window-size=1400,1024",
@@ -85,6 +85,6 @@ async function run() {
     } finally {
         await browser.close();
     }
-}
+};
 
 run();

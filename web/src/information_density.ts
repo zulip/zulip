@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import {user_settings} from "./user_settings";
 
-export function set_base_typography_css_variables(): void {
+export const set_base_typography_css_variables = (): void => {
     const font_size_px = user_settings.web_font_size_px;
     const line_height_percent = user_settings.web_line_height_percent;
     const line_height_unitless = line_height_percent / 100;
@@ -20,8 +20,8 @@ export function set_base_typography_css_variables(): void {
         "--markdown-interelement-doubled-space-px",
         `${markdown_interelement_space_px * 2}px`,
     );
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     set_base_typography_css_variables();
-}
+};

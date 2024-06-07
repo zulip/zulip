@@ -42,15 +42,15 @@ const social = {
 };
 stream_data.add_sub(social);
 
-function assert_zero_counts(counts) {
+const assert_zero_counts = (counts) => {
     assert.equal(counts.direct_message_count, 0);
     assert.equal(counts.home_unread_messages, 0);
     assert.equal(counts.mentioned_message_count, 0);
     assert.equal(counts.stream_count.size, 0);
     assert.equal(counts.pm_count.size, 0);
-}
+};
 
-function test_notifiable_count(home_unread_messages, expected_notifiable_count) {
+const test_notifiable_count = (home_unread_messages, expected_notifiable_count) => {
     user_settings.desktop_icon_count_display = 1;
     let notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, home_unread_messages);
@@ -63,15 +63,15 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
     user_settings.desktop_icon_count_display = 4;
     notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, 0);
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         unread.declare_bankruptcy();
         user_topics.set_user_topics([]);
         f(helpers);
     });
-}
+};
 
 test("empty_counts_while_narrowed", () => {
     const counts = unread.get_counts();
@@ -615,10 +615,10 @@ test("mention updates", () => {
         topic: "hello",
     };
 
-    function test_counted(counted) {
+    const test_counted = (counted) => {
         unread.update_message_for_mention(message);
         assert.equal(unread.unread_mentions_counter.has(message.id), counted);
-    }
+    };
 
     test_counted(false);
 

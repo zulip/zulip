@@ -37,16 +37,16 @@ export let user_settings_panel: SettingsPanel;
 
 export let user_default_language_name: string | undefined;
 
-export function set_default_language_name(name: string | undefined): void {
+export const set_default_language_name = (name: string | undefined): void => {
     user_default_language_name = name;
-}
+};
 
-function change_display_setting(
+const change_display_setting = (
     data: Record<string, string | boolean | number>,
     $status_el: JQuery,
     success_msg_html?: string,
     sticky?: boolean,
-): void {
+): void => {
     const status_is_sticky = $status_el.attr("data-is_sticky") === "true";
     const display_message_html = status_is_sticky
         ? $status_el.attr("data-sticky_msg_html")
@@ -61,9 +61,9 @@ function change_display_setting(
         $status_el.attr("data-sticky_msg_html", success_msg_html);
     }
     settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_el, opts);
-}
+};
 
-function spectator_default_language_modal_post_render(): void {
+const spectator_default_language_modal_post_render = (): void => {
     $("#language_selection_modal")
         .find(".language")
         .on("click", (e) => {
@@ -80,9 +80,9 @@ function spectator_default_language_modal_post_render(): void {
             Cookies.set(page_params.language_cookie_name, $link.attr("data-code")!);
             window.location.reload();
         });
-}
+};
 
-function org_notification_default_language_modal_post_render(): void {
+const org_notification_default_language_modal_post_render = (): void => {
     $("#language_selection_modal")
         .find(".language")
         .on("click", (e) => {
@@ -104,9 +104,9 @@ function org_notification_default_language_modal_post_render(): void {
                 $("#org-notifications"),
             );
         });
-}
+};
 
-function user_default_language_modal_post_render(): void {
+const user_default_language_modal_post_render = (): void => {
     $("#language_selection_modal")
         .find(".language")
         .on("click", (e) => {
@@ -145,9 +145,9 @@ function user_default_language_modal_post_render(): void {
                 true,
             );
         });
-}
+};
 
-function default_language_modal_post_render(): void {
+const default_language_modal_post_render = (): void => {
     if (page_params.is_spectator) {
         spectator_default_language_modal_post_render();
     } else if (hash_parser.get_current_hash_category() === "organization") {
@@ -155,9 +155,9 @@ function default_language_modal_post_render(): void {
     } else {
         user_default_language_modal_post_render();
     }
-}
+};
 
-export function launch_default_language_setting_modal(): void {
+export const launch_default_language_setting_modal = (): void => {
     let selected_language = user_settings.default_language;
 
     if (hash_parser.get_current_hash_category() === "organization") {
@@ -177,12 +177,12 @@ export function launch_default_language_setting_modal(): void {
         focus_submit_on_open: true,
         single_footer_button: true,
         post_render: default_language_modal_post_render,
-        on_click() {
+        on_click: () => {
             // We perform no actions since the 'close_on_submit' field takes care
             // of closing the modal.
         },
     });
-}
+};
 
 export function set_up(settings_panel: SettingsPanel): void {
     meta.loaded = true;
@@ -252,11 +252,11 @@ export function set_up(settings_panel: SettingsPanel): void {
         void channel.patch({
             url: "/json/settings",
             data,
-            success() {
+            success: () => {
                 // We don't launch any success report, since it is currently handled
                 // by function report_emojiset_change.
             },
-            error(xhr) {
+            error: (xhr) => {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
@@ -278,11 +278,11 @@ export function set_up(settings_panel: SettingsPanel): void {
         void channel.patch({
             url: "/json/settings",
             data,
-            success() {
+            success: () => {
                 // We don't launch any success report, since it is
                 // currently handled by report_user_list_style_change.
             },
-            error(xhr) {
+            error: (xhr) => {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
@@ -293,7 +293,7 @@ export function set_up(settings_panel: SettingsPanel): void {
     });
 }
 
-export async function report_emojiset_change(settings_panel: SettingsPanel): Promise<void> {
+export const report_emojiset_change = async (settings_panel: SettingsPanel): Promise<void> => {
     // TODO: Clean up how this works so we can use
     // change_display_setting.  The challenge is that we don't want to
     // report success before the server_events request returns that
@@ -313,9 +313,9 @@ export async function report_emojiset_change(settings_panel: SettingsPanel): Pro
         $spinner.expectOne();
         settings_ui.display_checkmark($spinner);
     }
-}
+};
 
-export function report_user_list_style_change(settings_panel: SettingsPanel): void {
+export const report_user_list_style_change = (settings_panel: SettingsPanel): void => {
     // TODO: Clean up how this works so we can use
     // change_display_setting.  The challenge is that we don't want to
     // report success before the server_events request returns that
@@ -333,9 +333,9 @@ export function report_user_list_style_change(settings_panel: SettingsPanel): vo
         $spinner.expectOne();
         settings_ui.display_checkmark($spinner);
     }
-}
+};
 
-export function update_page(property: UserSettingsProperty): void {
+export const update_page = (property: UserSettingsProperty): void => {
     if (!overlays.settings_open()) {
         return;
     }
@@ -365,9 +365,9 @@ export function update_page(property: UserSettingsProperty): void {
 
     const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
     settings_components.set_input_element_value($input_elem, value);
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     const user_language_name = get_language_name(user_settings.default_language);
     set_default_language_name(user_language_name);
 
@@ -377,4 +377,4 @@ export function initialize(): void {
         for_realm_settings: false,
         notification_sound_elem: null,
     };
-}
+};

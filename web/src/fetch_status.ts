@@ -1,13 +1,13 @@
 import * as message_feed_loading from "./message_feed_loading";
 import type {Message, RawMessage} from "./message_store";
 
-function max_id_for_messages(messages: (Message | RawMessage)[]): number {
+const max_id_for_messages = (messages: (Message | RawMessage)[]): number => {
     let max_id = 0;
     for (const msg of messages) {
         max_id = Math.max(max_id, msg.id);
     }
     return max_id;
-}
+};
 
 export class FetchStatus {
     // The FetchStatus object tracks the state of a

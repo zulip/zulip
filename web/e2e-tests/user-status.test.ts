@@ -2,7 +2,7 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function open_set_user_status_modal(page: Page): Promise<void> {
+const open_set_user_status_modal = async (page: Page): Promise<void> => {
     // We are clicking on the menu icon with the help of `waitForFunction` because the list
     // re-renders many times and can cause the element to become stale.
     await page.waitForFunction((): boolean => {
@@ -23,9 +23,9 @@ async function open_set_user_status_modal(page: Page): Promise<void> {
 
     // Wait for the modal to completely open.
     await common.wait_for_micromodal_to_open(page);
-}
+};
 
-async function test_user_status(page: Page): Promise<void> {
+const test_user_status = async (page: Page): Promise<void> => {
     await open_set_user_status_modal(page);
     // Check by clicking on common statues.
     await page.click(".user-status-value:nth-child(2)");
@@ -58,11 +58,11 @@ async function test_user_status(page: Page): Promise<void> {
 
     // Check if the emoji is added in user presence list.
     await page.waitForSelector(`.user-presence-link .status-emoji${tada_emoji_selector}`);
-}
+};
 
-async function user_status_test(page: Page): Promise<void> {
+const user_status_test = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await test_user_status(page);
-}
+};
 
 common.run_test(user_status_test);

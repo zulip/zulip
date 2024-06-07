@@ -23,7 +23,7 @@ import * as unread_ops from "./unread_ops";
 
 let message_actions_popover_keyboard_toggle = false;
 
-function get_action_menu_menu_items() {
+const get_action_menu_menu_items = () => {
     const $current_actions_popover_elem = $("[data-tippy-root] #message-actions-menu-dropdown");
     if (!$current_actions_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
@@ -31,16 +31,16 @@ function get_action_menu_menu_items() {
     }
 
     return $current_actions_popover_elem.find("li:not(.divider):visible a");
-}
+};
 
-function focus_first_action_popover_item() {
+const focus_first_action_popover_item = () => {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_action_menu_menu_items();
     popover_menus.focus_first_popover_item($items);
-}
+};
 
-export function toggle_message_actions_menu(message) {
+export const toggle_message_actions_menu = (message) => {
     if (popover_menus.is_message_actions_popover_displayed()) {
         popovers.hide_all();
         return true;
@@ -67,9 +67,9 @@ export function toggle_message_actions_menu(message) {
     message_actions_popover_keyboard_toggle = true;
     $popover_reference.trigger("click");
     return true;
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
         theme: "popover-menu",
         placement: "bottom",
@@ -85,7 +85,7 @@ export function initialize() {
                 },
             ],
         },
-        onShow(instance) {
+        onShow: (instance) => {
             popover_menus.on_show_prep(instance);
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
@@ -93,7 +93,7 @@ export function initialize() {
             instance.setContent(parse_html(render_message_actions_popover(args)));
             $row.addClass("has_actions_popover");
         },
-        onMount(instance) {
+        onMount: (instance) => {
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
             let quote_content;
@@ -227,7 +227,7 @@ export function initialize() {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             const $row = $(instance.reference).closest(".message_row");
             $row.removeClass("has_actions_popover");
             instance.destroy();
@@ -235,4 +235,4 @@ export function initialize() {
             message_actions_popover_keyboard_toggle = false;
         },
     });
-}
+};

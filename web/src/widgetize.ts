@@ -41,16 +41,16 @@ type WidgetValue = Record<string, unknown> & {
 export const widgets = new Map<string, WidgetValue>();
 export const widget_event_handlers = new Map<number, (events: Event[]) => void>();
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     widget_event_handlers.clear();
-}
+};
 
-function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
+const set_widget_in_message = ($row: JQuery, $widget_elem: JQuery): void => {
     const $content_holder = $row.find(".message_content");
     $content_holder.empty().append($widget_elem);
-}
+};
 
-export function activate(in_opts: WidgetOptions): void {
+export const activate = (in_opts: WidgetOptions): void => {
     const widget_type = in_opts.widget_type;
     const extra_data = in_opts.extra_data;
     const events = in_opts.events;
@@ -66,7 +66,7 @@ export function activate(in_opts: WidgetOptions): void {
         return;
     }
 
-    const callback = function (data: string): void {
+    const callback = (data: string): void => {
         post_to_server({
             msg_type: "widget",
             data,
@@ -98,9 +98,9 @@ export function activate(in_opts: WidgetOptions): void {
     if (events.length > 0) {
         event_handler(events);
     }
-}
+};
 
-export function handle_event(widget_event: Event & {message_id: number}): void {
+export const handle_event = (widget_event: Event & {message_id: number}): void => {
     const event_handler = widget_event_handlers.get(widget_event.message_id);
 
     if (!event_handler || message_lists.current?.get_row(widget_event.message_id).length === 0) {
@@ -113,4 +113,4 @@ export function handle_event(widget_event: Event & {message_id: number}): void {
     const events = [widget_event];
 
     event_handler(events);
-}
+};

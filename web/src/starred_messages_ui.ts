@@ -14,7 +14,7 @@ import * as sub_store from "./sub_store";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
-export function toggle_starred_and_update_server(message: Message): void {
+export const toggle_starred_and_update_server = (message: Message): void => {
     if (message.locally_echoed) {
         // This is defensive code for when you hit the "*" key
         // before we get a server ack.  It's rare that somebody
@@ -41,11 +41,11 @@ export function toggle_starred_and_update_server(message: Message): void {
         starred_messages.remove([message.id]);
         rerender_ui();
     }
-}
+};
 
 // This updates the state of the starred flag in local data
 // structures, and triggers a UI rerender.
-export function update_starred_flag(message_id: number, updated_starred_flag: boolean): void {
+export const update_starred_flag = (message_id: number, updated_starred_flag: boolean): void => {
     const message = message_store.get(message_id);
     if (message === undefined) {
         // If we don't have the message locally, do nothing; if later
@@ -54,9 +54,9 @@ export function update_starred_flag(message_id: number, updated_starred_flag: bo
     }
     message.starred = updated_starred_flag;
     message_live_update.update_starred_view(message_id, updated_starred_flag);
-}
+};
 
-export function rerender_ui(): void {
+export const rerender_ui = (): void => {
     let count = starred_messages.get_count();
 
     if (!user_settings.starred_message_counts) {
@@ -67,9 +67,9 @@ export function rerender_ui(): void {
     popover_menus.get_topic_menu_popover()?.hide();
     popover_menus.get_starred_messages_popover()?.hide();
     left_sidebar_navigation_area.update_starred_count(count);
-}
+};
 
-export function confirm_unstar_all_messages(): void {
+export const confirm_unstar_all_messages = (): void => {
     const html_body = render_confirm_unstar_all_messages();
 
     confirm_dialog.launch({
@@ -77,12 +77,12 @@ export function confirm_unstar_all_messages(): void {
         html_body,
         on_click: message_flags.unstar_all_messages,
     });
-}
+};
 
-export function confirm_unstar_all_messages_in_topic(stream_id: number, topic: string): void {
-    function on_click(): void {
+export const confirm_unstar_all_messages_in_topic = (stream_id: number, topic: string): void => {
+    const on_click = (): void => {
         message_flags.unstar_all_messages_in_topic(stream_id, topic);
-    }
+    };
 
     const stream_name = sub_store.maybe_get_stream_name(stream_id);
     if (stream_name === undefined) {
@@ -99,8 +99,8 @@ export function confirm_unstar_all_messages_in_topic(stream_id: number, topic: s
         html_body,
         on_click,
     });
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     rerender_ui();
-}
+};

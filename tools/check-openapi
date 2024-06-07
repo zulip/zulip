@@ -19,7 +19,7 @@ const argv = yargs(hideBin(process.argv))
     })
     .parse();
 
-async function checkFile(file) {
+const checkFile = async (file) => {
     const yaml = await fs.promises.readFile(file, "utf8");
     const lineCounter = new LineCounter();
     const tokens = [...new Parser(lineCounter.addNewLine).parse(yaml)];
@@ -46,7 +46,7 @@ async function checkFile(file) {
     const promises = [];
 
     visit(doc, {
-        Map(_key, node) {
+        Map: (_key, node) => {
             if (node.has("$ref") && node.items.length !== 1) {
                 const {line, col} = lineCounter.linePos(node.range[0]);
                 console.error("%s:%d:%d: Siblings of $ref have no effect", file, line, col);
@@ -54,7 +54,7 @@ async function checkFile(file) {
             }
         },
 
-        Pair(_key, node) {
+        Pair: (_key, node) => {
             if (
                 node.key instanceof Scalar &&
                 node.key.value === "allOf" &&
@@ -155,7 +155,7 @@ async function checkFile(file) {
         }
         process.exitCode = 1;
     }
-}
+};
 
 (async () => {
     for (const file of argv._) {

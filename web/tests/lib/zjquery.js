@@ -11,7 +11,7 @@ const {strict: assert} = require("assert");
 const FakeElement = require("./zjquery_element");
 const FakeEvent = require("./zjquery_event");
 
-function verify_selector_for_zulip(selector) {
+const verify_selector_for_zulip = (selector) => {
     const is_valid =
         "<#.".includes(selector[0]) ||
         selector === "window-stub" ||
@@ -33,16 +33,16 @@ function verify_selector_for_zulip(selector) {
             ? "Selector too broad! Use id, class or attributes of target instead."
             : `Invalid selector: ${selector}. Use $.create() maybe?`,
     );
-}
+};
 
-function make_zjquery() {
+const make_zjquery = () => {
     const elems = new Map();
 
     // Our fn structure helps us simulate extending jQuery.
     // Use this with extreme caution.
     const fn = {};
 
-    function new_elem(selector, create_opts) {
+    const new_elem = (selector, create_opts) => {
         const $elem = FakeElement(selector, {...create_opts});
         Object.assign($elem, fn);
 
@@ -52,7 +52,7 @@ function make_zjquery() {
         // that you'd find on a "real" jQuery object.  Sometimes we
         // expects devs to create their own stubs.
         const handler = {
-            get(target, key) {
+            get: (target, key) => {
                 // Handle the special case of equality checks, which
                 // we can infer by assert.equal trying to access the
                 // "stack" key.
@@ -80,11 +80,11 @@ function make_zjquery() {
         const proxy = new Proxy($elem, handler);
 
         return proxy;
-    }
+    };
 
     let initialize_function;
 
-    const zjquery = function (arg, arg2) {
+    const zjquery = (arg, arg2) => {
         if (typeof arg === "function") {
             assert.ok(
                 !initialize_function,
@@ -141,15 +141,13 @@ function make_zjquery() {
         return elems.get(selector);
     };
 
-    zjquery.get_initialize_function = function () {
-        return initialize_function;
-    };
+    zjquery.get_initialize_function = () => initialize_function;
 
-    zjquery.clear_initialize_function = function () {
+    zjquery.clear_initialize_function = () => {
         initialize_function = undefined;
     };
 
-    zjquery.create = function (name, opts) {
+    zjquery.create = (name, opts) => {
         assert.ok(!elems.has(name), "You already created an object with this name!!");
         const $elem = new_elem(name, opts);
         elems.set(name, $elem);
@@ -158,7 +156,7 @@ function make_zjquery() {
     };
 
     /* istanbul ignore next */
-    zjquery.state = function () {
+    zjquery.state = () => {
         // useful for debugging
         let res = [...elems.values()].map(($v) => $v.debug());
 
@@ -180,7 +178,7 @@ function make_zjquery() {
     };
 
     zjquery.fn = new Proxy(fn, {
-        set(_obj, _prop, _value) {
+        set: (_obj, _prop, _value) => {
             /* istanbul ignore next */
             throw new Error(`
                 Please don't use node tests to test code
@@ -200,22 +198,21 @@ function make_zjquery() {
         },
     });
 
-    zjquery.clear_all_elements = function () {
+    zjquery.clear_all_elements = () => {
         elems.clear();
     };
 
     zjquery.validator = {
-        /* istanbul ignore next */
-        addMethod() {
+        addMethod: /* istanbul ignore next */ () => {
             throw new Error("You must create your own $.validator.addMethod stub.");
         },
     };
 
     return zjquery;
-}
+};
 
 const $ = new Proxy(make_zjquery(), {
-    set(obj, prop, value) {
+    set: (obj, prop, value) => {
         if (obj[prop] && obj[prop]._patched_with_override) {
             obj[prop] = value;
             return true;

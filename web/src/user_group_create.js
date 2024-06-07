@@ -13,17 +13,15 @@ import * as user_groups from "./user_groups";
 
 let created_group_name;
 
-export function reset_name() {
+export const reset_name = () => {
     created_group_name = undefined;
-}
+};
 
-export function set_name(group_name) {
+export const set_name = (group_name) => {
     created_group_name = group_name;
-}
+};
 
-export function get_name() {
-    return created_group_name;
-}
+export const get_name = () => created_group_name;
 
 class UserGroupMembershipError {
     report_no_members_to_user_group() {
@@ -89,22 +87,22 @@ class UserGroupNameError {
 }
 const user_group_name_error = new UserGroupNameError();
 
-function clear_error_display() {
+const clear_error_display = () => {
     user_group_name_error.clear_errors();
     $(".user_group_create_info").hide();
     user_group_membership_error.clear_errors();
-}
+};
 
-export function show_new_user_group_modal() {
+export const show_new_user_group_modal = () => {
     $("#user-group-creation").removeClass("hide");
     $(".right .settings").hide();
 
     user_group_create_members.build_widgets();
 
     clear_error_display();
-}
+};
 
-function create_user_group() {
+const create_user_group = () => {
     const data = {};
     const group_name = $("#create_user_group_name").val().trim();
     const description = $("#create_user_group_description").val().trim();
@@ -137,14 +135,14 @@ function create_user_group() {
     return channel.post({
         url: "/json/user_groups/create",
         data,
-        success() {
+        success: () => {
             $("#create_user_group_name").val("");
             $("#create_user_group_description").val("");
             user_group_create_members.clear_member_list();
             loading.destroy_indicator($("#user_group_creating_indicator"));
             // TODO: The rest of the work should be done via the create event we will get for user group.
         },
-        error(xhr) {
+        error: (xhr) => {
             ui_report.error(
                 $t_html({defaultMessage: "Error creating user group."}),
                 xhr,
@@ -154,9 +152,9 @@ function create_user_group() {
             loading.destroy_indicator($("#user_group_creating_indicator"));
         },
     });
-}
+};
 
-export function set_up_handlers() {
+export const set_up_handlers = () => {
     const $people_to_add_holder = $("#people_to_add_in_group").expectOne();
     user_group_create_members.create_handlers($people_to_add_holder);
 
@@ -198,4 +196,4 @@ export function set_up_handlers() {
     });
 
     user_group_components.setup_permissions_dropdown(undefined, true);
-}
+};

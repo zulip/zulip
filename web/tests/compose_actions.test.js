@@ -78,23 +78,23 @@ const respond_to_message = compose_reply.respond_to_message;
 const reply_with_mention = compose_reply.reply_with_mention;
 const quote_and_reply = compose_reply.quote_and_reply;
 
-function assert_visible(sel) {
+const assert_visible = (sel) => {
     assert.ok($(sel).visible());
-}
+};
 
-function assert_hidden(sel) {
+const assert_hidden = (sel) => {
     assert.ok(!$(sel).visible());
-}
+};
 
-function override_private_message_recipient({override}) {
+const override_private_message_recipient = ({override}) => {
     let recipient;
     override(compose_pm_pill, "set_from_emails", (value) => {
         recipient = value;
     });
     override(compose_pm_pill, "get_emails", () => recipient, {unused: false});
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         // We don't test the css calls; we just skip over them.
         $("#compose").css = noop;
@@ -104,7 +104,7 @@ function test(label, f) {
         compose_state.set_message_type(undefined);
         f(helpers);
     });
-}
+};
 
 test("initial_state", () => {
     assert.equal(compose_state.composing(), false);

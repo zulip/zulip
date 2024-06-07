@@ -14,7 +14,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
-export function process_new_message(raw_message: RawMessage): Message {
+export const process_new_message = (raw_message: RawMessage): Message => {
     // Call this function when processing a new message.  After
     // a message is processed and inserted into the message store
     // cache, most modules use message_store.get to look at
@@ -124,4 +124,4 @@ export function process_new_message(raw_message: RawMessage): Message {
     alert_words.process_message(message);
     message_store.update_message_cache(message);
     return message;
-}
+};

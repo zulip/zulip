@@ -14,7 +14,7 @@ import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as stream_data from "./stream_data";
 
-function restore_draft(draft_id) {
+const restore_draft = (draft_id) => {
     const draft = drafts.draft_model.getDraft(draft_id);
     if (!draft) {
         return;
@@ -48,9 +48,9 @@ function restore_draft(draft_id) {
         ...compose_args,
         message_type: compose_args.type,
     });
-}
+};
 
-function remove_draft($draft_row) {
+const remove_draft = ($draft_row) => {
     // Deletes the draft and removes it from the list
     const draft_id = $draft_row.attr("data-draft-id");
 
@@ -65,9 +65,9 @@ function remove_draft($draft_row) {
         $("#drafts-from-conversation .overlay-message-row").length > 0,
         $("#other-drafts .overlay-message-row").length > 0,
     );
-}
+};
 
-function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) {
+const update_rendered_drafts = (has_drafts_from_conversation, has_other_drafts) => {
     if (has_drafts_from_conversation) {
         $("#drafts-from-conversation").show();
     } else {
@@ -79,10 +79,10 @@ function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) 
     if (!has_other_drafts) {
         $("#other-drafts").hide();
     }
-}
+};
 
 const keyboard_handling_context = {
-    get_items_ids() {
+    get_items_ids: () => {
         const draft_arrow = drafts.draft_model.get();
         return Object.getOwnPropertyNames(draft_arrow);
     },
@@ -115,12 +115,12 @@ const keyboard_handling_context = {
     id_attribute_name: "data-draft-id",
 };
 
-export function handle_keyboard_events(event_key) {
+export const handle_keyboard_events = (event_key) => {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
-}
+};
 
 export function launch() {
-    function format_drafts(data) {
+    const format_drafts = (data) => {
         for (const [id, draft] of Object.entries(data)) {
             draft.id = id;
         }
@@ -136,9 +136,9 @@ export function launch() {
             .filter(Boolean);
 
         return sorted_formatted_drafts;
-    }
+    };
 
-    function get_header_for_narrow_drafts() {
+    const get_header_for_narrow_drafts = () => {
         const {stream_name, topic, private_recipients} = drafts.current_recipient_data();
         if (private_recipients) {
             return $t(
@@ -150,7 +150,7 @@ export function launch() {
         }
         const recipient = topic ? `#${stream_name} > ${topic}` : `#${stream_name}`;
         return $t({defaultMessage: "Drafts from {recipient}"}, {recipient});
-    }
+    };
 
     function render_widgets(narrow_drafts, other_drafts) {
         $("#drafts_table").empty();
@@ -281,33 +281,31 @@ export function update_bulk_delete_ui() {
     }
 }
 
-export function open_overlay() {
+export const open_overlay = () => {
     drafts.sync_count();
     overlays.open_overlay({
         name: "drafts",
         $overlay: $("#draft_overlay"),
-        on_close() {
+        on_close: () => {
             browser_history.exit_overlay();
             drafts.sync_count();
         },
     });
-}
+};
 
-export function is_checkbox_icon_checked($checkbox) {
-    return $checkbox.hasClass("fa-check-square");
-}
+export const is_checkbox_icon_checked = ($checkbox) => $checkbox.hasClass("fa-check-square");
 
-export function toggle_checkbox_icon_state($checkbox, checked) {
+export const toggle_checkbox_icon_state = ($checkbox, checked) => {
     $checkbox.parent().attr("aria-checked", checked);
     if (checked) {
         $checkbox.removeClass("fa-square-o").addClass("fa-check-square");
     } else {
         $checkbox.removeClass("fa-check-square").addClass("fa-square-o");
     }
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     $("body").on("focus", "#drafts_table .overlay-message-info-box", (e) => {
         messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
     });
-}
+};

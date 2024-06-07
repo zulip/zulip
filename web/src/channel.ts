@@ -33,14 +33,14 @@ export type AjaxRequestHandler = typeof call | typeof patch;
 let password_change_in_progress = false;
 export let password_changes = 0;
 
-export function set_password_change_in_progress(value: boolean): void {
+export const set_password_change_in_progress = (value: boolean): void => {
     password_change_in_progress = value;
     if (!value) {
         password_changes += 1;
     }
-}
+};
 
-function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
+const call = (args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined => {
     if (reload_state.is_in_progress() && !args.ignore_reload) {
         // If we're in the process of reloading, most HTTP requests
         // are useless, with exceptions like cleaning up our event
@@ -83,7 +83,7 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
         (() => {
             // Ignore errors by default
         });
-    args.error = function wrapped_error(xhr, error_type, xhn) {
+    args.error = (xhr, error_type, xhn) => {
         if (span !== undefined) {
             span.setHttpStatus(xhr.status);
             span.finish();
@@ -148,7 +148,7 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
         (() => {
             // Do nothing by default
         });
-    args.success = function wrapped_success(data, textStatus, jqXHR) {
+    args.success = (data, textStatus, jqXHR) => {
         if (span !== undefined) {
             span.setHttpStatus(jqXHR.status);
             span.finish();
@@ -174,32 +174,32 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
     } finally {
         Sentry.getCurrentHub().popScope();
     }
-}
+};
 
-export function get(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
+export const get = (options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined => {
     const args = {type: "GET", dataType: "json", ...options};
     return call(args);
-}
+};
 
-export function post(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
+export const post = (options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined => {
     const args = {type: "POST", dataType: "json", ...options};
     return call(args);
-}
+};
 
-export function put(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
+export const put = (options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined => {
     const args = {type: "PUT", dataType: "json", ...options};
     return call(args);
-}
+};
 
 // Not called exports.delete because delete is a reserved word in JS
-export function del(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
+export const del = (options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined => {
     const args = {type: "DELETE", dataType: "json", ...options};
     return call(args);
-}
+};
 
-export function patch(
+export const patch = (
     options: Omit<AjaxRequestHandlerOptions, "data"> & PatchRequestData,
-): JQuery.jqXHR<unknown> | undefined {
+): JQuery.jqXHR<unknown> | undefined => {
     // Send a PATCH as a POST in order to work around QtWebkit
     // (Linux/Windows desktop app) not supporting PATCH body.
     if (options.processData === false) {
@@ -210,9 +210,9 @@ export function patch(
         options.data = {...options.data, method: "PATCH"};
     }
     return post(options);
-}
+};
 
-export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): string {
+export const xhr_error_message = (message: string, xhr: JQuery.jqXHR<unknown>): string => {
     let parsed;
     if (
         xhr.status >= 400 &&
@@ -230,4 +230,4 @@ export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): 
     }
 
     return message;
-}
+};

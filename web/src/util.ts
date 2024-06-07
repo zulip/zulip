@@ -7,9 +7,8 @@ import type {UpdateMessageEvent} from "./types";
 import {user_settings} from "./user_settings";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
-export function random_int(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+export const random_int = (min: number, max: number): number =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
 
 // Like C++'s std::lower_bound.  Returns the first index at which
 // `value` could be inserted without changing the ordering.  Assumes
@@ -21,11 +20,11 @@ export function random_int(min: number, max: number): number {
 // for some i and false otherwise.
 //
 // Usage: lower_bound(array, value, less)
-export function lower_bound<T1, T2>(
+export const lower_bound = <T1, T2>(
     array: T1[],
     value: T2,
     less: (item: T1, value: T2, middle: number) => boolean,
-): number {
+): number => {
     let first = 0;
     const last = array.length;
 
@@ -44,9 +43,9 @@ export function lower_bound<T1, T2>(
         }
     }
     return first;
-}
+};
 
-export const lower_same = function lower_same(a?: string, b?: string): boolean {
+export const lower_same = (a?: string, b?: string): boolean => {
     if (a === undefined || b === undefined) {
         blueslip.error("Cannot compare strings; at least one value is undefined", {a, b});
         return false;
@@ -59,17 +58,11 @@ export type StreamTopic = {
     topic: string;
 };
 
-export const same_stream_and_topic = function util_same_stream_and_topic(
-    a: StreamTopic,
-    b: StreamTopic,
-): boolean {
-    // Streams and topics are case-insensitive.
-    return a.stream_id === b.stream_id && lower_same(a.topic, b.topic);
-};
+export const same_stream_and_topic = (a: StreamTopic, b: StreamTopic): boolean =>
+    a.stream_id === b.stream_id && lower_same(a.topic, b.topic);
 
-export function extract_pm_recipients(recipients: string): string[] {
-    return recipients.split(/\s*[,;]\s*/).filter((recipient) => recipient.trim() !== "");
-}
+export const extract_pm_recipients = (recipients: string): string[] =>
+    recipients.split(/\s*[,;]\s*/).filter((recipient) => recipient.trim() !== "");
 
 // When the type is "private", properties from to_user_ids might be undefined.
 // See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
@@ -77,7 +70,7 @@ export type Recipient =
     | {type: "private"; to_user_ids?: string | undefined; reply_to: string}
     | ({type: "stream"} & StreamTopic);
 
-export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {
+export const same_recipient = (a?: Recipient, b?: Recipient): boolean => {
     if (a === undefined || b === undefined) {
         return false;
     }
@@ -94,31 +87,24 @@ export const same_recipient = function util_same_recipient(a?: Recipient, b?: Re
     return false;
 };
 
-export const same_sender = function util_same_sender(a: RawMessage, b: RawMessage): boolean {
-    return (
-        a !== undefined &&
-        b !== undefined &&
-        a.sender_email.toLowerCase() === b.sender_email.toLowerCase()
-    );
-};
+export const same_sender = (a: RawMessage, b: RawMessage): boolean =>
+    a !== undefined &&
+    b !== undefined &&
+    a.sender_email.toLowerCase() === b.sender_email.toLowerCase();
 
-export function normalize_recipients(recipients: string): string {
-    // Converts a string listing emails of message recipients
-    // into a canonical formatting: emails sorted ASCIIbetically
-    // with exactly one comma and no spaces between each.
-    return recipients
+export const normalize_recipients = (recipients: string): string =>
+    recipients
         .split(",")
         .map((s) => s.trim().toLowerCase())
         .filter((s) => s.length > 0)
         .sort()
         .join(",");
-}
 
 // Avoid URI decode errors by removing characters from the end
 // one by one until the decode succeeds.  This makes sense if
 // we are decoding input that the user is in the middle of
 // typing.
-export function robust_url_decode(str: string): string {
+export const robust_url_decode = (str: string): string => {
     let end = str.length;
     while (end > 0) {
         try {
@@ -131,13 +117,13 @@ export function robust_url_decode(str: string): string {
         }
     }
     return "";
-}
+};
 
 // If we can, use a locale-aware sorter.  However, if the browser
 // doesn't support the ECMAScript Internationalization API
 // Specification, do a dumb string comparison because
 // String.localeCompare is really slow.
-export function make_strcmp(): (x: string, y: string) => number {
+export const make_strcmp = (): ((x: string, y: string) => number) => {
     try {
         const collator = new Intl.Collator();
         return collator.compare.bind(collator);
@@ -145,14 +131,12 @@ export function make_strcmp(): (x: string, y: string) => number {
         // continue regardless of error
     }
 
-    return function util_strcmp(a: string, b: string): number {
-        return a < b ? -1 : a > b ? 1 : 0;
-    };
-}
+    return (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+};
 
 export const strcmp = make_strcmp();
 
-export const array_compare = function util_array_compare<T>(a: T[], b: T[]): boolean {
+export const array_compare = <T>(a: T[], b: T[]): boolean => {
     if (a.length !== b.length) {
         return false;
     }
@@ -194,7 +178,7 @@ export class CachedValue<T> {
     }
 }
 
-export function find_stream_wildcard_mentions(message_content: string): string | null {
+export const find_stream_wildcard_mentions = (message_content: string): string | null => {
     // We cannot use the exact same regex as the server side uses (in zerver/lib/mention.py)
     // because Safari < 16.4 does not support look-behind assertions.  Reframe the lookbehind of a
     // negative character class as a start-of-string or positive character class.
@@ -205,12 +189,9 @@ export function find_stream_wildcard_mentions(message_content: string): string |
         return null;
     }
     return mention[2]!;
-}
+};
 
-export const move_array_elements_to_front = function util_move_array_elements_to_front<T>(
-    array: T[],
-    selected: T[],
-): T[] {
+export const move_array_elements_to_front = <T>(array: T[], selected: T[]): T[] => {
     const selected_hash = new Set(selected);
     const selected_elements: T[] = [];
     const unselected_elements: T[] = [];
@@ -221,37 +202,29 @@ export const move_array_elements_to_front = function util_move_array_elements_to
 };
 
 // check by the userAgent string if a user's client is likely mobile.
-export function is_mobile(): boolean {
-    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+export const is_mobile = (): boolean =>
+    /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
         window.navigator.userAgent,
     );
-}
 
-export function is_client_safari(): boolean {
-    // Since GestureEvent is only supported on Safari, we can use it
-    // to detect if the browser is Safari including Safari on iOS.
-    // https://developer.mozilla.org/en-US/docs/Web/API/GestureEvent
-    return "GestureEvent" in window;
-}
+export const is_client_safari = (): boolean => "GestureEvent" in window;
 
-export function sorted_ids(ids: number[]): number[] {
+export const sorted_ids = (ids: number[]): number[] => {
     // This makes sure we don't mutate the list.
     const id_list = [...new Set(ids)];
     id_list.sort((a, b) => a - b);
 
     return id_list;
-}
+};
 
-export function set_match_data(target: Message, source: MatchedMessage): void {
+export const set_match_data = (target: Message, source: MatchedMessage): void => {
     target.match_subject = source.match_subject;
     target.match_content = source.match_content;
-}
+};
 
-export function get_match_topic(obj: Message | RawMessage): string | undefined {
-    return obj.match_subject;
-}
+export const get_match_topic = (obj: Message | RawMessage): string | undefined => obj.match_subject;
 
-export function get_edit_event_topic(obj: UpdateMessageEvent): string | undefined {
+export const get_edit_event_topic = (obj: UpdateMessageEvent): string | undefined => {
     if (obj.topic === undefined) {
         return obj.subject;
     }
@@ -259,30 +232,23 @@ export function get_edit_event_topic(obj: UpdateMessageEvent): string | undefine
     // This code won't be reachable till we fix the
     // server, but we use it now in tests.
     return obj.topic;
-}
+};
 
-export function get_edit_event_orig_topic(obj: UpdateMessageEvent): string | undefined {
-    return obj.orig_subject;
-}
+export const get_edit_event_orig_topic = (obj: UpdateMessageEvent): string | undefined =>
+    obj.orig_subject;
 
-export function is_topic_synonym(operator: string): boolean {
-    return operator === "subject";
-}
+export const is_topic_synonym = (operator: string): boolean => operator === "subject";
 
 // TODO: When "stream" is renamed to "channel", update these stream
 // synonym helper functions for the reverse logic.
-export function is_stream_synonym(text: string): boolean {
-    return text === "channel";
-}
+export const is_stream_synonym = (text: string): boolean => text === "channel";
 
-export function is_streams_synonym(text: string): boolean {
-    return text === "channels";
-}
+export const is_streams_synonym = (text: string): boolean => text === "channels";
 
 // For parts of the codebase that have been converted to use
 // channel/channels internally, this is used to convert those
 // back into stream/streams for external presentation.
-export function canonicalize_stream_synonyms(text: string): string {
+export const canonicalize_stream_synonyms = (text: string): string => {
     if (is_stream_synonym(text.toLowerCase())) {
         return "stream";
     }
@@ -290,11 +256,11 @@ export function canonicalize_stream_synonyms(text: string): string {
         return "streams";
     }
     return text;
-}
+};
 
 let inertDocument: Document | undefined;
 
-export function clean_user_content_links(html: string): string {
+export const clean_user_content_links = (html: string): string => {
     if (inertDocument === undefined) {
         inertDocument = new DOMParser().parseFromString("", "text/html");
     }
@@ -377,14 +343,14 @@ export function clean_user_content_links(html: string): string {
         }
     }
     return template.innerHTML;
-}
+};
 
-export function filter_by_word_prefix_match<T>(
+export const filter_by_word_prefix_match = <T>(
     items: T[],
     search_term: string,
     item_to_text: (item: T) => string,
     word_separator_regex = /\s/,
-): T[] {
+): T[] => {
     if (search_term === "") {
         return items;
     }
@@ -407,16 +373,16 @@ export function filter_by_word_prefix_match<T>(
     );
 
     return filtered_items;
-}
+};
 
-export function get_time_from_date_muted(date_muted: number | undefined): number {
+export const get_time_from_date_muted = (date_muted: number | undefined): number => {
     if (date_muted === undefined) {
         return Date.now();
     }
     return date_muted * 1000;
-}
+};
 
-export function call_function_periodically(callback: () => void, delay: number): void {
+export const call_function_periodically = (callback: () => void, delay: number): void => {
     // We previously used setInterval for this purpose, but
     // empirically observed that after unsuspend, Chrome can end
     // up trying to "catch up" by doing dozens of these requests
@@ -438,9 +404,9 @@ export function call_function_periodically(callback: () => void, delay: number):
         // exception.
         callback();
     }, delay);
-}
+};
 
-export function get_string_diff(string1: string, string2: string): [number, number, number] {
+export const get_string_diff = (string1: string, string2: string): [number, number, number] => {
     // This function specifies the single minimal diff between 2 strings. For
     // example, the diff between "#ann is for updates" and "#**announce** is
     // for updates" is from index 1, till 4 in the 1st string and 13 in the
@@ -477,9 +443,9 @@ export function get_string_diff(string1: string, string2: string): [number, numb
     }
 
     return [diff_start_index, diff_end_1_index, diff_end_2_index];
-}
+};
 
-export function try_parse_as_truthy<T>(val: (T | undefined)[]): T[] | undefined {
+export const try_parse_as_truthy = <T>(val: (T | undefined)[]): T[] | undefined => {
     // This is a typesafe helper to narrow an array from containing
     // possibly falsy values into an array containing non-undefined
     // items or undefined when any of the items is falsy.
@@ -496,9 +462,9 @@ export function try_parse_as_truthy<T>(val: (T | undefined)[]): T[] | undefined 
         result.push(x);
     }
     return result;
-}
+};
 
-export function is_valid_url(url: string, require_absolute = false): boolean {
+export const is_valid_url = (url: string, require_absolute = false): boolean => {
     try {
         let base_url;
         if (!require_absolute) {
@@ -514,14 +480,14 @@ export function is_valid_url(url: string, require_absolute = false): boolean {
         return false;
     }
     return true;
-}
+};
 
 // Formats an array of strings as a Internationalized list using the specified language.
-export function format_array_as_list(
+export const format_array_as_list = (
     array: string[],
     style: Intl.ListFormatStyle,
     type: Intl.ListFormatType,
-): string {
+): string => {
     // If Intl.ListFormat is not supported
     if (Intl.ListFormat === undefined) {
         return array.join(", ");
@@ -532,9 +498,8 @@ export function format_array_as_list(
 
     // Return the formatted string.
     return list_formatter.format(array);
-}
+};
 
 // Returns the remaining time in milliseconds from the start_time and duration.
-export function get_remaining_time(start_time: number, duration: number): number {
-    return Math.max(0, start_time + duration - Date.now());
-}
+export const get_remaining_time = (start_time: number, duration: number): number =>
+    Math.max(0, start_time + duration - Date.now());

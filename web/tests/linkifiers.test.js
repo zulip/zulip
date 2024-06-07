@@ -10,9 +10,7 @@ const linkifiers = zrequire("linkifiers");
 
 linkifiers.initialize([]);
 
-function get_linkifier_regexes() {
-    return [...linkifiers.get_linkifier_map().keys()];
-}
+const get_linkifier_regexes = () => [...linkifiers.get_linkifier_map().keys()];
 
 run_test("python_to_js_linkifier", () => {
     // The only way to reach python_to_js_linkifier is indirectly, hence the call

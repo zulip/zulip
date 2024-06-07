@@ -19,25 +19,22 @@ import * as ui_report from "./ui_report";
 
 let created_stream;
 
-export function reset_created_stream() {
+export const reset_created_stream = () => {
     created_stream = undefined;
-}
+};
 
-export function set_name(stream) {
+export const set_name = (stream) => {
     created_stream = stream;
-}
+};
 
-export function get_name() {
-    return created_stream;
-}
+export const get_name = () => created_stream;
 
-export function set_first_stream_created_modal_shown() {
+export const set_first_stream_created_modal_shown = () => {
     onboarding_steps.post_onboarding_step_as_read("first_stream_created_banner");
-}
+};
 
-export function should_show_first_stream_created_modal() {
-    return onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("first_stream_created_banner");
-}
+export const should_show_first_stream_created_modal = () =>
+    onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("first_stream_created_banner");
 
 class StreamSubscriptionError {
     report_no_subs_to_stream() {
@@ -126,7 +123,7 @@ const stream_name_error = new StreamNameError();
 let stream_announce_previous_value;
 
 // Within the new stream modal...
-function update_announce_stream_state() {
+const update_announce_stream_state = () => {
     // If there is no new_stream_announcements_stream, we simply hide the widget.
     if (stream_data.get_new_stream_announcements_stream() === "") {
         $("#announce-new-stream").hide();
@@ -163,9 +160,9 @@ function update_announce_stream_state() {
 
     $announce_stream_checkbox.prop("disabled", disable_it);
     $("#announce-new-stream").show();
-}
+};
 
-function create_stream() {
+const create_stream = () => {
     const data = {};
     const stream_name = $("#create_stream_name").val().trim();
     const description = $("#create_stream_description").val().trim();
@@ -276,7 +273,7 @@ function create_stream() {
     return channel.post({
         url: "/json/users/me/subscriptions",
         data,
-        success() {
+        success: () => {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
             ui_report.success(
@@ -286,7 +283,7 @@ function create_stream() {
             loading.destroy_indicator($("#stream_creating_indicator"));
             // The rest of the work is done via the subscribe event we will get
         },
-        error(xhr) {
+        error: (xhr) => {
             if (xhr.responseJSON?.msg?.includes("access")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
@@ -308,9 +305,9 @@ function create_stream() {
             loading.destroy_indicator($("#stream_creating_indicator"));
         },
     });
-}
+};
 
-export function new_stream_clicked(stream_name) {
+export const new_stream_clicked = (stream_name) => {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
     stream_settings_components.show_subs_pane.create_stream();
@@ -321,15 +318,15 @@ export function new_stream_clicked(stream_name) {
     }
     show_new_stream_modal();
     $("#create_stream_name").trigger("focus");
-}
+};
 
-function clear_error_display() {
+const clear_error_display = () => {
     stream_name_error.clear_errors();
     $(".stream_create_info").hide();
     stream_subscription_error.clear_errors();
-}
+};
 
-export function show_new_stream_modal() {
+export const show_new_stream_modal = () => {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
     stream_settings_components.hide_or_disable_stream_privacy_options_if_required(
@@ -384,9 +381,9 @@ export function show_new_stream_modal() {
     update_announce_stream_state();
     stream_ui_updates.update_default_stream_and_stream_privacy_state($("#stream-creation"));
     clear_error_display();
-}
+};
 
-export function set_up_handlers() {
+export const set_up_handlers = () => {
     stream_announce_previous_value =
         settings_data.user_can_create_public_streams() ||
         settings_data.user_can_create_web_public_streams();
@@ -435,7 +432,7 @@ export function set_up_handlers() {
             confirm_dialog.launch({
                 html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
                 html_body,
-                on_click() {
+                on_click: () => {
                     create_stream();
                 },
             });
@@ -460,4 +457,4 @@ export function set_up_handlers() {
     });
 
     stream_settings_components.new_stream_can_remove_subscribers_group_widget.setup();
-}
+};

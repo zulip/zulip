@@ -22,23 +22,23 @@ const inbox_util = zrequire("inbox_util");
 const message_lists = zrequire("message_lists");
 
 mock_esm("../src/compose_banner", {
-    clear_search_view_banner() {},
+    clear_search_view_banner: () => {},
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/spectators", {
-    login_to_access() {},
+    login_to_access: () => {},
 });
 
-function empty_narrow_html(title, html, search_data) {
+const empty_narrow_html = (title, html, search_data) => {
     const opts = {
         title,
         html,
         search_data,
     };
     return require("../templates/empty_feed_notice.hbs")(opts);
-}
+};
 
-function set_filter(terms) {
+const set_filter = (terms) => {
     terms = terms.map((op) => ({
         operator: op[0],
         operand: op[1],
@@ -48,7 +48,7 @@ function set_filter(terms) {
             filter: new Filter(terms),
         },
     });
-}
+};
 
 const me = {
     email: "me@example.com",

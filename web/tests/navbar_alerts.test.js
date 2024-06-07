@@ -17,12 +17,12 @@ const timerender = mock_esm("../src/timerender");
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         window.localStorage.clear();
         f(helpers);
     });
-}
+};
 
 test("allow_notification_alert", ({disallow, override}) => {
     const ls = localstorage();

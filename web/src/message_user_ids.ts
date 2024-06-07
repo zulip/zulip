@@ -13,14 +13,12 @@
 */
 const user_set = new Set<number>();
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     user_set.clear();
-}
+};
 
-export function user_ids(): number[] {
-    return [...user_set];
-}
+export const user_ids = (): number[] => [...user_set];
 
-export function add_user_id(user_id: number): void {
+export const add_user_id = (user_id: number): void => {
     user_set.add(user_id);
-}
+};

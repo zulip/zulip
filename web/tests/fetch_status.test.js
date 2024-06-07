@@ -6,60 +6,60 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 mock_esm("../src/message_feed_loading", {
-    hide_loading_older() {},
+    hide_loading_older: () => {},
 
-    show_loading_older() {},
-    hide_loading_newer() {},
-    show_loading_newer() {},
+    show_loading_older: () => {},
+    hide_loading_newer: () => {},
+    show_loading_newer: () => {},
 });
 
 const {FetchStatus} = zrequire("fetch_status");
 
 let fetch_status = new FetchStatus();
 
-function reset() {
+const reset = () => {
     fetch_status = new FetchStatus();
-}
+};
 
-function can_load_newer() {
+const can_load_newer = () => {
     assert.equal(fetch_status.can_load_newer_messages(), true);
-}
+};
 
-function blocked_newer() {
+const blocked_newer = () => {
     assert.equal(fetch_status.can_load_newer_messages(), false);
-}
+};
 
-function can_load_older() {
+const can_load_older = () => {
     assert.equal(fetch_status.can_load_older_messages(), true);
-}
+};
 
-function blocked_older() {
+const blocked_older = () => {
     assert.equal(fetch_status.can_load_older_messages(), false);
-}
+};
 
-function has_found_oldest() {
+const has_found_oldest = () => {
     assert.equal(fetch_status.has_found_oldest(), true);
-}
+};
 
-function has_not_found_oldest() {
+const has_not_found_oldest = () => {
     assert.equal(fetch_status.has_found_oldest(), false);
-}
+};
 
-function has_found_newest() {
+const has_found_newest = () => {
     assert.equal(fetch_status.has_found_newest(), true);
-}
+};
 
-function has_not_found_newest() {
+const has_not_found_newest = () => {
     assert.equal(fetch_status.has_found_newest(), false);
-}
+};
 
-function can_load_history() {
+const can_load_history = () => {
     assert.equal(fetch_status.history_limited(), false);
-}
+};
 
-function blocked_history() {
+const blocked_history = () => {
     assert.equal(fetch_status.history_limited(), true);
-}
+};
 
 run_test("basics", () => {
     reset();

@@ -29,9 +29,8 @@ const preview_regexes = [
     /\S*(?:twitter|youtube)\.com\/\S*/,
 ];
 
-function contains_preview_link(content: string): boolean {
-    return preview_regexes.some((re) => re.test(content));
-}
+const contains_preview_link = (content: string): boolean =>
+    preview_regexes.some((re) => re.test(content));
 
 let web_app_helpers: MarkdownHelpers | undefined;
 
@@ -78,25 +77,25 @@ export type MarkdownHelpers = {
     get_linkifier_map: GetLinkifierMap;
 };
 
-export function translate_emoticons_to_names({
+export const translate_emoticons_to_names = ({
     src,
     get_emoticon_translations,
 }: {
     src: string;
     get_emoticon_translations: () => {regex: RegExp; replacement_text: string}[];
-}): string {
+}): string => {
     // Translates emoticons in a string to their colon syntax.
     let translated = src;
     let replacement_text: string;
     const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
 
-    const emoticon_replacer = function (
+    const emoticon_replacer = (
         match: string,
         _capture_group: string,
         offset: number,
         str: string,
-    ): string {
+    ): string => {
         const prev_char = str[offset - 1];
         const next_char = str[offset + match.length];
 
@@ -127,12 +126,12 @@ export function translate_emoticons_to_names({
     }
 
     return translated;
-}
+};
 
-function contains_problematic_linkifier(
+const contains_problematic_linkifier = (
     content: string,
     get_linkifier_map: GetLinkifierMap,
-): boolean {
+): boolean => {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
@@ -145,38 +144,27 @@ function contains_problematic_linkifier(
     }
 
     return false;
-}
+};
 
-function contains_topic_wildcard_mention(content: string): boolean {
-    // If the content has topic wildcard mention (@**topic**) then don't
-    // render it locally. We have only server-side restriction check for
-    // @topic mention. This helps to show the error message (no permission)
-    // via the compose banner and not to local-echo then fail due to restriction.
-    return content.includes("@**topic**");
-}
+const contains_topic_wildcard_mention = (content: string): boolean =>
+    content.includes("@**topic**");
 
-function content_contains_backend_only_syntax(
+const content_contains_backend_only_syntax = (
     content: string,
     get_linkifier_map: GetLinkifierMap,
-): boolean {
-    // Try to guess whether or not a message contains syntax that only the
-    // backend Markdown processor can correctly handle.
-    // If it doesn't, we can immediately render it client-side for local echo.
-    return (
-        contains_preview_link(content) ||
-        contains_problematic_linkifier(content, get_linkifier_map) ||
-        contains_topic_wildcard_mention(content)
-    );
-}
+): boolean =>
+    contains_preview_link(content) ||
+    contains_problematic_linkifier(content, get_linkifier_map) ||
+    contains_topic_wildcard_mention(content);
 
-function parse_with_options(
+const parse_with_options = (
     raw_content: string,
     helper_config: MarkdownHelpers,
     options: ParseOptions,
 ): {
     content: string;
     flags: string[];
-} {
+} => {
     // Given the raw markdown content of a message (raw_content)
     // we return the HTML content (content) and flags.
     // Our caller passes a helper_config object that has several
@@ -190,7 +178,7 @@ function parse_with_options(
 
     const marked_options = {
         ...options,
-        userMentionHandler(mention: string, silently: boolean): string | undefined {
+        userMentionHandler: (mention: string, silently: boolean): string | undefined => {
             if (
                 mention === "all" ||
                 mention === "everyone" ||
@@ -306,7 +294,7 @@ function parse_with_options(
                 user_id.toString(),
             )}">${_.escape(display_text)}</span>`;
         },
-        groupMentionHandler(name: string, silently: boolean): string | undefined {
+        groupMentionHandler: (name: string, silently: boolean): string | undefined => {
             const group = helper_config.get_user_group_from_name(name);
             if (group !== undefined) {
                 let display_text;
@@ -331,7 +319,7 @@ function parse_with_options(
             }
             return undefined;
         },
-        silencedMentionHandler(quote: string): string {
+        silencedMentionHandler: (quote: string): string => {
             // Silence quoted personal and stream wildcard mentions.
             quote = quote.replaceAll(
                 /(<span class="user-mention)(" data-user-id="(\d+|\*)">)@/g,
@@ -382,18 +370,14 @@ function parse_with_options(
     }
 
     return {content, flags};
-}
+};
 
-function is_x_between(x: number, start: number, length: number): boolean {
-    return start <= x && x < start + length;
-}
+const is_x_between = (x: number, start: number, length: number): boolean =>
+    start <= x && x < start + length;
 
-function is_overlapping(match_a: Link, match_b: Link): boolean {
-    return (
-        is_x_between(match_a.index, match_b.index, match_b.text.length) ||
-        is_x_between(match_b.index, match_a.index, match_a.text.length)
-    );
-}
+const is_overlapping = (match_a: Link, match_b: Link): boolean =>
+    is_x_between(match_a.index, match_b.index, match_b.text.length) ||
+    is_x_between(match_b.index, match_a.index, match_a.text.length);
 
 type Link = {
     url: string;
@@ -404,7 +388,7 @@ type Link = {
 
 type TopicLink = {url: string; text: string};
 
-export function get_topic_links(topic: string): TopicLink[] {
+export const get_topic_links = (topic: string): TopicLink[] => {
     // We export this for testing purposes, and mobile may want to
     // use this as well in the future.
     const links: Link[] = [];
@@ -473,22 +457,19 @@ export function get_topic_links(topic: string): TopicLink[] {
     return applied_matches
         .sort((a, b) => a.index - b.index)
         .map((match) => ({url: match.url, text: match.text}));
-}
+};
 
-export function is_status_message(raw_content: string): boolean {
-    return raw_content.startsWith("/me ");
-}
+export const is_status_message = (raw_content: string): boolean => raw_content.startsWith("/me ");
 
-function make_emoji_span(codepoint: string, title: string, alt_text: string): string {
-    return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
+const make_emoji_span = (codepoint: string, title: string, alt_text: string): string =>
+    `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
         codepoint,
     )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
-}
 
-function handleUnicodeEmoji(
+const handleUnicodeEmoji = (
     unicode_emoji: string,
     get_emoji_name: (codepoint: string) => string | undefined,
-): string {
+): string => {
     // We want to avoid turning things like arrows (↔) and keycaps (numbers
     // in boxes) into qualified emoji (images).
     // More specifically, we skip anything with text in the second column of
@@ -513,9 +494,9 @@ function handleUnicodeEmoji(
     }
 
     return unicode_emoji;
-}
+};
 
-function handleEmoji({
+const handleEmoji = ({
     emoji_name,
     get_realm_emoji_url,
     get_emoji_codepoint,
@@ -523,7 +504,7 @@ function handleEmoji({
     emoji_name: string;
     get_realm_emoji_url: (emoji_name: string) => string | undefined;
     get_emoji_codepoint: (emoji_name: string) => string | undefined;
-}): string {
+}): string => {
     const alt_text = ":" + emoji_name + ":";
     const title = emoji_name.replaceAll("_", " ");
 
@@ -548,9 +529,9 @@ function handleEmoji({
     }
 
     return alt_text;
-}
+};
 
-function handleLinkifier({
+const handleLinkifier = ({
     pattern,
     matches,
     get_linkifier_map,
@@ -558,7 +539,7 @@ function handleLinkifier({
     pattern: RegExp;
     matches: LinkifierMatch[];
     get_linkifier_map: GetLinkifierMap;
-}): string {
+}): string => {
     const item = get_linkifier_map().get(pattern);
     assert(item !== undefined);
     const {url_template, group_number_to_name} = item;
@@ -566,9 +547,9 @@ function handleLinkifier({
         matches.map((match, i) => [group_number_to_name[i + 1]!, match]),
     );
     return url_template.expand(template_context);
-}
+};
 
-function handleTimestamp(time_string: string): string {
+const handleTimestamp = (time_string: string): string => {
     let timeobject;
     const time = Number(time_string);
 
@@ -594,9 +575,9 @@ function handleTimestamp(time_string: string): string {
     // render time without milliseconds.
     const escaped_isotime = _.escape(timeobject.toISOString().split(".")[0] + "Z");
     return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
-}
+};
 
-function handleStream({
+const handleStream = ({
     stream_name,
     get_stream_by_name,
     stream_hash,
@@ -609,7 +590,7 @@ function handleStream({
           }
         | undefined;
     stream_hash: (stream_id: number) => string;
-}): string | undefined {
+}): string | undefined => {
     const stream = get_stream_by_name(stream_name);
     if (stream === undefined) {
         return undefined;
@@ -618,9 +599,9 @@ function handleStream({
     return `<a class="stream" data-stream-id="${_.escape(
         stream.stream_id.toString(),
     )}" href="/${_.escape(href)}">#${_.escape(stream.name)}</a>`;
-}
+};
 
-function handleStreamTopic({
+const handleStreamTopic = ({
     stream_name,
     topic,
     get_stream_by_name,
@@ -635,7 +616,7 @@ function handleStreamTopic({
           }
         | undefined;
     stream_topic_hash: (stream_id: number, topic: string) => string;
-}): string | undefined {
+}): string | undefined => {
     const stream = get_stream_by_name(stream_name);
     if (stream === undefined || !topic) {
         return undefined;
@@ -645,9 +626,9 @@ function handleStreamTopic({
     return `<a class="stream-topic" data-stream-id="${_.escape(
         stream.stream_id.toString(),
     )}" href="/${_.escape(href)}">${_.escape(text)}</a>`;
-}
+};
 
-function handleTex(tex: string, fullmatch: string): string {
+const handleTex = (tex: string, fullmatch: string): string => {
     try {
         return katex.renderToString(tex);
     } catch (error) {
@@ -658,9 +639,9 @@ function handleTex(tex: string, fullmatch: string): string {
         }
         throw new Error(error.message);
     }
-}
+};
 
-export function parse({
+export const parse = ({
     raw_content,
     helper_config,
 }: {
@@ -669,18 +650,14 @@ export function parse({
 }): {
     content: string;
     flags: string[];
-} {
-    function get_linkifier_regexes(): RegExp[] {
-        return [...helper_config.get_linkifier_map().keys()];
-    }
+} => {
+    const get_linkifier_regexes = (): RegExp[] => [...helper_config.get_linkifier_map().keys()];
 
-    function disable_markdown_regex(rules: Record<string, RegExpOrStub>, name: string): void {
+    const disable_markdown_regex = (rules: Record<string, RegExpOrStub>, name: string): void => {
         rules[name] = {
-            exec(_: string) {
-                return null;
-            },
+            exec: (_: string) => null,
         };
-    }
+    };
 
     // Configure the marked Markdown parser for our usage
     const renderer = new marked.Renderer();
@@ -695,15 +672,11 @@ export function parse({
         old_link.call(renderer, href, title, text.trim() ? text : href);
 
     // Put a newline after a <br> in the generated HTML to match Markdown
-    renderer.br = function () {
-        return "<br>\n";
-    };
+    renderer.br = () => "<br>\n";
 
-    function preprocess_code_blocks(src: string): string {
-        return fenced_code.process_fenced_code(src);
-    }
+    const preprocess_code_blocks = (src: string): string => fenced_code.process_fenced_code(src);
 
-    function preprocess_translate_emoticons(src: string): string {
+    const preprocess_translate_emoticons = (src: string): string => {
         if (!helper_config.should_translate_emoticons()) {
             return src;
         }
@@ -714,7 +687,7 @@ export function parse({
             src,
             get_emoticon_translations: helper_config.get_emoticon_translations,
         });
-    }
+    };
 
     // Disable headings
     // We only keep the # Heading format.
@@ -738,42 +711,37 @@ export function parse({
     // HTML into the output. This generated HTML is safe to not escape
     fenced_code.set_stash_func((html) => marked.stashHtml(html, true));
 
-    function streamHandler(stream_name: string): string | undefined {
-        return handleStream({
+    const streamHandler = (stream_name: string): string | undefined =>
+        handleStream({
             stream_name,
             get_stream_by_name: helper_config.get_stream_by_name,
             stream_hash: helper_config.stream_hash,
         });
-    }
 
-    function streamTopicHandler(stream_name: string, topic: string): string | undefined {
-        return handleStreamTopic({
+    const streamTopicHandler = (stream_name: string, topic: string): string | undefined =>
+        handleStreamTopic({
             stream_name,
             topic,
             get_stream_by_name: helper_config.get_stream_by_name,
             stream_topic_hash: helper_config.stream_topic_hash,
         });
-    }
 
-    function emojiHandler(emoji_name: string): string {
-        return handleEmoji({
+    const emojiHandler = (emoji_name: string): string =>
+        handleEmoji({
             emoji_name,
             get_realm_emoji_url: helper_config.get_realm_emoji_url,
             get_emoji_codepoint: helper_config.get_emoji_codepoint,
         });
-    }
 
-    function unicodeEmojiHandler(unicode_emoji: string): string {
-        return handleUnicodeEmoji(unicode_emoji, helper_config.get_emoji_name);
-    }
+    const unicodeEmojiHandler = (unicode_emoji: string): string =>
+        handleUnicodeEmoji(unicode_emoji, helper_config.get_emoji_name);
 
-    function linkifierHandler(pattern: RegExp, matches: LinkifierMatch[]): string {
-        return handleLinkifier({
+    const linkifierHandler = (pattern: RegExp, matches: LinkifierMatch[]): string =>
+        handleLinkifier({
             pattern,
             matches,
             get_linkifier_map: helper_config.get_linkifier_map,
         });
-    }
 
     const options = {
         get_linkifier_regexes,
@@ -797,23 +765,25 @@ export function parse({
     };
 
     return parse_with_options(raw_content, helper_config, options);
-}
+};
 
 // NOTE: Everything below this line is likely to be web-specific
 //       and won't be used by future platforms such as mobile.
 //       We may eventually move this code to a new file, but we want
 //       to wait till the dust settles a bit on some other changes first.
-export function initialize(helper_config: MarkdownHelpers): void {
+export const initialize = (helper_config: MarkdownHelpers): void => {
     // This is generally only intended to be called by the web app. Most
     // other platforms should call setup().
     web_app_helpers = helper_config;
-}
+};
 
-export function render(raw_content: string): {
+export const render = (
+    raw_content: string,
+): {
     content: string;
     flags: string[];
     is_me_message: boolean;
-} {
+} => {
     // This is generally only intended to be called by the web app. Most
     // other platforms should call parse().
     assert(web_app_helpers !== undefined);
@@ -823,18 +793,18 @@ export function render(raw_content: string): {
         flags,
         is_me_message: is_status_message(raw_content),
     };
-}
+};
 
-export function contains_backend_only_syntax(content: string): boolean {
+export const contains_backend_only_syntax = (content: string): boolean => {
     assert(web_app_helpers !== undefined);
     return content_contains_backend_only_syntax(content, web_app_helpers.get_linkifier_map);
-}
+};
 
-export function parse_non_message(raw_content: string): string {
+export const parse_non_message = (raw_content: string): string => {
     assert(web_app_helpers !== undefined);
     // Occasionally we get markdown from the server that is not technically
     // a message, but we want to convert it to HTML. Note that we parse
     // raw_content exactly as if it were a Zulip message, so we will
     // handle things like mentions, stream links, and linkifiers.
     return parse({raw_content, helper_config: web_app_helpers}).content;
-}
+};

@@ -9,10 +9,10 @@ export type EmailPillWidget = InputPillContainer<EmailPill>;
 
 const email_regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function create_item_from_email(
+export const create_item_from_email = (
     email: string,
     current_items: InputPillItem<EmailPill>[],
-): InputPillItem<EmailPill> | undefined {
+): InputPillItem<EmailPill> | undefined => {
     if (!email_regex.test(email)) {
         return undefined;
     }
@@ -27,26 +27,24 @@ export function create_item_from_email(
         display_value: email,
         email,
     };
-}
+};
 
-export function get_email_from_item(item: InputPillItem<EmailPill>): string {
-    return item.email;
-}
+export const get_email_from_item = (item: InputPillItem<EmailPill>): string => item.email;
 
-export function get_current_email(
+export const get_current_email = (
     pill_container: input_pill.InputPillContainer<EmailPill>,
-): string | null {
+): string | null => {
     const current_text = pill_container.getCurrentText();
     if (current_text !== null && email_regex.test(current_text)) {
         return current_text;
     }
     return null;
-}
+};
 
-export function create_pills(
+export const create_pills = (
     $pill_container: JQuery,
     pill_config?: InputPillConfig | undefined,
-): input_pill.InputPillContainer<EmailPill> {
+): input_pill.InputPillContainer<EmailPill> => {
     const pill_container = input_pill.create({
         $container: $pill_container,
         pill_config,
@@ -54,4 +52,4 @@ export function create_pills(
         get_text_from_item: get_email_from_item,
     });
     return pill_container;
-}
+};

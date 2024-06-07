@@ -51,7 +51,7 @@ const jeff = {
 
 const example_avatar_url = "http://example.com/example.png";
 
-function init() {
+const init = () => {
     current_user.is_admin = true;
 
     people.init();
@@ -66,18 +66,16 @@ function init() {
     stream_topic_history.reset();
     huddle_data.clear_for_testing();
     stream_data.clear_subscriptions();
-}
+};
 
-function get_suggestions(query) {
-    return search.get_suggestions(query);
-}
+const get_suggestions = (query) => search.get_suggestions(query);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         init();
         f(helpers);
     });
-}
+};
 
 test("basic_get_suggestions", ({override}) => {
     const query = "fred";
@@ -353,15 +351,13 @@ test("group_suggestions", ({mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    function message(user_ids, timestamp) {
-        return {
-            type: "private",
-            display_recipient: user_ids.map((id) => ({
-                id,
-            })),
-            timestamp,
-        };
-    }
+    const message = (user_ids, timestamp) => ({
+        type: "private",
+        display_recipient: user_ids.map((id) => ({
+            id,
+        })),
+        timestamp,
+    });
 
     huddle_data.process_loaded_messages([
         message([bob.user_id, ted.user_id], 99),
@@ -436,9 +432,7 @@ test("empty_query_suggestions", () => {
 
     assert.deepEqual(suggestions.strings, expected);
 
-    function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
-    }
+    const describe = (q) => suggestions.lookup_table.get(q).description_html;
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
@@ -465,9 +459,7 @@ test("has_suggestions", ({override, mock_template}) => {
     let expected = ["h", "has:link", "has:image", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
-    function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
-    }
+    const describe = (q) => suggestions.lookup_table.get(q).description_html;
 
     assert.equal(describe("has:link"), "Messages that contain links");
     assert.equal(describe("has:image"), "Messages that contain images");
@@ -537,9 +529,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
-    }
+    const describe = (q) => suggestions.lookup_table.get(q).description_html;
 
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
@@ -717,9 +707,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
-    }
+    const describe = (q) => suggestions.lookup_table.get(q).description_html;
     assert.equal(describe("te"), "Search for <strong>te</strong>");
     assert.equal(describe("channel:office topic:team"), "Channel office > team");
 
@@ -761,12 +749,12 @@ test("topic_suggestions", ({override, mock_template}) => {
 test("topic_suggestions (limits)", () => {
     let candidate_topics = [];
 
-    function assert_result(guess, expected_topics) {
+    const assert_result = (guess, expected_topics) => {
         assert.deepEqual(
             search.get_topic_suggestions_from_candidates({candidate_topics, guess}),
             expected_topics,
         );
-    }
+    };
 
     assert_result("", []);
     assert_result("zzz", []);
@@ -918,48 +906,38 @@ test("people_suggestions", ({override, mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    function is_person(q) {
-        return suggestions.lookup_table.get(q).is_person;
-    }
+    const is_person = (q) => suggestions.lookup_table.get(q).is_person;
     assert.equal(is_person("dm:ted@zulip.com"), true);
     assert.equal(is_person("sender:ted@zulip.com"), true);
     assert.equal(is_person("dm-including:ted@zulip.com"), true);
 
-    function has_image(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.has_image;
-    }
+    const has_image = (q) => suggestions.lookup_table.get(q).user_pill_context.has_image;
     assert.equal(has_image("dm:bob@zulip.com"), true);
     assert.equal(has_image("sender:bob@zulip.com"), true);
     assert.equal(has_image("dm-including:bob@zulip.com"), true);
 
-    function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
-    }
+    const describe = (q) => suggestions.lookup_table.get(q).description_html;
     assert.equal(describe("dm:ted@zulip.com"), "Direct messages with");
     assert.equal(describe("sender:ted@zulip.com"), "Sent by");
     assert.equal(describe("dm-including:ted@zulip.com"), "Direct messages including");
 
     let expectedString = "<strong>Te</strong>d Smith";
 
-    function get_full_name(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.display_value.string;
-    }
+    const get_full_name = (q) =>
+        suggestions.lookup_table.get(q).user_pill_context.display_value.string;
     assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
     assert.equal(get_full_name("dm:ted@zulip.com"), expectedString);
     assert.equal(get_full_name("dm-including:ted@zulip.com"), expectedString);
 
     expectedString = example_avatar_url + "?s=50";
 
-    function get_avatar_url(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.img_src;
-    }
+    const get_avatar_url = (q) => suggestions.lookup_table.get(q).user_pill_context.img_src;
     assert.equal(get_avatar_url("dm:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("dm-including:bob@zulip.com"), expectedString);
 
-    function get_should_add_guest_user_indicator(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.should_add_guest_user_indicator;
-    }
+    const get_should_add_guest_user_indicator = (q) =>
+        suggestions.lookup_table.get(q).user_pill_context.should_add_guest_user_indicator;
 
     realm.realm_enable_guest_user_indicator = true;
     suggestions = get_suggestions(query);

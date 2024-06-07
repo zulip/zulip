@@ -20,7 +20,7 @@ const params = {
     ],
 };
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         pmc.clear_for_testing();
         user_topics.set_user_topics([]);
@@ -28,7 +28,7 @@ function test(label, f) {
         people.initialize_current_user(15);
         f({override});
     });
-}
+};
 
 test("partners", () => {
     const user1_id = 1;

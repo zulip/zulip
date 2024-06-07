@@ -11,7 +11,7 @@ $(() => {
     }
 
     $.ajaxSetup({
-        beforeSend(xhr: JQuery.jqXHR, settings: JQuery.AjaxSettings) {
+        beforeSend: (xhr: JQuery.jqXHR, settings: JQuery.AjaxSettings) => {
             if (settings.url === undefined || csrf_token === undefined) {
                 throw new Error("settings.url and/or csrf_token are missing.");
             }

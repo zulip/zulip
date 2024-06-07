@@ -9,20 +9,17 @@ import {user_settings} from "./user_settings";
 
 export let flatpickr_instance: flatpickr.Instance;
 
-export function is_open(): boolean {
-    return Boolean(flatpickr_instance?.isOpen);
-}
+export const is_open = (): boolean => Boolean(flatpickr_instance?.isOpen);
 
-function is_numeric_key(key: string): boolean {
-    return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
-}
+const is_numeric_key = (key: string): boolean =>
+    ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
 
-export function show_flatpickr(
+export const show_flatpickr = (
     element: HTMLElement,
     callback: (time: string) => void,
     default_timestamp: flatpickr.Options.DateOption,
     options: flatpickr.Options.Options = {},
-): flatpickr.Instance {
+): flatpickr.Instance => {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
     flatpickr_instance = flatpickr($flatpickr_input[0]!, {
@@ -43,7 +40,7 @@ export function show_flatpickr(
         disableMobile: true,
         time_24hr: user_settings.twenty_four_hour_time,
         minuteIncrement: 1,
-        onKeyDown(_selectedDates, _dateStr, instance, event: KeyboardEvent) {
+        onKeyDown: (_selectedDates, _dateStr, instance, event: KeyboardEvent) => {
             // See also the keydown handler below.
             //
             // TODO: Add a clear explanation of exactly how key
@@ -140,8 +137,8 @@ export function show_flatpickr(
     flatpickr_instance.selectedDateElem.focus();
 
     return flatpickr_instance;
-}
+};
 
-export function close_all(): void {
+export const close_all = (): void => {
     $(".flatpickr-calendar").removeClass("open");
-}
+};

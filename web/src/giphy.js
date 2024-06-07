@@ -18,22 +18,18 @@ let giphy_popover_instance = null;
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let edit_message_id;
 
-export function is_popped_from_edit_message() {
-    return giphy_popover_instance && edit_message_id !== undefined;
-}
+export const is_popped_from_edit_message = () =>
+    giphy_popover_instance && edit_message_id !== undefined;
 
-export function focus_current_edit_message() {
+export const focus_current_edit_message = () => {
     $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`).trigger("focus");
-}
+};
 
-export function is_giphy_enabled() {
-    return (
-        realm.giphy_api_key !== "" &&
-        realm.realm_giphy_rating !== realm.giphy_rating_options.disabled.id
-    );
-}
+export const is_giphy_enabled = () =>
+    realm.giphy_api_key !== "" &&
+    realm.realm_giphy_rating !== realm.giphy_rating_options.disabled.id;
 
-export function update_giphy_rating() {
+export const update_giphy_rating = () => {
     if (
         realm.realm_giphy_rating === realm.giphy_rating_options.disabled.id ||
         realm.giphy_api_key === ""
@@ -42,9 +38,9 @@ export function update_giphy_rating() {
     } else {
         $(".compose_gif_icon").show();
     }
-}
+};
 
-function get_rating() {
+const get_rating = () => {
     const options = realm.giphy_rating_options;
     for (const rating in realm.giphy_rating_options) {
         if (options[rating].id === realm.realm_giphy_rating) {
@@ -56,9 +52,9 @@ function get_rating() {
     // `giphy_rating` value not present in `giphy_rating_options`.
     blueslip.error("Invalid giphy_rating value: " + realm.realm_giphy_rating);
     return "g";
-}
+};
 
-async function renderGIPHYGrid(targetEl) {
+const renderGIPHYGrid = async (targetEl) => {
     const {renderGrid} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-components");
     const {GiphyFetch} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-fetch-api");
 
@@ -66,7 +62,7 @@ async function renderGIPHYGrid(targetEl) {
         giphy_fetch = new GiphyFetch(realm.giphy_api_key);
     }
 
-    function fetchGifs(offset) {
+    const fetchGifs = (offset) => {
         const config = {
             offset,
             limit: 25,
@@ -78,7 +74,7 @@ async function renderGIPHYGrid(targetEl) {
             return giphy_fetch.trending(config);
         }
         return giphy_fetch.search(search_term, config);
-    }
+    };
 
     const render = () =>
         // See https://github.com/Giphy/giphy-js/blob/master/packages/components/README.md#grid
@@ -93,7 +89,7 @@ async function renderGIPHYGrid(targetEl) {
                 // Hide the creator attribution that appears over a
                 // GIF; nice in principle but too distracting.
                 hideAttribution: true,
-                onGifClick(props) {
+                onGifClick: (props) => {
                     let $textarea = $("textarea#compose-textarea");
                     if (edit_message_id !== undefined) {
                         $textarea = $(
@@ -109,7 +105,7 @@ async function renderGIPHYGrid(targetEl) {
                     );
                     hide_giphy_popover();
                 },
-                onGifVisible(_gif, e) {
+                onGifVisible: (_gif, e) => {
                     // Set tabindex for all the GIFs that
                     // are visible to the user. This allows
                     // user to navigate the GIFs using tab.
@@ -128,14 +124,14 @@ async function renderGIPHYGrid(targetEl) {
     window.addEventListener("resize", resizeRender, false);
     const remove = render();
     return {
-        remove() {
+        remove: () => {
             remove();
             window.removeEventListener("resize", resizeRender, false);
         },
     };
-}
+};
 
-async function update_grid_with_search_term() {
+const update_grid_with_search_term = async () => {
     if (!gifs_grid) {
         return;
     }
@@ -152,9 +148,9 @@ async function update_grid_with_search_term() {
 
     // Set to undefined to stop searching.
     gifs_grid = undefined;
-}
+};
 
-export function hide_giphy_popover() {
+export const hide_giphy_popover = () => {
     // Returns `true` if the popover was open.
     if (giphy_popover_instance) {
         giphy_popover_instance.destroy();
@@ -164,18 +160,18 @@ export function hide_giphy_popover() {
         return true;
     }
     return false;
-}
+};
 
-function toggle_giphy_popover(target) {
+const toggle_giphy_popover = (target) => {
     popover_menus.toggle_popover_menu(
         target,
         {
             placement: "top",
-            onCreate(instance) {
+            onCreate: (instance) => {
                 instance.setContent(ui_util.parse_html(render_giphy_picker()));
                 $(instance.popper).addClass("giphy-popover");
             },
-            async onShow(instance) {
+            onShow: async (instance) => {
                 giphy_popover_instance = instance;
                 const $popper = $(giphy_popover_instance.popper).trigger("focus");
                 gifs_grid = await renderGIPHYGrid($popper.find(".giphy-content")[0]);
@@ -217,7 +213,7 @@ function toggle_giphy_popover(target) {
                 // navigating via keyboard.
                 $("#giphy-search-query").trigger("focus");
             },
-            onHidden() {
+            onHidden: () => {
                 hide_giphy_popover();
             },
         },
@@ -225,14 +221,14 @@ function toggle_giphy_popover(target) {
             show_as_overlay_on_mobile: true,
         },
     );
-}
+};
 
-function register_click_handlers() {
+const register_click_handlers = () => {
     $("body").on("click", ".compose_control_button.compose_gif_icon", (e) => {
         toggle_giphy_popover(e.currentTarget);
     });
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     register_click_handlers();
-}
+};

@@ -8,7 +8,7 @@ import * as popovers from "./popovers";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_muted_users from "./settings_muted_users";
 
-export function rerender_for_muted_user(): void {
+export const rerender_for_muted_user = (): void => {
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.update_muting_and_rerender();
     }
@@ -27,10 +27,10 @@ export function rerender_for_muted_user(): void {
     // because muting a user marks every message the user has sent as
     // read, it will update the inbox UI, if necessary through that
     // mechanism.
-}
+};
 
-export function handle_user_updates(raw_muted_users: RawMutedUser[]): void {
+export const handle_user_updates = (raw_muted_users: RawMutedUser[]): void => {
     popovers.hide_all();
     muted_users.set_muted_users(raw_muted_users);
     rerender_for_muted_user();
-}
+};

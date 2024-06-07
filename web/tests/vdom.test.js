@@ -67,22 +67,20 @@ run_test("attribute updates", () => {
     let updated;
     let removed;
 
-    function find() {
-        return {
-            children: () => [],
+    const find = () => ({
+        children: () => [],
 
-            attr(k, v) {
-                assert.equal(k, "color");
-                assert.equal(v, "red");
-                updated = true;
-            },
+        attr: (k, v) => {
+            assert.equal(k, "color");
+            assert.equal(v, "red");
+            updated = true;
+        },
 
-            removeAttr(k) {
-                assert.equal(k, "id");
-                removed = true;
-            },
-        };
-    }
+        removeAttr: (k) => {
+            assert.equal(k, "id");
+            removed = true;
+        },
+    });
 
     const new_opts = {
         keyed_nodes: [],
@@ -101,7 +99,7 @@ run_test("attribute updates", () => {
     assert.ok(removed);
 });
 
-function make_child(i, name) {
+const make_child = (i, name) => {
     const render = () => "<li>" + name + "</li>";
 
     const eq = (other) => name === other.name;
@@ -112,18 +110,16 @@ function make_child(i, name) {
         name,
         eq,
     };
-}
+};
 
-function make_children(lst) {
-    return lst.map((i) => make_child(i, "foo" + i));
-}
+const make_children = (lst) => lst.map((i) => make_child(i, "foo" + i));
 
 run_test("children", () => {
     let rendered_html;
 
-    function replace_content(html) {
+    const replace_content = (html) => {
         rendered_html = html;
-    }
+    };
 
     const find = undefined;
 
@@ -184,10 +180,10 @@ run_test("partial updates", () => {
 
     find = () => ({
         children: () => ({
-            eq(i) {
+            eq: (i) => {
                 assert.equal(i, 0);
                 return {
-                    replaceWith($element) {
+                    replaceWith: ($element) => {
                         $patched = $element;
                     },
                 };

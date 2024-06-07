@@ -15,13 +15,13 @@ const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_topic_history_util = zrequire("stream_topic_history_util");
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         unread.declare_bankruptcy();
         stream_topic_history.reset();
         f(helpers);
     });
-}
+};
 
 test("basics", () => {
     const stream_id = 55;
@@ -170,13 +170,13 @@ test("server_history", () => {
         topic_name: "local",
     });
 
-    function add_server_history() {
+    const add_server_history = () => {
         stream_topic_history.add_history(stream_id, [
             {name: "local", max_id: 501},
             {name: "hist2", max_id: 31},
             {name: "hist1", max_id: 30},
         ]);
-    }
+    };
 
     add_server_history();
 

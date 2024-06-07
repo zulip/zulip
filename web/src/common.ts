@@ -5,10 +5,8 @@ import {$t} from "./i18n";
 
 export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
 
-export function phrase_match(query: string, phrase: string): boolean {
-    // match "tes" to "test" and "stream test" but not "hostess"
-    return (" " + phrase.toLowerCase()).includes(" " + query.toLowerCase());
-}
+export const phrase_match = (query: string, phrase: string): boolean =>
+    (" " + phrase.toLowerCase()).includes(" " + query.toLowerCase());
 
 const keys_map = new Map([
     ["Backspace", "Delete"],
@@ -23,9 +21,7 @@ const keys_map = new Map([
 
 const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
 
-export function has_mac_keyboard(): boolean {
-    return /mac/i.test(navigator.platform);
-}
+export const has_mac_keyboard = (): boolean => /mac/i.test(navigator.platform);
 
 // We convert the <kbd> tags used for keyboard shortcuts to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
@@ -68,7 +64,7 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
 
 // We convert the hotkey hints used in the tooltips to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
-export function adjust_mac_hotkey_hints(hotkeys: string[]): void {
+export const adjust_mac_hotkey_hints = (hotkeys: string[]): void => {
     if (!has_mac_keyboard()) {
         return;
     }
@@ -84,12 +80,12 @@ export function adjust_mac_hotkey_hints(hotkeys: string[]): void {
             hotkeys.unshift("Fn");
         }
     }
-}
+};
 
 // We convert the Shift key with ⇧ (Level 2 Select Symbol) in the
 // popover menu hotkey hints. This helps us reduce the width of
 // the popover menus.
-export function adjust_shift_hotkey(hotkeys: string[]): boolean {
+export const adjust_shift_hotkey = (hotkeys: string[]): boolean => {
     for (const [index, hotkey] of hotkeys.entries()) {
         if (hotkey === "Shift") {
             hotkeys[index] = "⇧";
@@ -97,15 +93,15 @@ export function adjust_shift_hotkey(hotkeys: string[]): boolean {
         }
     }
     return false;
-}
+};
 
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation
 // for design details on this feature.
-function set_password_toggle_label(
+const set_password_toggle_label = (
     password_selector: string,
     label: string,
     tippy_tooltips: boolean,
-): void {
+): void => {
     $(password_selector).attr("aria-label", label);
     if (tippy_tooltips) {
         const element: tippy.ReferenceElement = $(password_selector)[0]!;
@@ -114,13 +110,13 @@ function set_password_toggle_label(
     } else {
         $(password_selector).attr("title", label);
     }
-}
+};
 
-function toggle_password_visibility(
+const toggle_password_visibility = (
     password_field_id: string,
     password_selector: string,
     tippy_tooltips: boolean,
-): void {
+): void => {
     let label;
     const $password_field = $(password_field_id);
 
@@ -134,23 +130,23 @@ function toggle_password_visibility(
         label = $t({defaultMessage: "Show password"});
     }
     set_password_toggle_label(password_selector, label, tippy_tooltips);
-}
+};
 
-export function reset_password_toggle_icons(
+export const reset_password_toggle_icons = (
     password_field: string,
     password_selector: string,
-): void {
+): void => {
     $(password_field).attr("type", "password");
     $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
     const label = $t({defaultMessage: "Show password"});
     set_password_toggle_label(password_selector, label, true);
-}
+};
 
-export function setup_password_visibility_toggle(
+export const setup_password_visibility_toggle = (
     password_field_id: string,
     password_selector: string,
     {tippy_tooltips = false} = {},
-): void {
+): void => {
     const label = $t({defaultMessage: "Show password"});
     set_password_toggle_label(password_selector, label, tippy_tooltips);
     $(password_selector).on("click", (e) => {
@@ -165,4 +161,4 @@ export function setup_password_visibility_toggle(
             toggle_password_visibility(password_field_id, password_selector, tippy_tooltips);
         }
     });
-}
+};

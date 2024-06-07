@@ -29,7 +29,7 @@ const meta = {
     loaded: false,
 };
 
-function can_delete_emoji(emoji: ServerEmoji): boolean {
+const can_delete_emoji = (emoji: ServerEmoji): boolean => {
     if (current_user.is_admin) {
         return true;
     }
@@ -41,9 +41,9 @@ function can_delete_emoji(emoji: ServerEmoji): boolean {
         return true;
     }
     return false;
-}
+};
 
-export function update_custom_emoji_ui(): void {
+export const update_custom_emoji_ui = (): void => {
     const rendered_tip = render_settings_emoji_settings_tip({
         realm_add_custom_emoji_policy: realm.realm_add_custom_emoji_policy,
         policy_values: settings_config.common_policy_values,
@@ -66,13 +66,13 @@ export function update_custom_emoji_ui(): void {
     }
 
     populate_emoji();
-}
+};
 
-export function reset(): void {
+export const reset = (): void => {
     meta.loaded = false;
-}
+};
 
-function sort_author_full_name(a: ServerEmoji, b: ServerEmoji): number {
+const sort_author_full_name = (a: ServerEmoji, b: ServerEmoji): number => {
     const author_a = a.author?.full_name;
     const author_b = b.author?.full_name;
 
@@ -86,15 +86,12 @@ function sort_author_full_name(a: ServerEmoji, b: ServerEmoji): number {
 
     // If one of the author is null, then we put the null author at the end.
     return author_a ? -1 : 1;
-}
+};
 
-function is_default_emoji(emoji_name: string): boolean {
-    // Spaces are replaced with `_` to match how the emoji name will
-    // actually be stored in the backend.
-    return emoji_codes.names.includes(emoji_name.replaceAll(" ", "_"));
-}
+const is_default_emoji = (emoji_name: string): boolean =>
+    emoji_codes.names.includes(emoji_name.replaceAll(" ", "_"));
 
-function is_custom_emoji(emoji_name: string): boolean {
+const is_custom_emoji = (emoji_name: string): boolean => {
     const emoji_data = emoji.get_server_realm_emoji_data();
     for (const emoji of Object.values(emoji_data)) {
         if (emoji.name === emoji_name && !emoji.deactivated) {
@@ -102,9 +99,9 @@ function is_custom_emoji(emoji_name: string): boolean {
         }
     }
     return false;
-}
+};
 
-export function populate_emoji(): void {
+export const populate_emoji = (): void => {
     if (!meta.loaded) {
         return;
     }
@@ -125,8 +122,8 @@ export function populate_emoji(): void {
     ListWidget.create<ServerEmoji>($emoji_table, active_emoji_data, {
         name: "emoji_list",
         get_item: ListWidget.default_get_item,
-        modifier_html(item) {
-            return render_admin_emoji_list({
+        modifier_html: (item) =>
+            render_admin_emoji_list({
                 emoji: {
                     name: item.name,
                     display_name: item.name.replaceAll("_", " "),
@@ -134,16 +131,13 @@ export function populate_emoji(): void {
                     author: item.author ?? "",
                     can_delete_emoji: can_delete_emoji(item),
                 },
-            });
-        },
+            }),
         filter: {
             $element: $emoji_table
                 .closest(".settings-section")
                 .find<HTMLInputElement>("input.search"),
-            predicate(item, value) {
-                return item.name.toLowerCase().includes(value);
-            },
-            onupdate() {
+            predicate: (item, value) => item.name.toLowerCase().includes(value),
+            onupdate: () => {
                 scroll_util.reset_scrollbar($emoji_table);
             },
         },
@@ -157,9 +151,9 @@ export function populate_emoji(): void {
     });
 
     loading.destroy_indicator($("#admin_page_emoji_loading_indicator"));
-}
+};
 
-export function add_custom_emoji_post_render(): void {
+export const add_custom_emoji_post_render = (): void => {
     $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
 
     $("#add-custom-emoji-form").on("input", "input", () => {
@@ -169,9 +163,7 @@ export function add_custom_emoji_post_render(): void {
         );
     });
 
-    const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $("#emoji_file_input");
-    };
+    const get_file_input = (): JQuery<HTMLInputElement> => $("#emoji_file_input");
 
     const $file_name_field = $("#emoji-file-name");
     const $input_error = $("#emoji_file_input_error");
@@ -209,18 +201,18 @@ export function add_custom_emoji_post_render(): void {
         $placeholder_icon.show();
         $preview_text.show();
     });
-}
+};
 
-function show_modal(): void {
+const show_modal = (): void => {
     const html_body = render_add_emoji({});
 
-    function add_custom_emoji(): void {
+    const add_custom_emoji = (): void => {
         dialog_widget.show_dialog_spinner();
 
         const $emoji_status = $("#dialog_error");
         const emoji: Record<string, string> = {};
 
-        function submit_custom_emoji_request(formData: FormData): void {
+        const submit_custom_emoji_request = (formData: FormData): void => {
             assert(emoji.name !== undefined);
             void channel.post({
                 url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
@@ -228,16 +220,16 @@ function show_modal(): void {
                 cache: false,
                 processData: false,
                 contentType: false,
-                success() {
+                success: () => {
                     dialog_widget.close();
                 },
-                error(xhr) {
+                error: (xhr) => {
                     $("#dialog_error").hide();
                     dialog_widget.hide_dialog_spinner();
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $emoji_status);
                 },
             });
-        }
+        };
 
         for (const obj of $("#add-custom-emoji-form").serializeArray()) {
             emoji[obj.name] = obj.value;
@@ -291,7 +283,7 @@ function show_modal(): void {
                 confirm_dialog.launch({
                     html_heading: $t_html({defaultMessage: "Override default emoji?"}),
                     html_body,
-                    on_click() {
+                    on_click: () => {
                         submit_custom_emoji_request(formData);
                     },
                 });
@@ -299,7 +291,7 @@ function show_modal(): void {
         } else {
             submit_custom_emoji_request(formData);
         }
-    }
+    };
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Add a new emoji"}),
         html_body,
@@ -310,7 +302,7 @@ function show_modal(): void {
         on_click: add_custom_emoji,
         post_render: add_custom_emoji_post_render,
     });
-}
+};
 
 export function set_up(): void {
     meta.loaded = true;
@@ -330,7 +322,7 @@ export function set_up(): void {
         const html_body = render_confirm_deactivate_custom_emoji({});
 
         const opts = {
-            success_continuation() {
+            success_continuation: () => {
                 const $row = $btn.parents("tr");
                 $row.remove();
             },
@@ -340,7 +332,7 @@ export function set_up(): void {
             html_heading: $t_html({defaultMessage: "Deactivate custom emoji?"}),
             html_body,
             id: "confirm_deactivate_custom_emoji_modal",
-            on_click() {
+            on_click: () => {
                 dialog_widget.submit_api_request(channel.del, url, {}, opts);
             },
             loading_spinner: true,

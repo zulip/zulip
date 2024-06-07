@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-function handle_submit_for_server_login_form(form: HTMLFormElement): void {
+const handle_submit_for_server_login_form = (form: HTMLFormElement): void => {
     // Get value of zulip_org_id.
     const zulip_org_id = $<HTMLInputElement>("input#zulip-org-id").val();
     const $error_field = $(".zulip_org_id-error");
@@ -25,7 +25,7 @@ function handle_submit_for_server_login_form(form: HTMLFormElement): void {
     $("#server-login-form").find(".loader").css("display", "inline-block");
     $("#server-login-button .server-login-button-text").hide();
     form.submit();
-}
+};
 
 export function initialize(): void {
     $(
@@ -33,7 +33,7 @@ export function initialize(): void {
     ).validate({
         errorClass: "text-error",
         wrapper: "div",
-        submitHandler(form) {
+        submitHandler: (form) => {
             if (form.id === "server-login-form") {
                 handle_submit_for_server_login_form(form);
                 return;
@@ -50,10 +50,10 @@ export function initialize(): void {
 
             form.submit();
         },
-        invalidHandler() {
+        invalidHandler: () => {
             $("*[class$='-error']").hide();
         },
-        showErrors(error_map) {
+        showErrors: (error_map) => {
             $("*[class$='-error']").hide();
             for (const [key, error] of Object.entries(error_map)) {
                 const $error_element = $(`.${CSS.escape(key)}-error`);

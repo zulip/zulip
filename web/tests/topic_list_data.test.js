@@ -8,27 +8,19 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 mock_esm("../src/message_store", {
-    get() {
-        return {
-            stream_id: 556,
-            topic: "general",
-        };
-    },
+    get: () => ({
+        stream_id: 556,
+        topic: "general",
+    }),
 });
 const user_topics = mock_esm("../src/user_topics", {
-    is_topic_muted() {
-        return false;
-    },
-    is_topic_followed() {
-        return false;
-    },
-    is_topic_unmuted_or_followed() {
-        return false;
-    },
+    is_topic_muted: () => false,
+    is_topic_followed: () => false,
+    is_topic_unmuted_or_followed: () => false,
 });
 const narrow_state = mock_esm("../src/narrow_state", {
-    topic() {},
-    stream_id() {},
+    topic: () => {},
+    stream_id: () => {},
 });
 
 const stream_data = zrequire("stream_data");
@@ -43,19 +35,19 @@ const general = {
 
 stream_data.add_sub(general);
 
-function get_list_info(zoom, search) {
+const get_list_info = (zoom, search) => {
     const stream_id = general.stream_id;
     const zoomed = zoom === undefined ? false : zoom;
     const search_term = search === undefined ? "" : search;
     return topic_list_data.get_list_info(stream_id, zoomed, search_term);
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         stream_topic_history.reset();
         f(helpers);
     });
-}
+};
 
 test("get_list_info w/real stream_topic_history", ({override}) => {
     let list_info;
@@ -69,13 +61,13 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         num_possible_topics: 0,
     });
 
-    function add_topic_message(topic_name, message_id) {
+    const add_topic_message = (topic_name, message_id) => {
         stream_topic_history.add_message({
             stream_id: general.stream_id,
             topic_name,
             message_id,
         });
-    }
+    };
     for (const i of _.range(10)) {
         let topic_name;
         // All odd topics are resolved.
@@ -179,7 +171,7 @@ test("get_list_info unreads", ({override}) => {
         });
     }
 
-    function add_unreads(topic, count) {
+    const add_unreads = (topic, count) => {
         unread.process_loaded_messages(
             Array.from({length: count}, () => ({
                 id: (message_id += 1),
@@ -189,9 +181,9 @@ test("get_list_info unreads", ({override}) => {
                 unread: true,
             })),
         );
-    }
+    };
 
-    function add_unreads_with_mention(topic, count) {
+    const add_unreads_with_mention = (topic, count) => {
         unread.process_loaded_messages(
             Array.from({length: count}, () => ({
                 id: (message_id += 1),
@@ -203,7 +195,7 @@ test("get_list_info unreads", ({override}) => {
                 mentioned_me_directly: true,
             })),
         );
-    }
+    };
 
     /*
         We have 16 topics, but we only show up

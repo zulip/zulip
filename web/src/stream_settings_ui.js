@@ -43,11 +43,10 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as util from "./util";
 
-export function is_sub_already_present(sub) {
-    return stream_ui_updates.row_for_stream_id(sub.stream_id).length > 0;
-}
+export const is_sub_already_present = (sub) =>
+    stream_ui_updates.row_for_stream_id(sub.stream_id).length > 0;
 
-export function update_left_panel_row(sub) {
+export const update_left_panel_row = (sub) => {
     const $row = stream_ui_updates.row_for_stream_id(sub.stream_id);
 
     if ($row.length === 0) {
@@ -70,9 +69,9 @@ export function update_left_panel_row(sub) {
     }
 
     $row.replaceWith($new_row);
-}
+};
 
-function get_row_data($row) {
+const get_row_data = ($row) => {
     const row_id = Number.parseInt($row.attr("data-stream-id"), 10);
     if (row_id) {
         const row_object = sub_store.get(row_id);
@@ -82,26 +81,24 @@ function get_row_data($row) {
         };
     }
     return undefined;
-}
+};
 
-function selectText(element) {
+const selectText = (element) => {
     const sel = window.getSelection();
     const range = document.createRange();
     range.selectNodeContents(element);
 
     sel.removeAllRanges();
     sel.addRange(range);
-}
+};
 
-function should_list_all_streams() {
-    return !realm.realm_is_zephyr_mirror_realm;
-}
+const should_list_all_streams = () => !realm.realm_is_zephyr_mirror_realm;
 
-export function toggle_pin_to_top_stream(sub) {
+export const toggle_pin_to_top_stream = (sub) => {
     stream_settings_api.set_stream_property(sub, {property: "pin_to_top", value: !sub.pin_to_top});
-}
+};
 
-export function update_stream_name(sub, new_name) {
+export const update_stream_name = (sub, new_name) => {
     // Rename the stream internally.
     stream_data.rename_sub(sub, new_name);
     const stream_id = sub.stream_id;
@@ -126,9 +123,9 @@ export function update_stream_name(sub, new_name) {
 
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
-}
+};
 
-export function update_stream_description(sub, description, rendered_description) {
+export const update_stream_description = (sub, description, rendered_description) => {
     sub.description = description;
     sub.rendered_description = rendered_description;
     stream_data.clean_up_description(sub);
@@ -142,9 +139,9 @@ export function update_stream_description(sub, description, rendered_description
 
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
-}
+};
 
-export function update_stream_privacy(slim_sub, values) {
+export const update_stream_privacy = (slim_sub, values) => {
     stream_data.update_stream_privacy(slim_sub, values);
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
 
@@ -167,39 +164,39 @@ export function update_stream_privacy(slim_sub, values) {
 
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
-}
+};
 
-export function update_stream_post_policy(sub, new_value) {
+export const update_stream_post_policy = (sub, new_value) => {
     stream_data.update_stream_post_policy(sub, new_value);
     stream_ui_updates.update_setting_element(sub, "stream_post_policy");
-}
+};
 
-export function update_message_retention_setting(sub, new_value) {
+export const update_message_retention_setting = (sub, new_value) => {
     stream_data.update_message_retention_setting(sub, new_value);
     stream_ui_updates.update_setting_element(sub, "message_retention_days");
-}
+};
 
-export function update_can_remove_subscribers_group_id(sub, new_value) {
+export const update_can_remove_subscribers_group_id = (sub, new_value) => {
     stream_data.update_can_remove_subscribers_group_id(sub, new_value);
     stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group");
     stream_edit_subscribers.rerender_subscribers_list(sub);
-}
+};
 
-export function update_is_default_stream() {
+export const update_is_default_stream = () => {
     const active_stream_id = stream_settings_components.get_active_data().id;
     if (active_stream_id) {
         const sub = sub_store.get(active_stream_id);
         stream_ui_updates.update_setting_element(sub, "is_default_stream");
     }
-}
+};
 
-export function update_subscribers_ui(sub) {
+export const update_subscribers_ui = (sub) => {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
     message_view_header.maybe_rerender_title_area_for_stream(sub);
-}
+};
 
-export function add_sub_to_table(sub) {
+export const add_sub_to_table = (sub) => {
     if (is_sub_already_present(sub)) {
         // If a stream is already listed/added in subscription modal,
         // display stream in `Subscribed` tab and return.
@@ -255,8 +252,8 @@ export function add_sub_to_table(sub) {
         }
     }
     update_empty_left_panel_message();
-}
-function show_first_stream_created_modal(stream) {
+};
+const show_first_stream_created_modal = (stream) => {
     dialog_widget.launch({
         html_heading: $t_html(
             {defaultMessage: "Channel <b><z-stream></z-stream></b> created!"},
@@ -266,14 +263,14 @@ function show_first_stream_created_modal(stream) {
         ),
         html_body: render_first_stream_created_modal({stream}),
         id: "first_stream_created_modal",
-        on_click() {},
+        on_click: () => {},
         html_submit_button: $t({defaultMessage: "Continue"}),
         close_on_submit: true,
         single_footer_button: true,
     });
-}
+};
 
-export function remove_stream(stream_id) {
+export const remove_stream = (stream_id) => {
     // It is possible that row is empty when we deactivate a
     // stream, but we let jQuery silently handle that.
     const $row = stream_ui_updates.row_for_stream_id(stream_id);
@@ -282,9 +279,9 @@ export function remove_stream(stream_id) {
     if (hash_parser.is_editing_stream(stream_id)) {
         stream_edit.open_edit_panel_empty();
     }
-}
+};
 
-export function update_settings_for_subscribed(slim_sub) {
+export const update_settings_for_subscribed = (slim_sub) => {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     $(
@@ -311,18 +308,18 @@ export function update_settings_for_subscribed(slim_sub) {
 
     // Update whether there's any streams shown or not.
     update_empty_left_panel_message();
-}
+};
 
-export function show_active_stream_in_left_panel() {
+export const show_active_stream_in_left_panel = () => {
     const selected_row = hash_parser.get_current_hash_section();
 
     if (Number.parseFloat(selected_row)) {
         const $sub_row = stream_ui_updates.row_for_stream_id(selected_row);
         $sub_row.addClass("active");
     }
-}
+};
 
-export function update_settings_for_unsubscribed(slim_sub) {
+export const update_settings_for_unsubscribed = (slim_sub) => {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
@@ -345,9 +342,9 @@ export function update_settings_for_unsubscribed(slim_sub) {
     stream_ui_updates.update_permissions_banner(sub);
 
     update_empty_left_panel_message();
-}
+};
 
-function triage_stream(left_panel_params, sub) {
+const triage_stream = (left_panel_params, sub) => {
     if (left_panel_params.show_subscribed && !sub.subscribed) {
         // reject non-subscribed streams
         return "rejected";
@@ -360,14 +357,14 @@ function triage_stream(left_panel_params, sub) {
 
     const search_terms = search_util.get_search_terms(left_panel_params.input);
 
-    function match(attr) {
+    const match = (attr) => {
         const val = sub[attr];
 
         return search_util.vanilla_match({
             val,
             search_terms,
         });
-    }
+    };
 
     if (match("name")) {
         return "name_match";
@@ -378,9 +375,9 @@ function triage_stream(left_panel_params, sub) {
     }
 
     return "rejected";
-}
+};
 
-function get_stream_id_buckets(stream_ids, left_panel_params) {
+const get_stream_id_buckets = (stream_ids, left_panel_params) => {
     // When we simplify the settings UI, we can get
     // rid of the "others" bucket.
 
@@ -407,9 +404,9 @@ function get_stream_id_buckets(stream_ids, left_panel_params) {
     stream_settings_data.sort_for_stream_settings(buckets.desc, left_panel_params.sort_order);
 
     return buckets;
-}
+};
 
-export function render_left_panel_superset() {
+export const render_left_panel_superset = () => {
     // For annoying legacy reasons we render all the subs we are
     // allowed to know about and put them in the DOM, then we do
     // a second pass where we filter/sort them.
@@ -418,9 +415,9 @@ export function render_left_panel_superset() {
     });
 
     scroll_util.get_content_element($("#channels_overlay_container .streams-list")).html(html);
-}
+};
 
-export function update_empty_left_panel_message() {
+export const update_empty_left_panel_message = () => {
     // Check if we have any streams in panel to decide whether to
     // display a notice.
     let has_streams;
@@ -451,17 +448,15 @@ export function update_empty_left_panel_message() {
         $(".all_streams_tab_empty_text").show();
     }
     $(".no-streams-to-show").show();
-}
+};
 
 // LeftPanelParams { input: String, show_subscribed: Boolean, sort_order: String }
-export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
+export const redraw_left_panel = (left_panel_params = get_left_panel_params()) => {
     // We only get left_panel_params passed in from tests.  Real
     // code calls get_left_panel_params().
     show_active_stream_in_left_panel();
 
-    function stream_id_for_row(row) {
-        return Number.parseInt($(row).attr("data-stream-id"), 10);
-    }
+    const stream_id_for_row = (row) => Number.parseInt($(row).attr("data-stream-id"), 10);
 
     const widgets = new Map();
 
@@ -508,11 +503,11 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
 
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
-}
+};
 
 let sort_order = "by-stream-name";
 
-export function get_left_panel_params() {
+export const get_left_panel_params = () => {
     const $search_box = $("#stream_filter input[type='text']");
     const input = $search_box.expectOne().val().trim();
     const params = {
@@ -522,12 +517,12 @@ export function get_left_panel_params() {
         sort_order,
     };
     return params;
-}
+};
 
 // Make it explicit that our toggler is not created right away.
 export let toggler;
 
-export function switch_stream_tab(tab_name) {
+export const switch_stream_tab = (tab_name) => {
     /*
         This switches the stream tab, but it doesn't update
         the toggler widget.  You may instead want to
@@ -558,9 +553,9 @@ export function switch_stream_tab(tab_name) {
         stream_edit.empty_right_panel();
     }
     stream_edit.setup_subscriptions_tab_hash(tab_name);
-}
+};
 
-export function switch_stream_sort(tab_name) {
+export const switch_stream_sort = (tab_name) => {
     if (
         tab_name === "by-stream-name" ||
         tab_name === "by-subscriber-count" ||
@@ -571,9 +566,9 @@ export function switch_stream_sort(tab_name) {
         sort_order = "by-stream-name";
     }
     redraw_left_panel();
-}
+};
 
-export function setup_page(callback) {
+export const setup_page = (callback) => {
     // We should strongly consider only setting up the page once,
     // but I am writing these comments write before a big release,
     // so it's too risky a change for now.
@@ -587,7 +582,7 @@ export function setup_page(callback) {
     // For now, every time we go back into the widget we'll
     // continue the strategy that we re-render everything from scratch.
     // Also, we'll always go back to the "Subscribed" tab.
-    function initialize_components() {
+    const initialize_components = () => {
         // Sort by name by default when opening "Stream settings".
         sort_order = "by-stream-name";
         const sort_toggler = components.toggle({
@@ -612,7 +607,7 @@ export function setup_page(callback) {
                 },
             ],
             html_class: "stream_sorter_toggle",
-            callback(_value, key) {
+            callback: (_value, key) => {
                 switch_stream_sort(key);
             },
         });
@@ -629,7 +624,7 @@ export function setup_page(callback) {
                 {label: $t({defaultMessage: "Not subscribed"}), key: "not-subscribed"},
                 {label: $t({defaultMessage: "All channels"}), key: "all-streams"},
             ],
-            callback(_value, key) {
+            callback: (_value, key) => {
                 switch_stream_tab(key);
             },
         });
@@ -645,9 +640,9 @@ export function setup_page(callback) {
 
         // show the "Stream settings" header by default.
         $(".display-type #stream_settings_title").show();
-    }
+    };
 
-    function populate_and_fill() {
+    const populate_and_fill = () => {
         $("#channels_overlay_container").empty();
 
         // TODO: Ideally we'd indicate in some way what stream types
@@ -729,16 +724,16 @@ export function setup_page(callback) {
         if (callback) {
             callback();
         }
-    }
+    };
 
     populate_and_fill();
 
     if (!should_list_all_streams()) {
         $(".create_stream_button").val($t({defaultMessage: "Subscribe"}));
     }
-}
+};
 
-export function switch_to_stream_row(stream_id) {
+export const switch_to_stream_row = (stream_id) => {
     const $stream_row = stream_ui_updates.row_for_stream_id(stream_id);
     const $container = $(".streams-list");
 
@@ -748,15 +743,15 @@ export function switch_to_stream_row(stream_id) {
     scroll_util.scroll_element_into_container($stream_row, $container);
 
     stream_edit.open_edit_panel_for_row($stream_row);
-}
+};
 
-function show_right_section() {
+const show_right_section = () => {
     $(".right").addClass("show");
     $(".subscriptions-header").addClass("slide-left");
     resize.resize_stream_subscribers_list();
-}
+};
 
-export function change_state(section, left_side_tab, right_side_tab) {
+export const change_state = (section, left_side_tab, right_side_tab) => {
     // if in #channels/new form.
     if (section === "new") {
         do_open_create_stream();
@@ -801,14 +796,14 @@ export function change_state(section, left_side_tab, right_side_tab) {
 
     toggler.goto("subscribed");
     stream_edit.empty_right_panel();
-}
+};
 
-export function launch(section, left_side_tab, right_side_tab) {
+export const launch = (section, left_side_tab, right_side_tab) => {
     setup_page(() => {
         overlays.open_overlay({
             name: "subscriptions",
             $overlay: $("#subscription_overlay"),
-            on_close() {
+            on_close: () => {
                 browser_history.exit_overlay();
                 $(".colorpicker").spectrum("destroy");
             },
@@ -822,9 +817,9 @@ export function launch(section, left_side_tab, right_side_tab) {
             $("#search_stream_name").trigger("focus");
         }
     }
-}
+};
 
-export function switch_rows(event) {
+export const switch_rows = (event) => {
     const active_data = stream_settings_components.get_active_data();
     const $add_subscriber_pill_input = $(".add_subscribers_container .input");
     let $switch_row;
@@ -863,17 +858,17 @@ export function switch_rows(event) {
         $("#search_stream_name").trigger("focus");
     }
     return true;
-}
+};
 
-export function keyboard_sub() {
+export const keyboard_sub = () => {
     const active_data = stream_settings_components.get_active_data();
     const row_data = get_row_data(active_data.$row);
     if (row_data) {
         stream_settings_components.sub_or_unsub(row_data.object);
     }
-}
+};
 
-export function toggle_view(event) {
+export const toggle_view = (event) => {
     const active_data = stream_settings_components.get_active_data();
     const stream_filter_tab = active_data.$tabs.first().text();
 
@@ -899,9 +894,9 @@ export function toggle_view(event) {
             }
             break;
     }
-}
+};
 
-export function view_stream() {
+export const view_stream = () => {
     const active_data = stream_settings_components.get_active_data();
     const row_data = get_row_data(active_data.$row);
     if (row_data) {
@@ -909,9 +904,9 @@ export function view_stream() {
             "#narrow/stream/" + hash_util.encode_stream_name(row_data.object.name);
         browser_history.go_to_location(stream_narrow_hash);
     }
-}
+};
 
-export function do_open_create_stream() {
+export const do_open_create_stream = () => {
     // Only call this directly for hash changes.
     // Prefer open_create_stream().
 
@@ -925,14 +920,14 @@ export function do_open_create_stream() {
     }
 
     stream_create.new_stream_clicked(stream);
-}
+};
 
-export function open_create_stream() {
+export const open_create_stream = () => {
     do_open_create_stream();
     browser_history.update("#channels/new");
-}
+};
 
-export function update_stream_privacy_choices(policy) {
+export const update_stream_privacy_choices = (policy) => {
     if (!overlays.streams_open()) {
         return;
     }
@@ -956,7 +951,7 @@ export function update_stream_privacy_choices(policy) {
     if (policy === "create_web_public_stream_policy") {
         stream_ui_updates.update_web_public_stream_privacy_option_state($container);
     }
-}
+};
 
 export function initialize() {
     $("#channels_overlay_container").on("click", ".create_stream_button", (e) => {

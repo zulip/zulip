@@ -8,18 +8,18 @@ const $ = require("./lib/zjquery");
 
 const channel = mock_esm("../src/channel");
 mock_esm("../src/ui_report", {
-    success(msg, elem) {
+    success: (msg, elem) => {
         elem.val(msg);
     },
 
-    error(msg, _xhr, elem) {
+    error: (msg, _xhr, elem) => {
         elem.val(msg);
     },
 });
 
 const settings_realm_domains = zrequire("settings_realm_domains");
 
-function test_realms_domain_modal(override, add_realm_domain) {
+const test_realms_domain_modal = (override, add_realm_domain) => {
     const $info = $(".realm_domains_info");
 
     $("#add-realm-domain-widget").set_find_results(
@@ -52,9 +52,9 @@ function test_realms_domain_modal(override, add_realm_domain) {
 
     error_callback({});
     assert.equal($info.val(), "translated HTML: Failed");
-}
+};
 
-function test_change_allow_subdomains(change_allow_subdomains) {
+const test_change_allow_subdomains = (change_allow_subdomains) => {
     const ev = {
         stopPropagation: noop,
     };
@@ -103,7 +103,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         $info.val(),
         "translated HTML: Update successful: Subdomains no longer allowed for example.com",
     );
-}
+};
 
 run_test("test_realm_domains_table", ({override}) => {
     settings_realm_domains.setup_realm_domains_modal_handlers();

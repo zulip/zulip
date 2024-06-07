@@ -1,9 +1,7 @@
-export function get_hash_category(hash?: string): string {
-    // given "#channels/subscribed", returns "channels"
-    return hash ? hash.replace(/^#/, "").split(/\//)[0]! : "";
-}
+export const get_hash_category = (hash?: string): string =>
+    hash ? hash.replace(/^#/, "").split(/\//)[0]! : "";
 
-export function get_hash_section(hash?: string): string {
+export const get_hash_section = (hash?: string): string => {
     // given "#settings/profile", returns "profile"
     // given '#channels/5/social", returns "5"
     if (!hash) {
@@ -13,40 +11,29 @@ export function get_hash_section(hash?: string): string {
     const parts = hash.replace(/\/$/, "").split(/\//);
 
     return parts[1] ?? "";
-}
+};
 
-function get_nth_hash_section(hash: string, n: number): string {
+const get_nth_hash_section = (hash: string, n: number): string => {
     // given "#settings/profile" and n=1, returns "profile"
     // given '#channels/5/social" and n=2, returns "social"
     const parts = hash.replace(/\/$/, "").split(/\//);
     return parts.at(n) ?? "";
-}
+};
 
-export function get_current_nth_hash_section(n: number): string {
-    return get_nth_hash_section(window.location.hash, n);
-}
+export const get_current_nth_hash_section = (n: number): string =>
+    get_nth_hash_section(window.location.hash, n);
 
-export function get_current_hash_category(): string {
-    return get_hash_category(window.location.hash);
-}
+export const get_current_hash_category = (): string => get_hash_category(window.location.hash);
 
-export function get_current_hash_section(): string {
-    return get_hash_section(window.location.hash);
-}
+export const get_current_hash_section = (): string => get_hash_section(window.location.hash);
 
-export function is_same_server_message_link(url: string): boolean {
-    // A same server message link always has category `narrow`,
-    // section `stream` or `dm`, and ends with `/near/<message_id>`,
-    // where <message_id> is a sequence of digits.
-    return (
-        get_hash_category(url) === "narrow" &&
-        (get_hash_section(url) === "stream" || get_hash_section(url) === "dm") &&
-        get_nth_hash_section(url, -2) === "near" &&
-        /^\d+$/.test(get_nth_hash_section(url, -1))
-    );
-}
+export const is_same_server_message_link = (url: string): boolean =>
+    get_hash_category(url) === "narrow" &&
+    (get_hash_section(url) === "stream" || get_hash_section(url) === "dm") &&
+    get_nth_hash_section(url, -2) === "near" &&
+    /^\d+$/.test(get_nth_hash_section(url, -1));
 
-export function is_overlay_hash(hash: string): boolean {
+export const is_overlay_hash = (hash: string): boolean => {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
     const overlay_list = [
         // In 2024, stream was renamed to channel in the Zulip API and UI.
@@ -71,11 +58,11 @@ export function is_overlay_hash(hash: string): boolean {
     const main_hash = get_hash_category(hash);
 
     return overlay_list.includes(main_hash);
-}
+};
 
 // this finds the stream that is actively open in the settings and focused in
 // the left side.
-export function is_editing_stream(desired_stream_id: number): boolean {
+export const is_editing_stream = (desired_stream_id: number): boolean => {
     const hash_components = window.location.hash.slice(1).split(/\//);
 
     if (hash_components[0] !== "channels") {
@@ -91,15 +78,13 @@ export function is_editing_stream(desired_stream_id: number): boolean {
     const stream_id = Number.parseFloat(hash_components[1]!);
 
     return stream_id === desired_stream_id;
-}
+};
 
-export function is_create_new_stream_narrow(): boolean {
-    return window.location.hash === "#channels/new";
-}
+export const is_create_new_stream_narrow = (): boolean => window.location.hash === "#channels/new";
 
 // This checks whether the user is in the stream settings menu
 // and is opening the 'Subscribers' tab on the right panel.
-export function is_subscribers_section_opened_for_stream(): boolean {
+export const is_subscribers_section_opened_for_stream = (): boolean => {
     const hash_components = window.location.hash.slice(1).split(/\//);
 
     if (hash_components[0] !== "channels") {
@@ -109,12 +94,12 @@ export function is_subscribers_section_opened_for_stream(): boolean {
         return false;
     }
     return hash_components[3] === "subscribers";
-}
+};
 
-export function is_in_specified_hash_category(hash_categories: string[]): boolean {
+export const is_in_specified_hash_category = (hash_categories: string[]): boolean => {
     const main_hash = get_hash_category(window.location.hash);
     return hash_categories.includes(main_hash);
-}
+};
 
 export const allowed_web_public_narrows = [
     "channels",
@@ -129,7 +114,7 @@ export const allowed_web_public_narrows = [
     "id",
 ];
 
-export function is_spectator_compatible(hash: string): boolean {
+export const is_spectator_compatible = (hash: string): boolean => {
     // Defines which views are supported for spectators.
     // This implementation should agree with the similar function in zerver/lib/narrow.py.
     const web_public_allowed_hashes = [
@@ -163,4 +148,4 @@ export function is_spectator_compatible(hash: string): boolean {
     }
 
     return web_public_allowed_hashes.includes(main_hash);
-}
+};

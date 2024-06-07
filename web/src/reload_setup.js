@@ -9,7 +9,7 @@ import * as message_view from "./message_view";
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
 
-export function initialize() {
+export const initialize = () => {
     // location.hash should be e.g. `#reload:12345123412312`
     if (!location.hash.startsWith("#reload:")) {
         return;
@@ -84,4 +84,4 @@ export function initialize() {
 
     activity.set_new_user_input(false);
     message_view.changehash(vars.oldhash, trigger);
-}
+};

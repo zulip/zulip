@@ -47,9 +47,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         $("#integration-url-stream_widget").prop("disabled", true);
 
         const clipboard = new ClipboardJS("#generate-integration-url-modal .dialog_submit_button", {
-            text() {
-                return $integration_url.text();
-            },
+            text: () => $integration_url.text(),
         });
         clipboard.on("success", () => {
             show_copied_confirmation(
@@ -88,7 +86,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             update_url();
         });
 
-        function update_url(render_events = false): void {
+        const update_url = (render_events = false): void => {
             selected_integration = integration_input_dropdown_widget.value()!.toString();
             if (previous_selected_integration !== selected_integration) {
                 reset_to_blank_state();
@@ -149,7 +147,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             ) {
                 $dialog_submit_button.prop("disabled", true);
             }
-        }
+        };
 
         integration_input_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "integration-name",
@@ -164,7 +162,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
         integration_input_dropdown_widget.setup();
 
-        function get_options_for_integration_input_dropdown_widget(): Option[] {
+        const get_options_for_integration_input_dropdown_widget = (): Option[] => {
             const options = [
                 default_integration_option,
                 ...realm.realm_incoming_webhook_bots
@@ -175,19 +173,19 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     })),
             ];
             return options;
-        }
+        };
 
-        function integration_item_click_callback(
+        const integration_item_click_callback = (
             event: JQuery.ClickEvent,
             dropdown: tippy.Instance,
-        ): void {
+        ): void => {
             integration_input_dropdown_widget.render();
             $(".integration-url-name-wrapper").trigger("input");
 
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
-        }
+        };
 
         stream_input_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "integration-url-stream",
@@ -202,7 +200,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
         stream_input_dropdown_widget.setup();
 
-        function get_options_for_stream_dropdown_widget(): Option[] {
+        const get_options_for_stream_dropdown_widget = (): Option[] => {
             const options = [
                 direct_messages_option,
                 ...streams
@@ -214,12 +212,12 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     })),
             ];
             return options;
-        }
+        };
 
-        function stream_item_click_callback(
+        const stream_item_click_callback = (
             event: JQuery.ClickEvent,
             dropdown: tippy.Instance,
-        ): void {
+        ): void => {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
             const user_selected_option = stream_input_dropdown_widget.value();
@@ -236,7 +234,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
-        }
+        };
 
         function set_events_param(params: URLSearchParams): boolean {
             if (!$show_integration_events.prop("checked")) {
@@ -258,7 +256,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             return false;
         }
 
-        function reset_to_blank_state(): void {
+        const reset_to_blank_state = (): void => {
             $("#integration-events-parameter").addClass("hide");
             $("#integrations-event-container").addClass("hide");
             $("#integrations-event-options").empty();
@@ -271,7 +269,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $topic_input.parent().addClass("hide");
 
             stream_input_dropdown_widget.render(direct_messages_option.unique_id);
-        }
+        };
     }
 
     dialog_widget.launch({
@@ -280,8 +278,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
         id: "generate-integration-url-modal",
         html_submit_button: $t_html({defaultMessage: "Copy URL"}),
         html_exit_button: $t_html({defaultMessage: "Close"}),
-        on_click() {
-            return;
+        on_click: () => {
+            // Do nothing
         },
         post_render: generate_integration_url_post_render,
     });

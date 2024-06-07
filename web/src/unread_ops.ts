@@ -45,22 +45,20 @@ let window_focused = document.hasFocus();
 // search query and thus worth including here as an optimization.),
 const all_unread_messages_narrow = [{operator: "is", operand: "unread", negated: false}];
 
-export function is_window_focused(): boolean {
-    return window_focused;
-}
+export const is_window_focused = (): boolean => window_focused;
 
-export function confirm_mark_all_as_read(): void {
+export const confirm_mark_all_as_read = (): void => {
     const html_body = render_confirm_mark_all_as_read();
 
     const modal_id = confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Mark all messages as read?"}),
         html_body,
-        on_click() {
+        on_click: () => {
             mark_all_as_read(modal_id);
         },
         loading_spinner: true,
     });
-}
+};
 
 const update_flags_for_narrow_response_schema = z.object({
     processed_count: z.number(),
@@ -71,7 +69,7 @@ const update_flags_for_narrow_response_schema = z.object({
     found_newest: z.boolean(),
 });
 
-function bulk_update_read_flags_for_narrow(
+const bulk_update_read_flags_for_narrow = (
     narrow: NarrowTerm[],
     op: "add" | "remove",
     {
@@ -88,7 +86,7 @@ function bulk_update_read_flags_for_narrow(
         num_after?: number;
     } = {},
     caller_modal_id?: string,
-): void {
+): void => {
     let response_html;
     const request = {
         anchor,
@@ -106,7 +104,7 @@ function bulk_update_read_flags_for_narrow(
     void channel.post({
         url: "/json/messages/flags/narrow",
         data: request,
-        success(raw_data) {
+        success: (raw_data) => {
             const data = update_flags_for_narrow_response_schema.parse(raw_data);
             messages_read_till_now += data.updated_count;
 
@@ -193,7 +191,7 @@ function bulk_update_read_flags_for_narrow(
                 }
             }
         },
-        error(xhr) {
+        error: (xhr) => {
             let parsed;
             if (xhr.readyState === 0) {
                 // client cancelled the request
@@ -230,26 +228,26 @@ function bulk_update_read_flags_for_narrow(
             }
         },
     });
-}
+};
 
-function process_newly_read_message(
+const process_newly_read_message = (
     message: Message,
     options: {from?: "pointer" | "server"},
-): void {
+): void => {
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.view.show_message_as_read(message, options);
     }
     desktop_notifications.close_notification(message);
     recent_view_ui.update_topic_unread_count(message);
-}
+};
 
-export function mark_as_unread_from_here(
+export const mark_as_unread_from_here = (
     message_id: number,
     include_anchor = true,
     messages_marked_unread_till_now = 0,
     num_after = INITIAL_BATCH_SIZE - 1,
     narrow?: string,
-): void {
+): void => {
     assert(message_lists.current !== undefined);
     if (narrow === undefined) {
         narrow = JSON.stringify(message_lists.current.data.filter.terms());
@@ -282,15 +280,15 @@ export function mark_as_unread_from_here(
             narrow,
         );
     }
-}
+};
 
-function do_mark_unread_by_narrow(
+const do_mark_unread_by_narrow = (
     message_id: number,
     include_anchor = true,
     messages_marked_unread_till_now = 0,
     num_after = INITIAL_BATCH_SIZE - 1,
     narrow: string,
-): void {
+): void => {
     const opts = {
         anchor: message_id,
         include_anchor,
@@ -303,7 +301,7 @@ function do_mark_unread_by_narrow(
     void channel.post({
         url: "/json/messages/flags/narrow",
         data: opts,
-        success(raw_data) {
+        success: (raw_data) => {
             const data = update_flags_for_narrow_response_schema.parse(raw_data);
             messages_marked_unread_till_now += data.updated_count;
             if (!data.found_newest) {
@@ -338,9 +336,9 @@ function do_mark_unread_by_narrow(
                 finish_loading(messages_marked_unread_till_now);
             }
         },
-        error(xhr) {
+        error: (xhr) => {
             handle_mark_unread_from_here_error(xhr, {
-                retry() {
+                retry: () => {
                     do_mark_unread_by_narrow(
                         message_id,
                         include_anchor,
@@ -352,28 +350,28 @@ function do_mark_unread_by_narrow(
             });
         },
     });
-}
+};
 
-function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
+const do_mark_unread_by_ids = (message_ids_to_update: number[]): void => {
     void channel.post({
         url: "/json/messages/flags",
         data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
-        success() {
+        success: () => {
             if (loading_indicator_displayed) {
                 finish_loading(message_ids_to_update.length);
             }
         },
-        error(xhr) {
+        error: (xhr) => {
             handle_mark_unread_from_here_error(xhr, {
-                retry() {
+                retry: () => {
                     do_mark_unread_by_ids(message_ids_to_update);
                 },
             });
         },
     });
-}
+};
 
-function finish_loading(messages_marked_unread_till_now: number): void {
+const finish_loading = (messages_marked_unread_till_now: number): void => {
     // If we were showing a loading indicator, then
     // display that we finished. For the common case where
     // the operation succeeds in a single batch, we don't
@@ -391,12 +389,12 @@ function finish_loading(messages_marked_unread_till_now: number): void {
         $("#request-progress-status-banner"),
         true,
     );
-}
+};
 
-function handle_mark_unread_from_here_error(
+const handle_mark_unread_from_here_error = (
     xhr: JQuery.jqXHR<unknown>,
     {retry}: {retry: () => void},
-): void {
+): void => {
     let parsed;
     if (xhr.readyState === 0) {
         // client cancelled the request
@@ -417,9 +415,9 @@ function handle_mark_unread_from_here_error(
             body: xhr.responseText,
         });
     }
-}
+};
 
-export function process_read_messages_event(message_ids: number[]): void {
+export const process_read_messages_event = (message_ids: number[]): void => {
     /*
         This code has a lot in common with notify_server_messages_read,
         but there are subtle differences due to the fact that the
@@ -448,9 +446,9 @@ export function process_read_messages_event(message_ids: number[]): void {
     }
 
     unread_ui.update_unread_counts();
-}
+};
 
-export function process_unread_messages_event({
+export const process_unread_messages_event = ({
     message_ids,
     message_details,
 }: {
@@ -462,7 +460,7 @@ export function process_unread_messages_event({
             | {type: "stream"; stream_id: number; topic: string}
         )
     >;
-}): void {
+}): void => {
     // This is the reverse of process_read_messages_event.
     message_ids = unread.get_read_message_ids(message_ids);
     if (message_ids.length === 0) {
@@ -540,14 +538,14 @@ export function process_unread_messages_event({
     }
 
     unread_ui.update_unread_counts();
-}
+};
 
 // Takes a list of messages and marks them as read.
 // Skips any messages that are already marked as read.
-export function notify_server_messages_read(
+export const notify_server_messages_read = (
     messages: Message[],
     options: {from?: "pointer" | "server"} = {},
-): void {
+): void => {
     messages = unread.get_unread_messages(messages);
     if (messages.length === 0) {
         return;
@@ -561,16 +559,16 @@ export function notify_server_messages_read(
     }
 
     unread_ui.update_unread_counts();
-}
+};
 
-export function notify_server_message_read(
+export const notify_server_message_read = (
     message: Message,
     options?: {from?: "pointer" | "server"},
-): void {
+): void => {
     notify_server_messages_read([message], options);
-}
+};
 
-function process_scrolled_to_bottom(): void {
+const process_scrolled_to_bottom = (): void => {
     if (message_lists.current === undefined) {
         // First, verify that user is narrowed to a list of messages.
         return;
@@ -594,11 +592,11 @@ function process_scrolled_to_bottom(): void {
     if (message_lists.current.has_unread_messages()) {
         unread_ui.notify_messages_remain_unread();
     }
-}
+};
 
 // If we ever materially change the algorithm for this function, we
 // may need to update message_notifications.received_messages as well.
-export function process_visible(): void {
+export const process_visible = (): void => {
     if (
         message_lists.current !== undefined &&
         viewport_is_visible_and_focused() &&
@@ -607,9 +605,9 @@ export function process_visible(): void {
     ) {
         process_scrolled_to_bottom();
     }
-}
+};
 
-export function mark_stream_as_read(stream_id: number): void {
+export const mark_stream_as_read = (stream_id: number): void => {
     const stream_name = stream_data.get_stream_name_from_id(stream_id);
     bulk_update_read_flags_for_narrow(
         [
@@ -618,9 +616,9 @@ export function mark_stream_as_read(stream_id: number): void {
         ],
         "add",
     );
-}
+};
 
-export function mark_topic_as_read(stream_id: number, topic: string): void {
+export const mark_topic_as_read = (stream_id: number, topic: string): void => {
     const stream_name = stream_data.get_stream_name_from_id(stream_id);
     bulk_update_read_flags_for_narrow(
         [
@@ -630,9 +628,9 @@ export function mark_topic_as_read(stream_id: number, topic: string): void {
         ],
         "add",
     );
-}
+};
 
-export function mark_topic_as_unread(stream_id: number, topic: string): void {
+export const mark_topic_as_unread = (stream_id: number, topic: string): void => {
     const stream_name = stream_data.get_stream_name_from_id(stream_id);
     bulk_update_read_flags_for_narrow(
         [
@@ -641,21 +639,21 @@ export function mark_topic_as_unread(stream_id: number, topic: string): void {
         ],
         "remove",
     );
-}
+};
 
-export function mark_all_as_read(modal_id?: string): void {
+export const mark_all_as_read = (modal_id?: string): void => {
     bulk_update_read_flags_for_narrow(all_unread_messages_narrow, "add", {}, modal_id);
-}
+};
 
-export function mark_pm_as_read(user_ids_string: string): void {
+export const mark_pm_as_read = (user_ids_string: string): void => {
     // user_ids_string is a stringified list of user ids which are
     // participants in the conversation other than the current
     // user. Eg: "123,124" or "123"
     const unread_msg_ids = unread.get_msg_ids_for_user_ids_string(user_ids_string);
     message_flags.mark_as_read(unread_msg_ids);
-}
+};
 
-export function viewport_is_visible_and_focused(): boolean {
+export const viewport_is_visible_and_focused = (): boolean => {
     if (
         overlays.any_active() ||
         modals.any_active() ||
@@ -665,9 +663,9 @@ export function viewport_is_visible_and_focused(): boolean {
         return false;
     }
     return true;
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     $(window)
         .on("focus", () => {
             window_focused = true;
@@ -679,4 +677,4 @@ export function initialize(): void {
         .on("blur", () => {
             window_focused = false;
         });
-}
+};

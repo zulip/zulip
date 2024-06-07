@@ -32,7 +32,7 @@ const settings_bots = zrequire("settings_bots");
 
 bot_data.initialize(bot_data_params);
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, ({override}) => {
         realm.realm_url = "https://chat.example.com";
         realm.realm_embedded_bots = [
@@ -43,7 +43,7 @@ function test(label, f) {
 
         f({override});
     });
-}
+};
 
 test("generate_zuliprc_url", () => {
     const url = settings_bots.generate_zuliprc_url(1);

@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery");
 
 set_global("history", {});
 mock_esm("../src/resize", {
-    resize_stream_filters_container() {},
+    resize_stream_filters_container: () => {},
 });
 const {Filter} = zrequire("../src/filter");
 const all_messages_data = mock_esm("../src/all_messages_data");
@@ -34,12 +34,10 @@ const message_lists = mock_esm("../src/message_lists", {
             filter: new Filter([{operator: "in", operand: "all"}]),
         },
     },
-    update_current_message_list(msg_list) {
+    update_current_message_list: (msg_list) => {
         message_lists.current = msg_list;
     },
-    all_rendered_message_lists() {
-        return [message_lists.current];
-    },
+    all_rendered_message_lists: () => [message_lists.current],
 });
 const message_feed_top_notices = mock_esm("../src/message_feed_top_notices");
 const message_feed_loading = mock_esm("../src/message_feed_loading");
@@ -52,11 +50,11 @@ const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_ar
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
 mock_esm("../src/pm_list", {
-    handle_narrow_activated() {},
+    handle_narrow_activated: () => {},
 });
 mock_esm("../src/unread_ui", {
-    reset_unread_banner() {},
-    update_unread_banner() {},
+    reset_unread_banner: () => {},
+    update_unread_banner: () => {},
 });
 
 //
@@ -87,14 +85,14 @@ const denmark = {
 };
 stream_data.add_sub(denmark);
 
-function test_helper({override}) {
+const test_helper = ({override}) => {
     const events = [];
 
-    function stub(module, func_name) {
+    const stub = (module, func_name) => {
         override(module, func_name, () => {
             events.push([module, func_name]);
         });
-    }
+    };
 
     stub(browser_history, "set_hash");
     stub(compose_banner, "clear_message_sent_banners");
@@ -117,11 +115,11 @@ function test_helper({override}) {
     $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     return {
-        assert_events(expected_events) {
+        assert_events: (expected_events) => {
             assert.deepEqual(events, expected_events);
         },
     };
-}
+};
 
 function stub_message_list() {
     message_list.MessageList = class MessageList {

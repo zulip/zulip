@@ -4,15 +4,12 @@ import {page_params} from "./page_params";
 import * as personal_menu_popover from "./personal_menu_popover";
 import * as popover_menus from "./popover_menus";
 
-export function is_navbar_menus_displayed() {
-    return (
-        popover_menus.is_personal_menu_popover_displayed() ||
-        popover_menus.is_gear_menu_popover_displayed() ||
-        popover_menus.is_help_menu_popover_displayed()
-    );
-}
+export const is_navbar_menus_displayed = () =>
+    popover_menus.is_personal_menu_popover_displayed() ||
+    popover_menus.is_gear_menu_popover_displayed() ||
+    popover_menus.is_help_menu_popover_displayed();
 
-export function handle_keyboard_events(event_name) {
+export const handle_keyboard_events = (event_name) => {
     // We don't need to process arrow keys in navbar menus for spectators
     // since they only have gear menu present.
     if (
@@ -54,4 +51,4 @@ export function handle_keyboard_events(event_name) {
     }
 
     return false;
-}
+};

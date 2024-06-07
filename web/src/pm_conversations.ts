@@ -10,15 +10,13 @@ type PMConversation = {
 
 const partners = new Set<number>();
 
-export function set_partner(user_id: number): void {
+export const set_partner = (user_id: number): void => {
     partners.add(user_id);
-}
+};
 
-export function is_partner(user_id: number): boolean {
-    return partners.has(user_id);
-}
+export const is_partner = (user_id: number): boolean => partners.has(user_id);
 
-function filter_muted_pms(conversation: PMConversation): boolean {
+const filter_muted_pms = (conversation: PMConversation): boolean => {
     // We hide muted users from the top left corner, as well as those huddles
     // in which all participants are muted.
     const recipients = people.split_to_ints(conversation.user_ids_string);
@@ -28,7 +26,7 @@ function filter_muted_pms(conversation: PMConversation): boolean {
     }
 
     return true;
-}
+};
 
 class RecentDirectMessages {
     // This data structure keeps track of the sets of users you've had
@@ -103,7 +101,7 @@ class RecentDirectMessages {
 
 export let recent = new RecentDirectMessages();
 
-export function process_message(message: Message): void {
+export const process_message = (message: Message): void => {
     const user_ids = people.pm_with_user_ids(message);
     if (!user_ids) {
         return;
@@ -114,9 +112,9 @@ export function process_message(message: Message): void {
     }
 
     recent.insert(user_ids, message.id);
-}
+};
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     recent = new RecentDirectMessages();
     partners.clear();
-}
+};

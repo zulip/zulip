@@ -12,7 +12,7 @@ import * as popovers from "./popovers";
 import * as rows from "./rows";
 import {parse_html} from "./ui_util";
 
-export function initialize() {
+export const initialize = () => {
     // compose box buttons popover shown on mobile widths.
     // We want this click event to propagate and hide other popovers
     // that could possibly obstruct user from using this popover.
@@ -25,7 +25,7 @@ export function initialize() {
         // actions
         target: ".mobile_button_container",
         placement: "top",
-        onShow(instance) {
+        onShow: (instance) => {
             popover_menus.popover_instances.compose_mobile_button = instance;
             popover_menus.on_show_prep(instance);
             instance.setContent(
@@ -36,7 +36,7 @@ export function initialize() {
                 ),
             );
         },
-        onMount(instance) {
+        onMount: (instance) => {
             const $popper = $(instance.popper);
             $popper.one("click", ".compose_mobile_stream_button", (e) => {
                 compose_actions.start({
@@ -54,7 +54,7 @@ export function initialize() {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             // Destroy instance so that event handlers
             // are destroyed too.
             instance.destroy();
@@ -67,7 +67,7 @@ export function initialize() {
     // only if user clicked outside it.
     popover_menus.register_popover_menu(".compose_control_menu_wrapper", {
         placement: "top",
-        onShow(instance) {
+        onShow: (instance) => {
             const parent_row = rows.get_closest_row(instance.reference);
             let preview_mode_on;
             // If the popover is opened from a message edit form, we want to
@@ -89,9 +89,9 @@ export function initialize() {
             popover_menus.popover_instances.compose_control_buttons = instance;
             popovers.hide_all();
         },
-        onHidden(instance) {
+        onHidden: (instance) => {
             instance.destroy();
             popover_menus.popover_instances.compose_control_buttons = undefined;
         },
     });
-}
+};

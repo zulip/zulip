@@ -77,22 +77,20 @@ people.add_active_user(denise);
 
 people.initialize_current_user(me.user_id);
 
-function convert_recipients(people) {
-    // Display_recipient uses `id` for user_ids.
-    return people.map((p) => ({
+const convert_recipients = (people) =>
+    people.map((p) => ({
         email: p.email,
         id: p.user_id,
         full_name: p.full_name,
     }));
-}
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         message_store.clear_for_testing();
         message_user_ids.clear_for_testing();
         f(helpers);
     });
-}
+};
 
 test("process_new_message", () => {
     let message = {

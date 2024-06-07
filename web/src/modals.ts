@@ -18,25 +18,23 @@ export type ModalConfig = {
 const pre_open_hooks: Hook[] = [];
 const pre_close_hooks: Hook[] = [];
 
-export function register_pre_open_hook(func: Hook): void {
+export const register_pre_open_hook = (func: Hook): void => {
     pre_open_hooks.push(func);
-}
+};
 
-export function register_pre_close_hook(func: Hook): void {
+export const register_pre_close_hook = (func: Hook): void => {
     pre_close_hooks.push(func);
-}
+};
 
-function call_hooks(func_list: Hook[]): void {
+const call_hooks = (func_list: Hook[]): void => {
     for (const element of func_list) {
         element();
     }
-}
+};
 
-export function any_active(): boolean {
-    return $(".micromodal").hasClass("modal--open");
-}
+export const any_active = (): boolean => $(".micromodal").hasClass("modal--open");
 
-export function active_modal(): string | undefined {
+export const active_modal = (): string | undefined => {
     if (!any_active()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
         return undefined;
@@ -44,12 +42,12 @@ export function active_modal(): string | undefined {
 
     const $micromodal = $(".micromodal.modal--open");
     return `#${CSS.escape($micromodal.attr("id")!)}`;
-}
+};
 
-export function is_active(modal_id: string): boolean {
+export const is_active = (modal_id: string): boolean => {
     const $micromodal = $(".micromodal.modal--open");
     return $micromodal.attr("id") === modal_id;
-}
+};
 
 // If conf.autoremove is true, the modal element will be removed from the DOM
 // once the modal is hidden.
@@ -58,10 +56,10 @@ export function is_active(modal_id: string): boolean {
 // on_shown: Callback to run when the modal is shown.
 // on_hide: Callback to run when the modal is triggered to hide.
 // on_hidden: Callback to run when the modal is hidden.
-export function open(
+export const open = (
     modal_id: string,
     conf: ModalConfig & {recursive_call_count?: number} = {},
-): void {
+): void => {
     if (modal_id === undefined) {
         blueslip.error("Undefined id was passed into open");
         return;
@@ -153,21 +151,21 @@ export function open(
         close(modal_id);
     });
 
-    function on_show_callback(): void {
+    const on_show_callback = (): void => {
         if (conf.on_show) {
             conf.on_show();
         }
         overlay_util.disable_scrolling();
         call_hooks(pre_open_hooks);
-    }
+    };
 
-    function on_close_callback(): void {
+    const on_close_callback = (): void => {
         if (conf.on_hide) {
             conf.on_hide();
         }
         overlay_util.enable_scrolling();
         call_hooks(pre_close_hooks);
-    }
+    };
 
     Micromodal.show(modal_id, {
         disableFocus: true,
@@ -175,11 +173,11 @@ export function open(
         onShow: on_show_callback,
         onClose: on_close_callback,
     });
-}
+};
 
 // `conf` is an object with the following optional properties:
 // * on_hidden: Callback to run when the modal finishes hiding.
-export function close(modal_id: string, conf: Pick<ModalConfig, "on_hidden"> = {}): void {
+export const close = (modal_id: string, conf: Pick<ModalConfig, "on_hidden"> = {}): void => {
     if (modal_id === undefined) {
         blueslip.error("Undefined id was passed into close");
         return;
@@ -213,9 +211,9 @@ export function close(modal_id: string, conf: Pick<ModalConfig, "on_hidden"> = {
     });
 
     Micromodal.close(modal_id);
-}
+};
 
-export function close_if_open(modal_id: string): void {
+export const close_if_open = (modal_id: string): void => {
     if (modal_id === undefined) {
         blueslip.error("Undefined id was passed into close_if_open");
         return;
@@ -234,9 +232,9 @@ export function close_if_open(modal_id: string): void {
             `${active_modal_id} is the currently active modal and ${modal_id} is already closed.`,
         );
     }
-}
+};
 
-export function close_active(): void {
+export const close_active = (): void => {
     if (!any_active()) {
         blueslip.warn("close_active() called without checking any_active()");
         return;
@@ -244,10 +242,10 @@ export function close_active(): void {
 
     const $micromodal = $(".micromodal.modal--open");
     Micromodal.close(CSS.escape($micromodal.attr("id") ?? ""));
-}
+};
 
-export function close_active_if_any(): void {
+export const close_active_if_any = (): void => {
     if (any_active()) {
         close_active();
     }
-}
+};

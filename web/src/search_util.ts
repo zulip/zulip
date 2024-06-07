@@ -1,12 +1,12 @@
-export function get_search_terms(input: string): string[] {
+export const get_search_terms = (input: string): string[] => {
     const search_terms = input
         .toLowerCase()
         .split(",")
         .map((s) => s.trim());
     return search_terms;
-}
+};
 
-export function vanilla_match(opts: {val: string; search_terms: string[]}): boolean {
+export const vanilla_match = (opts: {val: string; search_terms: string[]}): boolean => {
     /*
         This is a pretty vanilla search criteria
         where we see if any of our search terms
@@ -19,4 +19,4 @@ export function vanilla_match(opts: {val: string; search_terms: string[]}): bool
     */
     const val = opts.val.toLowerCase();
     return opts.search_terms.some((term) => val.includes(term));
-}
+};

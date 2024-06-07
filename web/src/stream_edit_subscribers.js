@@ -26,8 +26,8 @@ export let pill_widget;
 let current_stream_id;
 let subscribers_list_widget;
 
-function format_member_list_elem(person, user_can_remove_subscribers) {
-    return render_stream_member_list_entry({
+const format_member_list_elem = (person, user_can_remove_subscribers) =>
+    render_stream_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === current_user.user_id,
@@ -36,25 +36,24 @@ function format_member_list_elem(person, user_can_remove_subscribers) {
         for_user_group_members: false,
         img_src: people.small_avatar_url_for_person(person),
     });
-}
 
-function get_sub(stream_id) {
+const get_sub = (stream_id) => {
     const sub = sub_store.get(stream_id);
     if (!sub) {
         blueslip.error("get_sub() failed id lookup", {stream_id});
         return undefined;
     }
     return sub;
-}
+};
 
-function show_stream_subscription_request_result({
+const show_stream_subscription_request_result = ({
     message,
     add_class,
     remove_class,
     subscribed_users,
     already_subscribed_users,
     ignored_deactivated_users,
-}) {
+}) => {
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
     ).expectOne();
@@ -71,9 +70,9 @@ function show_stream_subscription_request_result({
     if (remove_class) {
         $stream_subscription_req_result_elem.removeClass(remove_class);
     }
-}
+};
 
-export function enable_subscriber_management({sub, $parent_container}) {
+export const enable_subscriber_management = ({sub, $parent_container}) => {
     const stream_id = sub.stream_id;
 
     const $pill_container = $parent_container.find(".pill-container");
@@ -81,9 +80,7 @@ export function enable_subscriber_management({sub, $parent_container}) {
     // current_stream_id and pill_widget are module-level variables
     current_stream_id = stream_id;
 
-    function get_potential_subscribers() {
-        return peer_data.potential_subscribers(stream_id);
-    }
+    const get_potential_subscribers = () => peer_data.potential_subscribers(stream_id);
 
     pill_widget = add_subscribers_pill.create({
         $pill_container,
@@ -105,9 +102,9 @@ export function enable_subscriber_management({sub, $parent_container}) {
         user_ids,
         user_can_remove_subscribers,
     });
-}
+};
 
-function make_list_widget({$parent_container, name, user_ids, user_can_remove_subscribers}) {
+const make_list_widget = ({$parent_container, name, user_ids, user_can_remove_subscribers}) => {
     const users = people.get_users_from_ids(user_ids);
     people.sort_but_pin_current_user_on_top(users);
 
@@ -119,12 +116,10 @@ function make_list_widget({$parent_container, name, user_ids, user_can_remove_su
     return ListWidget.create($list_container, users, {
         name,
         get_item: ListWidget.default_get_item,
-        modifier_html(item) {
-            return format_member_list_elem(item, user_can_remove_subscribers);
-        },
+        modifier_html: (item) => format_member_list_elem(item, user_can_remove_subscribers),
         filter: {
             $element: $parent_container.find(".search"),
-            predicate(person, value) {
+            predicate: (person, value) => {
                 const matcher = people.build_person_matcher(value);
                 const match = matcher(person);
 
@@ -139,9 +134,9 @@ function make_list_widget({$parent_container, name, user_ids, user_can_remove_su
         },
         $simplebar_container,
     });
-}
+};
 
-function subscribe_new_users({pill_user_ids}) {
+const subscribe_new_users = ({pill_user_ids}) => {
     const sub = get_sub(current_stream_id);
     if (!sub) {
         return;
@@ -183,7 +178,7 @@ function subscribe_new_users({pill_user_ids}) {
 
     const user_ids = [...user_id_set];
 
-    function invite_success(data) {
+    const invite_success = (data) => {
         pill_widget.clear();
         const subscribed_users = Object.keys(data.subscribed).map((email) =>
             people.get_by_email(email),
@@ -199,9 +194,9 @@ function subscribe_new_users({pill_user_ids}) {
             already_subscribed_users,
             ignored_deactivated_users,
         });
-    }
+    };
 
-    function invite_failure(xhr) {
+    const invite_failure = (xhr) => {
         let message = "Failed to subscribe user!";
         if (xhr.responseJSON?.msg) {
             message = xhr.responseJSON.msg;
@@ -211,18 +206,18 @@ function subscribe_new_users({pill_user_ids}) {
             add_class: "text-error",
             remove_class: "text-success",
         });
-    }
+    };
 
     subscriber_api.add_user_ids_to_stream(user_ids, sub, invite_success, invite_failure);
-}
+};
 
-function remove_subscriber({stream_id, target_user_id, $list_entry}) {
+const remove_subscriber = ({stream_id, target_user_id, $list_entry}) => {
     const sub = get_sub(stream_id);
     if (!sub) {
         return;
     }
 
-    function removal_success(data) {
+    const removal_success = (data) => {
         let message;
 
         if (stream_id !== current_stream_id) {
@@ -252,24 +247,24 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
             add_class: "text-success",
             remove_class: "text-remove",
         });
-    }
+    };
 
-    function removal_failure() {
+    const removal_failure = () => {
         show_stream_subscription_request_result({
             message: $t({defaultMessage: "Error removing user from this channel."}),
             add_class: "text-error",
             remove_class: "text-success",
         });
-    }
+    };
 
-    function remove_user_from_private_stream() {
+    const remove_user_from_private_stream = () => {
         subscriber_api.remove_user_id_from_stream(
             target_user_id,
             sub,
             removal_success,
             removal_failure,
         );
-    }
+    };
 
     if (sub.invite_only) {
         const sub_count = peer_data.get_subscriber_count(stream_id);
@@ -322,9 +317,9 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
         removal_success,
         removal_failure,
     );
-}
+};
 
-export function update_subscribers_list(sub) {
+export const update_subscribers_list = (sub) => {
     // This is for the "Subscribers" tab of the right panel.
     // Render subscriptions only if stream settings is open
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
@@ -348,17 +343,17 @@ export function update_subscribers_list(sub) {
         update_subscribers_list_widget(subscriber_ids);
         $(".subscriber_list_settings_container").show();
     }
-}
+};
 
-function update_subscribers_list_widget(subscriber_ids) {
+const update_subscribers_list_widget = (subscriber_ids) => {
     // This re-renders the subscribers_list_widget with a new
     // list of subscriber_ids.
     const users = people.get_users_from_ids(subscriber_ids);
     people.sort_but_pin_current_user_on_top(users);
     subscribers_list_widget.replace_list_data(users);
-}
+};
 
-export function rerender_subscribers_list(sub) {
+export const rerender_subscribers_list = (sub) => {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         blueslip.info("ignoring subscription for stream that is no longer being edited");
         return;
@@ -393,9 +388,9 @@ export function rerender_subscribers_list(sub) {
         user_ids,
         user_can_remove_subscribers,
     });
-}
+};
 
-export function initialize() {
+export const initialize = () => {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
         $parent_container: $("#channels_overlay_container"),
@@ -417,4 +412,4 @@ export function initialize() {
             remove_subscriber({stream_id, target_user_id, $list_entry});
         },
     );
-}
+};

@@ -17,7 +17,7 @@ import * as user_pill from "./user_pill";
 
 const user_value_schema = z.array(z.number());
 
-export function append_custom_profile_fields(element_id: string, user_id: number): void {
+export const append_custom_profile_fields = (element_id: string, user_id: number): void => {
     const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
         return;
@@ -73,9 +73,9 @@ export function append_custom_profile_fields(element_id: string, user_id: number
         });
         $(element_id).append($(html));
     }
-}
+};
 
-export function initialize_custom_user_type_fields(
+export const initialize_custom_user_type_fields = (
     element_id: string,
     user_id: number,
     is_editable: boolean,
@@ -92,7 +92,7 @@ export function initialize_custom_user_type_fields(
         },
         pills: UserPillWidget,
     ) => void,
-): Map<number, UserPillWidget> {
+): Map<number, UserPillWidget> => {
     const field_types = realm.custom_profile_field_types;
     const user_pills = new Map<number, UserPillWidget>();
 
@@ -148,7 +148,7 @@ export function initialize_custom_user_type_fields(
     }
 
     return user_pills;
-}
+};
 
 export function initialize_custom_date_type_fields(element_id: string): void {
     flatpickr($(element_id).find(".custom_user_field .datepicker")[0]!, {
@@ -177,7 +177,7 @@ export function initialize_custom_date_type_fields(element_id: string): void {
         });
 }
 
-export function initialize_custom_pronouns_type_fields(element_id: string): void {
+export const initialize_custom_pronouns_type_fields = (element_id: string): void => {
     const commonly_used_pronouns = [
         $t({defaultMessage: "he/him"}),
         $t({defaultMessage: "she/her"}),
@@ -190,14 +190,8 @@ export function initialize_custom_pronouns_type_fields(element_id: string): void
     new Typeahead(bootstrap_typeahead_input, {
         items: 3,
         helpOnEmptyStrings: true,
-        source() {
-            return commonly_used_pronouns;
-        },
-        sorter(items, query) {
-            return bootstrap_typeahead.defaultSorter(items, query);
-        },
-        highlighter_html(item) {
-            return typeahead_helper.render_typeahead_item({primary: item});
-        },
+        source: () => commonly_used_pronouns,
+        sorter: (items, query) => bootstrap_typeahead.defaultSorter(items, query),
+        highlighter_html: (item) => typeahead_helper.render_typeahead_item({primary: item}),
     });
-}
+};

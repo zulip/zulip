@@ -7,16 +7,16 @@ import * as people from "./people";
 // data, since that matches what the server sends us.
 let my_alert_words: string[] = [];
 
-export function set_words(words: string[]): void {
+export const set_words = (words: string[]): void => {
     // This module's highlighting algorithm of greedily created
     // highlight spans cannot correctly handle overlapping alert word
     // clauses, but processing in order from longest-to-shortest
     // reduces some symptoms of this. See #28415 for details.
     my_alert_words = words;
     my_alert_words.sort((a, b) => b.length - a.length);
-}
+};
 
-export function get_word_list(): {word: string}[] {
+export const get_word_list = (): {word: string}[] => {
     // Returns a array of objects
     // (with each alert_word as value and 'word' as key to the object.)
     const words = [];
@@ -24,11 +24,9 @@ export function get_word_list(): {word: string}[] {
         words.push({word});
     }
     return words;
-}
+};
 
-export function has_alert_word(word: string): boolean {
-    return my_alert_words.includes(word);
-}
+export const has_alert_word = (word: string): boolean => my_alert_words.includes(word);
 
 const alert_regex_replacements = new Map<string, string>([
     ["&", "&amp;"],
@@ -39,7 +37,7 @@ const alert_regex_replacements = new Map<string, string>([
     ["'", "(?:'|&#39;)"],
 ]);
 
-export function process_message(message: Message): void {
+export const process_message = (message: Message): void => {
     // Parsing for alert words is expensive, so we rely on the host
     // to tell us there any alert words to even look for.
     if (!message.alerted) {
@@ -81,15 +79,10 @@ export function process_message(message: Message): void {
             },
         );
     }
-}
+};
 
-export function notifies(message: Message): boolean {
-    // We exclude ourselves from notifications when we type one of our own
-    // alert words into a message, just because that can be annoying for
-    // certain types of workflows where everybody on your team, including
-    // yourself, sets up an alert word to effectively mention the team.
-    return !people.is_current_user(message.sender_email) && message.alerted;
-}
+export const notifies = (message: Message): boolean =>
+    !people.is_current_user(message.sender_email) && message.alerted;
 
 export const initialize = (params: {alert_words: string[]}): void => {
     set_words(params.alert_words);

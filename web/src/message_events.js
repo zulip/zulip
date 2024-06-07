@@ -35,7 +35,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) {
+const maybe_add_narrowed_messages = (messages, msg_list, callback, attempt = 1) => {
     const ids = [];
 
     for (const elem of messages) {
@@ -49,7 +49,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             narrow: JSON.stringify(narrow_state.public_search_terms()),
         },
         timeout: 5000,
-        success(data) {
+        success: (data) => {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
                 // We unnarrowed or moved to Recent Conversations in the meantime.
                 return;
@@ -78,7 +78,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
         },
-        error(xhr) {
+        error: (xhr) => {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
                 return;
             }
@@ -108,9 +108,9 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             }, delay);
         },
     });
-}
+};
 
-export function insert_new_messages(messages, sent_by_this_client) {
+export const insert_new_messages = (messages, sent_by_this_client) => {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
@@ -151,7 +151,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     // will filter out any not sent by us.
     if (sent_by_this_client) {
         compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
-            narrow_to_recipient(message_id) {
+            narrow_to_recipient: (message_id) => {
                 message_view.narrow_by_topic(message_id, {trigger: "outside_current_view"});
             },
         });
@@ -167,9 +167,9 @@ export function insert_new_messages(messages, sent_by_this_client) {
     pm_list.update_private_messages();
 
     return messages;
-}
+};
 
-export function update_messages(events) {
+export const update_messages = (events) => {
     const messages_to_rerender = [];
     let any_topic_edited = false;
     let changed_narrow = false;
@@ -573,9 +573,9 @@ export function update_messages(events) {
     unread_ui.update_unread_counts();
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-}
+};
 
-export function remove_messages(message_ids) {
+export const remove_messages = (message_ids) => {
     all_messages_data.remove(message_ids);
     for (const list of message_lists.all_rendered_message_lists()) {
         list.remove_and_rerender(message_ids);
@@ -584,4 +584,4 @@ export function remove_messages(message_ids) {
     recent_view_ui.update_topics_of_deleted_message_ids(message_ids);
     starred_messages.remove(message_ids);
     starred_messages_ui.rerender_ui();
-}
+};

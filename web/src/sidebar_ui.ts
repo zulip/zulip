@@ -17,12 +17,12 @@ import {user_settings} from "./user_settings";
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
 
-export function hide_userlist_sidebar(): void {
+export const hide_userlist_sidebar = (): void => {
     $(".app-main .column-right").removeClass("expanded");
     right_sidebar_expanded_as_overlay = false;
-}
+};
 
-export function show_userlist_sidebar(): void {
+export const show_userlist_sidebar = (): void => {
     const $userlist_sidebar = $(".app-main .column-right");
     if ($userlist_sidebar.css("display") !== "none") {
         // Return early if the right sidebar is already visible.
@@ -39,24 +39,23 @@ export function show_userlist_sidebar(): void {
     fix_invite_user_button_flicker();
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
-}
+};
 
-export function show_streamlist_sidebar(): void {
+export const show_streamlist_sidebar = (): void => {
     $(".app-main .column-left").addClass("expanded");
     resize.resize_stream_filters_container();
     left_sidebar_expanded_as_overlay = true;
-}
+};
 
-export function hide_streamlist_sidebar(): void {
+export const hide_streamlist_sidebar = (): void => {
     $(".app-main .column-left").removeClass("expanded");
     left_sidebar_expanded_as_overlay = false;
-}
+};
 
-export function any_sidebar_expanded_as_overlay(): boolean {
-    return left_sidebar_expanded_as_overlay || right_sidebar_expanded_as_overlay;
-}
+export const any_sidebar_expanded_as_overlay = (): boolean =>
+    left_sidebar_expanded_as_overlay || right_sidebar_expanded_as_overlay;
 
-export function update_invite_user_option(): void {
+export const update_invite_user_option = (): void => {
     if (
         !settings_data.user_can_invite_users_by_email() &&
         !settings_data.user_can_create_multiuse_invite()
@@ -65,14 +64,14 @@ export function update_invite_user_option(): void {
     } else {
         $("#right-sidebar .invite-user-link").show();
     }
-}
+};
 
-export function hide_all(): void {
+export const hide_all = (): void => {
     hide_streamlist_sidebar();
     hide_userlist_sidebar();
-}
+};
 
-function fix_invite_user_button_flicker(): void {
+const fix_invite_user_button_flicker = (): void => {
     // Keep right sidebar hidden after browser renders it to avoid
     // flickering of "Invite more users" button. Since the user list
     // is a complex component browser takes time for it to render
@@ -82,9 +81,9 @@ function fix_invite_user_button_flicker(): void {
     setTimeout(() => {
         $("body").removeClass("hide-right-sidebar-by-visibility");
     }, 0);
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     $("body").on("click", ".login_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -172,9 +171,9 @@ export function initialize(): void {
         },
         {capture: true},
     );
-}
+};
 
-export function initialize_left_sidebar(): void {
+export const initialize_left_sidebar = (): void => {
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
@@ -188,9 +187,9 @@ export function initialize_left_sidebar(): void {
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
-}
+};
 
-export function initialize_right_sidebar(): void {
+export const initialize_right_sidebar = (): void => {
     const rendered_sidebar = render_right_sidebar({
         realm_rendered_description: page_params.realm_rendered_description,
     });
@@ -239,4 +238,4 @@ export function initialize_right_sidebar(): void {
         e.stopPropagation();
         buddy_list.toggle_other_users_section();
     });
-}
+};

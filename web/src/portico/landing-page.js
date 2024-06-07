@@ -6,11 +6,9 @@ import {page_params} from "../base_page_params";
 import {detect_user_os} from "./tabbed-instructions";
 import render_tabs from "./team";
 
-export function path_parts() {
-    return window.location.pathname.split("/").filter((chunk) => chunk !== "");
-}
+export const path_parts = () => window.location.pathname.split("/").filter((chunk) => chunk !== "");
 
-const apps_events = function () {
+const apps_events = () => {
     const info = {
         windows: {
             alt: "Windows",
@@ -67,7 +65,7 @@ const apps_events = function () {
 
     let version;
 
-    function get_version_from_path() {
+    const get_version_from_path = () => {
         let result;
         const parts = path_parts();
 
@@ -79,9 +77,9 @@ const apps_events = function () {
 
         result = result || detect_user_os();
         return result;
-    }
+    };
 
-    const update_page = function () {
+    const update_page = () => {
         const $download_instructions = $(".download-instructions");
         const $third_party_apps = $("#third-party-apps");
         const $download_android_apk = $("#download-android-apk");
@@ -117,7 +115,7 @@ const apps_events = function () {
     update_page();
 };
 
-const events = function () {
+const events = () => {
     if (path_parts().includes("apps")) {
         apps_events();
     }

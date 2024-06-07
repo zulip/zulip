@@ -17,9 +17,7 @@ run_test("CachedValue", () => {
     let x = 5;
 
     const cv = new util.CachedValue({
-        compute_value() {
-            return x * 2;
-        },
+        compute_value: () => x * 2,
     });
 
     assert.equal(cv.get(), 10);
@@ -38,9 +36,7 @@ run_test("extract_pm_recipients", () => {
 run_test("lower_bound", () => {
     const arr = [{x: 10}, {x: 20}, {x: 30}, {x: 40}, {x: 50}];
 
-    function compare(a, b) {
-        return a.x < b;
-    }
+    const compare = (a, b) => a.x < b;
 
     assert.equal(util.lower_bound(arr, 5, compare), 0);
     assert.equal(util.lower_bound(arr, 10, compare), 0);

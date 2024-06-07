@@ -3,7 +3,7 @@ document.querySelector<HTMLFormElement>("form#form")!.addEventListener("submit",
 });
 document.querySelector<HTMLInputElement>("input#token")!.focus();
 
-async function decrypt_manual(): Promise<{key: Uint8Array; pasted: Promise<string>}> {
+const decrypt_manual = async (): Promise<{key: Uint8Array; pasted: Promise<string>}> => {
     const key = await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, ["decrypt"]);
     return {
         key: new Uint8Array(await crypto.subtle.exportKey("raw", key)),
@@ -34,7 +34,7 @@ async function decrypt_manual(): Promise<{key: Uint8Array; pasted: Promise<strin
             });
         }),
     };
-}
+};
 
 void (async () => {
     // Sufficiently new versions of the desktop app provide the

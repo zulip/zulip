@@ -30,15 +30,13 @@ import {user_settings} from "./user_settings";
     when the lookups fail.
 */
 
-function abstract_map<K, V>(map: Map<K, V>): AbstractMap<K, V> {
-    return {
-        keys: () => map.keys(),
-        entries: () => map.entries(),
-        get: (k) => map.get(k),
-    };
-}
+const abstract_map = <K, V>(map: Map<K, V>): AbstractMap<K, V> => ({
+    keys: () => map.keys(),
+    entries: () => map.entries(),
+    get: (k) => map.get(k),
+});
 
-function stream(obj: Stream | undefined): {stream_id: number; name: string} | undefined {
+const stream = (obj: Stream | undefined): {stream_id: number; name: string} | undefined => {
     if (obj === undefined) {
         return undefined;
     }
@@ -47,11 +45,11 @@ function stream(obj: Stream | undefined): {stream_id: number; name: string} | un
         stream_id: obj.stream_id,
         name: obj.name,
     };
-}
+};
 
-function user_group(
+const user_group = (
     obj: user_groups.UserGroup | undefined,
-): {id: number; name: string} | undefined {
+): {id: number; name: string} | undefined => {
     if (obj === undefined) {
         return undefined;
     }
@@ -60,7 +58,7 @@ function user_group(
         id: obj.id,
         name: obj.name,
     };
-}
+};
 
 export const get_helpers = (): MarkdownHelpers => ({
     // user stuff

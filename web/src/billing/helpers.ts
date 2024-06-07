@@ -44,7 +44,7 @@ const remote_discount_details: DiscountDetails = {
         "The Community plan is free for education non-profits with up to 100 users. For larger organizations, paid plans are discounted by 90% with online purchase.",
 };
 
-export function create_ajax_request(
+export const create_ajax_request = (
     url: string,
     form_name: string,
     ignored_inputs: string[] = [],
@@ -53,7 +53,7 @@ export function create_ajax_request(
     error_callback: (xhr: JQuery.jqXHR) => void = () => {
         // Ignore errors by default
     },
-): void {
+): void => {
     const $form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
     const form_input_section = `#${CSS.escape(form_name)}-input-section`;
@@ -82,7 +82,7 @@ export function create_ajax_request(
         type,
         url,
         data,
-        success(response: unknown) {
+        success: (response: unknown) => {
             $(form_loading).hide();
             $(form_error).hide();
             $(form_success).show();
@@ -95,7 +95,7 @@ export function create_ajax_request(
             }
             success_callback(response);
         },
-        error(xhr) {
+        error: (xhr) => {
             $(form_loading).hide();
             const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
             if (parsed.success) {
@@ -113,10 +113,10 @@ export function create_ajax_request(
             }
         },
     });
-}
+};
 
 // This function imitates the behavior of the format_money in views/billing_page.py
-export function format_money(cents: number): string {
+export const format_money = (cents: number): string => {
     // allow for small floating point errors
     cents = Math.ceil(cents - 0.001);
     let precision;
@@ -129,12 +129,12 @@ export function format_money(cents: number): string {
         minimumFractionDigits: precision,
         maximumFractionDigits: precision,
     }).format(Number.parseFloat((cents / 100).toFixed(precision)));
-}
+};
 
-export function update_discount_details(
+export const update_discount_details = (
     organization_type: string,
     is_remotely_hosted: boolean,
-): void {
+): void => {
     let discount_notice = is_remotely_hosted
         ? "Your organization may be eligible for a free Community plan, or a discounted Business plan."
         : "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
@@ -155,25 +155,24 @@ export function update_discount_details(
     }
 
     $("#sponsorship-discount-details").text(discount_notice);
-}
+};
 
-export function is_valid_input($elem: JQuery<HTMLFormElement>): boolean {
-    return $elem[0]!.checkValidity();
-}
+export const is_valid_input = ($elem: JQuery<HTMLFormElement>): boolean =>
+    $elem[0]!.checkValidity();
 
-export function redirect_to_billing_with_successful_upgrade(billing_base_url: string): void {
+export const redirect_to_billing_with_successful_upgrade = (billing_base_url: string): void => {
     window.location.replace(
         billing_base_url +
             "/billing/?success_message=" +
             encodeURIComponent("Your organization has been upgraded to PLAN_NAME."),
     );
-}
+};
 
-export function get_upgrade_page_url(
+export const get_upgrade_page_url = (
     is_manual_license_management_upgrade_session: boolean | undefined,
     tier: number,
     billing_base_url: string,
-): string {
+): string => {
     const base_url = billing_base_url + "/upgrade/";
     let params = `tier=${String(tier)}`;
     if (is_manual_license_management_upgrade_session !== undefined) {
@@ -182,4 +181,4 @@ export function get_upgrade_page_url(
         )}`;
     }
     return base_url + "?" + params;
-}
+};

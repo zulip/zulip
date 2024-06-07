@@ -13,28 +13,26 @@ const {current_user} = require("./lib/zpage_params");
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
 
-const noop = function () {};
+const noop = () => {};
 
 set_global("document", {
-    to_$() {
-        return {
-            trigger() {},
-        };
-    },
+    to_$: () => ({
+        trigger: () => {},
+    }),
 });
 
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_data = mock_esm("../src/stream_data");
 
 const {MessageList} = zrequire("message_list");
-function MessageListView() {
-    return {
-        maybe_rerender: noop,
-        append: noop,
-        prepend: noop,
-        clear_rendering_state: noop,
-        is_current_message_list: () => true,
-    };
+class MessageListView {
+    maybe_rerender() {}
+    append() {}
+    prepend() {}
+    clear_rendering_state() {}
+    is_current_message_list() {
+        return true;
+    }
 }
 mock_esm("../src/message_list_view", {
     MessageListView,
@@ -98,7 +96,7 @@ run_test("basics", ({override}) => {
 
     // Make sure not rerendered when reselected
     let num_renders = 0;
-    list.rerender = function () {
+    list.rerender = () => {
         num_renders += 1;
     };
     list.reselect_selected_id();
@@ -125,7 +123,7 @@ run_test("basics", ({override}) => {
     list.append(new_messages, true);
     assert.equal(list.last().id, 90);
 
-    list.view.clear_table = function () {};
+    list.view.clear_table = () => {};
 
     list.remove_and_rerender([60]);
     const removed = list.all_messages().filter((msg) => msg.id !== 60);

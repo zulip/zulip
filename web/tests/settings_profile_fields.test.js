@@ -51,7 +51,7 @@ mock_esm("sortablejs", {default: Sortable});
 
 const settings_profile_fields = zrequire("settings_profile_fields");
 
-function test_populate(opts, template_data) {
+const test_populate = (opts, template_data) => {
     const fields_data = opts.fields_data;
 
     realm.custom_profile_field_types = custom_profile_field_types;
@@ -78,7 +78,7 @@ function test_populate(opts, template_data) {
 
     assert.deepEqual(template_data, opts.expected_template_data);
     assert.equal(num_appends, fields_data.length);
-}
+};
 
 run_test("populate_profile_fields", ({mock_template}) => {
     realm.custom_profile_fields = {};

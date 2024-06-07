@@ -42,12 +42,12 @@ people.initialize_current_user(me.user_id);
 
 const dispatch = server_events_dispatch.dispatch_normal_event;
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         f(helpers);
     });
-}
+};
 
 test("add", ({override}) => {
     const event = event_fixtures.subscription__add;

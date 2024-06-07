@@ -28,17 +28,17 @@ const meta = {
     loaded: false,
 };
 
-export function reset(): void {
+export const reset = (): void => {
     meta.loaded = false;
-}
+};
 
-export function maybe_disable_widgets(): void {
+export const maybe_disable_widgets = (): void => {
     if (current_user.is_admin) {
         return;
     }
-}
+};
 
-function open_linkifier_edit_form(linkifier_id: number): void {
+const open_linkifier_edit_form = (linkifier_id: number): void => {
     const linkifiers_list = realm.realm_linkifiers;
     const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
     assert(linkifier !== undefined);
@@ -48,7 +48,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
         url_template: linkifier.url_template,
     });
 
-    function submit_linkifier_form(dialog_widget_id: string): void {
+    const submit_linkifier_form = (dialog_widget_id: string): void => {
         const $modal = $(`#${dialog_widget_id}`);
         const $change_linkifier_button = $modal.find(".dialog_submit_button");
         $change_linkifier_button.prop("disabled", true);
@@ -64,11 +64,11 @@ function open_linkifier_edit_form(linkifier_id: number): void {
         const $template_status = $modal.find("#edit-linkifier-template-status").expectOne();
         const $dialog_error_element = $modal.find("#dialog_error").expectOne();
         const opts = {
-            success_continuation() {
+            success_continuation: () => {
                 $change_linkifier_button.prop("disabled", false);
                 dialog_widget.close();
             },
-            error_continuation(xhr: JQuery.jqXHR<unknown>) {
+            error_continuation: (xhr: JQuery.jqXHR<unknown>) => {
                 $change_linkifier_button.prop("disabled", false);
                 const parsed = z
                     .object({errors: z.record(z.array(z.string()).optional())})
@@ -99,16 +99,16 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             $("#linkifier-field-status"),
             opts,
         );
-    }
+    };
 
     const dialog_widget_id = dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Edit linkfiers"}),
         html_body,
-        on_click() {
+        on_click: () => {
             submit_linkifier_form(dialog_widget_id);
         },
     });
-}
+};
 
 function update_linkifiers_order(): void {
     const order: number[] = [];
@@ -123,12 +123,12 @@ function update_linkifiers_order(): void {
     );
 }
 
-function handle_linkifier_api_error(
+const handle_linkifier_api_error = (
     errors: Record<string, string[] | undefined>,
     pattern_status: JQuery,
     template_status: JQuery,
     linkifier_status: JQuery,
-): void {
+): void => {
     // The endpoint uses the Django ValidationError system for error
     // handling, which returns somewhat complicated error
     // dictionaries. This logic parses them.
@@ -153,9 +153,9 @@ function handle_linkifier_api_error(
             linkifier_status,
         );
     }
-}
+};
 
-export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
+export const populate_linkifiers = (linkifiers_data: RealmLinkifiers): void => {
     if (!meta.loaded) {
         return;
     }
@@ -164,8 +164,8 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
     ListWidget.create($linkifiers_table, linkifiers_data, {
         name: "linkifiers_list",
         get_item: ListWidget.default_get_item,
-        modifier_html(linkifier, filter_value) {
-            return render_admin_linkifier_list({
+        modifier_html: (linkifier, filter_value) =>
+            render_admin_linkifier_list({
                 linkifier: {
                     pattern: linkifier.pattern,
                     url_template: linkifier.url_template,
@@ -173,19 +173,15 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
                 },
                 can_modify: current_user.is_admin,
                 can_drag: filter_value.length === 0,
-            });
-        },
+            }),
         filter: {
             $element: $linkifiers_table
                 .closest(".settings-section")
                 .find<HTMLInputElement>("input.search"),
-            predicate(item, value) {
-                return (
-                    item.pattern.toLowerCase().includes(value) ||
-                    item.url_template.toLowerCase().includes(value)
-                );
-            },
-            onupdate() {
+            predicate: (item, value) =>
+                item.pattern.toLowerCase().includes(value) ||
+                item.url_template.toLowerCase().includes(value),
+            onupdate: () => {
                 scroll_util.reset_scrollbar($linkifiers_table);
             },
         },
@@ -201,12 +197,12 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
             preventOnFilter: false,
         });
     }
-}
+};
 
-export function set_up(): void {
+export const set_up = (): void => {
     build_page();
     maybe_disable_widgets();
-}
+};
 
 export function build_page(): void {
     meta.loaded = true;
@@ -225,7 +221,7 @@ export function build_page(): void {
             html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
             html_body,
             id: "confirm_delete_linkifiers_modal",
-            on_click() {
+            on_click: () => {
                 dialog_widget.submit_api_request(channel.del, url, {});
             },
             loading_spinner: true,
@@ -263,7 +259,7 @@ export function build_page(): void {
             void channel.post({
                 url: "/json/realm/filters",
                 data: $(this).serialize(),
-                success(data) {
+                success: (data) => {
                     const clean_data = configure_linkifier_api_response_schema.parse(data);
                     $("#linkifier_pattern").val("");
                     $("#linkifier_template").val("");
@@ -274,7 +270,7 @@ export function build_page(): void {
                         $linkifier_status,
                     );
                 },
-                error(xhr) {
+                error: (xhr) => {
                     $add_linkifier_button.prop("disabled", false);
                     const parsed = z
                         .object({errors: z.record(z.array(z.string()).optional())})

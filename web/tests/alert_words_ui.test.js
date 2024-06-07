@@ -21,7 +21,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     alert_words_ui.reset();
     const ListWidget = mock_esm("../src/list_widget", {
         modifier_html: noop,
-        create(_container, words, opts) {
+        create: (_container, words, opts) => {
             const alert_words = [];
             ListWidget.modifier_html = opts.modifier_html;
             for (const word of words) {
@@ -107,7 +107,7 @@ run_test("close_status_message", ({override_rewire}) => {
     $alert.show();
 
     const event = {
-        preventDefault() {},
+        preventDefault: () => {},
         currentTarget: ".close-alert-word-status",
     };
 

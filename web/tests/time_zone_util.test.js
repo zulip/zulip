@@ -8,9 +8,7 @@ const {run_test} = require("./lib/test");
 const {get_offset, start_of_day, is_same_day, difference_in_calendar_days} =
     zrequire("time_zone_util");
 
-function pre(date) {
-    return new Date(date.getTime() - 1);
-}
+const pre = (date) => new Date(date.getTime() - 1);
 
 const ny = "America/New_York";
 const ny_new_year = new Date("2023-01-01T05:00Z");

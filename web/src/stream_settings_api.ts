@@ -5,7 +5,7 @@ import * as settings_ui from "./settings_ui";
 import type {StreamProperties, StreamSubscription} from "./sub_store";
 import * as sub_store from "./sub_store";
 
-export function bulk_set_stream_property(
+export const bulk_set_stream_property = (
     sub_data: {
         [Property in keyof StreamProperties]: {
             stream_id: number;
@@ -14,7 +14,7 @@ export function bulk_set_stream_property(
         };
     }[keyof StreamProperties][],
     $status_element?: JQuery,
-): void {
+): void => {
     const url = "/json/users/me/subscriptions/properties";
     const data = {subscription_data: JSON.stringify(sub_data)};
     if (!$status_element) {
@@ -27,9 +27,9 @@ export function bulk_set_stream_property(
 
     settings_ui.do_settings_change(channel.post, url, data, $status_element);
     return undefined;
-}
+};
 
-export function set_stream_property(
+export const set_stream_property = (
     sub: StreamSubscription,
     data: {
         [Property in keyof StreamProperties]: {
@@ -38,13 +38,13 @@ export function set_stream_property(
         };
     }[keyof StreamProperties],
     $status_element?: JQuery,
-): void {
+): void => {
     const sub_data = {stream_id: sub.stream_id, ...data};
     bulk_set_stream_property([sub_data], $status_element);
-}
+};
 
-export function set_color(stream_id: number, color: string): void {
+export const set_color = (stream_id: number, color: string): void => {
     const sub = sub_store.get(stream_id);
     assert(sub !== undefined);
     set_stream_property(sub, {property: "color", value: color});
-}
+};

@@ -67,6 +67,6 @@ export type UserSettings = (StreamNotificationSettings &
 
 export let user_settings: UserSettings;
 
-export function initialize_user_settings(params: {user_settings: UserSettings}): void {
+export const initialize_user_settings = (params: {user_settings: UserSettings}): void => {
     user_settings = params.user_settings;
-}
+};

@@ -136,11 +136,11 @@ run_test("munging", () => {
     alert_words.process_message(alertwordboundary_message);
     assert.equal(alertwordboundary_message.content, saved_content);
 
-    function assert_transform(message, expected_new_content) {
+    const assert_transform = (message, expected_new_content) => {
         const msg = {...message};
         alert_words.process_message(msg);
         assert.equal(msg.content, expected_new_content);
-    }
+    };
 
     assert_transform(
         other_message,

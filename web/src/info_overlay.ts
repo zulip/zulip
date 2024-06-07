@@ -21,7 +21,7 @@ import * as util from "./util";
 // set_up_toggler is called.
 export let toggler: Toggle | undefined;
 
-function format_usage_html(...keys: string[]): string {
+const format_usage_html = (...keys: string[]): string => {
     const get_formatted_keys: () => string = () => keys.map((key) => `<kbd>${key}</kbd>`).join("+");
     return $t_html(
         {
@@ -31,7 +31,7 @@ function format_usage_html(...keys: string[]): string {
             "key-html": get_formatted_keys,
         },
     );
-}
+};
 
 const markdown_help_rows = [
     {
@@ -291,7 +291,7 @@ export function set_up_toggler(): void {
             {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
             {label: $t({defaultMessage: "Search filters"}), key: "search-operators"},
         ],
-        callback(_name: string, key: string) {
+        callback: (_name: string, key: string) => {
             $(".overlay-modal").hide();
             $(`#${CSS.escape(key)}`).show();
             scroll_util
@@ -331,14 +331,14 @@ export function set_up_toggler(): void {
     common.adjust_mac_kbd_tags("#markdown-instructions kbd");
 }
 
-export function show(target: string | undefined): void {
+export const show = (target: string | undefined): void => {
     const $overlay = $(".informational-overlays");
 
     if (!$overlay.hasClass("show")) {
         overlays.open_overlay({
             name: "informationalOverlays",
             $overlay,
-            on_close() {
+            on_close: () => {
                 browser_history.exit_overlay();
             },
         });
@@ -351,4 +351,4 @@ export function show(target: string | undefined): void {
     if (target) {
         toggler!.goto(target);
     }
-}
+};

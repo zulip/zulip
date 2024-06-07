@@ -17,10 +17,10 @@ let playground_links_popover_instance: tippy.Instance;
 // Playground_store contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
 // to pop off of.
-function toggle_playground_links_popover(
+const toggle_playground_links_popover = (
     element: tippy.ReferenceElement,
     playground_store: Map<number, RealmPlaygroundWithURL>,
-): void {
+): void => {
     if (is_open()) {
         return;
     }
@@ -37,7 +37,7 @@ function toggle_playground_links_popover(
                 },
             ],
         },
-        onCreate(instance) {
+        onCreate: (instance) => {
             // We extract all the values out of playground_store map into
             // the playground_info array. Each element of the array is an
             // object with all properties the template needs for rendering.
@@ -47,30 +47,28 @@ function toggle_playground_links_popover(
                 ui_util.parse_html(render_playground_links_popover({playground_info})),
             );
         },
-        onShow(instance) {
+        onShow: (instance) => {
             const $reference = $(instance.reference);
             $reference.parent().addClass("active-playground-links-reference");
         },
-        onHidden() {
+        onHidden: () => {
             hide();
         },
     });
-}
+};
 
-export function is_open(): boolean {
-    return Boolean(playground_links_popover_instance);
-}
+export const is_open = (): boolean => Boolean(playground_links_popover_instance);
 
-export function hide(): void {
+export const hide = (): void => {
     if (is_open()) {
         $(playground_links_popover_instance.reference)
             .parent()
             .removeClass("active-playground-links-reference");
         playground_links_popover_instance.destroy();
     }
-}
+};
 
-function get_playground_links_popover_items(): JQuery | undefined {
+const get_playground_links_popover_items = (): JQuery | undefined => {
     if (!is_open()) {
         blueslip.error("Trying to get menu items when playground links popover is closed.");
         return undefined;
@@ -83,12 +81,12 @@ function get_playground_links_popover_items(): JQuery | undefined {
     }
 
     return $("li:not(.divider):visible a", $popover);
-}
+};
 
-export function handle_keyboard(key: string): void {
+export const handle_keyboard = (key: string): void => {
     const $items = get_playground_links_popover_items();
     popover_menus.popover_items_handle_keyboard(key, $items);
-}
+};
 
 function register_click_handlers(): void {
     $("#main_div, #preview_content, #message-history").on(
@@ -138,6 +136,6 @@ function register_click_handlers(): void {
     });
 }
 
-export function initialize(): void {
+export const initialize = (): void => {
     register_click_handlers();
-}
+};

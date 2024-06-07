@@ -4,19 +4,19 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
+const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 // Mocking and stubbing things
 set_global("document", "document-stub");
 const message_lists = mock_esm("../src/message_lists");
-function MessageListView() {
-    return {
-        maybe_rerender: noop,
-        append: noop,
-        prepend: noop,
-        is_current_message_list: () => true,
-    };
+class MessageListView {
+    maybe_rerender() {}
+    append() {}
+    prepend() {}
+    is_current_message_list() {
+        return true;
+    }
 }
 mock_esm("../src/message_list_view", {
     MessageListView,
@@ -28,7 +28,7 @@ const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 
 // Helper test function
-function test_reply_label(expected_label) {
+const test_reply_label = (expected_label) => {
     const label = $("#left_bar_compose_reply_button_big").text();
     const prepend_text_length = "translated: Message ".length;
     assert.equal(
@@ -37,7 +37,7 @@ function test_reply_label(expected_label) {
         "'" + label.slice(prepend_text_length),
         Number("' did not match '") + expected_label + "'",
     );
-}
+};
 
 run_test("reply_label", () => {
     // Mocking up a test message list

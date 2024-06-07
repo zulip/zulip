@@ -54,7 +54,7 @@ let expected_data_to_replace_in_list_widget;
 const ListWidget = mock_esm("../src/list_widget", {
     modifier_html: noop,
     generic_sort_functions: noop,
-    create(_container, mapped_topic_values, opts) {
+    create: (_container, mapped_topic_values, opts) => {
         const formatted_topics = [];
         ListWidget.modifier_html = opts.modifier_html;
         for (const item of mapped_topic_values) {
@@ -76,7 +76,7 @@ const ListWidget = mock_esm("../src/list_widget", {
 
     hard_redraw: noop,
     filter_and_sort: noop,
-    replace_list_data(data) {
+    replace_list_data: (data) => {
         assert.notEqual(
             expected_data_to_replace_in_list_widget,
             undefined,
@@ -100,7 +100,7 @@ mock_esm("../src/message_list_data", {
     MessageListData: class {},
 });
 mock_esm("../src/message_store", {
-    get(msg_id) {
+    get: (msg_id) => {
         if (msg_id < 15) {
             return messages[msg_id - 1];
         }
@@ -111,19 +111,19 @@ mock_esm("../src/message_view_header", {
     render_title_area: noop,
 });
 mock_esm("../src/user_topics", {
-    is_topic_muted(stream_id, topic) {
+    is_topic_muted: (stream_id, topic) => {
         if (stream_id === stream1 && topic === topic7) {
             return true;
         }
         return false;
     },
-    is_topic_unmuted_or_followed(stream_id, topic) {
+    is_topic_unmuted_or_followed: (stream_id, topic) => {
         if (stream_id === stream6 && (topic === topic11 || topic === topic12)) {
             return true;
         }
         return false;
     },
-    get_topic_visibility_policy(stream_id, topic) {
+    get_topic_visibility_policy: (stream_id, topic) => {
         if (stream_id === stream1 && topic === topic7) {
             return all_visibility_policies.MUTED;
         } else if (stream_id === stream6 && topic === topic11) {
@@ -136,7 +136,7 @@ mock_esm("../src/user_topics", {
     all_visibility_policies,
 });
 mock_esm("../src/narrow_title", {
-    update_narrow_title() {},
+    update_narrow_title: () => {},
 });
 mock_esm("../src/pm_list", {
     update_private_messages: noop,
@@ -144,16 +144,12 @@ mock_esm("../src/pm_list", {
 });
 mock_esm("../src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
-    get_pm_recent_senders(user_ids_string) {
-        return {
-            participants: user_ids_string.split(",").map((user_id) => Number.parseInt(user_id, 10)),
-        };
-    },
+    get_pm_recent_senders: (user_ids_string) => ({
+        participants: user_ids_string.split(",").map((user_id) => Number.parseInt(user_id, 10)),
+    }),
 });
 mock_esm("../src/stream_data", {
-    is_muted(stream_id) {
-        return stream_id === stream6;
-    },
+    is_muted: (stream_id) => stream_id === stream6,
     get_stream_name_from_id: () => "stream_name",
 });
 mock_esm("../src/stream_list", {
@@ -167,15 +163,13 @@ mock_esm("../src/left_sidebar_navigation_area", {
     highlight_recent_view: noop,
 });
 mock_esm("../src/unread", {
-    num_unread_for_topic(stream_id, topic) {
+    num_unread_for_topic: (stream_id, topic) => {
         if (stream_id === 1 && topic === "topic-1") {
             return 0;
         }
         return 1;
     },
-    num_unread_for_user_ids_string() {
-        return 0;
-    },
+    num_unread_for_user_ids_string: () => 0,
     topic_has_any_unread_mentions: () => false,
 });
 mock_esm("../src/resize", {
@@ -377,11 +371,9 @@ private_messages[2] = {
     pm_with_url: test_url(),
 };
 
-function get_topic_key(stream_id, topic) {
-    return stream_id + ":" + topic.toLowerCase();
-}
+const get_topic_key = (stream_id, topic) => stream_id + ":" + topic.toLowerCase();
 
-function generate_topic_data(topic_info_array) {
+const generate_topic_data = (topic_info_array) => {
     // Since most of the fields are common, this function helps generate fixtures
     // with non-common fields.
     $.clear_all_elements();
@@ -413,17 +405,17 @@ function generate_topic_data(topic_info_array) {
         });
     }
     return data;
-}
+};
 
-function verify_topic_data(all_topics, stream, topic, last_msg_id, participated) {
+const verify_topic_data = (all_topics, stream, topic, last_msg_id, participated) => {
     const topic_data = all_topics.get(stream + ":" + topic);
     assert.equal(topic_data.last_msg_id, last_msg_id);
     assert.equal(topic_data.participated, participated);
-}
+};
 
 rt.set_default_focus();
 
-function stub_out_filter_buttons() {
+const stub_out_filter_buttons = () => {
     // TODO: We probably want more direct tests that make sure
     //       the widgets get updated correctly, but the stubs here
     //       should accurately simulate toggling the filters.
@@ -435,9 +427,9 @@ function stub_out_filter_buttons() {
         const selector = `[data-filter="${filter}"]`;
         $("#recent_view_filter_buttons").set_find_results(selector, $stub);
     }
-}
+};
 
-function test(label, f) {
+const test = (label, f) => {
     run_test(label, (helpers) => {
         $(".header").css = noop;
         page_params.development_environment = true;
@@ -445,7 +437,7 @@ function test(label, f) {
         messages = sample_messages.map((message) => ({...message}));
         f(helpers);
     });
-}
+};
 
 test("test_recent_view_show", ({override, mock_template}) => {
     // Note: unread count and urls are fake,

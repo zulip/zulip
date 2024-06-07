@@ -37,11 +37,8 @@ class MarkdownComparer {
         this._output_formatter =
             output_formatter ||
             /* istanbul ignore next */
-            function (actual, expected) {
-                return ["Actual and expected output do not match.", actual, "!=", expected].join(
-                    "\n",
-                );
-            };
+            ((actual, expected) =>
+                ["Actual and expected output do not match.", actual, "!=", expected].join("\n"));
         this._document = new JSDOM().window.document;
     }
 
@@ -177,7 +174,7 @@ class MarkdownComparer {
     }
 }
 
-function returnComparer() {
+const returnComparer = () => {
     if (!_markdownComparerInstance) {
         _markdownComparerInstance = new MarkdownComparer(
             /* istanbul ignore next */
@@ -189,19 +186,18 @@ function returnComparer() {
         );
     }
     return _markdownComparerInstance;
-}
+};
 
 module.exports = {
-    equal(expected, actual, message) {
+    equal: (expected, actual, message) => {
         returnComparer().assertEqual(actual, expected, message);
     },
 
-    notEqual(expected, actual, message) {
+    notEqual: (expected, actual, message) => {
         returnComparer().assertNotEqual(actual, expected, message);
     },
 
-    /* istanbul ignore next */
-    setFormatter(output_formatter) {
+    setFormatter: /* istanbul ignore next */ (output_formatter) => {
         returnComparer().setFormatter(output_formatter);
     },
 };

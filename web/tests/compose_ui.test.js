@@ -115,12 +115,12 @@ run_test("insert_syntax_and_focus", ({override}) => {
 run_test("smart_insert", ({override}) => {
     let $textbox = make_textbox("abc");
     $textbox.caret(4);
-    function override_with_expected_syntax(expected_syntax) {
+    const override_with_expected_syntax = (expected_syntax) => {
         override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
             assert.equal(elt, "textarea");
             assert.equal(syntax, expected_syntax);
         });
-    }
+    };
     override_with_expected_syntax(" :smile: ");
     compose_ui.smart_insert_inline($textbox, ":smile:");
 
@@ -295,9 +295,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     let textarea_val = "";
     let textarea_caret_pos;
 
-    $("textarea#compose-textarea").val = function () {
-        return textarea_val;
-    };
+    $("textarea#compose-textarea").val = () => textarea_val;
 
     $("textarea#compose-textarea").caret = function (arg) {
         if (arg === undefined) {
@@ -332,15 +330,15 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
     });
 
-    function set_compose_content_with_caret(content) {
+    const set_compose_content_with_caret = (content) => {
         const caret_position = content.indexOf("%");
         content = content.slice(0, caret_position) + content.slice(caret_position + 1); // remove the "%"
         textarea_val = content;
         textarea_caret_pos = caret_position;
         $("textarea#compose-textarea").trigger("focus");
-    }
+    };
 
-    function reset_test_state() {
+    const reset_test_state = () => {
         // Reset `raw_content` property of `selected_message`.
         delete selected_message.raw_content;
 
@@ -348,9 +346,9 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         textarea_val = "";
         textarea_caret_pos = 0;
         $("textarea#compose-textarea").trigger("blur");
-    }
+    };
 
-    function override_with_quote_text(quote_text) {
+    const override_with_quote_text = (quote_text) => {
         override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
             assert.equal(elt, "compose-textarea");
             assert.equal(old_syntax, "translated: [Quoting…]");
@@ -362,7 +360,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
                     "```",
             );
         });
-    }
+    };
     let quote_text = "Testing caret position";
     override_with_quote_text(quote_text);
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
@@ -501,7 +499,7 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
 
 const $textarea = $("textarea#compose-textarea");
 $textarea.get = () => ({
-    setSelectionRange(start, end) {
+    setSelectionRange: (start, end) => {
         $textarea.range = () => ({
             start,
             end,
@@ -509,7 +507,7 @@ $textarea.get = () => ({
             length: end - start,
         });
     },
-    click() {},
+    click: () => {},
 });
 
 // The argument `text_representation` is a string representing the text
@@ -517,7 +515,7 @@ $textarea.get = () => ({
 // selection, and `|` represents the cursor when there is no selection.
 // To work as expected, the string must contain either a `|`, or a `<`
 // followed by a `>` with some text in between.
-function init_textarea_state(text_representation) {
+const init_textarea_state = (text_representation) => {
     $textarea.val = () => text_representation.replaceAll(/[<>|]/g, "");
     $textarea.range = text_representation.includes("|")
         ? () => ({
@@ -535,16 +533,16 @@ function init_textarea_state(text_representation) {
               ),
               length: text_representation.indexOf(">") - text_representation.indexOf("<") - 1,
           });
-}
+};
 
 // Returns a string representing the text in the compose box, of the same
 // style as the argument `text_representation` of the above function.
-function get_textarea_state() {
+const get_textarea_state = () => {
     const before_text = $textarea.val().slice(0, $textarea.range().start);
     const selected_text = $textarea.range().text ? "<" + $textarea.range().text + ">" : "|";
     const after_text = $textarea.val().slice($textarea.range().end);
     return before_text + selected_text + after_text;
-}
+};
 
 run_test("format_text - bold and italic", ({override, override_rewire}) => {
     override_rewire(
@@ -1150,7 +1148,7 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         preventDefault: noop,
     };
 
-    function all_markdown_test(isCtrl, isCmd) {
+    const all_markdown_test = (isCtrl, isCmd) => {
         // Test bold:
         // Mac env = Cmd+b
         // Windows/Linux = Ctrl+b
@@ -1179,13 +1177,13 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "link");
         format_text_type = undefined;
-    }
+    };
 
     // This function cross tests the Cmd/Ctrl + Markdown shortcuts in
     // Mac and Linux/Windows environments.  So in short, this tests
     // that e.g. Cmd+B should be ignored on Linux/Windows and Ctrl+B
     // should be ignored on Mac.
-    function os_specific_markdown_test(isCtrl, isCmd) {
+    const os_specific_markdown_test = (isCtrl, isCmd) => {
         event.ctrlKey = isCtrl;
         event.metaKey = isCmd;
 
@@ -1202,7 +1200,7 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         event.shiftKey = true;
         compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, undefined);
-    }
+    };
 
     // These keyboard shortcuts differ as to what key one should use
     // on MacOS vs. other platforms: Cmd (Mac) vs. Ctrl (non-Mac).

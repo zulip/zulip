@@ -8,11 +8,11 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 
-function update_table_message_recipient_stream_color(
+const update_table_message_recipient_stream_color = (
     table: JQuery,
     stream_name: string,
     recipient_bar_color: string,
-): void {
+): void => {
     const $stream_labels = table.find(".stream_label");
     for (const label of $stream_labels) {
         const $label = $(label);
@@ -22,16 +22,16 @@ function update_table_message_recipient_stream_color(
                 .css({background: recipient_bar_color});
         }
     }
-}
+};
 
-function update_stream_privacy_color(id: string, color: string): void {
+const update_stream_privacy_color = (id: string, color: string): void => {
     $(`.stream-privacy-original-color-${CSS.escape(id)}`).css("color", color);
     color = stream_color.get_stream_privacy_icon_color(color);
     // `modified-color` is only used in recipient bars.
     $(`.stream-privacy-modified-color-${CSS.escape(id)}`).css("color", color);
-}
+};
 
-function update_message_recipient_color(stream_name: string, color: string): void {
+const update_message_recipient_color = (stream_name: string, color: string): void => {
     const recipient_color = stream_color.get_recipient_bar_color(color);
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         update_table_message_recipient_stream_color(
@@ -54,9 +54,9 @@ function update_message_recipient_color(stream_name: string, color: string): voi
         const stream_id = stream_data.get_stream_id(stream_name);
         $(`#inbox-stream-header-${stream_id}`).css("background", recipient_color);
     }
-}
+};
 
-export function update_stream_color(sub: StreamSubscription, color: string): void {
+export const update_stream_color = (sub: StreamSubscription, color: string): void => {
     sub.color = color;
     const stream_id = sub.stream_id.toString();
     // The swatch in the subscription row header.
@@ -82,4 +82,4 @@ export function update_stream_color(sub: StreamSubscription, color: string): voi
     update_message_recipient_color(sub.name, color);
     update_stream_privacy_color(stream_id, color);
     message_view_header.colorize_message_view_header();
-}
+};

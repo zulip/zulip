@@ -2,15 +2,15 @@ import $ from "jquery";
 
 import {user_settings} from "./user_settings";
 
-export function set_layout_width(): void {
+export const set_layout_width = (): void => {
     if (user_settings.fluid_layout_width) {
         $("body").addClass("fluid_layout_width");
     } else {
         $("body").removeClass("fluid_layout_width");
     }
-}
+};
 
-export function handle_overlay_scrollbars(): void {
+export const handle_overlay_scrollbars = (): void => {
     // If right sidebar scrollbar overlaps with browser scrollbar, move the right
     // sidebar scrollbar to the left. Done on fluid screen width and when scrollbars overlap.
     const scrollbar_width = window.innerWidth - document.documentElement.clientWidth;
@@ -25,8 +25,8 @@ export function handle_overlay_scrollbars(): void {
     }
 
     $("body").removeClass("has-overlay-scrollbar");
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     set_layout_width();
-}
+};

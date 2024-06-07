@@ -32,9 +32,9 @@ The code we are testing lives here:
 run_test("basics", () => {
     // Let's create a sample piece of code to test:
 
-    function show_my_form() {
+    const show_my_form = () => {
         $("#my-form").show();
-    }
+    };
 
     // Before we call show_my_form, we can assert that my-form is hidden:
     assert.ok(!$("#my-form").visible());
@@ -71,9 +71,9 @@ run_test("basics", () => {
 
 run_test("finding_related_objects", () => {
     // Let's say you have a function like the following:
-    function update_message_emoji(emoji_src) {
+    const update_message_emoji = (emoji_src) => {
         $("#my-message").find(".emoji").attr("src", emoji_src);
-    }
+    };
 
     // This would explode:
     // update_message_emoji('foo.png');
@@ -116,7 +116,7 @@ run_test("clicks", () => {
 
     const state = {};
 
-    function set_up_click_handlers() {
+    const set_up_click_handlers = () => {
         $("#widget1").on("click", () => {
             state.clicked = true;
         });
@@ -124,7 +124,7 @@ run_test("clicks", () => {
         $(".some-class").on("keydown", () => {
             state.keydown = true;
         });
-    }
+    };
 
     // Setting up the click handlers doesn't change state right away.
     set_up_click_handlers();
@@ -147,7 +147,7 @@ run_test("events", () => {
 
     let value;
 
-    function initialize_handler() {
+    const initialize_handler = () => {
         $("#my-parent").on("click", ".button-red", (e) => {
             value = "red"; // just a dummy side effect
             e.stopPropagation();
@@ -157,7 +157,7 @@ run_test("events", () => {
             value = "blue";
             e.stopPropagation();
         });
-    }
+    };
 
     // Calling initialize_handler() doesn't immediately do much of interest.
     initialize_handler();
@@ -169,7 +169,7 @@ run_test("events", () => {
 
     // Set up a stub event so that stopPropagation doesn't explode on us.
     const stub_event = {
-        stopPropagation() {},
+        stopPropagation: () => {},
     };
 
     // Now call the handler.

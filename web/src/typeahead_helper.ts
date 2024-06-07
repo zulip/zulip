@@ -40,12 +40,12 @@ export type CombinedPillItem =
     | InputPillItem<UserGroupPill>
     | InputPillItem<StreamPill>;
 
-export function build_highlight_regex(query: string): RegExp {
+export const build_highlight_regex = (query: string): RegExp => {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
     return regex;
-}
+};
 
-export function highlight_with_escaping_and_regex(regex: RegExp, item: string): string {
+export const highlight_with_escaping_and_regex = (regex: RegExp, item: string): string => {
     // if regex is empty return entire item highlighted and escaped
     if (regex.source === "()") {
         return "<strong>" + Handlebars.Utils.escapeExpression(item) + "</strong>";
@@ -70,17 +70,15 @@ export function highlight_with_escaping_and_regex(regex: RegExp, item: string): 
     }
 
     return result;
-}
+};
 
-export function make_query_highlighter(query: string): (phrase: string) => string {
+export const make_query_highlighter = (query: string): ((phrase: string) => string) => {
     query = query.toLowerCase();
 
     const regex = build_highlight_regex(query);
 
-    return function (phrase) {
-        return highlight_with_escaping_and_regex(regex, phrase);
-    };
-}
+    return (phrase) => highlight_with_escaping_and_regex(regex, phrase);
+};
 
 type StreamData = {
     invite_only: boolean;
@@ -91,7 +89,7 @@ type StreamData = {
     subscribed: boolean;
 };
 
-export function render_typeahead_item(args: {
+export const render_typeahead_item = (args: {
     primary?: string | undefined;
     is_person?: boolean;
     img_src?: string;
@@ -102,7 +100,7 @@ export function render_typeahead_item(args: {
     stream?: StreamData;
     is_unsubscribed?: boolean;
     emoji_code?: string | undefined;
-}): string {
+}): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
     const has_secondary = args.secondary !== undefined;
@@ -114,9 +112,9 @@ export function render_typeahead_item(args: {
         has_secondary,
         has_pronouns,
     });
-}
+};
 
-export function render_person(person: UserPillData | UserOrMentionPillData): string {
+export const render_person = (person: UserPillData | UserOrMentionPillData): string => {
     if (person.type === "broadcast") {
         return render_typeahead_item({
             primary: person.user.special_item_text,
@@ -148,27 +146,26 @@ export function render_person(person: UserPillData | UserOrMentionPillData): str
     };
 
     return render_typeahead_item(typeahead_arguments);
-}
+};
 
-export function render_user_group(user_group: {name: string; description: string}): string {
-    return render_typeahead_item({
+export const render_user_group = (user_group: {name: string; description: string}): string =>
+    render_typeahead_item({
         primary: user_group.name,
         secondary: user_group.description,
         is_user_group: true,
     });
-}
 
-export function render_person_or_user_group(
+export const render_person_or_user_group = (
     item: UserGroupPillData | UserPillData | UserOrMentionPillData,
-): string {
+): string => {
     if (item.type === "user_group") {
         return render_user_group(item);
     }
 
     return render_person(item);
-}
+};
 
-export function render_stream(stream: StreamData): string {
+export const render_stream = (stream: StreamData): string => {
     let desc = stream.description;
     const short_desc = desc.slice(0, 35);
 
@@ -181,9 +178,9 @@ export function render_stream(stream: StreamData): string {
         stream,
         is_unsubscribed: !stream.subscribed,
     });
-}
+};
 
-export function render_emoji(item: EmojiSuggestion): string {
+export const render_emoji = (item: EmojiSuggestion): string => {
     const args = {
         is_emoji: true,
         primary: item.emoji_name.replaceAll("_", " "),
@@ -199,14 +196,14 @@ export function render_emoji(item: EmojiSuggestion): string {
         ...args,
         emoji_code: item.emoji_code,
     });
-}
+};
 
-export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string): T[] {
+export const sorter = <T>(query: string, objs: T[], get_item: (x: T) => string): T[] => {
     const results = typeahead.triage(query, objs, get_item);
     return [...results.matches, ...results.rest];
-}
+};
 
-export function compare_by_pms(user_a: User, user_b: User): number {
+export const compare_by_pms = (user_a: User, user_b: User): number => {
     const count_a = people.get_recipient_count(user_a);
     const count_b = people.get_recipient_count(user_b);
 
@@ -243,14 +240,14 @@ export function compare_by_pms(user_a: User, user_b: User): number {
         return 0;
     }
     return 1;
-}
+};
 
-export function compare_people_for_relevance(
+export const compare_people_for_relevance = (
     person_a: UserOrMentionPillData | UserPillData,
     person_b: UserOrMentionPillData | UserPillData,
     compare_by_current_conversation?: (user_a: User, user_b: User) => number,
     current_stream_id?: number,
-): number {
+): number => {
     // give preference to "all", "everyone" or "stream"
     if (compose_state.get_message_type() !== "private") {
         if (person_a.type === "broadcast") {
@@ -293,13 +290,13 @@ export function compare_people_for_relevance(
     }
 
     return compare_by_pms(person_a.user, person_b.user);
-}
+};
 
-export function sort_people_for_relevance<UserType extends UserOrMentionPillData | UserPillData>(
+export const sort_people_for_relevance = <UserType extends UserOrMentionPillData | UserPillData>(
     objs: UserType[],
     current_stream_id?: number,
     current_topic?: string,
-): UserType[] {
+): UserType[] => {
     // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
     const current_stream =
         current_stream_id !== undefined ? stream_data.get_sub_by_id(current_stream_id) : undefined;
@@ -325,9 +322,9 @@ export function sort_people_for_relevance<UserType extends UserOrMentionPillData
     }
 
     return objs;
-}
+};
 
-function compare_language_by_popularity(lang_a: string, lang_b: string): number {
+const compare_language_by_popularity = (lang_a: string, lang_b: string): number => {
     const lang_a_data = pygments_data.langs[lang_a];
     const lang_b_data = pygments_data.langs[lang_b];
 
@@ -372,11 +369,11 @@ function compare_language_by_popularity(lang_a: string, lang_b: string): number 
     }
 
     return lang_b_data.priority - lang_a_data.priority;
-}
+};
 
 // This function compares two languages first by their popularity, then if
 // there is a tie on popularity, then compare alphabetically to break the tie.
-export function compare_language(lang_a: string, lang_b: string): number {
+export const compare_language = (lang_a: string, lang_b: string): number => {
     let diff = compare_language_by_popularity(lang_a, lang_b);
 
     // Check to see if there is a tie. If there is, then use alphabetical order
@@ -386,9 +383,9 @@ export function compare_language(lang_a: string, lang_b: string): number {
     }
 
     return diff;
-}
+};
 
-function retain_unique_language_aliases(matches: string[]): string[] {
+const retain_unique_language_aliases = (matches: string[]): string[] => {
     // We make the typeahead a little more nicer but only showing one alias per language.
     // For example if the user searches for prefix "j", then the typeahead list should contain
     // "javascript" only, and not "js" and "javascript".
@@ -404,9 +401,12 @@ function retain_unique_language_aliases(matches: string[]): string[] {
         }
     }
     return unique_aliases;
-}
+};
 
-export function sort_languages(matches: LanguageSuggestion[], query: string): LanguageSuggestion[] {
+export const sort_languages = (
+    matches: LanguageSuggestion[],
+    query: string,
+): LanguageSuggestion[] => {
     const languages = matches.map((object) => object.language);
     const results = typeahead.triage(query, languages, (x) => x, compare_language);
     const unique_languages = retain_unique_language_aliases([...results.matches, ...results.rest]);
@@ -414,9 +414,9 @@ export function sort_languages(matches: LanguageSuggestion[], query: string): La
         language,
         type: "syntax",
     }));
-}
+};
 
-export function sort_recipients<UserType extends UserOrMentionPillData | UserPillData>({
+export const sort_recipients = <UserType extends UserOrMentionPillData | UserPillData>({
     users,
     query,
     current_stream_id,
@@ -430,10 +430,9 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     current_topic?: string | undefined;
     groups?: UserGroupPillData[];
     max_num_items?: number | undefined;
-}): (UserType | UserGroupPillData)[] {
-    function sort_relevance(items: UserType[]): UserType[] {
-        return sort_people_for_relevance(items, current_stream_id, current_topic);
-    }
+}): (UserType | UserGroupPillData)[] => {
+    const sort_relevance = (items: UserType[]): UserType[] =>
+        sort_people_for_relevance(items, current_stream_id, current_topic);
 
     const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
     const users_name_good_matches = [
@@ -512,7 +511,7 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     const recipients: (UserType | UserGroupPillData)[] = [];
     let stream_wildcard_mention_included = false;
 
-    function add_user_recipients(items: UserType[]): void {
+    const add_user_recipients = (items: UserType[]): void => {
         for (const item of items) {
             if (
                 item.type !== "broadcast" ||
@@ -525,13 +524,13 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
                 }
             }
         }
-    }
+    };
 
-    function add_group_recipients(items: UserGroupPillData[]): void {
+    const add_group_recipients = (items: UserGroupPillData[]): void => {
         for (const item of items) {
             recipients.push(item);
         }
-    }
+    };
 
     for (const getter of getters) {
         /*
@@ -557,16 +556,16 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     // FirstName, which we don't want to artificially prioritize over the
     // the lone active user whose name is FirstName LastName.
     return recipients.slice(0, max_num_items);
-}
+};
 
 type SlashCommand = {
     name: string;
 };
 
-function slash_command_comparator(
+const slash_command_comparator = (
     slash_command_a: SlashCommand,
     slash_command_b: SlashCommand,
-): number {
+): number => {
     if (slash_command_a.name < slash_command_b.name) {
         return -1;
     } else if (slash_command_a.name > slash_command_b.name) {
@@ -574,20 +573,20 @@ function slash_command_comparator(
     }
     /* istanbul ignore next */
     return 0;
-}
+};
 
-export function sort_slash_commands(
+export const sort_slash_commands = (
     matches: SlashCommandSuggestion[],
     query: string,
-): SlashCommandSuggestion[] {
+): SlashCommandSuggestion[] => {
     // We will likely want to in the future make this sort the
     // just-`/` commands by something approximating usefulness.
     const results = typeahead.triage(query, matches, (x) => x.name, slash_command_comparator);
 
     return [...results.matches, ...results.rest];
-}
+};
 
-function activity_score(sub: StreamSubscription): number {
+const activity_score = (sub: StreamSubscription): number => {
     // We assign the highest score to the stream being composed
     // to, and the lowest score to unsubscribed streams. For others,
     // we prioritise pinned unmuted streams > unpinned unmuted streams
@@ -611,15 +610,15 @@ function activity_score(sub: StreamSubscription): number {
         stream_score += 1;
     }
     return stream_score;
-}
+};
 
 // Sort streams by ranking them by activity. If activity is equal,
 // as defined bv activity_score, decide based on our weekly traffic
 // stats.
-export function compare_by_activity(
+export const compare_by_activity = (
     stream_a: StreamSubscription,
     stream_b: StreamSubscription,
-): number {
+): number => {
     let diff = activity_score(stream_b) - activity_score(stream_a);
     if (diff !== 0) {
         return diff;
@@ -629,9 +628,9 @@ export function compare_by_activity(
         return diff;
     }
     return util.strcmp(stream_a.name, stream_b.name);
-}
+};
 
-export function sort_streams(matches: StreamPillData[], query: string): StreamPillData[] {
+export const sort_streams = (matches: StreamPillData[], query: string): StreamPillData[] => {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
         query,
@@ -641,12 +640,12 @@ export function sort_streams(matches: StreamPillData[], query: string): StreamPi
     );
 
     return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
-}
+};
 
-export function query_matches_person(
+export const query_matches_person = (
     query: string,
     person: UserPillData | UserOrMentionPillData,
-): boolean {
+): boolean => {
     if (typeahead.query_matches_string_in_order(query, person.user.full_name, " ")) {
         return true;
     }
@@ -658,11 +657,9 @@ export function query_matches_person(
         );
     }
     return false;
-}
+};
 
-export function query_matches_name(
+export const query_matches_name = (
     query: string,
     user_group_or_stream: UserGroupPillData | StreamPillData,
-): boolean {
-    return typeahead.query_matches_string_in_order(query, user_group_or_stream.name, " ");
-}
+): boolean => typeahead.query_matches_string_in_order(query, user_group_or_stream.name, " ");

@@ -101,14 +101,14 @@ run_test("pills", ({override, override_rewire}) => {
         }
     });
 
-    function test_create_item(handler) {
-        (function test_rejection_path() {
+    const test_create_item = (handler) => {
+        (() => {
             const item = handler(othello.email, pills.items());
             assert.ok(get_by_email_called);
             assert.equal(item, undefined);
         })();
 
-        (function test_success_path() {
+        (() => {
             get_by_email_called = false;
             const res = handler(iago.email, pills.items());
             assert.ok(get_by_email_called);
@@ -117,7 +117,7 @@ run_test("pills", ({override, override_rewire}) => {
             assert.equal(res.display_value, iago.full_name);
         })();
 
-        (function test_deactivated_pill() {
+        (() => {
             people.deactivate(iago);
             get_by_email_called = false;
             const res = handler(iago.email, pills.items());
@@ -128,14 +128,14 @@ run_test("pills", ({override, override_rewire}) => {
             assert.ok(res.deactivated);
             people.add_active_user(iago);
         })();
-    }
+    };
 
-    function input_pill_stub(opts) {
+    const input_pill_stub = (opts) => {
         assert.equal(opts.$container, pill_container_stub);
         create_item_handler = opts.create_item_from_text;
         assert.ok(create_item_handler);
         return pills;
-    }
+    };
 
     override(input_pill, "create", input_pill_stub);
 
@@ -149,7 +149,7 @@ run_test("pills", ({override, override_rewire}) => {
 
     let on_pill_create_or_remove_call_count = 0;
     compose_pm_pill.initialize({
-        on_pill_create_or_remove() {
+        on_pill_create_or_remove: () => {
             on_pill_create_or_remove_call_count += 1;
         },
     });

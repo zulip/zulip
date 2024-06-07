@@ -11,7 +11,7 @@ import * as util from "./util";
 
 export let _old_width = $(window).width();
 
-export function handler(): void {
+export const handler = (): void => {
     const new_width = $(window).width();
 
     const mobile = util.is_mobile();
@@ -36,4 +36,4 @@ export function handler(): void {
     if (message_lists.current !== undefined && message_lists.current.selected_id() !== -1) {
         message_viewport.scroll_to_selected();
     }
-}
+};

@@ -35,13 +35,13 @@ type CleanStackFrame = {
     context: NumberedLine[] | undefined;
 };
 
-export function exception_msg(
+export const exception_msg = (
     ex: Error & {
         // Unsupported properties available on some browsers
         fileName?: string;
         lineNumber?: number;
     },
-): string {
+): string => {
     let message = ex.message;
     if (ex.fileName !== undefined) {
         message += " at " + ex.fileName;
@@ -50,9 +50,9 @@ export function exception_msg(
         }
     }
     return message;
-}
+};
 
-export function clean_path(full_path?: string): string | undefined {
+export const clean_path = (full_path?: string): string | undefined => {
     // If the file is local, just show the filename.
     // Otherwise, show the full path starting from node_modules.
     if (full_path === undefined) {
@@ -66,11 +66,11 @@ export function clean_path(full_path?: string): string | undefined {
         return full_path.slice("webpack://".length);
     }
     return full_path;
-}
+};
 
-export function clean_function_name(
+export const clean_function_name = (
     function_name: string | undefined,
-): {scope: string; name: string} | undefined {
+): {scope: string; name: string} | undefined => {
     if (function_name === undefined) {
         return undefined;
     }
@@ -79,13 +79,13 @@ export function clean_function_name(
         scope: function_name.slice(0, idx + 1),
         name: function_name.slice(idx + 1),
     };
-}
+};
 
 const sourceCache: Record<string, string | Promise<string>> = {};
 
 const stack_trace_gps = new StackTraceGPS({sourceCache});
 
-async function get_context(location: StackFrame): Promise<NumberedLine[] | undefined> {
+const get_context = async (location: StackFrame): Promise<NumberedLine[] | undefined> => {
     const {fileName, lineNumber} = location;
     if (fileName === undefined || lineNumber === undefined) {
         return undefined;
@@ -107,9 +107,9 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
         line,
         focus: lo_line_num + i + 1 === lineNumber,
     }));
-}
+};
 
-export async function display_stacktrace(ex: Error): Promise<void> {
+export const display_stacktrace = async (ex: Error): Promise<void> => {
     const errors = [];
     while (true) {
         const stackframes: CleanStackFrame[] = await Promise.all(
@@ -148,4 +148,4 @@ export async function display_stacktrace(ex: Error): Promise<void> {
     const $alert = $("<div>").addClass("stacktrace").html(render_blueslip_stacktrace({errors}));
     $(".alert-box").append($alert);
     $alert.addClass("show");
-}
+};

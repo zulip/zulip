@@ -57,22 +57,22 @@ export let client_is_active = document.hasFocus();
 // server-initiated reload as user activity.
 export let new_user_input = true;
 
-export function set_new_user_input(value: boolean): void {
+export const set_new_user_input = (value: boolean): void => {
     new_user_input = value;
-}
+};
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     client_is_active = false;
-}
+};
 
-export function mark_client_idle(): void {
+export const mark_client_idle = (): void => {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
     // this data is fundamentally not timely.
     client_is_active = false;
-}
+};
 
-export function compute_active_status(): ActivityState {
+export const compute_active_status = (): ActivityState => {
     // The overall algorithm intent for the `status` field is to send
     // `ACTIVE` (aka green circle) if we know the user is at their
     // computer, and IDLE (aka orange circle) if the user might not
@@ -95,9 +95,9 @@ export function compute_active_status(): ActivityState {
         return ActivityState.ACTIVE;
     }
     return ActivityState.IDLE;
-}
+};
 
-export function send_presence_to_server(redraw?: () => void): void {
+export const send_presence_to_server = (redraw?: () => void): void => {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -128,7 +128,7 @@ export function send_presence_to_server(redraw?: () => void): void {
             new_user_input,
             last_update_id: presence.presence_last_update_id,
         },
-        success(response) {
+        success: (response) => {
             const data = post_presence_response_schema.parse(response);
 
             // Update Zephyr mirror activity warning
@@ -163,17 +163,17 @@ export function send_presence_to_server(redraw?: () => void): void {
             }
         },
     });
-}
+};
 
-export function mark_client_active(): void {
+export const mark_client_active = (): void => {
     // exported for testing
     if (!client_is_active) {
         client_is_active = true;
         send_presence_to_server();
     }
-}
+};
 
-export function initialize(): void {
+export const initialize = (): void => {
     $("html").on("mousemove", () => {
         new_user_input = true;
     });
@@ -185,4 +185,4 @@ export function initialize(): void {
         onActive: mark_client_active,
         keepTracking: true,
     });
-}
+};

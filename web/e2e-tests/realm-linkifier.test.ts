@@ -4,7 +4,7 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function test_add_linkifier(page: Page): Promise<void> {
+const test_add_linkifier = async (page: Page): Promise<void> => {
     await page.waitForSelector(".admin-linkifier-form", {visible: true});
     await common.fill_form(page, "form.admin-linkifier-form", {
         pattern: "#(?P<id>[0-9]+)",
@@ -35,18 +35,18 @@ async function test_add_linkifier(page: Page): Promise<void> {
         ),
         "https://trac.example.com/ticket/{id}",
     );
-}
+};
 
-async function test_delete_linkifier(page: Page): Promise<void> {
+const test_delete_linkifier = async (page: Page): Promise<void> => {
     await page.waitForFunction(() => document.querySelectorAll(".linkifier_row").length === 4);
     await page.click(".linkifier_row:nth-last-child(1) .delete");
     await common.wait_for_micromodal_to_open(page);
     await page.click("#confirm_delete_linkifiers_modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
     await page.waitForFunction(() => document.querySelectorAll(".linkifier_row").length === 3);
-}
+};
 
-async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
+const test_add_invalid_linkifier_pattern = async (page: Page): Promise<void> => {
     await page.waitForSelector(".admin-linkifier-form", {visible: true});
     await common.fill_form(page, "form.admin-linkifier-form", {
         pattern: "(foo",
@@ -59,9 +59,9 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "div#admin-linkifier-status"),
         "Failed: Bad regular expression: missing ): (foo",
     );
-}
+};
 
-async function test_edit_linkifier(page: Page): Promise<void> {
+const test_edit_linkifier = async (page: Page): Promise<void> => {
     await page.click(".linkifier_row:nth-last-child(1) .edit");
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
@@ -86,9 +86,9 @@ async function test_edit_linkifier(page: Page): Promise<void> {
         ),
         "https://trac.example.com/commit/{num}",
     );
-}
+};
 
-async function test_edit_invalid_linkifier(page: Page): Promise<void> {
+const test_edit_invalid_linkifier = async (page: Page): Promise<void> => {
     await page.click(".linkifier_row:nth-last-child(1) .edit");
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
@@ -134,9 +134,9 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         ),
         "https://trac.example.com/commit/{num}",
     );
-}
+};
 
-async function linkifier_test(page: Page): Promise<void> {
+const linkifier_test = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await common.manage_organization(page);
     await page.click("li[data-section='linkifier-settings']");
@@ -146,6 +146,6 @@ async function linkifier_test(page: Page): Promise<void> {
     await test_edit_invalid_linkifier(page);
     await test_add_invalid_linkifier_pattern(page);
     await test_delete_linkifier(page);
-}
+};
 
 common.run_test(linkifier_test);

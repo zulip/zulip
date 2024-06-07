@@ -2,7 +2,7 @@ import type {ElementHandle, Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function test_subscription_button(page: Page): Promise<void> {
+const test_subscription_button = async (page: Page): Promise<void> => {
     const all_stream_selector = "[data-tab-key='all-streams']";
     await page.waitForSelector(all_stream_selector, {visible: true});
     await page.click(all_stream_selector);
@@ -11,23 +11,23 @@ async function test_subscription_button(page: Page): Promise<void> {
     const subscribed_selector = `${button_selector}.checked`;
     const unsubscribed_selector = `${button_selector}:not(.checked)`;
 
-    async function subscribed(): Promise<ElementHandle | null> {
+    const subscribed = async (): Promise<ElementHandle | null> => {
         await page.waitForSelector(
             `xpath///*[${common.has_class_x("stream_settings_header")}]//*[${common.has_class_x(
                 "sub_unsub_button",
             )} and normalize-space()="Unsubscribe"]`,
         );
         return await page.waitForSelector(subscribed_selector, {visible: true});
-    }
+    };
 
-    async function unsubscribed(): Promise<ElementHandle | null> {
+    const unsubscribed = async (): Promise<ElementHandle | null> => {
         await page.waitForSelector(
             `xpath///*[${common.has_class_x("stream_settings_header")}]//*[${common.has_class_x(
                 "sub_unsub_button",
             )} and normalize-space()="Subscribe"]`,
         );
         return await page.waitForSelector(unsubscribed_selector, {visible: true});
-    }
+    };
 
     // Make sure that Venice is even in our list of streams.
     await page.waitForSelector(stream_selector, {visible: true});
@@ -44,12 +44,12 @@ async function test_subscription_button(page: Page): Promise<void> {
     await (await subscribed())!.click();
     await (await unsubscribed())!.click();
     await subscribed();
-}
+};
 
-async function subscriptions_tests(page: Page): Promise<void> {
+const subscriptions_tests = async (page: Page): Promise<void> => {
     await common.log_in(page);
     await common.open_streams_modal(page);
     await test_subscription_button(page);
-}
+};
 
 common.run_test(subscriptions_tests);

@@ -142,18 +142,18 @@ import * as tippy from "tippy.js";
 
 import {get_string_diff} from "./util";
 
-function get_pseudo_keycode(
+const get_pseudo_keycode = (
     event: JQuery.KeyDownEvent | JQuery.KeyUpEvent | JQuery.KeyPressEvent,
-): number {
+): number => {
     const isComposing = event.originalEvent?.isComposing ?? false;
     /* We treat IME compose enter keypresses as a separate -13 key. */
     if (event.keyCode === 13 && isComposing) {
         return -13;
     }
     return event.keyCode;
-}
+};
 
-export function defaultSorter(items: string[], query: string): string[] {
+export const defaultSorter = (items: string[], query: string): string[] => {
     const beginswith = [];
     const caseSensitive = [];
     const caseInsensitive = [];
@@ -170,7 +170,7 @@ export function defaultSorter(items: string[], query: string): string[] {
     }
 
     return [...beginswith, ...caseSensitive, ...caseInsensitive];
-}
+};
 
 /* TYPEAHEAD PUBLIC CLASS DEFINITION
  * ================================= */

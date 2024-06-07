@@ -51,16 +51,16 @@ const topic_senders = new Map<number, FoldDict<Map<number, IdTracker>>>();
 // pm_senders[user_ids_string][user_id] = IdTracker
 const pm_senders = new Map<string, Map<number, IdTracker>>();
 
-export function clear_for_testing(): void {
+export const clear_for_testing = (): void => {
     stream_senders.clear();
     topic_senders.clear();
-}
+};
 
-function max_id_for_stream_topic_sender(opts: {
+const max_id_for_stream_topic_sender = (opts: {
     stream_id: number;
     topic: string;
     sender_id: number;
-}): number {
+}): number => {
     const {stream_id, topic, sender_id} = opts;
     const topic_dict = topic_senders.get(stream_id);
     if (!topic_dict) {
@@ -72,9 +72,9 @@ function max_id_for_stream_topic_sender(opts: {
     }
     const id_tracker = sender_dict.get(sender_id);
     return id_tracker ? id_tracker.max_id() : -1;
-}
+};
 
-function max_id_for_stream_sender(opts: {stream_id: number; sender_id: number}): number {
+const max_id_for_stream_sender = (opts: {stream_id: number; sender_id: number}): number => {
     const {stream_id, sender_id} = opts;
     const sender_dict = stream_senders.get(stream_id);
     if (!sender_dict) {
@@ -82,27 +82,27 @@ function max_id_for_stream_sender(opts: {stream_id: number; sender_id: number}):
     }
     const id_tracker = sender_dict.get(sender_id);
     return id_tracker ? id_tracker.max_id() : -1;
-}
+};
 
-function add_stream_message(opts: {
+const add_stream_message = (opts: {
     stream_id: number;
     sender_id: number;
     message_id: number;
-}): void {
+}): void => {
     const {stream_id, sender_id, message_id} = opts;
     const sender_dict = stream_senders.get(stream_id) ?? new Map<number, IdTracker>();
     const id_tracker = sender_dict.get(sender_id) ?? new IdTracker();
     stream_senders.set(stream_id, sender_dict);
     sender_dict.set(sender_id, id_tracker);
     id_tracker.add(message_id);
-}
+};
 
-function add_topic_message(opts: {
+const add_topic_message = (opts: {
     stream_id: number;
     topic: string;
     sender_id: number;
     message_id: number;
-}): void {
+}): void => {
     const {stream_id, topic, sender_id, message_id} = opts;
     const topic_dict = topic_senders.get(stream_id) ?? new FoldDict();
     const sender_dict = topic_dict.get(topic) ?? new Map<number, IdTracker>();
@@ -111,14 +111,14 @@ function add_topic_message(opts: {
     topic_dict.set(topic, sender_dict);
     sender_dict.set(sender_id, id_tracker);
     id_tracker.add(message_id);
-}
+};
 
-export function process_stream_message(message: {
+export const process_stream_message = (message: {
     stream_id: number;
     topic: string;
     sender_id: number;
     id: number;
-}): void {
+}): void => {
     const stream_id = message.stream_id;
     const topic = message.topic;
     const sender_id = message.sender_id;
@@ -126,14 +126,14 @@ export function process_stream_message(message: {
 
     add_stream_message({stream_id, sender_id, message_id});
     add_topic_message({stream_id, topic, sender_id, message_id});
-}
+};
 
-function remove_topic_message(opts: {
+const remove_topic_message = (opts: {
     stream_id: number;
     topic: string;
     sender_id: number;
     message_id: number;
-}): void {
+}): void => {
     const {stream_id, topic, sender_id, message_id} = opts;
     const topic_dict = topic_senders.get(stream_id);
     if (!topic_dict) {
@@ -160,15 +160,15 @@ function remove_topic_message(opts: {
     if (sender_dict.size === 0) {
         topic_dict.delete(topic);
     }
-}
+};
 
-export function process_topic_edit(opts: {
+export const process_topic_edit = (opts: {
     message_ids: number[];
     old_stream_id: number;
     old_topic: string;
     new_stream_id: number;
     new_topic: string;
-}): void {
+}): void => {
     const {message_ids, old_stream_id, old_topic, new_stream_id, new_topic} = opts;
     // Note that we don't delete anything from stream_senders here.
     // Our view is that it's probably better to not do so; users who
@@ -187,9 +187,9 @@ export function process_topic_edit(opts: {
 
         add_stream_message({stream_id: new_stream_id, sender_id, message_id});
     }
-}
+};
 
-export function update_topics_of_deleted_message_ids(message_ids: number[]): void {
+export const update_topics_of_deleted_message_ids = (message_ids: number[]): void => {
     for (const message_id of message_ids) {
         const message = message_store.get(message_id);
         if (!message || message.type !== "stream") {
@@ -202,14 +202,14 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
 
         remove_topic_message({stream_id, topic, sender_id, message_id});
     }
-}
+};
 
-export function compare_by_recency(
+export const compare_by_recency = (
     user_a: User,
     user_b: User,
     stream_id: number,
     topic: string,
-): number {
+): number => {
     let a_message_id;
     let b_message_id;
 
@@ -224,9 +224,9 @@ export function compare_by_recency(
     b_message_id = max_id_for_stream_sender({stream_id, sender_id: user_b.user_id});
 
     return b_message_id - a_message_id;
-}
+};
 
-export function get_topic_recent_senders(stream_id: number, topic: string): number[] {
+export const get_topic_recent_senders = (stream_id: number, topic: string): number[] => {
     const topic_dict = topic_senders.get(stream_id);
     if (topic_dict === undefined) {
         return [];
@@ -237,11 +237,11 @@ export function get_topic_recent_senders(stream_id: number, topic: string): numb
         return [];
     }
 
-    function by_max_message_id(item1: [number, IdTracker], item2: [number, IdTracker]): number {
+    const by_max_message_id = (item1: [number, IdTracker], item2: [number, IdTracker]): number => {
         const list1 = item1[1];
         const list2 = item2[1];
         return list2.max_id() - list1.max_id();
-    }
+    };
 
     const sorted_senders = [...sender_dict.entries()].sort(by_max_message_id);
     const recent_senders = [];
@@ -249,23 +249,23 @@ export function get_topic_recent_senders(stream_id: number, topic: string): numb
         recent_senders.push(item[0]);
     }
     return recent_senders;
-}
+};
 
-export function process_private_message(opts: {
+export const process_private_message = (opts: {
     to_user_ids: string;
     sender_id: number;
     id: number;
-}): void {
+}): void => {
     const {to_user_ids, sender_id, id} = opts;
     const sender_dict = pm_senders.get(to_user_ids) ?? new Map<number, IdTracker>();
     const id_tracker = sender_dict.get(sender_id) ?? new IdTracker();
     pm_senders.set(to_user_ids, sender_dict);
     sender_dict.set(sender_id, id_tracker);
     id_tracker.add(id);
-}
+};
 
 type DirectMessageSendersInfo = {participants: number[]; non_participants: number[]};
-export function get_pm_recent_senders(user_ids_string: string): DirectMessageSendersInfo {
+export const get_pm_recent_senders = (user_ids_string: string): DirectMessageSendersInfo => {
     const user_ids = [...people.get_participants_from_user_ids_string(user_ids_string)];
     const sender_dict = pm_senders.get(user_ids_string);
     const pm_senders_info: DirectMessageSendersInfo = {participants: [], non_participants: []};
@@ -286,16 +286,16 @@ export function get_pm_recent_senders(user_ids_string: string): DirectMessageSen
         return max_id2 - max_id1;
     });
     return pm_senders_info;
-}
+};
 
-export function get_topic_message_ids_for_sender(
+export const get_topic_message_ids_for_sender = (
     stream_id: number,
     topic: string,
     sender_id: number,
-): Set<number> {
+): Set<number> => {
     const id_tracker = topic_senders?.get(stream_id)?.get(topic)?.get(sender_id);
     if (id_tracker === undefined) {
         return new Set();
     }
     return id_tracker.ids;
-}
+};
