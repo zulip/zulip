@@ -220,7 +220,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     checked_endpoints: Set[str] = set()
     pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
-        "/users/me/presence",
         # These are a priority to document but don't match our normal URL schemes
         # and thus may be complicated to document with our current tooling.
         # (No /api/v1/ or /json prefix).

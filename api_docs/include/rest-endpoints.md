@@ -71,6 +71,7 @@
 * [Get user presence](/api/get-user-presence)
 * [Get a user's status](/api/get-user-status)
 * [Get presence of all users](/api/get-presence)
+* [Update your presence](/api/update-presence)
 * [Get attachments](/api/get-attachments)
 * [Delete an attachment](/api/remove-attachment)
 * [Update settings](/api/update-settings)
