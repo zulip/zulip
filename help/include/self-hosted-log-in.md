@@ -3,10 +3,10 @@
 
 1. Select <i class="zulip-icon zulip-icon-rocket"></i> **Plan management**.
 
-1. *(first-time log in)* Enter the e-mail address you want to use for plan
+1. *(first-time log in)* Enter the email address you want to use for plan
    management, and click **Continue**.
 
-1. *(first-time log in)* In your e-mail account, open the e-mail you received
+1. *(first-time log in)* In your email account, open the email you received
    (Subject: Confirm email for Zulip plan management), and click **Confirm and
    log in**.
 
