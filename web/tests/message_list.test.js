@@ -27,14 +27,14 @@ const narrow_state = mock_esm("../src/narrow_state");
 const stream_data = mock_esm("../src/stream_data");
 
 const {MessageList} = zrequire("message_list");
-function MessageListView() {
-    return {
-        maybe_rerender: noop,
-        append: noop,
-        prepend: noop,
-        clear_rendering_state: noop,
-        is_current_message_list: () => true,
-    };
+class MessageListView {
+    maybe_rerender() {}
+    append() {}
+    prepend() {}
+    clear_rendering_state() {}
+    is_current_message_list() {
+        return true;
+    }
 }
 mock_esm("../src/message_list_view", {
     MessageListView,

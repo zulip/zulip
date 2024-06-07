@@ -18,19 +18,19 @@ const compose_state = zrequire("compose_state");
 const noop = function () {};
 
 // Define MessageList stuff
-function MessageListView() {
-    return {
-        maybe_rerender: noop,
-        append: noop,
-        prepend: noop,
-        clear_rendering_state: noop,
-        get_row: () => ({
+class MessageListView {
+    maybe_rerender() {}
+    append() {}
+    prepend() {}
+    clear_rendering_state() {}
+    get_row() {
+        return {
             find: () => ({
                 is: () => false,
             }),
-        }),
-        message_containers: new Map(),
-    };
+        };
+    }
+    message_containers = new Map();
 }
 mock_esm("../src/message_list_view", {
     MessageListView,
