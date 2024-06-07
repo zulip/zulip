@@ -128,6 +128,7 @@
     "eslint-plugin-formatjs": "^4.0.2",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-no-jquery": "^2.7.0",
+    "eslint-plugin-prefer-arrow-functions": "^3.3.2",
     "eslint-plugin-unicorn": "^53.0.0",
     "jsdom": "^24.0.0",
     "minimist": "^1.2.6",
