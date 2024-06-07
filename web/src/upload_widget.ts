@@ -32,6 +32,11 @@ export type UploadFunction = (
     icon: boolean,
 ) => void;
 
+export type CropperOptions = {
+    aspectRatio: number;
+    cropSquare: boolean;
+};
+
 function upload_direct_widget(
     file: File,
     upload_function: UploadFunction,
@@ -160,6 +165,7 @@ export function build_widget(
     $upload_button: JQuery,
     $save_button: JQuery,
     $scale_to_fit_button: JQuery,
+    cropper_options: CropperOptions,
     $preview_text?: JQuery,
     $preview_image?: JQuery,
     $other_elements_to_hide?: JQuery,
@@ -167,10 +173,9 @@ export function build_widget(
 ): UploadWidget {
     let scaled = false;
     function accept(file: File): void {
-        // this is needed in case we uploaded a logo before
         if (image_editor_options.cropperOptions && image_editor_options.actions) {
-            image_editor_options.cropperOptions.aspectRatio = 1;
-            image_editor_options.actions.cropSquare = true;
+            image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
+            image_editor_options.actions.cropSquare = cropper_options.cropSquare;
         }
         $file_name_field.text(file.name);
         if ($preview_text && $preview_image) {
@@ -352,6 +357,8 @@ export function build_direct_upload_widget(
     max_file_upload_size: number,
     // New profile picture or New organization logo or New organization icon
     heading: string,
+    // Cropper options passed by the caller
+    cropper_options: CropperOptions,
 ): void {
     let scaled = false;
     function submit(): void {
@@ -379,15 +386,8 @@ export function build_direct_upload_widget(
         });
 
         if (image_editor_options.cropperOptions && image_editor_options.actions) {
-            if (heading === $t({defaultMessage: "New organization logo"})) {
-                // rectangle shape for organization logo
-                image_editor_options.cropperOptions.aspectRatio = 4;
-                image_editor_options.actions.cropSquare = false;
-            } else {
-                // this is needed in case we upload a logo first and then a non logo
-                image_editor_options.cropperOptions.aspectRatio = 1;
-                image_editor_options.actions.cropSquare = true;
-            }
+            image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
+            image_editor_options.actions.cropSquare = cropper_options.cropSquare;
         }
 
         uppy = new Uppy({

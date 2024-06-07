@@ -23,6 +23,7 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
+import type {CropperOptions} from "./upload_widget";
 import * as util from "./util";
 
 const meta = {
@@ -185,6 +186,10 @@ export function add_custom_emoji_post_render(): void {
     const $other_elements_to_hide = $(
         "#add-custom-emoji-modal .dialog_submit_button, #add-custom-emoji-modal .dialog_exit_button, .emoji_name_input, .modal__footer",
     );
+    const cropper_options: CropperOptions = {
+        aspectRatio: 1,
+        cropSquare: true,
+    };
 
     $preview_image.hide();
 
@@ -196,6 +201,7 @@ export function add_custom_emoji_post_render(): void {
         $upload_button,
         $save_button,
         $scale_to_fit_button,
+        cropper_options,
         $preview_text,
         $preview_image,
         $other_elements_to_hide,

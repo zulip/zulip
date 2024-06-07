@@ -4,7 +4,7 @@ import * as channel from "./channel";
 import {$t} from "./i18n";
 import {current_user, realm} from "./state_data";
 import * as upload_widget from "./upload_widget";
-import type {UploadFunction} from "./upload_widget";
+import type {CropperOptions, UploadFunction} from "./upload_widget";
 
 export function build_realm_icon_widget(upload_function: UploadFunction): void {
     const get_file_input = function (): JQuery<HTMLInputElement> {
@@ -27,6 +27,11 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
         });
     });
 
+    const cropper_options: CropperOptions = {
+        aspectRatio: 1,
+        cropSquare: true,
+    };
+
     upload_widget.build_direct_upload_widget(
         get_file_input,
         $("#realm-icon-upload-widget .image_file_input_error").expectOne(),
@@ -34,6 +39,7 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
         upload_function,
         realm.max_icon_file_size_mib,
         $t({defaultMessage: "New organization icon"}),
+        cropper_options,
     );
 }
 

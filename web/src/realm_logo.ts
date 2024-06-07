@@ -6,7 +6,7 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as ui_util from "./ui_util";
 import * as upload_widget from "./upload_widget";
-import type {UploadFunction} from "./upload_widget";
+import type {CropperOptions, UploadFunction} from "./upload_widget";
 
 export function build_realm_logo_widget(upload_function: UploadFunction, is_night: boolean): void {
     let logo_section_id = "#realm-day-logo-upload-widget";
@@ -46,6 +46,11 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
         });
     });
 
+    const cropper_options: CropperOptions = {
+        aspectRatio: 4,
+        cropSquare: false,
+    };
+
     upload_widget.build_direct_upload_widget(
         get_file_input,
         $file_input_error_elem.expectOne(),
@@ -53,6 +58,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
         upload_function,
         realm.max_logo_file_size_mib,
         $t({defaultMessage: "New organization logo"}),
+        cropper_options,
     );
 }
 
