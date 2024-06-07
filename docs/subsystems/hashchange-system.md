@@ -12,7 +12,7 @@ Some examples are:
   (subscription etc.)
 - `/#channels/11/announce`: Channels overlay with channel ID 11 (called
   "announce") selected.
-- `/#narrow/stream/42-android/topic/fun`: Message feed showing channel
+- `/#narrow/channel/42-android/topic/fun`: Message feed showing channel
   "android" and topic "fun". (The `42` represents the id of the
   channel.)
 
