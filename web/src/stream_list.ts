@@ -874,11 +874,11 @@ export function set_event_handlers({
         assert(scroll_position !== undefined);
         assert(pm_list_height !== undefined);
         if (scroll_position > pm_list_height) {
-            $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
-            $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
+            $("#toggle-direct-messages-section-icon").addClass("fa-caret-right");
+            $("#toggle-direct-messages-section-icon").removeClass("fa-caret-down");
         } else {
-            $("#toggle_private_messages_section_icon").addClass("fa-caret-down");
-            $("#toggle_private_messages_section_icon").removeClass("fa-caret-right");
+            $("#toggle-direct-messages-section-icon").addClass("fa-caret-down");
+            $("#toggle-direct-messages-section-icon").removeClass("fa-caret-right");
         }
     }
 
