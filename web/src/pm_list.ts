@@ -23,9 +23,7 @@ let private_messages_collapsed = false;
 let zoomed = false;
 
 function get_private_messages_section_header(): JQuery {
-    return $(
-        ".direct-messages-container #direct-messages-section #private_messages_section_header",
-    );
+    return $(".direct-messages-container #direct-messages-section #direct-messages-section-header");
 }
 
 export function set_count(count: number): void {
@@ -130,7 +128,7 @@ function unhighlight_all_private_messages_view(): void {
 
 function scroll_pm_into_view($target_li: JQuery): void {
     const $container = $("#left_sidebar_scroll_container");
-    const pm_header_height = $("#private_messages_section_header").outerHeight();
+    const pm_header_height = $("#direct-messages-section-header").outerHeight();
     if ($target_li.length > 0) {
         scroll_util.scroll_element_into_container($target_li, $container, pm_header_height);
     }

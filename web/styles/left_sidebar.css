@@ -219,7 +219,7 @@ li.show-more-topics {
        in the DM section. */
     margin-right: 12px;
 
-    #private_messages_section_header {
+    #direct-messages-section-header {
         grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
         grid-template-rows: var(--line-height-sidebar-row-prominent);
         /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
@@ -748,7 +748,7 @@ li.top_left_scheduled_messages {
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
 }
 
-#private_messages_section_header,
+#direct-messages-section-header,
 #streams_header,
 #topics_header {
     display: grid;
