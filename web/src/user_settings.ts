@@ -37,6 +37,7 @@ export type UserSettings = (StreamNotificationSettings &
     emojiset: string;
     enable_digest_emails: boolean;
     enable_drafts_synchronization: boolean;
+    enable_dm_reaction_notifications: boolean;
     enable_login_emails: boolean;
     enable_marketing_emails: boolean;
     enable_online_push_notifications: boolean;
@@ -53,6 +54,7 @@ export type UserSettings = (StreamNotificationSettings &
     send_read_receipts: boolean;
     send_stream_typing_notifications: boolean;
     starred_message_counts: boolean;
+    streams_reaction_notification: number;
     timezone: string;
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;

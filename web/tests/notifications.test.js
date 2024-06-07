@@ -14,6 +14,8 @@ const stream_data = zrequire("stream_data");
 
 const desktop_notifications = zrequire("desktop_notifications");
 const message_notifications = zrequire("message_notifications");
+const reaction_notifications = zrequire("reaction_notifications");
+const settings_config = zrequire("settings_config");
 
 // Not muted streams
 const general = {
@@ -35,6 +37,13 @@ const muted = {
 
 stream_data.add_sub(general);
 stream_data.add_sub(muted);
+
+user_topics.update_user_topics(
+    general.stream_id,
+    general.name,
+    "Unmuted topic",
+    user_topics.all_visibility_policies.UNMUTED,
+);
 
 user_topics.update_user_topics(
     general.stream_id,
@@ -338,6 +347,190 @@ test("message_is_notifiable", () => {
     assert.equal(message_notifications.should_send_desktop_notification(message), false);
     assert.equal(message_notifications.should_send_audible_notification(message), false);
     assert.equal(message_notifications.message_is_notifiable(message), true);
+});
+
+test("reaction_is_notifiable", () => {
+    // Case 1: Notify me about reactions to my DMs
+    user_settings.enable_dm_reaction_notifications = true;
+    let message = {
+        id: 1,
+        type: "private",
+        content: "React to my DM",
+        sender_id: "1",
+        to_user_ids: "31",
+        sent_by_me: true,
+        locally_echoed: true,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
+
+    // Case 2: Notify me about reactions to my message in topics I'm following
+    user_settings.streams_reaction_notification =
+        settings_config.streams_reaction_notification_values.followed_topics.code;
+    message = {
+        id: 2,
+        content: "React to my followed topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+        sent_by_me: true,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
+
+    // Case 3: Notify me about reactions to my message in topics I haven't muted
+    user_settings.streams_reaction_notification =
+        settings_config.streams_reaction_notification_values.unmuted_topics.code;
+    user_settings.enable_stream_desktop_notifications = true;
+    user_settings.enable_stream_audible_notifications = true;
+    message = {
+        id: 3,
+        content: "React to my unmuted topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "Unmuted topic",
+        sent_by_me: true,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
+
+    // Case 4: If reactions are in DMs, but notification setting is disabled
+    user_settings.enable_dm_reaction_notifications = false;
+    user_settings.streams_reaction_notification =
+        settings_config.streams_reaction_notification_values.never.code;
+
+    message = {
+        id: 4,
+        type: "private",
+        content: "React to my DM",
+        sender_id: "1",
+        to_user_ids: "31",
+        sent_by_me: true,
+        locally_echoed: true,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+
+    // Case 5: If reactions are in followed topics, but notification setting is disabled
+    message = {
+        id: 5,
+        content: "React to my followed topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+        sent_by_me: true,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+
+    // Case 6: If reactions are in unmuted topics, but notification setting is disabled
+    message = {
+        id: 6,
+        content: "React to my unmuted topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "unmuted topic",
+        sent_by_me: false,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+
+    // Case 7: If the reaction is made by the current user, do not notify
+    // Reset state
+    user_settings.enable_dm_reaction_notifications = true;
+    user_settings.streams_reaction_notification =
+        settings_config.streams_reaction_notification_values.always.code;
+
+    message = {
+        id: 7,
+        type: "private",
+        content: "React to my DM",
+        sender_id: "1",
+        to_user_ids: "31",
+        sent_by_me: true,
+        locally_echoed: true,
+        notification_sent: false,
+        current_user_reacted: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+
+    message = {
+        id: 8,
+        content: "React to my followed topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+        sent_by_me: true,
+        notification_sent: false,
+        current_user_reacted: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+
+    message = {
+        id: 9,
+        content: "React to my unmuted topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "unmuted topic",
+        sent_by_me: false,
+        notification_sent: false,
+        current_user_reacted: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+
+    // Case 8: Notify me about reactions to my message in topics, when notification setting are set to always
+    // Reset state
+    user_settings.enable_dm_reaction_notifications = true;
+    user_settings.streams_reaction_notification =
+        settings_config.streams_reaction_notification_values.always.code;
+
+    message = {
+        id: 7,
+        type: "private",
+        content: "React to my DM",
+        sender_id: "1",
+        to_user_ids: "31",
+        sent_by_me: true,
+        locally_echoed: true,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
+
+    message = {
+        id: 8,
+        content: "React to my followed topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+        sent_by_me: true,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
+
+    message = {
+        id: 3,
+        content: "React to my unmuted topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "whatever",
+        sent_by_me: true,
+        notification_sent: false,
+        current_user_reacted: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
 });
 
 test("basic_notifications", () => {
