@@ -781,7 +781,7 @@ export function initialize() {
         "click",
         ".direct-messages-container.zoom-out #direct-messages-section-header",
         (e) => {
-            if ($(e.target).closest("#show_all_private_messages").length === 1) {
+            if ($(e.target).closest("#show-all-direct-messages").length === 1) {
                 // Let the browser handle the "direct message feed" widget.
                 return;
             }
