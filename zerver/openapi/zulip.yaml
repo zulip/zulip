@@ -12552,6 +12552,44 @@ paths:
                         description: |
                           A typical failed JSON response for when the invitation link has already
                           been revoked:
+  /invites/{invite_id}/resend:
+    post:
+      operationId: resend-email-invite
+      summary: Resend an email invitation
+      tags: ["invites"]
+      description: |
+        Resend an [email invitation](/help/invite-new-users#send-email-invitations).
+
+        A user can only resend [invitations that they can
+        manage](/help/invite-new-users#manage-pending-invitations).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the email invitation to be resent.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for an invalid email invitation ID:
   /register:
     post:
       operationId: register-queue
