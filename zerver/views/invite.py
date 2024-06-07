@@ -181,10 +181,10 @@ def revoke_multiuse_invite(
 @require_member_or_admin
 @has_request_variables
 def resend_user_invite_email(
-    request: HttpRequest, user_profile: UserProfile, prereg_id: int
+    request: HttpRequest, user_profile: UserProfile, invite_id: int
 ) -> HttpResponse:
     try:
-        prereg_user = PreregistrationUser.objects.get(id=prereg_id)
+        prereg_user = PreregistrationUser.objects.get(id=invite_id)
     except PreregistrationUser.DoesNotExist:
         raise JsonableError(_("No such invitation"))
 
