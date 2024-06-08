@@ -125,8 +125,13 @@ export function is_local_mix(message: Message): boolean {
     }
 
     const current_filter = narrow_state.filter();
+    const is_conversation_view =
+        current_filter === undefined
+            ? false
+            : current_filter.is_conversation_view() ||
+              current_filter.is_conversation_view_with_near();
     const $row = message_lists.current.get_row(message.id);
-    if (current_filter && current_filter.is_conversation_view() && $row.length > 0) {
+    if (is_conversation_view && $row.length > 0) {
         // If our message is in the current conversation view, we do
         // not have a mix, so we are happy.
         return false;
