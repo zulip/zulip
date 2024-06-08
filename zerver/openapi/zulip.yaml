@@ -10182,6 +10182,7 @@ paths:
                     - 0
                     - 1
                     - 2
+                    - 3
                   example: 1
               required:
                 - stream_id
