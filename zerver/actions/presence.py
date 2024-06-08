@@ -1,3 +1,4 @@
+import logging
 import time
 from datetime import datetime, timedelta
 
@@ -17,6 +18,8 @@ from zerver.models import Client, UserPresence, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event
+
+logger = logging.getLogger(__name__)
 
 
 def send_presence_changed(
@@ -219,20 +222,15 @@ def do_update_user_presence(
             # There's a small possibility of a race where a different process may have
             # already created a row for this user. Given the extremely close timing
             # of these events, there's no clear reason to prefer one over the other,
-            # so we just go with the most direct approach of DO UPDATE, so that the
-            # last event emitted (the one coming from our process, since we're the slower one)
-            # matches the created presence state.
-            # TODO: Might be worth changing this to DO NOTHING instead with a bit of extra logic
-            # to skip emitting an event in such a scenario.
+            # so we choose the simplest option of DO NOTHING here and let the other
+            # concurrent transaction win.
+            # This also allows us to avoid sending a spurious presence update event,
+            # by checking if the row was actually created.
             query += sql.SQL("""
                 INSERT INTO zerver_userpresence (user_profile_id, last_active_time, last_connected_time, realm_id, last_update_id)
                 VALUES ({user_profile_id}, {last_active_time}, {last_connected_time}, {realm_id}, (SELECT last_update_id FROM new_last_update_id))
-                ON CONFLICT (user_profile_id) DO UPDATE SET
-                last_active_time = EXCLUDED.last_active_time,
-                last_connected_time = EXCLUDED.last_connected_time,
-                realm_id = EXCLUDED.realm_id,
-                last_update_id = EXCLUDED.last_update_id;
-            """).format(
+                ON CONFLICT (user_profile_id) DO NOTHING
+                """).format(
                 user_profile_id=sql.Literal(user_profile.id),
                 last_active_time=sql.Literal(presence.last_active_time),
                 last_connected_time=sql.Literal(presence.last_connected_time),
@@ -256,6 +254,16 @@ def do_update_user_presence(
 
         with connection.cursor() as cursor:
             cursor.execute(query)
+            if creating:
+                # Check if the row was actually created or if we
+                # hit the ON CONFLICT DO NOTHING case.
+                actually_created = cursor.rowcount > 0
+
+    if creating and not actually_created:
+        # If we ended up doing nothing due to something else creating the row
+        # in the meantime, then we shouldn't send an event here.
+        logger.info("UserPresence row already created for %s, returning.", user_profile.id)
+        return
 
     if force_send_update or (
         not user_profile.realm.presence_disabled and (creating or became_online)
