@@ -9100,7 +9100,7 @@ paths:
                           `presences`. This allows the client to have an identifier number
                           up to which it knows it has obtained all the presence data.
 
-                          The client should then pass this value when next queries this
+                          The client should then pass this value when it next queries this
                           endpoint, in order to only receive newer presence data to avoid
                           redundant fetching of already known information.
 
