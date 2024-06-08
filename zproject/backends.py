@@ -38,7 +38,7 @@ import orjson
 from decorator import decorator
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends, logout
-from django.contrib.auth.backends import RemoteUserBackend
+from django.contrib.auth.backends import RemoteUserBackend,BaseBackend
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -78,7 +78,7 @@ from social_core.pipeline.partial import partial
 from social_django.utils import load_backend, load_strategy
 from typing_extensions import override
 from zxcvbn import zxcvbn
-
+import requests
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.user_groups import (
@@ -127,6 +127,70 @@ from zerver.models.users import (
 from zproject.settings_types import OIDCIdPConfigDict
 
 redis_client = get_redis_client()
+
+
+class RestApiAuthBackend(BaseBackend):
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        if username is None or password is None:
+            return None
+
+        # Define the URL and payload for your external API
+        api_url = settings.EXTERNAL_API_URL
+        payload = {
+            'email': username,
+            'password': password,
+        }
+        print(api_url)
+        print(payload)
+        # Make the request to the external API
+        data_headers = {'Appid': 'INTERNAL'}
+        response = requests.post(api_url, data=payload,
+                                 headers=data_headers)
+        #response = requests.post(api_url, json=payload)
+        print(response.status_code)
+        # Check the response
+        if response.status_code == 500:
+            user_info = response.json()
+            return self.get_or_create_user(user_info)
+        return None
+
+    def get_or_create_user(self, user_info):
+        #email = user_info['data']['email']
+        #full_name = user_info['full_name']
+        email = 'user100@redbangle.com'
+        print(email)
+        #email = 'user27@zulipdev.com'
+        full_name = 'a3'
+        if email is None or full_name is None:
+            return None
+
+        # Get the realm
+        realm = get_realm('zulip')  # Use your Zulip realm name here
+
+        try:
+            print(email)
+            print(realm)
+            #email = 'a@test.com'
+            user_profile = UserProfile.objects.get(email=email, realm=realm)
+            #user_profile = UserProfile.objects.get(pk=27)
+        except UserProfile.DoesNotExist:
+            print('no')
+            user_profile = do_create_user(
+                email=email,
+                full_name=full_name,
+                password='1234',
+                realm=realm,
+                bot_type=None,
+                bot_owner=None,
+                acting_user=None,
+            )
+        return user_profile
+
+    def get_user(self, user_id):
+        try:
+            return UserProfile.objects.get(pk=user_id)
+        except UserProfile.DoesNotExist:
+            return None
 
 
 def all_default_backend_names() -> List[str]:
@@ -1620,13 +1684,13 @@ class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMeth
 
 def redirect_to_signup(realm: Realm) -> HttpResponseRedirect:
     signup_url = reverse("register")
-    redirect_url = realm.url + signup_url
+    redirect_url = realm.uri + signup_url
     return HttpResponseRedirect(redirect_url)
 
 
 def redirect_to_login(realm: Realm) -> HttpResponseRedirect:
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = realm.url + login_url
+    redirect_url = realm.uri + login_url
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1635,7 +1699,7 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
     redirect_url = append_url_query_string(
-        realm.url + login_url, urlencode({"is_deactivated": email})
+        realm.uri + login_url, urlencode({"is_deactivated": email})
     )
     return HttpResponseRedirect(redirect_url)
 

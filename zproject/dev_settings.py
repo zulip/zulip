@@ -53,6 +53,7 @@ ALLOWED_HOSTS = ["*"]
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
 AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
+    "zproject.backends.RestApiAuthBackend",
     "zproject.backends.DevAuthBackend",
     "zproject.backends.EmailAuthBackend",
     "zproject.backends.GitHubAuthBackend",
@@ -63,7 +64,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     "zproject.backends.AppleAuthBackend",
     "zproject.backends.GenericOpenIdConnectBackend",
 )
-
+EXTERNAL_API_URL = 'http://3.111.67.39:8005/redbangle/user/api/login'
 EXTERNAL_URI_SCHEME = "http://"
 
 if os.getenv("BEHIND_HTTPS_PROXY"):
