@@ -12,7 +12,7 @@
     "lodash": "^4.17.19"
   },
   "devDependencies": {
-    "typescript": "^4.8.2"
+    "typescript": "^5.0.2"
   },
   "files": [
     "icons",
