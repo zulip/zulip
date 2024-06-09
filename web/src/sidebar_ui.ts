@@ -225,9 +225,7 @@ export function initialize_left_sidebar(): void {
 }
 
 export function initialize_right_sidebar(): void {
-    const rendered_sidebar = render_right_sidebar({
-        realm_rendered_description: page_params.realm_rendered_description,
-    });
+    const rendered_sidebar = render_right_sidebar();
 
     $("#right-sidebar-container").html(rendered_sidebar);
 
