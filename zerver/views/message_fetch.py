@@ -6,27 +6,29 @@ from django.db import connection, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
+from pydantic import Json, NonNegativeInt
 from sqlalchemy.sql import and_, column, join, literal, literal_column, select, table
 from sqlalchemy.types import Integer, Text
+from typing_extensions import Annotated
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
+    NarrowParameter,
     OptionalNarrowListT,
     add_narrow_conditions,
     fetch_messages,
     is_spectator_compatible,
     is_web_public_narrow,
-    narrow_parameter,
     parse_anchor_value,
 )
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC
 from zerver.lib.topic_sqlalchemy import topic_column_sa
-from zerver.lib.validator import check_bool, check_int, check_list, to_non_negative_int
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import UserMessage, UserProfile
 
 MAX_MESSAGES_PER_FETCH = 5000
@@ -95,20 +97,21 @@ def clean_narrow_for_web_public_api(narrow: OptionalNarrowListT) -> OptionalNarr
     ]
 
 
-@has_request_variables
+@typed_endpoint
 def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
-    anchor_val: Optional[str] = REQ("anchor", default=None),
-    include_anchor: bool = REQ(json_validator=check_bool, default=True),
-    num_before: int = REQ(converter=to_non_negative_int),
-    num_after: int = REQ(converter=to_non_negative_int),
-    narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
-    use_first_unread_anchor_val: bool = REQ(
-        "use_first_unread_anchor", json_validator=check_bool, default=False
-    ),
-    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
-    apply_markdown: bool = REQ(json_validator=check_bool, default=True),
+    *,
+    anchor_val: Annotated[Optional[str], ApiParamConfig("anchor")] = None,
+    include_anchor: Json[bool] = True,
+    num_before: Json[NonNegativeInt],
+    num_after: Json[NonNegativeInt],
+    narrow: Json[Optional[List[NarrowParameter]]] = None,
+    use_first_unread_anchor_val: Annotated[
+        Json[bool], ApiParamConfig("use_first_unread_anchor")
+    ] = False,
+    client_gravatar: Json[bool] = True,
+    apply_markdown: Json[bool] = True,
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
@@ -119,6 +122,11 @@ def get_messages_backend(
         )
     if num_before > 0 and num_after > 0 and not include_anchor:
         raise JsonableError(_("The anchor can only be excluded at an end of the range"))
+
+    if narrow is not None and len(narrow) > 0:
+        narrow_parameter_list: OptionalNarrowListT = [x.model_dump() for x in narrow]
+    else:
+        narrow_parameter_list = None
 
     realm = get_valid_realm_from_request(request)
     if not maybe_user_profile.is_authenticated:
@@ -134,11 +142,11 @@ def get_messages_backend(
         # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError
-        narrow = clean_narrow_for_web_public_api(narrow)
-        if not is_web_public_narrow(narrow):
+        narrow_parameter_list = clean_narrow_for_web_public_api(narrow_parameter_list)
+        if not is_web_public_narrow(narrow_parameter_list):
             raise MissingAuthenticationError
-        assert narrow is not None
-        if not is_spectator_compatible(narrow):
+        assert narrow_parameter_list is not None
+        if not is_spectator_compatible(narrow_parameter_list):
             raise MissingAuthenticationError
 
         # We use None to indicate unauthenticated requests as it's more
@@ -160,10 +168,10 @@ def get_messages_backend(
         # email_address_visibility setting.
         client_gravatar = False
 
-    if narrow is not None:
+    if narrow_parameter_list is not None:
         # Add some metadata to our logging data for narrows
         verbose_operators = []
-        for term in narrow:
+        for term in narrow_parameter_list:
             if term["operator"] == "is":
                 verbose_operators.append("is:" + term["operand"])
             else:
@@ -198,7 +206,7 @@ def get_messages_backend(
             cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
 
         query_info = fetch_messages(
-            narrow=narrow,
+            narrow=narrow_parameter_list,
             user_profile=user_profile,
             realm=realm,
             is_web_public_query=is_web_public_query,
@@ -281,13 +289,16 @@ def get_messages_backend(
     return json_success(request, data=ret)
 
 
-@has_request_variables
+@typed_endpoint
 def messages_in_narrow_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    msg_ids: List[int] = REQ(json_validator=check_list(check_int)),
-    narrow: OptionalNarrowListT = REQ(converter=narrow_parameter),
+    *,
+    msg_ids: Json[List[int]],
+    narrow: Json[List[NarrowParameter]],
 ) -> HttpResponse:
+    narrow_parameter_list: OptionalNarrowListT = [x.model_dump() for x in narrow]
+
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
@@ -315,7 +326,7 @@ def messages_in_narrow_backend(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
-        narrow=narrow,
+        narrow=narrow_parameter_list,
         is_web_public_query=False,
         realm=user_profile.realm,
     )
