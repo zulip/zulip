@@ -360,20 +360,3 @@ $user_status_emoji_width: 24px;
         margin-left: -1px;
     }
 }
-
-.right-sidebar-shortcuts .realm-description {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-right: 20px;
-    width: 230px;
-
-    .color_animated_button {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    & hr {
-        width: 90%;
-    }
-}
