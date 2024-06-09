@@ -29,6 +29,9 @@
 
         /* Language and Environment */
         "target": "esnext",
+
+        /* Projects */
+        "composite": true,
     },
     "include": ["src"],
 }

@@ -27,6 +27,7 @@
 
 ## Byproducts of setting up and using the dev environment
 *.pyc
+*.tsbuildinfo
 package-lock.json
 
 /.vagrant
