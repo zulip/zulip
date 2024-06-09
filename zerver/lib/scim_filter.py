@@ -28,7 +28,7 @@ class ZulipUserFilterQuery(UserFilterQuery):
     # attr_map describes which table.column the given SCIM2 User
     # attributes refer to.
     attr_map = {
-        # attr, sub attr, uri
+        # attr, sub attr, url
         ("userName", None, None): "zerver_userprofile.delivery_email",
         # We can only reasonably support filtering by name.formatted
         # as UserProfile.full_name is its equivalent. We don't store

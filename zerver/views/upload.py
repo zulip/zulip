@@ -84,7 +84,7 @@ def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -
         return redirect(url)
 
     # We over-escape the path, to work around it being impossible to
-    # get the _unescaped_ new internal request URI in nginx.
+    # get the _unescaped_ new internal request URL in nginx.
     parsed_url = urlsplit(url)
     assert parsed_url.hostname is not None
     assert parsed_url.path is not None
