@@ -28,6 +28,9 @@
 
         /* Language and Environment */
         "target": "ESNext",
+
+        /* Projects */
+        "composite": true,
     },
     "exclude": [
         // Type stubs are not part of the top-level project.
