@@ -1,6 +1,7 @@
 import * as hash_util from "./hash_util";
 import * as peer_data from "./peer_data";
 import type {User} from "./people";
+import * as people from "./people";
 import * as settings_config from "./settings_config";
 import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
@@ -28,6 +29,10 @@ export type SettingsSubscription = StreamSubscription & {
 };
 
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
+    const creator = stream_data.maybe_get_creator_details(sub.creator_id);
+    if (creator) {
+        creator.is_active = creator ? people.is_person_active(creator.user_id) : false;
+    }
     return {
         ...sub,
 
@@ -36,7 +41,7 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
             new Date(sub.date_created * 1000),
             "dayofyear_year",
         ),
-        creator: stream_data.maybe_get_creator_details(sub.creator_id),
+        creator,
 
         is_creator: sub.creator_id === current_user.user_id,
         is_realm_admin: current_user.is_admin,

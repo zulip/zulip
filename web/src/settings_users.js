@@ -230,6 +230,7 @@ function bot_info(bot_user_id) {
     info.full_name = bot_user.full_name;
     info.bot_owner_id = owner_id;
     info.user_role_text = people.get_user_type(bot_user_id);
+    info.img_src = people.small_avatar_url_for_person(bot_user);
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
@@ -248,6 +249,11 @@ function bot_info(bot_user_id) {
 
     // It's always safe to show the real email addresses for bot users
     info.display_email = bot_user.email;
+
+    if (owner_id) {
+        info.is_bot_owner_active = people.is_person_active(owner_id);
+        info.owner_img_src = people.small_avatar_url_for_person(people.get_by_user_id(owner_id));
+    }
 
     return info;
 }
@@ -275,6 +281,7 @@ function human_info(person) {
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !current_user.is_owner);
     info.display_email = person.delivery_email;
+    info.img_src = people.small_avatar_url_for_person(person);
 
     if (info.is_active) {
         // TODO: We might just want to show this
@@ -414,7 +421,7 @@ export function update_user_data(user_id, new_data) {
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
-        $user_row.find(".user_name .view_user_profile").text(new_data.full_name);
+        $user_row.find(".pill-container .view_user_profile .pill-value").text(new_data.full_name);
     }
 
     if (new_data.role !== undefined) {
