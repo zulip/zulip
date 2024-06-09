@@ -3507,10 +3507,10 @@ class GetOldMessagesTest(ZulipTestCase):
         int_params = ["num_before", "num_after"]
 
         invalid_parameters: List[InvalidParam] = [
-            InvalidParam(value=False, expected_error="Bad value for"),
-            InvalidParam(value="", expected_error="Bad value for"),
-            InvalidParam(value="-1", expected_error="Bad value for"),
-            InvalidParam(value=-1, expected_error="Bad value for"),
+            InvalidParam(value=False, expected_error="is not valid JSON"),
+            InvalidParam(value="", expected_error="is not valid JSON"),
+            InvalidParam(value="-1", expected_error="is too small"),
+            InvalidParam(value=-1, expected_error="is too small"),
         ]
         for idx, param in enumerate(int_params):
             for invalid_parameter in invalid_parameters:
@@ -3522,10 +3522,8 @@ class GetOldMessagesTest(ZulipTestCase):
                     **dict.fromkeys(int_params[:idx] + int_params[idx + 1 :], 0),
                 }
                 result = self.client_get("/json/messages", post_params)
-                self.assert_json_error(
-                    result,
-                    f"{invalid_parameter.expected_error} '{param}': {invalid_parameter.value}",
-                )
+
+                self.assert_json_error(result, f"{param} {invalid_parameter.expected_error}")
 
     def test_bad_include_anchor(self) -> None:
         self.login("hamlet")
@@ -3543,20 +3541,24 @@ class GetOldMessagesTest(ZulipTestCase):
         other_params = {"anchor": 0, "num_before": 0, "num_after": 0}
 
         invalid_parameters: List[InvalidParam] = [
-            InvalidParam(value=False, expected_error="Bad value for 'narrow'"),
-            InvalidParam(value=0, expected_error="Bad value for 'narrow'"),
-            InvalidParam(value="", expected_error="Bad value for 'narrow'"),
-            InvalidParam(value="{malformed json,", expected_error="Bad value for 'narrow'"),
-            InvalidParam(value="{foo: 3}", expected_error="Bad value for 'narrow'"),
-            InvalidParam(value="[1,2]", expected_error="Bad value for 'narrow'"),
-            InvalidParam(value='[["x","y","z"]]', expected_error="Bad value for 'narrow'"),
+            InvalidParam(value=False, expected_error="narrow is not valid JSON"),
+            InvalidParam(value=0, expected_error="narrow is not a list"),
+            InvalidParam(value="", expected_error="narrow is not valid JSON"),
+            InvalidParam(value="{malformed json,", expected_error="narrow is not valid JSON"),
+            InvalidParam(value="{foo: 3}", expected_error="narrow is not valid JSON"),
+            InvalidParam(
+                value="[1,2]",
+                expected_error="Invalid narrow[0]: Value error, dict or list required",
+            ),
+            InvalidParam(
+                value='[["x","y","z"]]',
+                expected_error="Invalid narrow[0]: Value error, element is not a string pair",
+            ),
         ]
         for invalid_parameter in invalid_parameters:
             post_params = {**other_params, "narrow": invalid_parameter.value}
             result = self.client_get("/json/messages", post_params)
-            self.assert_json_error(
-                result, f"{invalid_parameter.expected_error}: {invalid_parameter.value}"
-            )
+            self.assert_json_error(result, invalid_parameter.expected_error)
 
     def test_bad_narrow_operator(self) -> None:
         """
@@ -3574,11 +3576,12 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # str or int is required for "id", "sender", "channel", "dm-including" and "group-pm-with"
         # operators
-        error_msg = 'elem["operand"] is not a string or integer'
         invalid_operands: List[InvalidParam] = [
-            InvalidParam(value=["1"], expected_error=error_msg),
-            InvalidParam(value=["2"], expected_error=error_msg),
-            InvalidParam(value=None, expected_error=error_msg),
+            InvalidParam(value=["1"], expected_error="operand is not a string or integer"),
+            InvalidParam(value=["2"], expected_error="operand is not a string or integer"),
+            InvalidParam(
+                value=None, expected_error="Invalid narrow[0]: Value error, operand is missing"
+            ),
         ]
 
         for operand in ["id", "sender", "channel", "dm-including", "group-pm-with"]:
@@ -3586,32 +3589,35 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # str or int list is required for "dm" and "pm-with" operator
         # First set of invalid operands
-        error_msg = 'elem["operand"] is not a string or an integer list'
-        invalid_operands = [InvalidParam(value=None, expected_error=error_msg)]
+        invalid_operands = [
+            InvalidParam(
+                value=None, expected_error="Invalid narrow[0]: Value error, operand is missing"
+            )
+        ]
+
         for operand in ["dm", "pm-with"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # Second set of invalid operands
-        error_msg = 'elem["operand"][0] is not an integer'
         invalid_operands = [
-            InvalidParam(value=["2"], expected_error=error_msg),
+            InvalidParam(value=["2"], expected_error="operand[0] is not an integer"),
         ]
         for operand in ["dm", "pm-with"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # Third set of invalid operands
-        error_msg = 'elem["operand"] is not a string'
         invalid_operands = [
-            InvalidParam(value=2, expected_error=error_msg),
-            InvalidParam(value=None, expected_error=error_msg),
-            InvalidParam(value=[1], expected_error=error_msg),
+            InvalidParam(value=2, expected_error="operand is not a string"),
+            InvalidParam(
+                value=None, expected_error="Invalid narrow[0]: Value error, operand is missing"
+            ),
+            InvalidParam(value=[1], expected_error="operand is not a string"),
         ]
         for operand in ["is", "near", "has"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # Disallow empty search terms
-        error_msg = 'elem["operand"] cannot be blank.'
-        invalid_operands = [InvalidParam(value="", expected_error=error_msg)]
+        invalid_operands = [InvalidParam(value="", expected_error="operand cannot be blank.")]
         self.exercise_bad_narrow_operand_using_dict_api("search", invalid_operands)
 
     # The exercise_bad_narrow_operand helper method uses legacy tuple format to
@@ -3641,7 +3647,7 @@ class GetOldMessagesTest(ZulipTestCase):
         returned.
         """
         self.login("hamlet")
-        error_msg = "Bad value for 'narrow'"
+        error_msg = "Invalid narrow[0]: Value error, element is not a string pair"
         bad_channel_content: List[InvalidParam] = [
             InvalidParam(value=0, expected_error=error_msg),
             InvalidParam(value=[], expected_error=error_msg),
@@ -3655,7 +3661,7 @@ class GetOldMessagesTest(ZulipTestCase):
         an error is returned.
         """
         self.login("hamlet")
-        error_msg = "Bad value for 'narrow'"
+        error_msg = "Invalid narrow[0]: Value error, element is not a string pair"
         bad_channel_content: List[InvalidParam] = [
             InvalidParam(value=0, expected_error=error_msg),
             InvalidParam(value=[], expected_error=error_msg),
@@ -3694,7 +3700,10 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_bad_narrow_dm_id_list(self) -> None:
         self.login("hamlet")
         invalid_operands: List[InvalidParam] = [
-            InvalidParam(value=-24, expected_error="Bad value for 'narrow': [[\"dm\",-24]]")
+            InvalidParam(
+                value=-24,
+                expected_error="Invalid narrow[0]: Value error, element is not a string pair",
+            )
         ]
         self.exercise_bad_narrow_operand("dm", invalid_operands)
 
