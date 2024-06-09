@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
@@ -67,6 +68,12 @@ from zerver.views.message_fetch import get_messages_backend
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
+
+@dataclass
+class InvalidParam:
+    value: object
+    expected_error: str
 
 
 def get_sqlalchemy_sql(query: ClauseElement) -> str:
@@ -3499,18 +3506,26 @@ class GetOldMessagesTest(ZulipTestCase):
         other_params = {"narrow": {}, "anchor": 0}
         int_params = ["num_before", "num_after"]
 
-        bad_types = (False, "", "-1", -1)
+        invalid_parameters: List[InvalidParam] = [
+            InvalidParam(value=False, expected_error="Bad value for"),
+            InvalidParam(value="", expected_error="Bad value for"),
+            InvalidParam(value="-1", expected_error="Bad value for"),
+            InvalidParam(value=-1, expected_error="Bad value for"),
+        ]
         for idx, param in enumerate(int_params):
-            for type in bad_types:
+            for invalid_parameter in invalid_parameters:
                 # Rotate through every bad type for every integer
                 # parameter, one at a time.
                 post_params = {
                     **other_params,
-                    param: type,
+                    param: invalid_parameter.value,
                     **dict.fromkeys(int_params[:idx] + int_params[idx + 1 :], 0),
                 }
                 result = self.client_get("/json/messages", post_params)
-                self.assert_json_error(result, f"Bad value for '{param}': {type}")
+                self.assert_json_error(
+                    result,
+                    f"{invalid_parameter.expected_error} '{param}': {invalid_parameter.value}",
+                )
 
     def test_bad_include_anchor(self) -> None:
         self.login("hamlet")
@@ -3527,19 +3542,21 @@ class GetOldMessagesTest(ZulipTestCase):
 
         other_params = {"anchor": 0, "num_before": 0, "num_after": 0}
 
-        bad_types: Tuple[Union[int, str, bool], ...] = (
-            False,
-            0,
-            "",
-            "{malformed json,",
-            "{foo: 3}",
-            "[1,2]",
-            '[["x","y","z"]]',
-        )
-        for type in bad_types:
-            post_params = {**other_params, "narrow": type}
+        invalid_parameters: List[InvalidParam] = [
+            InvalidParam(value=False, expected_error="Bad value for 'narrow'"),
+            InvalidParam(value=0, expected_error="Bad value for 'narrow'"),
+            InvalidParam(value="", expected_error="Bad value for 'narrow'"),
+            InvalidParam(value="{malformed json,", expected_error="Bad value for 'narrow'"),
+            InvalidParam(value="{foo: 3}", expected_error="Bad value for 'narrow'"),
+            InvalidParam(value="[1,2]", expected_error="Bad value for 'narrow'"),
+            InvalidParam(value='[["x","y","z"]]', expected_error="Bad value for 'narrow'"),
+        ]
+        for invalid_parameter in invalid_parameters:
+            post_params = {**other_params, "narrow": invalid_parameter.value}
             result = self.client_get("/json/messages", post_params)
-            self.assert_json_error(result, f"Bad value for 'narrow': {type}")
+            self.assert_json_error(
+                result, f"{invalid_parameter.expected_error}: {invalid_parameter.value}"
+            )
 
     def test_bad_narrow_operator(self) -> None:
         """
@@ -3557,51 +3574,66 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # str or int is required for "id", "sender", "channel", "dm-including" and "group-pm-with"
         # operators
-        invalid_operands = [["1"], [2], None]
         error_msg = 'elem["operand"] is not a string or integer'
+        invalid_operands: List[InvalidParam] = [
+            InvalidParam(value=["1"], expected_error=error_msg),
+            InvalidParam(value=["2"], expected_error=error_msg),
+            InvalidParam(value=None, expected_error=error_msg),
+        ]
+
         for operand in ["id", "sender", "channel", "dm-including", "group-pm-with"]:
-            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # str or int list is required for "dm" and "pm-with" operator
-        invalid_operands = [None]
+        # First set of invalid operands
         error_msg = 'elem["operand"] is not a string or an integer list'
+        invalid_operands = [InvalidParam(value=None, expected_error=error_msg)]
         for operand in ["dm", "pm-with"]:
-            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
-        invalid_operands = [["2"]]
+        # Second set of invalid operands
         error_msg = 'elem["operand"][0] is not an integer'
+        invalid_operands = [
+            InvalidParam(value=["2"], expected_error=error_msg),
+        ]
         for operand in ["dm", "pm-with"]:
-            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
-        # For others only str is acceptable
-        invalid_operands = [2, None, [1]]
+        # Third set of invalid operands
         error_msg = 'elem["operand"] is not a string'
+        invalid_operands = [
+            InvalidParam(value=2, expected_error=error_msg),
+            InvalidParam(value=None, expected_error=error_msg),
+            InvalidParam(value=[1], expected_error=error_msg),
+        ]
         for operand in ["is", "near", "has"]:
-            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # Disallow empty search terms
         error_msg = 'elem["operand"] cannot be blank.'
-        self.exercise_bad_narrow_operand_using_dict_api("search", [""], error_msg)
+        invalid_operands = [InvalidParam(value="", expected_error=error_msg)]
+        self.exercise_bad_narrow_operand_using_dict_api("search", invalid_operands)
 
     # The exercise_bad_narrow_operand helper method uses legacy tuple format to
     # test bad narrow, this method uses the current dict API format
     def exercise_bad_narrow_operand_using_dict_api(
-        self, operator: str, operands: Sequence[Any], error_msg: str
+        self, operator: str, operands: Sequence[InvalidParam]
     ) -> None:
         for operand in operands:
-            narrow = [dict(operator=operator, operand=operand)]
+            narrow = [dict(operator=operator, operand=operand.value)]
             params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())
             result = self.client_get("/json/messages", params)
-            self.assert_json_error_contains(result, error_msg)
+            self.assert_json_error_contains(result, operand.expected_error)
 
-    def exercise_bad_narrow_operand(
-        self, operator: str, operands: Sequence[Any], error_msg: str
-    ) -> None:
+    def exercise_bad_narrow_operand(self, operator: str, operands: Sequence[InvalidParam]) -> None:
         other_params = {"anchor": "0", "num_before": "0", "num_after": "0"}
         for operand in operands:
-            post_params = {**other_params, "narrow": orjson.dumps([[operator, operand]]).decode()}
+            post_params = {
+                **other_params,
+                "narrow": orjson.dumps([[operator, operand.value]]).decode(),
+            }
             result = self.client_get("/json/messages", post_params)
-            self.assert_json_error_contains(result, error_msg)
+            self.assert_json_error_contains(result, operand.expected_error)
 
     def test_bad_narrow_channel_content(self) -> None:
         """
@@ -3609,8 +3641,13 @@ class GetOldMessagesTest(ZulipTestCase):
         returned.
         """
         self.login("hamlet")
-        bad_channel_content: Tuple[int, List[None], List[str]] = (0, [], ["x", "y"])
-        self.exercise_bad_narrow_operand("channel", bad_channel_content, "Bad value for 'narrow'")
+        error_msg = "Bad value for 'narrow'"
+        bad_channel_content: List[InvalidParam] = [
+            InvalidParam(value=0, expected_error=error_msg),
+            InvalidParam(value=[], expected_error=error_msg),
+            InvalidParam(value=["x", "y"], expected_error=error_msg),
+        ]
+        self.exercise_bad_narrow_operand("channel", bad_channel_content)
 
     def test_bad_narrow_one_on_one_email_content(self) -> None:
         """
@@ -3618,29 +3655,48 @@ class GetOldMessagesTest(ZulipTestCase):
         an error is returned.
         """
         self.login("hamlet")
-        bad_channel_content: Tuple[int, List[None], List[str]] = (0, [], ["x", "y"])
-        self.exercise_bad_narrow_operand("dm", bad_channel_content, "Bad value for 'narrow'")
+        error_msg = "Bad value for 'narrow'"
+        bad_channel_content: List[InvalidParam] = [
+            InvalidParam(value=0, expected_error=error_msg),
+            InvalidParam(value=[], expected_error=error_msg),
+            InvalidParam(value=["x", "y"], expected_error=error_msg),
+        ]
+        self.exercise_bad_narrow_operand("dm", bad_channel_content)
 
     def test_bad_narrow_nonexistent_channel(self) -> None:
         self.login("hamlet")
-        self.exercise_bad_narrow_operand(
-            "channel", ["non-existent channel"], "Invalid narrow operator: unknown channel"
-        )
 
-        non_existing_channel_id = 1232891381239
-        self.exercise_bad_narrow_operand_using_dict_api(
-            "channel", [non_existing_channel_id], "Invalid narrow operator: unknown channel"
-        )
+        non_existing_channel_id_operand: List[InvalidParam] = [
+            InvalidParam(
+                value="non-existent channel",
+                expected_error="Invalid narrow operator: unknown channel",
+            ),
+        ]
+
+        self.exercise_bad_narrow_operand("channel", non_existing_channel_id_operand)
+
+        non_existing_channel_id_operand = [
+            InvalidParam(
+                value=1232891381239, expected_error="Invalid narrow operator: unknown channel"
+            ),
+        ]
+
+        self.exercise_bad_narrow_operand_using_dict_api("channel", non_existing_channel_id_operand)
 
     def test_bad_narrow_nonexistent_email(self) -> None:
         self.login("hamlet")
-        self.exercise_bad_narrow_operand(
-            "dm", ["non-existent-user@zulip.com"], "Invalid narrow operator: unknown user"
-        )
+        error_msg = "Invalid narrow operator: unknown user"
+        invalid_operands: List[InvalidParam] = [
+            InvalidParam(value="non-existent-user@zulip.com", expected_error=error_msg),
+        ]
+        self.exercise_bad_narrow_operand("dm", invalid_operands)
 
     def test_bad_narrow_dm_id_list(self) -> None:
         self.login("hamlet")
-        self.exercise_bad_narrow_operand("dm", [-24], "Bad value for 'narrow': [[\"dm\",-24]]")
+        invalid_operands: List[InvalidParam] = [
+            InvalidParam(value=-24, expected_error="Bad value for 'narrow': [[\"dm\",-24]]")
+        ]
+        self.exercise_bad_narrow_operand("dm", invalid_operands)
 
     def test_message_without_rendered_content(self) -> None:
         """Older messages may not have rendered_content in the database"""
