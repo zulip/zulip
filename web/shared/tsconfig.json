@@ -1,32 +1,32 @@
 {
     "compilerOptions": {
-        /* Language and Environment */
-        "target": "esnext",
+        /* Type Checking */
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strict": true,
 
         /* Modules */
-        "rootDir": "src",
         "moduleResolution": "node",
+        "rootDir": "src",
+
+        /* Emit */
+        "declaration": true,
+        "outDir": "lib",
+        "sourceMap": true,
 
         /* JavaScript Support */
         "allowJs": true,
 
-        /* Emit */
-        "declaration": true,
-        "sourceMap": true,
-        "outDir": "lib",
-
         /* Interop Constraints */
-        "isolatedModules": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
 
-        /* Type Checking */
-        "strict": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitOverride": true,
+        /* Language and Environment */
+        "target": "esnext",
     },
     "include": ["src"],
 }
