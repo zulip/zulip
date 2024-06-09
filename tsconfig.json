@@ -1,8 +1,7 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
         "paths": {
-            "*": ["web/src/types/*"],
+            "*": ["./web/src/types/*"],
         },
         "types": ["@types/jquery.validation"],
 
@@ -18,7 +17,6 @@
         "esModuleInterop": true,
         "moduleResolution": "node",
         "resolveJsonModule": true,
-        "sourceMap": true,
 
         /* Strict type-checking */
         "strict": true,
