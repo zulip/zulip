@@ -520,10 +520,12 @@ def fetch_initial_state_data(
         state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
         state["is_billing_admin"] = settings_user.is_billing_admin
+        state["paid_subscription"] = settings_user.paid_subscription
         state["user_id"] = settings_user.id
         state["email"] = settings_user.email
         state["delivery_email"] = settings_user.delivery_email
         state["full_name"] = settings_user.full_name
+        state["paid_subscription_date"] = settings_user.paid_subscription_date
 
     if want("realm_bot"):
         state["realm_bots"] = [] if user_profile is None else get_owned_bot_dicts(user_profile)

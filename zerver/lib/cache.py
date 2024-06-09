@@ -471,6 +471,8 @@ realm_user_dict_fields: List[str] = [
     "bot_type",
     "long_term_idle",
     "email_address_visibility",
+    "paid_subscription",
+    "paid_subscription_date",
 ]
 
 

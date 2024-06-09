@@ -442,6 +442,8 @@ class APIUserDict(TypedDict):
     profile_data: NotRequired[Optional[Dict[str, Any]]]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
+    paid_subscription: bool
+    paid_subscription_date: str
 
 
 def format_user_row(
@@ -482,6 +484,8 @@ def format_user_row(
         full_name=row["full_name"],
         timezone=canonicalize_timezone(row["timezone"]),
         is_active=row["is_active"],
+        paid_subscription=row["paid_subscription"],
+        paid_subscription_date=row["paid_subscription_date"].isoformat(),
         date_joined=row["date_joined"].isoformat(),
         delivery_email=delivery_email,
     )
@@ -828,6 +832,8 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         bot_type=user_profile.bot_type,
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
+        paid_subscription=user_profile.paid_subscription,
+        paid_subscription_date=user_profile.paid_subscription_date,
     )
 
 
@@ -882,6 +888,8 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        paid_subscription=UserProfile.paid_subscription,
+        paid_subscription_date=UserProfile.paid_subscription_date,
     )
     return user_dict
 

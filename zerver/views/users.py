@@ -24,6 +24,7 @@ from zerver.actions.user_settings import (
     check_change_full_name,
     do_change_avatar_fields,
     do_regenerate_api_key,
+    check_change_paid_subscription,
 )
 from zerver.actions.users import (
     do_change_user_role,
@@ -210,6 +211,7 @@ def update_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_id: int,
+    paid_subscription: Optional[bool] = REQ(default=None),
     full_name: Optional[str] = REQ(default=None),
     role: Optional[int] = REQ(
         default=None,
@@ -246,6 +248,11 @@ def update_user_backend(
         # We don't respect `name_changes_disabled` here because the request
         # is on behalf of the administrator.
         check_change_full_name(target, full_name, user_profile)
+
+    if paid_subscription is not None:
+        # We don't respect `name_changes_disabled` here because the request
+        # is on behalf of the administrator.
+        check_change_paid_subscription(target, paid_subscription, user_profile)
 
     if profile_data is not None:
         clean_profile_data: List[ProfileDataElementUpdateDict] = []

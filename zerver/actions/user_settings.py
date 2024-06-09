@@ -1,4 +1,5 @@
 from datetime import timedelta
+import datetime
 from typing import Iterable, Optional, Union
 
 from django.conf import settings
@@ -241,6 +242,36 @@ def do_change_full_name(
             bot_owner_user_ids(user_profile),
         )
 
+def do_change_paid_subscription(
+    user_profile: UserProfile, paid_subscription: str, acting_user: Optional[UserProfile]
+) -> None:
+    old_paid_subscription = user_profile.paid_subscription
+    user_profile.paid_subscription = paid_subscription
+    user_profile.paid_subscription_date = datetime.datetime.now()
+    user_profile.save(update_fields=["paid_subscription"])
+    user_profile.save(update_fields=["paid_subscription_date"])
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+        event_time=event_time,
+        extra_data={RealmAuditLog.OLD_VALUE: old_paid_subscription, RealmAuditLog.NEW_VALUE: paid_subscription},
+    )
+    payload = dict(user_id=user_profile.id, paid_subscription=user_profile.paid_subscription)
+    send_event(
+        user_profile.realm,
+        dict(type="realm_user", op="update", person=payload),
+        get_user_ids_who_can_access_user(user_profile),
+    )
+    if user_profile.is_bot:
+        send_event(
+            user_profile.realm,
+            dict(type="realm_bot", op="update", bot=payload),
+            bot_owner_user_ids(user_profile),
+        )
+
 
 def check_change_full_name(
     user_profile: UserProfile, full_name_raw: str, acting_user: Optional[UserProfile]
@@ -252,6 +283,16 @@ def check_change_full_name(
     new_full_name = check_full_name(full_name_raw)
     do_change_full_name(user_profile, new_full_name, acting_user)
     return new_full_name
+
+def check_change_paid_subscription(
+    user_profile: UserProfile, paid_subscription_raw: bool, acting_user: Optional[UserProfile]
+) -> bool:
+    """Verifies that the user's proposed full name is valid.  The caller
+    is responsible for checking check permissions.  Returns the new
+    full name, which may differ from what was passed in (because this
+    function strips whitespace)."""
+    do_change_paid_subscription(user_profile, paid_subscription_raw, acting_user)
+    return paid_subscription_raw
 
 
 def check_change_bot_full_name(

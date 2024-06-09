@@ -1102,6 +1102,8 @@ realm_user_type = DictType(
         ("full_name", str),
         ("is_admin", bool),
         ("is_billing_admin", bool),
+        ("paid_subscription", bool),
+        ("paid_subscription_date", str),
         ("is_owner", bool),
         ("is_bot", bool),
         ("is_guest", bool),

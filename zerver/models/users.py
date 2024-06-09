@@ -452,6 +452,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # See also `long_term_idle`.
     is_active = models.BooleanField(default=True, db_index=True)
 
+    paid_subscription = models.BooleanField(default=False, db_index=True)
+
+    paid_subscription_date = models.DateTimeField(default=None, null=True)
+
     is_billing_admin = models.BooleanField(default=False, db_index=True)
 
     is_bot = models.BooleanField(default=False, db_index=True)
