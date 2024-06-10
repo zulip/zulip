@@ -217,6 +217,16 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
         }
     });
 
+    // Firefox leaves a <br> child element when the user enters search
+    // input and then removes it, which breaks the :empty placeholder
+    // text, so we need to manually remove it.
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1513303
+    $("#search_query").on("input", () => {
+        if (get_search_bar_text() === "") {
+            $("#search_query").empty();
+        }
+    });
+
     // register searchbar click handler
     $("#search_exit").on("click", (e: JQuery.ClickEvent): void => {
         exit_search({keep_search_narrow_open: false});
