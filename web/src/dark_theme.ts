@@ -1,40 +1,64 @@
 import $ from "jquery";
 
 import {localstorage} from "./localstorage";
-import {page_params} from "./page_params";
+import * as message_lists from "./message_lists";
 import * as realm_logo from "./realm_logo";
 import * as settings_config from "./settings_config";
 import {user_settings} from "./user_settings";
 
-export function enable(): void {
+const ls = localstorage();
+
+function enable(): void {
     $(":root").removeClass("color-scheme-automatic").addClass("dark-theme");
-
-    if (page_params.is_spectator) {
-        const ls = localstorage();
-        ls.set("spectator-theme-preference", "dark");
-        user_settings.color_scheme = settings_config.color_scheme_values.night.code;
-        realm_logo.render();
-    }
 }
 
-export function disable(): void {
+function disable(): void {
     $(":root").removeClass("color-scheme-automatic").removeClass("dark-theme");
+}
 
-    if (page_params.is_spectator) {
-        const ls = localstorage();
-        ls.set("spectator-theme-preference", "light");
-        user_settings.color_scheme = settings_config.color_scheme_values.day.code;
-        realm_logo.render();
+function default_preference_checker(): void {
+    $(":root").removeClass("dark-theme").addClass("color-scheme-automatic");
+}
+
+export function set_theme(color_scheme: number): void {
+    if (color_scheme === settings_config.color_scheme_values.night.code) {
+        enable();
+    } else if (color_scheme === settings_config.color_scheme_values.day.code) {
+        disable();
+    } else {
+        // If the color_scheme_code is not valid, fallback to automatic.
+        default_preference_checker();
     }
 }
 
-export function default_preference_checker(): void {
-    $(":root").removeClass("dark-theme").addClass("color-scheme-automatic");
+export function set_theme_and_update(color_scheme: number): void {
+    set_theme(color_scheme);
+    // We cannot update recipient bar color and the realm logo variant
+    // using `set_theme` since that function is being called in the
+    // `ui_init` module before message_lists and realm_logo are initialized
+    // and the order cannot be changed.
+    message_lists.update_recipient_bar_background_color();
+    realm_logo.render();
+}
 
-    if (page_params.is_spectator) {
-        const ls = localstorage();
-        ls.set("spectator-theme-preference", "automatic");
-        user_settings.color_scheme = settings_config.color_scheme_values.automatic.code;
-        realm_logo.render();
-    }
+function get_theme_for_spectator(): number {
+    // If the spectator has not set a theme preference, fallback to automatic.
+    return (
+        Number(ls.get("spectator-theme-preference")) ||
+        settings_config.color_scheme_values.automatic.code
+    );
+}
+
+export function set_theme_for_spectator(color_scheme: number): void {
+    // Since we don't have events for spectators and handle the theme using
+    // localstorage, the theme change does not reflect across tabs.
+    ls.set("spectator-theme-preference", color_scheme);
+    user_settings.color_scheme = color_scheme;
+    set_theme_and_update(color_scheme);
+}
+
+export function initialize_theme_for_spectator(): void {
+    const color_scheme = get_theme_for_spectator();
+    user_settings.color_scheme = color_scheme;
+    set_theme(color_scheme);
 }

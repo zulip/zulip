@@ -58,7 +58,6 @@ import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigatio
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
 import * as local_message from "./local_message";
-import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_actions_popover from "./message_actions_popover";
@@ -423,15 +422,7 @@ export function initialize_everything(state_data) {
     sidebar_ui.restore_sidebar_toggle_status();
     information_density.initialize();
     if (page_params.is_spectator) {
-        const ls = localstorage();
-        const preferred_theme = ls.get("spectator-theme-preference");
-        if (preferred_theme === "dark") {
-            dark_theme.enable();
-        } else if (preferred_theme === "light") {
-            dark_theme.disable();
-        } else {
-            dark_theme.default_preference_checker();
-        }
+        dark_theme.initialize_theme_for_spectator();
     }
 
     i18n.initialize({language_list: page_params.language_list});

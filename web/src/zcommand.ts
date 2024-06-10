@@ -7,7 +7,7 @@ import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as markdown from "./markdown";
-import * as message_lists from "./message_lists";
+import * as settings_config from "./settings_config";
 
 /*
 
@@ -68,8 +68,7 @@ export function switch_to_light_theme(): void {
         on_success(raw_data) {
             const data = data_schema.parse(raw_data);
             requestAnimationFrame(() => {
-                dark_theme.disable();
-                message_lists.update_recipient_bar_background_color();
+                dark_theme.set_theme_and_update(settings_config.color_scheme_values.day.code);
             });
             feedback_widget.show({
                 populate($container) {
@@ -94,8 +93,7 @@ export function switch_to_dark_theme(): void {
         on_success(raw_data) {
             const data = data_schema.parse(raw_data);
             requestAnimationFrame(() => {
-                dark_theme.enable();
-                message_lists.update_recipient_bar_background_color();
+                dark_theme.set_theme_and_update(settings_config.color_scheme_values.night.code);
             });
             feedback_widget.show({
                 populate($container) {
