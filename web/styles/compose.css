@@ -414,8 +414,11 @@
     border: 1px solid;
     display: flex;
     align-items: center;
-    font-size: 15px;
-    line-height: 18px;
+    /* Banners should carry at least a minimum
+       legacy font-size of 15px, and a line-height
+       of 18px. 1.2em is 18px at 15px/1em. */
+    font-size: max(15px, var(--base-font-size-px));
+    line-height: max(18px, 1.2em);
 
     .main-view-banner-elements-wrapper {
         display: flex;
@@ -461,8 +464,8 @@
         margin-bottom: 4.5px;
         /* Buttons take a minimum height for
            when their text fits on a single
-           line. */
-        min-height: 32px;
+           line. 2.1333em is 32px at 15px/1em. */
+        min-height: 2.1333em;
         /* When we're larger than large mobile
            scales ($ml_min), flex the button to
            its max-content, i.e., all its text
@@ -512,8 +515,9 @@
         margin-bottom: 8px;
         /* Make as tall as two lines of banner message
            text, which have a line-height of 18px, but
-           no more. */
-        max-height: 36px;
+           no more. 2.4em is two 1.2em lines in the
+           banner area. */
+        max-height: 2.4em;
         /* Keep to the top of the box, but stretch
            taller based on how the box is flexing. */
         min-height: 0;
@@ -521,8 +525,10 @@
     }
 
     .main-view-banner-close-button {
-        font-size: 16px;
         text-decoration: none;
+        /* Set same top and bottom margin
+           as action buttons. */
+        margin: 8px 0;
         padding: 0 8px;
         /* Let the close button's box stretch,
            but no larger than the height of the
@@ -531,13 +537,22 @@
            padding, and height), which keeps
            the X vertically centered with it. */
         align-self: stretch;
-        max-height: 52px;
+        /* 2.4em is two 1.2em lines in the
+           banner area. */
+        max-height: 2.4em;
         /* Display as flexbox to better control
            the X icon's position. This creates
            an anonymous flexbox item out of the
            ::before content where the icon sits. */
         display: flex;
         align-items: center;
+
+        /* Set the font-size for the close button
+           on the ::before element, so that it doesn't
+           impact the em units above. */
+        &::before {
+            font-size: 16px;
+        }
     }
 
     .banner_content + .main-view-banner-close-button {
@@ -545,8 +560,9 @@
            height for the typical height of the box
            when it contains only banner message text.
            This will keep the action button aligned
-           with the first or only line of text. */
-        max-height: 34px;
+           with the first or only line of text.
+           2.2667 is 34px at 15px/1em; */
+        max-height: 2.2667em;
     }
 
     &.success {
