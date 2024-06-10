@@ -1306,7 +1306,9 @@ $option_title_width: 180px;
             padding: 5px 0;
             outline: none;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition:
+                background-color 0.2s ease,
+                border-bottom 0.2s ease;
             border-bottom: 1px solid hsl(0deg 0% 93%);
 
             &:last-of-type .text {
