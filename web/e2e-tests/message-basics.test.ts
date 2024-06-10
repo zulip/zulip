@@ -543,14 +543,31 @@ async function message_basic_tests(page: Page): Promise<void> {
     await common.send_multiple_messages(page, [
         {stream_name: "Verona", topic: "test", content: "verona test a"},
         {stream_name: "Verona", topic: "test", content: "verona test b"},
-        {stream_name: "Verona", topic: "other topic", content: "verona other topic c"},
-        {stream_name: "Denmark", topic: "test", content: "denmark message"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message a"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message b"},
-        {recipient: "cordelia@zulip.com", content: "direct message c"},
+        {
+            stream_name: "Verona",
+            topic: "other topic",
+            content: "verona other topic c",
+            outside_view: true,
+        },
+        {stream_name: "Denmark", topic: "test", content: "denmark message", outside_view: true},
+        {
+            recipient: "cordelia@zulip.com, hamlet@zulip.com",
+            content: "group direct message a",
+            outside_view: true,
+        },
+        {
+            recipient: "cordelia@zulip.com, hamlet@zulip.com",
+            content: "group direct message b",
+            outside_view: true,
+        },
+        {recipient: "cordelia@zulip.com", content: "direct message c", outside_view: true},
         {stream_name: "Verona", topic: "test", content: "verona test d"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message d"},
-        {recipient: "cordelia@zulip.com", content: "direct message e"},
+        {
+            recipient: "cordelia@zulip.com, hamlet@zulip.com",
+            content: "group direct message d",
+            outside_view: true,
+        },
+        {recipient: "cordelia@zulip.com", content: "direct message e", outside_view: true},
     ]);
 
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
