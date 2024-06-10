@@ -791,17 +791,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "color_scheme") {
                 requestAnimationFrame(() => {
-                    if (event.value === settings_config.color_scheme_values.night.code) {
-                        dark_theme.enable();
-                        realm_logo.render();
-                    } else if (event.value === settings_config.color_scheme_values.day.code) {
-                        dark_theme.disable();
-                        realm_logo.render();
-                    } else {
-                        dark_theme.default_preference_checker();
-                        realm_logo.render();
-                    }
-                    message_lists.update_recipient_bar_background_color();
+                    dark_theme.set_theme_and_update(event.value);
                 });
             }
             if (event.property === "starred_message_counts") {

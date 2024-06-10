@@ -965,26 +965,37 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_line_height_percent, 130);
 
-    override(realm_logo, "render", noop);
+    {
+        const stub = make_stub();
+        event = event_fixtures.user_settings__color_scheme_automatic;
+        user_settings.color_scheme = 2;
+        override(dark_theme, "set_theme_and_update", stub.f); // automatically checks if called
+        dispatch(event);
+        const args = stub.get_args("color_scheme_code");
+        assert.equal(stub.num_calls, 1);
+        assert.equal(user_settings.color_scheme, args.color_scheme_code);
+    }
 
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_dark;
         user_settings.color_scheme = 1;
-        override(dark_theme, "enable", stub.f); // automatically checks if called
+        override(dark_theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
+        const args = stub.get_args("color_scheme_code");
         assert.equal(stub.num_calls, 1);
-        assert.equal(user_settings.color_scheme, 2);
+        assert.equal(user_settings.color_scheme, args.color_scheme_code);
     }
 
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_light;
         user_settings.color_scheme = 1;
-        override(dark_theme, "disable", stub.f); // automatically checks if called
+        override(dark_theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
+        const args = stub.get_args("color_scheme_code");
         assert.equal(stub.num_calls, 1);
-        assert.equal(user_settings.color_scheme, 3);
+        assert.equal(user_settings.color_scheme, args.color_scheme_code);
     }
 
     {
@@ -1006,16 +1017,6 @@ run_test("user_settings", ({override}) => {
         user_settings.web_home_view = "all_messages";
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
-    }
-
-    {
-        const stub = make_stub();
-        event = event_fixtures.user_settings__color_scheme_automatic;
-        user_settings.color_scheme = 2;
-        override(dark_theme, "default_preference_checker", stub.f); // automatically checks if called
-        dispatch(event);
-        assert.equal(stub.num_calls, 1);
-        assert.equal(user_settings.color_scheme, 1);
     }
 
     {
