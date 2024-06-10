@@ -114,7 +114,6 @@ server][zulip-server-import].
 [slack-import]: https://zulip.com/help/import-from-slack
 [mattermost-import]: https://zulip.com/help/import-from-mattermost
 [rocketchat-import]: https://zulip.com/help/import-from-rocketchat
-[gitter-import]: https://zulip.com/help/import-from-gitter
 [zulip-cloud-import]: export-and-import.md#import-into-a-new-zulip-server
 [zulip-server-import]: export-and-import.md#import-into-a-new-zulip-server
 
