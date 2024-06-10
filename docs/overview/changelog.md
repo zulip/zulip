@@ -7,7 +7,7 @@ up-to-date list of all changes.
 
 ## Zulip Server 8.x series
 
-### Zulip Server 8.4
+### Zulip Server 8.8
 
 _Released 2024-05-09_
 
