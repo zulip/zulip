@@ -1211,6 +1211,8 @@ export function narrow_by_recipient(target_id, opts) {
     opts = {then_select_id: target_id, ...opts};
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
+    const emails = message.reply_to.split(",");
+    const reply_to = people.sort_emails_by_username(emails);
 
     switch (message.type) {
         case "private":
@@ -1224,7 +1226,7 @@ export function narrow_by_recipient(target_id, opts) {
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            show([{operator: "dm", operand: message.reply_to}], opts);
+            show([{operator: "dm", operand: reply_to.join(",")}], opts);
             break;
 
         case "stream":
