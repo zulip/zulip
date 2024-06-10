@@ -32,6 +32,7 @@ import type {StreamPillData} from "./stream_pill";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as timerender from "./timerender";
+import * as topic_link_util from "./topic_link_util";
 import * as typeahead_helper from "./typeahead_helper";
 import type {UserOrMentionPillData} from "./typeahead_helper";
 import type {UserGroupPillData} from "./user_group_pill";
@@ -1088,14 +1089,23 @@ export function content_typeahead_selected(
             if (beginning.endsWith("#*")) {
                 beginning = beginning.slice(0, -2);
             }
-            beginning += "#**" + item.name;
             if (event && event.key === ">") {
                 // Normally, one accepts typeahead with `Tab` or `Enter`, but when completing
                 // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
                 // as a completion that automatically sets up stream+topic typeahead for you.
-                beginning += ">";
+
+                // Even if the stream name produces a broken link, we'll go with the #** syntax
+                // here since we are dealing with it along with the topic name later.
+                beginning += "#**" + item.name + ">";
             } else {
-                beginning += "** ";
+                // for stream links, we use markdown link syntax if the #**stream** syntax
+                // will generate a broken url.
+                if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
+                    // use markdown link syntax
+                    beginning += topic_link_util.get_fallback_markdown_link(item.name);
+                } else {
+                    beginning += "#**" + item.name + "** ";
+                }
             }
             compose_validate.warn_if_private_stream_is_linked(item, $textbox);
             break;
@@ -1132,11 +1142,19 @@ export function content_typeahead_selected(
             break;
         }
         case "topic_list": {
-            // Stream + topic mention typeahead; close the stream+topic mention syntax
-            // with the topic and the final **.  Note that token.length can be 0
-            // if we are completing from `**streamname>`.
-            const start = beginning.length - token.length;
-            beginning = beginning.slice(0, start) + item.topic + "** ";
+            // Stream + topic mention typeahead; close the stream+topic mention syntax with
+            // the topic and the final ** or replace it with markdown link syntax if topic name
+            // will cause encoding issues.
+            // "beginning" contains all the text before the cursor, so we use lastIndexOf to
+            // avoid any other stream+topic mentions in the message.
+            const syntax_start_index = beginning.lastIndexOf("#**");
+            beginning =
+                beginning.slice(0, syntax_start_index) +
+                topic_link_util.get_stream_topic_link_syntax(
+                    beginning.slice(syntax_start_index),
+                    item.topic,
+                ) +
+                " ";
             break;
         }
         case "time_jump": {
