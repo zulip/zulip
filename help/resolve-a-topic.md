@@ -66,6 +66,11 @@ topics](/help/restrict-moving-messages).
 
 ## Mark a topic as unresolved
 
+Marking a topic as unresolved normally triggers an automated notice from the
+notification bot. However, unresolving a topic right after you resolved it
+removes the original notice instead. This is helpful if you resolved a topic by
+accident.
+
 {start_tabs}
 
 {tab|desktop-web}
