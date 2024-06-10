@@ -914,7 +914,7 @@ class BillingSession(ABC):
             )
 
         if charge_automatically:
-            collection_method: Literal["charge_automatically" | "send_invoice"] = (
+            collection_method: Literal["charge_automatically", "send_invoice"] = (
                 "charge_automatically"
             )
         else:
@@ -3131,7 +3131,7 @@ class BillingSession(ABC):
                     )
 
                 if plan.charge_automatically:
-                    collection_method: Literal["charge_automatically" | "send_invoice"] = (
+                    collection_method: Literal["charge_automatically", "send_invoice"] = (
                         "charge_automatically"
                     )
                     days_until_due = None
