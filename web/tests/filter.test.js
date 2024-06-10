@@ -2165,3 +2165,42 @@ run_test("is_in_home", () => {
     ]);
     assert.ok(!filter3.is_in_home());
 });
+
+run_test("equals", () => {
+    let terms = [{operator: "channel", operand: "Foo"}];
+    let filter = new Filter(terms);
+
+    assert.ok(filter.equals(new Filter(terms)));
+    assert.ok(!filter.equals(new Filter([])));
+    assert.ok(!filter.equals(new Filter([{operand: "Bar", operator: "channel"}])));
+    assert.ok(!filter.equals(new Filter([...terms, {operator: "topic", operand: "Bar"}])));
+
+    terms = [
+        {operator: "channel", operand: "Foo"},
+        {operator: "topic", operand: "Bar"},
+    ];
+    filter = new Filter(terms);
+    assert.ok(
+        filter.equals(
+            new Filter([
+                {operator: "topic", operand: "Bar"},
+                {operator: "channel", operand: "Foo"},
+            ]),
+        ),
+    );
+    assert.ok(!filter.equals(new Filter([...terms, {operator: "near", operand: "10"}])));
+
+    // Exclude `near` operator from comparison.
+    assert.ok(filter.equals(new Filter([...terms, {operator: "near", operand: "10"}]), ["near"]));
+    assert.ok(
+        filter.equals(
+            new Filter([
+                {operator: "near", operand: "10"},
+                {operator: "topic", operand: "Bar"},
+                {operator: "channel", operand: "Foo"},
+                {operator: "near", operand: "101"},
+            ]),
+            ["near"],
+        ),
+    );
+});
