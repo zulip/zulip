@@ -106,7 +106,7 @@
                     </a>
                 </li>
                 <li role="none" class="popover-menu-list-item">
-                    <div role="group" id="theme-switcher" class="tab-picker" aria-label="{{t 'App theme' }}">
+                    <div role="group" class="tab-picker popover-menu-tab-group" aria-label="{{t 'App theme' }}">
                         <input type="radio" id="select-automatic-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.automatic.code}}" {{#if (eq user_color_scheme color_scheme_values.automatic.code)}}checked{{/if}} />
                         <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-automatic-theme" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
                             <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>

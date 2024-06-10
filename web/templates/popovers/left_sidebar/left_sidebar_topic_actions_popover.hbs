@@ -7,7 +7,7 @@
         {{#unless is_spectator}}
         <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="popover-menu-list-item">
-            <div role="group" class="sidebar-topic-visibility-switcher tab-picker" aria-label="{{t 'Topic visibility' }}">
+            <div role="group" class="tab-picker popover-menu-tab-group" aria-label="{{t 'Topic visibility' }}">
                 <input type="radio" id="sidebar-topic-muted-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.MUTED}}" {{#if (eq visibility_policy all_visibility_policies.MUTED)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="sidebar-topic-muted-policy" aria-label="{{t 'Mute' }}" data-tippy-content="{{t 'Mute' }}" tabindex="0">
                     <i class="zulip-icon zulip-icon-mute-new" aria-hidden="true"></i>
