@@ -1246,6 +1246,10 @@ ul {
     }
 
     .tab-picker {
+        &.popover-menu-tab-group {
+            margin: 2px 10px;
+        }
+
         .tab-option-content:focus-visible {
             border-radius: 4px;
             /* Override the default focus style */
@@ -1437,9 +1441,4 @@ ul.popover-menu-list {
         border-radius: 3px;
         border: 1px solid var(--color-border-popover-hotkey-hint);
     }
-}
-
-#theme-switcher,
-.sidebar-topic-visibility-switcher {
-    margin: 2px 10px;
 }
