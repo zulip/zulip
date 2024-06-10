@@ -208,9 +208,9 @@
                             Your subscription will renew automatically. Your bill will vary based on the number of active users in your organization.
                             You can also <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}">purchase a fixed number of licenses</a> instead.
                             {% if is_self_hosting_management_page %}
-                                See <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-billing-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                See <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                             {% else %}
-                                See <a href="/help/zulip-cloud-billing#how-does-manual-billing-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                See <a href="/help/zulip-cloud-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                             {% endif %}
                         </p>
                         <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
@@ -220,15 +220,15 @@
                             {% if not page_params.setup_payment_by_invoice %}
                                 You can also <a href="{{ page_params.billing_base_url }}/upgrade/?tier={{ page_params.tier }}">choose automatic license management</a> instead.
                                 {% if is_self_hosting_management_page %}
-                                    See <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-billing-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                    See <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                                 {% else %}
-                                    See <a href="/help/zulip-cloud-billing#how-does-automatic-billing-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                    See <a href="/help/zulip-cloud-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                                 {% endif %}
                             {% else %}
                                 {% if is_self_hosting_management_page %}
-                                    See <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-billing-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                    See <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                                 {% else %}
-                                    See <a href="/help/zulip-cloud-billing#how-does-manual-billing-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                    See <a href="/help/zulip-cloud-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                                 {% endif %}
                             {% endif %}
                         </p>
