@@ -144,11 +144,11 @@ tool.
 You can always use a credit card to pay. If you would like to pay by invoice,
 you will need to sign up for an annual plan.
 
-### How does automatic billing work?
+### How does automatic license management work?
 
 {!automatic-billing.md!}
 
-### How does manual billing work?
+### How does manual license management work?
 
 {!manual-billing-intro.md!}
 
