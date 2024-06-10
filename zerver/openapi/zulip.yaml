@@ -1103,8 +1103,6 @@ paths:
                                       "full_name": "full name",
                                       "timezone": "",
                                       "is_active": true,
-                                      "paid_subscription": true,
-                                      "paid_subscription_date": "2020-07-15T15:04:02.030833+00:00",
                                       "date_joined": "2020-07-15T15:04:02.030833+00:00",
                                       "avatar_url": "https://secure.gravatar.com/avatar/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
                                       "profile_data": {},
