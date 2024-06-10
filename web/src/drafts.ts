@@ -354,9 +354,10 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
     const recipient_emails = draft.private_message_recipient
         .split(",")
         .filter((email) => people.is_valid_email_for_compose(email));
+    const sorted_recipient_emails = people.sort_emails_by_username(recipient_emails);
     return {
         type: "private",
-        private_message_recipient: recipient_emails.join(","),
+        private_message_recipient: sorted_recipient_emails.join(","),
         content: draft.content,
     };
 }

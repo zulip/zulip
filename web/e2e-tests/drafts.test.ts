@@ -212,7 +212,7 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
         page,
         common.fullname.hamlet,
     );
-    await common.pm_recipient.expect(page, `${hamlet_internal_email},${cordelia_internal_email}`);
+    await common.pm_recipient.expect(page, `${cordelia_internal_email},${hamlet_internal_email}`);
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
         "Cordelia, Lear's daughter, King Hamlet - Zulip Dev - Zulip",
