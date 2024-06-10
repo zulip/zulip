@@ -219,6 +219,50 @@ function handle_post_message_list_change(
     compose_recipient.handle_middle_pane_transition();
 }
 
+function try_rendering_locally_for_same_narrow(filter, opts) {
+    if (opts.then_select_id || opts.then_select_offset) {
+        // This function is designed to navigate user to a target message
+        // specified via `near` operator, which doesn't handle
+        // `then_select_id` or `then_select_offset` to avoid targeting
+        // the wrong message.
+        return false;
+    }
+
+    const current_filter = narrow_state.filter();
+    if (!current_filter) {
+        return false;
+    }
+
+    // If the difference between the current filter and the new filter
+    // is just a `near` operator, or just the value of a `near` operator,
+    // we can render the new filter without a rerender of the message list
+    // if the target message in the `near` operator is already rendered.
+    const excluded_operators = ["near"];
+    if (!filter.equals(current_filter, excluded_operators)) {
+        return false;
+    }
+
+    if (filter.has_operator("near")) {
+        const target_id = Number.parseInt(filter.operands("near")[0], 10);
+        if (!message_lists.current?.get(target_id)) {
+            return false;
+        }
+
+        const currently_selected_id = message_lists.current?.selected_id();
+        if (currently_selected_id !== target_id) {
+            message_lists.current.select_id(target_id, {
+                then_scroll: true,
+            });
+        }
+
+        message_lists.current.data.filter = filter;
+        update_hash_to_match_filter(filter);
+        return true;
+    }
+
+    return false;
+}
+
 export function show(raw_terms, opts) {
     /* Main entry point for switching to a new view / message list.
 
@@ -256,6 +300,11 @@ export function show(raw_terms, opts) {
         raw_terms = [{operator: "is", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
+
+    if (try_rendering_locally_for_same_narrow(filter, opts)) {
+        return;
+    }
+
     const is_combined_feed_global_view = filter.is_in_home();
     const is_narrowed_to_combined_feed_view = narrow_state.filter()?.is_in_home();
     if (is_narrowed_to_combined_feed_view && is_combined_feed_global_view) {
