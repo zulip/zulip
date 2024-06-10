@@ -1103,6 +1103,8 @@ paths:
                                       "full_name": "full name",
                                       "timezone": "",
                                       "is_active": true,
+                                      "paid_subscription": true,
+                                      "paid_subscription_date": "2020-07-15T15:04:02.030833+00:00",
                                       "date_joined": "2020-07-15T15:04:02.030833+00:00",
                                       "avatar_url": "https://secure.gravatar.com/avatar/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
                                       "profile_data": {},
@@ -8118,6 +8120,8 @@ paths:
                               "is_guest": false,
                               "date_joined": "2019-10-20T07:50:53.728864+00:00",
                               "full_name": "aaron",
+                              "paid_subscription": false,
+                              "paid_subscription_date": "2019-10-20T07:50:53.728864+00:00",
                             },
                             {
                               "date_joined": "2019-10-20T07:50:53.729659+00:00",
@@ -8158,6 +8162,8 @@ paths:
                               "is_active": true,
                               "email": "hamlet@zulip.com",
                               "delivery_email": null,
+                              "paid_subscription": false,
+                              "paid_subscription_date": "2019-10-20T07:50:53.728864+00:00",
                             },
                             {
                               "bot_owner_id": 11,
@@ -8176,6 +8182,8 @@ paths:
                               "bot_type": 1,
                               "timezone": "",
                               "is_bot": true,
+                              "paid_subscription": false,
+                              "paid_subscription_date": "2019-10-20T07:50:53.728864+00:00",
                             },
                           ],
                       }
@@ -8430,6 +8438,21 @@ paths:
                         description: |
                           A boolean indicating if the requesting user is
                           a billing administrator.
+
+                          **Changes**: New in Zulip 5.0 (feature level 73).
+                      paid_subscription:
+                        type: boolean
+                        description: |
+                          A boolean indicating if the requesting user has
+                          paid his subscription.
+
+                          **Changes**: New in Zulip 5.0 (feature level 73).
+                      paid_subscription_date:
+                        type: string
+                        nullable: true
+                        description: |
+                          A string indicating if the requesting user has
+                          a subscription payment date.
 
                           **Changes**: New in Zulip 5.0 (feature level 73).
                         example: false
@@ -15644,6 +15667,18 @@ paths:
                           Whether the current user is a billing administrator.
 
                           **Changes**: New in Zulip 5.0 (feature level 73).
+                      paid_subscription:
+                        type: boolean
+                        description: |
+                          Whether the member has paid his subscription.
+
+                      paid_subscription_date:
+                        type: string
+                        nullable: true
+                        description: |
+                          Whether the current member has a payment date for his subscription.
+
+                          **Changes**: New in Zulip 5.0 (feature level 73).
                       is_moderator:
                         type: boolean
                         description: |
@@ -15711,6 +15746,8 @@ paths:
                                 is_admin: {}
                                 is_guest: {}
                                 is_billing_admin: {}
+                                paid_subscription: {}
+                                paid_subscription_date: {}
                                 is_bot: {}
                                 # Referenced schema properties are rendered before any
                                 # non-referenced properties in the API documentation, so
@@ -20032,6 +20069,8 @@ components:
             is_admin: {}
             is_guest: {}
             is_billing_admin: {}
+            paid_subscription: {}
+            paid_subscription_date: {}
             is_bot: {}
             bot_type:
               nullable: true
@@ -20104,6 +20143,21 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user is a billing administrator.
+
+            **Changes**: New in Zulip 5.0 (feature level 73).
+        paid_subscription:
+          type: boolean
+          description: |
+            A boolean specifying whether the user has paid his
+            subscription.
+
+            **Changes**: New in Zulip 5.0 (feature level 73).
+        paid_subscription_date:
+          type: string
+          nullable: true
+          description: |
+            A string specifying whether the user has payment subscription
+            date.
 
             **Changes**: New in Zulip 5.0 (feature level 73).
         is_bot:

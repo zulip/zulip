@@ -485,7 +485,7 @@ def format_user_row(
         timezone=canonicalize_timezone(row["timezone"]),
         is_active=row["is_active"],
         paid_subscription=row["paid_subscription"],
-        paid_subscription_date=row["paid_subscription_date"].isoformat(),
+        paid_subscription_date=str(row["paid_subscription_date"]),
         date_joined=row["date_joined"].isoformat(),
         delivery_email=delivery_email,
     )
