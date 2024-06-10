@@ -246,6 +246,8 @@
 
         .search_list_item .pill-container {
             margin-left: 5px;
+            /* This contains only one pill, which handles its own border */
+            border: none;
             cursor: pointer;
             padding: 0;
         }
@@ -253,7 +255,11 @@
         .pill {
             align-items: baseline;
             margin: 0;
-            border: none;
+
+            &:focus {
+                /* Keep the border the same color, there's no user interaction for users in the typeahead menu */
+                border-color: var(--color-background-input-pill);
+            }
 
             .exit {
                 display: none;

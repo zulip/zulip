@@ -479,6 +479,18 @@
     --color-background-text-group-mention: hsl(183deg 60% 45% / 18%);
     --color-background-text-hover-group-mention: hsl(183deg 60% 45% / 30%);
 
+    /* Input pills */
+    --color-background-input-pill: hsl(237deg 68% 94%);
+    --color-focus-outline-input-pill: hsl(240deg 50% 50%);
+    --color-input-pill-close: hsl(240deg 60% 65%);
+    --color-background-input-pill-exit-hover: hsla(240deg 70% 70% / 15%);
+    --color-background-deactivated-user-pill: hsl(8deg 96% 91%);
+    --color-focus-outline-deactivated-user-pill: hsl(4deg 75% 53%);
+    --color-close-deactivated-user-pill: hsl(4deg 75% 53%);
+    --color-background-exit-hover-deactivated-user-pill: hsl(
+        4deg 75% 53% / 15%
+    );
+
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
@@ -835,6 +847,16 @@
     --color-background-text-hover-direct-mention: hsl(240deg 52% 60% / 45%);
     --color-background-text-group-mention: hsl(183deg 52% 40% / 20%);
     --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
+
+    /* Input pills */
+    --color-background-input-pill: hsl(240deg 65% 60% / 22%);
+    --color-focus-outline-input-pill: hsl(0deg 0% 100% / 60%);
+    --color-input-pill-close: hsl(240deg 50% 74%);
+    --color-background-input-pill-exit-hover: hsl(0deg 0% 100% / 7%);
+    --color-background-deactivated-user-pill: hsl(360deg 97% 25%);
+    --color-focus-outline-deactivated-user-pill: hsl(0deg 0% 100% / 70%);
+    --color-close-deactivated-user-pill: hsl(7deg 100% 74%);
+    --color-background-exit-hover-deactivated-user-pill: hsl(0deg 0% 100% / 7%);
 
     /* Inbox view */
     --color-background-inbox: var(--color-background);

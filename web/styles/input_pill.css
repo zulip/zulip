@@ -20,16 +20,14 @@
         margin: 1px 2px;
 
         color: inherit;
-        border: 1px solid hsl(0deg 0% 0% / 15%);
+        border: 1px solid transparent;
 
         border-radius: 4px;
-        background-color: hsl(0deg 0% 0% / 7%);
+        background-color: var(--color-background-input-pill);
         cursor: pointer;
 
         &:focus {
-            color: hsl(0deg 0% 100%);
-            border: 1px solid hsl(176deg 78% 28%);
-            background-color: hsl(176deg 49% 42%);
+            border-color: var(--color-focus-outline-input-pill);
             outline: none;
         }
 
@@ -56,14 +54,62 @@
             text-overflow: ellipsis;
         }
 
+        .pill-close-button {
+            font-size: 10px;
+            text-decoration: none;
+            /* Let the close button's box stretch,
+               but no larger than the height of the
+               banner box when the action button
+               achieves its full height (margin,
+               padding, and height), which keeps
+               the X vertically centered with it. */
+            align-self: stretch;
+            max-height: 52px;
+            /* Display as flexbox to better control
+               the X icon's position. This creates
+               an anonymous flexbox item out of the
+               ::before content where the icon sits. */
+            display: flex;
+            align-items: center;
+            /* !important overrides `.dark-theme:root a:hover` */
+            color: var(--color-input-pill-close) !important;
+            opacity: 0.7;
+        }
+
         .exit {
-            opacity: 0.5;
-            font-size: 1.3em;
-            margin-right: 3px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            justify-content: center;
+            margin-right: 2px;
+            border-radius: 2px;
         }
 
         .exit:hover {
-            opacity: 1;
+            background: var(--color-background-input-pill-exit-hover);
+
+            .pill-close-button {
+                opacity: 1;
+            }
+        }
+
+        &.deactivated-pill {
+            background-color: var(--color-background-deactivated-user-pill);
+
+            &:focus {
+                border-color: var(--color-focus-outline-deactivated-user-pill);
+            }
+
+            .pill-close-button {
+                /* !important overrides `.dark-theme:root a:hover` */
+                color: var(--color-close-deactivated-user-pill) !important;
+            }
+
+            .exit:hover {
+                background: var(
+                    --color-background-exit-hover-deactivated-user-pill
+                );
+            }
         }
     }
 
@@ -127,10 +173,6 @@
     width: 100%;
     box-sizing: border-box;
     background-color: var(--color-background-invitee-emails-pill-container);
-}
-
-.deactivated-pill {
-    background-color: hsl(0deg 86% 86%) !important;
 }
 
 .add_subscribers_container .pill-container,
