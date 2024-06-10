@@ -14,5 +14,4 @@ export {page_params, page_params_parse_time} from "./base_page_params";
 export {initiate as initiate_reload} from "./reload";
 export {page_load_time} from "./setup";
 export {current_user, realm} from "./state_data";
-// @ts-expect-error We haven't converted stream_create_subscribers.js yet
 export {add_user_id_to_new_stream} from "./stream_create_subscribers";
