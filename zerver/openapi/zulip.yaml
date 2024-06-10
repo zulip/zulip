@@ -20149,7 +20149,7 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user has paid his
-            subscription.
+            subscriptions.
 
             **Changes**: New in Zulip 5.0 (feature level 73).
         paid_subscription_date:
