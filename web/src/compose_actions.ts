@@ -138,10 +138,22 @@ let autosize_callback_opts: ComposeActionsStartOpts;
 export function autosize_message_content(opts: ComposeActionsStartOpts): void {
     if (!compose_ui.is_expanded()) {
         autosize_callback_opts = opts;
+        let has_resized_once = false;
         $("textarea#compose-textarea")
             .off("autosize:resized")
-            .one("autosize:resized", () => {
-                maybe_scroll_up_selected_message(autosize_callback_opts);
+            .on("autosize:resized", (e) => {
+                if (!has_resized_once) {
+                    has_resized_once = true;
+                    maybe_scroll_up_selected_message(autosize_callback_opts);
+                }
+                const height = $(e.currentTarget).height()!;
+                const max_height = Number.parseFloat($(e.currentTarget).css("max-height"));
+                // We add 5px to account for minor differences in height detected in Chrome.
+                if (height + 5 >= max_height) {
+                    $("#compose").addClass("automatically-expanded");
+                } else {
+                    $("#compose").removeClass("automatically-expanded");
+                }
             });
         autosize($("textarea#compose-textarea"));
     }

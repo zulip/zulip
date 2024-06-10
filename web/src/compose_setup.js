@@ -439,6 +439,13 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
+        compose_ui.make_compose_box_intermediate_size();
+    });
+
+    $("#compose").on("click", ".maximize-composebox-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         compose_ui.make_compose_box_full_size();
     });
 

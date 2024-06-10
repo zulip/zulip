@@ -376,6 +376,8 @@ export function make_compose_box_full_size(): void {
     // box else it will interfere and shrink its size accordingly.
     autosize.destroy($("textarea#compose-textarea"));
 
+    $("#compose").removeClass("compose-intermediate");
+    $("#compose").removeClass("automatically-expanded");
     $("#compose").addClass("compose-fullscreen");
 
     // Set the `top` property of compose-box.
@@ -385,10 +387,29 @@ export function make_compose_box_full_size(): void {
     $("textarea#compose-textarea").trigger("focus");
 }
 
+export function make_compose_box_intermediate_size(): void {
+    set_expanded_status(true, false);
+
+    // The autosize should be destroyed for the intermediate size compose
+    // box else it will interfere and shrink its size accordingly.
+    autosize.destroy($("textarea#compose-textarea"));
+
+    $("#compose").removeClass("compose-fullscreen");
+    $("#compose").removeClass("automatically-expanded");
+    $("#compose").addClass("compose-intermediate");
+
+    // Unset the `top` property of compose-box.
+    set_compose_box_top(false);
+
+    $("textarea#compose-textarea").trigger("focus");
+}
+
 export function make_compose_box_original_size(): void {
     set_expanded_status(false);
 
     $("#compose").removeClass("compose-fullscreen");
+    $("#compose").removeClass("compose-intermediate");
+    $("#compose").removeClass("automatically-expanded");
 
     // Unset the `top` property of compose-box.
     set_compose_box_top(false);
