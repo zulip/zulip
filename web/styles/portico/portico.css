@@ -1021,10 +1021,6 @@ input.new-organization-button {
     font-family: "Source Sans 3 VF", sans-serif;
 }
 
-.error_page .container {
-    padding: 20px 0;
-}
-
 .error_page img {
     display: block;
     clear: right;
