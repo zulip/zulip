@@ -501,44 +501,42 @@ export function get_widget_for_dropdown_list_settings(
     }
 }
 
-export function set_default_code_language_widget(widget: DropdownWidget): void {
-    default_code_language_widget = widget;
-}
-
-export function set_new_stream_announcements_stream_widget(widget: DropdownWidget): void {
-    new_stream_announcements_stream_widget = widget;
-}
-
-export function set_signup_announcements_stream_widget(widget: DropdownWidget): void {
-    signup_announcements_stream_widget = widget;
-}
-
-export function set_zulip_update_announcements_stream_widget(widget: DropdownWidget): void {
-    zulip_update_announcements_stream_widget = widget;
-}
-
-export function set_create_multiuse_invite_group_widget(widget: DropdownWidget): void {
-    create_multiuse_invite_group_widget = widget;
-}
-
-export function set_can_remove_subscribers_group_widget(widget: DropdownWidget): void {
-    can_remove_subscribers_group_widget = widget;
-}
-
-export function set_can_access_all_users_group_widget(widget: DropdownWidget): void {
-    can_access_all_users_group_widget = widget;
-}
-
-export function set_can_mention_group_widget(widget: DropdownWidget): void {
-    can_mention_group_widget = widget;
+export function set_dropdown_setting_widget(property_name: string, widget: DropdownWidget): void {
+    switch (property_name) {
+        case "realm_new_stream_announcements_stream_id":
+            new_stream_announcements_stream_widget = widget;
+            break;
+        case "realm_signup_announcements_stream_id":
+            signup_announcements_stream_widget = widget;
+            break;
+        case "realm_zulip_update_announcements_stream_id":
+            zulip_update_announcements_stream_widget = widget;
+            break;
+        case "realm_default_code_block_language":
+            default_code_language_widget = widget;
+            break;
+        case "realm_create_multiuse_invite_group":
+            create_multiuse_invite_group_widget = widget;
+            break;
+        case "can_remove_subscribers_group":
+            can_remove_subscribers_group_widget = widget;
+            break;
+        case "realm_can_access_all_users_group":
+            can_access_all_users_group_widget = widget;
+            break;
+        case "can_mention_group":
+            can_mention_group_widget = widget;
+            break;
+        case "realm_can_create_public_channel_group":
+            can_create_public_channel_group_widget = widget;
+            break;
+        default:
+            blueslip.error("No dropdown list widget for property", {property_name});
+    }
 }
 
 export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
     new_group_can_mention_group_widget = widget;
-}
-
-export function set_can_create_public_channel_group_widget(widget: DropdownWidget): void {
-    can_create_public_channel_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(

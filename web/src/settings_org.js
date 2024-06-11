@@ -739,7 +739,8 @@ export function init_dropdown_widgets() {
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
-    settings_components.set_new_stream_announcements_stream_widget(
+    settings_components.set_dropdown_setting_widget(
+        "realm_new_stream_announcements_stream_id",
         new_stream_announcements_stream_widget,
     );
     new_stream_announcements_stream_widget.setup();
@@ -764,7 +765,10 @@ export function init_dropdown_widgets() {
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
-    settings_components.set_signup_announcements_stream_widget(signup_announcements_stream_widget);
+    settings_components.set_dropdown_setting_widget(
+        "realm_signup_announcements_stream_id",
+        signup_announcements_stream_widget,
+    );
     signup_announcements_stream_widget.setup();
 
     const zulip_update_announcements_stream_widget = new dropdown_widget.DropdownWidget({
@@ -787,7 +791,8 @@ export function init_dropdown_widgets() {
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
-    settings_components.set_zulip_update_announcements_stream_widget(
+    settings_components.set_dropdown_setting_widget(
+        "realm_zulip_update_announcements_stream_id",
         zulip_update_announcements_stream_widget,
     );
     zulip_update_announcements_stream_widget.setup();
@@ -825,7 +830,10 @@ export function init_dropdown_widgets() {
             );
         },
     });
-    settings_components.set_default_code_language_widget(default_code_language_widget);
+    settings_components.set_dropdown_setting_widget(
+        "realm_default_code_block_language",
+        default_code_language_widget,
+    );
     default_code_language_widget.setup();
 
     const create_multiuse_invite_group_widget = new dropdown_widget.DropdownWidget({
@@ -854,7 +862,8 @@ export function init_dropdown_widgets() {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
-    settings_components.set_create_multiuse_invite_group_widget(
+    settings_components.set_dropdown_setting_widget(
+        "realm_create_multiuse_invite_group",
         create_multiuse_invite_group_widget,
     );
     create_multiuse_invite_group_widget.setup();
@@ -885,7 +894,10 @@ export function init_dropdown_widgets() {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
-    settings_components.set_can_access_all_users_group_widget(can_access_all_users_group_widget);
+    settings_components.set_dropdown_setting_widget(
+        "realm_can_access_all_users_group",
+        can_access_all_users_group_widget,
+    );
     can_access_all_users_group_widget.setup();
 
     const can_create_public_channel_group_widget = new dropdown_widget.DropdownWidget({
@@ -914,7 +926,8 @@ export function init_dropdown_widgets() {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
-    settings_components.set_can_create_public_channel_group_widget(
+    settings_components.set_dropdown_setting_widget(
+        "realm_can_create_public_channel_group",
         can_create_public_channel_group_widget,
     );
     can_create_public_channel_group_widget.setup();

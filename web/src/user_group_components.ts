@@ -48,7 +48,10 @@ export function setup_permissions_dropdown(group: UserGroup, for_group_creation:
     if (for_group_creation) {
         settings_components.set_new_group_can_mention_group_widget(can_mention_group_widget);
     } else {
-        settings_components.set_can_mention_group_widget(can_mention_group_widget);
+        settings_components.set_dropdown_setting_widget(
+            "can_mention_group",
+            can_mention_group_widget,
+        );
     }
     can_mention_group_widget.setup();
 }
