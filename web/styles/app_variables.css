@@ -85,6 +85,23 @@
        precise heights, and in the case of square elements,
        a matching precise width as well. */
     --length-line-fitted-block: calc(var(--base-line-height-unitless) * 1em);
+    /* Emoji elements are allowed to exceed the perfectly-fit
+       line-height. Classic Zulip emoji sizing is a 20px square
+       emoji at a 14px font-size, for 1.4286em at 14px/1em. */
+    --length-line-oversize-block: 1.4286em;
+    /* To avoid disturbing the flow of text around emoji or other
+       oversize inline blocks, we calculate a negative margin
+       adjustment for offsetting the emoji, top and bottom. */
+    --length-line-oversize-block-margin-adjust: calc(
+        (
+                (
+                        min(
+                            var(--base-maximum-block-height-em),
+                            var(--length-line-fitted-block)
+                        )
+                    ) - var(--length-line-oversize-block)
+            ) / 2
+    );
 
     /* Legacy values */
     --legacy-body-line-height-unitless: calc(20 / 14);

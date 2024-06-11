@@ -138,22 +138,18 @@
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
     .emoji {
-        /* The box for emoji is kept below a certain maximum, regardless
-           of more open line-heights. This prevents emoji from sizing
-           excessively larger than the surrounding text's content area. */
-        height: calc(
-            min(
-                var(--base-maximum-block-height-em),
-                var(--length-line-fitted-block)
-            )
-        );
-        width: calc(
-            min(
-                var(--base-maximum-block-height-em),
-                var(--length-line-fitted-block)
-            )
-        );
-        /* We set the alignment programmatically, as an em value. */
+        /* The box for emoji is allowed to be larger than the size of the
+           line-height. */
+        height: var(--length-line-oversize-block);
+        width: var(--length-line-oversize-block);
+        /* A negative top and bottom margin adjustment allows emoji
+           to size larger than the size of the line, without disturbing
+           the surrounding lines of text. */
+        margin: var(--length-line-oversize-block-margin-adjust) auto;
+        /* We set the alignment programmatically, as an em value.
+           Because the negative margins above are equal, top and bottom,
+           this vertical offset value works without adjustment for
+           oversize emoji blocks. */
         vertical-align: var(--line-fitted-vertical-align-offset-em);
     }
 
