@@ -666,7 +666,7 @@ paths:
                                     **Changes**: Removed `email_address` field from the dictionary
                                     in Zulip 8.0 (feature level 226).
 
-                                    **Changes**: Removed `role` field from the dictionary
+                                    Removed `role` field from the dictionary
                                     in Zulip 6.0 (feature level 133).
                                   items:
                                     $ref: "#/components/schemas/Subscriptions"
@@ -1068,7 +1068,7 @@ paths:
                                 `can_access_all_users_group` policy would receive a fake "Unknown
                                 user" event for such a user.
 
-                                **Changes**: Starting with Zulip 8.0 (feature level 228),
+                                Starting with Zulip 8.0 (feature level 228),
                                 this event is also sent when a guest user gains access to
                                 a user.
                               properties:
@@ -1115,12 +1115,12 @@ paths:
                               description: |
                                 Event sent to guest users when they lose access to a user.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event was deprecated.
+                                **Changes**: As of Zulip 8.0 (feature level 228), this event is no
+                                longer deprecated.
 
-                                **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
-
-                                Previously, this event was sent to all users in a Zulip organization when a
-                                user was deactivated.
+                                In Zulip 8.0 (feature level 222), this event was deprecated and no
+                                longer sent to clients. Prior to this feature level, it was sent to all
+                                users in a Zulip organization when a user was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2158,7 +2158,7 @@ paths:
                                     registering their event queue will not receive this legacy
                                     event type.
 
-                                    **Changes**: Before Zulip 3.0 (feature level 1), the `muted_topics`
+                                    Before Zulip 3.0 (feature level 1), the `muted_topics`
                                     array objects were 2-item tuples and did not include the timestamp
                                     information for when the topic was muted.
                                   items:
@@ -3183,7 +3183,7 @@ paths:
                                             **Changes**: Before Zulip 9.0 (feature level 258), the
                                             `can_mention_group` field was always an integer.
 
-                                            **Changes**: Before Zulip 8.0 (feature level 198),
+                                            Before Zulip 8.0 (feature level 198),
                                             the `can_mention_group` setting
                                             was named `can_mention_group_id`.
 
@@ -9464,7 +9464,7 @@ paths:
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
 
-                          **Changes**: Removed `role` field from the dictionary
+                          Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                         items:
                           $ref: "#/components/schemas/Subscriptions"
@@ -11679,7 +11679,7 @@ paths:
                             that are sent to clients. Prior to this feature level, updating either
                             property only generated a subscription update event for
                             `"in_home_view"`. <br>
-                            **Changes**: Prior to Zulip 2.1.0, this feature was represented
+                            Prior to Zulip 2.1.0, this feature was represented
                             by the more confusingly named `"in_home_view"` (with the
                             opposite value: `in_home_view=!is_muted`); for
                             backwards-compatibility, modern Zulip still accepts that property.
@@ -13048,7 +13048,9 @@ paths:
                       incomplete user database. If true, then the `realm_users` array in the `register`
                       response will not include data for inaccessible users and clients of guest users will
                       not receive `realm_user op:add` events for newly created users that are not accessible
-                      to the current user. **Changes**: New in Zulip 8.0 (feature level 232). This
+                      to the current user.
+                      <br />
+                      **Changes**: New in Zulip 8.0 (feature level 232). This
                       capability is for backwards-compatibility.
 
                     [help-linkifiers]: /help/add-a-custom-linkifier
@@ -13393,7 +13395,7 @@ paths:
                           response if the `user_topic` object, which generalizes and replaces
                           this field, is not explicitly requested via `fetch_event_types`.
 
-                          **Changes**: Before Zulip 3.0 (feature level 1), the `muted_topics`
+                          Before Zulip 3.0 (feature level 1), the `muted_topics`
                           array objects were 2-item tuples and did not include the timestamp
                           information for when the topic was muted.
                         items:
@@ -13701,7 +13703,7 @@ paths:
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
 
-                          **Changes**: Removed `role` field from the dictionary
+                          Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                       unsubscribed:
                         type: array
@@ -13720,7 +13722,7 @@ paths:
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
 
-                          **Changes**: Removed `role` field from the dictionary
+                          Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                       never_subscribed:
                         type: array
@@ -15336,9 +15338,11 @@ paths:
                           All users will receive a warning/reminder when using
                           mentions in large channels, even when permitted to do so.
 
-                          **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
-                          Zulip 4.0 (feature level 62). Channel administrators option removed in
-                          Zulip 6.0 (feature level 133).
+                          **Changes**: In Zulip 6.0 (feature level 133), channel administrators option removed.
+
+                          In Zulip 4.0 (feature level 62), moderators option added.
+
+                          New in Zulip 4.0 (feature level 33).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -17389,23 +17393,23 @@ paths:
         the handling of any invalid parameters present in a request
         (see feature level 78 change below).
 
-        The `/settings/display` and `/settings/notifications`
-        endpoints are now deprecated aliases for this endpoint for
-        backwards-compatibility, and will be removed once clients have
-        migrated to use this endpoint.
+        As of feature level 80, the `PATCH /settings/display` and
+        `PATCH /settings/notifications` endpoints are deprecated aliases
+        for this endpoint for backwards-compatibility, and will be removed
+        once clients have migrated to use this endpoint.
 
-        **Changes**: Prior to Zulip 5.0 (feature level 78),
-        the `/settings` endpoint indicated which parameters it had
-        processed by including in the response object `"key": value`
-        entries for values successfully changed by the request. That
-        was replaced by the more ergonomic
+        Prior to Zulip 5.0 (feature level 78), this endpoint indicated
+        which parameters it had processed by including in the response
+        object `"key": value` entries for values successfully changed by
+        the request. That was replaced by the more ergonomic
         [`ignored_parameters_unsupported`][ignored-parameters] array.
 
-        The `/settings/notifications` and `/settings/display` endpoints
-        also had this behavior before they became aliases of `/settings`
-        in Zulip 5.0 (see feature level 80 change above).
+        The `PATCH /settings/notifications` and `PATCH /settings/display`
+        endpoints also had this behavior of indicating processed parameters
+        before they became aliases of this endpoint in Zulip 5.0 (see
+        feature level 80 change above).
 
-        Before these changes, request parameters that were not supported
+        Before feature level 78, request parameters that were not supported
         (or were unchanged) were silently ignored.
 
         [ignored-parameters]: /api/rest-error-handling#ignored-parameters
@@ -19011,7 +19015,7 @@ paths:
                         **Changes**: Before Zulip 9.0 (feature level 258), the
                         `can_mention_group` setting could only be set to an integer.
 
-                        **Changes**: Before Zulip 8.0 (feature level 198),
+                        Before Zulip 8.0 (feature level 198),
                         the `can_mention_group` setting was named `can_mention_group_id`.
 
                         New in Zulip 8.0 (feature level 191). Previously, groups
@@ -19165,10 +19169,10 @@ paths:
                     **Changes**: In Zulip 9.0 (feature level 260), this was updated
                     to only accept an object with `old` and `new` fields.
 
-                    **Changes**: Before Zulip 9.0 (feature level 258), the
+                    Before Zulip 9.0 (feature level 258), the
                     `can_mention_group` field was always an integer.
 
-                    **Changes**: Before Zulip 8.0 (feature level 198),
+                    Before Zulip 8.0 (feature level 198),
                     the `can_mention_group` setting was named `can_mention_group_id`.
 
                     New in Zulip 8.0 (feature level 191). Previously, groups
@@ -19323,7 +19327,7 @@ paths:
                                     **Changes**: Before Zulip 9.0 (feature level 258), the
                                     `can_mention_group` field was always an integer.
 
-                                    **Changes**: Before Zulip 8.0 (feature level 198),
+                                    Before Zulip 8.0 (feature level 198),
                                     the `can_mention_group` setting was named `can_mention_group_id`.
 
                                     New in Zulip 8.0 (feature level 191). Previously, groups
@@ -20506,7 +20510,7 @@ components:
                 **Changes**: Before Zulip 9.0 (feature level 258), the
                 `can_mention_group` field was always an integer.
 
-                **Changes**: Before Zulip 8.0 (feature level 198),
+                Before Zulip 8.0 (feature level 198),
                 the `can_mention_group` setting was named `can_mention_group_id`.
 
                 New in Zulip 8.0 (feature level 191). Previously, groups
