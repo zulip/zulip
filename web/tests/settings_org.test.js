@@ -26,7 +26,6 @@ const settings_bots = zrequire("settings_bots");
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
-const dropdown_widget = zrequire("dropdown_widget");
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -499,10 +498,7 @@ test("set_up", ({override, override_rewire}) => {
         upload_realm_logo_or_icon = f;
     };
 
-    override_rewire(dropdown_widget, "DropdownWidget", () => ({
-        setup: noop,
-        render: noop,
-    }));
+    override_rewire(settings_org, "init_dropdown_widgets", noop);
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
         $.create("<stub edit limit custom input parent>"),
     );
