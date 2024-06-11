@@ -29,7 +29,7 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
 });
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea: noop,
-    is_full_size: () => false,
+    is_expanded: () => false,
     set_focus: noop,
     compute_placeholder_text: noop,
 });

@@ -1455,7 +1455,7 @@ nav {
 
 #bottom_whitespace {
     display: block;
-    height: var(--max-unexpanded-compose-height);
+    height: var(--max-unmaximized-compose-height);
 }
 
 .operator_value {

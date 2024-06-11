@@ -62,6 +62,7 @@ export let shift_pressed = false; // true or false
 export let code_formatting_button_triggered = false; // true or false
 export let compose_textarea_typeahead: Typeahead<TypeaheadSuggestion> | undefined;
 let full_size_status = false; // true or false
+let expanded_status = false; // true or false
 
 export function set_compose_textarea_typeahead(typeahead: Typeahead<TypeaheadSuggestion>): void {
     compose_textarea_typeahead = typeahead;
@@ -71,13 +72,18 @@ export function set_code_formatting_button_triggered(value: boolean): void {
     code_formatting_button_triggered = value;
 }
 
-// Some functions to handle the full size status explicitly
-export function set_full_size(is_full: boolean): void {
+// Some functions to handle the expanded status explicitly
+export function set_expanded_status(is_expanded: boolean, is_full = is_expanded): void {
+    expanded_status = is_expanded;
     full_size_status = is_full;
     // Show typeahead at bottom of textarea on compose full size.
     if (compose_textarea_typeahead) {
         compose_textarea_typeahead.dropup = !is_full;
     }
+}
+
+export function is_expanded(): boolean {
+    return expanded_status;
 }
 
 export function is_full_size(): boolean {
@@ -87,7 +93,7 @@ export function is_full_size(): boolean {
 export function autosize_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
-    if (!is_full_size()) {
+    if (!is_expanded()) {
         autosize.update($textarea);
     }
 }
@@ -364,7 +370,7 @@ export function set_compose_box_top(set_top: boolean): void {
 }
 
 export function make_compose_box_full_size(): void {
-    set_full_size(true);
+    set_expanded_status(true);
 
     // The autosize should be destroyed for the full size compose
     // box else it will interfere and shrink its size accordingly.
@@ -380,7 +386,7 @@ export function make_compose_box_full_size(): void {
 }
 
 export function make_compose_box_original_size(): void {
-    set_full_size(false);
+    set_expanded_status(false);
 
     $("#compose").removeClass("compose-fullscreen");
 

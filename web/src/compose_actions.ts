@@ -136,7 +136,7 @@ function clear_box(): void {
 
 let autosize_callback_opts: ComposeActionsStartOpts;
 export function autosize_message_content(opts: ComposeActionsStartOpts): void {
-    if (!compose_ui.is_full_size()) {
+    if (!compose_ui.is_expanded()) {
         autosize_callback_opts = opts;
         $("textarea#compose-textarea")
             .off("autosize:resized")
@@ -376,7 +376,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
 
 export function cancel(): void {
     // As user closes the compose box, restore the compose box max height
-    if (compose_ui.is_full_size()) {
+    if (compose_ui.is_expanded()) {
         compose_ui.make_compose_box_original_size();
     }
 

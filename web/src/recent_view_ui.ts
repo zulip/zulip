@@ -1197,14 +1197,14 @@ function recenter_focus_if_off_screen(): void {
 function is_scroll_position_for_render(): boolean {
     const scroll_position = window.scrollY;
     const window_height = window.innerHeight;
-    // We allocate `--max-unexpanded-compose-height` in empty space
+    // We allocate `--max-unmaximized-compose-height` in empty space
     // below the last rendered row in recent view.
     //
     // We don't want user to see this empty space until there are no
     // new rows to render when the user is scrolling to the bottom of
     // the view. So, we render new rows when user has scrolled 2 / 3
     // of (the total scrollable height - the empty space).
-    const compose_max_height = $("html").css("--max-unexpanded-compose-height");
+    const compose_max_height = $("html").css("--max-unmaximized-compose-height");
     assert(typeof compose_max_height === "string");
     const scroll_max = document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
     return scroll_position + window_height >= (2 / 3) * scroll_max;
