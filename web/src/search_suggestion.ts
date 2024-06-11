@@ -2,8 +2,8 @@ import Handlebars from "handlebars/runtime";
 import assert from "minimalistic-assert";
 
 import * as common from "./common";
+import * as direct_message_group_data from "./direct_message_group_data";
 import {Filter} from "./filter";
-import * as huddle_data from "./huddle_data";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -98,7 +98,7 @@ function compare_by_huddle(huddle_emails: string[]): (person1: User, person2: Us
         return user?.user_id ?? [];
     });
     // Construct dict for all huddles, so we can look up each's recency
-    const huddles = huddle_data.get_huddles();
+    const huddles = direct_message_group_data.get_huddles();
     const huddle_dict = new Map<string, number>();
     for (const [i, huddle] of huddles.entries()) {
         huddle_dict.set(huddle, i + 1);
