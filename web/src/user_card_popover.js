@@ -470,7 +470,7 @@ function load_medium_avatar(user, $elt) {
 
     sender_avatar_medium.src = user_avatar_url;
     $(sender_avatar_medium).on("load", function () {
-        $elt.css("background-image", "url(" + $(this).attr("src") + ")");
+        $elt.css("background-image", `url(${CSS.escape($(this).attr("src"))})`);
     });
 }
 

@@ -115,7 +115,10 @@ export function update_profile_modal_ui(user, new_data) {
         $bot_owner_field.attr("data-field-id", new_data.bot_owner_id);
     }
     if (new_data.avatar_url !== undefined) {
-        $("#avatar").css("background-image", `url(${people.medium_avatar_url_for_person(user)})`);
+        $("#avatar").css(
+            "background-image",
+            `url(${CSS.escape(people.medium_avatar_url_for_person(user))})`,
+        );
     }
     if (new_data.delivery_email !== undefined) {
         $("#email").find(".value").text(new_data.delivery_email);
