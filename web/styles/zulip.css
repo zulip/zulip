@@ -1418,14 +1418,14 @@ nav {
         text-align: left;
         margin-left: 15px;
         display: flex;
-        justify-content: space-between;
-        gap: 10px;
+        justify-content: left;
+        gap: 4px;
 
         .nav-logo {
             display: inline-block;
             vertical-align: top;
-            margin-top: 8px;
-            height: 25px;
+            margin-top: 10px;
+            height: 20px;
             max-width: 200px;
 
             @media (height < $short_navbar_cutoff_height) {
@@ -1438,7 +1438,7 @@ nav {
 
             .left-sidebar-toggle-unreadcount {
                 top: 10px;
-                right: 14px;
+                left: 21px;
             }
         }
     }
@@ -2133,7 +2133,7 @@ body:not(.hide-left-sidebar) {
         .left-sidebar-toggle-button
         .left-sidebar-toggle-unreadcount {
         top: 5px;
-        right: 9px;
+        left: 16px;
     }
 
     .left-sidebar-toggle-unreadcount {
