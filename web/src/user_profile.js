@@ -102,6 +102,10 @@ export function update_profile_modal_ui(user, new_data) {
     if (!(modals.any_active() && modals.active_modal() === "#user-profile-modal")) {
         return;
     }
+    if (original_values?.user_id === undefined) {
+        // This occurs if say, the "channel" tab is open.
+        return;
+    }
     const current_user_id = Number.parseInt(original_values.user_id, 10);
     if (current_user_id !== user.user_id) {
         return;
