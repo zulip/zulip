@@ -121,7 +121,7 @@ export function pm_with_url(reply_to: string): string {
     return "#narrow/dm/" + slug;
 }
 
-export function huddle_with_url(user_ids_string: string): string {
+export function direct_message_group_with_url(user_ids_string: string): string {
     // This method is convenient for callers
     // that have already converted emails to a comma-delimited
     // list of user_ids.  We should be careful to keep this
