@@ -270,7 +270,7 @@ function sort_numerically(user_ids: number[]): number[] {
     return user_ids;
 }
 
-export function huddle_string(message: Message): string | undefined {
+export function direct_message_group_string(message: Message): string | undefined {
     if (message.type !== "private") {
         return undefined;
     }
@@ -529,13 +529,13 @@ export function sorted_other_user_ids(user_ids: number[]): number[] {
     return user_ids;
 }
 
-export function concat_huddle(user_ids: number[], user_id: number): string {
+export function concat_direct_message_group(user_ids: number[], user_id: number): string {
     /*
         We assume user_ids and user_id have already
         been validated by the caller.
 
         The only logic we're encapsulating here is
-        how to encode huddles.
+        how to encode direct message group.
     */
     const sorted_ids = sort_numerically([...user_ids, user_id]);
     return sorted_ids.join(",");

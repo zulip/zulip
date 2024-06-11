@@ -178,7 +178,7 @@ run_test("urls", () => {
     let url = hash_util.pm_with_url(ray.email);
     assert.equal(url, "#narrow/dm/22-Raymond");
 
-    url = hash_util.huddle_with_url("22,23");
+    url = hash_util.direct_message_group_with_url("22,23");
     assert.equal(url, "#narrow/dm/22,23-group");
 
     url = hash_util.by_sender_url(ray.email);

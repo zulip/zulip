@@ -727,7 +727,7 @@ export class Filter {
         return this.has_operator("search");
     }
 
-    is_non_huddle_pm(): boolean {
+    is_non_group_direct_message(): boolean {
         return this.has_operator("dm") && this.operands("dm")[0]!.split(",").length === 1;
     }
 
