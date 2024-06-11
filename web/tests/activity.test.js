@@ -37,7 +37,7 @@ const watchdog = mock_esm("../src/watchdog");
 
 set_global("document", _document);
 
-const huddle_data = zrequire("huddle_data");
+const direct_message_group_data = zrequire("direct_message_group_data");
 const keydown_util = zrequire("keydown_util");
 const muted_users = zrequire("muted_users");
 const presence = zrequire("presence");
@@ -188,8 +188,8 @@ test("sort_users", () => {
     assert.deepEqual(user_ids, [fred.user_id, jill.user_id, alice.user_id]);
 });
 
-test("huddle_data.process_loaded_messages", () => {
-    // TODO: move this to a module for just testing `huddle_data`
+test("direct_message_group_data.process_loaded_messages", () => {
+    // TODO: move this to a module for just testing `direct_message_group_data`
 
     const huddle1 = "jill@zulip.com,norbert@zulip.com";
     const timestamp1 = 1382479029; // older
@@ -225,11 +225,11 @@ test("huddle_data.process_loaded_messages", () => {
         },
     ];
 
-    huddle_data.process_loaded_messages(messages);
+    direct_message_group_data.process_loaded_messages(messages);
 
     const user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
     const user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
-    assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
+    assert.deepEqual(direct_message_group_data.get_huddles(), [user_ids_string2, user_ids_string1]);
 });
 
 test("presence_list_full_update", ({override, mock_template}) => {

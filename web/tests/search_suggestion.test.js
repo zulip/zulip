@@ -9,7 +9,7 @@ const {current_user, page_params, realm} = require("./lib/zpage_params");
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
-const huddle_data = zrequire("huddle_data");
+const direct_message_group_data = zrequire("direct_message_group_data");
 
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -64,7 +64,7 @@ function init() {
     people.initialize_current_user(me.user_id);
 
     stream_topic_history.reset();
-    huddle_data.clear_for_testing();
+    direct_message_group_data.clear_for_testing();
     stream_data.clear_subscriptions();
 }
 
@@ -368,7 +368,7 @@ test("group_suggestions", ({mock_template}) => {
         };
     }
 
-    huddle_data.process_loaded_messages([
+    direct_message_group_data.process_loaded_messages([
         message([bob.user_id, ted.user_id], 99),
         message([bob.user_id, ted.user_id, jeff.user_id], 98),
     ]);
