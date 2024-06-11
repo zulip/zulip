@@ -761,7 +761,7 @@ textarea.new_message_textarea,
 
 #compose_recipient_box {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: stretch;
     flex: 1 1 0;
     border-radius: 3px;
