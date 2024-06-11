@@ -79,22 +79,6 @@ a:focus {
   color: #005580;
   text-decoration: underline;
 }
-.container {
-  width: 940px;
-}
-.container {
-  margin-right: auto;
-  margin-left: auto;
-}
-.container:before,
-.container:after {
-  display: table;
-  content: "";
-  line-height: 0;
-}
-.container:after {
-  clear: both;
-}
 p {
   margin: 0 0 10px;
 }
@@ -290,9 +274,6 @@ input:focus:invalid:focus {
     padding-left: 20px;
     padding-right: 20px;
   }
-  .container {
-    width: auto;
-  }
   .row {
     margin-left: 0;
   }
@@ -310,9 +291,6 @@ input:focus:invalid:focus {
   .row:after {
     clear: both;
   }
-  .container {
-    width: 724px;
-  }
   input {
     margin-left: 0;
   }
@@ -329,9 +307,6 @@ input:focus:invalid:focus {
   }
   .row:after {
     clear: both;
-  }
-  .container {
-    width: 1170px;
   }
   input {
     margin-left: 0;
