@@ -1303,7 +1303,15 @@ $option_title_width: 180px;
         }
 
         & li {
-            padding: 5px 0;
+            display: grid;
+            /* 3.5714em is 50px at 14px/1em -- the legacy height of these rows. */
+            grid-template:
+                "starting-anchor-element row-content ending-anchor-element" 3.5714em / 40px minmax(
+                    0,
+                    1fr
+                )
+                minmax(34px, auto);
+            align-items: center;
             outline: none;
             cursor: pointer;
             transition:
@@ -1320,50 +1328,33 @@ $option_title_width: 180px;
                 border-bottom: 1px solid transparent;
             }
 
-            .text,
-            .icon,
-            .locked {
-                display: inline-block;
-                vertical-align: top;
+            .icon {
+                font-size: 1.4em;
+                text-align: center;
+                color: hsl(0deg 0% 53%);
             }
 
             .text {
-                width: calc(100% - 90px);
-                padding: 10px 12px 10px 0;
-            }
-
-            .icon {
-                width: 18px;
-                height: 18px;
-                margin: 10px;
-                text-align: center;
-
-                font-size: 1.4em;
-                color: hsl(0deg 0% 53%);
-
-                background-size: cover;
-                background-repeat: no-repeat;
+                /* Hyphenate for internationalization */
+                hyphens: auto;
             }
 
             .zulip-icon-smart-toy {
                 font-size: 1.6em;
-                margin: 8px 11px 10px 9px;
             }
 
             .locked {
-                width: 18px;
-                height: 18px;
-                margin: 14px 8px 6px;
-
                 font-size: 1em;
+                text-align: center;
                 color: hsl(0deg 0% 62%);
-
-                background-size: cover;
-                background-repeat: no-repeat;
             }
         }
 
         .org-settings-list {
+            display: none;
+        }
+
+        .hide-org-settings {
             display: none;
         }
 
@@ -1658,10 +1649,6 @@ $option_title_width: 180px;
     position: relative;
     margin-top: 13px;
     display: inline-block;
-}
-
-.hide-org-settings {
-    display: none;
 }
 
 .collapse-settings-btn {
