@@ -700,6 +700,65 @@ export function set_up() {
     maybe_disable_widgets();
 }
 
+function set_up_dropdown_widget(setting_name, setting_options, setting_type) {
+    const $save_discard_widget_container = $(`#id_${CSS.escape(setting_name)}`).closest(
+        ".settings-subsection-parent",
+    );
+    const $events_container = $(`#id_${CSS.escape(setting_name)}`).closest(".settings-section");
+
+    let text_if_current_value_not_in_options;
+    if (setting_type === "channel") {
+        text_if_current_value_not_in_options = $t({defaultMessage: "Cannot view channel"});
+    }
+
+    let unique_id_type = dropdown_widget.DataTypes.NUMBER;
+    if (setting_type === "language") {
+        unique_id_type = dropdown_widget.DataTypes.STRING;
+    }
+
+    const setting_dropdown_widget = new dropdown_widget.DropdownWidget({
+        widget_name: setting_name,
+        get_options: setting_options,
+        $events_container,
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            const dropdown_widget =
+                settings_components.get_widget_for_dropdown_list_settings(setting_name);
+            dropdown_widget.render();
+            settings_components.save_discard_realm_settings_widget_status_handler(
+                $save_discard_widget_container,
+            );
+        },
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: realm[setting_name],
+        unique_id_type,
+        text_if_current_value_not_in_options,
+        on_mount_callback(dropdown) {
+            if (setting_type === "group") {
+                $(dropdown.popper).css("min-width", "300px");
+            }
+        },
+    });
+    settings_components.set_dropdown_setting_widget(setting_name, setting_dropdown_widget);
+    setting_dropdown_widget.setup();
+}
+
+export function set_up_dropdown_widget_for_realm_group_settings() {
+    const realm_group_permission_settings = Object.keys(
+        realm.server_supported_permission_settings.realm,
+    );
+
+    for (const setting_name of realm_group_permission_settings) {
+        const get_setting_options = () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(setting_name, "realm");
+        set_up_dropdown_widget("realm_" + setting_name, get_setting_options, "group");
+    }
+}
+
 export function init_dropdown_widgets() {
     const notification_stream_options = () => {
         const streams = stream_settings_data.get_streams_for_settings_page();
@@ -719,218 +778,44 @@ export function init_dropdown_widgets() {
         return options;
     };
 
-    const new_stream_announcements_stream_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "realm_new_stream_announcements_stream_id",
-        get_options: notification_stream_options,
-        $events_container: $("#settings_overlay_container #organization-settings"),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            settings_components.new_stream_announcements_stream_widget.render();
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-notifications"),
-            );
-        },
-        tippy_props: {
-            placement: "bottom-start",
-        },
-        default_id: realm.realm_new_stream_announcements_stream_id,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
-    });
-    settings_components.set_dropdown_setting_widget(
+    set_up_dropdown_widget(
         "realm_new_stream_announcements_stream_id",
-        new_stream_announcements_stream_widget,
+        notification_stream_options,
+        "channel",
     );
-    new_stream_announcements_stream_widget.setup();
-
-    const signup_announcements_stream_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "realm_signup_announcements_stream_id",
-        get_options: notification_stream_options,
-        $events_container: $("#settings_overlay_container #organization-settings"),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            settings_components.signup_announcements_stream_widget.render();
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-notifications"),
-            );
-        },
-        tippy_props: {
-            placement: "bottom-start",
-        },
-        default_id: realm.realm_signup_announcements_stream_id,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
-    });
-    settings_components.set_dropdown_setting_widget(
+    set_up_dropdown_widget(
         "realm_signup_announcements_stream_id",
-        signup_announcements_stream_widget,
+        notification_stream_options,
+        "channel",
     );
-    signup_announcements_stream_widget.setup();
-
-    const zulip_update_announcements_stream_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "realm_zulip_update_announcements_stream_id",
-        get_options: notification_stream_options,
-        $events_container: $("#settings_overlay_container #organization-settings"),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            settings_components.zulip_update_announcements_stream_widget.render();
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-notifications"),
-            );
-        },
-        tippy_props: {
-            placement: "bottom-start",
-        },
-        default_id: realm.realm_zulip_update_announcements_stream_id,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
-    });
-    settings_components.set_dropdown_setting_widget(
+    set_up_dropdown_widget(
         "realm_zulip_update_announcements_stream_id",
-        zulip_update_announcements_stream_widget,
+        notification_stream_options,
+        "channel",
     );
-    zulip_update_announcements_stream_widget.setup();
 
-    const default_code_language_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "realm_default_code_block_language",
-        get_options() {
-            const options = Object.keys(pygments_data.langs).map((x) => ({
-                name: x,
-                unique_id: x,
-            }));
+    const default_code_language_options = () => {
+        const options = Object.keys(pygments_data.langs).map((x) => ({
+            name: x,
+            unique_id: x,
+        }));
 
-            const disabled_option = {
-                is_setting_disabled: true,
-                unique_id: "",
-                name: $t({defaultMessage: "No language set"}),
-            };
+        const disabled_option = {
+            is_setting_disabled: true,
+            unique_id: "",
+            name: $t({defaultMessage: "No language set"}),
+        };
 
-            options.unshift(disabled_option);
-            return options;
-        },
-        $events_container: $("#settings_overlay_container #organization-settings"),
-        default_id: realm.realm_default_code_block_language,
-        unique_id_type: dropdown_widget.DataTypes.STRING,
-        tippy_props: {
-            placement: "bottom-start",
-        },
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            settings_components.default_code_language_widget.render();
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-other-settings"),
-            );
-        },
-    });
-    settings_components.set_dropdown_setting_widget(
+        options.unshift(disabled_option);
+        return options;
+    };
+    set_up_dropdown_widget(
         "realm_default_code_block_language",
-        default_code_language_widget,
+        default_code_language_options,
+        "language",
     );
-    default_code_language_widget.setup();
 
-    const create_multiuse_invite_group_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "realm_create_multiuse_invite_group",
-        get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
-                "create_multiuse_invite_group",
-                "realm",
-            ),
-        $events_container: $("#settings_overlay_container #organization-permissions"),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            settings_components.create_multiuse_invite_group_widget.render();
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-join-settings"),
-            );
-        },
-        tippy_props: {
-            placement: "bottom-start",
-        },
-        default_id: realm.realm_create_multiuse_invite_group,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        on_mount_callback(dropdown) {
-            $(dropdown.popper).css("min-width", "300px");
-        },
-    });
-    settings_components.set_dropdown_setting_widget(
-        "realm_create_multiuse_invite_group",
-        create_multiuse_invite_group_widget,
-    );
-    create_multiuse_invite_group_widget.setup();
-
-    const can_access_all_users_group_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "realm_can_access_all_users_group",
-        get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
-                "can_access_all_users_group",
-                "realm",
-            ),
-        $events_container: $("#settings_overlay_container #organization-permissions"),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            settings_components.can_access_all_users_group_widget.render();
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-guest-settings"),
-            );
-        },
-        tippy_props: {
-            placement: "bottom-start",
-        },
-        default_id: realm.realm_can_access_all_users_group,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        on_mount_callback(dropdown) {
-            $(dropdown.popper).css("min-width", "300px");
-        },
-    });
-    settings_components.set_dropdown_setting_widget(
-        "realm_can_access_all_users_group",
-        can_access_all_users_group_widget,
-    );
-    can_access_all_users_group_widget.setup();
-
-    const can_create_public_channel_group_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "realm_can_create_public_channel_group",
-        get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
-                "can_create_public_channel_group",
-                "realm",
-            ),
-        $events_container: $("#settings_overlay_container #organization-permissions"),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            settings_components.can_create_public_channel_group_widget.render();
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-stream-permissions"),
-            );
-        },
-        tippy_props: {
-            placement: "bottom-start",
-        },
-        default_id: realm.realm_can_create_public_channel_group,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        on_mount_callback(dropdown) {
-            $(dropdown.popper).css("min-width", "300px");
-        },
-    });
-    settings_components.set_dropdown_setting_widget(
-        "realm_can_create_public_channel_group",
-        can_create_public_channel_group_widget,
-    );
-    can_create_public_channel_group_widget.setup();
+    set_up_dropdown_widget_for_realm_group_settings();
 }
 
 export function register_save_discard_widget_handlers(
