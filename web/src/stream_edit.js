@@ -236,7 +236,8 @@ function setup_dropdown(sub, slim_sub) {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
-    settings_components.set_can_remove_subscribers_group_widget(
+    settings_components.set_dropdown_setting_widget(
+        "can_remove_subscribers_group",
         can_remove_subscribers_group_widget,
     );
     can_remove_subscribers_group_widget.setup();
