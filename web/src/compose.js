@@ -126,7 +126,7 @@ export function clear_compose_box() {
      * will have already done this action before echoing the message
      * to avoid the compose box triggering "new message out of view"
      * notifications incorrectly. */
-    if (compose_ui.is_full_size()) {
+    if (compose_ui.is_expanded()) {
         compose_ui.make_compose_box_original_size();
     }
     $("textarea#compose-textarea").val("").trigger("focus");

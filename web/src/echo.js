@@ -240,14 +240,14 @@ export function try_deliver_locally(message_request, insert_new_messages) {
     }
 
     // Now that we've committed to delivering the message locally, we
-    // shrink the compose-box if it is in the full-screen state. This
+    // shrink the compose-box if it is in an expanded state. This
     // would have happened anyway in clear_compose_box, however, we
     // need to this operation before inserting the local message into
     // the feed. Otherwise, the out-of-view notification will be
     // always triggered on the top of compose-box, regardless of
     // whether the message would be visible after shrinking compose,
-    // because compose occludes the whole screen.
-    if (compose_ui.is_full_size()) {
+    // because compose occludes the whole screen in full size state.
+    if (compose_ui.is_expanded()) {
         compose_ui.make_compose_box_original_size();
     }
 

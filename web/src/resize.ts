@@ -128,7 +128,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
 
 export function resize_bottom_whitespace(): void {
     const bottom_whitespace_height = get_bottom_whitespace_height();
-    $("html").css("--max-unexpanded-compose-height", `${bottom_whitespace_height}px`);
+    $("html").css("--max-unmaximized-compose-height", `${bottom_whitespace_height}px`);
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
@@ -203,7 +203,7 @@ function resize_navbar_alerts(): void {
         navbar_alerts_height + "px",
     );
 
-    // If the compose-box is in expanded state,
+    // If the compose-box is in full sized state,
     // reset its height as well.
     if (compose_ui.is_full_size()) {
         compose_ui.set_compose_box_top(true);
