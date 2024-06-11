@@ -35,7 +35,7 @@ format used by the Zulip server that they are interacting with.
   now contains the superset of the true value that best approximates the actual
   permission setting.
 
-**Feature level 263**:
+**Feature level 263**
 
 * [`POST /users/me/presence`](/api/update-presence):
   A new `last_update_id` parameter can be given, instructing
@@ -58,7 +58,7 @@ format used by the Zulip server that they are interacting with.
   querying [`/users/me/presence`](/api/update-presence) to avoid
   re-fetching of already known data.
 
-**Feature level 262**:
+**Feature level 262**
 
 * [`GET /users/{user_id}/status`](/api/get-user-status): Added a new
   endpoint to fetch an individual user's currently set
@@ -78,13 +78,13 @@ format used by the Zulip server that they are interacting with.
   have permission to [subscribe other users to
   channels](/help/configure-who-can-invite-to-channels).
 
-**Feature level 260**:
+**Feature level 260**
 
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):
   Updating `can_mention_group` now uses a race-resistant format where
   the client sends the expected `old` value and desired `new` value.
 
-**Feature level 259**:
+**Feature level 259**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
   For the `onboarding_steps` event type, an array of onboarding steps
@@ -94,7 +94,7 @@ format used by the Zulip server that they are interacting with.
   support, as we expect that only official Zulip clients will interact with
   this data. Currently, no client other than the Zulip web app uses this.
 
-**Feature level 258**:
+**Feature level 258**
 
 * [`GET /user_groups`](/api/get-user-groups), [`POST
   /register`](/api/register-queue): `can_mention_group` field can now
@@ -105,7 +105,7 @@ format used by the Zulip server that they are interacting with.
   `can_mention_group` parameter can now either be an ID of a named
   user group or an object describing a set of users and groups.
 
-**Feature level 257**:
+**Feature level 257**
 
 * [`POST /register`](/api/register-queue),
   [`POST /server_settings`](/api/get-server-settings), `PATCH /realm`:
@@ -479,7 +479,7 @@ No changes; feature level used for Zulip 8.0 release.
 * [`POST /mobile_push/test_notification`](/api/test-notify): Added new endpoint
   to send a test push notification to a mobile device or devices.
 
-**Feature level 216**:
+**Feature level 216**
 
 * `PATCH /realm`, [`POST register`](/api/register-queue),
   [`GET /events`](/api/get-events): Added `enable_guest_user_indicator`
@@ -863,7 +863,7 @@ No changes; feature level used for Zulip 7.0 release.
   determine the user's preference on whether to mark messages as read or not when
   scrolling through their message feed.
 
-**Feature level 174**:
+**Feature level 174**
 
 * [`POST /typing`](/api/set-typing-status), [`POST /messages`](/api/send-message):
   Added `"direct"` as the preferred way to indicate a direct message for the
@@ -872,7 +872,7 @@ No changes; feature level used for Zulip 7.0 release.
   the modern convention with servers that support it, because support for
   `"private"` may eventually be removed.
 
-**Feature level 173**:
+**Feature level 173**
 
 * [`GET /scheduled_messages`](/api/get-scheduled-messages), [`DELETE
   /scheduled_messages/<int:scheduled_message_id>`](/api/delete-scheduled-message):
@@ -890,7 +890,7 @@ No changes; feature level used for Zulip 7.0 release.
   this endpoint now returns an error response
   (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`).
 
-**Feature level 171**:
+**Feature level 171**
 
 * [`POST /fetch_api_key`](/api/fetch-api-key),
   [`POST /dev_fetch_api_key`](/api/dev-fetch-api-key): The return values
@@ -2222,7 +2222,7 @@ No changes; feature level used for Zulip 3.0 release.
 * Added new `presence_enabled` user notification setting; previously
   [presence](/help/status-and-availability) was always enabled.
 
-**Feature level 2**:
+**Feature level 2**
 
 * [`POST /messages/{message_id}/reactions`](/api/add-reaction):
   The `reaction_type` parameter is optional; the server will guess the
@@ -2233,7 +2233,7 @@ No changes; feature level used for Zulip 3.0 release.
   `user_id` field.  The legacy `user` dictionary (which had
   inconsistent format between those two endpoints) is deprecated.
 
-**Feature level 1**:
+**Feature level 1**
 
 * [`PATCH /messages/{message_id}`](/api/update-message): Added the
   `stream_id` parameter to support moving messages between streams.
