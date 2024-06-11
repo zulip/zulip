@@ -234,7 +234,7 @@ EXEMPT_FILES = make_set(
         "web/src/stream_create.js",
         "web/src/stream_create_subscribers.ts",
         "web/src/stream_edit.js",
-        "web/src/stream_edit_subscribers.js",
+        "web/src/stream_edit_subscribers.ts",
         "web/src/stream_edit_toggler.ts",
         "web/src/stream_list.ts",
         "web/src/stream_muting.js",
