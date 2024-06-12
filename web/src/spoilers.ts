@@ -62,14 +62,20 @@ export function initialize(): void {
             return;
         }
 
-        // Allow selecting text inside a spoiler header.
-        const selection = document.getSelection();
-        if (selection && selection.type === "Range") {
-            return;
-        }
-
         e.preventDefault();
         e.stopPropagation();
+
+        // Allow selecting text inside a spoiler header
+        // when the spoiler area is collapsed.
+        const selection = document.getSelection();
+        if (
+            selection &&
+            selection.type === "Range" &&
+            !selection.isCollapsed &&
+            !$spoiler_content.hasClass("spoiler-content-open")
+        ) {
+            return;
+        }
 
         if ($spoiler_content.hasClass("spoiler-content-open")) {
             // Content was open, we are collapsing

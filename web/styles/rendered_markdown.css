@@ -263,6 +263,10 @@
         }
 
         .spoiler-content {
+            /* Prevent unexpected content selection
+               in the spoiler content area when it's
+               in a collapsed state. */
+            user-select: none;
             overflow: hidden;
             border-top: hsl(0deg 0% 50%) 0 solid;
             transition:
@@ -273,6 +277,9 @@
             height: 0;
 
             &.spoiler-content-open {
+                /* Restore content selection when the
+                   spoiler area is expanded. */
+                user-select: auto;
                 border-top: hsl(0deg 0% 50%) 1px solid;
                 transition:
                     height 0.4s ease-in-out,
