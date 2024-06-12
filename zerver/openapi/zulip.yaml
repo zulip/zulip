@@ -13612,7 +13612,7 @@ paths:
                               description: |
                                 The name of the bot.
                             config:
-                              $ref: "#/components/schemas/Config"
+                              $ref: "#/components/schemas/BotConfiguration"
                         description: |
                           Present if `realm_embedded_bots` is present in `fetch_event_types`.
 
@@ -13661,7 +13661,7 @@ paths:
 
                                 **Changes**: New in Zulip 8.0 (feature level 207).
                             config:
-                              $ref: "#/components/schemas/Config"
+                              $ref: "#/components/schemas/BotConfiguration"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -20121,21 +20121,21 @@ components:
         services:
           type: array
           description: |
-            The "Services" array contains extra configuration fields only relevant
-            for Outgoing webhook bots and Embedded bots. It is always a single-element
+            An array containing extra configuration fields only relevant for
+            outgoing webhook bots and embedded bots. This is always a single-element
             array.
 
-            We consider this part of the Zulip API to be unstable; it is used only for
-            UI elements for administering bots and is likely to change.
+            We consider this part of the Zulip API to be unstable; it is used only
+            for UI elements for administering bots and is likely to change.
           items:
             description: |
-              Object containing details extra details. Which fields appear depend
-              on the type of bot.
+              Object with extra configuration details for the bot. The fields in the
+              object depend on the type of bot.
             oneOf:
               - type: object
                 additionalProperties: false
                 description: |
-                  When the bot is an outgoing webhook bot.
+                  When the bot is an outgoing webhook.
                 properties:
                   base_url:
                     type: string
@@ -20149,7 +20149,7 @@ components:
                   interface:
                     type: integer
                     description: |
-                      Integer indicating what format requests are posted in:
+                      An integer indicating what format requests are posted in:
 
                       - 1 = Zulip's native outgoing webhook format.
                       - 2 = Emulate the Slack outgoing webhook format.
@@ -20163,7 +20163,7 @@ components:
                     description: |
                       The name of the bot.
                   config_data:
-                    $ref: "#/components/schemas/Config"
+                    $ref: "#/components/schemas/BotConfiguration"
     Bot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -20201,14 +20201,15 @@ components:
               type: boolean
               description: |
                 A boolean describing whether the user account has been deactivated.
-    Config:
+    BotConfiguration:
       type: object
       description: |
-        A "string: string" dictionary which describes the configuration
-        for the embedded bot (usually details like API keys).
+        A dictionary of string key/value pairs, which describe the configuration
+        for the bot. These are usually details like API keys, and are unique to
+        the integration/bot. Can be an empty dictionary.
       additionalProperties:
         description: |
-          String describing the config data.
+          `{config_key}`: Description/value of the configuration data key.
         type: string
     CustomProfileField:
       type: object
