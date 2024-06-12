@@ -283,5 +283,5 @@ export function launch(section) {
     if (section !== "") {
         settings_panel_menu.org_settings.set_current_tab(section);
     }
-    settings_toggle.highlight_toggle("organization");
+    settings_toggle.goto("organization");
 }
