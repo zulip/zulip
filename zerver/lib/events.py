@@ -94,6 +94,7 @@ from zerver.models.realms import (
     EditTopicPolicyEnum,
     get_corresponding_policy_value_for_group_setting,
     get_realm_domains,
+    get_realm_with_settings,
 )
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
@@ -1641,6 +1642,11 @@ def do_events_register(
         event_types_set = set(event_types)
     else:
         event_types_set = None
+
+    # Fetch the realm object again to prefetch all the
+    # group settings which support anonymous groups
+    # to avoid unnecessary DB queries.
+    realm = get_realm_with_settings(realm_id=realm.id)
 
     if user_profile is None:
         # TODO: Unify the two fetch_initial_state_data code paths.

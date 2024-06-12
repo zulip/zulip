@@ -1074,6 +1074,19 @@ def get_realm_by_id(realm_id: int) -> Realm:
     return Realm.objects.get(id=realm_id)
 
 
+def get_realm_with_settings(realm_id: int) -> Realm:
+    # Prefetch all the settings that can be set to anonymous groups.
+    # This also prefetches can_access_all_users_group setting,
+    # even when it cannot be set to anonymous groups because
+    # the setting is used when fetching users in the realm.
+    return Realm.objects.select_related(
+        "can_access_all_users_group",
+        "can_access_all_users_group__named_user_group",
+        "can_create_public_channel_group",
+        "can_create_public_channel_group__named_user_group",
+    ).get(id=realm_id)
+
+
 def require_unique_names(realm: Optional[Realm]) -> bool:
     if realm is None:
         # realm is None when a new realm is being created.

@@ -29,7 +29,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.users import get_api_key, get_users_for_api
 from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
 from zerver.models.clients import get_client
-from zerver.models.realms import get_realm
+from zerver.models.realms import get_realm, get_realm_with_settings
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 from zerver.tornado.event_queue import (
@@ -1165,9 +1165,14 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        with self.assert_database_query_count(43):
+        # Fetch realm like it is done when calling fetch_initial_state_data
+        # in production to match the query counts with the actual query
+        # count in production.
+        realm = get_realm_with_settings(realm_id=user.realm_id)
+
+        with self.assert_database_query_count(44):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
-                fetch_initial_state_data(user, realm=user.realm)
+                fetch_initial_state_data(user, realm=realm)
 
         expected_counts = dict(
             alert_words=1,
@@ -1220,7 +1225,7 @@ class FetchQueriesTest(ZulipTestCase):
                 else:
                     event_types = [event_type]
 
-                fetch_initial_state_data(user, realm=user.realm, event_types=event_types)
+                fetch_initial_state_data(user, realm=realm, event_types=event_types)
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
