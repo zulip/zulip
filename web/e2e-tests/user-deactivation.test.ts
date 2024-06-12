@@ -14,7 +14,7 @@ async function navigate_to_user_list(page: Page): Promise<void> {
     await page.click(organization_settings);
 
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
-    await page.click("li[data-section='user-list-admin']");
+    await page.click("li[data-section='users']");
 }
 
 async function user_row(page: Page, name: string): Promise<string> {

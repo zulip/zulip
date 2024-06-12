@@ -361,7 +361,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [settings, "launch"],
     ]);
 
-    window.location.hash = "#organization/user-list-admin";
+    window.location.hash = "#organization/users";
 
     helper.clear_events();
     $window_stub.trigger("hashchange");
@@ -369,7 +369,22 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [overlays, "close_for_hash_change"],
         [settings, "build_page"],
         [admin, "build_page"],
-        [admin, "launch", ["user-list-admin"]],
+        [admin, "launch", ["users"]],
+    ]);
+
+    window.location.hash = "#organization/user-list-admin";
+
+    // Check whether `user-list-admin` is redirect to `users`, we
+    // cannot test the exact hashchange here, since the section url
+    // takes effect in `admin.launch` and that's why we're checking
+    // the arguments passed to `admin.launch`.
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [settings, "build_page"],
+        [admin, "build_page"],
+        [admin, "launch", ["users"]],
     ]);
 
     helper.clear_events();

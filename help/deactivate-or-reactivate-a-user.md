@@ -48,7 +48,7 @@ When you deactivate a user:
 
 {tab|via-organization-settings}
 
-{settings_tab|user-list-admin}
+{settings_tab|users}
 
 1. In the **Actions** column, click the **deactivate** (<i class="fa
    fa-user-times"></i>) icon for the user you want to deactivate.
