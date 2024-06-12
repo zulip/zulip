@@ -13,7 +13,13 @@ from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import guess_type
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_emoji
+from zerver.lib.thumbnail import (
+    MAX_EMOJI_GIF_FILE_SIZE_BYTES,
+    MEDIUM_AVATAR_SIZE,
+    BadImageError,
+    resize_avatar,
+    resize_emoji,
+)
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 
@@ -252,7 +258,11 @@ def upload_emoji_image(
     backend.upload_single_emoji_image(
         f"{emoji_path}.original", content_type, user_profile, image_data
     )
-    resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
+    resized_image_data, is_animated, still_image_data = resize_emoji(image_data, emoji_file_name)
+    if is_animated and len(still_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
+        raise BadImageError(_("Image size exceeds limit"))
+    if not is_animated and len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
+        raise BadImageError(_("Image size exceeds limit"))
     backend.upload_single_emoji_image(emoji_path, content_type, user_profile, resized_image_data)
     if is_animated:
         assert still_image_data is not None

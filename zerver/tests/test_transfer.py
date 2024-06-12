@@ -103,7 +103,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         resized_key = bucket.Object(emoji_path)
 
         image_data = read_test_image_file("img.png")
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
+        resized_image_data, is_animated, still_image_data = resize_emoji(image_data, "img.png")
 
         self.assertEqual(is_animated, False)
         self.assertEqual(still_image_data, None)
@@ -135,7 +135,9 @@ class TransferUploadsToS3Test(ZulipTestCase):
         )
 
         image_data = read_test_image_file("animated_img.gif")
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
+        resized_image_data, is_animated, still_image_data = resize_emoji(
+            image_data, "animated_img.gif"
+        )
 
         self.assertEqual(is_animated, True)
         self.assertEqual(type(still_image_data), bytes)

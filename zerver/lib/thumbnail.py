@@ -1,11 +1,12 @@
-import io
-from typing import Optional, Tuple
+import logging
+import os
+from contextlib import contextmanager
+from typing import Iterator, Optional, Tuple
 from urllib.parse import urljoin
 
+import pyvips
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
-from PIL import GifImagePlugin, Image, ImageOps, PngImagePlugin
-from PIL.Image import DecompressionBombError
 
 from zerver.lib.camo import get_camo_url
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -14,11 +15,11 @@ DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
 DEFAULT_EMOJI_SIZE = 64
 
-# These sizes were selected based on looking at the maximum common
-# sizes in a library of animated custom emoji, balanced against the
-# network cost of very large emoji images.
-MAX_EMOJI_GIF_SIZE = 128
-MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024 * 1024  # 128 kb
+# We refuse to deal with any image whose total pixelcount exceeds this.
+IMAGE_BOMB_TOTAL_PIXELS = 90000000
+
+# Reject emoji which, after resizing, have stills larger than this
+MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
 
 
 class BadImageError(JsonableError):
@@ -39,122 +40,114 @@ def generate_thumbnail_url(path: str, size: str = "0x0") -> str:
     return get_camo_url(path)
 
 
-def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
+@contextmanager
+def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
+    # The primary goal of this is to verify that the image is valid,
+    # and raise BadImageError otherwise.  The yielded `source_image`
+    # may be ignored, since calling `thumbnail_buffer` is faster than
+    # calling `thumbnail_image` on a pyvips.Image, since the latter
+    # cannot make use of shrink-on-load optimizations:
+    # https://www.libvips.org/API/current/libvips-resample.html#vips-thumbnail-image
     try:
-        im = Image.open(io.BytesIO(image_data))
-        im = ImageOps.exif_transpose(im)
-        im = ImageOps.fit(im, (size, size), Image.Resampling.LANCZOS)
-    except OSError:
+        source_image = pyvips.Image.new_from_buffer(image_data, "")
+    except pyvips.Error:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
-    except DecompressionBombError:
+
+    if source_image.width * source_image.height > IMAGE_BOMB_TOTAL_PIXELS:
         raise BadImageError(_("Image size exceeds limit."))
-    out = io.BytesIO()
-    if im.mode == "CMYK":
-        im = im.convert("RGB")
-    im.save(out, format="png")
-    return out.getvalue()
+
+    try:
+        yield source_image
+    except pyvips.Error as e:  # nocoverage
+        logging.exception(e)
+        raise BadImageError(_("Bad image!"))
+
+
+def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
+    # This will scale up, if necessary, and will scale the smallest
+    # dimension to fit.  That is, a 1x1000 image will end up with the
+    # one middle pixel enlarged to fill the full square.
+    with libvips_check_image(image_data):
+        return pyvips.Image.thumbnail_buffer(
+            image_data,
+            size,
+            height=size,
+            crop=pyvips.Interesting.CENTRE,
+        ).write_to_buffer(".png")
 
 
 def resize_logo(image_data: bytes) -> bytes:
-    try:
-        im = Image.open(io.BytesIO(image_data))
-        im = ImageOps.exif_transpose(im)
-        im.thumbnail((8 * DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.Resampling.LANCZOS)
-    except OSError:
-        raise BadImageError(_("Could not decode image; did you upload an image file?"))
-    except DecompressionBombError:
-        raise BadImageError(_("Image size exceeds limit."))
-    out = io.BytesIO()
-    if im.mode == "CMYK":
-        im = im.convert("RGB")
-    im.save(out, format="png")
-    return out.getvalue()
-
-
-def resize_animated(im: Image.Image, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
-    assert im.n_frames > 1
-    frames = []
-    duration_info = []
-    disposals = []
-    # If 'loop' info is not set then loop for infinite number of times.
-    loop = im.info.get("loop", 0)
-    for frame_num in range(im.n_frames):
-        im.seek(frame_num)
-        new_frame = im.copy()
-        new_frame.paste(im, (0, 0), im.convert("RGBA"))
-        new_frame = ImageOps.pad(new_frame, (size, size), Image.Resampling.LANCZOS)
-        frames.append(new_frame)
-        if im.info.get("duration") is None:  # nocoverage
-            raise BadImageError(_("Corrupt animated image."))
-        duration_info.append(im.info["duration"])
-        if isinstance(im, GifImagePlugin.GifImageFile):
-            disposals.append(
-                im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
-            )
-        elif isinstance(im, PngImagePlugin.PngImageFile):
-            disposals.append(im.info.get("disposal", PngImagePlugin.Disposal.OP_NONE))
-        else:  # nocoverage
-            raise BadImageError(_("Unknown animated image format."))
-    out = io.BytesIO()
-    frames[0].save(
-        out,
-        save_all=True,
-        optimize=False,
-        format=im.format,
-        append_images=frames[1:],
-        duration=duration_info,
-        disposal=disposals,
-        loop=loop,
-    )
-
-    return out.getvalue()
+    # This will only scale the image down, and will resize it to
+    # preserve aspect ratio and be contained within 8*AVATAR by AVATAR
+    # pixels; it does not add any padding to make it exactly that
+    # size.  A 1000x10 pixel image will end up as 800x8; a 10x10 will
+    # end up 10x10.
+    with libvips_check_image(image_data):
+        return pyvips.Image.thumbnail_buffer(
+            image_data,
+            8 * DEFAULT_AVATAR_SIZE,
+            height=DEFAULT_AVATAR_SIZE,
+            size=pyvips.Size.DOWN,
+        ).write_to_buffer(".png")
 
 
 def resize_emoji(
-    image_data: bytes, size: int = DEFAULT_EMOJI_SIZE
+    image_data: bytes, emoji_file_name: str, size: int = DEFAULT_EMOJI_SIZE
 ) -> Tuple[bytes, bool, Optional[bytes]]:
+    if len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:
+        raise BadImageError(_("Image size exceeds limit."))
+
+    # Square brackets are used for providing options to libvips' save
+    # operation; these should have been filtered out earlier, so we
+    # assert none are found here, for safety.
+    write_file_ext = os.path.splitext(emoji_file_name)[1]
+    assert "[" not in write_file_ext
+
     # This function returns three values:
     # 1) Emoji image data.
-    # 2) If emoji is gif i.e. animated.
-    # 3) If is animated then return still image data i.e. first frame of gif.
-
-    try:
-        im = Image.open(io.BytesIO(image_data))
-        image_format = im.format
-        if getattr(im, "n_frames", 1) > 1:
-            # There are a number of bugs in Pillow which cause results
-            # in resized images being broken. To work around this we
-            # only resize under certain conditions to minimize the
-            # chance of creating ugly images.
-            should_resize = (
-                im.size[0] != im.size[1]  # not square
-                or im.size[0] > MAX_EMOJI_GIF_SIZE  # dimensions too large
-                or len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES  # filesize too large
+    # 2) If the emoji is animated.
+    # 3) If it is animated, the still image data i.e. first frame of gif.
+    with libvips_check_image(image_data) as source_image:
+        if source_image.get_n_pages() == 1:
+            return (
+                pyvips.Image.thumbnail_buffer(
+                    image_data,
+                    size,
+                    height=size,
+                    crop=pyvips.Interesting.CENTRE,
+                ).write_to_buffer(write_file_ext),
+                False,
+                None,
             )
+        first_still = pyvips.Image.thumbnail_buffer(
+            image_data,
+            size,
+            height=size,
+            crop=pyvips.Interesting.CENTRE,
+        ).write_to_buffer(".png")
 
-            # Generate a still image from the first frame.  Since
-            # we're converting the format to PNG anyway, we resize unconditionally.
-            still_image = im.copy()
-            still_image.seek(0)
-            still_image = ImageOps.exif_transpose(still_image)
-            still_image = ImageOps.fit(still_image, (size, size), Image.Resampling.LANCZOS)
-            out = io.BytesIO()
-            still_image.save(out, format="PNG")
-            still_image_data = out.getvalue()
-
-            if should_resize:
-                image_data = resize_animated(im, size)
-
-            return image_data, True, still_image_data
-        else:
-            # Note that this is essentially duplicated in the
-            # still_image code path, above.
-            im = ImageOps.exif_transpose(im)
-            im = ImageOps.fit(im, (size, size), Image.Resampling.LANCZOS)
-            out = io.BytesIO()
-            im.save(out, format=image_format)
-            return out.getvalue(), False, None
-    except OSError:
-        raise BadImageError(_("Could not decode image; did you upload an image file?"))
-    except DecompressionBombError:
-        raise BadImageError(_("Image size exceeds limit."))
+        animated = pyvips.Image.thumbnail_buffer(
+            image_data,
+            size,
+            height=size,
+            # This is passed to the loader, and means "load all
+            # frames", instead of the default of just the first
+            option_string="n=-1",
+        )
+        if animated.width != animated.get("page-height"):
+            # If the image is non-square, we have to iterate the
+            # frames to add padding to make it so
+            if not animated.hasalpha():
+                animated = animated.addalpha()
+            frames = [
+                frame.gravity(
+                    pyvips.CompassDirection.CENTRE,
+                    size,
+                    size,
+                    extend=pyvips.Extend.BACKGROUND,
+                    background=[0, 0, 0, 0],
+                )
+                for frame in animated.pagesplit()
+            ]
+            animated = frames[0].pagejoin(frames[1:])
+        return (animated.write_to_buffer(write_file_ext), True, first_still)
