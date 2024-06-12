@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 266
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (281, 1)  # bumped 2024-06-16 for updating simplebar
+PROVISION_VERSION = (281, 2)  # bumped 2024-06-18 for adding libvips

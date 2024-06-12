@@ -249,6 +249,7 @@ cffi==1.16.0 \
     # via
     #   argon2-cffi-bindings
     #   cryptography
+    #   pyvips
 charset-normalizer==3.3.2 \
     --hash=sha256:06435b539f889b1f6f4ac1758871aae42dc3a8c0e24ac9e60c2384973ad73027 \
     --hash=sha256:06a81e93cd441c56a9b65d8e1d043daeb97a3d0856d177d5c90ba85acb3db087 \
@@ -1957,6 +1958,9 @@ python3-saml==1.16.0 \
 pyuca==1.2 \
     --hash=sha256:8a382fe74627f08c0d18908c0713ca4a20aad5385f077579e56208beea2893b2 \
     --hash=sha256:abaa12e1bd2c7c68ca8396ff8383bc0654a739cef3ae68fd7af58bf29af0a91e
+    # via -r requirements/common.in
+pyvips==2.2.3 \
+    --hash=sha256:43bceced0db492654c93008246a58a508e0373ae1621116b87b322f2ac72212f
     # via -r requirements/common.in
 pyyaml==6.0.1 \
     --hash=sha256:04ac92ad1925b2cff1db0cfebffb6ffc43457495c9b3c39d3fcae417d7125dc5 \
