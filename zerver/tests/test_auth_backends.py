@@ -92,8 +92,8 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
     use_s3_backend,
 )
+from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.types import Validator
-from zerver.lib.upload.base import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.users import get_all_api_keys, get_api_key, get_users_for_api
 from zerver.lib.utils import assert_is_not_none

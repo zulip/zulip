@@ -14,14 +14,11 @@ from typing_extensions import override
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
+from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_emoji, resize_logo
 from zerver.lib.upload.base import (
     INLINE_MIME_TYPES,
-    MEDIUM_AVATAR_SIZE,
     ZulipUploadBackend,
     create_attachment,
-    resize_avatar,
-    resize_emoji,
-    resize_logo,
     sanitize_name,
 )
 from zerver.models import Realm, RealmEmoji, UserProfile

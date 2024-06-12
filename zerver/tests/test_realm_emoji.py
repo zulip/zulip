@@ -8,7 +8,7 @@ from zerver.actions.users import do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
-from zerver.lib.upload.base import BadImageError
+from zerver.lib.thumbnail import BadImageError
 from zerver.models import Realm, RealmEmoji, UserProfile
 from zerver.models.realms import CommonPolicyEnum, get_realm
 
