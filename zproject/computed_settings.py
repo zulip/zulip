@@ -889,6 +889,11 @@ LOGGING: Dict[str, Any] = {
             "handlers": ["scim_file", "errors_file"],
             "propagate": False,
         },
+        "pyvips": {
+            "level": "WARNING",
+            "handlers": ["console", "errors_file"],
+            "propagate": False,
+        },
         "pika": {
             # pika is super chatty on INFO.
             "level": "WARNING",

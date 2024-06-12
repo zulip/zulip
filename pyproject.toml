@@ -76,6 +76,7 @@ module = [
     "pyinotify.*",
     "pyoembed.*",
     "pyuca.*",
+    "pyvips.*",
     "re2.*",
     "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
     "scim2_filter_parser.attr_paths",
