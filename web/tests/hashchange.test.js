@@ -172,7 +172,13 @@ function test_helper({override, override_rewire, change_tab}) {
         };
     }
 
-    stub(admin, "launch");
+    function stub_with_args(module, func_name) {
+        module[func_name] = (...args) => {
+            events.push([module, func_name, args]);
+        };
+    }
+
+    stub_with_args(admin, "launch");
     stub(admin, "build_page");
     stub(drafts_overlay_ui, "launch");
     stub(message_viewport, "stop_auto_scrolling");
@@ -363,7 +369,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [overlays, "close_for_hash_change"],
         [settings, "build_page"],
         [admin, "build_page"],
-        [admin, "launch"],
+        [admin, "launch", ["user-list-admin"]],
     ]);
 
     helper.clear_events();
