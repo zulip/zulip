@@ -51,7 +51,8 @@ Come find us on the [development community chat](https://zulip.com/development-c
 - **Checking Zulip out**. The best way to see Zulip in action is to drop by the
   [Zulip community server](https://zulip.com/development-community/). We also
   recommend reading about Zulip's [unique
-  approach](https://zulip.com/why-zulip/) to organizing conversations.
+  approach](https://zulip.com/why-zulip/) to organizing conversations. We also
+  have a 1 minute long preview showcasing Zulip's interface and main features [here](https://www.kapwing.com/videos/66690b888a157e0fa0f9cfbd)
 
 - **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
   Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
