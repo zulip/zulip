@@ -831,9 +831,7 @@ input[type="checkbox"] {
     margin: 20px 0 0;
 }
 
-#org-join-settings,
-#org-guest-settings,
-#org-stream-permissions {
+#organization-permissions {
     .dropdown-widget-button {
         width: 325px;
         color: hsl(0deg 0% 33%);
