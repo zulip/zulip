@@ -165,6 +165,20 @@
     --composebox-buttons-width: 25px;
 
     /*
+    Width of the send menu area with the Send button, Draft(s) button
+    and the vdots.
+    */
+    --compose-send-controls-width: 112px;
+
+    @media ((width >= $sm_min) and (width < $mc_min)) {
+        --compose-send-controls-width: 62px;
+    }
+
+    @media (width < $sm_min) {
+        --compose-send-controls-width: 28px;
+    }
+
+    /*
     Width to be reserved for document scrollbar when scrolling is disabled.
     Using `scrollbar-gutter` would be more appropriate but doesn't has wide
     support and doesn't work for `fixed` elements.
