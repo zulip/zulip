@@ -8,6 +8,7 @@ import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
 import * as scroll_util from "./scroll_util";
 import * as settings_sections from "./settings_sections";
+import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users";
 
 export let normal_settings;
 export let org_settings;
@@ -67,6 +68,11 @@ export class SettingsPanelMenu {
                 browser_history.update(`#organization/users/${key}`);
                 this.set_user_settings_tab(key);
                 $(".user-settings-section").hide();
+                if (key === "active") {
+                    redraw_active_users_list();
+                } else if (key === "deactivated") {
+                    redraw_deactivated_users_list();
+                }
                 $(`[data-user-settings-section="${CSS.escape(key)}"]`).show();
             },
         });
