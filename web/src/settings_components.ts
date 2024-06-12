@@ -462,77 +462,40 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
     return JSON.stringify(proposed_value);
 }
 
-export let default_code_language_widget: DropdownWidget | null = null;
-export let new_stream_announcements_stream_widget: DropdownWidget | null = null;
-export let signup_announcements_stream_widget: DropdownWidget | null = null;
-export let zulip_update_announcements_stream_widget: DropdownWidget | null = null;
-export let create_multiuse_invite_group_widget: DropdownWidget | null = null;
-export let can_remove_subscribers_group_widget: DropdownWidget | null = null;
-export let can_access_all_users_group_widget: DropdownWidget | null = null;
-export let can_mention_group_widget: DropdownWidget | null = null;
 export let new_group_can_mention_group_widget: DropdownWidget | null = null;
-export let can_create_public_channel_group_widget: DropdownWidget | null = null;
+
+const dropdown_widget_map = new Map<string, DropdownWidget | null>([
+    ["realm_new_stream_announcements_stream_id", null],
+    ["realm_signup_announcements_stream_id", null],
+    ["realm_zulip_update_announcements_stream_id", null],
+    ["realm_default_code_block_language", null],
+    ["realm_create_multiuse_invite_group", null],
+    ["can_remove_subscribers_group", null],
+    ["realm_can_access_all_users_group", null],
+    ["can_mention_group", null],
+    ["realm_can_create_public_channel_group", null],
+]);
 
 export function get_widget_for_dropdown_list_settings(
     property_name: string,
 ): DropdownWidget | null {
-    switch (property_name) {
-        case "realm_new_stream_announcements_stream_id":
-            return new_stream_announcements_stream_widget;
-        case "realm_signup_announcements_stream_id":
-            return signup_announcements_stream_widget;
-        case "realm_zulip_update_announcements_stream_id":
-            return zulip_update_announcements_stream_widget;
-        case "realm_default_code_block_language":
-            return default_code_language_widget;
-        case "realm_create_multiuse_invite_group":
-            return create_multiuse_invite_group_widget;
-        case "can_remove_subscribers_group":
-            return can_remove_subscribers_group_widget;
-        case "realm_can_access_all_users_group":
-            return can_access_all_users_group_widget;
-        case "can_mention_group":
-            return can_mention_group_widget;
-        case "realm_can_create_public_channel_group":
-            return can_create_public_channel_group_widget;
-        default:
-            blueslip.error("No dropdown list widget for property", {property_name});
-            return null;
+    const dropdown_widget = dropdown_widget_map.get(property_name);
+
+    if (dropdown_widget === undefined) {
+        blueslip.error("No dropdown list widget for property", {property_name});
+        return null;
     }
+
+    return dropdown_widget;
 }
 
 export function set_dropdown_setting_widget(property_name: string, widget: DropdownWidget): void {
-    switch (property_name) {
-        case "realm_new_stream_announcements_stream_id":
-            new_stream_announcements_stream_widget = widget;
-            break;
-        case "realm_signup_announcements_stream_id":
-            signup_announcements_stream_widget = widget;
-            break;
-        case "realm_zulip_update_announcements_stream_id":
-            zulip_update_announcements_stream_widget = widget;
-            break;
-        case "realm_default_code_block_language":
-            default_code_language_widget = widget;
-            break;
-        case "realm_create_multiuse_invite_group":
-            create_multiuse_invite_group_widget = widget;
-            break;
-        case "can_remove_subscribers_group":
-            can_remove_subscribers_group_widget = widget;
-            break;
-        case "realm_can_access_all_users_group":
-            can_access_all_users_group_widget = widget;
-            break;
-        case "can_mention_group":
-            can_mention_group_widget = widget;
-            break;
-        case "realm_can_create_public_channel_group":
-            can_create_public_channel_group_widget = widget;
-            break;
-        default:
-            blueslip.error("No dropdown list widget for property", {property_name});
+    if (dropdown_widget_map.get(property_name) === undefined) {
+        blueslip.error("No dropdown list widget for property", {property_name});
+        return;
     }
+
+    dropdown_widget_map.set(property_name, widget);
 }
 
 export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
