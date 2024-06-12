@@ -384,8 +384,7 @@
     :disabled,
     input:not([type="radio"]):read-only,
     textarea:read-only,
-    #org-join-settings .dropdown-widget-button:disabled,
-    #org-guest-settings .dropdown-widget-button:disabled {
+    #organization-permissions .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
     }
@@ -439,8 +438,7 @@
     .pill-container,
     .user-status-content-wrapper,
     #custom-expiration-time-input,
-    #org-join-settings .dropdown-widget-button,
-    #org-guest-settings .dropdown-widget-button,
+    #organization-permissions .dropdown-widget-button,
     #compose_recipient_box {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
