@@ -115,6 +115,12 @@ people.add_active_user({
     email: "ampampamp@zulip.com",
 });
 
+people.add_active_user({
+    full_name: "Zoe",
+    user_id: 7,
+    email: "zoe@zulip.com",
+});
+
 people.add_inaccessible_user(108);
 
 people.initialize_current_user(cordelia.user_id);
