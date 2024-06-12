@@ -183,7 +183,7 @@ def delete_message_backend(
     message = access_message(user_profile, message_id, lock_message=True)
     validate_can_delete_message(user_profile, message)
     try:
-        do_delete_messages(user_profile.realm, [message])
+        do_delete_messages(user_profile.realm, [message],user_profile)
     except (Message.DoesNotExist, IntegrityError):
         raise JsonableError(_("Message already deleted"))
     return json_success(request)

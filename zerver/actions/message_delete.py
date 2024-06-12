@@ -6,6 +6,7 @@ from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_i
 from zerver.models import Message, Realm, Stream, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
+from zerver.lib.message_cache import update_message_cache
 
 class DeleteMessagesEvent(TypedDict, total=False):
     type: str
@@ -44,7 +45,7 @@ def check_update_first_message_id(
     send_event_on_commit(realm, stream_event, users_to_notify)
 
 
-def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
+def do_delete_messages(realm: Realm, messages: Iterable[Message],user_profile=None) -> None:
     # messages in delete_message event belong to the same topic
     # or is a single direct message, as any other behaviour is not possible with
     # the current callers to this method.
@@ -57,7 +58,6 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         "type": "delete_message",
         "message_ids": message_ids,
     }
-
     sample_message = messages[0]
     message_type = "stream"
     users_to_notify = []
@@ -86,6 +86,8 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
     event["message_type"] = message_type
+    if user_profile:
+        users_to_notify = users_to_notify.append(user_profile.id)
     send_event_on_commit(realm, event, users_to_notify)
 
 
