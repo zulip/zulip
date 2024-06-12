@@ -34,7 +34,7 @@ export function get_group(section) {
         case "bot-list-admin":
             return "org_bots";
 
-        case "user-list-admin":
+        case "users":
         case "deactivated-users-admin":
             return "org_users";
 

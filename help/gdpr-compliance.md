@@ -107,7 +107,7 @@ GDPR:
 
 * A Zulip user can change their profile information, delete their
   messages, uploaded files, etc., directly within the Zulip web app.
-* You can use the [organization users](/#organization/user-list-admin)
+* You can use the [organization users](/#organization/users)
   panel to deactivate users, edit or delete their account details,
   etc.
 * For complying with access requests, you'll want to start with that

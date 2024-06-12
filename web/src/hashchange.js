@@ -276,6 +276,10 @@ function do_hashchange_overlay(old_hash) {
         // #settings/display-settings is being redirected to #settings/preferences.
         section = "preferences";
     }
+    if (section === "user-list-admin") {
+        // #settings/user-list-admin is being redirected to #settings/users after it was renamed.
+        section = "users";
+    }
     if ((base === "settings" || base === "organization") && !section) {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {
