@@ -66,8 +66,7 @@ busy topics,” Jon says.
 
 For the past six years, the Zulip chat has been a virtual office for End Point’s
 distributed team, a place to show up and be present at work. Discussing projects
-in Zulip [channels](/help/introduction-to-channels) (similar to channels in other chat
-tools) keeps everyone informed.
+in Zulip channels keeps everyone informed.
 
 “Zulip is my lifeline,” says [Joanne
 Tipton](https://www.endpointdev.com/team/joanne-tipton/), a senior team manager
