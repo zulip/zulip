@@ -164,7 +164,7 @@ export function launch(section) {
     if (section !== "") {
         settings_panel_menu.normal_settings.set_current_tab(section);
     }
-    settings_toggle.highlight_toggle("settings");
+    settings_toggle.goto("settings");
 }
 
 export function initialize() {

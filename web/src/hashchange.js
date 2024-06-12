@@ -370,7 +370,7 @@ function do_hashchange_overlay(old_hash) {
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
         }
-        settings_toggle.highlight_toggle(base);
+        settings_toggle.goto(base);
         return;
     }
 

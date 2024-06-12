@@ -6,7 +6,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 
 let toggler;
 
-export function highlight_toggle(tab_name) {
+export function goto(tab_name) {
     if (toggler) {
         toggler.goto(tab_name);
     }
