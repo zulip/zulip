@@ -1,11 +1,6 @@
-import os
-import sys
 from urllib.parse import urljoin
 
 from django.utils.http import url_has_allowed_host_and_scheme
-
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(ZULIP_PATH)
 
 from zerver.lib.camo import get_camo_url
 
