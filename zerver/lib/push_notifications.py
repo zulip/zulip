@@ -922,11 +922,74 @@ def get_mobile_push_content(rendered_content: str) -> str:
             plain_text += elem.tail or ""
         return plain_text
 
+    def is_same_server_message_link(hash: str) -> bool:
+        # A same server message link always has category `narrow`,
+        # section `stream` or `dm`, and ends with `/near/<message_id>`,
+        # where <message_id> is a sequence of digits.
+        match = re.match(r"#([^/]+)", hash)
+        if match is None or match.group(1) != "narrow":
+            return False
+
+        match = re.search(r"#narrow/([^/]+)", hash)
+        if match is None or not (match.group(1) == "stream" or match.group(1) == "dm"):
+            return False
+
+        return re.search(r"/near/\d+$", hash) is not None
+
+    def is_user_said_paragraph(element: lxml.html.HtmlElement) -> bool:
+        # The user said paragraph has these exact elements:
+        # 1. A user mention
+        # 2. A same server message link ("said")
+        # 3. A colon (:)
+        user_mention_elements = element.find_class("user-mention")
+        if len(user_mention_elements) != 1:
+            return False
+
+        message_link_elements = []
+        anchor_elements = element.cssselect("a[href]")
+        for elem in anchor_elements:
+            href = elem.get("href")
+            if is_same_server_message_link(href):
+                message_link_elements.append(elem)
+
+        if len(message_link_elements) != 1:
+            return False
+
+        remaining_text = (
+            element.text_content()
+            .replace(user_mention_elements[0].text_content(), "")
+            .replace(message_link_elements[0].text_content(), "")
+        )
+        return remaining_text.strip() == ":"
+
+    def get_collapsible_status_array(elements: List[lxml.html.HtmlElement]) -> List[bool]:
+        collapsible_status: List[bool] = [
+            element.tag == "blockquote" or is_user_said_paragraph(element) for element in elements
+        ]
+        return collapsible_status
+
+    def potentially_collapse_quotes(element: lxml.html.HtmlElement) -> None:
+        children = element.getchildren()
+        collapsible_status = get_collapsible_status_array(children)
+
+        if all(collapsible_status) or all(not x for x in collapsible_status):
+            return
+
+        collapse_element = lxml.html.Element("p")
+        collapse_element.text = "[…]"
+        for index, child in enumerate(children):
+            if collapsible_status[index]:
+                if index > 0 and collapsible_status[index - 1]:
+                    child.drop_tree()
+                else:
+                    child.getparent().replace(child, collapse_element)
+
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
         return _("New message")
 
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     change_katex_to_raw_latex(elem)
+    potentially_collapse_quotes(elem)
     plain_text = process(elem)
     return plain_text
 
