@@ -20,6 +20,12 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
     use_s3_backend,
 )
+from zerver.lib.thumbnail import (
+    DEFAULT_AVATAR_SIZE,
+    DEFAULT_EMOJI_SIZE,
+    MEDIUM_AVATAR_SIZE,
+    resize_avatar,
+)
 from zerver.lib.upload import (
     all_message_attachments,
     delete_export_tarball,
@@ -28,12 +34,6 @@ from zerver.lib.upload import (
     save_attachment_contents,
     upload_export_tarball,
     upload_message_attachment,
-)
-from zerver.lib.upload.base import (
-    DEFAULT_AVATAR_SIZE,
-    DEFAULT_EMOJI_SIZE,
-    MEDIUM_AVATAR_SIZE,
-    resize_avatar,
 )
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, RealmEmoji, UserProfile

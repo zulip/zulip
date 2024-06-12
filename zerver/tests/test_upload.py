@@ -37,8 +37,9 @@ from zerver.lib.test_helpers import (
     ratelimit_rule,
     read_test_image_file,
 )
+from zerver.lib.thumbnail import BadImageError, resize_emoji
 from zerver.lib.upload import upload_message_attachment
-from zerver.lib.upload.base import BadImageError, ZulipUploadBackend, resize_emoji, sanitize_name
+from zerver.lib.upload.base import ZulipUploadBackend, sanitize_name
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
@@ -1422,15 +1423,15 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             animated_large_img_data = read_test_image_file(f"animated_large_img.{img_format}")
 
             # Test an image larger than max is resized
-            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_SIZE", 128):
+            with patch("zerver.lib.thumbnail.MAX_EMOJI_GIF_SIZE", 128):
                 test_resize()
 
             # Test an image file larger than max is resized
-            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
+            with patch("zerver.lib.thumbnail.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
                 test_resize()
 
             # Test an image smaller than max and smaller than file size max is not resized
-            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_SIZE", 512):
+            with patch("zerver.lib.thumbnail.MAX_EMOJI_GIF_SIZE", 512):
                 test_resize(size=256)
 
         # Test a non-animated GIF image which does need to be resized
