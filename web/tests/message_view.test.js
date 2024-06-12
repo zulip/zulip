@@ -25,6 +25,9 @@ mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 mock_esm("../src/spectators", {
     login_to_access() {},
 });

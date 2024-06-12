@@ -31,6 +31,9 @@ const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
 const rows = mock_esm("../src/rows");
 const message_store = mock_esm("../src/message_store");
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => false,
+});
 
 const iago = {
     email: "iago@zulip.com",

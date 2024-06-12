@@ -49,6 +49,14 @@ const moderators_group = {
     direct_subgroup_ids: new Set([1]),
 };
 
+const everyone_group = {
+    name: "Everyone",
+    id: 3,
+    members: new Set([me.user_id, test_user.user_id]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
 function test(label, f) {
     run_test(label, (helpers) => {
         current_user.is_admin = false;
@@ -58,7 +66,9 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        user_groups.initialize({realm_user_groups: [admins_group, moderators_group]});
+        user_groups.initialize({
+            realm_user_groups: [admins_group, moderators_group, everyone_group],
+        });
         f(helpers);
     });
 }
@@ -820,7 +830,8 @@ test("create_sub", () => {
 
 test("creator_id", () => {
     people.add_active_user(test_user);
-
+    realm.realm_can_access_all_users_group = everyone_group.id;
+    current_user.user_id = me.user_id;
     // When creator id is not a valid user id
     assert.throws(() => stream_data.maybe_get_creator_details(-1), {
         name: "Error",
