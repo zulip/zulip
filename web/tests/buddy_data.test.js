@@ -8,6 +8,9 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {current_user, realm, user_settings} = require("./lib/zpage_params");
 
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 const timerender = mock_esm("../src/timerender");
 
 const compose_fade_helper = zrequire("compose_fade_helper");

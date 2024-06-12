@@ -7,6 +7,10 @@ const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {current_user, realm} = require("./lib/zpage_params");
 
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
+
 mock_esm("../src/stream_topic_history", {
     add_message: noop,
 });

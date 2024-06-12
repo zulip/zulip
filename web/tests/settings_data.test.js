@@ -349,9 +349,10 @@ run_test("user_can_create_multiuse_invite", () => {
     };
 
     user_groups.initialize({realm_user_groups: [admins, moderators]});
-
+    page_params.is_spectator = true;
     assert.equal(settings_data.user_can_create_multiuse_invite(), false);
 
+    page_params.is_spectator = false;
     realm.realm_create_multiuse_invite_group = 1;
     current_user.user_id = admin_user_id;
     assert.equal(settings_data.user_can_create_multiuse_invite(), true);
@@ -381,9 +382,10 @@ run_test("can_edit_user_group", () => {
         realm_user_groups: [students],
     });
 
-    delete current_user.user_id;
+    page_params.is_spectator = true;
     assert.ok(!settings_data.can_edit_user_group(students.id));
 
+    page_params.is_spectator = false;
     current_user.user_id = 3;
     current_user.is_guest = true;
     assert.ok(!settings_data.can_edit_user_group(students.id));
@@ -442,9 +444,10 @@ run_test("user_can_access_all_other_users", () => {
     realm.realm_can_access_all_users_group = members.id;
 
     // Test spectators case.
-    current_user.user_id = undefined;
+    page_params.is_spectator = true;
     assert.ok(settings_data.user_can_access_all_other_users());
 
+    page_params.is_spectator = false;
     current_user.user_id = member_user_id;
     assert.ok(settings_data.user_can_access_all_other_users());
 
@@ -477,8 +480,10 @@ run_test("user_can_create_public_streams", () => {
 
     user_groups.initialize({realm_user_groups: [admins, moderators]});
 
+    page_params.is_spectator = true;
     assert.equal(settings_data.user_can_create_public_streams(), false);
 
+    page_params.is_spectator = false;
     realm.realm_can_create_public_channel_group = 1;
     current_user.user_id = admin_user_id;
     assert.equal(settings_data.user_can_create_public_streams(), true);

@@ -22,6 +22,9 @@ const overlays = mock_esm("../src/overlays");
 const popovers = mock_esm("../src/popovers");
 const recent_view_ui = mock_esm("../src/recent_view_ui");
 const settings = mock_esm("../src/settings");
+mock_esm("../src/settings_data", {
+    user_can_create_public_streams: () => true,
+});
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const ui_util = mock_esm("../src/ui_util");
 const ui_report = mock_esm("../src/ui_report");

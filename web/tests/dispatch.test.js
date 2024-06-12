@@ -55,6 +55,7 @@ const scheduled_messages_ui = mock_esm("../src/scheduled_messages_ui");
 const scroll_bar = mock_esm("../src/scroll_bar");
 const settings_account = mock_esm("../src/settings_account");
 const settings_bots = mock_esm("../src/settings_bots");
+const settings_data = mock_esm("../src/settings_data");
 const settings_emoji = mock_esm("../src/settings_emoji");
 const settings_exports = mock_esm("../src/settings_exports");
 const settings_invites = mock_esm("../src/settings_invites");
@@ -788,6 +789,7 @@ run_test("realm_user", ({override}) => {
     args = update_bot_stub.get_args("update_user_id", "update_bot_data");
     assert_same(args.update_user_id, event.person.user_id);
 
+    override(settings_data, "user_can_access_all_other_users", () => false);
     event = event_fixtures.realm_user__remove;
     dispatch(event);
     const removed_person = people.get_by_user_id(event.person.user_id);
