@@ -470,11 +470,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Increasing vertical padding any further will increase
-            the height of the row. */
-            padding: 8px;
-            position: relative;
-            right: -8px; /* To cancel padding-right */
             /* To accommodate fa-group icon */
             width: 14px;
             height: 14px;
