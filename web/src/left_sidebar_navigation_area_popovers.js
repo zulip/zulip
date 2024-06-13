@@ -44,6 +44,7 @@ function register_mark_all_read_handler(event) {
 export function initialize() {
     // Starred messages popover
     popover_menus.register_popover_menu(".starred-messages-sidebar-menu-icon", {
+        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
