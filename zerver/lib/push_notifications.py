@@ -353,7 +353,7 @@ def send_apple_push_notification(
 
 
 #
-# Sending to GCM, for Android
+# Sending to FCM, for Android
 #
 
 
@@ -403,18 +403,18 @@ def send_android_push_notification_to_user(
 
 def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     """
-    Parse GCM options, supplying defaults, and raising an error if invalid.
+    Parse FCM options, supplying defaults, and raising an error if invalid.
 
     The options permitted here form part of the Zulip notification
     bouncer's API.  They are:
 
-    `priority`: Passed through to GCM; see upstream doc linked below.
+    `priority`: Passed through to FCM; see upstream doc linked below.
         Zulip servers should always set this; when unset, we guess a value
         based on the behavior of old server versions.
 
     Including unrecognized options is an error.
 
-    For details on options' semantics, see this GCM upstream doc:
+    For details on options' semantics, see this FCM upstream doc:
       https://firebase.google.com/docs/cloud-messaging/http-server-ref
 
     Returns `priority`.
@@ -454,14 +454,14 @@ def send_android_push_notification(
     remote: Optional["RemoteZulipServer"] = None,
 ) -> int:
     """
-    Send a GCM message to the given devices.
+    Send a FCM message to the given devices.
 
     See https://firebase.google.com/docs/cloud-messaging/http-server-ref
-    for the GCM upstream API which this talks to.
+    for the FCM upstream API which this talks to.
 
     data: The JSON object (decoded) to send as the 'data' parameter of
-        the GCM message.
-    options: Additional options to control the GCM message sent.
+        the FCM message.
+    options: Additional options to control the FCM message sent.
         For details, see `parse_gcm_options`.
     """
     if not devices:
@@ -489,7 +489,7 @@ def send_android_push_notification(
     try:
         # See https://firebase.google.com/docs/cloud-messaging/http-server-ref .
         # Two kwargs `retries` and `session` get eaten by `json_request`;
-        # the rest pass through to the GCM server.
+        # the rest pass through to the FCM server.
         #
         # One initial request plus 2 retries, with 5-second timeouts,
         # and expected 1 + 2 seconds (the gcm module jitters its
@@ -781,7 +781,7 @@ def push_notifications_configured() -> bool:
         # only require one to be configured.
         return True
     elif has_apns_credentials() and has_fcm_credentials():  # nocoverage
-        # We have the needed configuration to send through APNs and GCM directly
+        # We have the needed configuration to send through APNs and FCM directly
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
     return False
@@ -1091,7 +1091,7 @@ def get_message_payload_gcm(
     mentioned_user_group_name: Optional[str] = None,
     can_access_sender: bool = True,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """A `message` payload + options, for Android via GCM/FCM."""
+    """A `message` payload + options, for Android via FCM."""
     data = get_message_payload(
         user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
     )
@@ -1126,7 +1126,7 @@ def get_remove_payload_gcm(
     user_profile: UserProfile,
     message_ids: List[int],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """A `remove` payload + options, for Android via GCM/FCM."""
+    """A `remove` payload + options, for Android via FCM."""
     gcm_payload = get_base_payload(user_profile)
     gcm_payload.update(
         event="remove",
