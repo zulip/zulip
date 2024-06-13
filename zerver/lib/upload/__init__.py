@@ -258,20 +258,22 @@ def upload_emoji_image(
     backend.upload_single_emoji_image(
         f"{emoji_path}.original", content_type, user_profile, image_data
     )
-    resized_image_data, is_animated, still_image_data = resize_emoji(image_data, emoji_file_name)
-    if is_animated and len(still_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
-        raise BadImageError(_("Image size exceeds limit"))
-    if not is_animated and len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
+    resized_image_data, still_image_data = resize_emoji(image_data, emoji_file_name)
+    if still_image_data is not None:
+        if len(still_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
+            raise BadImageError(_("Image size exceeds limit"))
+    elif len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
         raise BadImageError(_("Image size exceeds limit"))
     backend.upload_single_emoji_image(emoji_path, content_type, user_profile, resized_image_data)
-    if is_animated:
-        assert still_image_data is not None
-        still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
-            realm_id=user_profile.realm_id,
-            emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
-        )
-        backend.upload_single_emoji_image(still_path, content_type, user_profile, still_image_data)
-    return is_animated
+    if still_image_data is None:
+        return False
+
+    still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+        realm_id=user_profile.realm_id,
+        emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
+    )
+    backend.upload_single_emoji_image(still_path, content_type, user_profile, still_image_data)
+    return True
 
 
 def get_emoji_file_content(

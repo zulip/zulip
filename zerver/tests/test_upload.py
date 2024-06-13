@@ -1390,10 +1390,9 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         # Test unequal width and height of animated GIF image
         animated_unequal_img_data = read_test_image_file("animated_unequal_img.gif")
         original_image = pyvips.Image.new_from_buffer(animated_unequal_img_data, "n=-1")
-        resized_img_data, is_animated, still_img_data = resize_emoji(
+        resized_img_data, still_img_data = resize_emoji(
             animated_unequal_img_data, "animated_unequal_img.gif", size=50
         )
-        self.assertTrue(is_animated)
         assert still_img_data is not None
         emoji_image = pyvips.Image.new_from_buffer(resized_img_data, "n=-1")
         self.assertEqual(emoji_image.get("vips-loader"), "gifload_buffer")
@@ -1415,17 +1414,16 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
 
         animated_large_img_data = read_test_image_file("animated_large_img.gif")
         original_image = pyvips.Image.new_from_buffer(animated_large_img_data, "n=-1")
-        resized_img_data, is_animated, still_img_data = resize_emoji(
+        resized_img_data, still_img_data = resize_emoji(
             animated_large_img_data, "animated_large_img.gif", size=50
         )
+        assert still_img_data is not None
         emoji_image = pyvips.Image.new_from_buffer(resized_img_data, "n=-1")
         self.assertEqual(emoji_image.get("vips-loader"), "gifload_buffer")
         self.assertEqual(emoji_image.get_n_pages(), original_image.get_n_pages())
         self.assertEqual(emoji_image.get("page-height"), 50)
         self.assertEqual(emoji_image.height, 150)
         self.assertEqual(emoji_image.width, 50)
-        self.assertTrue(is_animated)
-        assert still_img_data
         still_image = pyvips.Image.new_from_buffer(still_img_data, "")
         self.assertEqual(still_image.get("vips-loader"), "pngload_buffer")
         self.assertEqual(still_image.get_n_pages(), 1)
@@ -1444,7 +1442,7 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
 
         # Test a non-animated GIF image which does need to be resized
         still_large_img_data = read_test_image_file("still_large_img.gif")
-        resized_img_data, is_animated, no_still_data = resize_emoji(
+        resized_img_data, no_still_data = resize_emoji(
             still_large_img_data, "still_large_img.gif", size=50
         )
         emoji_image = pyvips.Image.new_from_buffer(resized_img_data, "n=-1")
@@ -1452,20 +1450,16 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(emoji_image.height, 50)
         self.assertEqual(emoji_image.width, 50)
         self.assertEqual(emoji_image.get_n_pages(), 1)
-        self.assertFalse(is_animated)
         assert no_still_data is None
 
         # Test a non-animated and non-animatable image format which needs to be resized
         still_large_img_data = read_test_image_file("img.jpg")
-        resized_img_data, is_animated, no_still_data = resize_emoji(
-            still_large_img_data, "img.jpg", size=50
-        )
+        resized_img_data, no_still_data = resize_emoji(still_large_img_data, "img.jpg", size=50)
         emoji_image = pyvips.Image.new_from_buffer(resized_img_data, "")
         self.assertEqual(emoji_image.get("vips-loader"), "jpegload_buffer")
         self.assertEqual(emoji_image.height, 50)
         self.assertEqual(emoji_image.width, 50)
         self.assertEqual(emoji_image.get_n_pages(), 1)
-        self.assertFalse(is_animated)
         assert no_still_data is None
 
 

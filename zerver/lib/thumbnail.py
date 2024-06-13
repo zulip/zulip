@@ -93,7 +93,7 @@ def resize_logo(image_data: bytes) -> bytes:
 
 def resize_emoji(
     image_data: bytes, emoji_file_name: str, size: int = DEFAULT_EMOJI_SIZE
-) -> Tuple[bytes, bool, Optional[bytes]]:
+) -> Tuple[bytes, Optional[bytes]]:
     if len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:
         raise BadImageError(_("Image size exceeds limit."))
 
@@ -103,10 +103,9 @@ def resize_emoji(
     write_file_ext = os.path.splitext(emoji_file_name)[1]
     assert "[" not in write_file_ext
 
-    # This function returns three values:
+    # This function returns two values:
     # 1) Emoji image data.
-    # 2) If the emoji is animated.
-    # 3) If it is animated, the still image data i.e. first frame of gif.
+    # 2) If it is animated, the still image data i.e. first frame of gif.
     with libvips_check_image(image_data) as source_image:
         if source_image.get_n_pages() == 1:
             return (
@@ -116,7 +115,6 @@ def resize_emoji(
                     height=size,
                     crop=pyvips.Interesting.CENTRE,
                 ).write_to_buffer(write_file_ext),
-                False,
                 None,
             )
         first_still = pyvips.Image.thumbnail_buffer(
@@ -150,4 +148,4 @@ def resize_emoji(
                 for frame in animated.pagesplit()
             ]
             animated = frames[0].pagejoin(frames[1:])
-        return (animated.write_to_buffer(write_file_ext), True, first_still)
+        return (animated.write_to_buffer(write_file_ext), first_still)
