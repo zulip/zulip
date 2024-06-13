@@ -125,6 +125,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         user_profile: UserProfile,
         image_data: bytes,
         content_type: Optional[str],
+        future: bool = True,
     ) -> None:
         output_path = os.path.join(
             assert_is_not_none(settings.LOCAL_AVATARS_DIR),

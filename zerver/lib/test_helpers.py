@@ -246,7 +246,7 @@ def avatar_disk_path(
     avatar_disk_path = os.path.join(
         settings.LOCAL_AVATARS_DIR,
         avatar_url_path.split("/")[-2],
-        avatar_url_path.split("/")[-1].split("?")[0],
+        avatar_url_path.split("/")[-1],
     )
     if original:
         return avatar_disk_path.replace(".png", ".original")

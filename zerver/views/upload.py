@@ -300,10 +300,7 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
     else:
         response = internal_nginx_redirect(quote(f"/internal/local/user_avatars/{path}"))
 
-    # We do _not_ mark the contents as immutable for caching purposes,
-    # since the path for avatar images is hashed only by their user-id
-    # and a salt, and as such are reused when a user's avatar is
-    # updated.
+    patch_cache_control(response, max_age=31536000, public=True, immutable=True)
     return response
 
 
