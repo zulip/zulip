@@ -55,9 +55,6 @@ https://github.com/zulip/zulint/archive/417b4e4971fdd5ca8e84847f1391b657b188631a
 
 -r mypy.in
 
-# Needed for using integration logo svg files as bot avatars
-cairosvg
-
 # Needed for tools/check-thirdparty
 python-debian
 
