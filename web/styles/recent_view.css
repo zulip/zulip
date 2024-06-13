@@ -47,7 +47,7 @@
         .filter-icon {
             /* Maintain righthand space between icon
                 and stream name. */
-            margin-right: 3px;
+            margin: 0 3px 0 -1px;
         }
 
         & > * {
@@ -95,7 +95,8 @@
     }
 
     .fa-envelope {
-        font-size: 0.7rem;
+        /* Legacy 11.2px size at 14px/1em. */
+        font-size: 0.8em;
         margin-right: 2px;
         position: relative;
         top: -1px;
@@ -491,9 +492,9 @@
     }
 
     .stream-privacy .zulip-icon {
-        position: relative;
-        left: -1px;
-        top: 1.5px;
+        /* Let flexbox handle vertical alignment by
+           pushing back against inline-block display. */
+        display: block;
     }
 }
 
