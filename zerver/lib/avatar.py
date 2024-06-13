@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -27,24 +27,6 @@ def avatar_url(
         medium=medium,
         client_gravatar=client_gravatar,
     )
-
-
-def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool = False) -> str:
-    """
-    DEPRECATED: We should start using
-                get_avatar_field to populate users,
-                particularly for codepaths where the
-                client can compute gravatar URLs
-                on the client side.
-    """
-    url = _get_unversioned_avatar_url(
-        userdict["id"],
-        userdict["avatar_source"],
-        userdict["realm_id"],
-        email=userdict["email"],
-        medium=medium,
-    )
-    return append_url_query_string(url, "version={:d}".format(userdict["avatar_version"]))
 
 
 def get_avatar_field(
