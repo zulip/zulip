@@ -1335,7 +1335,6 @@ class TestRealmAuditLog(ZulipTestCase):
             user_group,
             "can_mention_group",
             new_group,
-            old_setting_api_value=old_group.id,
             acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1364,7 +1363,6 @@ class TestRealmAuditLog(ZulipTestCase):
             user_group,
             "can_mention_group",
             new_group,
-            old_setting_api_value=old_group.id,
             acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
