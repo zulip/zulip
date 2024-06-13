@@ -272,6 +272,7 @@ export const default_popover_props: Partial<tippy.Props> = {
 };
 
 export const left_sidebar_tippy_options = {
+    theme: "popover-menu",
     placement: "right",
     popperOptions: {
         modifiers: [

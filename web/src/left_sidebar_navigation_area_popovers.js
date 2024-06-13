@@ -44,7 +44,6 @@ function register_mark_all_read_handler(event) {
 export function initialize() {
     // Starred messages popover
     popover_menus.register_popover_menu(".starred-messages-sidebar-menu-icon", {
-        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -89,7 +88,6 @@ export function initialize() {
 
     // Drafts popover
     popover_menus.register_popover_menu(".drafts-sidebar-menu-icon", {
-        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -116,7 +114,6 @@ export function initialize() {
 
     // Inbox popover
     popover_menus.register_popover_menu(".inbox-sidebar-menu-icon", {
-        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -151,7 +148,6 @@ export function initialize() {
 
     // Combined feed popover
     popover_menus.register_popover_menu(".all-messages-sidebar-menu-icon", {
-        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -185,7 +181,6 @@ export function initialize() {
 
     // Recent view popover
     popover_menus.register_popover_menu(".recent-view-sidebar-menu-icon", {
-        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -218,7 +213,6 @@ export function initialize() {
     });
 
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
-        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
             // Determine at show time whether there are scheduled messages,
