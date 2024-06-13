@@ -25,6 +25,26 @@ EVENT_HEADER_TEMPLATE = """
 
 OP_TEMPLATE = '<span class="api-event-op">op: {op_type}</span>'
 
+EVENTS_TABLE_TEMPLATE = """
+<div class="api-events-table">
+{events_list}
+</div>
+<hr>
+""".strip()
+
+TABLE_OPS_TEMPLATE = """
+<div class="api-event-type">{event_name}:</div>
+<div class="api-event-ops">
+{ops}
+</div>
+""".strip()
+
+TABLE_LINK_TEMPLATE = """
+<div class="api-event-link">
+    <a href="#{url}">{link_name}</a>
+</div>
+""".strip()
+
 
 @dataclass
 class EventData:
@@ -232,9 +252,25 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         event_strings.append("<hr>")
         return event_strings
 
+    def generate_events_table(self, events_by_type: OrderedDict[str, List[str]]) -> List[str]:
+        event_links: List[str] = []
+        for event_type, event_ops in events_by_type.items():
+            if not event_ops:
+                event_links.append(TABLE_LINK_TEMPLATE.format(link_name=event_type, url=event_type))
+            else:
+                event_ops.sort()
+                ops_list = [
+                    TABLE_LINK_TEMPLATE.format(link_name=f"op: {op}", url=f"{event_type}-{op}")
+                    for op in event_ops
+                ]
+                event_links.append(
+                    TABLE_OPS_TEMPLATE.format(event_name=event_type, ops="\n".join(ops_list))
+                )
+        return [EVENTS_TABLE_TEMPLATE.format(events_list="\n".join(event_links))]
+
     def render_events(self, events_dict: Dict[str, Any]) -> List[str]:
-        text: List[str] = []
-        events_table: OrderedDict[str, List[str]] = OrderedDict()
+        events: List[str] = []
+        events_for_table: OrderedDict[str, List[str]] = OrderedDict()
         for event in events_dict["oneOf"]:
             # The op property doesn't have a description, so it must be removed
             # before any calls to self.render_table, which expects a description.
@@ -249,36 +285,15 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 example=json.dumps(event["example"], indent=4, sort_keys=True),
                 op_type=op_type,
             )
-            text += self.generate_event_strings(event_data)
+            events += self.generate_event_strings(event_data)
             if event_data.op_type is None:
-                events_table[event_data.type] = []
-            elif event_data.type in events_table:
-                events_table[event_data.type] += [event_data.op_type]
+                events_for_table[event_data.type] = []
+            elif event_data.type in events_for_table:
+                events_for_table[event_data.type] += [event_data.op_type]
             else:
-                events_table[event_data.type] = [event_data.op_type]
-
-        # Creates table of links for events
-        events_table_str: List[str] = ['<div class="events-table">']
-        sorted_events_table: OrderedDict[str, List[str]] = OrderedDict(sorted(events_table.items()))
-        for event_name, ops in sorted_events_table.items():
-            if not ops:
-                events_table_str.append(
-                    table_link_template.format(link_name=event_name, url=event_name)
-                )
-            else:
-                events_table_str.append(f'<div class="events-table-link">{event_name}:</div>')
-                events_table_str.append("<div class='events-table-ops'>")
-                ops.sort()
-                op_list = [
-                    table_link_template.format(link_name=f"op: {op}", url=f"{event_name}-{op}")
-                    for op in ops
-                ]
-                events_table_str.extend(op_list)
-                events_table_str.append("</div>")
-        events_table_str.append("</div>")
-
-        text = events_table_str + text
-        return text
+                events_for_table[event_data.type] = [event_data.op_type]
+        events_table = self.generate_events_table(OrderedDict(sorted(events_for_table.items())))
+        return events_table + events
 
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownReturnValuesTableGenerator:
