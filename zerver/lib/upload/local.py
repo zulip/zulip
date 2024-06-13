@@ -125,6 +125,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         user_profile: UserProfile,
         image_data: bytes,
         content_type: Optional[str],
+        future: bool = True,
     ) -> None:
         write_local_file("avatars", file_path, image_data)
 

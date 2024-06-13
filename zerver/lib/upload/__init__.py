@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.translation import gettext as _
 
-from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import guess_type
 from zerver.lib.outgoing_http import OutgoingSession
@@ -208,6 +208,7 @@ def write_avatar_images(
     *,
     content_type: Optional[str],
     backend: Optional[ZulipUploadBackend] = None,
+    future: bool = True,
 ) -> None:
     if backend is None:
         backend = upload_backend
@@ -216,6 +217,7 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=image_data,
         content_type=content_type,
+        future=future,
     )
 
     backend.upload_single_avatar_image(
@@ -223,6 +225,7 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=resize_avatar(image_data),
         content_type="image/png",
+        future=future,
     )
 
     backend.upload_single_avatar_image(
@@ -230,6 +233,7 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=resize_avatar(image_data, MEDIUM_AVATAR_SIZE),
         content_type="image/png",
+        future=future,
     )
 
 
@@ -238,23 +242,31 @@ def upload_avatar_image(
     user_profile: UserProfile,
     content_type: Optional[str] = None,
     backend: Optional[ZulipUploadBackend] = None,
+    future: bool = True,
 ) -> None:
     if content_type is None:
         content_type = guess_type(user_file.name)[0]
-    file_path = user_avatar_path(user_profile)
+    file_path = user_avatar_path(user_profile, future=future)
 
     image_data = user_file.read()
     write_avatar_images(
-        file_path, user_profile, image_data, content_type=content_type, backend=backend
+        file_path,
+        user_profile,
+        image_data,
+        content_type=content_type,
+        backend=backend,
+        future=future,
     )
 
 
 def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    source_file_path = user_avatar_path(source_profile)
-    target_file_path = user_avatar_path(target_profile)
+    source_file_path = user_avatar_path(source_profile, future=False)
+    target_file_path = user_avatar_path(target_profile, future=True)
 
     image_data, content_type = upload_backend.get_avatar_contents(source_file_path)
-    write_avatar_images(target_file_path, target_profile, image_data, content_type=content_type)
+    write_avatar_images(
+        target_file_path, target_profile, image_data, content_type=content_type, future=True
+    )
 
 
 def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None:
@@ -282,11 +294,12 @@ def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None
         user_profile=user_profile,
         image_data=resized_avatar,
         content_type="image/png",
+        future=False,
     )
 
 
-def delete_avatar_image(user_profile: UserProfile) -> None:
-    path_id = user_avatar_path(user_profile)
+def delete_avatar_image(user_profile: UserProfile, avatar_version: int) -> None:
+    path_id = user_avatar_base_path_from_ids(user_profile.id, avatar_version, user_profile.realm_id)
     upload_backend.delete_avatar_image(path_id)
 
 

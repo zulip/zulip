@@ -27,7 +27,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
@@ -148,6 +148,7 @@ def build_avatar(
         path=avatar_url,  # Save original avatar URL here, which is downloaded later
         realm_id=realm_id,
         content_type=None,
+        avatar_version=1,
         user_profile_id=zulip_user_id,
         last_modified=timestamp,
         user_profile_email=email,
@@ -594,7 +595,9 @@ def process_avatars(
     avatar_original_list = []
     avatar_upload_list = []
     for avatar in avatar_list:
-        avatar_hash = user_avatar_path_from_ids(avatar["user_profile_id"], realm_id)
+        avatar_hash = user_avatar_base_path_from_ids(
+            avatar["user_profile_id"], avatar["avatar_version"], realm_id
+        )
         avatar_url = avatar["path"]
         avatar_original = dict(avatar)
 
