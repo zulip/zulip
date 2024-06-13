@@ -55,7 +55,6 @@ module = [
     "ahocorasick.*",
     "bitfield.*",
     "bmemcached.*",
-    "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
     "circuitbreaker.*",
     "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
