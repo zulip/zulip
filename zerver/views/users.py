@@ -312,12 +312,9 @@ def avatar(
         avatar_version = 1
         url = get_gravatar_url(email, avatar_version, medium)
 
-    # We can rely on the URL already having query parameters. Because
-    # our templates depend on being able to use the ampersand to
-    # add query parameters to our url, get_avatar_url does '?x=x'
-    # hacks to prevent us from having to jump through decode/encode hoops.
     assert url is not None
-    url = append_url_query_string(url, request.META["QUERY_STRING"])
+    if request.META["QUERY_STRING"]:
+        url = append_url_query_string(url, request.META["QUERY_STRING"])
     return redirect(url)
 
 
