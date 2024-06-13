@@ -50,7 +50,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                     events = return_values["events"].pop("items", None)
                     text = self.render_table(return_values, 0)
                     # Another heading for the events documentation
-                    text.append("\n\n## Events\n\n")
+                    text.append("\n\n## Events by `type`\n\n")
                     text += self.render_events(events)
                 else:
                     text = self.render_table(return_values, 0)
@@ -216,7 +216,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 op_str = op["enum"][0]
                 h3_id += "-" + op_str
                 op_type: str = op_str
-                op_str = f'<span class="api-argument-deprecated">op: {op_str}</span>'
+                op_str = f'<span class="api-event-name">op: {op_str}</span>'
                 if event_name in events_table:
                     events_table[event_name] += [op_type]
                 else:
@@ -250,7 +250,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 events_table_str.append("<div class='events-table-ops'>")
                 ops.sort()
                 op_list = [
-                    table_link_template.format(link_name=op, url=f"{event_name}-{op}") for op in ops
+                    table_link_template.format(link_name=f"op: {op}", url=f"{event_name}-{op}")
+                    for op in ops
                 ]
                 events_table_str.extend(op_list)
                 events_table_str.append("</div>")

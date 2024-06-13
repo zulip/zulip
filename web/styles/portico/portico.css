@@ -1442,12 +1442,11 @@ label.label-title {
 
 .events-table-link {
     line-height: 100%;
-    font-size: 0.7rem;
     font-weight: 600;
 }
 
 .events-table {
-    column-count: 4;
+    column-count: 3;
     column-gap: 10px;
     margin: 15px 0 0 10px !important;
 
@@ -1456,19 +1455,13 @@ label.label-title {
     }
 }
 
-@media (width <= 1100px) {
-    .events-table {
-        column-count: 3;
-    }
-}
-
-@media (width <= 600px) {
+@media (width <= 1000px) {
     .events-table {
         column-count: 2;
     }
 }
 
-@media (width <= 420px) {
+@media (width <= 500px) {
     .events-table {
         column-count: 1;
     }
