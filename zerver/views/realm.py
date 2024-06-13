@@ -632,6 +632,7 @@ def update_realm_user_settings_defaults(
     ]
     | None = None,
     web_navigate_to_sent_message: Json[bool] | None = None,
+    web_suggest_update_timezone: Json[bool] | None = None,
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
