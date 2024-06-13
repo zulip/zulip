@@ -560,6 +560,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
     )
     avatar_version = models.PositiveSmallIntegerField(default=1)
+    # This is only used for LDAP-provided avatars; it contains the
+    # SHA256 hex digest of most recent raw contents that LDAP provided
+    # us, pre-thumbnailing.
     avatar_hash = models.CharField(null=True, max_length=64)
 
     # TODO: TUTORIAL_STATUS was originally an optimization designed to
