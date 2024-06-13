@@ -244,13 +244,10 @@
     margin: 0;
     height: 100%;
 
-    .messagebox-wrapper {
-        flex: 1;
-    }
-
     .messagebox {
         /* normally 5px 14px; pull in the right and bottom a bit */
         cursor: default;
+        flex: 1;
         padding: 0;
         background: none;
         box-shadow: none;
