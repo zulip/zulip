@@ -17,7 +17,9 @@ import {user_settings} from "./user_settings";
 
 let next_timerender_id = 0;
 
-export let display_time_zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+export let display_time_zone = new Intl.DateTimeFormat()
+    .resolvedOptions()
+    .timeZone.replace("Calcutta", "Kolkata");
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
 
