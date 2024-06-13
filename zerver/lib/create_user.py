@@ -55,13 +55,13 @@ def copy_default_settings(
     if settings_source.avatar_source == UserProfile.AVATAR_FROM_USER:
         from zerver.actions.user_settings import do_change_avatar_fields
 
+        copy_avatar(settings_source, target_profile)
         do_change_avatar_fields(
             target_profile,
             UserProfile.AVATAR_FROM_USER,
             skip_notify=True,
             acting_user=target_profile,
         )
-        copy_avatar(settings_source, target_profile)
 
     copy_onboarding_steps(settings_source, target_profile)
 
