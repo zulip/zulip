@@ -1178,6 +1178,7 @@ ul {
         /* Keep menu items on a single line, unless forced to wrap
         by a max-width on the popover. */
         width: max-content;
+        flex: 1 0 0;
     }
 
     .text-item,
