@@ -183,6 +183,7 @@ export function initialize() {
 
     // Recent view popover
     popover_menus.register_popover_menu(".recent-view-sidebar-menu-icon", {
+        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
