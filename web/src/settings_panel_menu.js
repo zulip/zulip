@@ -108,6 +108,7 @@ export class SettingsPanelMenu {
             // We need to re-register these handlers since they are
             // destroyed once the settings modal closes.
             this.org_user_settings_toggler.register_event_handlers();
+            this.set_key_handlers(this.org_user_settings_toggler, $("#admin-user-list"));
         }
     }
 
@@ -120,10 +121,10 @@ export class SettingsPanelMenu {
         return $li;
     }
 
-    set_key_handlers(toggler) {
+    set_key_handlers(toggler, $elem = this.$main_elem) {
         const {vim_left, vim_right, vim_up, vim_down} = keydown_util;
         keydown_util.handle({
-            $elem: this.$main_elem,
+            $elem,
             handlers: {
                 ArrowLeft: toggler.maybe_go_left,
                 ArrowRight: toggler.maybe_go_right,
