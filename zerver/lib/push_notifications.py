@@ -387,7 +387,7 @@ else:
     gcm_client = None
 
 
-def has_gcm_credentials() -> bool:  # nocoverage
+def has_fcm_credentials() -> bool:  # nocoverage
     return gcm_client is not None
 
 
@@ -548,7 +548,7 @@ def uses_notification_bouncer() -> bool:
 
 
 def sends_notifications_directly() -> bool:
-    return has_apns_credentials() and has_gcm_credentials() and not uses_notification_bouncer()
+    return has_apns_credentials() and has_fcm_credentials() and not uses_notification_bouncer()
 
 
 def send_notifications_to_bouncer(
@@ -775,12 +775,12 @@ def push_notifications_configured() -> bool:
         # works -- e.g., that we have ever successfully sent to the bouncer --
         # but this is a good start.
         return True
-    if settings.DEVELOPMENT and (has_apns_credentials() or has_gcm_credentials()):  # nocoverage
+    if settings.DEVELOPMENT and (has_apns_credentials() or has_fcm_credentials()):  # nocoverage
         # Since much of the notifications logic is platform-specific, the mobile
         # developers often work on just one platform at a time, so we should
         # only require one to be configured.
         return True
-    elif has_apns_credentials() and has_gcm_credentials():  # nocoverage
+    elif has_apns_credentials() and has_fcm_credentials():  # nocoverage
         # We have the needed configuration to send through APNs and GCM directly
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
