@@ -19,6 +19,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
+import * as popovers from "./popovers";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
@@ -244,6 +245,9 @@ function setup_dropdown(sub, slim_sub) {
 }
 
 export function show_settings_for(node) {
+    // Hide any tooltips or popovers before we rerender / change
+    // currently displayed stream settings.
+    popovers.hide_all();
     const stream_id = get_stream_id(node);
     const slim_sub = sub_store.get(stream_id);
     stream_data.clean_up_description(slim_sub);
