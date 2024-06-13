@@ -11863,6 +11863,14 @@ paths:
                     only options to disable sending typing notifications.
                   type: boolean
                   example: true
+                web_suggest_update_timezone:
+                  description: |
+                    Whether the user should be shown an alert offering to update their profile time zone
+                    to the time zone of the browser in case they differ.
+
+                    **Changes**: New in Zulip 10.0 (feature level 329).
+                  type: boolean
+                  example: true
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -12352,6 +12360,8 @@ paths:
               starred_message_counts:
                 contentType: application/json
               receives_typing_notifications:
+                contentType: application/json
+              web_suggest_update_timezone:
                 contentType: application/json
               fluid_layout_width:
                 contentType: application/json
@@ -15197,6 +15207,13 @@ paths:
 
                               **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
                               only options to disable sending typing notifications.
+                          web_suggest_update_timezone:
+                            type: boolean
+                            description: |
+                              Whether the user should be shown an alert offering to update their profile time zone
+                              to the time zone of the browser in case they differ.
+
+                              **Changes**: New in Zulip 10.0 (feature level 329).
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -16305,6 +16322,13 @@ paths:
 
                           **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
                           only options to disable sending typing notifications.
+                      web_suggest_update_timezone:
+                        type: boolean
+                        description: |
+                          Whether the user should be shown an alert offering to update their profile time zone
+                          to the time zone of the browser in case they differ.
+
+                          **Changes**: New in Zulip 10.0 (feature level 329).
                       enter_sends:
                         deprecated: true
                         type: boolean
@@ -17721,6 +17745,13 @@ paths:
 
                               **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
                               only options to disable sending typing notifications.
+                          web_suggest_update_timezone:
+                            type: boolean
+                            description: |
+                              Whether the user should be shown an alert offering to update their profile time zone
+                              to the time zone of the browser in case they differ.
+
+                              **Changes**: New in Zulip 10.0 (feature level 329).
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -18876,6 +18907,14 @@ paths:
                     options to disable sending typing notifications.
                   type: boolean
                   example: true
+                web_suggest_update_timezone:
+                  type: boolean
+                  description: |
+                    Whether the user should be shown an alert offering to update their profile time zone
+                    to the time zone of the browser in case they differ.
+
+                    **Changes**: New in Zulip 10.0 (feature level 329).
+                  example: true
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -19466,6 +19505,8 @@ paths:
               starred_message_counts:
                 contentType: application/json
               receives_typing_notifications:
+                contentType: application/json
+              web_suggest_update_timezone:
                 contentType: application/json
               fluid_layout_width:
                 contentType: application/json

@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 329**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new `web_suggest_update_timezone` option to decide whether the user should be
+  shown an alert offering to update their profile time zone to the time zone of the
+  browser in case they differ.
+
 **Feature level 328**
 
 * [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
