@@ -59,7 +59,7 @@ from zerver.lib.push_notifications import (
     handle_remove_push_notification,
     hex_to_b64,
     modernize_apns_payload,
-    parse_gcm_options,
+    parse_fcm_options,
     send_android_push_notification_to_user,
     send_apple_push_notification,
     send_notifications_to_bouncer,
@@ -4773,20 +4773,20 @@ class TestPushApi(BouncerTestCase):
 class GCMParseOptionsTest(ZulipTestCase):
     def test_invalid_option(self) -> None:
         with self.assertRaises(JsonableError):
-            parse_gcm_options({"invalid": True}, {})
+            parse_fcm_options({"invalid": True}, {})
 
     def test_invalid_priority_value(self) -> None:
         with self.assertRaises(JsonableError):
-            parse_gcm_options({"priority": "invalid"}, {})
+            parse_fcm_options({"priority": "invalid"}, {})
 
     def test_default_priority(self) -> None:
-        self.assertEqual("high", parse_gcm_options({}, {"event": "message"}))
-        self.assertEqual("normal", parse_gcm_options({}, {"event": "remove"}))
-        self.assertEqual("normal", parse_gcm_options({}, {}))
+        self.assertEqual("high", parse_fcm_options({}, {"event": "message"}))
+        self.assertEqual("normal", parse_fcm_options({}, {"event": "remove"}))
+        self.assertEqual("normal", parse_fcm_options({}, {}))
 
     def test_explicit_priority(self) -> None:
-        self.assertEqual("normal", parse_gcm_options({"priority": "normal"}, {}))
-        self.assertEqual("high", parse_gcm_options({"priority": "high"}, {}))
+        self.assertEqual("normal", parse_fcm_options({"priority": "normal"}, {}))
+        self.assertEqual("high", parse_fcm_options({"priority": "high"}, {}))
 
 
 @mock.patch("zerver.lib.push_notifications.gcm_client")

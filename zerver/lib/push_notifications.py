@@ -401,7 +401,7 @@ def send_android_push_notification_to_user(
     )
 
 
-def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
+def parse_fcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     """
     Parse FCM options, supplying defaults, and raising an error if invalid.
 
@@ -462,7 +462,7 @@ def send_android_push_notification(
     data: The JSON object (decoded) to send as the 'data' parameter of
         the FCM message.
     options: Additional options to control the FCM message sent.
-        For details, see `parse_gcm_options`.
+        For details, see `parse_fcm_options`.
     """
     if not devices:
         return 0
@@ -485,7 +485,7 @@ def send_android_push_notification(
             "GCM: Sending notification for local user %s to %d devices", user_identity, len(devices)
         )
     reg_ids = [device.token for device in devices]
-    priority = parse_gcm_options(options, data)
+    priority = parse_fcm_options(options, data)
     try:
         # See https://firebase.google.com/docs/cloud-messaging/http-server-ref .
         # Two kwargs `retries` and `session` get eaten by `json_request`;
