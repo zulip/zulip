@@ -137,7 +137,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
             "user_uuid": str(user.uuid),
             "user_id": user.id,
             "token": "invalid",
-            "token_kind": PushDeviceToken.GCM,
+            "token_kind": PushDeviceToken.FCM,
             "base_payload": get_base_payload(user),
         }
         result = self.uuid_post(
@@ -154,7 +154,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         # server, but for some reason the server failed to register it with the bouncer.
 
         token = "111222"
-        token_kind = PushDeviceToken.GCM
+        token_kind = PushDeviceToken.FCM
         # We create a PushDeviceToken object, but no RemotePushDeviceToken object, to simulate
         # a missing registration on the bouncer.
         PushDeviceToken.objects.create(user=user, token=token, kind=token_kind)
@@ -183,7 +183,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         user = self.example_user("cordelia")
 
         android_token = "111222"
-        android_token_kind = PushDeviceToken.GCM
+        android_token_kind = PushDeviceToken.FCM
         apple_token = "111223"
         apple_token_kind = PushDeviceToken.APNS
         android_device = PushDeviceToken.objects.create(
@@ -302,7 +302,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         remote_realm = RemoteRealm.objects.get(server=server, uuid=user.realm.uuid)
 
         token = "111222"
-        token_kind = PushDeviceToken.GCM
+        token_kind = PushDeviceToken.FCM
         PushDeviceToken.objects.create(user=user, token=token, kind=token_kind)
         remote_device = RemotePushDeviceToken.objects.create(
             server=server, user_uuid=str(user.uuid), token=token, kind=token_kind
@@ -344,7 +344,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_unregister_remote_push_user_params(self) -> None:
         token = "111222"
-        token_kind = PushDeviceToken.GCM
+        token_kind = PushDeviceToken.FCM
 
         endpoint = "/api/v1/remotes/push/unregister"
         result = self.uuid_post(self.server_uuid, endpoint, {"token_kind": token_kind})
@@ -380,7 +380,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
     def test_register_remote_push_user_params(self) -> None:
         token = "111222"
         user_id = 11
-        token_kind = PushDeviceToken.GCM
+        token_kind = PushDeviceToken.FCM
 
         endpoint = "/api/v1/remotes/push/register"
 
@@ -497,7 +497,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         result = self.uuid_post(
             self.server_uuid,
             endpoint,
-            {**args, "token_kind": PushDeviceToken.GCM},
+            {**args, "token_kind": PushDeviceToken.FCM},
         )
         self.assert_json_success(result)
 
@@ -522,7 +522,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         token = "111222"
         user_id = hamlet.id
         user_uuid = str(hamlet.uuid)
-        token_kind = PushDeviceToken.GCM
+        token_kind = PushDeviceToken.FCM
 
         endpoint = "/api/v1/remotes/push/register"
 
@@ -581,7 +581,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         remote_realm = RemoteRealm.objects.get(server=server, uuid=hamlet.realm.uuid)
 
         android_token = RemotePushDeviceToken.objects.create(
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             token=hex_to_b64("aaaa"),
             user_uuid=hamlet.uuid,
             server=server,
@@ -631,7 +631,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         for i in ["aa", "bb"]:
             android_tokens.append(
                 RemotePushDeviceToken.objects.create(
-                    kind=RemotePushDeviceToken.GCM,
+                    kind=RemotePushDeviceToken.FCM,
                     token=hex_to_b64(token + i),
                     user_id=hamlet.id,
                     server=server,
@@ -643,7 +643,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             # and will delete the old, legacy registration.
             uuid_android_tokens.append(
                 RemotePushDeviceToken.objects.create(
-                    kind=RemotePushDeviceToken.GCM,
+                    kind=RemotePushDeviceToken.FCM,
                     token=hex_to_b64(token + i),
                     user_uuid=str(hamlet.uuid),
                     server=server,
@@ -741,7 +741,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         hamlet = self.example_user("hamlet")
         remote_server = self.server
         RemotePushDeviceToken.objects.create(
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             token=hex_to_b64("aaaaaa"),
             user_id=hamlet.id,
             server=remote_server,
@@ -952,7 +952,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
     def test_subsecond_timestamp_format(self) -> None:
         hamlet = self.example_user("hamlet")
         RemotePushDeviceToken.objects.create(
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             token=hex_to_b64("aaaaaa"),
             user_id=hamlet.id,
             server=self.server,
@@ -1164,7 +1164,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 RemotePushDeviceToken.APNS,
                 {"appid": "org.zulip.Zulip"},
             ),
-            ("/json/users/me/android_gcm_reg_id", "android-token", RemotePushDeviceToken.GCM, {}),
+            ("/json/users/me/android_gcm_reg_id", "android-token", RemotePushDeviceToken.FCM, {}),
         ]
 
         # Test error handling
@@ -2757,7 +2757,7 @@ class PushNotificationTest(BouncerTestCase):
         self.gcm_tokens = ["1111", "2222"]
         for token in self.gcm_tokens:
             PushDeviceToken.objects.create(
-                kind=PushDeviceToken.GCM,
+                kind=PushDeviceToken.FCM,
                 token=hex_to_b64(token),
                 user=self.user_profile,
                 ios_app_id=None,
@@ -2766,13 +2766,13 @@ class PushNotificationTest(BouncerTestCase):
         self.remote_gcm_tokens = [("dddd", "eeee")]
         for id_token, uuid_token in self.remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.GCM,
+                kind=RemotePushDeviceToken.FCM,
                 token=hex_to_b64(id_token),
                 user_id=self.user_profile.id,
                 server=self.server,
             )
             RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.GCM,
+                kind=RemotePushDeviceToken.FCM,
                 token=hex_to_b64(uuid_token),
                 user_uuid=self.user_profile.uuid,
                 server=self.server,
@@ -2835,7 +2835,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             ]
             gcm_devices = [
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
+                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
             ]
             mock_gcm.json_request.return_value = {
                 "success": {device[2]: message.id for device in gcm_devices}
@@ -2995,7 +2995,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             ]
             gcm_devices = [
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
+                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
             ]
 
             # Reset the local registrations for the user to make them compatible
@@ -3010,15 +3010,15 @@ class HandlePushNotificationTest(PushNotificationTest):
                 )
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
             ]
-            PushDeviceToken.objects.filter(kind=PushDeviceToken.GCM).delete()
+            PushDeviceToken.objects.filter(kind=PushDeviceToken.FCM).delete()
             [
                 PushDeviceToken.objects.create(
-                    kind=PushDeviceToken.GCM,
+                    kind=PushDeviceToken.FCM,
                     token=device.token,
                     user=self.user_profile,
                     ios_app_id=device.ios_app_id,
                 )
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
+                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
             ]
 
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
@@ -3085,7 +3085,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with mock.patch("zerver.lib.push_notifications.gcm_client") as mock_gcm:
             gcm_devices = [
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
+                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
             ]
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
             with self.assertRaises(PushNotificationBouncerRetryLaterError):
@@ -3249,7 +3249,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "gcm_payload": {"gcm": True},
                     "gcm_options": {},
                     "android_devices": list(
-                        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
+                        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM)
                         .order_by("id")
                         .values_list("token", flat=True)
                     ),
@@ -3283,7 +3283,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
         android_devices = list(
-            PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.GCM)
+            PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.FCM)
         )
 
         apple_devices = list(
@@ -3377,7 +3377,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"priority": "normal"},
                 list(
                     PushDeviceToken.objects.filter(
-                        user=user_profile, kind=PushDeviceToken.GCM
+                        user=user_profile, kind=PushDeviceToken.FCM
                     ).order_by("id")
                 ),
                 list(
@@ -3404,7 +3404,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
         android_devices = list(
-            PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.GCM)
+            PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.FCM)
         )
 
         apple_devices = list(
@@ -3544,7 +3544,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         }
 
         android_devices = list(
-            PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.GCM)
+            PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.FCM)
         )
 
         apple_devices = list(
@@ -4504,7 +4504,7 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
 
-        android_devices = PushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
+        android_devices = PushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
         apple_devices = PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
 
         self.assertNotEqual(android_devices.count(), 0)
@@ -4560,7 +4560,7 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
         )
 
         self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
-        self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.GCM).count(), 0)
+        self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.FCM).count(), 0)
 
         # Now simulating getting "can_push" as False from the bouncer and verify
         # that we update the realm value.
@@ -4848,7 +4848,7 @@ class GCMSendTest(PushNotificationTest):
 
         def get_count(hex_token: str) -> int:
             token = hex_to_b64(hex_token)
-            return PushDeviceToken.objects.filter(token=token, kind=PushDeviceToken.GCM).count()
+            return PushDeviceToken.objects.filter(token=token, kind=PushDeviceToken.FCM).count()
 
         self.assertEqual(get_count("1111"), 1)
 
