@@ -89,6 +89,7 @@ export function initialize() {
 
     // Drafts popover
     popover_menus.register_popover_menu(".drafts-sidebar-menu-icon", {
+        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
