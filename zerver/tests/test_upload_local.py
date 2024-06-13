@@ -3,8 +3,8 @@ import re
 from io import BytesIO, StringIO
 from urllib.parse import urlsplit
 
+import pyvips
 from django.conf import settings
-from PIL import Image
 
 import zerver.lib.upload
 from zerver.lib.avatar_hash import user_avatar_path
@@ -229,9 +229,9 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         with open(file_path + ".original", "rb") as original_file:
             self.assertEqual(read_test_image_file("img.png"), original_file.read())
 
-        expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
-        with Image.open(file_path) as resized_image:
-            self.assertEqual(expected_size, resized_image.size)
+        resized_emoji = pyvips.Image.new_from_file(file_path)
+        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_emoji.width)
+        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_emoji.height)
 
     def test_tarball_upload_and_deletion(self) -> None:
         user_profile = self.example_user("iago")

@@ -1,4 +1,3 @@
-import io
 import os
 import re
 from io import BytesIO, StringIO
@@ -6,8 +5,8 @@ from unittest.mock import patch
 from urllib.parse import urlsplit
 
 import botocore.exceptions
+import pyvips
 from django.conf import settings
-from PIL import Image
 
 import zerver.lib.upload
 from zerver.actions.user_settings import do_delete_avatar_image
@@ -414,9 +413,9 @@ class S3Test(ZulipTestCase):
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
         resized_data = bucket.Object(resized_path_id).get()["Body"].read()
-        # while trying to fit in a 800 x 100 box without losing part of the image
-        resized_image = Image.open(io.BytesIO(resized_data)).size
-        self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
+        resized_image = pyvips.Image.new_from_buffer(resized_data, "")
+        self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.height)
+        self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.width)
 
     @use_s3_backend
     def _test_upload_logo_image(self, night: bool, file_name: str) -> None:
@@ -436,8 +435,9 @@ class S3Test(ZulipTestCase):
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", f"{file_name}.png")
         resized_data = bucket.Object(resized_path_id).get()["Body"].read()
-        resized_image = Image.open(io.BytesIO(resized_data)).size
-        self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
+        resized_image = pyvips.Image.new_from_buffer(resized_data, "")
+        self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.height)
+        self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.width)
 
     def test_upload_realm_logo_image(self) -> None:
         self._test_upload_logo_image(night=False, file_name="logo")
@@ -489,8 +489,9 @@ class S3Test(ZulipTestCase):
         self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
 
         resized_data = bucket.Object(emoji_path).get()["Body"].read()
-        resized_image = Image.open(io.BytesIO(resized_data))
-        self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
+        resized_image = pyvips.Image.new_from_buffer(resized_data, "")
+        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.height)
+        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.width)
 
     @use_s3_backend
     def test_tarball_upload_and_deletion(self) -> None:

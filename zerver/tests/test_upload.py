@@ -1,4 +1,3 @@
-import io
 import os
 import re
 import time
@@ -8,9 +7,9 @@ from unittest.mock import patch
 from urllib.parse import quote
 
 import orjson
+import pyvips
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from PIL import Image
 from typing_extensions import override
 from urllib3 import encode_multipart_formdata
 from urllib3.fields import RequestField
@@ -1258,7 +1257,9 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 if rfname is not None:
                     response = self.client_get(url)
                     data = response.getvalue()
-                    self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
+                    avatar_image = pyvips.Image.new_from_buffer(data, "")
+                    self.assertEqual(avatar_image.height, 100)
+                    self.assertEqual(avatar_image.width, 100)
 
                 # Verify that the medium-size avatar was created
                 user_profile = self.example_user("hamlet")
@@ -1385,21 +1386,27 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
 
 class EmojiTest(UploadSerializeMixin, ZulipTestCase):
-    # While testing GIF resizing, we can't test if the final GIF has the same
-    # number of frames as the original one because PIL drops duplicate frames
-    # with a corresponding increase in the duration of the previous frame.
     def test_resize_emoji(self) -> None:
         # Test unequal width and height of animated GIF image
         animated_unequal_img_data = read_test_image_file("animated_unequal_img.gif")
+        original_image = pyvips.Image.new_from_buffer(animated_unequal_img_data, "n=-1")
         resized_img_data, is_animated, still_img_data = resize_emoji(
             animated_unequal_img_data, "animated_unequal_img.gif", size=50
         )
-        im = Image.open(io.BytesIO(resized_img_data))
-        self.assertEqual((50, 50), im.size)
         self.assertTrue(is_animated)
         assert still_img_data is not None
-        still_image = Image.open(io.BytesIO(still_img_data))
-        self.assertEqual((50, 50), still_image.size)
+        emoji_image = pyvips.Image.new_from_buffer(resized_img_data, "n=-1")
+        self.assertEqual(emoji_image.get("vips-loader"), "gifload_buffer")
+        self.assertEqual(emoji_image.get_n_pages(), original_image.get_n_pages())
+        self.assertEqual(emoji_image.get("page-height"), 50)
+        self.assertEqual(emoji_image.height, 150)
+        self.assertEqual(emoji_image.width, 50)
+
+        still_image = pyvips.Image.new_from_buffer(still_img_data, "")
+        self.assertEqual(still_image.get("vips-loader"), "pngload_buffer")
+        self.assertEqual(still_image.get_n_pages(), 1)
+        self.assertEqual(still_image.height, 50)
+        self.assertEqual(still_image.width, 50)
 
         # Test corrupt image exception
         corrupted_img_data = read_test_image_file("corrupt.gif")
@@ -1407,15 +1414,23 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             resize_emoji(corrupted_img_data, "corrupt.gif")
 
         animated_large_img_data = read_test_image_file("animated_large_img.gif")
+        original_image = pyvips.Image.new_from_buffer(animated_large_img_data, "n=-1")
         resized_img_data, is_animated, still_img_data = resize_emoji(
             animated_large_img_data, "animated_large_img.gif", size=50
         )
-        im = Image.open(io.BytesIO(resized_img_data))
-        self.assertEqual((50, 50), im.size)
+        emoji_image = pyvips.Image.new_from_buffer(resized_img_data, "n=-1")
+        self.assertEqual(emoji_image.get("vips-loader"), "gifload_buffer")
+        self.assertEqual(emoji_image.get_n_pages(), original_image.get_n_pages())
+        self.assertEqual(emoji_image.get("page-height"), 50)
+        self.assertEqual(emoji_image.height, 150)
+        self.assertEqual(emoji_image.width, 50)
         self.assertTrue(is_animated)
         assert still_img_data
-        still_image = Image.open(io.BytesIO(still_img_data))
-        self.assertEqual((50, 50), still_image.size)
+        still_image = pyvips.Image.new_from_buffer(still_img_data, "")
+        self.assertEqual(still_image.get("vips-loader"), "pngload_buffer")
+        self.assertEqual(still_image.get_n_pages(), 1)
+        self.assertEqual(still_image.height, 50)
+        self.assertEqual(still_image.width, 50)
 
         # Test an image file with too many bytes is not resized
         with patch("zerver.lib.thumbnail.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 1024):
@@ -1432,8 +1447,11 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         resized_img_data, is_animated, no_still_data = resize_emoji(
             still_large_img_data, "still_large_img.gif", size=50
         )
-        im = Image.open(io.BytesIO(resized_img_data))
-        self.assertEqual((50, 50), im.size)
+        emoji_image = pyvips.Image.new_from_buffer(resized_img_data, "n=-1")
+        self.assertEqual(emoji_image.get("vips-loader"), "gifload_buffer")
+        self.assertEqual(emoji_image.height, 50)
+        self.assertEqual(emoji_image.width, 50)
+        self.assertEqual(emoji_image.get_n_pages(), 1)
         self.assertFalse(is_animated)
         assert no_still_data is None
 
@@ -1442,8 +1460,11 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         resized_img_data, is_animated, no_still_data = resize_emoji(
             still_large_img_data, "img.jpg", size=50
         )
-        im = Image.open(io.BytesIO(resized_img_data))
-        self.assertEqual((50, 50), im.size)
+        emoji_image = pyvips.Image.new_from_buffer(resized_img_data, "")
+        self.assertEqual(emoji_image.get("vips-loader"), "jpegload_buffer")
+        self.assertEqual(emoji_image.height, 50)
+        self.assertEqual(emoji_image.width, 50)
+        self.assertEqual(emoji_image.get_n_pages(), 1)
         self.assertFalse(is_animated)
         assert no_still_data is None
 
@@ -1535,7 +1556,9 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
                 if rfname is not None:
                     response = self.client_get(url)
                     data = response.getvalue()
-                    self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
+                    response_image = pyvips.Image.new_from_buffer(data, "")
+                    self.assertEqual(response_image.height, 100)
+                    self.assertEqual(response_image.width, 100)
 
     def test_invalid_icons(self) -> None:
         """
@@ -1719,7 +1742,9 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
                     data = response.getvalue()
                     # size should be 100 x 100 because thumbnail keeps aspect ratio
                     # while trying to fit in a 800 x 100 box without losing part of the image
-                    self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
+                    response_image = pyvips.Image.new_from_buffer(data, "")
+                    self.assertEqual(response_image.height, 100)
+                    self.assertEqual(response_image.width, 100)
 
     def test_invalid_logo_upload(self) -> None:
         """
