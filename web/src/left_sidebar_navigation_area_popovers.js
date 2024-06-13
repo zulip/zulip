@@ -114,6 +114,7 @@ export function initialize() {
 
     // Inbox popover
     popover_menus.register_popover_menu(".inbox-sidebar-menu-icon", {
+        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
