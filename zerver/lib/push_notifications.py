@@ -518,37 +518,6 @@ def send_android_push_notification(
     else:
         DeviceTokenClass = PushDeviceToken
 
-    # res.canonical will contain results when there are duplicate registrations for the same
-    # device. The "canonical" registration is the latest registration made by the device.
-    # Ref: https://developer.android.com/google/gcm/adv.html#canonical
-    if "canonical" in res:
-        for reg_id, new_reg_id in res["canonical"].items():
-            if reg_id == new_reg_id:
-                # I'm not sure if this should happen. In any case, not really actionable.
-                logger.warning("GCM: Got canonical ref but it already matches our ID %s!", reg_id)
-            elif not DeviceTokenClass._default_manager.filter(
-                token=new_reg_id, kind=DeviceTokenClass.GCM
-            ).exists():
-                # This case shouldn't happen; any time we get a canonical ref it should have been
-                # previously registered in our system.
-                #
-                # That said, recovery is easy: just update the current PDT object to use the new ID.
-                logger.warning(
-                    "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating.",
-                    new_reg_id,
-                    reg_id,
-                )
-                DeviceTokenClass._default_manager.filter(
-                    token=reg_id, kind=DeviceTokenClass.GCM
-                ).update(token=new_reg_id)
-            else:
-                # Since we know the new ID is registered in our system we can just drop the old one.
-                logger.info("GCM: Got canonical ref %s, dropping %s", new_reg_id, reg_id)
-
-                DeviceTokenClass._default_manager.filter(
-                    token=reg_id, kind=DeviceTokenClass.GCM
-                ).delete()
-
     if "errors" in res:
         for error, reg_ids in res["errors"].items():
             if error in ["NotRegistered", "InvalidRegistration"]:
