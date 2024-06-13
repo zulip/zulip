@@ -489,6 +489,12 @@
                 position: unset;
             }
         }
+
+        .user_status_icon_wrapper {
+            /* Keep status emoji with usernames,
+               and better vertically align the emoji. */
+            display: inline-flex;
+        }
     }
 
     .stream-privacy .zulip-icon {
