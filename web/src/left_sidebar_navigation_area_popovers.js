@@ -218,6 +218,7 @@ export function initialize() {
     });
 
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
+        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
             // Determine at show time whether there are scheduled messages,

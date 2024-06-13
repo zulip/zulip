@@ -847,23 +847,8 @@ li.top_left_scheduled_messages {
 }
 
 .condensed-views-popover-menu {
-    .left-sidebar-popover-icon-label-count {
-        display: flex;
-        align-items: baseline;
-    }
-
-    .filter-icon {
-        align-self: center;
-        height: 15px;
-    }
-
-    .left-sidebar-navigation-label {
-        flex: 1 0 0;
-        margin-left: 3px;
-    }
-
     .unread_count {
-        margin-left: 6px;
+        margin: 1px 0 0 6px;
         border-color: var(--color-border-unread-counter-popover-menu);
     }
 }
