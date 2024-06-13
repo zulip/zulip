@@ -1825,7 +1825,6 @@ class NormalActionsTest(BaseAction):
                 backend,
                 "can_mention_group",
                 moderators_group,
-                old_setting_api_value=everyone_group.id,
                 acting_user=None,
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
@@ -1839,7 +1838,6 @@ class NormalActionsTest(BaseAction):
                 backend,
                 "can_mention_group",
                 setting_group,
-                old_setting_api_value=moderators_group.id,
                 acting_user=None,
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
