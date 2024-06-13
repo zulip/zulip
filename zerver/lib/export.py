@@ -29,7 +29,7 @@ from typing_extensions import TypeAlias
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload.s3 import get_bucket
 from zerver.models import (
@@ -1543,8 +1543,10 @@ def export_uploads_and_avatars(
         )
 
         avatar_hash_values = set()
-        for user_id in user_ids:
-            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
+        for avatar_user in users:
+            avatar_path = user_avatar_base_path_from_ids(
+                avatar_user.id, avatar_user.avatar_version, realm.id
+            )
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
 
@@ -1623,6 +1625,9 @@ def _get_exported_s3_record(
         record["realm_id"] = int(record["realm_id"])
     else:
         raise Exception("Missing realm_id")
+
+    if "avatar_version" in record:
+        record["avatar_version"] = int(record["avatar_version"])
 
     return record
 
@@ -1782,7 +1787,7 @@ def export_avatars_from_local(
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
 
-        avatar_path = user_avatar_path_from_ids(user.id, realm.id)
+        avatar_path = user_avatar_base_path_from_ids(user.id, user.avatar_version, realm.id)
         wildcard = os.path.join(local_dir, avatar_path + ".*")
 
         for local_path in glob.glob(wildcard):
@@ -1800,6 +1805,7 @@ def export_avatars_from_local(
                 realm_id=realm.id,
                 user_profile_id=user.id,
                 user_profile_email=user.email,
+                avatar_version=user.avatar_version,
                 s3_path=fn,
                 path=fn,
                 size=stat.st_size,

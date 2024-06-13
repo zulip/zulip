@@ -49,7 +49,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
             transfer_avatars_to_s3(1)
 
         path_id = user_avatar_path(user)
-        image_key = bucket.Object(path_id)
+        image_key = bucket.Object(path_id + ".png")
         original_image_key = bucket.Object(path_id + ".original")
         medium_image_key = bucket.Object(path_id + "-medium.png")
 

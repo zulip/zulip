@@ -78,6 +78,7 @@ class ZulipUploadBackend:
         user_profile: UserProfile,
         image_data: bytes,
         content_type: Optional[str],
+        future: bool = True,
     ) -> None:
         raise NotImplementedError
 

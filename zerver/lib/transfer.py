@@ -30,7 +30,7 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
     file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path)
     try:
         with open(file_path + ".original", "rb") as f:
-            upload_avatar_image(f, user, backend=s3backend)
+            upload_avatar_image(f, user, backend=s3backend, future=False)
             logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
     except FileNotFoundError:
         pass
@@ -66,7 +66,7 @@ def _transfer_message_files_to_s3(attachment: Attachment) -> None:
                 guessed_type,
                 attachment.owner,
                 f.read(),
-                settings.S3_UPLOADS_STORAGE_CLASS,
+                storage_class=settings.S3_UPLOADS_STORAGE_CLASS,
             )
             logging.info("Uploaded message file in path %s", file_path)
     except FileNotFoundError:  # nocoverage

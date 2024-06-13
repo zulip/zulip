@@ -21,7 +21,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from zerver.actions.create_realm import set_default_for_realm_permission_group_settings
 from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.user_settings import do_change_avatar_fields
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
 from zerver.lib.markdown import markdown_convert
@@ -797,7 +797,9 @@ def process_avatars(record: Dict[str, Any]) -> None:
         return None
     user_profile = get_user_profile_by_id(record["user_profile_id"])
     if settings.LOCAL_AVATARS_DIR is not None:
-        avatar_path = user_avatar_path_from_ids(user_profile.id, record["realm_id"])
+        avatar_path = user_avatar_base_path_from_ids(
+            user_profile.id, user_profile.avatar_version, record["realm_id"]
+        )
         medium_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + "-medium.png"
         if os.path.exists(medium_file_path):
             # We remove the image here primarily to deal with
@@ -864,7 +866,9 @@ def import_uploads(
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
-            relative_path = user_avatar_path_from_ids(record["user_profile_id"], record["realm_id"])
+            relative_path = user_avatar_base_path_from_ids(
+                record["user_profile_id"], record["avatar_version"], record["realm_id"]
+            )
             if record["s3_path"].endswith(".original"):
                 relative_path += ".original"
             else:
