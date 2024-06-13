@@ -106,7 +106,7 @@ def validate_uuid(uuid: str) -> None:
 
 
 def validate_bouncer_token_request(token: str, kind: int) -> None:
-    if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.GCM]:
+    if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.FCM]:
         raise JsonableError(err_("Invalid token type"))
     validate_token(token, kind)
 
@@ -566,7 +566,7 @@ def remote_server_notify_push(
     android_devices = list(
         RemotePushDeviceToken.objects.filter(
             user_identity.filter_q(),
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             server=server,
         ).order_by("id")
     )
@@ -734,7 +734,7 @@ def get_deleted_devices(
     android_devices_we_have = RemotePushDeviceToken.objects.filter(
         user_identity.filter_q(),
         token__in=android_devices,
-        kind=RemotePushDeviceToken.GCM,
+        kind=RemotePushDeviceToken.FCM,
         server=server,
     ).values_list("token", flat=True)
     apple_devices_we_have = RemotePushDeviceToken.objects.filter(

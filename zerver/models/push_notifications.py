@@ -9,11 +9,13 @@ from zerver.models.users import UserProfile
 
 class AbstractPushDeviceToken(models.Model):
     APNS = 1
-    GCM = 2
+    FCM = 2
 
     KINDS = (
         (APNS, "apns"),
-        (GCM, "gcm"),
+        # The string value in the database is "gcm" for legacy reasons.
+        # TODO: We should migrate it.
+        (FCM, "gcm"),
     )
 
     kind = models.PositiveSmallIntegerField(choices=KINDS)
@@ -21,7 +23,7 @@ class AbstractPushDeviceToken(models.Model):
     # The token is a unique device-specific token that is
     # sent to us from each device:
     #   - APNS token if kind == APNS
-    #   - GCM registration id if kind == GCM
+    #   - FCM registration id if kind == FCM
     token = models.CharField(max_length=4096, db_index=True)
 
     # TODO: last_updated should be renamed date_created, since it is

@@ -396,7 +396,7 @@ def has_gcm_credentials() -> bool:  # nocoverage
 def send_android_push_notification_to_user(
     user_profile: UserProfile, data: Dict[str, Any], options: Dict[str, Any]
 ) -> None:
-    devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM))
+    devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM))
     send_android_push_notification(
         UserPushIdentityCompat(user_id=user_profile.id), devices, data, options
     )
@@ -527,7 +527,7 @@ def send_android_push_notification(
                     # We remove all entries for this token (There
                     # could be multiple for different Zulip servers).
                     DeviceTokenClass._default_manager.filter(
-                        token=reg_id, kind=DeviceTokenClass.GCM
+                        token=reg_id, kind=DeviceTokenClass.FCM
                     ).delete()
             else:
                 for reg_id in reg_ids:
@@ -610,7 +610,7 @@ def send_notifications_to_bouncer(
             sorted(apple_deleted_devices),
         )
         PushDeviceToken.objects.filter(
-            kind=PushDeviceToken.GCM, token__in=android_deleted_devices
+            kind=PushDeviceToken.FCM, token__in=android_deleted_devices
         ).delete()
         PushDeviceToken.objects.filter(
             kind=PushDeviceToken.APNS, token__in=apple_deleted_devices
@@ -1246,7 +1246,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM).order_by("id")
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM).order_by("id")
     )
     apple_devices = list(
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
@@ -1416,7 +1416,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM).order_by("id")
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM).order_by("id")
     )
 
     apple_devices = list(
@@ -1462,7 +1462,7 @@ def send_test_push_notification_directly_to_devices(
     payload["event"] = "test"
 
     apple_devices = [device for device in devices if device.kind == PushDeviceToken.APNS]
-    android_devices = [device for device in devices if device.kind == PushDeviceToken.GCM]
+    android_devices = [device for device in devices if device.kind == PushDeviceToken.FCM]
     # Let's make the payloads separate objects to make sure mutating to make e.g. Android
     # adjustments doesn't affect the Apple payload and vice versa.
     apple_payload = copy.deepcopy(payload)
