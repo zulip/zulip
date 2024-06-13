@@ -2331,7 +2331,6 @@ body:not(.hide-left-sidebar) {
     }
 }
 
-#unstar_all_messages,
 .emoji-popover-tab-item {
     .zulip-icon-star {
         position: relative;
