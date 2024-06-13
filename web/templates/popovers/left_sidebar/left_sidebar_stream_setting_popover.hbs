@@ -1,12 +1,16 @@
-<ul class="nav nav-list">
-    <li>
-        <a href="#channels/notsubscribed" class="navigate_and_close_popover">
-            {{t "Browse channels" }}
-        </a>
-    </li>
-    <li>
-        <a href="#channels/new" class="navigate_and_close_popover">
-            {{t "Create a channel" }}
-        </a>
-    </li>
-</ul>
+<div class="popover-menu" data-simplebar>
+    <ul role="menu" class="popover-menu-list">
+        <li role="none" class="link-item popover-menu-list-item">
+            <a href="#channels/notsubscribed" role="menuitem" class="popover-menu-link navigate_and_close_popover" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-search" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Browse channels" }}</span>
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a href="#channels/new" role="menuitem" class="popover-menu-link navigate_and_close_popover" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Create a channel" }}</span>
+            </a>
+        </li>
+    </ul>
+</div>
