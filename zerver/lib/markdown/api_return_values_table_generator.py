@@ -2,6 +2,7 @@ import copy
 import json
 import re
 from collections import OrderedDict
+from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional
 
 import markdown
@@ -15,6 +16,23 @@ from zerver.openapi.openapi import check_deprecated_consistency, get_openapi_ret
 from .api_arguments_table_generator import generate_data_type
 
 REGEXP = re.compile(r"\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}")
+
+EVENT_HEADER_TEMPLATE = """
+<div class="api-event-header">
+    <h3 id="{id}"><span class="api-event-name">{event}</span></h3>
+</div>
+""".strip()
+
+OP_TEMPLATE = '<span class="api-event-op">op: {op_type}</span>'
+
+
+@dataclass
+class EventData:
+    type: str
+    description: str
+    properties: Dict[str, Any]
+    example: str
+    op_type: Optional[str] = None
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
@@ -191,51 +209,53 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 )
         return ans
 
-    def render_events(self, events_dict: Dict[str, Any]) -> List[str]:
-        text: List[str] = []
-        # Use argument section design for better visuals
-        # Directly using `###` for subheading causes errors so use h3 with made up id.
-        argument_template = (
-            '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
-            "{event_type} {op}</h3></p></div> \n{description}\n\n\n"
-        )
-        table_link_template = (
-            '<div class="events-table-link"><a href="#{url}">{link_name}</a></div>'
-        )
-        events_table: OrderedDict[str, List[str]] = OrderedDict()
-        for events in events_dict["oneOf"]:
-            event_type: Dict[str, Any] = events["properties"]["type"]
-            event_type_str: str = event_type["enum"][0]
-            # Internal hyperlink name
-            h3_id: str = event_type_str
-            event_name: str = event_type_str
-            event_type_str = f'<span class="api-event-name"> {event_type_str}</span>'
-            op: Optional[Dict[str, Any]] = events["properties"].pop("op", None)
-            op_str: str = ""
-            if op is not None:
-                op_str = op["enum"][0]
-                h3_id += "-" + op_str
-                op_type: str = op_str
-                op_str = f'<span class="api-event-name">op: {op_str}</span>'
-                if event_name in events_table:
-                    events_table[event_name] += [op_type]
-                else:
-                    events_table[event_name] = [op_type]
-            else:
-                events_table[event_name] = []
-            description = events["description"]
-            text.append(
-                argument_template.format(
-                    event_type=event_type_str, op=op_str, description=description, h3_id=h3_id
+    def generate_event_strings(self, event_data: EventData) -> List[str]:
+        event_strings: List[str] = []
+        if event_data.op_type is None:
+            event_strings.append(
+                EVENT_HEADER_TEMPLATE.format(id=event_data.type, event=event_data.type)
+            )
+        else:
+            op_detail = OP_TEMPLATE.format(op_type=event_data.op_type)
+            event_strings.append(
+                EVENT_HEADER_TEMPLATE.format(
+                    id=f"{event_data.type}-{event_data.op_type}",
+                    event=f"{event_data.type} {op_detail}",
                 )
             )
-            text += self.render_table(events["properties"], 0)
-            # This part is for adding examples of individual events
-            text.append("**Example**")
-            text.append("\n```json\n")
-            example = json.dumps(events["example"], indent=4, sort_keys=True)
-            text.append(example)
-            text.append("```\n\n")
+        event_strings.append(f"\n{event_data.description}\n\n\n")
+        event_strings += self.render_table(event_data.properties, 0)
+        event_strings.append("**Example**")
+        event_strings.append("\n```json\n")
+        event_strings.append(event_data.example)
+        event_strings.append("```\n\n")
+        event_strings.append("<hr>")
+        return event_strings
+
+    def render_events(self, events_dict: Dict[str, Any]) -> List[str]:
+        text: List[str] = []
+        events_table: OrderedDict[str, List[str]] = OrderedDict()
+        for event in events_dict["oneOf"]:
+            # The op property doesn't have a description, so it must be removed
+            # before any calls to self.render_table, which expects a description.
+            op: Optional[Dict[str, Any]] = event["properties"].pop("op", None)
+            op_type: Optional[str] = None
+            if op is not None:
+                op_type = op["enum"][0]
+            event_data = EventData(
+                type=event["properties"]["type"]["enum"][0],
+                description=event["description"],
+                properties=event["properties"],
+                example=json.dumps(event["example"], indent=4, sort_keys=True),
+                op_type=op_type,
+            )
+            text += self.generate_event_strings(event_data)
+            if event_data.op_type is None:
+                events_table[event_data.type] = []
+            elif event_data.type in events_table:
+                events_table[event_data.type] += [event_data.op_type]
+            else:
+                events_table[event_data.type] = [event_data.op_type]
 
         # Creates table of links for events
         events_table_str: List[str] = ['<div class="events-table">']

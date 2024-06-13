@@ -1401,6 +1401,18 @@ label.label-title {
     color: hsl(176deg 46.4% 41%);
 }
 
+.api-event-header {
+    .api-event-name {
+        color: hsl(14deg 75% 60%);
+        font-size: 1.1rem;
+
+        .api-event-op {
+            color: hsl(14deg 60% 60%);
+            font-size: 1rem;
+        }
+    }
+}
+
 .desktop-redirect-box {
     text-align: center;
 
@@ -1469,9 +1481,4 @@ label.label-title {
 
 .events-table-ops {
     margin-left: 12px !important;
-}
-
-.api-event-name {
-    color: hsl(14deg 75% 60%);
-    font-size: 1rem;
 }
