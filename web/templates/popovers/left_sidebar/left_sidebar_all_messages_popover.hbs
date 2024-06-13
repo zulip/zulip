@@ -1,21 +1,23 @@
-<ul class="nav nav-list">
-    {{#if is_home_view}}
-    <li>
-        {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
-        <a tabindex="0" id="mark_all_messages_as_read">
-            <i class="fa fa-book" aria-hidden="true"></i>
-            {{t "Mark all messages as read" }}
-        </a>
-    </li>
-    {{/if}}
-    {{#unless is_home_view}}
-    <li>
-        <a tabindex="0" class="set-home-view" data-view-code="{{view_code}}">
-            <i class="fa fa-home" aria-hidden="true"></i>
-            {{#tr}}
-                Make <b>combined feed</b> my home view
-            {{/tr}}
-        </a>
-    </li>
-    {{/unless}}
-</ul>
+<div class="popover-menu" data-simplebar>
+    <ul role="menu" class="popover-menu-list">
+        {{#if is_home_view}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="mark_all_messages_as_read" class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-read" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Mark all messages as read" }}</span>
+            </a>
+        </li>
+        {{else}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="set-home-view popover-menu-link" data-view-code="{{view_code}}" tabindex="0">
+                <i class="popover-menu-icon fa fa-home" aria-hidden="true"></i>
+                <span class="popover-menu-label">
+                    {{#tr}}
+                        Make <b>combined feed</b> my home view
+                    {{/tr}}
+                </span>
+            </a>
+        </li>
+        {{/if}}
+    </ul>
+</div>

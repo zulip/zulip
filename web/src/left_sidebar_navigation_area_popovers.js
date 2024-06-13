@@ -149,6 +149,7 @@ export function initialize() {
 
     // Combined feed popover
     popover_menus.register_popover_menu(".all-messages-sidebar-menu-icon", {
+        theme: "popover-menu",
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
