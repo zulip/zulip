@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -10,7 +11,9 @@ import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import {page_params} from "./page_params";
+import type {User} from "./people";
 import * as people from "./people";
+import type {UserPillItem} from "./search_suggestion";
 import {realm} from "./state_data";
 import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
@@ -54,7 +57,16 @@ type Part =
           type: "prefix_for_operator";
           prefix_for_operator: string;
           operand: string;
+      }
+    | {
+          type: "user_pill";
+          operator: string;
+          users: ValidOrInvalidUser[];
       };
+
+type ValidOrInvalidUser =
+    | {valid_user: true; user_pill_context: UserPillItem}
+    | {valid_user: false; operand: string};
 
 // TODO: When "stream" is renamed to "channel", these placeholders
 // should be removed, or replaced with helper functions similar
@@ -254,6 +266,28 @@ function message_matches_search_term(message: Message, operator: string, operand
     return true; // unknown operators return true (effectively ignored)
 }
 
+// For when we don't need to do highlighting
+export function create_user_pill_context(user: User): UserPillItem {
+    const avatar_url = people.small_avatar_url_for_person(user);
+
+    return {
+        id: user.user_id,
+        display_value: new Handlebars.SafeString(user.full_name),
+        has_image: true,
+        img_src: avatar_url,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+    };
+}
+
+const USER_OPERATORS = new Set([
+    "dm-including",
+    "dm",
+    "sender",
+    "from",
+    "pm-with",
+    "group-pm-with",
+]);
+
 export class Filter {
     _terms: NarrowTerm[];
     _sub?: StreamSubscription | undefined;
@@ -371,9 +405,7 @@ export class Filter {
 
     static decodeOperand(encoded: string, operator: string): string {
         encoded = encoded.replaceAll('"', "");
-        if (
-            !["dm-including", "dm", "sender", "from", "pm-with", "group-pm-with"].includes(operator)
-        ) {
+        if (!USER_OPERATORS.has(operator)) {
             encoded = encoded.replaceAll("+", " ");
         }
         return util.robust_url_decode(encoded).trim();
@@ -640,6 +672,27 @@ export class Filter {
                 canonicalized_operator,
                 term.negated,
             );
+            if (USER_OPERATORS.has(canonicalized_operator)) {
+                const user_emails = operand.split(",");
+                const users: ValidOrInvalidUser[] = user_emails.map((email) => {
+                    const person = people.get_by_email(email);
+                    if (person === undefined) {
+                        return {
+                            valid_user: false,
+                            operand: email,
+                        };
+                    }
+                    return {
+                        valid_user: true,
+                        user_pill_context: create_user_pill_context(person),
+                    };
+                });
+                return {
+                    type: "user_pill",
+                    operator: prefix_for_operator,
+                    users,
+                };
+            }
             if (prefix_for_operator !== "") {
                 return {
                     type: "prefix_for_operator",

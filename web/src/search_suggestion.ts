@@ -5,7 +5,7 @@ import render_user_pill from "../templates/user_pill.hbs";
 
 import * as common from "./common";
 import * as direct_message_group_data from "./direct_message_group_data";
-import {Filter} from "./filter";
+import {Filter, create_user_pill_context} from "./filter";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -16,7 +16,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as typeahead_helper from "./typeahead_helper";
 
-type UserPillItem = {
+export type UserPillItem = {
     id: number;
     display_value: Handlebars.SafeString;
     has_image: boolean;
@@ -40,18 +40,6 @@ export type Suggestion = {
           }[];
       }
 );
-
-function create_user_pill_context(user: User): UserPillItem {
-    const avatar_url = people.small_avatar_url_for_person(user);
-
-    return {
-        id: user.user_id,
-        display_value: new Handlebars.SafeString(user.full_name),
-        has_image: true,
-        img_src: avatar_url,
-        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
-    };
-}
 
 export const max_num_of_search_results = 12;
 
