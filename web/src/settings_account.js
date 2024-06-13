@@ -26,6 +26,7 @@ import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import {current_user, realm} from "./state_data";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as user_pill from "./user_pill";
@@ -775,8 +776,17 @@ export function set_up() {
     $("#user_timezone").on("change", function (e) {
         e.preventDefault();
         e.stopPropagation();
-
-        const data = {timezone: this.value};
+        const chosen_timezone = this.value;
+        const data = {timezone: chosen_timezone};
+        if (chosen_timezone !== timerender.display_time_zone) {
+            data.automatically_detect_time_zone = false;
+        } else {
+            data.automatically_detect_time_zone = true;
+        }
+        $("#automatically_offer_update_time_zone").prop(
+            "checked",
+            data.automatically_detect_time_zone,
+        );
 
         settings_ui.do_settings_change(
             channel.patch,
