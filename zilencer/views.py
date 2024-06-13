@@ -655,6 +655,9 @@ def remote_server_notify_push(
     # PushBouncerSession).  The timeouts in the FCM and APNS codepaths
     # must be set accordingly; see send_android_push_notification and
     # send_apple_push_notification.
+    # TODO: This limit can be slightly exceeded now after changing the library
+    # used for sending FCM notifications. This is pending adjustment after
+    # getting some data on the behavior of the new API.
 
     gcm_payload = truncate_payload(gcm_payload)
     android_successfully_delivered = send_android_push_notification(

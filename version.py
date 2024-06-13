@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 265
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (280, 2)  # bumped 2024-06-03 for adding confusing-browser-globals
+PROVISION_VERSION = (281, 0)  # bumped 2024-06-12 for adding firebase-admin

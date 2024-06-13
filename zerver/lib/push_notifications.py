@@ -22,7 +22,6 @@ from typing import (
     Union,
 )
 
-import gcm
 import lxml.html
 import orjson
 from django.conf import settings
@@ -31,6 +30,12 @@ from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from firebase_admin import App as FCMApp
+from firebase_admin import credentials as firebase_credentials
+from firebase_admin import exceptions as firebase_exceptions
+from firebase_admin import initialize_app as firebase_initialize_app
+from firebase_admin import messaging as firebase_messaging
+from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 from typing_extensions import TypeAlias, override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
@@ -44,7 +49,6 @@ from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message_and_usermessage, huddle_users
 from zerver.lib.notification_data import get_mentioned_user_group
-from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
     record_push_notifications_recently_working,
     send_json_to_push_bouncer,
@@ -358,38 +362,30 @@ def send_apple_push_notification(
 #
 
 
-class FCMSession(OutgoingSession):
-    def __init__(self) -> None:
-        # We don't set up retries, since the gcm package does that for us.
-        super().__init__(role="fcm", timeout=5)
+# Note: This is a timeout value per retry, not a total timeout.
+FCM_REQUEST_TIMEOUT = 5
 
 
-def make_gcm_client() -> gcm.GCM:  # nocoverage
-    # From GCM upstream's doc for migrating to FCM:
-    #
-    #   FCM supports HTTP and XMPP protocols that are virtually
-    #   identical to the GCM server protocols, so you don't need to
-    #   update your sending logic for the migration.
-    #
-    #   https://developers.google.com/cloud-messaging/android/android-migrate-fcm
-    #
-    # The one thing we're required to change on the server is the URL of
-    # the endpoint.  So we get to keep using the GCM client library we've
-    # been using (as long as we're happy with it) -- just monkey-patch in
-    # that one change, because the library's API doesn't anticipate that
-    # as a customization point.
-    gcm.gcm.GCM_URL = "https://fcm.googleapis.com/fcm/send"
-    return gcm.GCM(settings.ANDROID_GCM_API_KEY)
+def make_fcm_app() -> FCMApp:  # nocoverage
+    if settings.ANDROID_FCM_CREDENTIALS_PATH is None:
+        return None
+
+    fcm_credentials = firebase_credentials.Certificate(settings.ANDROID_FCM_CREDENTIALS_PATH)
+    fcm_app = firebase_initialize_app(
+        fcm_credentials, options=dict(httpTimeout=FCM_REQUEST_TIMEOUT)
+    )
+
+    return fcm_app
 
 
-if settings.ANDROID_GCM_API_KEY:  # nocoverage
-    gcm_client = make_gcm_client()
+if settings.ANDROID_FCM_CREDENTIALS_PATH:  # nocoverage
+    fcm_app = make_fcm_app()
 else:
-    gcm_client = None
+    fcm_app = None
 
 
 def has_fcm_credentials() -> bool:  # nocoverage
-    return gcm_client is not None
+    return fcm_app is not None
 
 
 # This is purely used in testing
@@ -416,7 +412,7 @@ def parse_fcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     Including unrecognized options is an error.
 
     For details on options' semantics, see this FCM upstream doc:
-      https://firebase.google.com/docs/cloud-messaging/http-server-ref
+      https://firebase.google.com/docs/cloud-messaging/android/message-priority
 
     Returns `priority`.
     """
@@ -467,51 +463,44 @@ def send_android_push_notification(
     """
     if not devices:
         return 0
-    if not gcm_client:
+    if not fcm_app:
         logger.debug(
-            "Skipping sending a GCM push notification since "
-            "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset"
+            "Skipping sending a FCM push notification since "
+            "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_FCM_CREDENTIALS_PATH are both unset"
         )
         return 0
 
     if remote:
         logger.info(
-            "GCM: Sending notification for remote user %s:%s to %d devices",
+            "FCM: Sending notification for remote user %s:%s to %d devices",
             remote.uuid,
             user_identity,
             len(devices),
         )
     else:
         logger.info(
-            "GCM: Sending notification for local user %s to %d devices", user_identity, len(devices)
+            "FCM: Sending notification for local user %s to %d devices", user_identity, len(devices)
         )
-    reg_ids = [device.token for device in devices]
-    priority = parse_fcm_options(options, data)
-    try:
-        # See https://firebase.google.com/docs/cloud-messaging/http-server-ref .
-        # Two kwargs `retries` and `session` get eaten by `json_request`;
-        # the rest pass through to the FCM server.
-        #
-        # One initial request plus 2 retries, with 5-second timeouts,
-        # and expected 1 + 2 seconds (the gcm module jitters its
-        # backoff by ±50%, so worst case * 1.5) between them, totals
-        # 18s expected, up to 19.5s worst case.
-        res = gcm_client.json_request(
-            registration_ids=reg_ids,
-            priority=priority,
-            data=data,
-            retries=2,
-            session=FCMSession(),
-        )
-    except OSError:
-        logger.warning("Error while pushing to GCM", exc_info=True)
-        return 0
 
-    successfully_sent_count = 0
-    if res and "success" in res:
-        for reg_id, msg_id in res["success"].items():
-            logger.info("GCM: Sent %s as %s", reg_id, msg_id)
-        successfully_sent_count = len(res["success"].keys())
+    token_list = [device.token for device in devices]
+    priority = parse_fcm_options(options, data)
+
+    # The API requires all values to be strings. Our data dict is going to have
+    # things like an integer realm and user ids etc., so just convert everything
+    # like that.
+    data = {k: str(v) if not isinstance(v, str) else v for k, v in data.items()}
+    messages = [
+        firebase_messaging.Message(
+            data=data, token=token, android=firebase_messaging.AndroidConfig(priority=priority)
+        )
+        for token in token_list
+    ]
+
+    try:
+        batch_response = firebase_messaging.send_each(messages, app=fcm_app)
+    except firebase_exceptions.FirebaseError:
+        logger.warning("Error while pushing to FCM", exc_info=True)
+        return 0
 
     if remote:
         assert settings.ZILENCER_ENABLED
@@ -519,24 +508,30 @@ def send_android_push_notification(
     else:
         DeviceTokenClass = PushDeviceToken
 
-    if "errors" in res:
-        for error, reg_ids in res["errors"].items():
-            if error in ["NotRegistered", "InvalidRegistration"]:
-                for reg_id in reg_ids:
-                    logger.info("GCM: Removing %s", reg_id)
-                    # We remove all entries for this token (There
-                    # could be multiple for different Zulip servers).
-                    DeviceTokenClass._default_manager.filter(
-                        token=reg_id, kind=DeviceTokenClass.FCM
-                    ).delete()
+    successfully_sent_count = 0
+    for idx, response in enumerate(batch_response.responses):
+        # We enumerate to have idx to track which token the response
+        # corresponds to. send_each() preserves the order of the messages,
+        # so this works.
+
+        token = token_list[idx]
+        if response.success:
+            successfully_sent_count += 1
+            logger.info("FCM: Sent message with ID: %s to %s", response.message_id, token)
+        else:
+            error = response.exception
+            if isinstance(error, FCMUnregisteredError):
+                logger.info("FCM: Removing %s due to %s", token, error.code)
+
+                # We remove all entries for this token (There
+                # could be multiple for different Zulip servers).
+                DeviceTokenClass._default_manager.filter(
+                    token=token, kind=DeviceTokenClass.FCM
+                ).delete()
             else:
-                for reg_id in reg_ids:
-                    logger.warning("GCM: Delivery to %s failed: %s", reg_id, error)
+                logger.warning("FCM: Delivery failed for %s: %s:%s", token, error.__class__, error)
 
     return successfully_sent_count
-
-    # python-gcm handles retrying of the unsent messages.
-    # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
 
 
 #

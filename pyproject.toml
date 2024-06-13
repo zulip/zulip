@@ -66,6 +66,7 @@ module = [
     "django_scim.*",
     "DNS.*",
     "fakeldap.*",
+    "firebase_admin.*",
     "gcm.*",
     "gitlint.*",
     "jsonref.*",
