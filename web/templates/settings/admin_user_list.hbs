@@ -3,11 +3,11 @@
         {{> ../user_display_only_pill display_value=full_name user_id=user_id img_src=img_src}}
     </td>
     {{#if display_email}}
-    <td class="email">
+    <td class="email settings-email-column">
         <span class="email">{{display_email}}</span>
     </td>
     {{else}}
-    <td class="email">
+    <td class="email settings-email-column">
         <span class="hidden-email">{{t "(hidden)"}}</span>
     </td>
     {{/if}}
