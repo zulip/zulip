@@ -2753,9 +2753,9 @@ class PushNotificationTest(BouncerTestCase):
                 server=self.server,
             )
 
-    def setup_gcm_tokens(self) -> None:
-        self.gcm_tokens = ["1111", "2222"]
-        for token in self.gcm_tokens:
+    def setup_fcm_tokens(self) -> None:
+        self.fcm_tokens = ["1111", "2222"]
+        for token in self.fcm_tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.FCM,
                 token=hex_to_b64(token),
@@ -2763,8 +2763,8 @@ class PushNotificationTest(BouncerTestCase):
                 ios_app_id=None,
             )
 
-        self.remote_gcm_tokens = [("dddd", "eeee")]
-        for id_token, uuid_token in self.remote_gcm_tokens:
+        self.remote_fcm_tokens = [("dddd", "eeee")]
+        for id_token, uuid_token in self.remote_fcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.FCM,
                 token=hex_to_b64(id_token),
@@ -2802,7 +2802,7 @@ class HandlePushNotificationTest(PushNotificationTest):
     def test_end_to_end(self) -> None:
         self.add_mock_response()
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
 
         time_sent = now().replace(microsecond=0)
         with time_machine.travel(time_sent, tick=False):
@@ -2891,7 +2891,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.add_mock_response()
 
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
 
         self.server.last_api_feature_level = 237
         self.server.save()
@@ -2962,7 +2962,7 @@ class HandlePushNotificationTest(PushNotificationTest):
     def test_unregistered_client(self) -> None:
         self.add_mock_response()
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
 
         time_sent = now().replace(microsecond=0)
         with time_machine.travel(time_sent, tick=False):
@@ -3062,7 +3062,7 @@ class HandlePushNotificationTest(PushNotificationTest):
     @responses.activate
     def test_connection_error(self) -> None:
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
 
         message = self.get_message(
             Recipient.PERSONAL,
@@ -3204,7 +3204,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_send_notifications_to_bouncer(self) -> None:
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
 
         user_profile = self.user_profile
         message = self.get_message(
@@ -3271,7 +3271,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_non_bouncer_push(self) -> None:
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,
@@ -3328,7 +3328,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_send_remove_notifications_to_bouncer(self) -> None:
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
 
         user_profile = self.user_profile
         message = self.get_message(
@@ -3391,7 +3391,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_non_bouncer_push_remove(self) -> None:
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,
@@ -3499,7 +3499,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         not long-term idle; we fake it, though, in the sense that the user should
         not have received the message in the first place"""
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
         self.make_stream("public_stream")
         sender = self.example_user("iago")
         self.subscribe(sender, "public_stream")
@@ -3521,7 +3521,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         not long-term idle; we fake it, though, in the sense that the user should
         not have received the message in the first place"""
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
         self.make_stream("public_stream")
         sender = self.example_user("iago")
         self.subscribe(self.user_profile, "public_stream")
@@ -4502,7 +4502,7 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
         user = self.example_user("hamlet")
 
         self.setup_apns_tokens()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
 
         android_devices = PushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
         apple_devices = PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
@@ -4790,13 +4790,13 @@ class GCMParseOptionsTest(ZulipTestCase):
 
 
 @mock.patch("zerver.lib.push_notifications.gcm_client")
-class GCMSendTest(PushNotificationTest):
+class FCMSendTest(PushNotificationTest):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.setup_gcm_tokens()
+        self.setup_fcm_tokens()
 
-    def get_gcm_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_fcm_data(self, **kwargs: Any) -> Dict[str, Any]:
         data = {
             "key 1": "Data 1",
             "key 2": "Data 2",
@@ -4827,10 +4827,10 @@ class GCMSendTest(PushNotificationTest):
     @mock.patch("zerver.lib.push_notifications.logger.warning")
     def test_success(self, mock_warning: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
-        res["success"] = {token: ind for ind, token in enumerate(self.gcm_tokens)}
+        res["success"] = {token: ind for ind, token in enumerate(self.fcm_tokens)}
         mock_gcm.json_request.return_value = res
 
-        data = self.get_gcm_data()
+        data = self.get_fcm_data()
         with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
         self.assert_length(logger.output, 3)
@@ -4852,7 +4852,7 @@ class GCMSendTest(PushNotificationTest):
 
         self.assertEqual(get_count("1111"), 1)
 
-        data = self.get_gcm_data()
+        data = self.get_fcm_data()
         with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
             self.assertEqual(
@@ -4871,7 +4871,7 @@ class GCMSendTest(PushNotificationTest):
         res["errors"] = {"Failed": [token]}
         mock_gcm.json_request.return_value = res
 
-        data = self.get_gcm_data()
+        data = self.get_fcm_data()
         with self.assertLogs("zerver.lib.push_notifications", level="WARNING") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
             msg = f"WARNING:zerver.lib.push_notifications:GCM: Delivery to {token} failed: Failed"
