@@ -530,10 +530,11 @@ input[type="checkbox"] {
 }
 
 #id_org_profile_preview {
-    margin-bottom: 20px;
-    display: inline-flex;
-    justify-content: space-evenly;
+    width: max-content;
+    display: flex;
+    gap: 5px;
     align-items: center;
+    margin-bottom: 20px;
 }
 
 .inline-block.organization-permissions-parent div:first-of-type {
