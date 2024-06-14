@@ -380,6 +380,7 @@
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
+    --color-border-informational-overlays-table: hsl(0deg 0% 87%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -735,6 +736,7 @@
     /* Markdown color */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 100% / 20%);
+    --color-border-informational-overlays-table: hsl(0deg 0% 0% / 20%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical

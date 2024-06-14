@@ -48,6 +48,20 @@
         }
     }
 
+    .overlay-body {
+        table {
+            border-color: var(--color-border-informational-overlays-table);
+        }
+
+        & tr th {
+            border-color: var(--color-border-informational-overlays-table);
+        }
+
+        & tr td {
+            border-color: var(--color-border-informational-overlays-table);
+        }
+    }
+
     & td.operator {
         font-size: 0.9em;
     }
