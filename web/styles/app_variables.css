@@ -215,7 +215,7 @@
     it doesn't cause the container to have a second scrollbar.
     This value will be overridden when stream settings is opened.
     */
-    --stream-subscriber-list-max-height: 1.429em;
+    --stream-subscriber-list-max-height: 100%;
 
     /*
       Reusable dimensions and offsets.
