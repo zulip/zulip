@@ -3082,14 +3082,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/notify"
         responses.add(responses.POST, URL, body=ConnectionError())
-        with mock.patch("zerver.lib.push_notifications.gcm_client") as mock_gcm:
-            gcm_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
-            ]
-            mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
-            with self.assertRaises(PushNotificationBouncerRetryLaterError):
-                handle_push_notification(self.user_profile.id, missed_message)
+        with self.assertRaises(PushNotificationBouncerRetryLaterError):
+            handle_push_notification(self.user_profile.id, missed_message)
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_read_message(self, mock_push_notifications: mock.MagicMock) -> None:
