@@ -1185,7 +1185,7 @@ class FetchQueriesTest(ZulipTestCase):
             muted_users=1,
             onboarding_steps=1,
             presence=1,
-            realm=1,
+            realm=3,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,
@@ -1216,6 +1216,11 @@ class FetchQueriesTest(ZulipTestCase):
         wanted_event_types = {item[0][0] for item in want_mock.call_args_list}
 
         self.assertEqual(wanted_event_types, set(expected_counts))
+
+        # Fetch realm again here so that the cached foreign key fields
+        # while testing the above case does not reduce the query count
+        # and we test the actual query count for each event type.
+        realm = get_realm_with_settings(realm_id=user.realm_id)
 
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
