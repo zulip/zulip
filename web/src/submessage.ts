@@ -10,13 +10,7 @@ import {todo_widget_extra_data_schema} from "./todo_widget";
 import type {TodoWidgetOutboundData} from "./todo_widget";
 import * as widgetize from "./widgetize";
 
-export type Submessage = {
-    id: number;
-    sender_id: number;
-    message_id: number;
-    content: string;
-    msg_type: string;
-};
+export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
 export const zform_widget_extra_data_schema = z
     .object({
