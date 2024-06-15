@@ -122,7 +122,7 @@ def always_want(msg_type: str) -> bool:
 def fetch_initial_state_data(
     user_profile: Optional[UserProfile],
     *,
-    realm: Optional[Realm] = None,
+    realm: Realm,
     event_types: Optional[Iterable[str]] = None,
     queue_id: Optional[str] = "",
     client_gravatar: bool = False,
@@ -148,10 +148,6 @@ def fetch_initial_state_data(
     corresponding events for changes in the data structures and new
     code to apply_events (and add a test in test_events.py).
     """
-    if realm is None:
-        assert user_profile is not None
-        realm = user_profile.realm
-
     state: Dict[str, Any] = {"queue_id": queue_id}
 
     if event_types is None:
@@ -1705,6 +1701,7 @@ def do_events_register(
 
     ret = fetch_initial_state_data(
         user_profile,
+        realm=realm,
         event_types=event_types_set,
         queue_id=queue_id,
         client_gravatar=client_gravatar,

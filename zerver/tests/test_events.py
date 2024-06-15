@@ -329,6 +329,7 @@ class BaseAction(ZulipTestCase):
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(
             self.user_profile,
+            realm=self.user_profile.realm,
             event_types=event_types,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
@@ -397,6 +398,7 @@ class BaseAction(ZulipTestCase):
 
         normal_state = fetch_initial_state_data(
             self.user_profile,
+            realm=self.user_profile.realm,
             event_types=event_types,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
@@ -2623,7 +2625,7 @@ class NormalActionsTest(BaseAction):
     def test_realm_update_org_type(self) -> None:
         realm = self.user_profile.realm
 
-        state_data = fetch_initial_state_data(self.user_profile)
+        state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_org_type"], Realm.ORG_TYPES["business"]["id"])
 
         with self.verify_action() as events:
@@ -2632,7 +2634,7 @@ class NormalActionsTest(BaseAction):
             )
         check_realm_update("events[0]", events[0], "org_type")
 
-        state_data = fetch_initial_state_data(self.user_profile)
+        state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_org_type"], Realm.ORG_TYPES["government"]["id"])
 
     def test_realm_update_plan_type(self) -> None:
@@ -2642,7 +2644,7 @@ class NormalActionsTest(BaseAction):
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
 
-        state_data = fetch_initial_state_data(self.user_profile)
+        state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], True)
 
@@ -2652,7 +2654,7 @@ class NormalActionsTest(BaseAction):
         check_realm_update_dict("events[1]", events[1])
         check_realm_update("events[2]", events[2], "plan_type")
 
-        state_data = fetch_initial_state_data(self.user_profile)
+        state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], False)
 
@@ -3201,7 +3203,7 @@ class NormalActionsTest(BaseAction):
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True):
             do_delete_messages(self.user_profile.realm, [message])
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
     def test_do_delete_message_with_no_messages(self) -> None:
