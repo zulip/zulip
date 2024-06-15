@@ -7,13 +7,7 @@ import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import * as widgetize from "./widgetize";
 
-export type Submessage = {
-    id: number;
-    sender_id: number;
-    message_id: number;
-    content: string;
-    msg_type: string;
-};
+export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
 export const zform_widget_extra_data_schema = z
     .object({
