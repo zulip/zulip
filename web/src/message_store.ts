@@ -1,82 +1,109 @@
 import _ from "lodash";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as people from "./people";
-import type {Submessage} from "./submessage";
-import type {TopicLink} from "./types";
+import {topic_link_schema} from "./types";
 import type {UserStatusEmojiInfo} from "./user_status";
 
 const stored_messages = new Map<number, Message>();
 
-export type MatchedMessage = {
-    match_content?: string | undefined;
-    match_subject?: string | undefined;
-};
+const matched_message_schema = z.object({
+    match_content: z.optional(z.string()),
+    match_subject: z.optional(z.string()),
+});
 
-export type MessageReactionType = "unicode_emoji" | "realm_emoji" | "zulip_extra_emoji";
+export type MatchedMessage = z.infer<typeof matched_message_schema>;
 
-export type DisplayRecipientUser = {
-    email: string;
-    full_name: string;
-    id: number;
-};
+const message_reaction_type_schema = z.enum(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"]);
 
-export type DisplayRecipient = string | DisplayRecipientUser[];
+export type MessageReactionType = z.infer<typeof message_reaction_type_schema>;
 
-export type MessageEditHistoryEntry = {
-    user_id: number | null;
-    timestamp: number;
-    prev_content?: string;
-    prev_rendered_content?: string;
-    prev_rendered_content_version?: number;
-    prev_stream?: number;
-    prev_topic?: string;
-    stream?: number;
-    topic?: string;
-};
+const display_recipient_user_schema = z.object({
+    email: z.string(),
+    full_name: z.string(),
+    id: z.number(),
+});
 
-export type MessageReaction = {
-    emoji_name: string;
-    emoji_code: string;
-    reaction_type: MessageReactionType;
-    user_id: number;
-};
+export type DisplayRecipientUser = z.infer<typeof display_recipient_user_schema>;
 
-export type RawMessage = {
-    avatar_url: string | null;
-    client: string;
-    content: string;
-    content_type: "text/html";
-    display_recipient: DisplayRecipient;
-    edit_history?: MessageEditHistoryEntry[];
-    id: number;
-    is_me_message: boolean;
-    last_edit_timestamp?: number;
-    reactions: MessageReaction[];
-    recipient_id: number;
-    sender_email: string;
-    sender_full_name: string;
-    sender_id: number;
-    sender_realm_str: string;
-    submessages: Submessage[];
-    timestamp: number;
-    flags: string[];
-} & (
-    | {
-          type: "private";
-          topic_links?: undefined;
-      }
-    | {
-          type: "stream";
-          stream_id: number;
-          // Messages that come from the server use `subject`.
-          // Messages that come from `send_message` use `topic`.
-          subject?: string;
-          topic?: string;
-          topic_links: TopicLink[];
-      }
-) &
-    MatchedMessage;
+const display_recipient_schema = z.union([z.string(), z.array(display_recipient_user_schema)]);
+
+export type DisplayRecipient = z.infer<typeof display_recipient_schema>;
+
+const message_edit_history_entry_schema = z.object({
+    user_id: z.nullable(z.number()),
+    timestamp: z.number(),
+    prev_content: z.optional(z.string()),
+    prev_rendered_content: z.optional(z.string()),
+    prev_rendered_content_version: z.optional(z.number()),
+    prev_stream: z.optional(z.number()),
+    prev_topic: z.optional(z.string()),
+    stream: z.optional(z.number()),
+    topic: z.optional(z.string()),
+});
+
+export type MessageEditHistoryEntry = z.infer<typeof message_edit_history_entry_schema>;
+
+const message_reaction_schema = z.object({
+    emoji_name: z.string(),
+    emoji_code: z.string(),
+    reaction_type: message_reaction_type_schema,
+    user_id: z.number(),
+});
+
+export type MessageReaction = z.infer<typeof message_reaction_schema>;
+
+export const submessage_schema = z.object({
+    id: z.number(),
+    sender_id: z.number(),
+    message_id: z.number(),
+    content: z.string(),
+    msg_type: z.string(),
+});
+
+export const raw_message_schema = z.intersection(
+    z.intersection(
+        z.object({
+            avatar_url: z.nullable(z.string()),
+            client: z.string(),
+            content: z.string(),
+            content_type: z.literal("text/html"),
+            display_recipient: display_recipient_schema,
+            edit_history: z.optional(z.array(message_edit_history_entry_schema)),
+            id: z.number(),
+            is_me_message: z.boolean(),
+            last_edit_timestamp: z.optional(z.number()),
+            reactions: z.array(message_reaction_schema),
+            recipient_id: z.number(),
+            sender_email: z.string(),
+            sender_full_name: z.string(),
+            sender_id: z.number(),
+            sender_realm_str: z.string(),
+            submessages: z.array(submessage_schema),
+            timestamp: z.number(),
+            flags: z.array(z.string()),
+        }),
+        z.discriminatedUnion("type", [
+            z.object({
+                type: z.literal("private"),
+                topic_links: z.optional(z.array(z.undefined())),
+            }),
+            z.object({
+                type: z.literal("stream"),
+                stream_id: z.number(),
+                // Messages that come from the server use `subject`.
+                // Messages that come from `send_message` use `topic`.
+                subject: z.optional(z.string()),
+                topic: z.optional(z.string()),
+                topic_links: z.array(topic_link_schema),
+            }),
+        ]),
+    ),
+    matched_message_schema,
+);
+
+export type RawMessage = z.infer<typeof raw_message_schema>;
 
 // We add these boolean properties to Raw message in
 // `message_store.convert_raw_message_to_message_with_booleans` method.
