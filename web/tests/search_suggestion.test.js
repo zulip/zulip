@@ -99,6 +99,16 @@ test("basic_get_suggestions_for_spectator", () => {
     page_params.is_spectator = false;
 });
 
+test("get_is_suggestions_for_spectator", () => {
+    page_params.is_spectator = true;
+
+    const query = "is:";
+    const suggestions = get_suggestions(query);
+    // The list of suggestions should be empty for a spectator
+    assert.deepEqual(suggestions.strings, []);
+    page_params.is_spectator = false;
+});
+
 test("subset_suggestions", ({mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
