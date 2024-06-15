@@ -64,7 +64,9 @@ export class MessageListData {
         this._selected_id = -1;
     }
 
-    set_add_messages_callback(callback: () => void): void {
+    set_add_messages_callback(
+        callback: (messages: Message[], rows_order_changed: boolean) => void,
+    ): void {
         this.add_messages_callback = callback;
     }
 
