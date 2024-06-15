@@ -48,6 +48,7 @@ export type MessageList = {
     id: number;
     preserve_rendered_state: boolean;
     view: MessageListView;
+    is_combined_feed_view: boolean;
     selected_id: () => number;
     selected_row: () => JQuery;
     selected_idx: () => number;
