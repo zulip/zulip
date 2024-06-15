@@ -849,6 +849,7 @@ def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
     mark_as_read: Sequence[int] = [],
+    is_channel_unsubscription_notification: bool = False,
 ) -> List[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1014,7 +1015,11 @@ def do_send_messages(
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
+        wide_message_dict = MessageDict.wide_dict(
+            send_request.message,
+            realm_id,
+            is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+        )
 
         user_flags = user_message_flags.get(send_request.message.id, {})
 

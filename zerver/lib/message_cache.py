@@ -73,8 +73,16 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24)
-def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -> bytes:
-    return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
+def message_to_encoded_cache(
+    message: Message,
+    realm_id: Optional[int] = None,
+    is_channel_unsubscription_notification: bool = False,
+) -> bytes:
+    return MessageDict.messages_to_encoded_cache(
+        [message],
+        realm_id,
+        is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+    )[message.id]
 
 
 def update_message_cache(
@@ -151,13 +159,21 @@ class MessageDict:
     """
 
     @staticmethod
-    def wide_dict(message: Message, realm_id: Optional[int] = None) -> Dict[str, Any]:
+    def wide_dict(
+        message: Message,
+        realm_id: Optional[int] = None,
+        is_channel_unsubscription_notification: bool = False,
+    ) -> Dict[str, Any]:
         """
         The next two lines get the cacheable field related
         to our message object, with the side effect of
         populating the cache.
         """
-        encoded_object_bytes = message_to_encoded_cache(message, realm_id)
+        encoded_object_bytes = message_to_encoded_cache(
+            message,
+            realm_id,
+            is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+        )
         obj = extract_message_dict(encoded_object_bytes)
 
         """
@@ -273,15 +289,25 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache(
-        messages: Iterable[Message], realm_id: Optional[int] = None
+        messages: Iterable[Message],
+        realm_id: Optional[int] = None,
+        *,
+        is_channel_unsubscription_notification: bool = False,
     ) -> Dict[int, bytes]:
-        messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
+        messages_dict = MessageDict.messages_to_encoded_cache_helper(
+            messages,
+            realm_id,
+            is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+        )
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
         return encoded_messages
 
     @staticmethod
     def messages_to_encoded_cache_helper(
-        messages: Iterable[Message], realm_id: Optional[int] = None
+        messages: Iterable[Message],
+        realm_id: Optional[int] = None,
+        *,
+        is_channel_unsubscription_notification: bool = False,
     ) -> List[Dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects
@@ -317,7 +343,13 @@ class MessageDict:
             for message in messages
         ]
 
-        MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
+        if is_channel_unsubscription_notification:
+            for message in message_rows:
+                message["submessages"] = []
+                message["reactions"] = []
+        else:
+            MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
+
         return [MessageDict.build_dict_from_raw_db_row(row) for row in message_rows]
 
     @staticmethod
