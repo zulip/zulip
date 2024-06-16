@@ -139,7 +139,7 @@ function register_click_handlers(): void {
                 )[0]!;
                 toggle_playground_links_popover(popover_target, playground_store);
             }
-        },
+        }
     );
 
     $("body").on("click", ".popover_playground_link", (e) => {
