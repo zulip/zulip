@@ -270,6 +270,14 @@ export function user_can_move_messages_to_another_topic(): boolean {
     );
 }
 
+export function user_can_resolve_topic(): boolean {
+    return user_has_permission_for_group_setting(
+        realm.realm_can_resolve_topics_group,
+        "can_resolve_topics_group",
+        "realm",
+    );
+}
+
 export function user_can_delete_any_message(): boolean {
     return user_has_permission_for_group_setting(
         realm.realm_can_delete_any_message_group,

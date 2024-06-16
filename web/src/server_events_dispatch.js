@@ -232,6 +232,7 @@ export function dispatch_normal_event(event) {
                 can_mention_many_users_group: noop,
                 can_move_messages_between_channels_group: noop,
                 can_move_messages_between_topics_group: noop,
+                can_resolve_topics_group: noop,
                 can_summarize_topics_group: noop,
                 create_multiuse_invite_group: noop,
                 default_code_block_language: noop,
@@ -358,7 +359,14 @@ export function dispatch_normal_event(event) {
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
-                                if (key === "can_move_messages_between_topics_group") {
+                                if (
+                                    key === "can_move_messages_between_topics_group" ||
+                                    key === "can_resolve_topics_group"
+                                ) {
+                                    // Technically we just need to rerender the message recipient
+                                    // bars to update the buttons for editing or resolving a topic,
+                                    // but because these policies are changed rarely, it's fine to
+                                    // rerender the entire message feed.
                                     message_live_update.rerender_messages_view();
                                 }
 

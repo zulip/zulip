@@ -33,6 +33,7 @@ import * as popovers from "./popovers.ts";
 import * as reactions from "./reactions.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
+import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
@@ -237,15 +238,11 @@ function get_timestr(message: Message): string {
 
 function get_topic_edit_properties(message: Message): {
     is_topic_editable: boolean;
-    user_can_resolve_topic: boolean;
 } {
     const is_topic_editable = message_edit.is_topic_editable(message);
-    // if a user who can edit a topic, can resolve it as well
-    const user_can_resolve_topic = is_topic_editable;
 
     return {
         is_topic_editable,
-        user_can_resolve_topic,
     };
 }
 
@@ -412,6 +409,7 @@ function populate_group_from_message(
             message_containers: [],
             is_stream,
             ...get_topic_edit_properties(message),
+            user_can_resolve_topic: settings_data.user_can_resolve_topic(),
             ...subscription_markers,
             date,
             display_recipient,
