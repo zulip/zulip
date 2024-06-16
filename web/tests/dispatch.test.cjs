@@ -583,6 +583,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_can_create_public_channel_group", 1);
     override(realm, "realm_can_invite_users_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 1);
+    override(realm, "realm_can_move_messages_between_topics_group", 5);
     override(realm, "realm_direct_message_permission_group", 1);
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
@@ -607,6 +608,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_can_create_public_channel_group, 3);
     assert_same(realm.realm_can_invite_users_group, 3);
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
+    assert_same(realm.realm_can_resolve_topics_group, 1);
     assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
