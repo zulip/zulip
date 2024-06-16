@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy, {delegate} from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
@@ -51,7 +51,7 @@ export const EXTRA_LONG_HOVER_DELAY: [number, number] = [1500, 20];
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
 // documentation for default properties.
-tippy.setDefaultProps({
+tippy.default.setDefaultProps({
     // Tooltips shouldn't take more space than mobile widths.
     maxWidth: 300,
     delay: INSTANT_HOVER_DELAY,
@@ -84,14 +84,14 @@ export function initialize(): void {
     // * Set `data-tippy-content="{{t 'Tooltip content' }}"`, often
     //   replacing a `title` attribute on an element that had both.
     // * Set placement; we typically use `data-tippy-placement="top"`.
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".tippy-zulip-tooltip",
     });
 
     // variant of tippy-zulip-tooltip above having delay=LONG_HOVER_DELAY,
     // default placement="top" with fallback placement="bottom",
     // and appended to body
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".tippy-zulip-delayed-tooltip",
         // Disable trigger on focus, to avoid displaying on-click.
         trigger: "mouseenter",
@@ -109,7 +109,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".toggle-subscription-tooltip",
         trigger: "mouseenter",
         delay: EXTRA_LONG_HOVER_DELAY,
@@ -117,7 +117,7 @@ export function initialize(): void {
         placement: "bottom",
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
@@ -138,7 +138,7 @@ export function initialize(): void {
     // this element doesn't have an always visible label, and
     // thus hovering it is a way to find out what it does, give
     // it the faster LONG_HOVER_DELAY.
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#show_all_private_messages",
         placement: "right",
         delay: LONG_HOVER_DELAY,
@@ -157,7 +157,7 @@ export function initialize(): void {
 
     // Variant of .tippy-left-sidebar-tooltip configuration. Here
     // we need to dynamically check which view is the home view.
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".tippy-views-tooltip",
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
@@ -188,7 +188,7 @@ export function initialize(): void {
     // below specify the target directly, elements using those should
     // not have the tippy-zulip-tooltip class.
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".draft-selection-tooltip",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -202,7 +202,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".delete-selected-drafts-button-container",
         appendTo: () => document.body,
         onShow(instance) {
@@ -215,7 +215,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#add-poll-modal .dialog_submit_button_container",
         appendTo: () => document.body,
         onShow(instance) {
@@ -234,15 +234,15 @@ export function initialize(): void {
     $("body").on(
         "blur",
         ".message_control_button, .delete-selected-drafts-button-container",
-        (e) => {
+        function (this: tippy.ReferenceElement) {
             // Remove tooltip when user is trying to tab through all the icons.
             // If user tabs slowly, tooltips are displayed otherwise they are
             // destroyed before they can be displayed.
-            e.currentTarget?._tippy?.destroy();
+            this._tippy?.destroy();
         },
     );
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: [
             "#streams_header .streams-tooltip-target",
             "#scroll-to-bottom-button-clickable-area",
@@ -257,9 +257,11 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: [
             "#compose_top_right [data-tippy-content]",
+            ".expand-composebox-button",
+            ".collapse-composebox-button",
             "#compose_top_right [data-tooltip-template-id]",
         ].join(","),
         delay: LONG_HOVER_DELAY,
@@ -269,7 +271,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".media-info-wrapper > .media-description > .title",
         appendTo: () => document.body,
         onShow(instance) {
@@ -277,7 +279,7 @@ export function initialize(): void {
             if (title === undefined) {
                 return false;
             }
-            const filename = $(instance.reference).prop("data-filename");
+            const filename = $(instance.reference).attr("data-filename");
             const $markup = $("<span>").text(title);
             if (title !== filename) {
                 // If the image title is the same as the filename, there's no reason
@@ -285,7 +287,7 @@ export function initialize(): void {
                 const second_line = $t({defaultMessage: "File name: {filename}"}, {filename});
                 $markup.append($("<br>"), $("<span>").text(second_line));
             }
-            instance.setContent($markup[0]);
+            instance.setContent($markup[0]!);
             return undefined;
         },
         onHidden(instance) {
@@ -293,7 +295,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         // Configure tooltips for the stream_sorter_toggle buttons.
 
         // TODO: Ideally, we'd extend this to be a common mechanism for
@@ -308,7 +310,7 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         // This tooltip appears on the "Summary" checkboxes in
         // settings > custom profile fields, when at the limit of 2
         // fields with display_in_profile_summary enabled.
@@ -330,7 +332,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#full_name_input_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
@@ -342,7 +344,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#change_email_button_container.disabled_setting_tooltip",
         content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
         appendTo: () => document.body,
@@ -351,7 +353,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: [
             "#deactivate_account_container.disabled_setting_tooltip",
             "#edit-user-form .deactivate_user_button_tooltip",
@@ -366,7 +368,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#deactivate_realm_button_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage: "Only organization owners may deactivate an organization.",
@@ -377,10 +379,10 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".settings-radio-input-parent.default_stream_private_tooltip",
         content: $t({
-            defaultMessage: "Default streams for new users cannot be made private.",
+            defaultMessage: "Default channels for new users cannot be made private.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -388,10 +390,24 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
+        target: [
+            "[data-tab-key='not-subscribed'].disabled",
+            "[data-tab-key='all-streams'].disabled",
+        ].join(","),
+        content: $t({
+            defaultMessage: "You can only view channels that you are subscribed to.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".default-stream.default_stream_private_tooltip",
         content: $t({
-            defaultMessage: "Private streams cannot be default streams for new users.",
+            defaultMessage: "Private channels cannot be default channels for new users.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -399,11 +415,11 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
-        target: "#generate_multiuse_invite_radio_container.disabled_setting_tooltip",
+    tippy.delegate("body", {
+        target: "[data-tab-key='invite-link-tab'].disabled",
         content: $t({
             defaultMessage:
-                "You do not have permissions to generate invite links in this organization.",
+                "You do not have permissions to create invite links in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -411,7 +427,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: [
             "#api_key_button_container.disabled_setting_tooltip",
             "#user_email_address_dropdown_container.disabled_setting_tooltip",
@@ -425,11 +441,11 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
-        target: "#email_invite_radio_container.disabled_setting_tooltip",
+    tippy.delegate("body", {
+        target: "[data-tab-key='invite-email-tab'].disabled",
         content: $t({
             defaultMessage:
-                "You do not have permissions to send email invitations in this organization.",
+                "You do not have permissions to send invite emails in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -437,7 +453,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".views-tooltip-target",
         onShow(instance) {
             if ($("#toggle-top-left-navigation-area-icon").hasClass("fa-caret-down")) {
@@ -454,7 +470,7 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".dm-tooltip-target",
         onShow(instance) {
             if ($(".direct-messages-container").hasClass("zoom-in")) {
@@ -476,11 +492,11 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#stream_creation_form .add_subscribers_disabled",
         content: $t({
             defaultMessage:
-                "You do not have permission to add other users to streams in this organization.",
+                "You do not have permission to add other users to channels in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -488,7 +504,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".user_row .actions button",
         trigger: "mouseenter",
         onShow(instance) {
@@ -505,12 +521,12 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".user-card-status-area .status-emoji",
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".status-emoji-name",
         placement: "top",
         delay: INSTANT_HOVER_DELAY,
@@ -533,7 +549,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         /*
             The tooltip for new user group button (+) icon button on #groups
             overlay was not mounted correctly as its sibling element (search bar)
@@ -548,14 +564,14 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#move_topic_to_stream_widget_wrapper",
         onShow(instance) {
             if ($("#move_topic_to_stream_widget").prop("disabled")) {
                 instance.setContent(
                     $t({
                         defaultMessage:
-                            "You do not have permission to move messages to another stream in this organization.",
+                            "You do not have permission to move messages to another channel in this organization.",
                     }),
                 );
                 return undefined;
@@ -565,7 +581,7 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#userlist-header",
         placement: "top",
         appendTo: () => document.body,
@@ -577,7 +593,25 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
+        target: ".header-main .column-left .left-sidebar-toggle-button",
+        delay: LONG_HOVER_DELAY,
+        placement: "bottom",
+        appendTo: () => document.body,
+        onShow(instance) {
+            let template = "show-left-sidebar-tooltip-template";
+            if ($("#left-sidebar-container").is(":visible")) {
+                template = "hide-left-sidebar-tooltip-template";
+            }
+            $(instance.reference).attr("data-tooltip-template-id", template);
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#userlist-toggle",
         delay: LONG_HOVER_DELAY,
         placement: "bottom",
@@ -595,7 +629,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#realm-logo",
         placement: "right",
         appendTo: () => document.body,
@@ -611,7 +645,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".custom-user-field-label-wrapper.required-field-wrapper",
         content: $t({
             defaultMessage: "This profile field is required.",
@@ -619,6 +653,21 @@ export function initialize(): void {
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".popover-contains-shift-hotkey",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const hotkey_hints = $(instance.reference).attr("data-hotkey-hints");
+            if (hotkey_hints) {
+                instance.setContent(hotkey_hints.replace("⇧", "Shift").replaceAll(",", " + "));
+                return undefined;
+            }
+            return false;
         },
     });
 }

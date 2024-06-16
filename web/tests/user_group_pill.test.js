@@ -22,13 +22,13 @@ const testers = {
 };
 
 const admins_pill = {
-    id: admins.id,
+    group_id: admins.id,
     group_name: admins.name,
     type: "user_group",
     display_value: admins.name + ": " + admins.members.length + " users",
 };
 const testers_pill = {
-    id: testers.id,
+    group_id: testers.id,
     group_name: testers.name,
     type: "user_group",
     display_value: testers.name + ": " + testers.members.length + " users",

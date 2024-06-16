@@ -66,8 +66,14 @@ def update_scheduled_message_backend(
         else:
             recipient_type_name = req_type
 
+    if recipient_type_name is not None and recipient_type_name == "channel":
+        # For now, use "stream" from Message.API_RECIPIENT_TYPES.
+        # TODO: Use "channel" here, as well as in events and
+        # message (created, schdeduled, drafts) objects/dicts.
+        recipient_type_name = "stream"
+
     if recipient_type_name is not None and recipient_type_name == "stream" and topic_name is None:
-        raise JsonableError(_("Topic required when updating scheduled message type to stream."))
+        raise JsonableError(_("Topic required when updating scheduled message type to channel."))
 
     if recipient_type_name is not None and recipient_type_name == "direct":
         # For now, use "private" from Message.API_RECIPIENT_TYPES.
@@ -123,6 +129,11 @@ def create_scheduled_message_backend(
         # TODO: Use "direct" here, as well as in events and
         # scheduled message objects/dicts.
         recipient_type_name = "private"
+    elif recipient_type_name == "channel":
+        # For now, use "stream" from Message.API_RECIPIENT_TYPES.
+        # TODO: Use "channel" here, as well as in events and
+        # message (created, schdeduled, drafts) objects/dicts.
+        recipient_type_name = "stream"
 
     deliver_at = timestamp_to_datetime(scheduled_delivery_timestamp)
     if deliver_at <= timezone_now():

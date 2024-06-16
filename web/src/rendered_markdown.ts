@@ -148,7 +148,7 @@ export const update_elements = ($content: JQuery): void => {
                 //
                 // In these cases, the best we can do is leave the
                 // existing name in the existing mention pill
-                // HTML. Clicking on the pill will show the the
+                // HTML. Clicking on the pill will show the
                 // "Unknown user" popover.
                 if (person === undefined) {
                     people.add_inaccessible_user(user_id);
@@ -270,15 +270,15 @@ export const update_elements = ($content: JQuery): void => {
         // Add the expand/collapse button to spoiler blocks
         const toggle_button_html =
             '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
-        $(this).prepend($(toggle_button_html));
+        $(this).append($(toggle_button_html));
     });
 
     // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,
-    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.js`.
+    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.ts`.
     $content.find("div.codehilite").each(function (): void {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
-        const fenced_code_lang = $codehilite.data("code-language");
+        const fenced_code_lang = $codehilite.attr("data-code-language");
         let playground_info;
         if (fenced_code_lang !== undefined) {
             playground_info = realm_playground.get_playground_info_for_languages(fenced_code_lang);
@@ -296,7 +296,11 @@ export const update_elements = ($content: JQuery): void => {
             // popover listing the options.
             let title = $t({defaultMessage: "View in playground"});
             const $view_in_playground_button = $buttonContainer.find(".code_external_link");
-            if (playground_info && playground_info.length === 1) {
+            if (
+                playground_info &&
+                playground_info.length === 1 &&
+                playground_info[0] !== undefined
+            ) {
                 title = $t(
                     {defaultMessage: "View in {playground_name}"},
                     {playground_name: playground_info[0].name},
@@ -307,15 +311,16 @@ export const update_elements = ($content: JQuery): void => {
             $view_in_playground_button.attr("data-tippy-content", title);
             $view_in_playground_button.attr("aria-label", title);
         }
-
-        const clipboard = new ClipboardJS($buttonContainer[0], {
+        const $copy_button = $buttonContainer.find(".copy_codeblock");
+        const clipboard = new ClipboardJS($copy_button[0]!, {
             text(copy_element) {
-                return $(copy_element).siblings("code").text();
+                const $code = $(copy_element).parent().siblings("code");
+                return $code.text();
             },
         });
+
         clipboard.on("success", () => {
-            const $copy_button = $buttonContainer.find(".copy_codeblock");
-            show_copied_confirmation($copy_button[0]);
+            show_copied_confirmation($copy_button[0]!);
         });
         $codehilite.addClass("zulip-code-block");
     });
@@ -326,7 +331,7 @@ export const update_elements = ($content: JQuery): void => {
         $content
             .find(".emoji")
             .text(function () {
-                const text = $(this).attr("title");
+                const text = $(this).attr("title") ?? "";
                 return ":" + text + ":";
             })
             .contents()

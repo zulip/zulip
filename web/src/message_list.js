@@ -2,18 +2,16 @@ import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
-import {Filter} from "./filter";
 import {MessageListData} from "./message_list_data";
 import * as message_list_tooltips from "./message_list_tooltips";
 import {MessageListView} from "./message_list_view";
-import * as message_lists from "./message_lists";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as stream_data from "./stream_data";
+import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 
 export class MessageList {
@@ -59,9 +57,8 @@ export class MessageList {
         // DOM.
         this.view = new MessageListView(this, collapse_messages, opts.is_node_test);
 
-        // Whether this is a narrowed message list. The only message
-        // list that is not is the home_msg_list global.
-        this.narrowed = !this.data.filter.is_in_home();
+        // If this message list is for the combined feed view.
+        this.is_combined_feed_view = this.data.filter.is_in_home();
 
         // Keeps track of whether the user has done a UI interaction,
         // such as "Mark as unread", that should disable marking
@@ -73,6 +70,60 @@ export class MessageList {
         this.reading_prevented = false;
 
         return this;
+    }
+
+    should_preserve_current_rendered_state() {
+        // Whether this message list is preserved in the DOM even
+        // when viewing other views -- a valuable optimization for
+        // fast toggling between the combined feed and other views,
+        // which we enable only when that is the user's home view.
+        //
+        // This is intentionally not live-updated when web_home_view
+        // changes, since it's easier to reason about if this
+        // optimization is active or not for an entire session.
+        if (user_settings.web_home_view !== "all_messages" || !this.is_combined_feed_view) {
+            return false;
+        }
+
+        // If we click on a narrow, we go the first unread message.
+        // If first unread message is not available in a cached message list,
+        // we render by selecting the `message_list.last()` message.
+        // This is incorrect unless we have found the newest message.
+        //
+        // So, we don't preserve the rendered state of this list if first unread message
+        // is not available to us. Otherwise, this leads to confusion when we are
+        // restoring the rendered list but our first unread message is not available
+        // and fetching it from the server could lead to non-contiguous messages history.
+        //
+        // NOTE: Non-contiguous message history can still happen in the opposite situation
+        // where user is narrowing to a message id which is not present in the rendered list.
+        // In this case, we create a new list and if the new fetched history contains first
+        // unread message, we preserve this list and discard others with the same filter.
+        //
+        // This nicely supports the common workflow of user reloading with a `then_select_id`
+        // and then scrolling to the first unread message; then narrowing to the unread topic
+        // and combing back to combined feed. The combined feed will be rendered in this case
+        // but not if we decided to discard this list based on if anchor was on `first_unread.
+        //
+        // Since we know we are checking for first unread unmuted message in combined feed,
+        // we can use `unread.first_unread_unmuted_message_id` to correctly check if we have
+        // fetched the first unread message.
+        //
+        // TODO: For supporting other narrows, we need to check if we have fetched the first
+        // unread message for that narrow, for which we will have to query server for the
+        // first unread message id. Maybe that can be part of the narrow fetch query itself.
+        const first_unread_message = this.get(unread.first_unread_unmuted_message_id);
+        if (!first_unread_message?.unread) {
+            // If we have found the newest message, we can preserve the rendered state.
+            return this.data.fetch_status.has_found_newest();
+        }
+
+        // If we have found the first unread message, we can preserve the rendered state.
+        return true;
+    }
+
+    is_current_message_list() {
+        return this.view.is_current_message_list();
     }
 
     prevent_reading() {
@@ -110,14 +161,14 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this.narrowed && !this.visibly_empty()) {
+        if (!this.visibly_empty() && this.is_current_message_list()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
         }
 
-        if (this.narrowed && !this.visibly_empty() && this.selected_id() === -1) {
+        if (!this.visibly_empty() && this.selected_id() === -1 && this.is_current_message_list()) {
             // The message list was previously empty, but now isn't
             // due to adding these messages, and we need to select a
             // message. Regardless of whether the messages are new or
@@ -133,6 +184,10 @@ export class MessageList {
 
     get(id) {
         return this.data.get(id);
+    }
+
+    msg_id_in_fetched_range(msg_id) {
+        return this.data.msg_id_in_fetched_range(msg_id);
     }
 
     num_items() {
@@ -155,10 +210,6 @@ export class MessageList {
         return this.data.last();
     }
 
-    ids_greater_or_equal_than(id) {
-        return this.data.ids_greater_or_equal_than(id);
-    }
-
     prev() {
         return this.data.prev();
     }
@@ -169,10 +220,6 @@ export class MessageList {
 
     is_at_end() {
         return this.data.is_at_end();
-    }
-
-    nth_most_recent_id(n) {
-        return this.data.nth_most_recent_id(n);
     }
 
     is_keyword_search() {
@@ -328,7 +375,7 @@ export class MessageList {
     // message list.
     update_trailing_bookend() {
         this.view.clear_trailing_bookend();
-        if (!this.narrowed) {
+        if (this.is_combined_feed_view) {
             return;
         }
         const stream_name = narrow_state.stream_name();
@@ -381,14 +428,16 @@ export class MessageList {
         this.rerender();
     }
 
-    show_edit_message($row, edit_obj) {
+    show_edit_message($row, $form) {
         if ($row.find(".message_edit_form form").length !== 0) {
             return;
         }
-        $row.find(".message_edit_form").append(edit_obj.$form);
+        $row.find(".message_edit_form").append($form);
         $row.find(".message_content, .status-message, .message_controls").hide();
         $row.find(".messagebox-content").addClass("content_edit_mode");
         $row.find(".message_edit").css("display", "block");
+        // autosize will not change the height of the textarea if the `$row` is not
+        // rendered in DOM yet. So, we call `autosize.update` post render.
         autosize($row.find(".message_edit_content"));
     }
 
@@ -450,7 +499,7 @@ export class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (this.narrowed) {
+        if (!this.is_combined_feed_view) {
             if (
                 this.visibly_empty() &&
                 this.data.fetch_status.has_found_oldest() &&
@@ -468,19 +517,6 @@ export class MessageList {
     }
 
     update_muting_and_rerender() {
-        // For the home message list, we need to re-initialize
-        // _all_items for stream muting/topic unmuting from
-        // all_messages_data, since otherwise unmuting a previously
-        // muted stream won't work.
-        //
-        // "in-home" filter doesn't included muted stream messages, so we
-        // need to repopulate the message list with all messages to include
-        // the previous messages in muted streams so that update_items_for_muting works.
-        if (this.data.filter.is_in_home()) {
-            this.data.clear();
-            this.data.add_messages(all_messages_data.all_messages());
-        }
-
         this.data.update_items_for_muting();
         // We need to rerender whether or not the narrow hides muted
         // topics, because we need to update recipient bars for topics
@@ -528,13 +564,4 @@ export class MessageList {
     get_last_message_sent_by_me() {
         return this.data.get_last_message_sent_by_me();
     }
-}
-
-export function initialize() {
-    /* Create home_msg_list and register it. */
-    const home_msg_list = new MessageList({
-        filter: new Filter([{operator: "in", operand: "home"}]),
-        excludes_muted_topics: true,
-    });
-    message_lists.set_home(home_msg_list);
 }

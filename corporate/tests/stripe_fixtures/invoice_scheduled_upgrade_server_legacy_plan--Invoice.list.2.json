@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9WdW1EWkNOVjNMRUk3NnFsQUkxbDdLalNXOE5NLDEwMDA2NjI4OQ0200eT6VJjVV?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBQSTY0ZUkzTU5qMmlndGFXMThsSFMycThtYk1DLDEwMzI5ODYyMw0200PaP6JIk8?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9WdW1EWkNOVjNMRUk3NnFsQUkxbDdLalNXOE5NLDEwMDA2NjI4OQ0200eT6VJjVV/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBQSTY0ZUkzTU5qMmlndGFXMThsSFMycThtYk1DLDEwMzI5ODYyMw0200PaP6JIk8/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -68,8 +68,8 @@
             "metadata": {},
             "object": "line_item",
             "period": {
-              "end": 1000000000,
-              "start": 1000000000
+              "end": 1364871845,
+              "start": 1333335845
             },
             "plan": null,
             "price": {
@@ -212,7 +212,7 @@
       "total_excluding_tax": 176000,
       "total_tax_amounts": [],
       "transfer_data": null,
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     }
   ],
   "has_more": false,

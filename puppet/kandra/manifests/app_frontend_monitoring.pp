@@ -6,12 +6,18 @@ class kandra::app_frontend_monitoring {
   include kandra::prometheus::uwsgi
   include kandra::prometheus::process
   kandra::firewall_allow { 'grok_exporter': port => '9144' }
+
   file { '/etc/cron.d/rabbitmq-monitoring':
-    ensure  => file,
-    require => Package[rabbitmq-server],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/cron.d/rabbitmq-monitoring',
+    ensure => absent,
+  }
+  zulip::cron { 'check-rabbitmq-queue':
+    minute  => '*',
+    user    => 'root',
+    command => '/home/zulip/deployments/current/scripts/nagios/check-rabbitmq-queue',
+  }
+  zulip::cron { 'check-rabbitmq-consumers':
+    minute  => '*',
+    user    => 'root',
+    command => '/home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers',
   }
 }

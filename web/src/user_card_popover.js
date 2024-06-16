@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
@@ -24,8 +24,8 @@ import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
+import * as message_view from "./message_view";
 import * as muted_users from "./muted_users";
-import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -455,7 +455,7 @@ function init_email_tooltip(user) {
 
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
-            tippy(this, {
+            tippy.default(this, {
                 placement: "bottom",
                 content: people.get_visible_email(user),
                 interactive: true,
@@ -470,7 +470,7 @@ function load_medium_avatar(user, $elt) {
 
     sender_avatar_medium.src = user_avatar_url;
     $(sender_avatar_medium).on("load", function () {
-        $elt.css("background-image", "url(" + $(this).attr("src") + ")");
+        $elt.css("background-image", `url(${CSS.escape($(this).attr("src"))})`);
     });
 }
 
@@ -688,7 +688,15 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        narrow.by("dm", email, {trigger: "user sidebar popover"});
+        message_view.show(
+            [
+                {
+                    operator: "dm",
+                    operand: email,
+                },
+            ],
+            {trigger: "user sidebar popover"},
+        );
         hide_all();
         if (overlays.any_active()) {
             overlays.close_active();
@@ -700,7 +708,15 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        narrow.by("sender", email, {trigger: "user sidebar popover"});
+        message_view.show(
+            [
+                {
+                    operator: "sender",
+                    operand: email,
+                },
+            ],
+            {trigger: "user sidebar popover"},
+        );
         hide_all();
         if (overlays.any_active()) {
             overlays.close_active();
@@ -755,6 +771,7 @@ function register_click_handlers() {
             compose_actions.start({
                 message_type: "stream",
                 trigger: "sidebar user actions",
+                keep_composebox_empty: true,
             });
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
@@ -769,7 +786,10 @@ function register_click_handlers() {
 
     $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
         if (!compose_state.composing()) {
-            compose_reply.respond_to_message({trigger: "user sidebar popover"});
+            compose_reply.respond_to_message({
+                trigger: "user sidebar popover",
+                keep_composebox_empty: true,
+            });
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
@@ -781,7 +801,7 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".view_user_profile", (e) => {
+    $("body").on("click", ".view_user_profile, .person_picker .pill[data-user-id]", (e) => {
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
         toggle_user_card_popover(e.target, user);

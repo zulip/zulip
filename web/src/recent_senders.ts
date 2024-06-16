@@ -2,7 +2,6 @@ import _ from "lodash";
 
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
-import type {Message} from "./message_store";
 import * as people from "./people";
 import type {User} from "./people";
 
@@ -91,7 +90,7 @@ function add_stream_message(opts: {
     message_id: number;
 }): void {
     const {stream_id, sender_id, message_id} = opts;
-    const sender_dict = stream_senders.get(stream_id) ?? new Map();
+    const sender_dict = stream_senders.get(stream_id) ?? new Map<number, IdTracker>();
     const id_tracker = sender_dict.get(sender_id) ?? new IdTracker();
     stream_senders.set(stream_id, sender_dict);
     sender_dict.set(sender_id, id_tracker);
@@ -106,7 +105,7 @@ function add_topic_message(opts: {
 }): void {
     const {stream_id, topic, sender_id, message_id} = opts;
     const topic_dict = topic_senders.get(stream_id) ?? new FoldDict();
-    const sender_dict = topic_dict.get(topic) ?? new Map();
+    const sender_dict = topic_dict.get(topic) ?? new Map<number, IdTracker>();
     const id_tracker = sender_dict.get(sender_id) ?? new IdTracker();
     topic_senders.set(stream_id, topic_dict);
     topic_dict.set(topic, sender_dict);
@@ -114,7 +113,12 @@ function add_topic_message(opts: {
     id_tracker.add(message_id);
 }
 
-export function process_stream_message(message: Message & {type: "stream"}): void {
+export function process_stream_message(message: {
+    stream_id: number;
+    topic: string;
+    sender_id: number;
+    id: number;
+}): void {
     const stream_id = message.stream_id;
     const topic = message.topic;
     const sender_id = message.sender_id;
@@ -253,7 +257,7 @@ export function process_private_message(opts: {
     id: number;
 }): void {
     const {to_user_ids, sender_id, id} = opts;
-    const sender_dict = pm_senders.get(to_user_ids) ?? new Map();
+    const sender_dict = pm_senders.get(to_user_ids) ?? new Map<number, IdTracker>();
     const id_tracker = sender_dict.get(sender_id) ?? new IdTracker();
     pm_senders.set(to_user_ids, sender_dict);
     sender_dict.set(sender_id, id_tracker);

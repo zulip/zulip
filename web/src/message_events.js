@@ -9,8 +9,8 @@ import * as compose_fade from "./compose_fade";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
+import * as direct_message_group_data from "./direct_message_group_data";
 import * as drafts from "./drafts";
-import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
@@ -18,7 +18,7 @@ import * as message_lists from "./message_lists";
 import * as message_notifications from "./message_notifications";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
@@ -56,14 +56,10 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             }
 
             let new_messages = [];
-            const elsewhere_messages = [];
-
             for (const elem of messages) {
                 if (Object.hasOwn(data.messages, elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
-                } else {
-                    elsewhere_messages.push(elem);
                 }
             }
 
@@ -81,7 +77,6 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
-            compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error(xhr) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
@@ -119,7 +114,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
-    huddle_data.process_loaded_messages(messages);
+    direct_message_group_data.process_loaded_messages(messages);
 
     // all_messages_data is the data that we use to populate
     // other lists, so we always update this
@@ -155,7 +150,11 @@ export function insert_new_messages(messages, sent_by_this_client) {
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
     if (sent_by_this_client) {
-        compose_notifications.notify_local_mixes(messages, need_user_to_scroll);
+        compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
+            narrow_to_recipient(message_id) {
+                message_view.narrow_by_topic(message_id, {trigger: "outside_current_view"});
+            },
+        });
     }
 
     if (any_untracked_unread_messages) {
@@ -166,7 +165,8 @@ export function insert_new_messages(messages, sent_by_this_client) {
     message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    recent_view_ui.process_messages(messages);
+
+    return messages;
 }
 
 export function update_messages(events) {
@@ -406,7 +406,7 @@ export function update_messages(events) {
                     // The fix is likely somewhat involved, so punting for now.
                     const new_stream_name = sub_store.get(new_stream_id).name;
                     new_filter = new_filter.filter_with_new_params({
-                        operator: "stream",
+                        operator: "channel",
                         operand: new_stream_name,
                     });
                     changed_narrow = true;
@@ -429,7 +429,7 @@ export function update_messages(events) {
                         trigger: "stream/topic change",
                         then_select_id: current_selected_id,
                     };
-                    narrow.activate(terms, opts);
+                    message_view.show(terms, opts);
                 }
             }
 
@@ -532,7 +532,6 @@ export function update_messages(events) {
     // propagated edits to be updated (since the topic edits can have
     // changed the correct grouping of messages).
     if (any_topic_edited || any_stream_changed) {
-        message_lists.home.update_muting_and_rerender();
         // However, we don't need to rerender message_list if
         // we just changed the narrow earlier in this function.
         //
@@ -542,8 +541,15 @@ export function update_messages(events) {
         // edit.  Doing so could save significant work, since most
         // topic edits will not match the current topic narrow in
         // large organizations.
-        if (!changed_narrow && message_lists.current?.narrowed) {
-            message_lists.current.update_muting_and_rerender();
+
+        for (const list of message_lists.all_rendered_message_lists()) {
+            if (changed_narrow && list === message_lists.current) {
+                // Avoid updating current message list if user switched to a different narrow and
+                // we don't want to preserver the rendered state for the current one.
+                continue;
+            }
+
+            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
         }
     } else {
         // If the content of the message was edited, we do a special animation.

@@ -4,7 +4,7 @@
 
 Zulip uses the Django framework for its Python backend. We
 use the testing framework from
-[django.test](https://docs.djangoproject.com/en/3.2/topics/testing/)
+[django.test](https://docs.djangoproject.com/en/5.0/topics/testing/)
 to test our code. We have thousands of automated tests that verify that
 our backend works as expected.
 

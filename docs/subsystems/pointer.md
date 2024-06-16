@@ -1,6 +1,6 @@
 # Unread counts and the pointer
 
-When you're using Zulip and you reload, or narrow to a stream, how
+When you're using Zulip and you reload, or narrow to a channel, how
 does Zulip decide where to place you?
 
 Conceptually, Zulip takes you to the place where you left off
@@ -29,7 +29,7 @@ First a bit of terminology:
 ### Recipient bar: message you clicked
 
 If you enter a narrow by clicking on a message group's _recipient bar_
-(stream/topic or direct message recipient list at the top of a group
+(channel/topic or direct message recipient list at the top of a group
 of messages), Zulip will select the message you clicked on. This
 provides a nice user experience where you get to see the stuff near
 what you clicked on, and in fact the message you clicked on stays at
@@ -48,17 +48,17 @@ This provides the nice user experience of taking you to the start of
 the new stuff (with enough messages you've seen before still in view
 at the top to provide you with context), which is usually what you
 want. (When finding the "first unread message", Zulip ignores unread
-messages in muted streams or in muted topics within non-muted
-streams.)
+messages in muted channels or in muted topics within non-muted
+channels.)
 
 ### Unnarrow: previous sequence
 
 When you unnarrow using e.g. the `a` key, you will automatically be
-taken to the same message that was selected in the All messages view before
+taken to the same message that was selected in the Combined feed view before
 you narrowed, unless in the narrow you read new messages, in which
 case you will be jumped forward to the first unread and non-muted
-message in the All messages view (or the bottom of the feed if there is
-none). This makes for a nice experience reading threads via the All messages
+message in the Combined feed view (or the bottom of the feed if there is
+none). This makes for a nice experience reading threads via the Combined feed
 view in sequence.
 
 ### Forced reload: state preservation

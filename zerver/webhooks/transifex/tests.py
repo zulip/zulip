@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TransifexHookTests(WebhookTestCase):
-    STREAM_NAME = "transifex"
+    CHANNEL_NAME = "transifex"
     URL_TEMPLATE = "/api/v1/external/transifex?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "transifex"
 

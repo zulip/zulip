@@ -15,7 +15,7 @@
 * [Update personal message flags](/api/update-message-flags)
 * [Update personal message flags for narrow](/api/update-message-flags-for-narrow)
 * [Mark all messages as read](/api/mark-all-as-read)
-* [Mark messages in a stream as read](/api/mark-stream-as-read)
+* [Mark messages in a channel as read](/api/mark-stream-as-read)
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
 
@@ -33,27 +33,27 @@
 * [Edit a draft](/api/edit-draft)
 * [Delete a draft](/api/delete-draft)
 
-#### Streams
+#### Channels
 
-* [Get subscribed streams](/api/get-subscriptions)
-* [Subscribe to a stream](/api/subscribe)
-* [Unsubscribe from a stream](/api/unsubscribe)
+* [Get subscribed channels](/api/get-subscriptions)
+* [Subscribe to a channel](/api/subscribe)
+* [Unsubscribe from a channel](/api/unsubscribe)
 * [Get subscription status](/api/get-subscription-status)
 * [Get all subscribers](/api/get-subscribers)
 * [Update subscription settings](/api/update-subscription-settings)
-* [Get all streams](/api/get-streams)
-* [Get a stream by ID](/api/get-stream-by-id)
-* [Get stream ID](/api/get-stream-id)
-* [Create a stream](/api/create-stream)
-* [Update a stream](/api/update-stream)
-* [Archive a stream](/api/archive-stream)
-* [Get stream's email address](/api/get-stream-email-address)
-* [Get topics in a stream](/api/get-stream-topics)
+* [Get all channels](/api/get-streams)
+* [Get a channel by ID](/api/get-stream-by-id)
+* [Get channel ID](/api/get-stream-id)
+* [Create a channel](/api/create-stream)
+* [Update a channel](/api/update-stream)
+* [Archive a channel](/api/archive-stream)
+* [Get channel's email address](/api/get-stream-email-address)
+* [Get topics in a channel](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
 * [Update personal preferences for a topic](/api/update-user-topic)
 * [Delete a topic](/api/delete-topic)
-* [Add a default stream](/api/add-default-stream)
-* [Remove a default stream](/api/remove-default-stream)
+* [Add a default channel](/api/add-default-stream)
+* [Remove a default channel](/api/remove-default-stream)
 
 #### Users
 
@@ -69,7 +69,9 @@
 * [Deactivate own user](/api/deactivate-own-user)
 * [Set "typing" status](/api/set-typing-status)
 * [Get user presence](/api/get-user-presence)
+* [Get a user's status](/api/get-user-status)
 * [Get presence of all users](/api/get-presence)
+* [Update your presence](/api/update-presence)
 * [Get attachments](/api/get-attachments)
 * [Delete an attachment](/api/remove-attachment)
 * [Update settings](/api/update-settings)
@@ -92,6 +94,10 @@
 
 * [Get all invitations](/api/get-invites)
 * [Send invitations](/api/send-invites)
+* [Create a reusable invitation link](/api/create-invite-link)
+* [Resend an email invitation](/api/resend-email-invite)
+* [Revoke an email invitation](/api/revoke-email-invite)
+* [Revoke a reusable invitation link](/api/revoke-invite-link)
 
 #### Server & organizations
 
@@ -123,3 +129,7 @@
 * [Fetch an API key (production)](/api/fetch-api-key)
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
 * [Send a test notification to mobile device(s)](/api/test-notify)
+* [Add an APNs device token](/api/add-apns-token)
+* [Remove an APNs device token](/api/remove-apns-token)
+* [Add an FCM registration token](/api/add-fcm-token)
+* [Remove an FCM registration token](/api/remove-fcm-token)

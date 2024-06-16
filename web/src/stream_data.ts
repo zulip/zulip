@@ -3,6 +3,7 @@ import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import type {User} from "./people";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -186,6 +187,14 @@ export function get_sub_by_id(stream_id: number): StreamSubscription | undefined
     return stream_info.get(stream_id);
 }
 
+export function maybe_get_creator_details(creator_id: number | null): User | undefined {
+    if (creator_id === null) {
+        return undefined;
+    }
+
+    return people.get_user_by_id_assert_valid(creator_id);
+}
+
 export function get_stream_id(name: string): number | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
@@ -261,7 +270,7 @@ export function slug_to_name(slug: string): string {
     */
     const m = /^(\d+)(-.*)?$/.exec(slug);
     if (m) {
-        const stream_id = Number.parseInt(m[1], 10);
+        const stream_id = Number.parseInt(m[1]!, 10);
         const sub = sub_store.get(stream_id);
         if (sub) {
             return sub.name;
@@ -287,12 +296,12 @@ export function delete_sub(stream_id: number): void {
     stream_info.delete(stream_id);
 }
 
-export function get_non_default_stream_names(): {name: string; unique_id: string}[] {
+export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
     let subs = [...stream_info.values()];
     subs = subs.filter((sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only);
     const names = subs.map((sub) => ({
         name: sub.name,
-        unique_id: sub.stream_id.toString(),
+        unique_id: sub.stream_id,
     }));
     return names;
 }

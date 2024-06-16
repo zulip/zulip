@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9UWWE0SHFuS1pudnJYSTl2RWk4aXRadUhHZTZPLDEwMDA2NjE4Ng0200LzzJ4PlI?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBRTFJMTkNFVWM0QzQ1REJnOTBPOTBnZ0V0VEJPLDEwMzI5ODY5MA0200IpkWkDtC?s=ap",
   "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9UWWE0SHFuS1pudnJYSTl2RWk4aXRadUhHZTZPLDEwMDA2NjE4Ng0200LzzJ4PlI/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBRTFJMTkNFVWM0QzQ1REJnOTBPOTBnZ0V0VEJPLDEwMzI5ODY5MA0200IpkWkDtC/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -61,13 +61,13 @@
         "discounts": [],
         "id": "il_NORMALIZED00000000000001",
         "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1328151845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -76,13 +76,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000001",
+          "id": "price_NORMALIZED00000000000002",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0001",
+          "product": "prod_NORMALIZED0002",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -112,13 +112,13 @@
         "discounts": [],
         "id": "il_NORMALIZED00000000000002",
         "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000002",
+        "invoice_item": "ii_NORMALIZED00000000000003",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1328151845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -127,13 +127,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000002",
+          "id": "price_NORMALIZED00000000000003",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0002",
+          "product": "prod_NORMALIZED0003",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -164,10 +164,11 @@
     "billing_schedule": "2",
     "license_management": "automatic",
     "licenses": "11",
+    "on_free_trial": "False",
     "plan_tier": "103"
   },
   "next_payment_attempt": null,
-  "number": "NORMALI-0002",
+  "number": "NORMALI-0003",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,
@@ -215,5 +216,5 @@
   "total_excluding_tax": 1850,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

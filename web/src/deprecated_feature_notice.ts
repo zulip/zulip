@@ -1,4 +1,4 @@
-import z from "zod";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as common from "./common";

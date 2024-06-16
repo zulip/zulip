@@ -9,14 +9,14 @@ role](/help/roles-and-permissions#change-a-users-role) if needed.
 
 !!! tip ""
 
-    Learn about [stream permissions](/help/stream-permissions), including
-    **public** and **private** streams.
+    Learn about [channel permissions](/help/channel-permissions), including
+    **public** and **private** channels.
 
-* **Organization owner**: Can manage users, public streams, organization
+* **Organization owner**: Can manage users, public channels, organization
   settings, and billing. Organization owners can do anything that an
   organization administrator can do.
 
-* **Organization administrator**: Can manage users, public streams, and
+* **Organization administrator**: Can manage users, public channels, and
   organization settings. Cannot make someone an owner, or change an existing
   owner's role.
 
@@ -25,15 +25,15 @@ role](/help/roles-and-permissions#change-a-users-role) if needed.
   your organization.
 
 * **Member**: This is the default role for most users. Members have access to
-  all public streams. You can [configure different
+  all public channels. You can [configure different
   permissions](/help/restrict-permissions-of-new-members) for **new members**
   and **full members**, which is especially useful for [moderating open
   organizations](/help/moderating-open-organizations). New members automatically
   become full members after a configurable waiting period.
 
-* **Guest**: Can view and send messages in streams they have been added to.
-  Guests cannot see other streams, unless they have been specifically added to
-  the stream. See [guest users documentation](/help/guest-users) for additional
+* **Guest**: Can view and send messages in channels they have been added to.
+  Guests cannot see other channels, unless they have been specifically added to
+  the channel. See [guest users documentation](/help/guest-users) for additional
   details and configuration options.
 
 * **Billing administrator**: The user who upgrades the organization to
@@ -41,6 +41,10 @@ role](/help/roles-and-permissions#change-a-users-role) if needed.
   administrator.  Billing administrators can manage billing for the organization.
   For example, someone from your billing department can be a **billing
   administrator**, but not an **administrator** for the organization.
+
+## View users by role
+
+{!view-users-by-role.md!}
 
 ## Change a user's role
 
@@ -61,7 +65,7 @@ role](/help/roles-and-permissions#change-a-users-role) if needed.
 ## Related articles
 
 * [Change a user's role](/help/change-a-users-role)
-* [Stream permissions](/help/stream-permissions)
+* [Channel permissions](/help/channel-permissions)
 * [Inviting new users](/help/invite-new-users)
 * [Zulip Cloud billing](/help/zulip-cloud-billing)
 * [Guest users](/help/guest-users)

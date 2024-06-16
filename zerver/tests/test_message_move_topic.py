@@ -3,28 +3,56 @@ from typing import Any, Dict, List
 from unittest import mock
 
 import orjson
+import time_machine
+from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
-from zerver.actions.message_edit import check_update_message, do_update_message
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import (
+    check_update_message,
+    do_update_message,
+    maybe_send_resolve_topic_notifications,
+)
 from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
-from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, messages_for_topic
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
     topic_has_visibility_policy,
 )
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Realm, UserMessage, UserProfile, UserTopic
+from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.realms import CommonMessagePolicyEnum
+from zerver.models.streams import Stream
 
 
 class MessageMoveTopicTest(ZulipTestCase):
     def check_topic(self, msg_id: int, topic_name: str) -> None:
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(msg.topic_name(), topic_name)
+
+    def assert_has_visibility_policy(
+        self,
+        user_profile: UserProfile,
+        topic_name: str,
+        stream: Stream,
+        visibility_policy: int,
+        *,
+        expected: bool = True,
+    ) -> None:
+        if expected:
+            self.assertTrue(
+                topic_has_visibility_policy(user_profile, stream.id, topic_name, visibility_policy)
+            )
+        else:
+            self.assertFalse(
+                topic_has_visibility_policy(user_profile, stream.id, topic_name, visibility_policy)
+            )
 
     def test_private_message_edit_topic(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -91,7 +119,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid character in topic, at position 8!")
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -173,8 +201,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
-    @mock.patch("zerver.actions.user_topics.send_event")
-    def test_edit_muted_topic(self, mock_send_event: mock.MagicMock) -> None:
+    @mock.patch("zerver.actions.user_topics.send_event_on_commit")
+    def test_edit_muted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
         hamlet = self.example_user("hamlet")
@@ -254,7 +282,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # Here we assert that the expected users are notified properly.
         users_notified_via_muted_topics_event: List[int] = []
         users_notified_via_user_topic_event: List[int] = []
-        for call_args in mock_send_event.call_args_list:
+        for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
@@ -440,8 +468,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert_is_topic_muted(cordelia, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(aaron, new_public_stream.id, "final topic name", muted=False)
 
-    @mock.patch("zerver.actions.user_topics.send_event")
-    def test_edit_unmuted_topic(self, mock_send_event: mock.MagicMock) -> None:
+    @mock.patch("zerver.actions.user_topics.send_event_on_commit")
+    def test_edit_unmuted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
 
@@ -449,26 +477,6 @@ class MessageMoveTopicTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         aaron = self.example_user("aaron")
         othello = self.example_user("othello")
-
-        def assert_has_visibility_policy(
-            user_profile: UserProfile,
-            topic_name: str,
-            visibility_policy: int,
-            *,
-            expected: bool,
-        ) -> None:
-            if expected:
-                self.assertTrue(
-                    topic_has_visibility_policy(
-                        user_profile, stream.id, topic_name, visibility_policy
-                    )
-                )
-            else:
-                self.assertFalse(
-                    topic_has_visibility_policy(
-                        user_profile, stream.id, topic_name, visibility_policy
-                    )
-                )
 
         self.subscribe(hamlet, stream_name)
         self.login_user(hamlet)
@@ -536,7 +544,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # Here we assert that the expected users are notified properly.
         users_notified_via_muted_topics_event: List[int] = []
         users_notified_via_user_topic_event: List[int] = []
-        for call_args in mock_send_event.call_args_list:
+        for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
@@ -552,43 +560,47 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
 
         # No visibility_policy set for 'Topic1'
-        assert_has_visibility_policy(
-            hamlet, "Topic1", UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        self.assert_has_visibility_policy(
+            hamlet, "Topic1", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
-        assert_has_visibility_policy(
-            cordelia, "Topic1", UserTopic.VisibilityPolicy.MUTED, expected=False
+        self.assert_has_visibility_policy(
+            cordelia, "Topic1", stream, UserTopic.VisibilityPolicy.MUTED, expected=False
         )
-        assert_has_visibility_policy(
-            othello, "Topic1", UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        self.assert_has_visibility_policy(
+            othello, "Topic1", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
-        assert_has_visibility_policy(
-            aaron, "Topic1", UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        self.assert_has_visibility_policy(
+            aaron, "Topic1", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
         # No change in visibility_policy configurations for 'Topic2'
-        assert_has_visibility_policy(
-            hamlet, "Topic2", UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        self.assert_has_visibility_policy(
+            hamlet, "Topic2", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=True
         )
-        assert_has_visibility_policy(
-            cordelia, "Topic2", UserTopic.VisibilityPolicy.MUTED, expected=True
+        self.assert_has_visibility_policy(
+            cordelia, "Topic2", stream, UserTopic.VisibilityPolicy.MUTED, expected=True
         )
-        assert_has_visibility_policy(
-            othello, "Topic2", UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        self.assert_has_visibility_policy(
+            othello, "Topic2", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=True
         )
-        assert_has_visibility_policy(
-            aaron, "Topic2", UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        self.assert_has_visibility_policy(
+            aaron, "Topic2", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
         # UserTopic records moved to 'Topic 1 edited' after move-topic operation.
-        assert_has_visibility_policy(
-            hamlet, change_all_topic_name, UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        self.assert_has_visibility_policy(
+            hamlet, change_all_topic_name, stream, UserTopic.VisibilityPolicy.UNMUTED, expected=True
         )
-        assert_has_visibility_policy(
-            cordelia, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED, expected=True
+        self.assert_has_visibility_policy(
+            cordelia, change_all_topic_name, stream, UserTopic.VisibilityPolicy.MUTED, expected=True
         )
-        assert_has_visibility_policy(
-            othello, change_all_topic_name, UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        self.assert_has_visibility_policy(
+            othello,
+            change_all_topic_name,
+            stream,
+            UserTopic.VisibilityPolicy.UNMUTED,
+            expected=True,
         )
-        assert_has_visibility_policy(
-            aaron, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED, expected=False
+        self.assert_has_visibility_policy(
+            aaron, change_all_topic_name, stream, UserTopic.VisibilityPolicy.MUTED, expected=False
         )
 
     def test_merge_user_topic_states_on_move_messages(self) -> None:
@@ -598,15 +610,6 @@ class MessageMoveTopicTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         aaron = self.example_user("aaron")
-
-        def assert_has_visibility_policy(
-            user_profile: UserProfile,
-            topic_name: str,
-            visibility_policy: int,
-        ) -> None:
-            self.assertTrue(
-                topic_has_visibility_policy(user_profile, stream.id, topic_name, visibility_policy)
-            )
 
         self.subscribe(hamlet, stream_name)
         self.login_user(hamlet)
@@ -654,12 +657,24 @@ class MessageMoveTopicTest(ZulipTestCase):
             content=None,
         )
 
-        assert_has_visibility_policy(hamlet, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(cordelia, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(aaron, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(hamlet, target_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(cordelia, target_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(aaron, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
+        self.assert_has_visibility_policy(
+            hamlet, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            cordelia, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            hamlet, target_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            cordelia, target_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            aaron, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
 
         # Test the following cases:
         #
@@ -703,12 +718,24 @@ class MessageMoveTopicTest(ZulipTestCase):
             content=None,
         )
 
-        assert_has_visibility_policy(hamlet, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(cordelia, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(aaron, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(hamlet, target_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(cordelia, target_topic, UserTopic.VisibilityPolicy.MUTED)
-        assert_has_visibility_policy(aaron, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
+        self.assert_has_visibility_policy(
+            hamlet, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            cordelia, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            hamlet, target_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            cordelia, target_topic, stream, UserTopic.VisibilityPolicy.MUTED
+        )
+        self.assert_has_visibility_policy(
+            aaron, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
 
         # Test the following cases:
         #
@@ -752,12 +779,24 @@ class MessageMoveTopicTest(ZulipTestCase):
             content=None,
         )
 
-        assert_has_visibility_policy(hamlet, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(cordelia, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(aaron, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(hamlet, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
-        assert_has_visibility_policy(cordelia, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
-        assert_has_visibility_policy(aaron, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
+        self.assert_has_visibility_policy(
+            hamlet, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            cordelia, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            hamlet, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assert_has_visibility_policy(
+            cordelia, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assert_has_visibility_policy(
+            aaron, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
 
     def test_user_topic_states_on_moving_to_topic_with_no_messages(self) -> None:
         stream_name = "Stream 123"
@@ -770,15 +809,6 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.subscribe(hamlet, stream_name)
         self.subscribe(cordelia, stream_name)
         self.subscribe(aaron, stream_name)
-
-        def assert_has_visibility_policy(
-            user_profile: UserProfile,
-            topic_name: str,
-            visibility_policy: int,
-        ) -> None:
-            self.assertTrue(
-                topic_has_visibility_policy(user_profile, stream.id, topic_name, visibility_policy)
-            )
 
         # Test the case where target topic has no messages:
         #
@@ -811,12 +841,24 @@ class MessageMoveTopicTest(ZulipTestCase):
             content=None,
         )
 
-        assert_has_visibility_policy(hamlet, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(cordelia, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(aaron, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-        assert_has_visibility_policy(hamlet, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
-        assert_has_visibility_policy(cordelia, target_topic, UserTopic.VisibilityPolicy.MUTED)
-        assert_has_visibility_policy(aaron, target_topic, UserTopic.VisibilityPolicy.INHERIT)
+        self.assert_has_visibility_policy(
+            hamlet, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            cordelia, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            hamlet, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assert_has_visibility_policy(
+            cordelia, target_topic, stream, UserTopic.VisibilityPolicy.MUTED
+        )
+        self.assert_has_visibility_policy(
+            aaron, target_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
 
         def test_user_topic_state_for_messages_deleted_from_target_topic(
             orig_topic: str, target_topic: str, original_topic_state: int
@@ -849,7 +891,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             do_set_realm_property(
                 hamlet.realm,
                 "delete_own_message_policy",
-                Realm.POLICY_MEMBERS_ONLY,
+                CommonMessagePolicyEnum.MEMBERS_ONLY,
                 acting_user=None,
             )
             self.client_delete(f"/json/messages/{target_message_id}")
@@ -865,12 +907,18 @@ class MessageMoveTopicTest(ZulipTestCase):
                 content=None,
             )
 
-            assert_has_visibility_policy(hamlet, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-            assert_has_visibility_policy(cordelia, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-            assert_has_visibility_policy(aaron, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
-            assert_has_visibility_policy(hamlet, target_topic, original_topic_state)
-            assert_has_visibility_policy(cordelia, target_topic, original_topic_state)
-            assert_has_visibility_policy(aaron, target_topic, original_topic_state)
+            self.assert_has_visibility_policy(
+                hamlet, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+            )
+            self.assert_has_visibility_policy(
+                cordelia, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+            )
+            self.assert_has_visibility_policy(
+                aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+            )
+            self.assert_has_visibility_policy(hamlet, target_topic, stream, original_topic_state)
+            self.assert_has_visibility_policy(cordelia, target_topic, stream, original_topic_state)
+            self.assert_has_visibility_policy(aaron, target_topic, stream, original_topic_state)
 
         # orig_topic | target_topic | final behaviour
         #   INHERIT      INHERIT         INHERIT
@@ -1582,4 +1630,133 @@ class MessageMoveTopicTest(ZulipTestCase):
             not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
             .extra(where=[UserMessage.where_unread()])
             .exists()
+        )
+
+    @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
+    def test_mark_topic_as_resolved_within_grace_period(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+        original_topic = "topic 1"
+        id1 = self.send_stream_message(
+            hamlet, "new", content="message 1", topic_name=original_topic
+        )
+        id2 = self.send_stream_message(
+            admin_user, "new", content="message 2", topic_name=original_topic
+        )
+
+        resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        start_time = timezone_now()
+        with time_machine.travel(start_time, tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(id1),
+                {
+                    "topic": resolved_topic,
+                    "propagate_mode": "change_all",
+                },
+            )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                resolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, resolved_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+        unresolved_topic = original_topic
+
+        # Now unresolve the topic within the grace period.
+        with time_machine.travel(start_time + timedelta(seconds=30), tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(id1),
+                {
+                    "topic": unresolved_topic,
+                    "propagate_mode": "change_all",
+                },
+            )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                unresolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, unresolved_topic)
+        # The message about the topic having been resolved is gone.
+        self.assert_length(messages, 2)
+        self.assertEqual(
+            messages[1].content,
+            "message 2",
+        )
+        self.assertEqual(messages[0].content, "message 1")
+
+        # Now resolve the topic again after the grace period
+        with time_machine.travel(start_time + timedelta(seconds=61), tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(id1),
+                {
+                    "topic": resolved_topic,
+                    "propagate_mode": "change_all",
+                },
+            )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                resolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, resolved_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+    def test_send_resolve_topic_notification_with_no_topic_messages(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+        original_topic = "topic 1"
+        message_id = self.send_stream_message(
+            hamlet, "new", content="message 1", topic_name=original_topic
+        )
+
+        message = Message.objects.get(id=message_id)
+        do_delete_messages(admin_user.realm, [message])
+
+        assert stream.recipient_id is not None
+        changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
+        resolve_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        maybe_send_resolve_topic_notifications(
+            user_profile=admin_user,
+            stream=stream,
+            old_topic_name=original_topic,
+            new_topic_name=resolve_topic,
+            changed_messages=changed_messages,
+        )
+
+        topic_messages = get_topic_messages(admin_user, stream, resolve_topic)
+        self.assert_length(topic_messages, 1)
+        self.assertEqual(
+            topic_messages[0].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )

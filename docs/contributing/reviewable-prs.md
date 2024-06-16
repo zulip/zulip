@@ -1,97 +1,161 @@
-# Reviewable pull requests
+# Submitting a pull request
 
-This page offers some tips for making your pull requests easy to review.
-Following this advice will help the whole Zulip project move more quickly by
-saving maintainers time when they review your code. It will also make a big
-difference for getting your work integrated without delay. For a detailed
-overview of Zulip's PR review process, see the [pull request review
-process](../contributing/review-process.md) guide.
+A pull request (PR) is a presentation of your proposed changes to Zulip. Your aim
+should be to explain your changes as clearly as possible. This will help
+reviewers evaluate whether the proposed changes are correct, and address any
+open questions. Clear communication helps the whole Zulip project move more
+quickly by saving maintainers time when they review your code. It will also make
+a big difference for getting your work integrated without delay.
 
-## Posting a pull request
+You will go through the following steps to prepare your work for review. Each
+step is described in detail below, with links to additional resources:
 
-- Before requesting a review for your pull request, follow our guide to
-  carefully [review and test your own
-  code](./code-reviewing.md#reviewing-your-own-code). Doing so can save many
-  review round-trips.
+1. Write your code [with clarity in mind](#write-clear-code).
+1. [Organize your proposed changes](#organize-your-proposed-changes) into a
+   series of commits that tell the story of how the codebase will change.
+1. [Explain your changes](#explain-your-changes) in the description for your
+   pull request, including [screenshots](#demonstrating-visual-changes) for
+   visual changes.
+1. Carefully [review your own work](#review-your-own-work).
+1. [Submit your pull request](#submit-your-pull-request-for-review) for review.
 
-- Make sure the pull request template is filled out correctly, and that all the
-  relevant points on the self-review checklist (if the repository has one) have
-  been addressed.
+See the [pull request review process](../contributing/review-process.md) guide
+for a detailed overview of what happens once your pull request is submitted.
 
-- Be sure to explicitly call out any open questions, concerns, or decisions you
-  are uncertain about.
+## Write clear code
 
-## Addressing feedback
+When you write code, you should make sure that you understand _why it works_ as
+intended. This is the foundation for being able to explain your proposed changes
+to others.
 
-- When you update your pull request after addressing a round of review feedback,
-  be clear about which issues you've resolved (and how!).
+Zulip’s coding philosophy is to focus relentlessly on making the codebase easy
+to understand and difficult to make dangerous mistakes. Our linters, tests, code
+style guidelines, [testing philosophy](../testing/philosophy.md), [commit
+discipline](../contributing/commit-discipline.md), this documentation, and our
+attention to detail in [code review](../contributing/review-process.md) are all
+important elements of this strategy. Following these guidelines is essential if
+you'd like your work to be merged into the project.
 
-- Even more importantly, save time for your reviewers by indicating any feedback
-  you _haven't_ addressed yet.
+If any part of your contribution is from someone else (code snippets, images,
+sounds, or any other copyrightable work, modified or unmodified), be sure to
+review the instructions on how to [properly attribute](./licensing.md) the work.
 
-## Working on larger projects
+## Organize your proposed changes
 
-For a larger project, aim to create a series of small (less than 100 lines of
-code) commits that are each safely mergeable and move you towards your goal. A
-mergeable commit:
+The changes you submit will be organized into a series of commits. A PR might
+contain a single commit, or a dozen or more, depending on the changes being
+made.
 
-- Is well-tested and passes all the tests. That is, changes to tests should be in
-  the same commit as changes to the code that they are testing.
+Commits help you tell the story of how each change you are proposing is
+necessary or helpful. If you were presenting your changes, a commit might be a
+slide in your presentation. As a rough guideline, a good commit usually has less
+than 100 lines of code changes. If you can see a way to split a commit into
+different pieces of meaning, you should split it.
 
-- Does not make Zulip worse. For example, it is fine to add backend capabilities
-  without adding a frontend to access them. It's not fine to add a frontend
-  component with no backend to make it work.
+Keep in mind that you are presenting your final work product, _not_ the path you
+took to get there. You should never have a commit that can be described as
+fixing a mistake in an earlier commit in the same PR; use `git rebase -i` to fix
+the mistake in the original commit.
 
-Ideally, when reviewing a branch you are working on, the maintainer
-should be able to verify and merge the first few commits and leave
-comments on the rest. It is by far the most efficient way to do
-collaborative development, since one is constantly making progress, we
-keep branches small, and developers don't end up repeatedly reviewing
-the earlier parts of a pull request.
+See the [commit discipline guide](../contributing/commit-discipline.md) for more
+details on how to structure your commits, and guidelines on how to write good
+commit messages. Your pull request can only be reviewed once you've followed
+these guidelines to the best of your ability. This makes it much easier for
+reviewers to understand your work and identify any problems.
 
-Here is some advice on how to proceed:
+Ideally, when reviewing a pull request for a complex project, Zulip's
+maintainers should be able to verify and merge the first few commits, and leave
+comments on the rest. It is by far the most efficient way to do collaborative
+development, since one is constantly making progress, we keep branches small,
+and reviewers don't end up repeatedly going over the earlier parts of a pull
+request.
 
-- Use `git rebase -i` as much as you need to shape your commit
-  structure. See the [Git guide](../git/overview.md) for useful
-  resources on mastering Git.
+## Explain your changes
 
-- If you need to refactor code, add tests, rename variables, or make
-  other changes that do not change the functionality of the product, make those
-  changes into a series of preparatory commits that can be merged independently
-  of building the feature itself.
+By the time you are submitting your pull request, you should already have put a
+lot of thought into how to organize and present your proposed changes. In the
+description for your pull request, you will:
 
-- To figure out what refactoring needs to happen, you might first make a hacky
-  attempt at hooking together the feature, with reading and print statements as
-  part of the effort, to identify any refactoring needed or tests you want to
-  write to help make sure your changes won't break anything important as you work.
-  Work out a fast and consistent test procedure for how to make sure the
-  feature is working as planned.
+- Provide an overview of your changes.
+- Note any differences from prior plans (e.g., from the description of the issue you
+  are solving).
+- Call out any open questions, concerns, or decisions you are uncertain about.
+  The review process will go a lot more smoothly if points of uncertainty are
+  explicitly laid out.
+- Include screenshots for all visual changes, so that they can be reviewed
+  without running your code. See [below](#demonstrating-visual-changes) for
+  detailed instructions.
 
-- Build a mergeable version of the feature on top of those refactorings.
-  Whenever possible, find chunks of complexity that you can separate from the
-  rest of the project.
+If you have a question about a specific part of your code that you expect to be
+resolved during the review process, put it in a PR comment attached to a
+relevant part of the changes.
 
-See our [commit discipline guide](../contributing/commit-discipline.md) for
-more details on writing reviewable commits.
+Take advantage of [GitHub's formatting][github-syntax] to make your pull request
+description and comments easy to read.
 
-## Tips and best practices
+### Discussions in the development community
 
-When writing comments for pull requests, it's good to be familiar with
-[GitHub's basic formatting syntax][github-syntax]. Here are some additional
-tips and best practices that Zulip contributors and maintainers have found
-helpful for writing clear and thorough pull request comments:
+Any questions for which broader feedback or visibility is helpful are discussed
+in the [Zulip development community](https://zulip.com/development-community/).
 
-- If there has been a conversation in the [Zulip development
-  community][zulip-dev-community] about the changes you've made or the issue
-  your pull request addresses, please cross-link between your pull request and
-  those conversations. This provides helpful context for maintainers and
-  reviewers. Specifically, it's best to link from your pull request [to a
-  specific message][link-to-message], as these links will still work even if the
-  topic of the conversation is renamed, moved or resolved.
+If there has been a conversation in the [Zulip development
+community][zulip-dev-community] about the changes you've made or the issue your
+pull request addresses, please cross-link between your pull request and those
+conversations in both directions. This provides helpful context for maintainers
+and reviewers. Specifically, it's best to link from your pull request [to a
+specific message][link-to-message], as these links will still work even if the
+topic of the conversation is renamed, moved or resolved.
 
-  Once you've created a pull request on GitHub, you can use one of the [custom
-  linkifiers][dev-community-linkifiers] in the development community to easily
-  link to your pull request from the relevant conversation.
+Once you've created a pull request on GitHub, you can use one of the [custom
+linkifiers][dev-community-linkifiers] in the development community to easily
+link to your pull request from the relevant conversation.
+
+## Review your own work
+
+Before requesting a review for your pull request, follow our [review
+guide](./code-reviewing.md#reviewing-your-own-code) to carefully review and test
+your own work. You can often find things you missed by taking a step back to
+look over your work before asking others to do so. Catching mistakes yourself
+will help your PRs be merged faster, and reviewers will appreciate the quality
+and professionalism of your work.
+
+The pull request template in the `zulip/zulip` repository has a checklist of
+reminders for points you need to cover in your review. Make sure that all the
+relevant items on the self-review checklist have been addressed.
+
+## Submit your pull request for review
+
+If you are new to Git, see our guide on [making a pull
+request](../git/pull-requests.md) for detailed technical instructions on how to
+submit a pull request.
+
+When submitting your PR, you will need to make sure that the pull request passes
+all CI tests. You can sometimes request initial feedback if there are open
+questions that will impact how you update the tests. But in general,
+maintainers will wait for your PR to pass tests before reviewing your work.
+
+If your PR was not ready for review when you first posted it (e.g., because it
+was failing tests, or you weren't done working through the self-review
+checklist), notify maintainers when you'd like them to take a look by posting a
+clear comment on the main GitHub thread for your PR with details on any changes
+from the original version; this is very helpful for any maintainers who already
+read the draft PR.
+
+## Draft pull requests
+
+If it helps your workflow, you can submit your pull request marked as
+a [draft][github-help-draft-pr] while you're still working on it. When ready for
+review:
+
+1. Make sure your PR is no longer marked as a [draft][github-help-draft-pr], and
+   doesn't have "WIP" in the title.
+
+1. Post a quick "Ready for review!" comment on the main GitHub thread for your
+   PR.
+
+[github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
+
+## Demonstrating visual changes
 
 - For [screenshots or screencasts][screenshots-gifs] of changes,
   putting them in details/summary tags reduces visual clutter
@@ -107,6 +171,11 @@ helpful for writing clear and thorough pull request comments:
   ![uploaded-image](uploaded-file-information)
   </details>
   ```
+
+- Screencasts are difficult to review, so use them only when necessary to
+  demonstrate an interaction. Keep videos as short as possible. If your changes
+  can be seen on a screenshot, be sure to include screenshots in addition to any
+  videos.
 
 - For before and after images or videos of changes, using GithHub's table
   syntax renders them side-by-side for quick and clear comparison.

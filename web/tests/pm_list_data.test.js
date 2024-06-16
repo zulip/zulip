@@ -7,6 +7,9 @@ const {run_test} = require("./lib/test");
 
 const unread = mock_esm("../src/unread");
 
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 mock_esm("../src/user_status", {
     get_status_emoji: () => ({
         emoji_code: "20",
@@ -141,6 +144,22 @@ test("get_conversations", ({override}) => {
     expected_data[1].is_zero = true;
     assert.deepEqual(pm_data, expected_data);
 
+    pm_data = pm_list_data.get_conversations();
+    assert.deepEqual(pm_data, expected_data);
+
+    expected_data.unshift({
+        recipients: "Iago",
+        user_ids_string: "106",
+        unread: 0,
+        is_zero: true,
+        is_active: true,
+        url: "#narrow/dm/106-Iago",
+        status_emoji_info: {emoji_code: "20"},
+        user_circle_class: "user_circle_empty",
+        is_group: false,
+        is_bot: false,
+    });
+    set_pm_with_filter("iago@zulip.com");
     pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
 });

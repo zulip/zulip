@@ -10,6 +10,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_reply from "./compose_reply";
+import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_state from "./compose_state";
 import * as compose_textarea from "./compose_textarea";
 import * as condense from "./condense";
@@ -23,7 +24,6 @@ import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
-import * as hotspots from "./hotspots";
 import * as inbox_ui from "./inbox_ui";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
@@ -32,8 +32,8 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
+import * as message_view from "./message_view";
 import * as modals from "./modals";
-import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navbar_menus from "./navbar_menus";
 import * as navigate from "./navigate";
@@ -47,7 +47,6 @@ import * as read_receipts from "./read_receipts";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
@@ -172,7 +171,8 @@ const keypress_mappings = {
     83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
     85: {name: "mark_unread", message_view_only: true}, // 'U'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
-    97: {name: "all_messages", message_view_only: true}, // 'a'
+    // The shortcut "a" dates from when this was called "All messages".
+    97: {name: "open_combined_feed", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
@@ -384,7 +384,8 @@ export function process_escape_key(e) {
     /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
     if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
-        hashchange.set_hash_to_home_view();
+        const triggered_by_escape_key = true;
+        hashchange.set_hash_to_home_view(triggered_by_escape_key);
         return true;
     }
 
@@ -452,11 +453,6 @@ export function process_enter_key(e) {
         return true;
     }
 
-    if (hotspots.is_open()) {
-        $(e.target).find(".hotspot.overlay.show .hotspot-confirm").trigger("click");
-        return false;
-    }
-
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("enter", e);
     }
@@ -503,7 +499,7 @@ export function process_enter_key(e) {
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
     if (e.target.id === "send_later") {
-        scheduled_messages_popover.toggle();
+        compose_send_menu_popover.toggle();
         return true;
     }
 
@@ -784,10 +780,6 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (hotspots.is_open()) {
-        return false;
-    }
-
     if (overlays.info_overlay_open()) {
         if (event_name === "show_shortcuts") {
             overlays.close_active();
@@ -840,7 +832,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (event_name === "narrow_to_compose_target") {
-        narrow.to_compose_target();
+        message_view.to_compose_target();
         return true;
     }
 
@@ -933,7 +925,15 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that don't require a message
     switch (event_name) {
         case "narrow_private":
-            narrow.by("is", "dm", {trigger: "hotkey"});
+            message_view.show(
+                [
+                    {
+                        operator: "is",
+                        operand: "dm",
+                    },
+                ],
+                {trigger: "hotkey"},
+            );
             return true;
         case "query_streams":
             stream_list.initiate_search();
@@ -952,19 +952,19 @@ export function process_hotkey(e, hotkey) {
             browser_history.go_to_location("keyboard-shortcuts");
             return true;
         case "stream_cycle_backward":
-            narrow.stream_cycle_backward();
+            message_view.stream_cycle_backward();
             return true;
         case "stream_cycle_forward":
-            narrow.stream_cycle_forward();
+            message_view.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
             return true;
         case "narrow_to_next_unread_followed_topic":
-            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
+            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
             return true;
         case "p_key":
-            narrow.narrow_to_next_pm_string({trigger: "hotkey"});
+            message_view.narrow_to_next_pm_string({trigger: "hotkey"});
             return true;
         case "open_recent_view":
             browser_history.go_to_location("#recent");
@@ -972,8 +972,8 @@ export function process_hotkey(e, hotkey) {
         case "open_inbox":
             browser_history.go_to_location("#inbox");
             return true;
-        case "all_messages":
-            browser_history.go_to_location("#all_messages");
+        case "open_combined_feed":
+            browser_history.go_to_location("#feed");
             return true;
         case "toggle_topic_visibility_policy":
             if (recent_view_ui.is_in_focus()) {
@@ -1001,6 +1001,7 @@ export function process_hotkey(e, hotkey) {
                 compose_actions.start({
                     message_type: "stream",
                     trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
                 });
             }
             return true;
@@ -1009,6 +1010,7 @@ export function process_hotkey(e, hotkey) {
                 compose_actions.start({
                     message_type: "private",
                     trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
                 });
             }
             return true;
@@ -1089,13 +1091,13 @@ export function process_hotkey(e, hotkey) {
         case "toggle_conversation_view":
             if (narrow_state.narrowed_by_topic_reply()) {
                 // narrow to stream if user is in topic view
-                return do_narrow_action(narrow.by_recipient);
+                return do_narrow_action(message_view.narrow_by_recipient);
             } else if (narrow_state.narrowed_by_pm_reply()) {
                 // do nothing if user is in DM view
                 return false;
             }
             // else narrow to conversation view (topic / DM)
-            return do_narrow_action(narrow.by_topic);
+            return do_narrow_action(message_view.narrow_by_topic);
         case "toggle_stream_subscription":
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
             return true;
@@ -1192,10 +1194,10 @@ export function process_hotkey(e, hotkey) {
         case "zoom_to_message_near": {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`
-            // but we use `narrow.activate` to pass in the `trigger` parameter
+            // but we use `message_view.show` to pass in the `trigger` parameter
             switch (msg.type) {
                 case "private":
-                    narrow.activate(
+                    message_view.show(
                         [
                             {operator: "dm", operand: msg.reply_to},
                             {operator: "near", operand: msg.id},
@@ -1204,10 +1206,10 @@ export function process_hotkey(e, hotkey) {
                     );
                     return true;
                 case "stream":
-                    narrow.activate(
+                    message_view.show(
                         [
                             {
-                                operator: "stream",
+                                operator: "channel",
                                 operand: stream_data.get_stream_name_from_id(msg.stream_id),
                             },
                             {operator: "topic", operand: msg.topic},

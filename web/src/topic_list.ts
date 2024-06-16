@@ -54,7 +54,7 @@ export function zoom_out(): void {
 
     const stream_ids = [...active_widgets.keys()];
 
-    if (stream_ids.length !== 1) {
+    if (stream_ids.length !== 1 || stream_ids[0] === undefined) {
         blueslip.error("Unexpected number of topic lists to zoom out.");
         return;
     }
@@ -141,7 +141,7 @@ export function spinner_li(): ListInfoNode {
 }
 
 export class TopicListWidget {
-    prior_dom?: vdom.Tag<ListInfoNodeOptions> = undefined;
+    prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
     $parent_elem: JQuery;
     my_stream_id: number;
 
@@ -237,6 +237,7 @@ export function clear_topic_search(e: JQuery.Event): void {
         const stream_ids = [...active_widgets.keys()];
 
         const stream_id = stream_ids[0];
+        assert(stream_id !== undefined);
         const widget = active_widgets.get(stream_id);
         assert(widget !== undefined);
         const parent_widget = widget.get_parent();
@@ -258,7 +259,7 @@ export function active_stream_id(): number | undefined {
 export function get_stream_li(): JQuery | undefined {
     const widgets = [...active_widgets.values()];
 
-    if (widgets.length !== 1) {
+    if (widgets.length !== 1 || widgets[0] === undefined) {
         return undefined;
     }
 
@@ -337,9 +338,9 @@ export function initialize({
 }): void {
     $("#stream_filters").on(
         "click",
-        ".sidebar-topic-check, .topic-name, .topic-markers-and-controls",
+        ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-controls",
         (e) => {
-            if (e.metaKey || e.ctrlKey) {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) {
                 return;
             }
             if ($(e.target).closest(".show-more-topics").length > 0) {

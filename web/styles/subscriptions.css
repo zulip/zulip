@@ -950,14 +950,14 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream-email-box {
+    .stream_details_box {
+        > .stream_details_subsection {
+            margin: 0 0 10px; /* mimic paragraph spacing */
+        }
+
         .stream_email_address_error {
             vertical-align: top;
             margin-left: 15px;
-        }
-
-        .copy_email_button {
-            padding: 10px 15px;
         }
     }
 

@@ -4,8 +4,6 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import timeout_mock
-from zerver.lib.timeout import TimeoutExpiredError
 from zerver.models import Message, UserMessage
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
@@ -162,7 +160,7 @@ class TopicHistoryTest(ZulipTestCase):
         # non-sensible stream id
         endpoint = "/json/users/me/9999999999/topics"
         result = self.client_get(endpoint, {})
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # out of realm
         bad_stream = self.make_stream(
@@ -171,7 +169,7 @@ class TopicHistoryTest(ZulipTestCase):
         )
         endpoint = f"/json/users/me/{bad_stream.id}/topics"
         result = self.client_get(endpoint, {})
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # private stream to which I am not subscribed
         private_stream = self.make_stream(
@@ -180,7 +178,7 @@ class TopicHistoryTest(ZulipTestCase):
         )
         endpoint = f"/json/users/me/{private_stream.id}/topics"
         result = self.client_get(endpoint, {})
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_get_topics_web_public_stream_web_public_request(self) -> None:
         iago = self.example_user("iago")
@@ -206,13 +204,13 @@ class TopicHistoryTest(ZulipTestCase):
         stream = get_stream("Verona", self.example_user("iago").realm)
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint)
-        self.assert_json_error(result, "Invalid stream ID", 400)
+        self.assert_json_error(result, "Invalid channel ID", 400)
 
     def test_get_topics_non_existent_stream_web_public_request(self) -> None:
         non_existent_stream_id = 10000000000000000000000
         endpoint = f"/json/users/me/{non_existent_stream_id}/topics"
         result = self.client_get(endpoint)
-        self.assert_json_error(result, "Invalid stream ID", 400)
+        self.assert_json_error(result, "Invalid channel ID", 400)
 
 
 class TopicDeleteTest(ZulipTestCase):
@@ -291,26 +289,24 @@ class TopicDeleteTest(ZulipTestCase):
             acting_user=user_profile,
         )
         # Delete the topic should now remove all messages
-        with timeout_mock("zerver.views.streams"):
-            result = self.client_post(
-                endpoint,
-                {
-                    "topic_name": topic_name,
-                },
-            )
+        result = self.client_post(
+            endpoint,
+            {
+                "topic_name": topic_name,
+            },
+        )
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
         self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
         self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())
 
         # Delete again, to test the edge case of deleting an empty topic.
-        with timeout_mock("zerver.views.streams"):
-            result = self.client_post(
-                endpoint,
-                {
-                    "topic_name": topic_name,
-                },
-            )
+        result = self.client_post(
+            endpoint,
+            {
+                "topic_name": topic_name,
+            },
+        )
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
         self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
@@ -328,7 +324,7 @@ class TopicDeleteTest(ZulipTestCase):
 
         self.login_user(user_profile)
         endpoint = "/json/streams/" + str(stream.id) + "/delete_topic"
-        with mock.patch("zerver.views.streams.timeout", side_effect=TimeoutExpiredError):
+        with mock.patch("time.monotonic", side_effect=[10000, 10051]):
             result = self.client_post(
                 endpoint,
                 {

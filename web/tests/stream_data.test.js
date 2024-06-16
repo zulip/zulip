@@ -49,6 +49,14 @@ const moderators_group = {
     direct_subgroup_ids: new Set([1]),
 };
 
+const everyone_group = {
+    name: "Everyone",
+    id: 3,
+    members: new Set([me.user_id, test_user.user_id]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
 function test(label, f) {
     run_test(label, (helpers) => {
         current_user.is_admin = false;
@@ -58,7 +66,9 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        user_groups.initialize({realm_user_groups: [admins_group, moderators_group]});
+        user_groups.initialize({
+            realm_user_groups: [admins_group, moderators_group, everyone_group],
+        });
         f(helpers);
     });
 }
@@ -326,6 +336,8 @@ test("admin_options", () => {
             is_muted: true,
             invite_only: false,
             can_remove_subscribers_group: admins_group.id,
+            date_created: 1691057093,
+            creator_id: null,
         };
         stream_data.add_sub(sub);
         return sub;
@@ -379,6 +391,8 @@ test("stream_settings", () => {
         subscribed: true,
         invite_only: false,
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
 
     const blue = {
@@ -388,6 +402,8 @@ test("stream_settings", () => {
         subscribed: false,
         invite_only: false,
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
 
     const amber = {
@@ -400,6 +416,8 @@ test("stream_settings", () => {
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
         message_retention_days: 10,
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -483,7 +501,7 @@ test("default_stream_names", () => {
     stream_data.add_sub(general);
 
     const names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names.sort(), [{name: "public", unique_id: "102"}]);
+    assert.deepEqual(names.sort(), [{name: "public", unique_id: 102}]);
 
     const default_stream_ids = stream_data.get_default_stream_ids();
     assert.deepEqual(default_stream_ids.sort(), [announce.stream_id, general.stream_id]);
@@ -808,6 +826,26 @@ test("create_sub", () => {
     const antarctica_sub = stream_data.create_sub_from_server_data(antarctica);
     assert.ok(antarctica_sub);
     assert.equal(antarctica_sub.color, "#76ce90");
+});
+
+test("creator_id", () => {
+    people.add_active_user(test_user);
+    realm.realm_can_access_all_users_group = everyone_group.id;
+    current_user.user_id = me.user_id;
+    // When creator id is not a valid user id
+    assert.throws(() => stream_data.maybe_get_creator_details(-1), {
+        name: "Error",
+        message: "Unknown user_id in get_by_user_id: -1",
+    });
+
+    // When there is no creator
+    assert.equal(stream_data.maybe_get_creator_details(null), undefined);
+
+    const creator_details = people.get_by_user_id(test_user.user_id);
+    assert.deepStrictEqual(
+        stream_data.maybe_get_creator_details(test_user.user_id),
+        creator_details,
+    );
 });
 
 test("initialize", () => {

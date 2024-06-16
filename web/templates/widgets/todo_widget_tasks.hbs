@@ -1,12 +1,11 @@
-<br />
 {{#each all_tasks}}
     <li>
         <label class="checkbox">
-            <div>
+            <div class="todo-checkbox">
                 <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}}/>
-                <span></span>
+                <span class="custom-checkbox"></span>
             </div>
-            <div>
+            <div class="todo-task">
                 {{#if completed}}
                 <strike><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</strike>
                 {{else}}

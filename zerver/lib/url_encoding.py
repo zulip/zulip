@@ -22,7 +22,7 @@ def encode_stream(stream_id: int, stream_name: str) -> str:
 
 
 def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
-    base_url = f"{realm.uri}/#narrow/dm/"
+    base_url = f"{realm.url}/#narrow/dm/"
     encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", sender.full_name)
     pm_slug = str(sender.id) + "-" + encoded_user_name
     return base_url + pm_slug
@@ -32,17 +32,17 @@ def huddle_narrow_url(*, user: UserProfile, display_recipient: List[UserDisplayR
     realm = user.realm
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
     pm_slug = ",".join(str(user_id) for user_id in sorted(other_user_ids)) + "-group"
-    base_url = f"{realm.uri}/#narrow/dm/"
+    base_url = f"{realm.url}/#narrow/dm/"
     return base_url + pm_slug
 
 
 def stream_narrow_url(realm: Realm, stream: Stream) -> str:
-    base_url = f"{realm.uri}/#narrow/stream/"
+    base_url = f"{realm.url}/#narrow/stream/"
     return base_url + encode_stream(stream.id, stream.name)
 
 
 def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
-    base_url = f"{realm.uri}/#narrow/stream/"
+    base_url = f"{realm.url}/#narrow/stream/"
     return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
 
 
@@ -70,7 +70,7 @@ def near_stream_message_url(realm: Realm, message: Dict[str, Any]) -> str:
     encoded_stream = encode_stream(stream_id=stream_id, stream_name=stream_name)
 
     parts = [
-        realm.uri,
+        realm.url,
         "#narrow",
         "stream",
         encoded_stream,
@@ -92,7 +92,7 @@ def near_pm_message_url(realm: Realm, message: Dict[str, Any]) -> str:
     pm_str = ",".join(str_user_ids) + "-pm"
 
     parts = [
-        realm.uri,
+        realm.url,
         "#narrow",
         "dm",
         pm_str,

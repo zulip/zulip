@@ -15,13 +15,12 @@ import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
-import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
-import * as hotspots from "./hotspots";
+import * as information_density from "./information_density";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
@@ -147,11 +146,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "onboarding_steps":
-            hotspots.load_new(onboarding_steps.filter_new_hotspots(event.onboarding_steps));
-            onboarding_steps.update_notice_to_display(event.onboarding_steps);
-            current_user.onboarding_steps = current_user.onboarding_steps
-                ? [...current_user.onboarding_steps, ...event.onboarding_steps]
-                : event.onboarding_steps;
+            onboarding_steps.update_onboarding_steps_to_display(event.onboarding_steps);
             break;
 
         case "invites_changed":
@@ -175,7 +170,6 @@ export function dispatch_normal_event(event) {
 
         case "web_reload_client": {
             const reload_options = {
-                save_pointer: true,
                 save_compose: true,
                 message_html: "The application has been updated; reloading!",
             };
@@ -210,7 +204,6 @@ export function dispatch_normal_event(event) {
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 create_multiuse_invite_group: noop,
-                create_public_stream_policy: noop,
                 create_private_stream_policy: noop,
                 create_web_public_stream_policy: noop,
                 invite_to_stream_policy: noop,
@@ -274,7 +267,6 @@ export function dispatch_normal_event(event) {
 
                         const stream_creation_settings = [
                             "create_private_stream_policy",
-                            "create_public_stream_policy",
                             "create_web_public_stream_policy",
                         ];
                         if (stream_creation_settings.includes(event.property)) {
@@ -301,6 +293,10 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
+                                }
+
+                                if (key === "can_create_public_channel_group") {
+                                    stream_settings_ui.update_stream_privacy_choices(key);
                                 }
 
                                 if (key === "edit_topic_policy") {
@@ -390,7 +386,6 @@ export function dispatch_normal_event(event) {
             // And then let other widgets know.
             settings_emoji.populate_emoji();
             emoji_picker.rebuild_catalog();
-            composebox_typeahead.update_emoji_data();
             break;
 
         case "realm_export":
@@ -461,13 +456,24 @@ export function dispatch_normal_event(event) {
 
         case "realm_user":
             switch (event.op) {
-                case "add":
+                case "add": {
+                    // There may be presence data we already received from the server
+                    // before getting this event. Check if we need to redraw.
+                    const should_redraw = activity_ui.check_should_redraw_new_user(
+                        event.person.user_id,
+                    );
+
                     people.add_active_user(event.person);
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
                         settings_users.redraw_bots_list();
                     }
+
+                    if (should_redraw) {
+                        activity_ui.redraw_user(event.person.user_id);
+                    }
                     break;
+                }
                 case "update":
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
@@ -705,6 +711,7 @@ export function dispatch_normal_event(event) {
                 "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
+                "receives_typing_notifications",
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
@@ -770,8 +777,14 @@ export function dispatch_normal_event(event) {
                 activity_ui.build_user_sidebar();
             }
             if (event.property === "dense_mode") {
-                $("body").toggleClass("less_dense_mode");
-                $("body").toggleClass("more_dense_mode");
+                $("body").toggleClass("less-dense-mode");
+                $("body").toggleClass("more-dense-mode");
+            }
+            if (
+                event.property === "web_font_size_px" ||
+                event.property === "web_line_height_percent"
+            ) {
+                information_density.set_base_typography_css_variables();
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();
@@ -793,6 +806,12 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "starred_message_counts") {
                 starred_messages_ui.rerender_ui();
+            }
+            if (
+                event.property === "receives_typing_notifications" &&
+                !user_settings.receives_typing_notifications
+            ) {
+                typing_events.disable_typing_notification();
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();

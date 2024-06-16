@@ -10,7 +10,7 @@ American English, you can set the language used for the organization's
 automated messages and invitation emails. This setting:
 
 * Determines the language used for [automated
-  notices](/help/configure-automated-notices) that are sent to streams, including
+  notices](/help/configure-automated-notices) that are sent to channels, including
   both the topic name and message content. (Automated messages sent to a single
   user will use that user's preferred language).
 

@@ -2,43 +2,44 @@ from typing import List, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
+from typing_extensions import Annotated, Literal
 
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_for_send_message
-from zerver.lib.validator import check_int, check_list, check_string_in
+from zerver.lib.typed_endpoint import ApiParamConfig, OptionalTopic, typed_endpoint
 from zerver.models import UserProfile
 
-VALID_OPERATOR_TYPES = ["start", "stop"]
-VALID_RECIPIENT_TYPES = ["direct", "stream"]
 
-
-@has_request_variables
+@typed_endpoint
 def send_notification_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    req_type: str = REQ(
-        "type", str_validator=check_string_in(VALID_RECIPIENT_TYPES), default="direct"
-    ),
-    operator: str = REQ("op", str_validator=check_string_in(VALID_OPERATOR_TYPES)),
-    notification_to: Optional[List[int]] = REQ(
-        "to", json_validator=check_list(check_int), default=None
-    ),
-    stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    topic: Optional[str] = REQ("topic", default=None),
+    *,
+    req_type: Annotated[Literal["direct", "stream", "channel"], ApiParamConfig("type")] = "direct",
+    operator: Annotated[Literal["start", "stop"], ApiParamConfig("op")],
+    notification_to: Annotated[Json[Optional[List[int]]], ApiParamConfig("to")] = None,
+    stream_id: Json[Optional[int]] = None,
+    topic: OptionalTopic = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
+    if recipient_type_name == "channel":
+        # For now, use "stream" from Message.API_RECIPIENT_TYPES.
+        # TODO: Use "channel" here, as well as in events and
+        # message (created, schdeduled, drafts) objects/dicts.
+        recipient_type_name = "stream"
+
     if recipient_type_name == "stream":
         if stream_id is None:
-            raise JsonableError(_("Missing stream_id"))
+            raise JsonableError(_("Missing '{var_name}' argument").format(var_name="stream_id"))
 
         if topic is None:
             raise JsonableError(_("Missing topic"))
 
         if not user_profile.send_stream_typing_notifications:
-            raise JsonableError(_("User has disabled typing notifications for stream messages"))
+            raise JsonableError(_("User has disabled typing notifications for channel messages"))
 
         # Verify that the user has access to the stream and has
         # permission to send messages to it.

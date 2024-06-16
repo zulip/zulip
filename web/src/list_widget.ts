@@ -18,6 +18,7 @@ type ListWidgetMeta<Key, Item = Key> = {
     filtered_list: Item[];
     reverse_mode: boolean;
     $scroll_container: JQuery;
+    $scroll_listening_element: JQuery<HTMLElement | Window>;
 };
 
 // This type ensures the mutually exclusive nature of the predicate and filterer options.
@@ -45,7 +46,7 @@ type ListWidgetOpts<Key, Item = Key> = {
     callback_after_render?: () => void;
     post_scroll__pre_render_callback?: () => void;
     get_min_load_count?: (rendered_count: number, load_count: number) => number;
-    is_scroll_position_for_render?: (scroll_container: HTMLElement) => boolean;
+    is_scroll_position_for_render?: () => boolean;
     filter?: ListWidgetFilterOpts<Item>;
     multiselect?: {
         selected_items: Key[];
@@ -81,7 +82,7 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
         get_insert_index: (list: Item[], item: Item) => number,
     ) => void;
     sort: (sorting_function: string, prop?: string) => void;
-    replace_list_data: (list: Key[]) => void;
+    replace_list_data: (list: Key[], should_redraw?: boolean) => void;
 };
 
 const DEFAULTS = {
@@ -213,9 +214,9 @@ export function render_empty_list_message_if_needed(
     $container: JQuery,
     filter_value: string,
 ): void {
-    let empty_list_message = $container.data("empty");
+    let empty_list_message = $container.attr("data-empty");
 
-    const empty_search_results_message = $container.data("search-results-empty");
+    const empty_search_results_message = $container.attr("data-search-results-empty");
     if (filter_value && empty_search_results_message) {
         empty_list_message = empty_search_results_message;
     }
@@ -254,11 +255,22 @@ export function create<Key, Item = Key>(
     $container: JQuery,
     list: Key[],
     opts: ListWidgetOpts<Key, Item>,
-): ListWidget<Key, Item> | undefined {
+): ListWidget<Key, Item> {
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // Clear event handlers for prior widget.
         const old_widget = DEFAULTS.instances.get(opts.name)!;
         old_widget.clear_event_handlers();
+    }
+
+    let $scroll_listening_element: JQuery<HTMLElement | Window> = opts.$simplebar_container;
+    if ($scroll_listening_element.is("html")) {
+        // When `$scroll_container` is the entire page (`html`),
+        // scroll events are fired on `window/document`, so we need to
+        // listen for scrolling events on that.
+        //
+        // We still keep `html` as `$scroll_container` to use
+        // its various methods as `HTMLElement`.
+        $scroll_listening_element = $(window);
     }
 
     const meta: ListWidgetMeta<Key, Item> = {
@@ -270,6 +282,7 @@ export function create<Key, Item = Key>(
         reverse_mode: false,
         filter_value: "",
         $scroll_container: scroll_util.get_scroll_element(opts.$simplebar_container),
+        $scroll_listening_element,
     };
 
     const widget: ListWidget<Key, Item> = {
@@ -326,6 +339,9 @@ export function create<Key, Item = Key>(
             // Stop once the offset reaches the length of the original list.
             if (this.all_rendered()) {
                 render_empty_list_message_if_needed($container, meta.filter_value);
+                if (opts.callback_after_render) {
+                    opts.callback_after_render();
+                }
                 return;
             }
 
@@ -414,25 +430,32 @@ export function create<Key, Item = Key>(
         set_up_event_handlers() {
             // on scroll of the nearest scrolling container, if it hits the bottom
             // of the container then fetch a new block of items and render them.
-            meta.$scroll_container.on("scroll.list_widget_container", function () {
+            meta.$scroll_listening_element.on("scroll.list_widget_container", function () {
                 if (opts.post_scroll__pre_render_callback) {
                     opts.post_scroll__pre_render_callback();
                 }
 
+                let should_render;
                 if (opts.is_scroll_position_for_render === undefined) {
-                    opts.is_scroll_position_for_render = is_scroll_position_for_render;
+                    assert(!(this instanceof Window));
+                    should_render = is_scroll_position_for_render(this);
+                } else {
+                    should_render = opts.is_scroll_position_for_render();
                 }
 
-                const should_render = opts.is_scroll_position_for_render(this);
                 if (should_render) {
                     widget.render();
                 }
             });
 
             if (opts.$parent_container) {
-                opts.$parent_container.on("click.list_widget_sort", "[data-sort]", function () {
-                    handle_sort($(this), widget);
-                });
+                opts.$parent_container.on(
+                    "click.list_widget_sort",
+                    "[data-sort]",
+                    function (this: HTMLElement) {
+                        handle_sort($(this), widget);
+                    },
+                );
             }
 
             opts.filter?.$element?.on("input.list_widget_filter", function () {
@@ -443,7 +466,7 @@ export function create<Key, Item = Key>(
         },
 
         clear_event_handlers() {
-            meta.$scroll_container.off("scroll.list_widget_container");
+            meta.$scroll_listening_element.off("scroll.list_widget_container");
 
             if (opts.$parent_container) {
                 opts.$parent_container.off("click.list_widget_sort", "[data-sort]");
@@ -511,10 +534,10 @@ export function create<Key, Item = Key>(
                 }
                 const rendered_row = opts.modifier_html(item, meta.filter_value);
                 if (insert_index === meta.filtered_list.length - 1) {
-                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]);
+                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
                     $target_row.after($(rendered_row));
                 } else {
-                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]);
+                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
                     $target_row.before($(rendered_row));
                 }
                 widget.increase_rendered_offset();
@@ -527,14 +550,16 @@ export function create<Key, Item = Key>(
             widget.hard_redraw();
         },
 
-        replace_list_data(list) {
+        replace_list_data(list, should_redraw = true) {
             /*
                 We mostly use this widget for lists where you are
                 not adding or removing rows, so when you do modify
                 the list, we have a brute force solution.
             */
             meta.list = list;
-            widget.hard_redraw();
+            if (should_redraw) {
+                widget.hard_redraw();
+            }
         },
     };
 
@@ -579,8 +604,9 @@ export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>)
             <th data-sort="status"></th>
         </thead>
         */
-    const sort_type: string = $th.data("sort");
-    const prop_name: string = $th.data("sort-prop");
+    const sort_type = $th.attr("data-sort");
+    const prop_name = $th.attr("data-sort-prop");
+    assert(sort_type !== undefined);
 
     if ($th.hasClass("active")) {
         if (!$th.hasClass("descend")) {

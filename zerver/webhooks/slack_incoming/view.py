@@ -55,7 +55,7 @@ def api_slack_incoming_webhook(
 
     if user_specified_topic is None and "channel" in payload:
         channel = payload["channel"].tame(check_string)
-        user_specified_topic = re.sub("^[@#]", "", channel)
+        user_specified_topic = re.sub(r"^[@#]", "", channel)
 
     if user_specified_topic is None:
         user_specified_topic = "(no topic)"

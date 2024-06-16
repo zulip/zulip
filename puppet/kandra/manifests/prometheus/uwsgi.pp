@@ -12,6 +12,8 @@ class kandra::prometheus::uwsgi {
     version        => $version,
     url            => "https://github.com/timonwong/uwsgi_exporter/releases/download/v${version}/uwsgi_exporter-${version}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => "uwsgi_exporter-${version}.linux-${zulip::common::goarch}",
+    bin            => [$bin],
+    cleanup_after  => [Service[supervisor]],
   }
 
   kandra::firewall_allow { 'uwsgi_exporter': port => '9238' }
@@ -20,7 +22,7 @@ class kandra::prometheus::uwsgi {
     require => [
       User[zulip],
       Package[supervisor],
-      Zulip::External_Dep['uwsgi_exporter'],
+      File[$bin],
     ],
     owner   => 'root',
     group   => 'root',

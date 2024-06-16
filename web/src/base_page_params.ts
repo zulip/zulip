@@ -35,6 +35,8 @@ const home_params_schema = default_params_schema
         corporate_enabled: z.boolean(),
         furthest_read_time: z.nullable(z.number()),
         is_spectator: z.boolean(),
+        // `language_cookie_name` is only sent for spectators.
+        language_cookie_name: z.optional(z.string()),
         language_list: z.array(
             z.object({
                 code: z.string(),
@@ -93,6 +95,8 @@ const upgrade_params_schema = default_params_schema.extend({
     fixed_price: z.number().nullable(),
     setup_payment_by_invoice: z.boolean(),
     free_trial_days: z.nullable(z.number()),
+    percent_off_annual_price: z.string().nullable(),
+    percent_off_monthly_price: z.string().nullable(),
 });
 
 const page_params_schema = z.discriminatedUnion("page_type", [

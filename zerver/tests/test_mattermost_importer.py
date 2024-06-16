@@ -29,6 +29,7 @@ from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Reaction, Recipient, UserProfile
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -744,6 +745,9 @@ class MatterMostImporter(ZulipTestCase):
 
         realm = get_realm("gryffindor")
 
+        presence_sequence = PresenceSequence.objects.get(realm=realm)
+        self.assertEqual(presence_sequence.last_update_id, 0)
+
         self.assertFalse(get_user("harry@zulip.com", realm).is_mirror_dummy)
         self.assertFalse(get_user("ron@zulip.com", realm).is_mirror_dummy)
         self.assertTrue(get_user("snape@zulip.com", realm).is_mirror_dummy)
@@ -849,7 +853,7 @@ class MatterMostImporter(ZulipTestCase):
         messages = Message.objects.filter(realm=realm)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
-        self.assert_length(messages, 11)
+        self.assert_length(messages, 12)
 
         stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
         stream_recipients = stream_messages.values_list("recipient", flat=True)
@@ -880,7 +884,7 @@ class MatterMostImporter(ZulipTestCase):
             "date_sent"
         )
         personal_recipients = personal_messages.values_list("recipient", flat=True)
-        self.assert_length(personal_messages, 4)
+        self.assert_length(personal_messages, 5)
         self.assert_length(set(personal_recipients), 3)
         self.assertEqual(personal_messages[0].sender.email, "ron@zulip.com")
         self.assertRegex(personal_messages[0].content, "hey harry\n\n\\[harry-ron.jpg\\]\\(.*\\)")

@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
+import render_jump_to_sent_message_conversation_banner from "../templates/compose_banner/jump_to_sent_message_conversation_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
@@ -12,6 +13,7 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as narrow_state from "./narrow_state";
+import * as onboarding_steps from "./onboarding_steps";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as user_topics from "./user_topics";
@@ -69,10 +71,12 @@ export function notify_automatic_new_visibility_policy(
             banner_type: compose_banner.SUCCESS,
             classname: compose_banner.CLASSNAMES.automatic_new_visibility_policy,
             link_msg_id: data.id,
-            stream_topic,
+            channel_topic: stream_topic,
             narrow_url,
             followed,
             button_text: $t({defaultMessage: "Change setting"}),
+            hide_close_button: true,
+            is_onboarding_banner: true,
         }),
     );
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
@@ -114,35 +118,33 @@ export function get_muted_narrow(message: Message): string | undefined {
     return undefined;
 }
 
-export function get_local_notify_mix_reason(message: Message): string | undefined {
+export function is_local_mix(message: Message): boolean {
     if (message_lists.current === undefined) {
         // For non-message list views like Inbox, the message is not visible after sending it.
-        return undefined;
+        return true;
     }
 
-    const $row = message_lists.current.get_row(message.id);
-    if ($row.length > 0) {
-        // If our message is in the current message list, we do
-        // not have a mix, so we are happy.
-        return undefined;
-    }
-
-    // offscreen because it is outside narrow
-    // we can only look for these on non-search (can_apply_locally) messages
-    // see also: exports.notify_messages_outside_current_search
     const current_filter = narrow_state.filter();
-    if (
-        current_filter &&
-        current_filter.can_apply_locally() &&
-        !current_filter.predicate()(message)
-    ) {
-        return $t({defaultMessage: "Sent! Your message is outside your current view."});
+    const is_conversation_view =
+        current_filter === undefined
+            ? false
+            : current_filter.is_conversation_view() ||
+              current_filter.is_conversation_view_with_near();
+    const $row = message_lists.current.get_row(message.id);
+    if (is_conversation_view && $row.length > 0) {
+        // If our message is in the current conversation view, we do
+        // not have a mix, so we are happy.
+        return false;
     }
 
-    return undefined;
+    return true;
 }
 
-export function notify_local_mixes(messages: Message[], need_user_to_scroll: boolean): void {
+export function notify_local_mixes(
+    messages: Message[],
+    need_user_to_scroll: boolean,
+    {narrow_to_recipient}: {narrow_to_recipient: (message_id: number) => void},
+): void {
     /*
         This code should only be called when we are displaying
         messages sent by current client. It notifies users that
@@ -171,13 +173,13 @@ export function notify_local_mixes(messages: Message[], need_user_to_scroll: boo
             continue;
         }
 
-        let banner_text = get_local_notify_mix_reason(message);
+        const local_mix = is_local_mix(message);
 
         const link_msg_id = message.id;
 
-        if (!banner_text) {
+        if (!local_mix) {
             if (need_user_to_scroll) {
-                banner_text = $t({defaultMessage: "Sent!"});
+                const banner_text = $t({defaultMessage: "Sent!"});
                 const link_text = $t({defaultMessage: "Scroll down to view your message."});
                 notify_above_composebox(
                     banner_text,
@@ -195,18 +197,20 @@ export function notify_local_mixes(messages: Message[], need_user_to_scroll: boo
             continue;
         }
 
-        const link_text = $t(
-            {defaultMessage: "Go to {message_recipient}"},
-            {message_recipient: get_message_header(message)},
-        );
+        narrow_to_recipient(link_msg_id);
 
-        notify_above_composebox(
-            banner_text,
-            compose_banner.CLASSNAMES.narrow_to_recipient,
-            get_above_composebox_narrow_url(message),
-            link_msg_id,
-            link_text,
-        );
+        if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("jump_to_conversation_banner")) {
+            const new_row_html = render_jump_to_sent_message_conversation_banner({
+                banner_type: compose_banner.SUCCESS,
+                classname: compose_banner.CLASSNAMES.jump_to_sent_message_conversation,
+                hide_close_button: true,
+                is_onboarding_banner: true,
+            });
+            compose_banner.append_compose_banner_to_banner_list(
+                $(new_row_html),
+                $("#compose_banners"),
+            );
+        }
     }
 }
 
@@ -223,28 +227,6 @@ function get_above_composebox_narrow_url(message: Message): string {
     return above_composebox_narrow_url;
 }
 
-// for callback when we have to check with the server if a message should be in
-// the message_lists.current (!can_apply_locally; a.k.a. "a search").
-export function notify_messages_outside_current_search(messages: Message[]): void {
-    for (const message of messages) {
-        if (!people.is_current_user(message.sender_email)) {
-            continue;
-        }
-        const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
-        const link_text = $t(
-            {defaultMessage: "Narrow to {message_recipient}"},
-            {message_recipient: get_message_header(message)},
-        );
-        notify_above_composebox(
-            $t({defaultMessage: "Sent! Your recent message is outside the current search."}),
-            compose_banner.CLASSNAMES.narrow_to_recipient,
-            above_composebox_narrow_url,
-            message.id,
-            link_text,
-        );
-    }
-}
-
 export function reify_message_id(opts: {old_id: number; new_id: number}): void {
     const old_id = opts.old_id;
     const new_id = opts.new_id;
@@ -253,10 +235,10 @@ export function reify_message_id(opts: {old_id: number; new_id: number}): void {
     // update that link as well
     for (const e of $("#compose_banners a")) {
         const $elem = $(e);
-        const message_id = $elem.data("message-id");
+        const message_id = Number($elem.attr("data-message-id"));
 
         if (message_id === old_id) {
-            $elem.data("message-id", new_id);
+            $elem.attr("data-message-id", new_id);
             compose_banner.set_scroll_to_message_banner_message_id(new_id);
         }
     }
@@ -271,7 +253,7 @@ export function initialize(opts: {
         "click",
         ".narrow_to_recipient .above_compose_banner_action_link, .automatic_new_visibility_policy .above_compose_banner_action_link",
         (e) => {
-            const message_id = $(e.currentTarget).data("message-id");
+            const message_id = Number($(e.currentTarget).attr("data-message-id"));
             on_narrow_to_recipient(message_id);
             e.stopPropagation();
             e.preventDefault();
@@ -282,7 +264,7 @@ export function initialize(opts: {
         ".sent_scroll_to_view .above_compose_banner_action_link",
         (e) => {
             assert(message_lists.current !== undefined);
-            const message_id = $(e.currentTarget).data("message-id");
+            const message_id = Number($(e.currentTarget).attr("data-message-id"));
             message_lists.current.select_id(message_id);
             on_click_scroll_to_selected();
             compose_banner.clear_message_sent_banners(false);

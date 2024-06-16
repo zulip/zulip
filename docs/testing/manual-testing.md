@@ -53,13 +53,13 @@ Try using all the navigation hotkeys:
 Try narrowing from the message view:
 
 - Hotkeys
-  - use a to go to All messages
-  - use s to narrow to a stream (select message first
+  - use a to go to Combined feed
+  - use s to narrow to a channel (select message first
     and verify in sidebar)
   - use S to narrow to the topic (and verify in sidebar)
   - use v to navigate to direct messages
 - Click on the recipient bar
-  - narrow to a stream
+  - narrow to a channel
   - narrow to a topic
   - narrow to direct messages with one user
   - narrow to a group direct message
@@ -134,15 +134,15 @@ Here are some tasks:
 
   - send a message to the topic "original"
   - edit the message content
-  - send two messages to the "original" stream
+  - send two messages to the "original" channel
   - start to edit a message but then cancel
   - change the topic for the first message to "change1" (just
     this message)
   - narrow back to "original"
-  - send one more message to the stream
+  - send one more message to the channel
   - change the topic for the last two messages to "change2"
   - narrow back to "original"
-  - send two more messages to the stream
+  - send two more messages to the channel
   - edit the 2nd message on topic and change all messages to
     "change3"
 
@@ -162,7 +162,7 @@ that no messages outside the narrow show up in Cordelia's view.
 
 :::{important}
 Make sure that Cordelia is subscribed to Verona but not
-subscribed to Denmark; if not, you should use different streams
+subscribed to Denmark; if not, you should use different channels
 for your testing.
 :::
 
@@ -184,8 +184,8 @@ For each of the above types of messages, you will want to cycle
 through the following views for Cordelia (and have Hamlet send new
 messages after each narrow):
 
-- Go to All messages view.
-- Go to All direct messages view.
+- Go to Combined feed view.
+- Go to Direct message feed view.
 - Go to Direct messages w/Hamlet.
 - Go to Direct messages w/Hamlet and Othello.
 - Go to Verona view.
@@ -207,26 +207,26 @@ populated and where the focus is placed.
 
 - Hotkeys
 
-  - use r to reply to a stream message
+  - use r to reply to a channel message
   - use r to reply to a direct message
   - use R to reply to the author of a direct message
-  - use R to reply to the author of a direct message stream
-  - use c to compose a stream message
+  - use R to reply to the author of a direct message channel
+  - use c to compose a channel message
   - use x to compose a new direct message
 
 - Buttons
 
-  - Narrow to a stream and click on "New topic"
-  - Narrow "All direct messages" and click on "New topic"
-  - Narrow to a stream and click on "New direct message"
-  - Narrow "All direct messages" and click on "New direct message"
+  - Narrow to a channel and click on "New topic"
+  - Narrow to "Direct message feed" and click on "New topic"
+  - Narrow to a channel and click on "New direct message"
+  - Narrow to "Direct message feed" and click on "New direct message"
 
 - Topics
 
-  - Compose/send a message to a stream with no topic.
-  - Compose/send a message to a stream with a new topic.
-  - Compose/send a message to a stream with autocomplete.
-  - Compose/send a message to a stream manually typing an
+  - Compose/send a message to a channel with no topic.
+  - Compose/send a message to a channel with a new topic.
+  - Compose/send a message to a channel with autocomplete.
+  - Compose/send a message to a channel manually typing an
     existing topic.
 
 - Formatting stuff
@@ -252,10 +252,10 @@ populated and where the focus is placed.
   - Use "restore drafts" to restore the draft.
   - Start composing then use "Esc" to abort the message.
   - Use "restore drafts" to restore the draft.
-  - Start composing a stream message and then abort using
+  - Start composing a channel message and then abort using
     the little "x" icon in the compose box.
   - Click on "New direct message" and restore the draft. (You
-    should now be sending to a stream.)
+    should now be sending to a channel.)
 
 - Click to send
   - Turn off Enter-to-send.
@@ -275,15 +275,15 @@ then the message will disappear from the view.
 
 Here are the things to test:
 
-- Stream sidebar menus (click ellipsis when hovering over stream filters)
+- Channel sidebar menus (click ellipsis when hovering over channel filters)
 
-  - Stream settings (just make sure it goes there)
+  - Channel settings (just make sure it goes there)
   - Narrow (and then have Hamlet send a message)
   - Pin/unpin (do both)
-  - Compose (send a message to the stream)
+  - Compose (send a message to the channel)
   - Mark as read (scroll back and then have Hamlet send you a message)
   - Mute/unmute (do both)
-  - Unsubscribe (and then go to Stream settings in the gear menu to resubscribe)
+  - Unsubscribe (and then go to Channel settings in the gear menu to resubscribe)
   - Choose custom color (play around with this)
 
 - Topic sidebar menus (click ellipsis when hovering over topics)
@@ -320,15 +320,15 @@ Here are the things to test:
 
 This is a fairly quick task where we test the search filters on the left sidebar
 and the buddy list. If Cordelia is not subscribed to Denmark, subscribe her to
-that stream.
+that channel.
 
-- Streams filtering
+- Channels filtering
 
   - Use "w" hotkey to open the search.
   - Filter on "d".
   - Pin/unpin Denmark.
   - Clear filter.
-  - Use "A" and "D" hotkeys to cycle through the streams.
+  - Use "A" and "D" hotkeys to cycle through the channels.
   - Filter again and then click somewhere else.
 
 - Buddy list filtering
@@ -339,57 +339,57 @@ that stream.
   - Log on/log off Hamlet while not filtering at all.
   - Filter again and then click somewhere else.
 
-### Stream permissions
+### Channel permissions
 
 This is an important category to test, because we obviously do not
-want to have bugs where people can read messages on streams they
+want to have bugs where people can read messages on channels they
 should not have access to.
 
-The general flow here is for Hamlet to create the streams and verify
+The general flow here is for Hamlet to create the channels and verify
 that Cordelia has the correct visibility to them.
 
 First, we start off with "positive" tests.
 
 - Positive tests
-  - Have Hamlet create a public stream w/Cordelia subscribed and
-    have him post a message to the stream.
-  - Have Hamlet create a public stream without Cordelia and then...
-    - Have Hamlet post to the stream.
-    - Have Cordelia subscribe to the stream.
+  - Have Hamlet create a public channel w/Cordelia subscribed and
+    have him post a message to the channel.
+  - Have Hamlet create a public channel without Cordelia and then...
+    - Have Hamlet post to the channel.
+    - Have Cordelia subscribe to the channel.
     - Verify Cordelia can see the previous message.
-    - Have Cordelia post a message to the stream.
-  - Have Hamlet create a private stream with Cordelia
+    - Have Cordelia post a message to the channel.
+  - Have Hamlet create a private channel with Cordelia
     invited and test a two-way conversation between the two
     users.
 
 For negative tests, we want to dig a little deeper to find back
-doors for Cordelia to access the stream. Here are some techniques
+doors for Cordelia to access the channel. Here are some techniques
 to try:
 
-- Try to have her compose a message to the stream by
+- Try to have her compose a message to the channel by
   circumventing autocomplete.
-- Try to have her narrow to the stream using stream:foo
+- Try to have her narrow to the channel using channel:foo
   in search.
-- Go to stream settings and see if the stream shows up.
+- Go to channel settings and see if the channel shows up.
 
-For public streams, it's ok for Cordelia to know the stream exists,
-and she can subsequently subscribe. For private streams, she should
+For public channels, it's ok for Cordelia to know the channel exists,
+and she can subsequently subscribe. For private channels, she should
 not even know they exist (until she's invited, of course).
 
 - Negative tests
-  - Have Hamlet create a public stream without inviting Cordelia.
-    - Verify Cordelia can see the stream in her settings.
-    - Verify Cordelia can't compose a message to the stream.
+  - Have Hamlet create a public channel without inviting Cordelia.
+    - Verify Cordelia can see the channel in her settings.
+    - Verify Cordelia can't compose a message to the channel.
     - Verify that Cordelia sees nothing when Hamlet posts to
-      the stream.
-  - Have Hamlet create a public stream with Cordelia, but then
+      the channel.
+  - Have Hamlet create a public channel with Cordelia, but then
     have Iago revoke her subscription using the admin page.
-    - Verify that the stream appears in Cordelia's left sidebar
+    - Verify that the channel appears in Cordelia's left sidebar
       and then goes away.
-    - Try to have Cordelia view the stream using a sneaky
-      search along the lines of `stream:foo`.
-  - Have Hamlet create a private stream without inviting Cordelia.
-    - Verify Cordelia can't compose a message to the stream.
+    - Try to have Cordelia view the channel using a sneaky
+      search along the lines of `channel:foo`.
+  - Have Hamlet create a private channel without inviting Cordelia.
+    - Verify Cordelia can't compose a message to the channel.
 
 ### Search
 
@@ -401,9 +401,9 @@ empty, have Hamlet send a message that matches the search.
 
 Here are searches you should be able to do with autocomplete:
 
-- stream:design
-- stream:Verona topic:Verona1
-- stream:Verona keyword
+- channel:design
+- channel:Verona topic:Verona1
+- channel:Verona keyword
 - sent by me
 - @-mentions
 - starred messages
@@ -413,8 +413,8 @@ Here are searches you should be able to do with autocomplete:
 
 There are some things you can try that don't come up in autocomplete:
 
-- -stream:Verona (exclude Verona)
-- stream:Verona stream:devel (should return no results)
+- -channel:Verona (exclude Verona)
+- channel:Verona channel:devel (should return no results)
 
 Miscellaneous:
 
@@ -422,9 +422,9 @@ Miscellaneous:
 - Use the "x" icon to clear a search.
 - Use the "Esc" hotkey to clear a search.
 
-### Stream settings
+### Channel settings
 
-Test various UI entry points into stream settings:
+Test various UI entry points into channel settings:
 
 - Use small gear menu in left sidebar, then filter to "devel".
 - Use popover menu in left sidebar next to "devel".
@@ -433,27 +433,27 @@ Test various UI entry points into stream settings:
 - Use gear menu and then click on chevron menu next to "devel."
   (I'm not sure why we still have the chevron at this writing.)
 
-Create new public stream "public1" and add Hamlet:
+Create new public channel "public1" and add Hamlet:
 
-- Type "public1" in the text box and then click "Create new stream."
+- Type "public1" in the text box and then click "Create new channel."
 - Select "People must be invited" and then verify you can't
-  select "Announce new stream in #[announcement stream]".
+  select "Announce new channel in #[announcement channel]".
 - Select "Anyone can join" again to make it be public.
 - Check the checkbox for Hamlet.
 - Hit the "Create" button.
 
 Test subscribe/unsubscribe:
 
-- Log in as Hamlet and go to his stream settings.
+- Log in as Hamlet and go to his channel settings.
 - As Cordelia, unsubscribe from "public1" using the checkmark in the
-  stream settings page.
+  channel settings page.
 - Verify that Hamlet sees that Cordelia has unsubscribed (and the
   subscriber count should decrement).
 - As Cordelia, resubscribe to "public1."
 - Verify Hamlet sees that change.
 
-As Cordelia, exercise different options in Create Stream
-dialog by creating streams s1, s2, s3, etc.:
+As Cordelia, exercise different options in **Create Channel**
+dialog by creating channels s1, s2, s3, etc.:
 
 - s1: anyone can join, announce it, and add Hamlet using filter feature
 - s2: people must be invited
@@ -461,18 +461,18 @@ dialog by creating streams s1, s2, s3, etc.:
 - s4: check all, then uncheck all, then invite only Hamlet
 - s5: invite everybody but Hamlet
 - s6:
-  - create the stream as public, but don't subscribe anybody initially
-  - then click on stream options to add Hamlet using "Add" button
+  - create the channel as public, but don't subscribe anybody initially
+  - then click on channel options to add Hamlet using "Add" button
 
-Test per-stream options:
+Test per-channel options:
 
-- Use "devel" stream and send a message to it
+- Use "devel" channel and send a message to it
 - Do mute and unmute, have Hamlet send messages
 - Test notifications on/off, have Hamlet send messages
 - Test pin and unpin, view left sidebar
-- Change stream color, and then view the left sidebar and the All
+- Change channel color, and then view the left sidebar and the All
   messages view
-- Verify stream subscriber counts in the main stream view
+- Verify channel subscriber counts in the main channel view
 
 ### User settings
 
@@ -488,14 +488,14 @@ Do these tasks as Cordelia.
   - Default language (change to Spanish)
   - 24-hour time (and then test going back to AM/PM)
 - Notifications
-  - Stream message
+  - Channel message
     - turn off notifications at user level
-      - create a new stream
+      - create a new channel
       - have Hamlet send a message
     - turn on notifications at user level
-      - create a new stream
+      - create a new channel
       - have Hamlet send a message
-      - then turn off notifications for that stream
+      - then turn off notifications for that channel
       - have Hamlet send another message
   - Direct messages and @-mentions
     - Test Desktop/Audible options
@@ -509,7 +509,7 @@ Do these tasks as Cordelia.
   - Have Hamlet send you a message that includes the alert word
 - Zulip labs
   - Turn on auto-scroll to new messages (and have Hamlet send you one)
-  - Turn on/off "Enable desktop notifications for new streams" and test.
+  - Turn on/off "Enable desktop notifications for new channels" and test.
     (We may eliminate this option soon.)
 
 ### Keyboard shortcuts

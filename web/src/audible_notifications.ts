@@ -22,6 +22,6 @@ export function update_notification_sound_source(
     if (notification_sound !== "none") {
         // Load it so that it is ready to be played; without this the old sound
         // is played.
-        $container_elem[0].load();
+        $container_elem[0]!.load();
     }
 }

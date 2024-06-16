@@ -272,6 +272,7 @@ def check_change_bot_full_name(
     check_bot_name_available(
         realm_id=user_profile.realm_id,
         full_name=new_full_name,
+        is_activation=False,
     )
     do_change_full_name(user_profile, new_full_name, acting_user)
 
@@ -573,10 +574,15 @@ def do_change_user_setting(
                 seconds=settings.OFFLINE_THRESHOLD_SECS + 120
             )
 
-        do_update_user_presence(
-            user_profile,
-            get_client("website"),
-            presence_time,
-            status,
-            force_send_update=True,
+        # do_update_user_presence doesn't allow being run inside another
+        # transaction.atomic block, so we need to use on_commit here to ensure
+        # it gets executed outside of our current transaction.
+        transaction.on_commit(
+            lambda: do_update_user_presence(
+                user_profile,
+                get_client("website"),
+                presence_time,
+                status,
+                force_send_update=True,
+            )
         )

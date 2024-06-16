@@ -8,13 +8,13 @@ be used to deep-link into the application and allow the browser's
 Some examples are:
 
 - `/#settings/your-bots`: Bots section of the settings overlay.
-- `/#streams`: Streams overlay, where the user manages streams
+- `/#channels`: Channels overlay, where the user manages channels
   (subscription etc.)
-- `/#streams/11/announce`: Streams overlay with stream ID 11 (called
+- `/#channels/11/announce`: Channels overlay with channel ID 11 (called
   "announce") selected.
-- `/#narrow/stream/42-android/topic/fun`: Message feed showing stream
+- `/#narrow/channel/42-android/topic/fun`: Message feed showing channel
   "android" and topic "fun". (The `42` represents the id of the
-  stream.)
+  channel.)
 
 The main module in the frontend that manages this all is
 `web/src/hashchange.js` (plus `hash_util.js` for all the parsing
@@ -23,19 +23,19 @@ the reason that it's thorny is that it needs to support a lot of
 different flows:
 
 - The user clicking on an in-app link, which in turn opens an overlay.
-  For example the streams overlay opens when the user clicks the small
+  For example the channels overlay opens when the user clicks the small
   cog symbol on the left sidebar, which is in fact a link to
-  `/#streams`. This makes it easy to have simple links around the app
+  `/#channels`. This makes it easy to have simple links around the app
   without custom click handlers for each one.
 - The user uses the "back" button in their browser (basically
   equivalent to the previous one, as a _link_ out of the browser history
   will be visited).
-- The user clicking some in-app click handler (e.g. "Stream settings"
-  for an individual stream), that potentially does
-  several UI-manipulating things including e.g. loading the streams
+- The user clicking some in-app click handler (e.g. "Channel settings"
+  for an individual channel), that potentially does
+  several UI-manipulating things including e.g. loading the channels
   overlay, and needs to update the hash without re-triggering the open
   animation (etc.).
-- Within an overlay like the streams overlay, the user clicks to
+- Within an overlay like the channels overlay, the user clicks to
   another part of the overlay, which should update the hash but not
   re-trigger loading the overlay (which would result in a confusing
   animation experience).
@@ -69,7 +69,7 @@ Internally you have these functions:
   a hash or using the back button) or triggered internally.
 - `hashchange.do_hashchange_normal` handles most cases, like loading the main
   page (but maybe with a specific URL if you are narrowed to a
-  stream or topic or direct messages, etc.).
+  channel or topic or direct messages, etc.).
 - `hashchange.do_hashchange_overlay` handles overlay cases. Overlays have
   some minor complexity related to remembering the page from
   which the overlay was launched, as well as optimizing in-page

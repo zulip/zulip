@@ -23,3 +23,7 @@ export function message_has_image(message: Message): boolean {
 export function message_has_attachment(message: Message): boolean {
     return is_element_in_message_content(message, "a[href^='/user_uploads']");
 }
+
+export function message_has_reaction(message: Message): boolean {
+    return message.clean_reactions.size > 0;
+}

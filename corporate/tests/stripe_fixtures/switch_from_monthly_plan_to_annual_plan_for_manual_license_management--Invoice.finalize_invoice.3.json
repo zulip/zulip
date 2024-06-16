@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9QS292MWkxOUl4YXAyUzZDR2hjakN4UXVxQVBULDEwMDA2NTk1OA02000LeHPTzJ?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTWVBPcEdTTnVnUjVtZG5MbGhLbFV5aEZ3ZmNNLDEwMzI5ODgyMw0200GFBZhg3G?s=ap",
   "id": "in_NORMALIZED00000000000003",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9QS292MWkxOUl4YXAyUzZDR2hjakN4UXVxQVBULDEwMDA2NTk1OA02000LeHPTzJ/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTWVBPcEdTTnVnUjVtZG5MbGhLbFV5aEZ3ZmNNLDEwMzI5ODgyMw0200GFBZhg3G/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -159,5 +159,5 @@
   "total_excluding_tax": 280000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

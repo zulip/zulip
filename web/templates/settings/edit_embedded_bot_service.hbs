@@ -1,7 +1,7 @@
 <div id="config_edit_inputbox">
     {{#each service.config_data}}
         <div class="input-group">
-            <label for="embedded_bot_{{@key}}_edit">{{@key}}</label>
+            <label for="embedded_bot_{{@key}}_edit" class="modal-field-label">{{@key}}</label>
             <input type="text" name="{{@key}}" id="embedded_bot_{{@key}}_edit" class="modal_text_input"
               maxlength=1000 value="{{this}}" />
         </div>

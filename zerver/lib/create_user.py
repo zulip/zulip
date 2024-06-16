@@ -2,12 +2,11 @@ from datetime import datetime
 from email.headerregistry import Address
 from typing import Optional, Union
 
-import orjson
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.hotspots import copy_hotspots
 from zerver.lib.i18n import get_default_language_for_new_user
+from zerver.lib.onboarding_steps import copy_onboarding_steps
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
 from zerver.models import (
@@ -64,7 +63,7 @@ def copy_default_settings(
         )
         copy_avatar(settings_source, target_profile)
 
-    copy_hotspots(settings_source, target_profile)
+    copy_onboarding_steps(settings_source, target_profile)
 
 
 def get_display_email_address(user_profile: UserProfile) -> str:
@@ -125,7 +124,6 @@ def create_user_profile(
         tos_version=tos_version,
         timezone=timezone,
         tutorial_status=tutorial_status,
-        onboarding_steps=orjson.dumps([]).decode(),
         default_language=default_language,
         delivery_email=email,
         email_address_visibility=email_address_visibility,

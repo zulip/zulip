@@ -13,8 +13,8 @@ export type Context = {
 };
 
 export function row_with_focus(context: Context): JQuery {
-    const focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`)[0];
-    return $(focused_item).parent(`.${CSS.escape(context.row_item_selector)}`);
+    const $focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`);
+    return $focused_item.parent(`.${CSS.escape(context.row_item_selector)}`);
 }
 
 export function activate_element(elem: HTMLElement, context: Context): void {
@@ -23,8 +23,8 @@ export function activate_element(elem: HTMLElement, context: Context): void {
     elem.focus();
 }
 
-export function get_focused_element_id(context: Context): string {
-    return row_with_focus(context).attr(context.id_attribute_name)!;
+export function get_focused_element_id(context: Context): string | undefined {
+    return row_with_focus(context).attr(context.id_attribute_name);
 }
 
 export function focus_on_sibling_element(context: Context): void {
@@ -41,7 +41,7 @@ export function focus_on_sibling_element(context: Context): void {
     }
 
     const $new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
-    if ($new_focus_element.length > 0) {
+    if ($new_focus_element[0] !== undefined) {
         assert($new_focus_element[0].children[0] instanceof HTMLElement);
         activate_element($new_focus_element[0].children[0], context);
     }
@@ -74,10 +74,10 @@ export function modals_handle_events(event_key: string, context: Context): void 
 export function set_initial_element(element_id: string, context: Context): void {
     if (element_id) {
         const $current_element = get_element_by_id(element_id, context);
-        const focus_element = $current_element[0].children[0];
+        const focus_element = $current_element[0]!.children[0];
         assert(focus_element instanceof HTMLElement);
         activate_element(focus_element, context);
-        $(`.${CSS.escape(context.items_list_selector)}`)[0].scrollTop = 0;
+        $(`.${CSS.escape(context.items_list_selector)}`)[0]!.scrollTop = 0;
     }
 }
 
@@ -125,39 +125,23 @@ function initialize_focus(event_name: string, context: Context): void {
     }
 
     const modal_items_ids = context.get_items_ids();
-    if (modal_items_ids.length === 0) {
+    const id = modal_items_ids.at(event_name === "up_arrow" ? -1 : 0);
+    if (id === undefined) {
         // modal is empty
         return;
     }
 
-    let $element: JQuery;
-
-    function get_last_element(): JQuery {
-        const last_id = modal_items_ids.at(-1) ?? "";
-        return get_element_by_id(last_id, context);
-    }
-
-    function get_first_element(): JQuery {
-        const first_id = modal_items_ids[0];
-        return get_element_by_id(first_id, context);
-    }
-
-    if (event_name === "up_arrow") {
-        $element = get_last_element();
-    } else {
-        $element = get_first_element();
-    }
-
-    const focus_element = $element[0].children[0];
+    const $element = get_element_by_id(id, context);
+    const focus_element = $element[0]!.children[0];
     assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
 }
 
 function scroll_to_element($element: JQuery, context: Context): void {
-    if ($element.length === 0) {
+    if ($element[0] === undefined) {
         return;
     }
-    if ($element.children.length === 0) {
+    if ($element[0].children[0] === undefined) {
         return;
     }
     assert($element[0].children[0] instanceof HTMLElement);
@@ -168,28 +152,28 @@ function scroll_to_element($element: JQuery, context: Context): void {
     const $box_item = $(`.${CSS.escape(context.box_item_selector)}`);
 
     // If focused element is first, scroll to the top.
-    if ($box_item.first()[0].parentElement === $element[0]) {
-        $items_list[0].scrollTop = 0;
+    if ($box_item.first()[0]!.parentElement === $element[0]) {
+        $items_list[0]!.scrollTop = 0;
     }
 
     // If focused element is last, scroll to the bottom.
-    if ($box_item.last()[0].parentElement === $element[0]) {
-        $items_list[0].scrollTop = $items_list[0].scrollHeight - ($items_list.height() ?? 0);
+    if ($box_item.last()[0]!.parentElement === $element[0]) {
+        $items_list[0]!.scrollTop = $items_list[0]!.scrollHeight - ($items_list.height() ?? 0);
     }
 
     // If focused element is cut off from the top, scroll up halfway in modal.
     if ($element.position().top < 55) {
         // 55 is the minimum distance from the top that will require extra scrolling.
-        $items_list[0].scrollTop -= $items_list[0].clientHeight / 2;
+        $items_list[0]!.scrollTop -= $items_list[0]!.clientHeight / 2;
     }
 
     // If focused element is cut off from the bottom, scroll down halfway in modal.
     const dist_from_top = $element.position().top;
     const total_dist = dist_from_top + $element[0].clientHeight;
-    const dist_from_bottom = $items_container[0].clientHeight - total_dist;
+    const dist_from_bottom = $items_container[0]!.clientHeight - total_dist;
     if (dist_from_bottom < -4) {
         // -4 is the min dist from the bottom that will require extra scrolling.
-        $items_list[0].scrollTop += $items_list[0].clientHeight / 2;
+        $items_list[0]!.scrollTop += $items_list[0]!.clientHeight / 2;
     }
 }
 

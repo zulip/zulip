@@ -82,7 +82,7 @@ export function toggle(opts: {
 
         meta.idx = idx;
         if (opts.callback) {
-            opts.callback(opts.values[idx].label, opts.values[idx].key);
+            opts.callback(opts.values[idx]!.label, opts.values[idx]!.key);
         }
 
         if (!opts.child_wants_focus) {
@@ -116,7 +116,7 @@ export function toggle(opts: {
     }
 
     meta.$ind_tab.on("click", function () {
-        const idx = $(this).data("tab-id");
+        const idx = Number($(this).attr("data-tab-id"));
         select_tab(idx);
     });
 
@@ -162,7 +162,7 @@ export function toggle(opts: {
 
         value() {
             if (meta.idx >= 0) {
-                return opts.values[meta.idx].label;
+                return opts.values[meta.idx]!.label;
             }
             /* istanbul ignore next */
             return undefined;

@@ -1,5 +1,5 @@
 <div id="message-row-{{message_list_id}}-{{msg/id}}" data-message-id="{{msg/id}}"
-  class="message_row{{#unless msg/is_stream}} private-message{{/unless}}{{#include_sender}} include-sender{{/include_sender}}{{#if mention_classname}} {{mention_classname}}{{/if}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}locally-echoed{{/if}} selectable_row"
+  class="message_row{{#unless msg/is_stream}} private-message{{/unless}}{{#include_sender}} messagebox-includes-sender{{/include_sender}}{{#if mention_classname}} {{mention_classname}}{{/if}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}locally-echoed{{/if}} selectable_row"
   role="listitem">
     {{#if want_date_divider}}
     <div class="unread_marker date_unread_marker"><div class="unread-marker-fill"></div></div>

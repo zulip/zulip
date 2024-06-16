@@ -38,7 +38,7 @@ type DropdownWidgetOptions = {
     widget_name: string;
     // You can bold the selected `option` by setting `option.bold_current_selection` to `true`.
     // Currently, not implemented for stream names.
-    get_options: () => Option[];
+    get_options: (current_value: string | number | undefined) => Option[];
     item_click_callback: (
         event: JQuery.ClickEvent,
         instance: tippy.Instance,
@@ -59,7 +59,7 @@ type DropdownWidgetOptions = {
     focus_target_on_hidden?: boolean;
     tippy_props?: Partial<tippy.Props>;
     // NOTE: Any value other than `undefined` will be rendered when class is initialized.
-    default_id?: string | number;
+    default_id?: string | number | undefined;
     unique_id_type?: DataTypes;
     // Text to show if the current value is not in `get_options()`.
     text_if_current_value_not_in_options?: string;
@@ -73,7 +73,7 @@ export class DropdownWidget {
     widget_selector: string;
     widget_wrapper_id: string;
     widget_value_selector: string;
-    get_options: () => Option[];
+    get_options: (current_value: string | number | undefined) => Option[];
     item_click_callback: (
         event: JQuery.ClickEvent,
         instance: tippy.Instance,
@@ -200,20 +200,24 @@ export class DropdownWidget {
                     "input.dropdown-list-search-input",
                 );
 
-                this.list_widget = ListWidget.create($dropdown_list_body, this.get_options(), {
-                    name: `${CSS.escape(this.widget_name)}-list-widget`,
-                    get_item: ListWidget.default_get_item,
-                    modifier_html(item) {
-                        return render_dropdown_list({item});
-                    },
-                    filter: {
-                        $element: $search_input,
-                        predicate(item, value) {
-                            return item.name.toLowerCase().includes(value);
+                this.list_widget = ListWidget.create(
+                    $dropdown_list_body,
+                    this.get_options(this.current_value),
+                    {
+                        name: `${CSS.escape(this.widget_name)}-list-widget`,
+                        get_item: ListWidget.default_get_item,
+                        modifier_html(item) {
+                            return render_dropdown_list({item});
                         },
+                        filter: {
+                            $element: $search_input,
+                            predicate(item, value) {
+                                return item.name.toLowerCase().includes(value);
+                            },
+                        },
+                        $simplebar_container: $popper.find(".dropdown-list-wrapper"),
                     },
-                    $simplebar_container: $popper.find(".dropdown-list-wrapper"),
-                });
+                );
 
                 $search_input.on("input.list_widget_filter", () => {
                     this.show_empty_if_no_items($popper);
@@ -239,6 +243,7 @@ export class DropdownWidget {
 
                     function first_item(): JQuery {
                         const first_item = list_items[0];
+                        assert(first_item !== undefined);
                         return $popper.find(`.list-item[data-unique-id="${first_item.unique_id}"]`);
                     }
 
@@ -371,7 +376,7 @@ export class DropdownWidget {
             this.current_value = value;
         }
 
-        const all_options = this.get_options();
+        const all_options = this.get_options(this.current_value);
         const option = all_options.find((option) => option.unique_id === this.current_value);
 
         // If provided, show custom text if cannot find current option.

@@ -5,6 +5,6 @@
 ## Related articles
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Starting a new topic](/help/starting-a-new-topic)
+* [Introduction to topics](/help/introduction-to-topics)
 * [Replying to messages](/help/replying-to-messages)
 * [Messaging tips & tricks](/help/messaging-tips)

@@ -1,5 +1,5 @@
 {{#with emoji_dict}}
-<div class="emoji-popover-emoji {{#if has_reacted}}reacted{{/if}}" data-emoji-name="{{name}}" tabindex="0" data-emoji-id="{{../type}},{{../section}},{{../index}}">
+<div class="emoji-popover-emoji {{#if has_reacted}}reacted{{/if}}" data-emoji-name="{{#if emoji_name}}{{emoji_name}}{{else}}{{name}}{{/if}}" tabindex="0" data-emoji-id="{{../type}},{{../section}},{{../index}}">
     {{#if is_realm_emoji}}
     <img src="{{url}}" class="emoji"/>
     {{else}}

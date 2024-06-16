@@ -70,11 +70,15 @@ export function bytes_to_size(bytes: number, kb_with_1024_bytes = false): string
     return size + " " + sizes[i];
 }
 
+export function mib_to_bytes(mib: number): number {
+    return mib * 1024 * 1024;
+}
+
 export function percentage_used_space(uploads_size: number): string | null {
     if (realm.realm_upload_quota_mib === null) {
         return null;
     }
-    return ((100 * uploads_size) / realm.realm_upload_quota_mib).toFixed(1);
+    return ((100 * uploads_size) / mib_to_bytes(realm.realm_upload_quota_mib)).toFixed(1);
 }
 
 function set_upload_space_stats(): void {
@@ -84,7 +88,7 @@ function set_upload_space_stats(): void {
     const args = {
         show_upgrade_message: realm.realm_plan_type === 2,
         percent_used: percentage_used_space(upload_space_used),
-        upload_quota: bytes_to_size(realm.realm_upload_quota_mib, true),
+        upload_quota: bytes_to_size(mib_to_bytes(realm.realm_upload_quota_mib), true),
     };
     const rendered_upload_stats_html = render_settings_upload_space_stats(args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
@@ -100,7 +104,7 @@ function delete_attachments(attachment: string, file_name: string): void {
         id: "confirm_delete_file_modal",
         focus_submit_on_open: true,
         on_click() {
-            dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment);
+            dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment, {});
         },
         loading_spinner: true,
     });
@@ -163,12 +167,12 @@ function render_attachments_ui(): void {
     scroll_util.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
-function format_attachment_data(new_attachments: ServerAttachment[]): Attachment[] {
-    return new_attachments.map((attachment) => ({
+function format_attachment_data(attachment: ServerAttachment): Attachment {
+    return {
         ...attachment,
         create_time_str: timerender.render_now(new Date(attachment.create_time)).time_str,
         size_str: bytes_to_size(attachment.size),
-    }));
+    };
 }
 
 export function update_attachments(event: AttachmentEvent): void {
@@ -180,7 +184,7 @@ export function update_attachments(event: AttachmentEvent): void {
         attachments = attachments.filter((a) => a.id !== event.attachment.id);
     }
     if (event.op === "add" || event.op === "update") {
-        attachments.push(format_attachment_data([event.attachment])[0]);
+        attachments.push(format_attachment_data(event.attachment));
     }
     upload_space_used = event.upload_space_used;
     // TODO: This is inefficient and we should be able to do some sort
@@ -209,7 +213,9 @@ export function set_up_attachments(): void {
         success(data) {
             const clean_data = attachment_api_response_schema.parse(data);
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            attachments = format_attachment_data(clean_data.attachments);
+            attachments = clean_data.attachments.map((attachment) =>
+                format_attachment_data(attachment),
+            );
             upload_space_used = clean_data.upload_space_used;
             render_attachments_ui();
         },

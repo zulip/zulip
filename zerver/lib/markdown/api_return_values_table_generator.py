@@ -1,6 +1,8 @@
 import copy
 import json
 import re
+from collections import OrderedDict
+from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional
 
 import markdown
@@ -8,12 +10,49 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 from zerver.openapi.openapi import check_deprecated_consistency, get_openapi_return_values
 
 from .api_arguments_table_generator import generate_data_type
 
 REGEXP = re.compile(r"\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}")
+
+EVENT_HEADER_TEMPLATE = """
+<div class="api-event-header">
+    <h3 id="{id}"><span class="api-event-name">{event}</span></h3>
+</div>
+""".strip()
+
+OP_TEMPLATE = '<span class="api-event-op">op: {op_type}</span>'
+
+EVENTS_TABLE_TEMPLATE = """
+<div class="api-events-table">
+{events_list}
+</div>
+<hr>
+""".strip()
+
+TABLE_OPS_TEMPLATE = """
+<div class="api-event-type">{event_name}:</div>
+<div class="api-event-ops">
+{ops}
+</div>
+""".strip()
+
+TABLE_LINK_TEMPLATE = """
+<div class="api-event-link">
+    <a href="#{url}">{link_name}</a>
+</div>
+""".strip()
+
+
+@dataclass
+class EventData:
+    type: str
+    description: str
+    properties: Dict[str, Any]
+    example: str
+    op_type: Optional[str] = None
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
@@ -22,7 +61,7 @@ class MarkdownReturnValuesTableGenerator(Extension):
         md.preprocessors.register(
             APIReturnValuesTablePreprocessor(md, self.getConfigs()),
             "generate_return_values",
-            PREPROCESSOR_PRIORITES["generate_return_values"],
+            PREPROCESSOR_PRIORITIES["generate_return_values"],
         )
 
 
@@ -49,7 +88,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                     events = return_values["events"].pop("items", None)
                     text = self.render_table(return_values, 0)
                     # Another heading for the events documentation
-                    text.append("\n\n## Events\n\n")
+                    text.append("\n\n## Events by `type`\n\n")
                     text += self.render_events(events)
                 else:
                     text = self.render_table(return_values, 0)
@@ -190,40 +229,71 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 )
         return ans
 
-    def render_events(self, events_dict: Dict[str, Any]) -> List[str]:
-        text: List[str] = []
-        # Use argument section design for better visuals
-        # Directly using `###` for subheading causes errors so use h3 with made up id.
-        argument_template = (
-            '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
-            "{event_type} {op}</h3></p></div> \n{description}\n\n\n"
-        )
-        for events in events_dict["oneOf"]:
-            event_type: Dict[str, Any] = events["properties"]["type"]
-            event_type_str: str = event_type["enum"][0]
-            # Internal hyperlink name
-            h3_id: str = event_type_str
-            event_type_str = f'<span class="api-argument-required"> {event_type_str}</span>'
-            op: Optional[Dict[str, Any]] = events["properties"].pop("op", None)
-            op_str: str = ""
-            if op is not None:
-                op_str = op["enum"][0]
-                h3_id += "-" + op_str
-                op_str = f'<span class="api-argument-deprecated">op: {op_str}</span>'
-            description = events["description"]
-            text.append(
-                argument_template.format(
-                    event_type=event_type_str, op=op_str, description=description, h3_id=h3_id
+    def generate_event_strings(self, event_data: EventData) -> List[str]:
+        event_strings: List[str] = []
+        if event_data.op_type is None:
+            event_strings.append(
+                EVENT_HEADER_TEMPLATE.format(id=event_data.type, event=event_data.type)
+            )
+        else:
+            op_detail = OP_TEMPLATE.format(op_type=event_data.op_type)
+            event_strings.append(
+                EVENT_HEADER_TEMPLATE.format(
+                    id=f"{event_data.type}-{event_data.op_type}",
+                    event=f"{event_data.type} {op_detail}",
                 )
             )
-            text += self.render_table(events["properties"], 0)
-            # This part is for adding examples of individual events
-            text.append("**Example**")
-            text.append("\n```json\n")
-            example = json.dumps(events["example"], indent=4, sort_keys=True)
-            text.append(example)
-            text.append("```\n\n")
-        return text
+        event_strings.append(f"\n{event_data.description}\n\n\n")
+        event_strings += self.render_table(event_data.properties, 0)
+        event_strings.append("**Example**")
+        event_strings.append("\n```json\n")
+        event_strings.append(event_data.example)
+        event_strings.append("```\n\n")
+        event_strings.append("<hr>")
+        return event_strings
+
+    def generate_events_table(self, events_by_type: OrderedDict[str, List[str]]) -> List[str]:
+        event_links: List[str] = []
+        for event_type, event_ops in events_by_type.items():
+            if not event_ops:
+                event_links.append(TABLE_LINK_TEMPLATE.format(link_name=event_type, url=event_type))
+            else:
+                event_ops.sort()
+                ops_list = [
+                    TABLE_LINK_TEMPLATE.format(link_name=f"op: {op}", url=f"{event_type}-{op}")
+                    for op in event_ops
+                ]
+                event_links.append(
+                    TABLE_OPS_TEMPLATE.format(event_name=event_type, ops="\n".join(ops_list))
+                )
+        return [EVENTS_TABLE_TEMPLATE.format(events_list="\n".join(event_links))]
+
+    def render_events(self, events_dict: Dict[str, Any]) -> List[str]:
+        events: List[str] = []
+        events_for_table: OrderedDict[str, List[str]] = OrderedDict()
+        for event in events_dict["oneOf"]:
+            # The op property doesn't have a description, so it must be removed
+            # before any calls to self.render_table, which expects a description.
+            op: Optional[Dict[str, Any]] = event["properties"].pop("op", None)
+            op_type: Optional[str] = None
+            if op is not None:
+                op_type = op["enum"][0]
+            event_data = EventData(
+                type=event["properties"]["type"]["enum"][0],
+                description=event["description"],
+                properties=event["properties"],
+                example=json.dumps(event["example"], indent=4, sort_keys=True),
+                op_type=op_type,
+            )
+            events += self.generate_event_strings(event_data)
+            if event_data.op_type is None:
+                events_for_table[event_data.type] = []
+            elif event_data.type in events_for_table:
+                events_for_table[event_data.type] += [event_data.op_type]
+            else:
+                events_for_table[event_data.type] = [event_data.op_type]
+        events_table = self.generate_events_table(OrderedDict(sorted(events_for_table.items())))
+        return events_table + events
 
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownReturnValuesTableGenerator:

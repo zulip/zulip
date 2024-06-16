@@ -10,8 +10,8 @@ box also stretches automatically when you type a long message.
 
 {!start-composing.md!}
 
-1. Click on the **<i class="fa fa-chevron-up"></i> icon** in the top
-   right corner of the compose box.
+1. Click on the **<i class="zulip-icon zulip-icon-expand-diagonal"></i> icon** in the top
+   right corner of the compose box, which is visible on hovering over the compose box.
 
 {end_tabs}
 
@@ -19,8 +19,9 @@ box also stretches automatically when you type a long message.
 
 {start_tabs}
 
-1. With the compose box in the expanded state, click on the **<i class="fa
-   fa-chevron-down"></i> icon** in the top right corner of the compose box.
+1. With the compose box in the expanded state, click on the **<i class="zulip-icon
+   zulip-icon-collapse-diagonal"></i> icon** in the top right corner of the compose box,
+   which is visible on hovering over the compose box.
 
 {end_tabs}
 

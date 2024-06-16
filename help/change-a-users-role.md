@@ -21,6 +21,7 @@ organization](/help/deactivate-your-organization) instead).
 
 ## Related articles
 
+* [Roles and permissions](/help/roles-and-permissions)
 * [Change a user's name](/help/change-a-users-name)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Manage a user](/help/manage-a-user)

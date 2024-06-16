@@ -52,14 +52,8 @@ export function $t_html(
 
 export let language_list: (typeof page_params & {page_type: "home"})["language_list"];
 
-export function get_language_name(language_code: string): string {
-    const language_list_map: Record<string, string> = {};
-
-    // One-to-one mapping from code to name for all languages
-    for (const language of language_list) {
-        language_list_map[language.code] = language.name;
-    }
-    return language_list_map[language_code];
+export function get_language_name(language_code: string): string | undefined {
+    return language_list.find((language) => language.code === language_code)?.name;
 }
 
 export function initialize(language_params: {language_list: typeof language_list}): void {

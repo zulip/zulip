@@ -144,9 +144,6 @@ LANGUAGE_CODE = "en-us"
 # to load the internationalization machinery.
 USE_I18N = True
 
-# If you set this to False, Django will not use time-zone-aware datetimes.
-USE_TZ = True
-
 # this directory will be used to store logs for development environment
 DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, "var", "log")
 
@@ -178,8 +175,6 @@ MIDDLEWARE = [
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
-    # Needs to be after CommonMiddleware, which sets Content-Length
-    "zerver.middleware.FinalizeOpenGraphDescription",
 ]
 
 AUTH_USER_MODEL = "zerver.UserProfile"
@@ -227,7 +222,7 @@ SILENCED_SYSTEM_CHECKS = [
     # `unique=True`.  For us this is `email`, and it's unique only per-realm.
     # Per Django docs, this is perfectly fine so long as our authentication
     # backends support the username not being unique; and they do.
-    # See: https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
+    # See: https://docs.djangoproject.com/en/5.0/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
     # models.E034 limits index names to 30 characters for Oracle compatibility.
     # We aren't using Oracle.
@@ -320,7 +315,7 @@ elif (
     )
 POSTGRESQL_MISSING_DICTIONARIES = get_config("postgresql", "missing_dictionaries", False)
 
-DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ########################################################################
 # RABBITMQ CONFIGURATION
@@ -692,7 +687,6 @@ QUEUE_ERROR_DIR = zulip_path("/var/log/zulip/queue_error")
 QUEUE_STATS_DIR = zulip_path("/var/log/zulip/queue_stats")
 DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
 ANALYTICS_LOG_PATH = zulip_path("/var/log/zulip/analytics.log")
-ANALYTICS_LOCK_FILE = zulip_path("/home/zulip/deployments/analytics-lock.lock")
 WEBHOOK_LOG_PATH = zulip_path("/var/log/zulip/webhooks_errors.log")
 WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_anomalous_payloads.log")
 WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_unsupported_events.log")
@@ -704,6 +698,10 @@ AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 
 ZULIP_WORKER_TEST_FILE = zulip_path("/var/log/zulip/zulip-worker-test-file")
+
+LOCKFILE_DIRECTORY = (
+    "/srv/zulip-locks" if not DEVELOPMENT else os.path.join(os.path.join(DEPLOY_ROOT, "var/locks"))
+)
 
 
 if IS_WORKER:
@@ -1177,6 +1175,10 @@ CROSS_REALM_BOT_EMAILS = {
     "welcome-bot@zulip.com",
     "emailgateway@zulip.com",
 }
+
+MOBILE_NOTIFICATIONS_SHARDS = int(
+    get_config("application_server", "mobile_notification_shards", "1")
+)
 
 TWO_FACTOR_PATCH_ADMIN = False
 

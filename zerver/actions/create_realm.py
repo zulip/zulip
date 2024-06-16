@@ -5,6 +5,8 @@ from typing import Any, Dict, Optional
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import internal_send_stream_message
@@ -33,7 +35,15 @@ from zerver.models import (
     Stream,
     UserProfile,
 )
-from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.groups import SystemGroups
+from zerver.models.presence import PresenceSequence
+from zerver.models.realms import (
+    CommonPolicyEnum,
+    InviteToRealmPolicyEnum,
+    MoveMessagesBetweenStreamsPolicyEnum,
+    get_org_type_display_name,
+    get_realm,
+)
 from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
 
@@ -57,7 +67,7 @@ def do_change_realm_subdomain(
     experience for clients.
     """
     old_subdomain = realm.subdomain
-    old_uri = realm.uri
+    old_uri = realm.url
     # If the realm had been a demo organization scheduled for
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
@@ -73,10 +83,10 @@ def do_change_realm_subdomain(
         )
 
         # If a realm if being renamed multiple times, we should find all the placeholder
-        # realms and reset their deactivated_redirect field to point to the new realm uri
+        # realms and reset their deactivated_redirect field to point to the new realm url
         placeholder_realms = Realm.objects.filter(deactivated_redirect=old_uri, deactivated=True)
         for placeholder_realm in placeholder_realms:
-            do_add_deactivated_redirect(placeholder_realm, realm.uri)
+            do_add_deactivated_redirect(placeholder_realm, realm.url)
 
     # The below block isn't executed in a transaction with the earlier code due to
     # the functions called below being complex and potentially sending events,
@@ -87,8 +97,10 @@ def do_change_realm_subdomain(
     # the realm has been moved to a new subdomain.
     if add_deactivated_redirect:
         placeholder_realm = do_create_realm(old_subdomain, realm.name)
-        do_deactivate_realm(placeholder_realm, acting_user=None)
-        do_add_deactivated_redirect(placeholder_realm, realm.uri)
+        do_deactivate_realm(
+            placeholder_realm, acting_user=None, deactivation_reason="subdomain_change"
+        )
+        do_add_deactivated_redirect(placeholder_realm, realm.url)
 
 
 def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
@@ -108,25 +120,36 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         Realm.ORG_TYPES["education"]["id"],
     ):
         # Limit user creation to administrators.
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
-        # Restrict public stream creation to staff, but allow private
-        # streams (useful for study groups, etc.).
-        realm.create_public_stream_policy = Realm.POLICY_ADMINS_ONLY
+        realm.invite_to_realm_policy = InviteToRealmPolicyEnum.ADMINS_ONLY
         # Don't allow members (students) to manage user groups or
         # stream subscriptions.
-        realm.user_group_edit_policy = Realm.POLICY_MODERATORS_ONLY
-        realm.invite_to_stream_policy = Realm.POLICY_MODERATORS_ONLY
+        realm.user_group_edit_policy = CommonPolicyEnum.MODERATORS_ONLY
+        realm.invite_to_stream_policy = CommonPolicyEnum.MODERATORS_ONLY
         # Allow moderators (TAs?) to move topics between streams.
-        realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
+        realm.move_messages_between_streams_policy = (
+            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY
+        )
 
 
 @transaction.atomic(savepoint=False)
-def set_default_for_realm_permission_group_settings(realm: Realm) -> None:
+def set_default_for_realm_permission_group_settings(
+    realm: Realm, group_settings_defaults_for_org_types: Optional[Dict[str, Dict[int, str]]] = None
+) -> None:
     system_groups_dict = get_role_based_system_groups_dict(realm)
 
     for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         group_name = permission_configuration.default_group_name
-        setattr(realm, setting_name, system_groups_dict[group_name])
+
+        # Below code updates the group_name if the setting default depends on org_type.
+        if (
+            group_settings_defaults_for_org_types is not None
+            and setting_name in group_settings_defaults_for_org_types
+        ):
+            setting_org_type_defaults = group_settings_defaults_for_org_types[setting_name]
+            if realm.org_type in setting_org_type_defaults:
+                group_name = setting_org_type_defaults[realm.org_type]
+
+        setattr(realm, setting_name, system_groups_dict[group_name].usergroup_ptr)
 
     realm.save(update_fields=list(Realm.REALM_PERMISSION_GROUP_SETTINGS.keys()))
 
@@ -266,7 +289,16 @@ def do_create_realm(
         )
 
         create_system_user_groups_for_realm(realm)
-        set_default_for_realm_permission_group_settings(realm)
+
+        group_settings_defaults_for_org_types = {
+            "can_create_public_channel_group": {
+                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
+                Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
+            }
+        }
+        set_default_for_realm_permission_group_settings(
+            realm, group_settings_defaults_for_org_types
+        )
 
         RealmAuthenticationMethod.objects.bulk_create(
             [
@@ -275,31 +307,43 @@ def do_create_realm(
             ]
         )
 
+        PresenceSequence.objects.create(realm=realm, last_update_id=0)
+
         maybe_enqueue_audit_log_upload(realm)
 
-    # Create stream once Realm object has been saved
-    new_stream_announcements_stream = ensure_stream(
-        realm,
-        Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-        stream_description="Everyone is added to this stream by default. Welcome! :octopus:",
-        acting_user=None,
-    )
+    # Create channels once Realm object has been saved
+    with override_language(realm.default_language):
+        zulip_discussion_channel = ensure_stream(
+            realm,
+            str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            stream_description=_("Questions and discussion about using Zulip."),
+            acting_user=None,
+        )
+        zulip_sandbox_channel = ensure_stream(
+            realm,
+            str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            stream_description=_("Experiment with Zulip here. :test_tube:"),
+            acting_user=None,
+        )
+        new_stream_announcements_stream = ensure_stream(
+            realm,
+            str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
+            stream_description=_("For team-wide conversations"),
+            acting_user=None,
+        )
+
     # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
     realm.new_stream_announcements_stream = new_stream_announcements_stream
     realm.zulip_update_announcements_stream = new_stream_announcements_stream
 
-    # With the current initial streams situation, the only public
-    # stream is the new_stream_announcements_stream.
-    DefaultStream.objects.create(stream=new_stream_announcements_stream, realm=realm)
-
-    signup_announcements_stream = ensure_stream(
-        realm,
-        Realm.INITIAL_PRIVATE_STREAM_NAME,
-        invite_only=True,
-        stream_description="A private stream for core team members.",
-        acting_user=None,
-    )
-    realm.signup_announcements_stream = signup_announcements_stream
+    # With the current initial streams situation, the public channels are
+    # 'zulip_discussion_channel', 'zulip_sandbox_channel', 'new_stream_announcements_stream'.
+    public_channels = [
+        DefaultStream(stream=zulip_discussion_channel, realm=realm),
+        DefaultStream(stream=zulip_sandbox_channel, realm=realm),
+        DefaultStream(stream=new_stream_announcements_stream, realm=realm),
+    ]
+    DefaultStream.objects.bulk_create(public_channels)
 
     # New realm is initialized with the latest zulip update announcements
     # level as it shouldn't receive a bunch of old updates.
@@ -308,7 +352,6 @@ def do_create_realm(
     realm.save(
         update_fields=[
             "new_stream_announcements_stream",
-            "signup_announcements_stream",
             "zulip_update_announcements_stream",
             "zulip_update_announcements_level",
         ]
@@ -331,7 +374,7 @@ def do_create_realm(
         support_url = get_realm_support_url(realm)
         organization_type = get_org_type_display_name(realm.org_type)
 
-        message = f"[{realm.name}]({support_url}) ([{realm.display_subdomain}]({realm.uri})). Organization type: {organization_type}"
+        message = f"[{realm.name}]({support_url}) ([{realm.display_subdomain}]({realm.url})). Organization type: {organization_type}"
         topic_name = "new organizations"
 
         try:

@@ -78,12 +78,22 @@ export function redraw_user(user_id: number): void {
     });
 }
 
+export function check_should_redraw_new_user(user_id: number): boolean {
+    if (realm.realm_presence_disabled) {
+        return false;
+    }
+
+    const user_is_in_presence_info = presence.presence_info.has(user_id);
+    const user_not_yet_known = people.maybe_get_user_by_id(user_id, true) === undefined;
+    return user_is_in_presence_info && user_not_yet_known;
+}
+
 export function searching(): boolean {
     return user_filter?.searching() ?? false;
 }
 
 export function render_empty_user_list_message_if_needed($container: JQuery): void {
-    const empty_list_message = $container.data("search-results-empty");
+    const empty_list_message = $container.attr("data-search-results-empty");
 
     if (!empty_list_message || $container.children().length) {
         return;

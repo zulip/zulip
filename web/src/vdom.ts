@@ -38,7 +38,7 @@ export function eq_array<T>(
         return false;
     }
 
-    return a.every((item, i) => eq(item, b[i]));
+    return a.every((item, i) => eq(item, b[i]!));
 }
 
 export function ul<T>(opts: Options<T>): Tag<T> {
@@ -198,7 +198,7 @@ export function update<T>(
     const $child_elems = find().children();
 
     for (const [i, new_node] of new_opts.keyed_nodes.entries()) {
-        const old_node = old_opts.keyed_nodes[i];
+        const old_node = old_opts.keyed_nodes[i]!;
         if (new_node.eq(old_node)) {
             continue;
         }

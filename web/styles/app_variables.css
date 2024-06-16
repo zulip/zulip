@@ -58,17 +58,81 @@
     --right-sidebar-width: 250px;
     --left-sidebar-header-icon-width: 15px;
 
+    /* We base sidebar row heights on their line heights.
+       Prominent rows include things like headers (e.g., VIEWS)
+       as well as navigation items. Everything else takes
+       the smaller line-height. */
+    --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
+    --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
+
     /* Tippy popover related values */
-    --popover-menu-min-width: 230px;
+    --navbar-popover-menu-min-width: 230px;
+    --message-actions-popover-min-width: 230px;
+    --topic-actions-popover-min-width: 200px;
+
+    /* Information density and typography values */
+    /* The legacy values here are updated via JavaScript */
+    --base-font-size-px: 14px;
+    --base-line-height-unitless: 1.214;
+    --base-maximum-block-height-em: 1.425em;
+    --line-fitted-vertical-align-offset-em: 0;
+    --markdown-interelement-space-px: 5px;
+    --markdown-interelement-doubled-space-px: calc(
+        var(--markdown-interelement-space-px) * 2
+    );
+    /* Certain elements need to be fitted perfectly to
+       the line height; the length here can be used to set
+       precise heights, and in the case of square elements,
+       a matching precise width as well. */
+    --length-line-fitted-block: calc(var(--base-line-height-unitless) * 1em);
+    /* Emoji elements are allowed to exceed the perfectly-fit
+       line-height. Classic Zulip emoji sizing is a 20px square
+       emoji at a 14px font-size, for 1.4286em at 14px/1em. */
+    --length-line-oversize-block: 1.4286em;
+    /* To avoid disturbing the flow of text around emoji or other
+       oversize inline blocks, we calculate a negative margin
+       adjustment for offsetting the emoji, top and bottom. */
+    --length-line-oversize-block-margin-adjust: calc(
+        (
+                (
+                        min(
+                            var(--base-maximum-block-height-em),
+                            var(--length-line-fitted-block)
+                        )
+                    ) - var(--length-line-oversize-block)
+            ) / 2
+    );
+
+    /* Legacy values */
+    --legacy-body-line-height-unitless: calc(20 / 14);
+
+    .more-dense-mode {
+        /* The legacy values here are not altered by JavaScript */
+        --base-font-size-px: 14px;
+        --base-line-height-unitless: 1.214;
+        --markdown-interelement-space-px: 5px;
+        --markdown-interelement-doubled-space-px: 10px;
+        --message-box-markdown-aligned-vertical-space: 5px;
+    }
 
     /*
     Message box elements and values.
     */
     --message-box-avatar-width: 35px;
     --message-box-avatar-height: var(--message-box-avatar-width);
-    --message-box-line-height: 1.214;
+    --message-box-avatar-column-width: 46px;
+    /* 6px appears to provide 5px of space between the avatar
+       and the selected-message outline, which is offset by -1px. */
+    --message-box-vertical-margin: 6px;
+    --message-box-markdown-aligned-vertical-space: var(
+        --markdown-interelement-space-px
+    );
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
+    /* The line-height on the sender line should coordinate with the
+       height of the hover icons. The sender line never wraps, so this
+       just keeps the two in line with the grid definition. */
+    --message-box-sender-line-height: var(--message-box-icon-height);
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
@@ -87,9 +151,18 @@
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
     allow elements like DM pills to stack without breaking out of their
-    flex item.
+    flex item. 2.1786em is 30.5px at 14px/1em.
     */
-    --compose-recipient-box-min-height: 30.5px;
+    --compose-recipient-box-min-height: 2.1786em;
+
+    /*
+    Width of the area where the compose box buttons are placed, "inside"
+    the right edge of the compose box. This is used for the negative right
+    margin and the right padding of the textbox to extend it into the compose
+    expand / collapse buttons area, but keep the text from showing under the
+    the buttons.
+    */
+    --composebox-buttons-width: 25px;
 
     /*
     Width to be reserved for document scrollbar when scrolling is disabled.
@@ -120,6 +193,10 @@
     --subscriptions-overlay-display-type-height: 44px;
     /* .settings-sticky-footer */
     --subscriptions-overlay-sticky-footer-height: 60px;
+    /* Informational overlay */
+    /* Because zoom breaks at 525px perhaps due to rounding errors, we add a
+       trivial amount of width so the overlay doesn't break. */
+    --informational-overlay-max-width: 550px;
 
     /*
     Maximum height of the compose box when it is not in expanded state. This
@@ -133,8 +210,9 @@
     Line height of the message buttons in compose box. Here it's necessary
     to control this value uniformly and precisely to avoid issues with
     layout shifts originating with non-Latin characters in this area.
+    1.429em is 20px at 14px em.
     */
-    --line-height-compose-buttons: 20px;
+    --line-height-compose-buttons: 1.429em;
 
     /*
     Maximum height of the subscribers list in stream settings so that
@@ -143,14 +221,28 @@
     */
     --stream-subscriber-list-max-height: 100%;
 
+    /*
+      Reusable dimensions and offsets.
+    */
+    --margin-bottom-field-description: 3px;
     /* Gap between tabs in the tab picker */
     --grid-gap-tab-picker: 2px;
+
+    /*
+    The tippy arrow which matches the color of the popover's border,
+    is formed by stacking two arrows on top of each other, via the
+    use of `::before` and `::after` pseudo-elements. This value overrides
+    the offset of the `::before` pseudo element to create a thicker border,
+    visually consistent with that of it's parent popover.
+    */
+    --popover-tippy-arrow-before-offset: -6.5px;
 
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
     --color-background-stream-message-content: hsl(0deg 0% 100%);
+    --color-selected-message-outline: hsl(217deg 64% 59% / 60%);
     --color-message-list-border: hsl(0deg 0% 0% / 16%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 10%);
     --color-private-message-header-border: hsl(0deg 0% 0% / 10%);
@@ -168,6 +260,7 @@
     --color-masked-unread-marker: hsl(0deg 0% 80%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
+    --color-background-invitee-emails-pill-container: hsl(0deg 0% 100%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
     --color-outline-focus: hsl(215deg 47% 50%);
     --color-background-search: hsl(0deg 0% 100%);
@@ -178,14 +271,17 @@
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
     --color-background-image-loader: hsl(0deg 0% 0% / 10%);
     --color-icon-purple: hsl(240deg 35% 60%);
-    --color-background-dropdown-menu: hsl(0deg 0% 100%);
-    --color-border-popover-menu: hsl(0deg 0% 0% / 10%);
+    --color-background-popover-menu: hsl(0deg 0% 100%);
+    --color-border-popover-menu-separator: hsl(0deg 0% 0% / 10%);
     --color-hotkey-hint: hsl(227deg 78% 59%);
-    --color-background-hover-dropdown-menu: hsl(220deg 12% 5% / 5%);
-    --color-background-active-dropdown-menu: hsl(220deg 12% 5% / 7%);
-    --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
+    --color-popover-hotkey-hint: hsl(0deg 0% 40%);
+    --color-border-popover-hotkey-hint: hsl(0deg 0% 40% / 50%);
+    --color-background-hover-popover-menu: hsl(220deg 12% 5% / 5%);
+    --color-background-active-popover-menu: hsl(220deg 12% 5% / 7%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
     /* There's no alpha channel here, but this keeps
        the variable names in line. */
     --color-background-unread-counter-no-alpha: var(
@@ -194,7 +290,6 @@
     --color-background-unread-counter-dot: var(
         --color-background-unread-counter
     );
-    --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
@@ -206,6 +301,16 @@
     --color-background-alert-word: hsl(18deg 100% 84%);
     --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
     --color-border-sidebar: hsl(0deg 0% 87%);
+
+    /* Recent view */
+    --color-border-recent-view-row: hsl(0deg 0% 87%);
+    --color-border-recent-view-table: hsl(0deg 0% 0% / 60%);
+    --color-background-recent-view-row: hsl(100deg 11% 96%);
+    --color-background-recent-view-row-hover: hsl(210deg 100% 97%);
+    --color-background-recent-view-unread-row: hsl(0deg 0% 100%);
+    --color-background-recent-view-unread-row-hover: hsl(210deg 100% 97%);
+    --color-recent-view-link: hsl(205deg 47% 42%);
+    --color-recent-view-link-hover: hsl(214deg 40% 58%);
 
     /* Compose box colors */
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
@@ -237,12 +342,27 @@
         231deg 100% 90% / 50%
     );
     --color-compose-chevron-arrow: hsl(0deg 0% 58%);
+    --color-limit-indicator: hsl(38deg 100% 36%);
+    --color-limit-indicator-over-limit: hsl(3deg 80% 40%);
+    --color-narrow-to-compose-recipients-background: hsl(227deg 100% 70% / 25%);
+    --color-narrow-to-compose-recipients-background-hover: hsl(
+        227deg 100% 70% / 35%
+    );
+    --color-narrow-to-compose-recipients: hsl(227deg 76% 64%);
+    --color-narrow-to-compose-recipients-hover: hsl(227deg 78% 59%);
+    --color-composebox-button: hsl(0deg 100% 0% / 55%);
+    --color-composebox-button-hover: var(--color-text-default);
+    --color-composebox-button-background: hsl(0deg 100% 100% / 60%);
+    --color-composebox-button-background-hover: hsl(0deg 0% 95%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-default: hsl(0deg 0% 15%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
+    /* Light and dark mode both use the same hover color on
+       sender names. */
+    --color-text-sender-name-hover: hsl(200deg 100% 40%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
@@ -250,7 +370,7 @@
     --color-text-search: hsl(0deg 0% 35%);
     --color-text-search-hover: hsl(0deg 0% 0%);
     --color-text-search-placeholder: hsl(0deg 0% 50%);
-    --color-text-dropdown-menu: hsl(0deg 0% 15%);
+    --color-text-popover-menu: hsl(0deg 0% 15%);
     --color-text-full-name: hsl(0deg 0% 15%);
     --color-text-item: hsl(0deg 0% 40%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
@@ -260,6 +380,11 @@
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
+
+    /* Markdown colors */
+    --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
+    --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
+    --color-border-informational-overlays-table: hsl(0deg 0% 87%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -290,6 +415,8 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(200deg 100% 40%);
+    --color-user-circle-active: hsl(106deg 74% 44%);
+    --color-user-circle-idle: hsl(29deg 84% 51%);
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
@@ -361,7 +488,7 @@
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
 
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+    --box-shadow-popover-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
         0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
@@ -447,9 +574,17 @@
     --color-background-emoji-picker-emoji-reacted: hsl(195deg 50% 95%);
     --color-border-emoji-picker-emoji-reacted: hsl(195deg 52% 79%);
     --color-background-emoji-picker-emoji-reacted-focus: hsl(195deg 55% 88%);
+    /* Same color as background color of header / footer */
+    --color-border-emoji-picker-tippy-arrow: hsl(0deg 0% 93%);
 }
 
 %dark-theme {
+    /* There is no lefthand border to cover in dark mode, so
+       don't apply negative margin that would otherwise pull
+       the unread marker to the left. */
+    --unread-marker-left: 0;
+
+    /* Colors used across the app */
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-background-private-message-content: hsl(46deg 7% 16%);
@@ -460,6 +595,7 @@
     --color-private-message-header-border: hsl(0deg 0% 0% / 48%);
     --color-message-header-contents-border-bottom: hsl(0deg 0% 0% / 50%);
     --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 37%);
+    --color-selected-message-outline: hsl(217deg 64% 59% / 70%);
     --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
     --color-background-widget-input: hsl(225deg 6% 10%);
@@ -470,6 +606,7 @@
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
     --color-background-modal: hsl(212deg 28% 18%);
+    --color-background-invitee-emails-pill-container: hsl(0deg 0% 0% / 20%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
     --color-background-search: hsl(0deg 0% 20%);
@@ -477,12 +614,14 @@
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
     --color-background-image-loader: hsl(0deg 0% 100% / 10%);
-    --color-background-dropdown-menu: hsl(0deg 0% 17%);
-    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
+    --color-background-popover-menu: hsl(0deg 0% 17%);
+    --color-border-popover-menu-separator: hsl(0deg 0% 0% / 40%);
     --color-hotkey-hint: hsl(225deg 100% 84%);
-    --color-background-hover-dropdown-menu: hsl(220deg 12% 95% / 5%);
-    --color-background-active-dropdown-menu: hsl(220deg 12% 95% / 7%);
-    --color-border-dropdown-menu: hsl(0deg 0% 0%);
+    --color-popover-hotkey-hint: hsl(0deg 0% 65%);
+    --color-border-popover-hotkey-hint: hsl(0deg 0% 65% / 50%);
+    --color-background-hover-popover-menu: hsl(220deg 12% 95% / 5%);
+    --color-background-active-popover-menu: hsl(220deg 12% 95% / 7%);
+    --color-border-popover-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     /* When unreads are hovered on the condensed
@@ -498,7 +637,6 @@
         hsl(0deg 0% 11%)
     );
     --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
-    --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
     --color-border-unread-counter-popover-menu: var(
         --color-border-unread-counter
@@ -511,6 +649,16 @@
     --color-background-alert-word: hsl(22deg 70% 35%);
     --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
+
+    /* Recent view */
+    --color-border-recent-view-row: hsl(0deg 0% 0% / 20%);
+    --color-border-recent-view-table: hsl(0deg 0% 88%);
+    --color-background-recent-view-row: hsl(0deg 0% 11%);
+    --color-background-recent-view-row-hover: hsl(208deg 26% 11% / 60%);
+    --color-background-recent-view-unread-row: hsl(212deg 30% 22% / 40%);
+    --color-background-recent-view-unread-row-hover: hsl(212deg 30% 22% / 60%);
+    --color-recent-view-link: hsl(206deg 89% 74%);
+    --color-recent-view-link-hover: hsl(208deg 64% 52%);
 
     /* Compose box colors */
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
@@ -542,6 +690,17 @@
         235deg 100% 70% / 11%
     );
     --color-background-popover: hsl(212deg 32% 14%);
+    --color-limit-indicator: hsl(38deg 100% 70%);
+    --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
+    --color-narrow-to-compose-recipients-background: hsl(227deg 80% 60% / 25%);
+    --color-narrow-to-compose-recipients-background-hover: hsl(
+        227deg 80% 60% / 35%
+    );
+    --color-narrow-to-compose-recipients: hsl(224deg 28% 81%);
+    --color-narrow-to-compose-recipients-hover: hsl(221deg 100% 95%);
+    --color-composebox-button: hsl(0deg 100% 100% / 55%);
+    --color-composebox-button-background: hsl(231deg 8% 13.5% / 80%);
+    --color-composebox-button-background-hover: hsl(231deg 12% 18%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -560,7 +719,7 @@
     --color-text-search-hover: hsl(0deg 0% 100%);
     --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
     --color-text-empty-list-message: hsl(0deg 0% 67%);
-    --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
+    --color-text-popover-menu: hsl(0deg 0% 100% / 80%);
     --color-text-full-name: hsl(0deg 0% 100%);
     --color-text-item: hsl(0deg 0% 50%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
@@ -577,6 +736,11 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+
+    /* Markdown color */
+    --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
+    --color-border-rendered-markdown-table: hsl(0deg 0% 100% / 20%);
+    --color-border-informational-overlays-table: hsl(0deg 0% 0% / 20%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
@@ -673,7 +837,7 @@
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
 
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+    --box-shadow-popover-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
         0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
@@ -725,9 +889,8 @@
 
     /* Button colors on modals and message editing. */
     --color-exit-button-text: hsl(0deg 0% 100%);
-    --color-exit-button-border: hsl(0deg 0% 0% / 60%);
-    --color-exit-button-background: hsl(211deg 29% 14%);
-    --color-exit-button-background-interactive: hsl(211deg 29% 17%);
+    --color-exit-button-background: hsl(226deg 1% 30% / 50%);
+    --color-exit-button-background-interactive: hsl(226deg 1% 30% / 65%);
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 0% / 20%);
@@ -739,6 +902,9 @@
     --color-background-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 50%);
     --color-border-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 90%);
     --color-background-emoji-picker-emoji-reacted-focus: hsl(0deg 0% 20% / 70%);
+    --color-border-add-subscription-button-focus: hsl(0deg 0% 67%);
+    /* Same color as background color of header / footer */
+    --color-border-emoji-picker-tippy-arrow: hsl(211.58deg 33.33% 11.18%);
 }
 
 @media screen {

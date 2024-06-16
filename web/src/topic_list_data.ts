@@ -98,7 +98,7 @@ function choose_topics(
 
                 // Otherwise, we don't show the topic in the
                 // unzoomed view.  We might display its unread
-                // count in in "more topics" if it is not muted.
+                // count in "show all topics" if it is not muted.
                 return false;
             }
 
@@ -153,6 +153,7 @@ export function get_list_info(
     zoomed: boolean,
     search_term: string,
 ): TopicListInfo {
+    const narrowed_topic = narrow_state.topic();
     const topic_choice_state: TopicChoiceState = {
         items: [],
         topics_selected: 0,
@@ -169,6 +170,15 @@ export function get_list_info(
     const stream_muted = sub.is_muted;
 
     let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
+
+    if (
+        stream_id === narrow_state.stream_id() &&
+        narrowed_topic &&
+        !topic_names.includes(narrowed_topic)
+    ) {
+        topic_names.unshift(narrowed_topic);
+    }
+
     if (zoomed) {
         topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
     }
@@ -193,7 +203,7 @@ export function get_list_info(
         stream_muted
     ) {
         // For muted streams, if the only unreads are in muted topics,
-        // we have a muted styling "more topics" row.
+        // we have a muted styling "all topics" row.
         return {
             items: topic_choice_state.items,
             num_possible_topics: topic_names.length,

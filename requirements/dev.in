@@ -33,6 +33,7 @@ ruff
 
 # Needed for watching file changes
 pyinotify
+pyasyncore  # https://github.com/seb-m/pyinotify/issues/204
 
 # Needed to run tests in parallel
 tblib
@@ -61,7 +62,7 @@ cairosvg
 python-debian
 
 # Pattern-based lint tool
-semgrep<1.53.0  # https://github.com/boto/botocore/issues/2926
+semgrep
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check

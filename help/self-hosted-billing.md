@@ -3,59 +3,80 @@
 This page describes how to manage your self-hosted plan, and answers some common
 questions about plans and billing for self-hosted organizations. Please refer to
 [Self-hosted Zulip plans and pricing](https://zulip.com/plans/#self-hosted) for plan
-details.  If you have any questions not answered here, please don't hesitate to
+details.
+
+The topics covered include:
+
+* [Logging in to manage billing](#log-in-to-billing-management)
+* [Upgrading to a paid plan](#upgrade-to-a-paid-plan)
+* [Managing billing](#manage-billing)
+* [Canceling a paid plan](#cancel-paid-plan)
+* [Applying for a free Community plan](#apply-for-community-plan)
+* [Applying for a paid plan discount](#apply-for-a-paid-plan-discount)
+* [Manual license management](#manually-update-number-of-licenses)
+
+If you have any questions not answered here, please don't hesitate to
 reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 ## Paid plan details and upgrades
 
-For businesses with up to 10 Zulip users, the Free plan is a good option, and
-includes free access to the Mobile Push Notification Service.
+For businesses with up to 10 Zulip users, the **Free** plan is a good option, and
+includes free access to Zulip's [Mobile Push Notification Service][push-notifications].
 
-For businesses with more than 10 Zulip users, both the Basic and Business plans
-include unlimited access to the Mobile Push Notification Service.
+For businesses with more than 10 Zulip users, both the **Basic** and **Business**
+plans include unlimited access to Zulip's Mobile Push Notification Service.
 
-The Business plan also includes commercial support for dozens of features and
-[integrations](/help/integrations-overview) that help businesses take full advantage of their Zulip
-implementation. The minimum purchase is 25 licenses.
+The **Business** plan also includes commercial support for dozens of features and
+[integrations](/help/integrations-overview) that help businesses take full advantage
+of their Zulip implementation. The minimum purchase is 25 licenses.
 
-If your organization requires hands-on support, such as real-time support during
-installation and upgrades, support for advanced deployment options, custom
-feature development or integrations, etc., should contact
+If your organization requires hands-on support, such as real-time assistance during
+installation and upgrades, help with advanced deployment options, development of
+custom features or integrations, etc., please contact
 [sales@zulip.com](mailto:sales@zulip.com) to discuss pricing.
+
+!!! warn ""
+
+    **Note**: For 8.0+ servers hosting more than one organization, commercial support
+    for any server-wide configurations requires upgrading the organization with the
+    largest number of users.
 
 Paid plan discounts are available in a variety of situations; see
 [below](#paid-plan-discounts) for details.
 
-### Upgrades for legacy customers
+## Log in to billing management
 
-On December 15, 2023, it was
-[announced](https://blog.zulip.com/2023/12/15/new-plans-for-self-hosted-customers/)
-that self-hosted customers will no longer get unlimited free access to Zulip's
-[Mobile Push Notification
-Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
-Legacy customers can continue using the notification service for free (no action
-required) until February 15, 2024.
+{!self-hosted-billing-multiple-organizations.md!}
 
-To continue using the service after that date, organizations with more than 10
-users must upgrade to a paid plan or the Community plan. When you upgrade to a
-paid plan, you can start the plan right away (if you‘d like your technical
-support to start immediately), or schedule a February 15 start date.
+{start_tabs}
 
-If your organization needs more time to sign up for a plan, please contact
-[sales@zulip.com](mailto:sales@zulip.com) to request extended free access to the
-Mobile Push Notification Service.
+{tab|v8}
 
-!!! tip ""
-    An email announcing this change was sent to the registered contact email
-    address for all legacy customers. If you did not receive this email, please
-    [update](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#updating-your-server-s-registration)
-    your contact information.
+{!self-hosted-billing-admin-only.md!}
 
-Any Zulip server that registered for Zulip's [Mobile Push Notification
-Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
-prior to December 15, 2023 is considered to be a legacy customer.
+{!register-server.md!}
 
-#### Do I have to upgrade my server first?
+{!self-hosted-log-in.md!}
+
+{tab|all-versions}
+
+{!legacy-log-in-intro.md!}
+
+{!register-server-legacy.md!}
+
+{!legacy-log-in.md!}
+
+{end_tabs}
+
+Once you are logged in, you can [upgrade to a paid
+plan](#upgrade-to-a-paid-plan), [manage billing](#manage-billing), [cancel a
+paid plan](#cancel-paid-plan), or [apply for a free Community
+plan](#apply-for-community-plan) or a [paid plan
+discount](#apply-for-a-paid-plan-discount).
+
+## Upgrade to a paid plan
+
+### Do I have to upgrade my server first?
 
 While upgrading your Zulip server to version 8.0+ makes it more convenient to
 manage your plan, you do not have to upgrade your Zulip installation in order to
@@ -67,214 +88,123 @@ you:
 - Easily log in to Zulip plan management, without an additional server
   authentication step.
 
-- Separately manage plans for all the organizations on your server.
+- Separately manage plans for all the organizations hosted on your server.
 
-- Upload only the [basic
-  metadata](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata)
-  required for the service, without also [uploading usage
-  statistics](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics).
+- Upload only the [basic metadata][basic-metadata] required for the service,
+  without also [uploading usage statistics][usage-statistics].
 
 If you upgrade your server after signing up for a plan, you will be able to
-transfer your plan to an organization on your server. If your server has one
-organization on it, this will happen automatically. Otherwise, contact
-[support@zulip.com](mailto:support@zulip.com) for help.
+transfer your plan to an organization on your server. If your server only
+hosts one organization, this will happen automatically. Otherwise, contact
+[support@zulip.com](mailto:support@zulip.com) for assistance.
 
-#### Upgrading to a paid plan
+### Start a free trial
 
-{!self-hosted-billing-multiple-organizations.md!}
+**New customers** are eligible for a free 30-day trial of the **Basic** plan.
+An organization is considered to be a new customer if:
+
+- It was not registered for Zulip's [Mobile Push Notification
+  Service][push-notifications] prior to December 12, 2023, and
+
+- It has never previously signed up for a self-hosted Zulip plan (Basic,
+  Business, Community or Enterprise).
 
 {start_tabs}
 
-{tab|v8}
+{tab|by-card}
 
-{!self-hosted-billing-admin-only.md!}
+{!self-hosted-billing-log-in-step.md!}
 
-{!self-hosted-log-in.md!}
+1. On the page listing Zulip's self-hosted plans, click the **Start
+   30-day trial** button at the bottom of the **Basic** plan.
+
+1. Click **Add card** to enter your payment details.
+
+1. *(optional)* Update the billing details included on receipts so that
+   they are different from the information entered for the payment method,
+   e.g. in case you would prefer that the company's name be on receipts
+   instead of the card holder's name.
+
+1. Click **Start 30-day trial** to start your free trial.
+
+!!! tip ""
+
+    Once you start the trial, you can switch between monthly and annual
+    billing on your organization's billing page.
+
+{tab|by-invoice}
+
+!!! warn ""
+
+    Only [manual license
+    management](#how-does-manual-license-management-work) is available
+    when paying by invoice.
+
+{!self-hosted-billing-log-in-step.md!}
+
+1. On the page listing Zulip's self-hosted plans, click the **Start
+   30-day trial** button at the bottom of the **Basic** plan.
+
+1. Select **pay by invoice**.
+
+1. Select your preferred option from the **Payment schedule** dropdown.
+
+1. Select the **Number of licenses** you would like to purchase for your
+   organization. You can adjust this number to update your initial invoice any
+   time during your trial.
+
+1. Click **Update billing information** to enter your billing details, which
+   will be included on invoices and receipts.
+
+1. Click **Start 30-day trial** to start your free trial.
+
+{end_tabs}
+
+### Upgrade directly to a paid plan
+
+{start_tabs}
+
+{tab|by-card}
+
+{!self-hosted-billing-log-in-step.md!}
 
 1. On the page listing Zulip's self-hosted plans, click the button at the bottom
    of the plan you would like to purchase.
 
-1. Select your preferred option from the **Payment schedule** dropdown.
+{!plan-upgrade-steps.md!}
 
-1. Under **Plan start date**, select **February 15, 2024** or **Today**.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** or **Schedule upgrade** button to complete your
-   purchase.
+{tab|by-invoice}
 
 !!! warn ""
 
-    If your server hosts more than one organization, commercial
-    support for server-wide configurations requires upgrading the
-    organization with the largest number of users.
+    Only [manual license
+    management](#how-does-manual-license-management-work) is available
+    when paying by invoice.
 
-{tab|all-versions}
+{!self-hosted-billing-log-in-step.md!}
 
-{!legacy-log-in-intro.md!}
-
-{!legacy-log-in.md!}
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Under **Plan start date**, select **February 15, 2024** or **Today**.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** or **Schedule upgrade** button to complete your
-   purchase.
+{!pay-by-invoice-steps.md!}
 
 {end_tabs}
-
-### Upgrades for new customers
-
-#### Upgrade to Zulip Basic
-
-**New customers** are eligible for a free 30-day trial of Zulip Basic. An
-organization is considered to be a new customer if:
-
-- It was not registered for Zulip's [Mobile Push Notification
-  Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
-  prior to December 12, 2023, and
-- It has never previously signed up for a self-hosted Zulip plan (Basic, Business,
-  Community or Enterprise).
-
-{!self-hosted-billing-multiple-organizations.md!}
-
-{start_tabs}
-
-{tab|v8}
-
-{!register-server.md!}
-
-{!self-hosted-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Start 30-day
-   trial** button at the bottom of the **Basic** plan.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click **Start 30-day trial** to start your free trial.
-
-!!! tip ""
-
-    Once you start the trial, you can switch between monthly and annual billing
-    on your organization's billing page.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!register-server-legacy.md!}
-
-{!legacy-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Start 30-day
-   trial** button at the bottom of the **Basic** plan.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click **Start 30-day trial** to start your free trial.
-
-!!! tip ""
-
-    Once you start the trial, you can switch between monthly and annual billing
-    on your organization's billing page.
-
-{end_tabs}
-
-#### Upgrade to Zulip Business
-
-{!self-hosted-billing-multiple-organizations.md!}
-
-{start_tabs}
-
-{tab|v8}
-
-{!register-server.md!}
-
-{!self-hosted-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Upgrade to Business** button
-   at the bottom of the **Business** plan.
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** button to complete your purchase.
-
-!!! warn ""
-
-    If your server hosts more than one organization, commercial
-    support for server-wide configurations requires upgrading the
-    organization with the largest number of users.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!register-server-legacy.md!}
-
-{!legacy-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Upgrade to Business** button
-   at the bottom of the **Business** plan.
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** button to complete your purchase.
-
-!!! tip ""
-
-    Once you start the trial, you can switch between monthly and annual billing
-    on your organization's billing page.
-
-{end_tabs}
-
 
 ## Manage billing
 
-{!self-hosted-billing-multiple-organizations.md!}
+{!manage-billing-intro.md!}
 
 {start_tabs}
 
-{tab|v8}
-
-{!self-hosted-log-in.md!}
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!legacy-log-in.md!}
+{!self-hosted-billing-log-in-step.md!}
 
 {end_tabs}
 
 ## Cancel paid plan
-
-{!self-hosted-billing-multiple-organizations.md!}
 
 If you cancel your plan, your organization will be downgraded to the
 **Free** plan at the end of the current billing period.
 
 {start_tabs}
 
-{tab|v8}
-
-{!self-hosted-log-in.md!}
-
-1. At the bottom of the page, click **Cancel plan**.
-
-2. Click **Downgrade** to confirm.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!legacy-log-in.md!}
+{!self-hosted-billing-log-in-step.md!}
 
 1. At the bottom of the page, click **Cancel plan**.
 
@@ -285,7 +215,7 @@ If you cancel your plan, your organization will be downgraded to the
 ## Free Community plan
 
 Zulip sponsors free plans for over 1000 worthy organizations. The following
-types of organizations are generally eligible for the free Community plan.
+types of organizations are generally eligible for the **Community** plan.
 
 - Open-source projects, including projects with a small paid team.
 - Research in an academic setting, such as research groups, cross-institutional
@@ -297,60 +227,36 @@ types of organizations are generally eligible for the free Community plan.
   friends, volunteer groups, etc.).
 
 Organizations that have up to 10 users, or do not require mobile push
-notifications, will likely find the Free plan to be the most convenient
-option. Larger organizations are encouraged to apply for the free Community
+notifications, will likely find the **Free** plan to be the most convenient
+option. Larger organizations are encouraged to apply for the **Community**
 plan, which includes unlimited push notifications and support for many Zulip
 features.
 
 If you aren't sure whether your organization qualifies, submitting a sponsorship
 form describing your situation is a great starting point. Many organizations
-that don't qualify for the Community plan can still receive [discounted paid
+that don't qualify for the **Community** plan can still receive [discounted paid
 plan pricing](#paid-plan-discounts).
 
 ### Apply for Community plan
 
-These instructions describe the Community plan application process for an
-existing Zulip server. If you would like to inquire about Community plan
-eligibility prior to setting up a server, contact
-[sales@zulip.com](mailto:sales@zulip.com).
-
-!!! tip ""
-
-    Organizations that do not qualify for a Community plan may be offered a
-    discount on the Business plan.
+These instructions describe the **Community** plan application process for an
+existing Zulip server. If you would like to inquire about eligibility prior to
+setting up a self-hosted server, contact [sales@zulip.com](mailto:sales@zulip.com).
 
 {start_tabs}
 
-{tab|v8}
-
-{!register-server.md!}
-
-{!self-hosted-log-in.md!}
+{!self-hosted-billing-log-in-step.md!}
 
 1. On the page listing Zulip's self-hosted plans, scroll down to the
    **Sponsorship and discounts** area, and click **Apply here**.
 
 1. Fill out the requested information, and click **Submit**. Your application
-   will be reviewed for Community plan eligibility.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!register-server-legacy.md!}
-
-{!legacy-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, scroll down to the
-   **Sponsorship and discounts** area, and click **Apply here**.
-
-1. Fill out the requested information, and click **Submit**. Your application
-   will be reviewed for Community plan eligibility.
+   will be reviewed for **Community** plan eligibility.
 
 !!! tip ""
 
-    Organizations that do not qualify for a Community plan may be offered a
-    discount on the Business plan.
+    Organizations that do not qualify for a **Community** plan may be offered a
+    discount for the **Basic** plan.
 
 {end_tabs}
 
@@ -376,11 +282,12 @@ situation.
 ### Education pricing
 
 Organizations operated by individual educators (for example, a professor
-teaching one or more classes) are generally eligible for a free
-Community plan.
+teaching one or more classes) are generally eligible for [the Community
+plan](#free-community-plan).
 
-Departments and other institutions using Zulip are eligible for discounted
-education pricing.
+Departments and other institutions using Zulip with students are eligible for
+discounted education pricing. Other educational uses (e.g., by teaching staff or
+university IT) may qualify for [non-profit pricing](#non-profit-pricing).
 
 - **For-profit education pricing**:
     - **Basic plan**: $0.50 per user per month
@@ -396,7 +303,8 @@ education pricing.
 
 ### Non-profit pricing
 
-Non-profits with no paid staff are eligible for the free Community plan.
+Non-profits with no paid staff are eligible for [the Community
+plan](#free-community-plan).
 
 For non-profits with paid staff, volunteers and other unpaid participants in
 your community are eligible for free Zulip accounts. Additionally, discounts are
@@ -427,32 +335,12 @@ may contact [sales@zulip.com](mailto:sales@zulip.com) to arrange a discounted ra
 
 These instructions describe the paid plan discount application process for an
 existing Zulip server. If you would like to inquire about paid plan discount
-eligibility prior to setting up a server, contact
+eligibility prior to setting up a self-hosted server, contact
 [sales@zulip.com](mailto:sales@zulip.com).
 
 {start_tabs}
 
-{tab|v8}
-
-{!register-server.md!}
-
-{!self-hosted-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, scroll down to the
-   **Sponsorship and discounts** area, and click **Apply here**.
-
-1. Select your preferred option from the **Plan** dropdown.
-
-1. Fill out the requested information, and click **Submit**. Your application
-   will be reviewed for discount eligibility.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!register-server-legacy.md!}
-
-{!legacy-log-in.md!}
+{!self-hosted-billing-log-in-step.md!}
 
 1. On the page listing Zulip's self-hosted plans, scroll down to the
    **Sponsorship and discounts** area, and click **Apply here**.
@@ -466,53 +354,39 @@ eligibility prior to setting up a server, contact
 
 ## Payment methods
 
-### Can I pay by credit card and/or invoice?
+### What are my payment options?
 
-You can always use a credit card to pay. If you would like to pay by invoice,
-you will need to sign up for an annual plan.
+{!payment-options.md!}
 
-### How does automatic billing work?
+### How does automatic license management work?
 
 {!automatic-billing.md!}
 
-### How does manual billing work?
+### How does manual license management work?
 
-{!manual-billing-intro.md!}
+With manual license management, you choose and pay for a fixed number of
+licenses for your organization or server. [Deactivating a
+user](/help/deactivate-or-reactivate-a-user) frees up their license for reuse.
 
-#### Manually manage licenses
+If the number of active users exceeds the number of licenses you've purchased,
+any paid services included in your plan will be paused until this is addressed.
+For example, you will lose access to the [Mobile Push Notification
+Service][push-notifications] until you have purchased more licenses or
+deactivated enough users.
+
+#### Manually update number of licenses
 
 {start_tabs}
 
-{tab|v8}
+{!self-hosted-billing-log-in-step.md!}
 
-{!self-hosted-log-in.md!}
-
-1. Modify **Number of licenses for current billing period** or **Number of
-   licenses for next billing period**, and click **Update**.
-
-!!! tip ""
-
-    You can only increase the number of licenses for the current billing period.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!legacy-log-in.md!}
-
-1. Modify **Number of licenses for current billing period** or **Number of
-   licenses for next billing period**, and click **Update**.
-
-!!! tip ""
-
-    You can only increase the number of licenses for the current billing period.
+{!manual-add-license-instructions.md!}
 
 {end_tabs}
 
 ## How paid plans support the Zulip project
 
-Zulip is proudly independent, with [no venture capital
-funding](https://zulip.com/values/#building-a-sustainable-business-aligned-with-our-values),
+Zulip is proudly independent, with [no venture capital funding][sustainable-growth],
 which means that revenue strongly impacts the pace of Zulip’s development. Paid
 plans for self-hosted customers help fund improvements in Zulip's self-hosting
 experience, and overall product development. Zulip needs the support of
@@ -526,13 +400,11 @@ the Zulip project.
 
 Zulip is 100% open-source. Organizations that do not require support with their
 installation can always use Zulip for free with no limitations. Additionally,
-the [Mobile Push Notification
-Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
-is provided free of charge for organizations with up to 10 users.
+the [Mobile Push Notification Service][push-notifications] is provided free of
+charge for organizations with up to 10 users.
 
 You can self-manage your Zulip installation without signing up for a plan. Get
-started with the [installation
-guide](https://zulip.readthedocs.io/en/stable/production/install.html).
+started with the [installation guide][production-install].
 
 ## Related articles
 
@@ -540,3 +412,9 @@ guide](https://zulip.readthedocs.io/en/stable/production/install.html).
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Contact support](/help/contact-support)
+
+[basic-metadata]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata
+[usage-statistics]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics
+[push-notifications]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
+[production-install]: https://zulip.readthedocs.io/en/stable/production/install.html
+[sustainable-growth]: https://zulip.com/values/#building-a-sustainable-business-aligned-with-our-values

@@ -39,6 +39,10 @@
 
     .messagebox-content {
         display: block !important;
+
+        .message_content {
+            cursor: default !important;
+        }
     }
 
     #message-history-error {
@@ -49,5 +53,13 @@
         font-size: 1rem;
         display: none;
         margin: 10px;
+    }
+
+    .overlay_loading_indicator_style {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }

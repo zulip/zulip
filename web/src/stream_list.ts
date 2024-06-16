@@ -9,6 +9,7 @@ import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import type {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -173,13 +174,13 @@ export function update_count_in_dom(
 }
 
 class StreamSidebar {
-    rows = new Map(); // stream id -> row widget
+    rows = new Map<number, StreamSidebarRow>(); // stream id -> row widget
 
     set_row(stream_id: number, widget: StreamSidebarRow): void {
         this.rows.set(stream_id, widget);
     }
 
-    get_row(stream_id: number): StreamSidebarRow {
+    get_row(stream_id: number): StreamSidebarRow | undefined {
         return this.rows.get(stream_id);
     }
 
@@ -254,6 +255,7 @@ export function build_stream_list(force_rerender: boolean): void {
 
     function add_sidebar_li(stream_id: number): void {
         const sidebar_row = stream_sidebar.get_row(stream_id);
+        assert(sidebar_row !== undefined);
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
     }
@@ -663,19 +665,19 @@ export function refresh_muted_or_unmuted_stream(sub: StreamSubscription): void {
 }
 
 export function get_sidebar_stream_topic_info(filter: Filter): {
-    stream_id?: number;
+    stream_id: number | undefined;
     topic_selected: boolean;
 } {
     const result: {
-        stream_id?: number;
+        stream_id: number | undefined;
         topic_selected: boolean;
     } = {
         stream_id: undefined,
         topic_selected: false,
     };
 
-    const op_stream = filter.operands("stream");
-    if (op_stream.length === 0) {
+    const op_stream = filter.operands("channel");
+    if (op_stream[0] === undefined) {
         return result;
     }
 
@@ -745,10 +747,21 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     return $stream_li;
 }
 
-export function handle_narrow_activated(filter: Filter): void {
+export function handle_narrow_activated(
+    filter: Filter,
+    change_hash: boolean,
+    show_more_topics: boolean,
+): void {
     const $stream_li = update_stream_sidebar_for_narrow(filter);
     if ($stream_li) {
         scroll_stream_into_view($stream_li);
+        if (!change_hash) {
+            if (!is_zoomed_in() && show_more_topics) {
+                zoom_in();
+            } else if (is_zoomed_in() && !show_more_topics) {
+                zoom_out();
+            }
+        }
     }
 }
 
@@ -804,6 +817,7 @@ export function initialize({
 
     $("#stream_filters").on("click", ".show-more-topics", (e) => {
         zoom_in();
+        browser_history.update_current_history_state_data({show_more_topics: true});
 
         e.preventDefault();
         e.stopPropagation();
@@ -811,6 +825,7 @@ export function initialize({
 
     $(".show-all-streams").on("click", (e) => {
         zoom_out();
+        browser_history.update_current_history_state_data({show_more_topics: false});
 
         e.preventDefault();
         e.stopPropagation();
@@ -823,7 +838,7 @@ export function set_event_handlers({
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
@@ -953,6 +968,8 @@ export function initiate_search(): void {
     ) {
         popovers.hide_all();
         sidebar_ui.show_streamlist_sidebar();
+    } else if (!sidebar_ui.left_sidebar_expanded_as_overlay) {
+        $("body").removeClass("hide-left-sidebar");
     }
     $filter.trigger("focus");
 

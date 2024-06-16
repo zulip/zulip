@@ -87,27 +87,32 @@ export function create_ajax_request(
             $(form_error).hide();
             $(form_success).show();
             if (["autopay", "invoice"].includes(form_name)) {
-                if ("pushState" in history) {
-                    history.pushState("", document.title, location.pathname + location.search);
+                if ("pushState" in window.history) {
+                    window.history.pushState(
+                        "",
+                        document.title,
+                        window.location.pathname + window.location.search,
+                    );
                 } else {
-                    location.hash = "";
+                    window.location.hash = "";
                 }
             }
             success_callback(response);
         },
         error(xhr) {
             $(form_loading).hide();
-            if (xhr.responseJSON?.msg) {
-                $(form_error).show().text(xhr.responseJSON.msg);
+            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            if (parsed.success) {
+                $(form_error).show().text(parsed.data.msg);
             }
             $(form_input_section).show();
             error_callback(xhr);
 
             if (xhr.status === 401) {
                 // User session timed out, we need to login again.
-                const login_url = JSON.parse(xhr.responseText)?.login_url;
-                if (login_url !== undefined) {
-                    window.location.href = login_url;
+                const parsed = z.object({login_url: z.string()}).safeParse(xhr.responseJSON);
+                if (parsed.success) {
+                    window.location.href = parsed.data.login_url;
                 }
             }
         },
@@ -156,8 +161,8 @@ export function update_discount_details(
     $("#sponsorship-discount-details").text(discount_notice);
 }
 
-export function is_valid_input(elem: JQuery<HTMLFormElement>): boolean {
-    return elem[0].checkValidity();
+export function is_valid_input($elem: JQuery<HTMLFormElement>): boolean {
+    return $elem[0]!.checkValidity();
 }
 
 export function redirect_to_billing_with_successful_upgrade(billing_base_url: string): void {

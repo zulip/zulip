@@ -6,7 +6,7 @@
   "default_currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "zulip.testserver 332b5af0-59b",
+  "description": "zulip.testserver f27ccad7-fd5",
   "discount": null,
   "email": "hamlet@zulip.com",
   "id": "cus_NORMALIZED0001",
@@ -16,15 +16,15 @@
     "default_payment_method": {
       "billing_details": {
         "address": {
-          "city": null,
-          "country": null,
-          "line1": null,
+          "city": "San Francisco",
+          "country": "US",
+          "line1": "123 Main St",
           "line2": null,
-          "postal_code": null,
-          "state": null
+          "postal_code": "94105",
+          "state": "CA"
         },
         "email": null,
-        "name": null,
+        "name": "John Doe",
         "phone": null
       },
       "card": {
@@ -36,7 +36,7 @@
         },
         "country": "US",
         "display_brand": "visa",
-        "exp_month": 3,
+        "exp_month": 4,
         "exp_year": 2025,
         "fingerprint": "NORMALIZED000001",
         "funding": "credit",
@@ -55,7 +55,7 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OqSqBDEQaroqDjswKb0vt3L",
+      "id": "pm_1P41lIDEQaroqDjswjP2kgpc",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -67,7 +67,7 @@
   "livemode": false,
   "metadata": {
     "remote_realm_host": "zulip.testserver",
-    "remote_realm_uuid": "332b5af0-59bf-4285-8447-23fb3a302c86"
+    "remote_realm_uuid": "f27ccad7-fd5b-42cf-947a-3763c39673b7"
   },
   "name": null,
   "next_invoice_sequence": 1,

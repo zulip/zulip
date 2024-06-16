@@ -129,22 +129,16 @@ function fade_messages(): void {
         return;
     }
 
-    let i;
-    let first_message;
-    let $first_row;
-    let should_fade_group = false;
-    const visible_groups = message_viewport.visible_groups(false);
-
     normal_display = false;
 
     // Update the visible messages first, before the compose box opens
-    for (i = 0; i < visible_groups.length; i += 1) {
-        $first_row = rows.first_message_in_group($(visible_groups[i]));
-        first_message = message_lists.current.get(rows.id($first_row));
+    for (const group_elt of message_viewport.visible_groups(false)) {
+        const $first_row = rows.first_message_in_group($(group_elt));
+        const first_message = message_lists.current.get(rows.id($first_row));
         assert(first_message !== undefined);
-        should_fade_group = compose_fade_helper.should_fade_message(first_message);
+        const should_fade_group = compose_fade_helper.should_fade_message(first_message);
 
-        change_fade_state($(visible_groups[i]), should_fade_group);
+        change_fade_state($(group_elt), should_fade_group);
     }
 
     // Defer updating all message groups so that the compose box can open sooner
@@ -158,13 +152,12 @@ function fade_messages(): void {
                 return;
             }
 
-            should_fade_group = false;
             const $all_groups = message_lists.current.view.$list.find(".recipient_row");
             // Note: The below algorithm relies on the fact that all_elts is
             // sorted as it would be displayed in the message view
-            for (i = 0; i < $all_groups.length; i += 1) {
-                const $group_elt = $($all_groups[i]);
-                should_fade_group = compose_fade_helper.should_fade_message(
+            for (const group_elt of $all_groups) {
+                const $group_elt = $(group_elt);
+                const should_fade_group = compose_fade_helper.should_fade_message(
                     rows.recipient_from_group($group_elt)!,
                 );
                 change_fade_state($group_elt, should_fade_group);
@@ -220,7 +213,7 @@ export function update_rendered_message_groups(
     // the other code takes advantage of blocks beneath recipient bars.
     for (const message_group of message_groups) {
         const $elt = get_element(message_group);
-        const first_message = message_group.message_containers[0].msg;
+        const first_message = message_group.message_containers[0]!.msg;
         const should_fade = compose_fade_helper.should_fade_message(first_message);
         change_fade_state($elt, should_fade);
     }

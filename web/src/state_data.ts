@@ -19,80 +19,36 @@ export const narrow_term_schema = z.object({
     operand: z.string(),
 });
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
+
+export const custom_profile_field_schema = z.object({
+    display_in_profile_summary: z.optional(z.boolean()),
+    field_data: z.string(),
+    hint: z.string(),
+    id: z.number(),
+    name: z.string(),
+    order: z.number(),
+    required: z.boolean(),
+    type: z.number(),
+});
+
+export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
+
 // Sync this with zerver.lib.events.do_events_register.
-
-const placement_schema = z.enum([
-    "top",
-    "left",
-    "right",
-    "bottom",
-    "left_bottom",
-    "viewport_center",
-]);
-
-export type Placement = z.infer<typeof placement_schema>;
-
-const hotspot_location_schema = z.object({
-    element: z.string(),
-    offset_x: z.number(),
-    offset_y: z.number(),
-    popover: z.optional(placement_schema),
-});
-
-export type HotspotLocation = z.output<typeof hotspot_location_schema>;
-
-const raw_hotspot_schema = z.object({
-    delay: z.number(),
-    description: z.string(),
-    has_trigger: z.boolean(),
-    name: z.string(),
-    title: z.string(),
-    type: z.literal("hotspot"),
-});
-
-export type RawHotspot = z.output<typeof raw_hotspot_schema>;
-
-const hotspot_schema = raw_hotspot_schema.extend({
-    location: hotspot_location_schema,
-});
-
-export type Hotspot = z.output<typeof hotspot_schema>;
-
-const one_time_notice_schema = z.object({
-    name: z.string(),
-    type: z.literal("one_time_notice"),
-});
-
-const onboarding_step_schema = z.union([one_time_notice_schema, raw_hotspot_schema]);
-
-export type OnboardingStep = z.output<typeof onboarding_step_schema>;
-
 export const current_user_schema = z.object({
     avatar_source: z.string(),
     delivery_email: z.string(),
+    has_zoom_token: z.boolean(),
     is_admin: z.boolean(),
     is_billing_admin: z.boolean(),
     is_guest: z.boolean(),
     is_moderator: z.boolean(),
     is_owner: z.boolean(),
-    onboarding_steps: z.array(onboarding_step_schema),
     user_id: z.number(),
 });
-// Sync this with zerver.lib.events.do_events_register.
 
+// Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
-    custom_profile_fields: z.array(
-        z.object({
-            display_in_profile_summary: z.optional(z.boolean()),
-            field_data: z.string(),
-            hint: z.string(),
-            id: z.number(),
-            name: z.string(),
-            order: z.number(),
-            required: z.boolean(),
-            type: z.number(),
-        }),
-    ),
+    custom_profile_fields: z.array(custom_profile_field_schema),
     custom_profile_field_types: z.object({
         SHORT_TEXT: z.object({id: z.number(), name: z.string()}),
         LONG_TEXT: z.object({id: z.number(), name: z.string()}),
@@ -103,7 +59,9 @@ export const realm_schema = z.object({
         USER: z.object({id: z.number(), name: z.string()}),
         PRONOUNS: z.object({id: z.number(), name: z.string()}),
     }),
+    demo_organization_scheduled_deletion_date: z.optional(z.number()),
     max_avatar_file_size_mib: z.number(),
+    max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
     max_message_length: z.number(),
@@ -126,11 +84,21 @@ export const realm_schema = z.object({
     realm_avatar_changes_disabled: z.boolean(),
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
+    realm_can_create_public_channel_group: z.number(),
     realm_create_multiuse_invite_group: z.number(),
     realm_create_private_stream_policy: z.number(),
-    realm_create_public_stream_policy: z.number(),
     realm_create_web_public_stream_policy: z.number(),
+    realm_date_created: z.number(),
     realm_default_code_block_language: z.string(),
+    realm_default_external_accounts: z.record(
+        z.string(),
+        z.object({
+            text: z.string(),
+            url_pattern: z.string(),
+            name: z.string(),
+            hint: z.string(),
+        }),
+    ),
     realm_default_language: z.string(),
     realm_delete_own_message_policy: z.number(),
     realm_description: z.string(),
@@ -142,14 +110,6 @@ export const realm_schema = z.object({
         }),
     ),
     realm_edit_topic_policy: z.number(),
-    realm_playgrounds: z.array(
-        z.object({
-            id: z.number(),
-            name: z.string(),
-            pygments_language: z.string(),
-            url_template: z.string(),
-        }),
-    ),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
     realm_enable_guest_user_indicator: z.boolean(),
@@ -168,6 +128,13 @@ export const realm_schema = z.object({
     realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
     realm_jitsi_server_url: z.nullable(z.string()),
+    realm_linkifiers: z.array(
+        z.object({
+            pattern: z.string(),
+            url_template: z.string(),
+            id: z.number(),
+        }),
+    ),
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
     realm_mandatory_topics: z.boolean(),
@@ -184,13 +151,21 @@ export const realm_schema = z.object({
     realm_night_logo_url: z.string(),
     realm_org_type: z.number(),
     realm_plan_type: z.number(),
+    realm_playgrounds: z.array(
+        z.object({
+            id: z.number(),
+            name: z.string(),
+            pygments_language: z.string(),
+            url_template: z.string(),
+        }),
+    ),
     realm_presence_disabled: z.boolean(),
     realm_private_message_policy: z.number(),
     realm_push_notifications_enabled: z.boolean(),
     realm_require_unique_names: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
     realm_upload_quota_mib: z.nullable(z.number()),
-    realm_uri: z.string(),
+    realm_url: z.string(),
     realm_user_group_edit_policy: z.number(),
     realm_video_chat_provider: z.number(),
     realm_waiting_period_threshold: z.number(),

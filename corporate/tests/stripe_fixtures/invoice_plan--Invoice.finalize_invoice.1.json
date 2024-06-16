@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9MRnZxSkdpU25ObEtDZlpzVkNOeUFROXUyaXpTLDEwMDA2NTcxNw0200eTjOxyVB?s=ap",
-  "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9MRnZxSkdpU25ObEtDZlpzVkNOeUFROXUyaXpTLDEwMDA2NTcxNw0200eTjOxyVB/pdf?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBPTllqRlMyWEc2eVpRTHB5d2V2djhoeGxiSHUwLDEwMzI5ODU1Mg02008JaxTbSl?s=ap",
+  "id": "in_NORMALIZED00000000000003",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBPTllqRlMyWEc2eVpRTHB5d2V2djhoeGxiSHUwLDEwMzI5ODU1Mg02008JaxTbSl/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -59,15 +59,15 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000001",
-        "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000001",
+        "id": "il_NORMALIZED00000000000004",
+        "invoice": "in_NORMALIZED00000000000003",
+        "invoice_item": "ii_NORMALIZED00000000000004",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -106,23 +106,24 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000003/lines"
   },
   "livemode": false,
   "metadata": {
     "billing_schedule": "1",
     "license_management": "automatic",
     "licenses": "6",
+    "on_free_trial": "False",
     "plan_tier": "1",
     "user_id": "10"
   },
   "next_payment_attempt": null,
-  "number": "NORMALI-0002",
+  "number": "NORMALI-0004",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,
   "paid_out_of_band": false,
-  "payment_intent": "pi_NORMALIZED00000000000001",
+  "payment_intent": "pi_NORMALIZED00000000000003",
   "payment_settings": {
     "default_mandate": null,
     "payment_method_options": null,
@@ -165,5 +166,5 @@
   "total_excluding_tax": 48000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

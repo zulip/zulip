@@ -6,7 +6,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 
 START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
@@ -79,14 +79,14 @@ TAB_SECTION_LABELS = {
     "via-left-sidebar": "Via left sidebar",
     "via-right-sidebar": "Via right sidebar",
     "instructions-for-all-platforms": "Instructions for all platforms",
-    "public-streams": "Public streams",
-    "private-streams": "Private streams",
-    "web-public-streams": "Web-public streams",
+    "public-channels": "Public channels",
+    "private-channels": "Private channels",
+    "web-public-channels": "Web-public channels",
     "via-user-card": "Via user card",
     "via-user-profile": "Via user profile",
     "via-organization-settings": "Via organization settings",
     "via-personal-settings": "Via personal settings",
-    "via-stream-settings": "Via stream settings",
+    "via-channel-settings": "Via channel settings",
     "default-subdomain": "Default subdomain",
     "custom-subdomain": "Custom subdomain",
     "zulip-cloud-standard": "Zulip Cloud Standard",
@@ -98,6 +98,7 @@ TAB_SECTION_LABELS = {
     "okta": "Okta",
     "onelogin": "OneLogin",
     "azuread": "AzureAD",
+    "entraid": "Microsoft Entra ID",
     "keycloak": "Keycloak",
     "auth0": "Auth0",
     "logged-in": "If you are logged in",
@@ -108,13 +109,15 @@ TAB_SECTION_LABELS = {
     "via-paste": "Via paste",
     "via-drag-and-drop": "Via drag-and-drop",
     "via-markdown": "Via Markdown",
-    "via-compose-box-buttons": "Via compose box buttons",
-    "stream-compose": "Compose to a stream",
+    "via-compose-box-buttons": "Via compose box button",
+    "channel-compose": "Compose to a channel",
     "dm-compose": "Compose a DM",
     "v8": "Zulip Server 8.0+",
     "v6": "Zulip Server 6.0+",
     "v4": "Zulip Server 4.0+",
     "all-versions": "All versions",
+    "by-card": "Pay by credit card",
+    "by-invoice": "Pay by invoice",
     "for-a-bot": "For a bot",
     "for-yourself": "For yourself",
 }
@@ -126,7 +129,7 @@ class TabbedSectionsGenerator(Extension):
         md.preprocessors.register(
             TabbedSectionsPreprocessor(md, self.getConfigs()),
             "tabbed_sections",
-            PREPROCESSOR_PRIORITES["tabbed_sections"],
+            PREPROCESSOR_PRIORITIES["tabbed_sections"],
         )
 
 

@@ -2,7 +2,7 @@ import * as channel from "./channel";
 import * as timerender from "./timerender";
 import {get_time_from_date_muted} from "./util";
 
-type RawMutedUser = {
+export type RawMutedUser = {
     id: number;
     timestamp: number;
 };

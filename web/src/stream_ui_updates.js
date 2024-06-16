@@ -1,5 +1,4 @@
 import $ from "jquery";
-import tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
@@ -7,6 +6,7 @@ import render_stream_settings_tip from "../templates/stream_settings/stream_sett
 
 import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
@@ -28,16 +28,27 @@ function settings_button_for_sub(sub) {
     );
 }
 
-export let subscribed_only = true;
+export let show_subscribed = true;
+export let show_not_subscribed = false;
 
 export function is_subscribed_stream_tab_active() {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
-    return subscribed_only;
+    return show_subscribed;
 }
 
-export function set_subscribed_only(value) {
-    subscribed_only = value;
+export function is_not_subscribed_stream_tab_active() {
+    // Returns true if "not-subscribed" tab in stream settings is open
+    // otherwise false.
+    return show_not_subscribed;
+}
+
+export function set_show_subscribed(value) {
+    show_subscribed = value;
+}
+
+export function set_show_not_subscribed(value) {
+    show_not_subscribed = value;
 }
 
 export function update_web_public_stream_privacy_option_state($container) {
@@ -114,24 +125,9 @@ export function update_private_stream_privacy_option_state($container, is_defaul
         .toggleClass("default_stream_private_tooltip", is_default_stream);
 }
 
-export function initialize_disable_btn_hint_popover($btn_wrapper, hint_text) {
-    const opts = {
-        animation: false,
-        hideOnClick: false,
-        placement: "bottom",
-    };
-
-    // If hint_text is undefined, we use the HTML content of a
-    // <template> whose id is given by data-tooltip-template-id
-    if (hint_text !== undefined) {
-        opts.content = hint_text;
-    }
-    tippy($btn_wrapper[0], opts);
-}
-
 export function initialize_cant_subscribe_popover() {
     const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
-    initialize_disable_btn_hint_popover($button_wrapper);
+    settings_components.initialize_disable_btn_hint_popover($button_wrapper);
 }
 
 export function set_up_right_panel_section(sub) {
@@ -324,11 +320,11 @@ export function update_permissions_banner(sub) {
 
 export function update_notification_setting_checkbox(notification_name) {
     // This is in the right panel (Personal settings).
-    const $stream_row = $("#streams_overlay_container .stream-row.active");
+    const $stream_row = $("#channels_overlay_container .stream-row.active");
     if (!$stream_row.length) {
         return;
     }
-    const stream_id = $stream_row.data("stream-id");
+    const stream_id = Number($stream_row.attr("data-stream-id"));
     $(`#${CSS.escape(notification_name)}_${CSS.escape(stream_id)}`).prop(
         "checked",
         stream_data.receives_notifications(stream_id, notification_name),
@@ -339,15 +335,20 @@ export function update_stream_row_in_settings_tab(sub) {
     // This is in the left panel.
     // This function display/hide stream row in stream settings tab,
     // used to display immediate effect of add/removal subscription event.
-    // If user is subscribed to stream, it will show sub row under
-    // "Subscribed" tab, otherwise if stream is not public hide
-    // stream row under tab.
-    if (is_subscribed_stream_tab_active()) {
-        const $sub_row = row_for_stream_id(sub.stream_id);
-        if (sub.subscribed) {
-            $sub_row.removeClass("notdisplayed");
+    // If user is subscribed or unsubscribed to stream, it will show sub or unsub
+    // row under "Subscribed" or "Not subscribed" (only if the stream is public) tab, otherwise
+    // if stream is not public hide stream row under tab.
+
+    if (is_subscribed_stream_tab_active() || is_not_subscribed_stream_tab_active()) {
+        const $row = row_for_stream_id(sub.stream_id);
+
+        if (
+            (is_subscribed_stream_tab_active() && sub.subscribed) ||
+            (is_not_subscribed_stream_tab_active() && !sub.subscribed)
+        ) {
+            $row.removeClass("notdisplayed");
         } else if (sub.invite_only || current_user.is_guest) {
-            $sub_row.addClass("notdisplayed");
+            $row.addClass("notdisplayed");
         }
     }
 }
@@ -377,14 +378,17 @@ export function update_add_subscriptions_elements(sub) {
         if (!settings_data.user_can_subscribe_other_users()) {
             tooltip_message = $t({
                 defaultMessage:
-                    "You do not have permission to add other users to streams in this organization.",
+                    "You do not have permission to add other users to channels in this organization.",
             });
         } else {
             tooltip_message = $t({
-                defaultMessage: "Only stream members can add users to a private stream.",
+                defaultMessage: "Only channel members can add users to a private channel.",
             });
         }
-        initialize_disable_btn_hint_popover($add_subscribers_container, tooltip_message);
+        settings_components.initialize_disable_btn_hint_popover(
+            $add_subscribers_container,
+            tooltip_message,
+        );
     }
 }
 
@@ -394,7 +398,7 @@ export function update_setting_element(sub, setting_name) {
     }
 
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
-    settings_org.discard_property_element_changes($elem, false, sub);
+    settings_org.discard_stream_property_element_changes($elem, sub);
 }
 
 export function enable_or_disable_add_subscribers_elements(

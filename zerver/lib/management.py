@@ -1,9 +1,11 @@
 # Library code for use in management commands
 import logging
-from argparse import ArgumentParser, RawTextHelpFormatter, _ActionsContainer
+import os
+import sys
+from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
-from functools import reduce
-from typing import Any, Dict, Optional
+from functools import reduce, wraps
+from typing import Any, Dict, Optional, Protocol
 
 from django.conf import settings
 from django.core import validators
@@ -12,6 +14,7 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db.models import Q, QuerySet
 from typing_extensions import override
 
+from zerver.lib.context_managers import lockfile_nonblocking
 from zerver.lib.initial_password import initial_password
 from zerver.models import Client, Realm, UserProfile
 from zerver.models.clients import get_client
@@ -38,6 +41,31 @@ def check_config() -> None:
         raise CommandError(f"Error: You must set {setting_name} in /etc/zulip/settings.py.")
 
 
+class HandleMethod(Protocol):
+    def __call__(self, *args: Any, **kwargs: Any) -> None: ...
+
+
+def abort_unless_locked(handle_func: HandleMethod) -> HandleMethod:
+    @wraps(handle_func)
+    def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+        os.makedirs(settings.LOCKFILE_DIRECTORY, exist_ok=True)
+        # Trim out just the last part of the module name, which is the
+        # command name, to use as the lockfile name;
+        # `zerver.management.commands.send_zulip_update_announcements`
+        # becomes `/srv/zulip-locks/send_zulip_update_announcements.lock`
+        lockfile_name = handle_func.__module__.split(".")[-1]
+        lockfile_path = settings.LOCKFILE_DIRECTORY + "/" + lockfile_name + ".lock"
+        with lockfile_nonblocking(lockfile_path) as lock_acquired:
+            if not lock_acquired:  # nocoverage
+                self.stdout.write(
+                    self.style.ERROR(f"Lock {lockfile_path} is unavailable; exiting.")
+                )
+                sys.exit(1)
+            handle_func(self, *args, **kwargs)
+
+    return our_handle
+
+
 @dataclass
 class CreateUserParameters:
     email: str
@@ -50,8 +78,23 @@ class ZulipBaseCommand(BaseCommand):
     @override
     def create_parser(self, prog_name: str, subcommand: str, **kwargs: Any) -> CommandParser:
         parser = super().create_parser(prog_name, subcommand, **kwargs)
+        parser.add_argument(
+            "--automated",
+            help="This command is run non-interactively (enables Sentry, etc)",
+            action=BooleanOptionalAction,
+            default=not sys.stdin.isatty(),
+        )
         parser.formatter_class = RawTextHelpFormatter
         return parser
+
+    @override
+    def execute(self, *args: Any, **options: Any) -> None:
+        if settings.SENTRY_DSN and not options["automated"]:  # nocoverage
+            import sentry_sdk
+
+            # This deactivates Sentry
+            sentry_sdk.init()
+        super().execute(*args, **options)
 
     def add_realm_args(
         self, parser: ArgumentParser, *, required: bool = False, help: Optional[str] = None

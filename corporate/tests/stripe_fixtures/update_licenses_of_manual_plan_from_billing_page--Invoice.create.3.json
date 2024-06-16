@@ -2,9 +2,9 @@
   "account_country": "US",
   "account_name": "Kandra Labs, Inc.",
   "account_tax_ids": null,
-  "amount_due": 960000,
+  "amount_due": 1200000,
   "amount_paid": 0,
-  "amount_remaining": 960000,
+  "amount_remaining": 1200000,
   "amount_shipping": 0,
   "application": null,
   "application_fee_amount": null,
@@ -52,22 +52,22 @@
   "lines": {
     "data": [
       {
-        "amount": 960000,
-        "amount_excluding_tax": 960000,
+        "amount": 1200000,
+        "amount_excluding_tax": 1200000,
         "currency": "usd",
         "description": "Zulip Cloud Standard - renewal",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000004",
+        "id": "il_NORMALIZED00000000000003",
         "invoice": "in_NORMALIZED00000000000003",
-        "invoice_item": "ii_NORMALIZED00000000000004",
+        "invoice_item": "ii_NORMALIZED00000000000003",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1420167845,
-          "start": 1388631845
+          "end": 1388631845,
+          "start": 1357095845
         },
         "plan": null,
         "price": {
@@ -76,13 +76,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000002",
+          "id": "price_NORMALIZED00000000000003",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0002",
+          "product": "prod_NORMALIZED0003",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -95,7 +95,7 @@
         "proration_details": {
           "credited_items": null
         },
-        "quantity": 120,
+        "quantity": 150,
         "subscription": null,
         "tax_amounts": [],
         "tax_rates": [],
@@ -150,14 +150,14 @@
   "subscription_details": {
     "metadata": null
   },
-  "subtotal": 960000,
-  "subtotal_excluding_tax": 960000,
+  "subtotal": 1200000,
+  "subtotal_excluding_tax": 1200000,
   "tax": null,
   "test_clock": null,
-  "total": 960000,
+  "total": 1200000,
   "total_discount_amounts": [],
-  "total_excluding_tax": 960000,
+  "total_excluding_tax": 1200000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

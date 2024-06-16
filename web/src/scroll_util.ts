@@ -5,10 +5,10 @@ import SimpleBar from "simplebar";
 type JQueryOrZJQuery = {__zjquery?: true} & JQuery;
 
 export function get_content_element($element: JQuery): JQuery {
-    const element = $element.expectOne()[0];
+    const element = $element.expectOne()[0]!;
     const sb = SimpleBar.instances.get(element);
     if (sb) {
-        return $(sb.getContentElement());
+        return $(sb.getContentElement()!);
     }
     return $element;
 }
@@ -19,10 +19,10 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
         return $element;
     }
 
-    const element = $element.expectOne()[0];
+    const element = $element.expectOne()[0]!;
     const sb = SimpleBar.instances.get(element);
     if (sb) {
-        return $(sb.getScrollElement());
+        return $(sb.getScrollElement()!);
     } else if ("simplebar" in element.dataset) {
         // The SimpleBar mutation observer hasn’t processed this element yet.
         // Create the SimpleBar early in case we need to add event listeners.
@@ -32,10 +32,10 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
 }
 
 export function reset_scrollbar($element: JQuery): void {
-    const element = $element.expectOne()[0];
+    const element = $element.expectOne()[0]!;
     const sb = SimpleBar.instances.get(element);
     if (sb) {
-        sb.getScrollElement().scrollTop = 0;
+        sb.getScrollElement()!.scrollTop = 0;
     } else {
         element.scrollTop = 0;
     }

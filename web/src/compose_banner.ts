@@ -21,9 +21,9 @@ export const INFO = "info";
 
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
-    narrow_to_recipient: "narrow_to_recipient",
     message_scheduled_success_compose_banner: "message_scheduled_success_compose_banner",
     automatic_new_visibility_policy: "automatic_new_visibility_policy",
+    jump_to_sent_message_conversation: "jump_to_sent_message_conversation",
 };
 // Technically, unmute_topic_notification is a message sent banner, but
 // it has distinct behavior / look - it has an associated action button,
@@ -52,7 +52,6 @@ export const CLASSNAMES = {
     invalid_recipient: "invalid_recipient",
     invalid_recipients: "invalid_recipients",
     deactivated_user: "deactivated_user",
-    message_too_long: "message_too_long",
     topic_missing: "topic_missing",
     zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
@@ -88,8 +87,24 @@ export function update_or_append_banner(
     }
 }
 
-export function clear_message_sent_banners(include_unmute_banner = true): void {
+export function clear_message_sent_banners(
+    include_unmute_banner = true,
+    skip_automatic_new_visibility_policy_banner = false,
+): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
+        if (
+            skip_automatic_new_visibility_policy_banner &&
+            classname === MESSAGE_SENT_CLASSNAMES.automatic_new_visibility_policy
+        ) {
+            // Handles the case where this banner shouldn't be cleared in the
+            // race condition where the response from `POST /messages` for a
+            // not locally echoed message (composed from a different view) wins
+            // over the event received for the same.
+            // Otherwise, the response will lead to this banner, and the event
+            // will narrow the sender to the new conversation, leading to this
+            // banner being visible for a fraction of seconds.
+            continue;
+        }
         $(`#compose_banners .${CSS.escape(classname)}`).remove();
     }
     if (include_unmute_banner) {
@@ -173,7 +188,7 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
 
     const new_row_html = render_stream_does_not_exist_error({
         banner_type: ERROR,
-        stream_name,
+        channel_name: stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
@@ -192,7 +207,7 @@ export function show_stream_not_subscribed_error(sub: StreamSubscription): void 
         banner_type: ERROR,
         banner_text: $t({
             defaultMessage:
-                "You're not subscribed to this stream. You will not be notified if other users reply to your message.",
+                "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
         }),
         button_text: stream_data.can_toggle_subscription(sub)
             ? $t({defaultMessage: "Subscribe"})

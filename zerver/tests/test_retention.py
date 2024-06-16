@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 from unittest import mock
 
+import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -466,11 +467,15 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         transactions = ArchiveTransaction.objects.all()
         self.assert_length(transactions, 2)  # With chunk_size 4, there should be 2 transactions
 
-        restore_all_data_from_archive()
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            restore_all_data_from_archive()
         transactions[0].refresh_from_db()
         transactions[1].refresh_from_db()
         self.assertTrue(transactions[0].restored)
         self.assertTrue(transactions[1].restored)
+        self.assertEqual(transactions[0].restored_timestamp, now)
+        self.assertEqual(transactions[1].restored_timestamp, now)
 
         archive_messages(chunk_size=10)
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
@@ -1138,7 +1143,7 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(21):
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 

@@ -45,6 +45,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    NamedUserGroup,
     OnboardingStep,
     Reaction,
     Realm,
@@ -70,6 +71,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -137,10 +139,12 @@ ALL_ZULIP_TABLES = {
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_namedusergroup",
     "zerver_onboardingstep",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
+    "zerver_presencesequence",
     "zerver_pushdevicetoken",
     "zerver_reaction",
     "zerver_realm",
@@ -690,6 +694,13 @@ def get_realm_config() -> Config:
     )
 
     Config(
+        table="zerver_presencesequence",
+        model=PresenceSequence,
+        normal_parent=realm_config,
+        include_rows="realm_id__in",
+    )
+
+    Config(
         custom_tables=["zerver_scheduledmessage"],
         virtual_parent=realm_config,
         custom_fetch=custom_fetch_scheduled_messages,
@@ -774,6 +785,14 @@ def get_realm_config() -> Config:
         normal_parent=realm_config,
         include_rows="realm_id__in",
         exclude=["direct_members", "direct_subgroups"],
+    )
+
+    Config(
+        table="zerver_namedusergroup",
+        model=NamedUserGroup,
+        normal_parent=realm_config,
+        include_rows="realm_for_sharding_id__in",
+        exclude=["realm", "direct_members", "direct_subgroups"],
     )
 
     Config(
@@ -2408,9 +2427,15 @@ def export_realm_wrapper(
 
 
 def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
+    # Exclude exports made via shell. 'acting_user=None', since they
+    # aren't supported in the current API format.
+    #
+    # TODO: We should return those via the API as well, with an
+    # appropriate way to express for who issued them; this requires an
+    # API change.
     all_exports = RealmAuditLog.objects.filter(
         realm=user.realm, event_type=RealmAuditLog.REALM_EXPORTED
-    )
+    ).exclude(acting_user=None)
     exports_dict = {}
     for export in all_exports:
         export_url = None

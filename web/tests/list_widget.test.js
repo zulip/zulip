@@ -45,6 +45,7 @@ const ListWidget = zrequire("list_widget");
 
 function make_container() {
     const $container = {};
+    $container.attr = noop;
     $container.empty = noop;
     $container.data = noop;
 
@@ -59,6 +60,7 @@ function make_container() {
 
 function make_scroll_container() {
     const $scroll_container = {};
+    $scroll_container[0] = {};
 
     $scroll_container.cleared = false;
 
@@ -67,7 +69,7 @@ function make_scroll_container() {
     $scroll_container.on = (ev, f) => {
         assert.equal(ev, "scroll.list_widget_container");
         $scroll_container.call_scroll = () => {
-            f.call($scroll_container);
+            f.call($scroll_container[0]);
         };
     };
 
@@ -75,6 +77,7 @@ function make_scroll_container() {
         assert.equal(ev, "scroll.list_widget_container");
         $scroll_container.cleared = true;
     };
+    $scroll_container.is = () => false;
 
     return $scroll_container;
 }
@@ -169,9 +172,9 @@ run_test("scrolling", () => {
     assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry so it forces a scroll action.
-    $scroll_container.scrollTop = 180;
-    $scroll_container.clientHeight = 100;
-    $scroll_container.scrollHeight = 260;
+    $scroll_container[0].scrollTop = 180;
+    $scroll_container[0].clientHeight = 100;
+    $scroll_container[0].scrollHeight = 260;
 
     // Scrolling gets the next two elements from the list into
     // our widget.
@@ -221,9 +224,9 @@ run_test("not_scrolling", () => {
     assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry.
-    $scroll_container.scrollTop = 180;
-    $scroll_container.clientHeight = 100;
-    $scroll_container.scrollHeight = 260;
+    $scroll_container[0].scrollTop = 180;
+    $scroll_container[0].clientHeight = 100;
+    $scroll_container[0].scrollHeight = 260;
 
     // Since `should_render` is always false, no elements will be
     // added regardless of scrolling.
@@ -314,15 +317,15 @@ function sort_button(opts) {
     // don't have any abstraction for the button and its
     // siblings other than direct jQuery actions.
 
-    function data(sel) {
-        switch (sel) {
-            case "sort":
+    function attr(name) {
+        switch (name) {
+            case "data-sort":
                 return opts.sort_type;
-            case "sort-prop":
+            case "data-sort-prop":
                 return opts.prop_name;
             /* istanbul ignore next */
             default:
-                throw new Error("unknown selector: " + sel);
+                throw new Error("unknown attribute: " + name);
         }
     }
 
@@ -336,7 +339,7 @@ function sort_button(opts) {
     const classList = new Set();
 
     const $button = {
-        data,
+        attr,
         closest: lookup(".progressive-table-wrapper", {
             data: lookup("list-widget", opts.list_name),
         }),

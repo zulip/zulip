@@ -2,7 +2,7 @@ Zulip supports integration with CircleCI and can notify you of your
 job and workflow statuses. This integration currently supports using
 CircleCI with GitHub, BitBucket and GitLab.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

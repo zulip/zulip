@@ -81,7 +81,7 @@ to help.
   paying special attention to the
   [community norms](https://zulip.com/development-community/#community-norms).
   If you'd like, introduce yourself in
-  [#new members](https://chat.zulip.org/#narrow/stream/95-new-members), using
+  [#new members](https://chat.zulip.org/#narrow/channel/95-new-members), using
   your name as the topic. Bonus: tell us about your first impressions of
   Zulip, and anything that felt confusing/broken or interesting/helpful as you
   started using the product.
@@ -95,7 +95,7 @@ to help.
 
     - [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
       getting help in
-      [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
+      [#provision help](https://chat.zulip.org/#narrow/channel/21-provision-help)
       if you run into any troubles.
     - Familiarize yourself with [using the development environment](https://zulip.readthedocs.io/en/latest/development/using.html).
     - Go through the [new application feature
@@ -117,7 +117,7 @@ to help.
   Git](https://zulip.readthedocs.io/en/latest/git/index.html) if you
   are unfamiliar with Git or Zulip's rebase-based Git workflow,
   getting help in [#git
-  help](https://chat.zulip.org/#narrow/stream/44-git-help) if you run
+  help](https://chat.zulip.org/#narrow/channel/44-git-help) if you run
   into any troubles. Even Git experts should read the [Zulip-specific
   Git tools
   page](https://zulip.readthedocs.io/en/latest/git/zulip-tools.html).
@@ -235,7 +235,7 @@ GitHub issue or pull request.
 
 To get early feedback on any UI changes, we encourage you to post screenshots of
 your work in the [#design
-stream](https://chat.zulip.org/#narrow/stream/101-design) in the [Zulip
+stream](https://chat.zulip.org/#narrow/channel/101-design) in the [Zulip
 development community](https://zulip.com/development-community/)
 
 For more advice, see [What makes a great Zulip
@@ -245,10 +245,14 @@ faster as you build experience.
 
 ### Submitting a pull request
 
-See the [pull request review
-process](https://zulip.readthedocs.io/en/latest/contributing/review-process.html)
-guide for detailed instructions on how to submit a pull request, and information
-on the stages of review your PR will go through.
+See the [guide on submitting a pull
+request](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html)
+for detailed instructions on how to present your proposed changes to Zulip.
+
+The [pull request review process
+guide](https://zulip.readthedocs.io/en/latest/contributing/review-process.html)
+explains the stages of review your PR will go through, and offers guidance on
+how to help the review process move forward.
 
 ### Beyond the first issue
 
@@ -373,7 +377,7 @@ to:
   A link to your organization's website?
 
 You can contact us in the [#feedback stream of the Zulip development
-community](https://chat.zulip.org/#narrow/stream/137-feedback) or
+community](https://chat.zulip.org/#narrow/channel/137-feedback) or
 by emailing [support@zulip.com](mailto:support@zulip.com).
 
 ## Outreach programs

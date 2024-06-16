@@ -6,14 +6,14 @@
   "description": "Zulip Basic",
   "discountable": false,
   "discounts": [],
-  "id": "ii_NORMALIZED00000000000002",
+  "id": "ii_NORMALIZED00000000000004",
   "invoice": null,
   "livemode": false,
   "metadata": {},
   "object": "invoiceitem",
   "period": {
-    "end": 1000000000,
-    "start": 1000000000
+    "end": 1328151845,
+    "start": 1325473445
   },
   "plan": null,
   "price": {
@@ -22,13 +22,13 @@
     "created": 1000000000,
     "currency": "usd",
     "custom_unit_amount": null,
-    "id": "price_NORMALIZED00000000000002",
+    "id": "price_NORMALIZED00000000000004",
     "livemode": false,
     "lookup_key": null,
     "metadata": {},
     "nickname": null,
     "object": "price",
-    "product": "prod_NORMALIZED0002",
+    "product": "prod_NORMALIZED0003",
     "recurring": null,
     "tax_behavior": "unspecified",
     "tiers_mode": null,

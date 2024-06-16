@@ -1,3 +1,0 @@
-PATH=/bin:/usr/bin:/usr/local/bin
-
-0 2 * * * postgres /usr/local/bin/pg_backup_and_purge >/var/log/pg_backup_and_purge.log 2>&1

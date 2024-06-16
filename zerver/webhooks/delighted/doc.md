@@ -1,7 +1,7 @@
 Zulip supports integration with Delighted and can notify you
 about updates in feedback responses organized by Delighted.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

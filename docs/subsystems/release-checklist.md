@@ -84,7 +84,7 @@ preparing a new release.
 - Announce the release, pointing to the blog post, via:
   - Email to [zulip-announce](https://groups.google.com/g/zulip-announce)
   - Email to [zulip-blog-announce](https://groups.google.com/a/zulip.com/g/zulip-blog-announce)
-  - Message in [#announce](https://chat.zulip.org/#narrow/stream/1-announce)
+  - Message in [#announce](https://chat.zulip.org/#narrow/channel/1-announce)
   - Tweet from [@zulip](https://twitter.com/zulip).
   - Toot from [fosstodon.org/@zulip](https://fosstodon.org/@zulip)
 
@@ -112,6 +112,7 @@ preparing a new release.
     - Build a docker image: `cd tools/ci && docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bookworm --build-arg=VERSION=7.0 --tag=zulip/ci:bookworm-7.0 && docker push zulip/ci:bookworm-7.0`
     - Add a new line to the `production_upgrade` matrix in
       `.github/workflows/production-suite.yml`.
+  - Update /history page in `templates/corporate/history.md`.
 - _Minor releases only (e.g. 3.2):_
   - On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g. `3.2+git`.

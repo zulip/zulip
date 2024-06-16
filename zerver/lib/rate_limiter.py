@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Set, Tuple, Type, cast
@@ -11,6 +10,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from typing_extensions import override
 
+from zerver.lib import redis_utils
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.redis_utils import get_redis_client
@@ -21,8 +21,6 @@ from zerver.models import UserProfile
 
 client = get_redis_client()
 rules: Dict[str, List[Tuple[int, int]]] = settings.RATE_LIMITING_RULES
-
-KEY_PREFIX = ""
 
 logger = logging.getLogger(__name__)
 
@@ -159,11 +157,6 @@ class RateLimitedIPAddr(RateLimitedObject):
         return rules[self.domain]
 
 
-def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
-    global KEY_PREFIX
-    KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"
-
-
 class RateLimiterBackend(ABC):
     @classmethod
     @abstractmethod
@@ -233,10 +226,10 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
         """
         Returns a tuple of `(rate_limited, time_till_free)`.
         For simplicity, we have loosened the semantics here from
-        - each key may make atmost `count * (t / window)` request within any t
+        - each key may make at most `count * (t / window)` request within any t
           time interval.
         to
-        - each key may make atmost `count * [(t / window) + 1]` request within
+        - each key may make at most `count * [(t / window) + 1]` request within
           any t time interval.
         Thus, we only need to store reset_times for each key which will be less
         memory-intensive. This also has the advantage that you can only ever
@@ -323,7 +316,8 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
     def get_keys(cls, entity_key: str) -> List[str]:
         return [
-            f"{KEY_PREFIX}ratelimit:{entity_key}:{keytype}" for keytype in ["list", "zset", "block"]
+            f"{redis_utils.REDIS_KEY_PREFIX}ratelimit:{entity_key}:{keytype}"
+            for keytype in ["list", "zset", "block"]
         ]
 
     @classmethod

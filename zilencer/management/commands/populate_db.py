@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.files.base import File
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from django.core.validators import validate_email
 from django.db import connection
 from django.db.models import F
@@ -36,6 +36,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
@@ -68,13 +69,16 @@ from zerver.models import (
 )
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
-from zerver.models.realms import get_realm
+from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 from zilencer.models import RemoteRealm, RemoteZulipServer, RemoteZulipServerAuditLog
 from zilencer.views import update_remote_realm_data_for_server
 
+# Disable the push notifications bouncer to avoid enqueuing updates in
+# maybe_enqueue_audit_log_upload during early setup.
+settings.PUSH_NOTIFICATION_BOUNCER_URL = None
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
@@ -198,7 +202,7 @@ def create_alert_words(realm_id: int) -> None:
     AlertWord.objects.bulk_create(recs)
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = "Populate a test database"
 
     @override
@@ -314,7 +318,7 @@ class Command(BaseCommand):
 
         if options["max_topics"] is None:
             # If max_topics is not set, we use a default that's big
-            # enough "more topics" should appear, and scales slowly
+            # enough "show all topics" should appear, and scales slowly
             # with the number of messages.
             options["max_topics"] = 8 + options["num_messages"] // 1000
 
@@ -374,7 +378,7 @@ class Command(BaseCommand):
                 # Default to allowing all members to send mentions in
                 # large streams for the test suite to keep
                 # mention-related tests simple.
-                zulip_realm.wildcard_mention_policy = Realm.WILDCARD_MENTION_POLICY_MEMBERS
+                zulip_realm.wildcard_mention_policy = WildcardMentionPolicyEnum.MEMBERS
                 zulip_realm.save(update_fields=["wildcard_mention_policy"])
 
             # Realms should have matching RemoteRealm entries - simulating having realms registered
@@ -618,8 +622,9 @@ class Command(BaseCommand):
             # Add the realm internal bots to each realm.
             create_if_missing_realm_internal_bots()
 
-            # Create public streams.
-            signups_stream = Realm.INITIAL_PRIVATE_STREAM_NAME
+            # Create streams.
+            zulip_discussion_channel_name = str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME)
+            zulip_sandbox_channel_name = str(Realm.ZULIP_SANDBOX_CHANNEL_NAME)
 
             stream_list = [
                 "Verona",
@@ -627,13 +632,20 @@ class Command(BaseCommand):
                 "Scotland",
                 "Venice",
                 "Rome",
-                signups_stream,
+                "core team",
+                zulip_discussion_channel_name,
+                zulip_sandbox_channel_name,
             ]
             stream_dict: Dict[str, Dict[str, Any]] = {
                 "Denmark": {"description": "A Scandinavian country"},
-                "Scotland": {"description": "Located in the United Kingdom"},
-                "Venice": {"description": "A northeastern Italian city"},
+                "Scotland": {"description": "Located in the United Kingdom", "creator": iago},
+                "Venice": {"description": "A northeastern Italian city", "creator": polonius},
                 "Rome": {"description": "Yet another Italian city", "is_web_public": True},
+                "core team": {
+                    "description": "A private channel for core team members",
+                    "invite_only": True,
+                    "creator": desdemona,
+                },
             }
 
             bulk_create_streams(zulip_realm, stream_dict)
@@ -657,12 +669,20 @@ class Command(BaseCommand):
                 subscriptions_map = {
                     "AARON@zulip.com": ["Verona"],
                     "cordelia@zulip.com": ["Verona"],
-                    "hamlet@zulip.com": ["Verona", "Denmark", signups_stream],
+                    "hamlet@zulip.com": [
+                        "Verona",
+                        "Denmark",
+                        "core team",
+                        zulip_discussion_channel_name,
+                        zulip_sandbox_channel_name,
+                    ],
                     "iago@zulip.com": [
                         "Verona",
                         "Denmark",
                         "Scotland",
-                        signups_stream,
+                        "core team",
+                        zulip_discussion_channel_name,
+                        zulip_sandbox_channel_name,
                     ],
                     "othello@zulip.com": ["Verona", "Denmark", "Scotland"],
                     "prospero@zulip.com": ["Verona", "Denmark", "Scotland", "Venice"],
@@ -672,7 +692,9 @@ class Command(BaseCommand):
                         "Verona",
                         "Denmark",
                         "Venice",
-                        signups_stream,
+                        "core team",
+                        zulip_discussion_channel_name,
+                        zulip_sandbox_channel_name,
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
                 }
@@ -934,10 +956,17 @@ class Command(BaseCommand):
                 )
 
                 mit_user = get_user_by_delivery_email("sipbtest@mit.edu", mit_realm)
-                mit_signup_stream = Stream.objects.get(
-                    name=Realm.INITIAL_PRIVATE_STREAM_NAME, realm=mit_realm
+                bulk_create_streams(
+                    mit_realm,
+                    {
+                        "core team": {
+                            "description": "A private channel for core team members",
+                            "invite_only": True,
+                        }
+                    },
                 )
-                bulk_add_subscriptions(mit_realm, [mit_signup_stream], [mit_user], acting_user=None)
+                core_team_stream = Stream.objects.get(name="core team", realm=mit_realm)
+                bulk_add_subscriptions(mit_realm, [core_team_stream], [mit_user], acting_user=None)
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
@@ -948,11 +977,18 @@ class Command(BaseCommand):
                 )
 
                 lear_user = get_user_by_delivery_email("king@lear.org", lear_realm)
-                lear_signup_stream = Stream.objects.get(
-                    name=Realm.INITIAL_PRIVATE_STREAM_NAME, realm=lear_realm
+                bulk_create_streams(
+                    lear_realm,
+                    {
+                        "core team": {
+                            "description": "A private channel for core team members",
+                            "invite_only": True,
+                        }
+                    },
                 )
+                core_team_stream = Stream.objects.get(name="core team", realm=lear_realm)
                 bulk_add_subscriptions(
-                    lear_realm, [lear_signup_stream], [lear_user], acting_user=None
+                    lear_realm, [core_team_stream], [lear_user], acting_user=None
                 )
 
             if not options["test_suite"]:
@@ -967,13 +1003,14 @@ class Command(BaseCommand):
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
                     "ビデオゲーム": {
-                        "description": f"Share your favorite video games!  {raw_emojis[2]}"
+                        "description": f"Share your favorite video games!  {raw_emojis[2]}",
+                        "creator": shiva,
                     },
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     },
-                    "design": {"description": "For design"},
+                    "design": {"description": "For design", "creator": hamlet},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},

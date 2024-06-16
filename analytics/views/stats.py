@@ -310,8 +310,8 @@ def get_chart_data(
         tables = (aggregate_table, UserCount)
         subgroup_to_label = {
             stats[0]: {
-                "public_stream": _("Public streams"),
-                "private_stream": _("Private streams"),
+                "public_stream": _("Public channels"),
+                "private_stream": _("Private channels"),
                 "private_message": _("Direct messages"),
                 "huddle_message": _("Group direct messages"),
             }
@@ -336,7 +336,7 @@ def get_chart_data(
     elif chart_name == "messages_sent_by_stream":
         if stream is None:
             raise JsonableError(
-                _("Missing stream for chart: {chart_name}").format(chart_name=chart_name)
+                _("Missing channel for chart: {chart_name}").format(chart_name=chart_name)
             )
         stats = [COUNT_STATS["messages_in_stream:is_bot:day"]]
         tables = (aggregate_table, StreamCount)
@@ -525,7 +525,9 @@ def client_label_map(name: str) -> str:
     if name == "ZulipiOS":
         return "Old iOS app"
     if name == "ZulipMobile":
-        return "Mobile app"
+        return "Mobile app (React Native)"
+    if name in ["ZulipFlutter", "ZulipMobile/flutter"]:
+        return "Mobile app beta (Flutter)"
     if name in ["ZulipPython", "API: Python"]:
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):

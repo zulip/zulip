@@ -16,8 +16,18 @@ async function _add_playground_and_return_status(page: Page, payload: Playground
     const admin_playground_status_selector = "div#admin-playground-status";
     await page.waitForSelector(admin_playground_status_selector, {hidden: true});
 
+    await common.select_item_via_typeahead(
+        page,
+        "#playground_pygments_language",
+        payload.pygments_language,
+        payload.pygments_language,
+    );
+
     // Now we can fill and click the submit button.
-    await common.fill_form(page, "form.admin-playground-form", payload);
+    await common.fill_form(page, "form.admin-playground-form", {
+        playground_name: payload.playground_name,
+        url_template: payload.url_template,
+    });
     // Not sure why, but page.click() doesn't seem to always click the submit button.
     // So we resort to using eval with the button ID instead.
     await page.$eval("button#submit_playground_button", (el) => {

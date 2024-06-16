@@ -15,7 +15,7 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import {get_time_from_date_muted} from "./util";
 
-type ServerUserTopic = z.infer<typeof user_topic_schema>;
+export type ServerUserTopic = z.infer<typeof user_topic_schema>;
 
 export type UserTopic = {
     stream_id: number;
@@ -70,7 +70,7 @@ export function update_user_topics(
     }
 }
 
-export function get_topic_visibility_policy(stream_id: number, topic: string): number | boolean {
+export function get_topic_visibility_policy(stream_id: number, topic: string): number | false {
     if (stream_id === undefined) {
         return false;
     }
@@ -123,6 +123,8 @@ export function set_user_topic_visibility_policy(
     from_hotkey?: boolean,
     from_banner?: boolean,
     $status_element?: JQuery,
+    success_cb?: () => void,
+    error_cb?: () => void,
 ): void {
     const data = {
         stream_id,
@@ -141,6 +143,10 @@ export function set_user_topic_visibility_policy(
         url: "/json/user_topics",
         data,
         success() {
+            if (success_cb) {
+                success_cb();
+            }
+
             if ($status_element) {
                 const remove_after = 1000;
                 const appear_after = 500;
@@ -189,6 +195,11 @@ export function set_user_topic_visibility_policy(
                     title_text: $t({defaultMessage: "Topic muted"}),
                     undo_button_text: $t({defaultMessage: "Undo mute"}),
                 });
+            }
+        },
+        error() {
+            if (error_cb) {
+                error_cb();
             }
         },
     });

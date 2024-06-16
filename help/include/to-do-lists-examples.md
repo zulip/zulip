@@ -1,16 +1,13 @@
 ### What you type
 
 ```
-/todo
+/todo Today's tasks
+Task 1: This is the first task.
+Task 2: This is the second task.
+Last task
 ```
 
-!!! warn ""
-
-    Any other content in a message starting with `/todo` will be ignored.
-
 ### What it looks like
-
-After two tasks have been added to the shared to-do list:
 
 ![Markdown todo-lists](/static/images/help/markdown-todo.png)
 

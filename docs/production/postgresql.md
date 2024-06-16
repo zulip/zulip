@@ -168,6 +168,56 @@ su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
 su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 ```
 
+## PostgreSQL warm standby
+
+Zulip's configuration allows for [warm standby database replicas][warm-standby]
+as a disaster recovery solution; see the linked PostgreSQL documentation for
+details on this type of deployment. Zulip's configuration can, but is not
+required to, build on top of `wal-g`, our [streaming database backup
+solution][wal-g], for ease of establishing base images without incurring load on
+the primary.
+
+Warm standby replicas should configure the hostname of their primary replica,
+and username to use for replication, in `/etc/zulip/zulip.conf`:
+
+```ini
+[postgresql]
+replication_user = replicator
+replication_primary = hostname-of-primary.example.com
+```
+
+The `postgres` user on the replica will need to be able to authenticate as the
+`replication_user` user, which may require further configuration of
+`pg_hba.conf` and client certificates on the replica. If you are using password
+authentication, you can set a `postgresql_replication_password` secret in
+`/etc/zulip/zulip-secrets.conf`.
+
+Use `zulip-puppet-apply` to rebuild the PostgreSQL configuration with those
+values. If [wal-g][wal-g] is used, use `env-wal-g backup-fetch` to fetch the
+latest copy of the base backup; otherwise, use [`pg_basebackup`][pg_basebackup].
+The PostgreSQL replica should then begin live-replicating from the primary.
+
+In the event of a primary failure, use [`pg_ctl promote`][promote] on the warm
+standby to promote it to primary. As with all database promotions, care should
+be taken to ensure that the old primary cannot come back online, and leave the
+cluster with two diverging timelines.
+
+To make fail-over to the warm-standby faster, without requiring a restart of
+Zulip services, you can configure Zulip with a comma-separated list of remote
+PostgreSQL servers to connect to; it will choose the first which accepts writes
+(i.e. is not a read-only replica). In the event that the primary fails, it will
+repeatedly retry the list, in order, until the replica is promoted and becomes
+writable. To configure this, in `/etc/zulip/settings.py`, set:
+
+```python3
+REMOTE_POSTGRES_HOST = 'primary-database-host,warm-standby-host'
+```
+
+[warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
+[wal-g]: export-and-import.md#database-only-backup-tools
+[pg_basebackup]: https://www.postgresql.org/docs/current/app-pgbasebackup.html
+[promote]: https://www.postgresql.org/docs/current/app-pg-ctl.html
+
 ## PostgreSQL vacuuming alerts
 
 The `autovac_freeze` PostgreSQL alert from `check_postgres` is particularly

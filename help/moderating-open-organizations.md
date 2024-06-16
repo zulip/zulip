@@ -26,12 +26,12 @@ problematic behavior.
 
 ### Restrict permissions for making changes
 
-* Restrict who can [create streams](/help/configure-who-can-create-streams), or
-  monitor new streams by enabling [new stream
-  announcements](/help/configure-automated-notices#new-stream-announcements).
+* Restrict who can [create channels](/help/configure-who-can-create-channels), or
+  monitor new channels by enabling [new channel
+  announcements](/help/configure-automated-notices#new-channel-announcements).
 * Restrict who can [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
 * Restrict who can [move messages to another
-  stream](/help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream),
+  channel](/help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel),
   and set a [time
   limit](/help/restrict-moving-messages#set-a-time-limit-for-editing-topics) for
   editing topics.
@@ -51,9 +51,9 @@ problematic behavior.
   to prevent off-platform spam.
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
   so only [moderators](/help/roles-and-permissions) can mention everyone in your organization.
-* Create a [default stream](/help/set-default-streams-for-new-users)
+* Create a [default channel](/help/set-default-channels-for-new-users)
   for announcements where [only admins can
-  post](/help/stream-sending-policy).
+  post](/help/channel-posting-policy).
 * Restrict who can [send direct messages](/help/restrict-direct-messages).
 
 ## Response
@@ -71,9 +71,9 @@ organization's policy choices.
   their account is reactivated by an administrator.
 * Investigate behavior by [viewing messages sent by a
   user](/help/view-messages-sent-by-a-user).
-* Delete messages, [archive streams](/help/archive-a-stream), and
-  [unsubscribe users from streams](/help/add-or-remove-users-from-a-stream).
-* [Move topics](/help/rename-a-topic), including between streams, when
+* Delete messages, [archive channels](/help/archive-a-channel), and
+  [unsubscribe users from channels](/help/add-or-remove-users-from-a-channel).
+* [Move topics](/help/rename-a-topic), including between channels, when
   users start conversations in the wrong place.
 * [Change users' names](/help/change-a-users-name) (e.g., to "Name (Spammer)")
   for users who sent spam direct messages to many community members.
@@ -82,7 +82,7 @@ organization's policy choices.
 
 ## Public access option
 
-{!web-public-streams-intro.md!}
+{!web-public-channels-intro.md!}
 
 ## Zulip communities directory
 

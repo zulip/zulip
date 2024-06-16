@@ -33,8 +33,8 @@ function make_tab(i) {
         return tokens.includes(c);
     };
 
-    $self.data = (name) => {
-        assert.equal(name, "tab-id");
+    $self.attr = (name) => {
+        assert.equal(name, "data-tab-id");
         return i;
     };
 

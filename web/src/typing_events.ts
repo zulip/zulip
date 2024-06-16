@@ -64,7 +64,7 @@ function get_users_typing_for_narrow(): number[] {
     }
 
     const terms = narrow_state.search_terms();
-    if (terms.length === 0) {
+    if (terms[0] === undefined) {
         return [];
     }
 
@@ -145,4 +145,9 @@ export function display_notification(event: TypingEvent): void {
             hide_notification(event);
         },
     );
+}
+
+export function disable_typing_notification(): void {
+    typing_data.clear_typing_data();
+    render_notifications_for_narrow();
 }

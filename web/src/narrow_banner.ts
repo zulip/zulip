@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import {$t, $t_html} from "./i18n";
@@ -32,7 +33,7 @@ function retrieve_search_query_data(): SearchData {
     const current_filter = narrow_state.filter();
     assert(current_filter !== undefined);
     const search_query = current_filter.operands("search")[0];
-    const query_words = search_query.split(" ");
+    const query_words = search_query!.split(" ");
 
     const search_string_result: SearchData = {
         query_words: [],
@@ -40,8 +41,8 @@ function retrieve_search_query_data(): SearchData {
     };
 
     // Add in stream:foo and topic:bar if present
-    if (current_filter.has_operator("stream") || current_filter.has_operator("topic")) {
-        const stream = current_filter.operands("stream")[0];
+    if (current_filter.has_operator("channel") || current_filter.has_operator("topic")) {
+        const stream = current_filter.operands("channel")[0];
         const topic = current_filter.operands("topic")[0];
         if (stream) {
             search_string_result.stream_query = stream;
@@ -92,18 +93,19 @@ function pick_empty_narrow_banner(): NarrowBannerData {
 
     const current_filter = narrow_state.filter();
 
-    if (current_filter === undefined) {
+    if (current_filter === undefined || current_filter.is_in_home()) {
         return default_banner;
     }
 
-    const first_term = current_filter.terms()[0];
+    const first_term = current_filter.terms()[0]!;
+    const current_terms_types = current_filter.sorted_term_types();
     const first_operator = first_term.operator;
     const first_operand = first_term.operand;
     const num_terms = current_filter.terms().length;
 
     if (num_terms !== 1) {
         // For invalid-multi-operator narrows, we display an invalid narrow message
-        const streams = current_filter.operands("stream");
+        const streams = current_filter.operands("channel");
         const topics = current_filter.operands("topic");
 
         // No message can have multiple streams
@@ -112,7 +114,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 title: default_banner_for_multiple_filters,
                 html: $t_html({
                     defaultMessage:
-                        "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
+                        "<p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
                 }),
             };
         }
@@ -147,7 +149,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
 
         if (
             page_params.is_spectator &&
-            first_operator === "stream" &&
+            first_operator === "channel" &&
             !stream_data.is_web_public_by_stream_name(first_operand)
         ) {
             // For non web-public streams, show `login_to_access` modal.
@@ -158,6 +160,26 @@ function pick_empty_narrow_banner(): NarrowBannerData {
         // A stream > topic that doesn't exist yet.
         if (num_terms === 2 && streams.length === 1 && topics.length === 1) {
             return default_banner;
+        }
+
+        if (
+            _.isEqual(current_terms_types, ["sender", "has-reaction"]) &&
+            current_filter.operands("sender")[0] === people.my_current_email()
+        ) {
+            return {
+                title: $t({defaultMessage: "None of your messages have emoji reactions yet."}),
+                html: $t_html(
+                    {
+                        defaultMessage: "Learn more about emoji reactions <z-link>here</z-link>.",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">${content_html.join(
+                                "",
+                            )}</a>`,
+                    },
+                ),
+            };
         }
 
         // For other multi-operator narrows, we just use the default banner
@@ -242,7 +264,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             }
             // fallthrough to default case if no match is found
             break;
-        case "stream":
+        case "channel":
             if (!stream_data.is_subscribed_by_name(first_operand)) {
                 // You are narrowed to a stream which does not exist or is a private stream
                 // in which you were never subscribed.
@@ -264,28 +286,11 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 }
 
                 if (can_toggle_narrowed_stream()) {
-                    return {
-                        title: $t({
-                            defaultMessage:
-                                "You aren't subscribed to this stream and nobody has talked about that yet!",
-                        }),
-                        // TODO: Consider moving the button to be its own option in the template.
-                        html: $t_html(
-                            {
-                                defaultMessage: "<z-button>Subscribe</z-button>",
-                            },
-                            {
-                                "z-button": (content_html) =>
-                                    `<button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html.join(
-                                        "",
-                                    )}</button>`,
-                            },
-                        ),
-                    };
+                    return default_banner;
                 }
 
                 return {
-                    title: $t({defaultMessage: "This stream does not exist or is private."}),
+                    title: $t({defaultMessage: "This channel does not exist or is private."}),
                 };
             }
             // else fallthrough to default case
@@ -309,7 +314,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 };
             }
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
-            assert(user_ids !== undefined);
+            assert(user_ids?.[0] !== undefined);
             if (
                 realm.realm_private_message_policy ===
                     settings_config.private_message_policy_values.disabled.code &&

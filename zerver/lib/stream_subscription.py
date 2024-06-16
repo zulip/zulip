@@ -180,7 +180,7 @@ def get_users_for_streams(stream_ids: Set[int]) -> Dict[int, Set[UserProfile]]:
 
 def bulk_get_subscriber_peer_info(
     realm: Realm,
-    streams: Collection[Stream],
+    streams: Collection[Stream] | QuerySet[Stream],
 ) -> SubscriberPeerInfo:
     """
     Glossary:

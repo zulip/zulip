@@ -114,7 +114,7 @@ def send_user_remove_events_on_stream_deactivation(
 def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) -> None:
     # If the stream is already deactivated, this is a no-op
     if stream.deactivated is True:
-        raise JsonableError(_("Stream is already deactivated"))
+        raise JsonableError(_("Channel is already deactivated"))
 
     # We want to mark all messages in the to-be-deactivated stream as
     # read for all users; otherwise they will pollute queries like
@@ -195,7 +195,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     event = dict(type="stream", op="delete", streams=[stream_dict])
     send_event_on_commit(stream.realm, event, affected_user_ids)
 
-    if stream.realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+    if stream.realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
         send_user_remove_events_on_stream_deactivation(stream, subscribed_users)
 
     event_time = timezone_now()
@@ -238,10 +238,10 @@ def do_unarchive_stream(
 ) -> None:
     realm = stream.realm
     if not stream.deactivated:
-        raise JsonableError(_("Stream is not currently deactivated"))
+        raise JsonableError(_("Channel is not currently deactivated"))
     if Stream.objects.filter(realm=realm, name=new_name).exists():
         raise JsonableError(
-            _("Stream named {stream_name} already exists").format(stream_name=new_name)
+            _("Channel named {channel_name} already exists").format(channel_name=new_name)
         )
     assert stream.recipient_id is not None
 
@@ -312,7 +312,7 @@ def do_unarchive_stream(
             sender,
             stream,
             str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-            _("Stream {stream_name} un-archived.").format(stream_name=new_name),
+            _("Channel {channel_name} un-archived.").format(channel_name=new_name),
         )
 
 
@@ -450,6 +450,7 @@ def send_subscription_add_events(
                 subscribers=stream_subscribers,
                 # Fields from Stream.API_FIELDS
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
+                creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
@@ -469,13 +470,13 @@ def send_subscription_add_events(
 
         # Send a notification to the user who subscribed.
         event = dict(type="subscription", op="add", subscriptions=sub_dicts)
-        send_event(realm, event, [user_id])
+        send_event_on_commit(realm, event, [user_id])
 
 
 # This function contains all the database changes as part of
-# subscribing users to streams; we use a transaction to ensure that
-# the RealmAuditLog entries are created atomically with the
-# Subscription object creation (and updates).
+# subscribing users to streams; the transaction ensures that the
+# RealmAuditLog entries are created atomically with the Subscription
+# object creation (and updates).
 @transaction.atomic(savepoint=False)
 def bulk_add_subs_to_db_with_logging(
     realm: Realm,
@@ -702,6 +703,7 @@ def send_user_creation_events_on_adding_subscriptions(
 SubT: TypeAlias = Tuple[List[SubInfo], List[SubInfo]]
 
 
+@transaction.atomic(savepoint=False)
 def bulk_add_subscriptions(
     realm: Realm,
     streams: Collection[Stream],
@@ -796,7 +798,7 @@ def bulk_add_subscriptions(
         if sub_info.user.is_guest:
             altered_guests.add(sub_info.user.id)
 
-    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
         altered_users = list(altered_streams_dict.keys())
         subscribers_of_altered_user_subscriptions = get_subscribers_of_target_user_subscriptions(
             altered_users
@@ -836,7 +838,7 @@ def bulk_add_subscriptions(
             subscriber_dict=subscriber_peer_info.subscribed_ids,
         )
 
-    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
         send_user_creation_events_on_adding_subscriptions(
             realm,
             altered_user_dict,
@@ -1081,7 +1083,7 @@ def bulk_remove_subscriptions(
     removed_sub_tuples = [(sub_info.user, sub_info.stream) for sub_info in subs_to_deactivate]
     send_subscription_remove_events(realm, users, streams, removed_sub_tuples)
 
-    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
         altered_user_dict: Dict[UserProfile, Set[int]] = defaultdict(set)
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
@@ -1175,11 +1177,12 @@ def send_change_stream_permission_notification(
 
     with override_language(stream.realm.default_language):
         notification_string = _(
-            "{user} changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **{old_policy}** to **{new_policy}**."
+            "{user} changed the [access permissions]({help_link}) "
+            "for this channel from **{old_policy}** to **{new_policy}**."
         )
         notification_string = notification_string.format(
             user=user_mention,
+            help_link="/help/channel-permissions",
             old_policy=old_policy_name,
             new_policy=new_policy_name,
         )
@@ -1188,6 +1191,7 @@ def send_change_stream_permission_notification(
         )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_stream_permission(
     stream: Stream,
     *,
@@ -1203,78 +1207,76 @@ def do_change_stream_permission(
     stream.is_web_public = is_web_public
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
+    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
 
     realm = stream.realm
 
-    with transaction.atomic():
-        stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
+    event_time = timezone_now()
+    if old_invite_only_value != stream.invite_only:
+        # Reset the Attachment.is_realm_public cache for all
+        # messages in the stream whose permissions were changed.
+        assert stream.recipient_id is not None
+        Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_realm_public=None
+        )
+        # We need to do the same for ArchivedAttachment to avoid
+        # bugs if deleted attachments are later restored.
+        ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_realm_public=None
+        )
 
-        event_time = timezone_now()
-        if old_invite_only_value != stream.invite_only:
-            # Reset the Attachment.is_realm_public cache for all
-            # messages in the stream whose permissions were changed.
-            assert stream.recipient_id is not None
-            Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-                is_realm_public=None
-            )
-            # We need to do the same for ArchivedAttachment to avoid
-            # bugs if deleted attachments are later restored.
-            ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-                is_realm_public=None
-            )
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=event_time,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_invite_only_value,
+                RealmAuditLog.NEW_VALUE: stream.invite_only,
+                "property": "invite_only",
+            },
+        )
 
-            RealmAuditLog.objects.create(
-                realm=realm,
-                acting_user=acting_user,
-                modified_stream=stream,
-                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-                event_time=event_time,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: old_invite_only_value,
-                    RealmAuditLog.NEW_VALUE: stream.invite_only,
-                    "property": "invite_only",
-                },
-            )
+    if old_history_public_to_subscribers_value != stream.history_public_to_subscribers:
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=event_time,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_history_public_to_subscribers_value,
+                RealmAuditLog.NEW_VALUE: stream.history_public_to_subscribers,
+                "property": "history_public_to_subscribers",
+            },
+        )
 
-        if old_history_public_to_subscribers_value != stream.history_public_to_subscribers:
-            RealmAuditLog.objects.create(
-                realm=realm,
-                acting_user=acting_user,
-                modified_stream=stream,
-                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-                event_time=event_time,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: old_history_public_to_subscribers_value,
-                    RealmAuditLog.NEW_VALUE: stream.history_public_to_subscribers,
-                    "property": "history_public_to_subscribers",
-                },
-            )
+    if old_is_web_public_value != stream.is_web_public:
+        # Reset the Attachment.is_realm_public cache for all
+        # messages in the stream whose permissions were changed.
+        assert stream.recipient_id is not None
+        Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_web_public=None
+        )
+        # We need to do the same for ArchivedAttachment to avoid
+        # bugs if deleted attachments are later restored.
+        ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_web_public=None
+        )
 
-        if old_is_web_public_value != stream.is_web_public:
-            # Reset the Attachment.is_realm_public cache for all
-            # messages in the stream whose permissions were changed.
-            assert stream.recipient_id is not None
-            Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-                is_web_public=None
-            )
-            # We need to do the same for ArchivedAttachment to avoid
-            # bugs if deleted attachments are later restored.
-            ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-                is_web_public=None
-            )
-
-            RealmAuditLog.objects.create(
-                realm=realm,
-                acting_user=acting_user,
-                modified_stream=stream,
-                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-                event_time=event_time,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: old_is_web_public_value,
-                    RealmAuditLog.NEW_VALUE: stream.is_web_public,
-                    "property": "is_web_public",
-                },
-            )
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=event_time,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_is_web_public_value,
+                RealmAuditLog.NEW_VALUE: stream.is_web_public,
+                "property": "is_web_public",
+            },
+        )
 
     notify_stream_creation_ids = set()
     if old_invite_only_value and not stream.invite_only:
@@ -1307,7 +1309,7 @@ def do_change_stream_permission(
             stream_ids=[stream.id],
             user_ids=sorted(stream_subscriber_user_ids),
         )
-        send_event(stream.realm, peer_add_event, peer_notify_user_ids)
+        send_event_on_commit(stream.realm, peer_add_event, peer_notify_user_ids)
 
     event = dict(
         op="update",
@@ -1322,7 +1324,7 @@ def do_change_stream_permission(
     # we do not need to send update events to the users who received creation event
     # since they already have the updated stream info.
     notify_stream_update_ids = can_access_stream_user_ids(stream) - notify_stream_creation_ids
-    send_event(stream.realm, event, notify_stream_update_ids)
+    send_event_on_commit(stream.realm, event, notify_stream_update_ids)
 
     old_policy_name = get_stream_permission_policy_name(
         invite_only=old_invite_only_value,
@@ -1350,13 +1352,14 @@ def send_change_stream_post_policy_notification(
 
     with override_language(stream.realm.default_language):
         notification_string = _(
-            "{user} changed the [posting permissions](/help/stream-sending-policy) "
-            "for this stream:\n\n"
+            "{user} changed the [posting permissions]({help_link}) "
+            "for this channel:\n\n"
             "* **Old permissions**: {old_policy}.\n"
             "* **New permissions**: {new_policy}.\n"
         )
         notification_string = notification_string.format(
             user=user_mention,
+            help_link="/help/channel-posting-policy",
             old_policy=Stream.POST_POLICIES[old_post_policy],
             new_policy=Stream.POST_POLICIES[new_post_policy],
         )
@@ -1466,10 +1469,10 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
             sender,
             stream,
             str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-            _("{user_name} renamed stream {old_stream_name} to {new_stream_name}.").format(
+            _("{user_name} renamed channel {old_channel_name} to {new_channel_name}.").format(
                 user_name=silent_mention_syntax_for_user(user_profile),
-                old_stream_name=f"**{old_name}**",
-                new_stream_name=f"**{new_name}**",
+                old_channel_name=f"**{old_name}**",
+                new_channel_name=f"**{new_name}**",
             ),
         )
 
@@ -1487,7 +1490,7 @@ def send_change_stream_description_notification(
             old_description = "*" + _("No description.") + "*"
 
         notification_string = (
-            _("{user} changed the description for this stream.").format(user=user_mention)
+            _("{user} changed the description for this channel.").format(user=user_mention)
             + "\n\n* **"
             + _("Old description")
             + ":**"
@@ -1560,24 +1563,29 @@ def send_change_stream_message_retention_days_notification(
     with override_language(stream.realm.default_language):
         if old_value == Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["unlimited"]:
             old_retention_period = _("Forever")
-            new_retention_period = f"{new_value} days"
-            summary_line = f"Messages in this stream will now be automatically deleted {new_value} days after they are sent."
+            new_retention_period = _("{number_of_days} days").format(number_of_days=new_value)
+            summary_line = _(
+                "Messages in this channel will now be automatically deleted {number_of_days} days after they are sent."
+            ).format(number_of_days=new_value)
         elif new_value == Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["unlimited"]:
-            old_retention_period = f"{old_value} days"
+            old_retention_period = _("{number_of_days} days").format(number_of_days=old_value)
             new_retention_period = _("Forever")
-            summary_line = _("Messages in this stream will now be retained forever.")
+            summary_line = _("Messages in this channel will now be retained forever.")
         else:
-            old_retention_period = f"{old_value} days"
-            new_retention_period = f"{new_value} days"
-            summary_line = f"Messages in this stream will now be automatically deleted {new_value} days after they are sent."
+            old_retention_period = _("{number_of_days} days").format(number_of_days=old_value)
+            new_retention_period = _("{number_of_days} days").format(number_of_days=new_value)
+            summary_line = _(
+                "Messages in this channel will now be automatically deleted {number_of_days} days after they are sent."
+            ).format(number_of_days=new_value)
         notification_string = _(
-            "{user} has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            "{user} has changed the [message retention period]({help_link}) for this channel:\n"
             "* **Old retention period**: {old_retention_period}\n"
             "* **New retention period**: {new_retention_period}\n\n"
             "{summary_line}"
         )
         notification_string = notification_string.format(
             user=user_mention,
+            help_link="/help/message-retention-policy",
             old_retention_period=old_retention_period,
             new_retention_period=new_retention_period,
             summary_line=summary_line,

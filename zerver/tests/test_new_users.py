@@ -14,9 +14,10 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.models import Message, Realm, Recipient, Stream, UserProfile
+from zerver.models import Message, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_huddle_user_ids
+from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
 
@@ -274,6 +275,8 @@ class TestNotifyNewUser(ZulipTestCase):
 
     def test_notify_realm_of_new_user(self) -> None:
         realm = get_realm("zulip")
+        realm.signup_announcements_stream = get_stream("core team", realm)
+        realm.save(update_fields=["signup_announcements_stream"])
         new_user = self.example_user("cordelia")
         message_count = self.get_message_count()
 
@@ -282,7 +285,7 @@ class TestNotifyNewUser(ZulipTestCase):
         message = self.get_last_message()
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        self.assertEqual(actual_stream.name, Realm.INITIAL_PRIVATE_STREAM_NAME)
+        self.assertEqual(actual_stream.name, "core team")
         self.assertIn(
             f"@_**Cordelia, Lear's daughter|{new_user.id}** joined this organization.",
             message.content,
@@ -299,6 +302,8 @@ class TestNotifyNewUser(ZulipTestCase):
         admin_user_ids = set(realm.get_human_admin_users().values_list("id", flat=True))
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
         expected_group_direct_message_user_ids = admin_user_ids | {notification_bot.id}
+        realm.signup_announcements_stream = get_stream("core team", realm)
+        realm.save(update_fields=["signup_announcements_stream"])
 
         user_count = get_latest_seat_count(realm)
         extra_licenses = 5

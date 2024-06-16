@@ -2,7 +2,7 @@ class zulip::postfix_localmail {
   include zulip::snakeoil
   $postfix_packages = [ 'postfix', ]
 
-  $fqdn = $::networking['fqdn']
+  $fqdn = $facts['networking']['fqdn']
   if $fqdn == '' {
     fail('Your system does not have a fully-qualified domain name defined. See hostname(1).')
   }

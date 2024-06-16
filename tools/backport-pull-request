@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -e
 
 usage() {
@@ -11,25 +12,91 @@ the current branch using 'git cherry-pick -x'.
 Typical usage is:
   git fetch upstream
   git checkout -b 8.x upstream/8.x
-  $0 FIRST_PR_ID FIRST_PR_COMMIT_COUNT
-  $0 SECOND_PR_ID SECOND_PR_COMMIT_COUNT
+  $0 FIRST_PR_ID
+  $0 SECOND_PR_ID
   git push origin +HEAD:backport-changes
 EOF
     exit 1
 }
 
-remote_default="$(git config zulip.zulipRemote || echo upstream)"
+pr_id="$1"
 
-request_id="$1"
-commit_count="$2"
-
-if [ -z "$request_id" ] || [ -z "$commit_count" ]; then
+if [ -z "$pr_id" ]; then
     usage
 fi
 
-remote=${3:-"$remote_default"}
+fail() {
+    echo "$1"
+    exit 1
+}
+
+type gh >/dev/null 2>&1 \
+    || fail "The 'gh' CLI tool is not installed; see https://cli.github.com/"
+gh auth status 2>/dev/null || fail "Not authenticated to github"
+
+# Find the last commit that was merged.  We will look back in `main`
+# for other commits from the same PR.
+# shellcheck disable=SC2016
+merge_commit="$(
+    gh api graphql \
+        -q '.data.repository.pullRequest.timelineItems.nodes[0].commit.oid' \
+        -F pr_id="$1" \
+        -f query='
+query($pr_id:Int!) {
+  repository(name: "zulip", owner: "zulip") {
+    pullRequest(number:$pr_id) {
+      timelineItems(last:1, itemTypes: [MERGED_EVENT]) {
+        nodes {
+          ... on MergedEvent {
+            commit {
+              oid
+            }
+          }
+        }
+      }
+    }
+  }
+}
+'
+)"
+
+# We cannot trust the "commits" count on the PR, since only part of it
+# may get merged, or it may have commits squashed during the merge.
+# Walk backwards on `main` from the merge commit we found, checking
+# that each of those commits is still associated with the same PR.
+commit_id="$merge_commit"
+while true; do
+    # shellcheck disable=SC2016
+    this_pr="$(gh api graphql -F "commit_id=$commit_id 0" \
+        --jq '.data.repository.ref.target.history.edges[].node.associatedPullRequests.nodes[].number' \
+        -f query='
+query($commit_id: String!) {
+  repository(owner: "zulip", name:"zulip") {
+    ref(qualifiedName:"main") {
+      target {
+        ... on Commit {
+          history(first:1, after: $commit_id) {
+            edges {
+              node {
+                oid
+                associatedPullRequests(first: 1) {
+                  nodes {
+                    number
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}')"
+    if [ "$this_pr" != "$pr_id" ]; then
+        break
+    fi
+    commit_id="$(git rev-parse "$commit_id"~)"
+done
 
 set -x
-
-git fetch "$remote" "pull/$request_id/head"
-git cherry-pick -x FETCH_HEAD~"$commit_count"..FETCH_HEAD
+git cherry-pick -x "$commit_id~..$merge_commit"

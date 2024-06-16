@@ -26,7 +26,7 @@ import gcm
 import lxml.html
 import orjson
 from django.conf import settings
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -42,9 +42,11 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message, huddle_users
+from zerver.lib.message import access_message_and_usermessage, huddle_users
+from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
+    record_push_notifications_recently_working,
     send_json_to_push_bouncer,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
@@ -61,7 +63,6 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
-    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -662,15 +663,18 @@ def send_notifications_to_bouncer(
         # The server may have updated our understanding of whether
         # push notifications will work.
         assert isinstance(remote_realm_dict, dict)
+        can_push = remote_realm_dict["can_push"]
         do_set_realm_property(
             user_profile.realm,
             "push_notifications_enabled",
-            remote_realm_dict["can_push"],
+            can_push,
             acting_user=None,
         )
         do_set_push_notifications_enabled_end_timestamp(
             user_profile.realm, remote_realm_dict["expected_end_timestamp"], acting_user=None
         )
+        if can_push:
+            record_push_notifications_recently_working()
 
     logger.info(
         "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
@@ -687,7 +691,7 @@ def send_notifications_to_bouncer(
 
 def add_push_device_token(
     user_profile: UserProfile, token_str: str, kind: int, ios_app_id: Optional[str] = None
-) -> PushDeviceToken:
+) -> None:
     logger.info(
         "Registering push device: %d %r %d %r", user_profile.id, token_str, kind, ios_app_id
     )
@@ -697,45 +701,42 @@ def add_push_device_token(
     # These can be used to discern whether the user has any mobile
     # devices configured, and is also where we will store encryption
     # keys for mobile push notifications.
-    try:
-        with transaction.atomic():
-            token = PushDeviceToken.objects.create(
+    PushDeviceToken.objects.bulk_create(
+        [
+            PushDeviceToken(
                 user_id=user_profile.id,
-                kind=kind,
                 token=token_str,
+                kind=kind,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone_now(),
-            )
-    except IntegrityError:
-        token = PushDeviceToken.objects.get(
-            user_id=user_profile.id,
-            kind=kind,
-            token=token_str,
-        )
+            ),
+        ],
+        ignore_conflicts=True,
+    )
+
+    if not uses_notification_bouncer():
+        return
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
-    if uses_notification_bouncer():
-        post_data = {
-            "server_uuid": settings.ZULIP_ORG_ID,
-            "user_uuid": str(user_profile.uuid),
-            "realm_uuid": str(user_profile.realm.uuid),
-            # user_id is sent so that the bouncer can delete any pre-existing registrations
-            # for this user+device to avoid duplication upon adding the uuid registration.
-            "user_id": str(user_profile.id),
-            "token": token_str,
-            "token_kind": kind,
-        }
+    post_data = {
+        "server_uuid": settings.ZULIP_ORG_ID,
+        "user_uuid": str(user_profile.uuid),
+        "realm_uuid": str(user_profile.realm.uuid),
+        # user_id is sent so that the bouncer can delete any pre-existing registrations
+        # for this user+device to avoid duplication upon adding the uuid registration.
+        "user_id": str(user_profile.id),
+        "token": token_str,
+        "token_kind": kind,
+    }
 
-        if kind == PushDeviceToken.APNS:
-            post_data["ios_app_id"] = ios_app_id
+    if kind == PushDeviceToken.APNS:
+        post_data["ios_app_id"] = ios_app_id
 
-        logger.info("Sending new push device to bouncer: %r", post_data)
-        # Calls zilencer.views.register_remote_push_device
-        send_to_push_bouncer("POST", "push/register", post_data)
-
-    return token
+    logger.info("Sending new push device to bouncer: %r", post_data)
+    # Calls zilencer.views.register_remote_push_device
+    send_to_push_bouncer("POST", "push/register", post_data)
 
 
 def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: int) -> None:
@@ -921,11 +922,74 @@ def get_mobile_push_content(rendered_content: str) -> str:
             plain_text += elem.tail or ""
         return plain_text
 
+    def is_same_server_message_link(hash: str) -> bool:
+        # A same server message link always has category `narrow`,
+        # section `stream` or `dm`, and ends with `/near/<message_id>`,
+        # where <message_id> is a sequence of digits.
+        match = re.match(r"#([^/]+)", hash)
+        if match is None or match.group(1) != "narrow":
+            return False
+
+        match = re.search(r"#narrow/([^/]+)", hash)
+        if match is None or not (match.group(1) == "stream" or match.group(1) == "dm"):
+            return False
+
+        return re.search(r"/near/\d+$", hash) is not None
+
+    def is_user_said_paragraph(element: lxml.html.HtmlElement) -> bool:
+        # The user said paragraph has these exact elements:
+        # 1. A user mention
+        # 2. A same server message link ("said")
+        # 3. A colon (:)
+        user_mention_elements = element.find_class("user-mention")
+        if len(user_mention_elements) != 1:
+            return False
+
+        message_link_elements = []
+        anchor_elements = element.cssselect("a[href]")
+        for elem in anchor_elements:
+            href = elem.get("href")
+            if is_same_server_message_link(href):
+                message_link_elements.append(elem)
+
+        if len(message_link_elements) != 1:
+            return False
+
+        remaining_text = (
+            element.text_content()
+            .replace(user_mention_elements[0].text_content(), "")
+            .replace(message_link_elements[0].text_content(), "")
+        )
+        return remaining_text.strip() == ":"
+
+    def get_collapsible_status_array(elements: List[lxml.html.HtmlElement]) -> List[bool]:
+        collapsible_status: List[bool] = [
+            element.tag == "blockquote" or is_user_said_paragraph(element) for element in elements
+        ]
+        return collapsible_status
+
+    def potentially_collapse_quotes(element: lxml.html.HtmlElement) -> None:
+        children = element.getchildren()
+        collapsible_status = get_collapsible_status_array(children)
+
+        if all(collapsible_status) or all(not x for x in collapsible_status):
+            return
+
+        collapse_element = lxml.html.Element("p")
+        collapse_element.text = "[…]"
+        for index, child in enumerate(children):
+            if collapsible_status[index]:
+                if index > 0 and collapsible_status[index - 1]:
+                    child.drop_tree()
+                else:
+                    child.getparent().replace(child, collapse_element)
+
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
         return _("New message")
 
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     change_katex_to_raw_latex(elem)
+    potentially_collapse_quotes(elem)
     plain_text = process(elem)
     return plain_text
 
@@ -947,7 +1011,8 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     # These will let the app support logging into multiple realms and servers.
     data["server"] = settings.EXTERNAL_HOST
     data["realm_id"] = user_profile.realm.id
-    data["realm_uri"] = user_profile.realm.uri
+    data["realm_uri"] = user_profile.realm.url
+    data["realm_url"] = user_profile.realm.url
     data["realm_name"] = user_profile.realm.name
     data["user_id"] = user_profile.id
 
@@ -1266,7 +1331,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the
-    zerver.worker.queue_processors.PushNotificationWorker.consume function.
+    zerver.worker.missedmessage_mobile_notifications.PushNotificationWorker.consume function.
     """
     if not push_notifications_configured():
         return
@@ -1292,11 +1357,8 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     with transaction.atomic(savepoint=False):
         try:
-            (message, user_message) = access_message(
-                user_profile,
-                missed_message["message_id"],
-                lock_message=True,
-                get_user_message="object",
+            (message, user_message) = access_message_and_usermessage(
+                user_profile, missed_message["message_id"], lock_message=True
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
@@ -1353,20 +1415,22 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     if trigger == "private_message":
         trigger = NotificationTriggers.DIRECT_MESSAGE  # nocoverage
 
-    mentioned_user_group_name = None
-    # mentioned_user_group_id will be None if the user is personally mentioned
+    # mentioned_user_group will be None if the user is personally mentioned
     # regardless whether they are a member of the mentioned user group in the
     # message or not.
-    mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
-
-    if mentioned_user_group_id is not None:
-        user_group = UserGroup.objects.get(
-            id=mentioned_user_group_id, realm_id=user_profile.realm_id
-        )
-        mentioned_user_group_name = user_group.name
+    mentioned_user_group_id = None
+    mentioned_user_group_name = None
+    mentioned_user_group_members_count = None
+    mentioned_user_group = get_mentioned_user_group([missed_message], user_profile)
+    if mentioned_user_group is not None:
+        mentioned_user_group_id = mentioned_user_group.id
+        mentioned_user_group_name = mentioned_user_group.name
+        mentioned_user_group_members_count = mentioned_user_group.members_count
 
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
-    soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
+    soft_reactivate_if_personal_notification(
+        user_profile, {trigger}, mentioned_user_group_members_count
+    )
 
     if message.is_stream_message():
         # This will almost always be True. The corner case where you
@@ -1448,13 +1512,14 @@ def send_test_push_notification_directly_to_devices(
     apple_payload = copy.deepcopy(payload)
     android_payload = copy.deepcopy(payload)
 
-    realm_uri = base_payload["realm_uri"]
+    # TODO/compatibility: Backwards-compatibility name for realm_url.
+    realm_url = base_payload.get("realm_url", base_payload["realm_uri"])
     realm_name = base_payload["realm_name"]
     apns_data = {
         "alert": {
             "title": _("Test notification"),
-            "body": _("This is a test notification from {realm_name} ({realm_uri}).").format(
-                realm_name=realm_name, realm_uri=realm_uri
+            "body": _("This is a test notification from {realm_name} ({realm_url}).").format(
+                realm_name=realm_name, realm_url=realm_url
             ),
         },
         "sound": "default",

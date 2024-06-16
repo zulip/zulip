@@ -2,7 +2,7 @@
     <li>
         <div class="enter_sends_choices grey-box">
             <label class="enter_sends_choice">
-                <input type="radio" name="enter_sends_choice" class="prop-element" value="true"{{#if enter_sends_true }} checked{{/if}} />
+                <input type="radio" name="enter_sends_choice" value="true"{{#if enter_sends_true }} checked{{/if}} />
                 <div class="enter_sends_choice_text">
                     <span>
                         {{#tr}}
@@ -19,7 +19,7 @@
                 </div>
             </label>
             <label class="enter_sends_choice">
-                <input type="radio" name="enter_sends_choice" class="prop-element" value="false"{{#unless enter_sends_true }} checked{{/unless}} />
+                <input type="radio" name="enter_sends_choice" value="false"{{#unless enter_sends_true }} checked{{/unless}} />
                 <div class="enter_sends_choice_text">
                     <span>
                         {{#tr}}
@@ -51,6 +51,12 @@
     </li>
     <hr class="drafts-item-in-popover" />
     <li class="drafts-item-in-popover">
-        <a href="#drafts">{{t "Drafts"}} <span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span></a>
+        <a href="#drafts">{{t "Drafts" }} <span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span></a>
     </li>
+    {{#if show_compose_new_message}}
+    <hr />
+    <li>
+        <a class="compose_new_message" tabindex=="0">{{t "Save draft and start a new message" }}</a>
+    </li>
+    {{/if}}
 </ul>

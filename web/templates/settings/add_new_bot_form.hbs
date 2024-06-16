@@ -1,7 +1,7 @@
 <form id="create_bot_form" class="new-style">
     <div class="new-bot-form">
         <div class="input-group">
-            <label for="bot_type">
+            <label for="bot_type" class="modal-field-label">
                 {{t "Bot type" }}
                 {{> ../help_link_widget link="/help/bots-overview#bot-type" }}
             </label>
@@ -14,7 +14,7 @@
             </select>
         </div>
         <div class="input-group" id="service_name_list">
-            <label for="select_service_name">{{t "Bot"}}</label>
+            <label for="select_service_name" class="modal-field-label">{{t "Bot"}}</label>
             <select name="service_name" id="select_service_name" class="modal_select bootstrap-focus-style">
                 {{#each realm_embedded_bots}}
                     <option value="{{this.name}}">{{this.name}}</option>
@@ -22,13 +22,13 @@
             </select>
         </div>
         <div class="input-group">
-            <label for="create_bot_name">{{t "Name" }}</label>
+            <label for="create_bot_name" class="modal-field-label">{{t "Name" }}</label>
             <input type="text" name="bot_name" id="create_bot_name" class="required modal_text_input"
               maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
             <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
         </div>
         <div class="input-group">
-            <label for="bot_short_name">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
+            <label for="bot_short_name" class="modal-field-label">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
             <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part modal_text_input"
               placeholder="{{t 'cookie' }}" value="" />
             -bot@{{ realm_bot_domain }}
@@ -38,13 +38,13 @@
         </div>
         <div id="payload_url_inputbox">
             <div class="input-group">
-                <label for="create_payload_url">{{t "Endpoint URL" }}</label>
+                <label for="create_payload_url" class="modal-field-label">{{t "Endpoint URL" }}</label>
                 <input type="text" name="payload_url" id="create_payload_url" class="modal_text_input"
                   maxlength=2083 placeholder="https://hostname.example.com" value="" />
                 <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
             </div>
             <div class="input-group">
-                <label for="interface_type">{{t "Outgoing webhook message format" }}</label>
+                <label for="interface_type" class="modal-field-label">{{t "Outgoing webhook message format" }}</label>
                 <select name="interface_type" id="create_interface_type" class="modal_select bootstrap-focus-style">
                     <option value="1">Zulip</option>
                     <option value="2">{{t "Slack compatible" }}</option>
@@ -60,7 +60,7 @@
             {{/each}}
         </div>
         <div class="input-group">
-            <label for="bot_avatar_file_input">{{t "Avatar" }}</label>
+            <label for="bot_avatar_file_input" class="modal-field-label">{{t "Avatar" }}</label>
             <div id="bot_avatar_file"></div>
             <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
             <div id="add_bot_preview_text">

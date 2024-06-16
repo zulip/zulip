@@ -77,7 +77,8 @@ export function message_viewport_info(): MessageViewportInfo {
 // the server are not considered.
 export function at_rendered_bottom(): boolean {
     const bottom = scrollTop() + height();
-    const full_height = $scroll_container.prop("scrollHeight");
+    // This also includes bottom whitespace.
+    const full_height = $scroll_container[0]!.scrollHeight;
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
@@ -91,9 +92,9 @@ export function at_rendered_bottom(): boolean {
 // further to see the rest of that message.
 export function bottom_rendered_message_visible(): boolean {
     const $last_row = rows.last_visible();
-    if ($last_row.length) {
+    if ($last_row[0] !== undefined) {
         const message_bottom = $last_row[0].getBoundingClientRect().bottom;
-        const bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
+        const bottom_of_feed = $("#compose")[0]!.getBoundingClientRect().top;
         return bottom_of_feed > message_bottom;
     }
     return false;
@@ -213,7 +214,7 @@ const top_of_feed = new util.CachedValue({
 
 const bottom_of_feed = new util.CachedValue({
     compute_value() {
-        return $("#compose")[0].getBoundingClientRect().top;
+        return $("#compose")[0]!.getBoundingClientRect().top;
     },
 });
 
@@ -358,8 +359,11 @@ export function stop_auto_scrolling(): void {
     }
 }
 
-export function system_initiated_animate_scroll(scroll_amount: number): void {
-    message_scroll_state.set_update_selection_on_next_scroll(false);
+export function system_initiated_animate_scroll(
+    scroll_amount: number,
+    update_selection_on_scroll = false,
+): void {
+    message_scroll_state.set_update_selection_on_next_scroll(update_selection_on_scroll);
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
     $scroll_container.animate({

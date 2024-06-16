@@ -162,7 +162,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
 
         # Copy any cookies
         if not hasattr(self, "_new_cookies"):
-            self._new_cookies: List[http.cookie.SimpleCookie[str]] = []
+            self._new_cookies: List[http.cookie.SimpleCookie] = []
         self._new_cookies.append(response.cookies)
 
         # Copy the response content

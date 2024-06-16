@@ -1,7 +1,7 @@
 <label class="checkbox">
     <input type="checkbox" name="announce" value="announce" checked />
     <span></span>
-    {{t "Announce new stream in"}}
+    {{t "Announce new channel in"}}
     {{#if new_stream_announcements_stream_sub}}
         <strong>
             {{> ../inline_decorated_stream_name
@@ -9,5 +9,5 @@
               }}
         </strong>
     {{/if}}
-    {{> ../help_link_widget link="/help/configure-automated-notices#new-stream-announcements"}}
+    {{> ../help_link_widget link="/help/configure-automated-notices#new-channel-announcements"}}
 </label>

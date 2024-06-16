@@ -35,7 +35,7 @@ export function lower_bound<T1, T2>(
     while (len > 0) {
         step = Math.floor(len / 2);
         middle = first + step;
-        if (less(array[middle], value, middle)) {
+        if (less(array[middle]!, value, middle)) {
             first = middle;
             first += 1;
             len = len - step - 1;
@@ -74,7 +74,7 @@ export function extract_pm_recipients(recipients: string): string[] {
 // When the type is "private", properties from to_user_ids might be undefined.
 // See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
 export type Recipient =
-    | {type: "private"; to_user_ids?: string; reply_to: string}
+    | {type: "private"; to_user_ids?: string | undefined; reply_to: string}
     | ({type: "stream"} & StreamTopic);
 
 export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {
@@ -204,7 +204,7 @@ export function find_stream_wildcard_mentions(message_content: string): string |
     if (mention === null) {
         return null;
     }
-    return mention[2];
+    return mention[2]!;
 }
 
 export const move_array_elements_to_front = function util_move_array_elements_to_front<T>(
@@ -247,7 +247,7 @@ export function set_match_data(target: Message, source: MatchedMessage): void {
     target.match_content = source.match_content;
 }
 
-export function get_match_topic(obj: Message): string | undefined {
+export function get_match_topic(obj: Message | RawMessage): string | undefined {
     return obj.match_subject;
 }
 
@@ -269,21 +269,25 @@ export function is_topic_synonym(operator: string): boolean {
     return operator === "subject";
 }
 
-export function convert_message_topic(message: Message): void {
-    if (message.type === "stream" && message.topic === undefined) {
-        message.topic = message.subject;
-    }
-}
-
 // TODO: When "stream" is renamed to "channel", update these stream
 // synonym helper functions for the reverse logic.
 export function is_stream_synonym(text: string): boolean {
     return text === "channel";
 }
 
-export function canonicalize_stream_synonym(text: string): string {
+export function is_streams_synonym(text: string): boolean {
+    return text === "channels";
+}
+
+// For parts of the codebase that have been converted to use
+// channel/channels internally, this is used to convert those
+// back into stream/streams for external presentation.
+export function canonicalize_stream_synonyms(text: string): string {
     if (is_stream_synonym(text.toLowerCase())) {
         return "stream";
+    }
+    if (is_streams_synonym(text.toLowerCase())) {
+        return "streams";
     }
     return text;
 }
@@ -528,4 +532,9 @@ export function format_array_as_list(
 
     // Return the formatted string.
     return list_formatter.format(array);
+}
+
+// Returns the remaining time in milliseconds from the start_time and duration.
+export function get_remaining_time(start_time: number, duration: number): number {
+    return Math.max(0, start_time + duration - Date.now());
 }

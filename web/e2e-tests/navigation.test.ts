@@ -42,7 +42,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 
     await open_menu(page);
 
-    const manage_streams_selector = '.link-item a[href^="#streams"]';
+    const manage_streams_selector = '.link-item a[href^="#channels"]';
     await page.waitForSelector(manage_streams_selector, {visible: true});
     await page.click(manage_streams_selector);
 
@@ -64,12 +64,15 @@ async function navigate_to_private_messages(page: Page): Promise<void> {
 }
 
 async function test_reload_hash(page: Page): Promise<void> {
-    const initial_page_load_time = await page.evaluate((): number => zulip_test.page_load_time);
+    const initial_page_load_time = await page.evaluate(() => zulip_test.page_load_time);
+    assert(initial_page_load_time !== undefined);
     console.log(`initial load time: ${initial_page_load_time}`);
 
     const initial_hash = await page.evaluate(() => window.location.hash);
 
-    await page.evaluate(() => zulip_test.initiate_reload({immediate: true}));
+    await page.evaluate(() => {
+        zulip_test.initiate_reload({immediate: true});
+    });
     await page.waitForNavigation();
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
@@ -77,6 +80,7 @@ async function test_reload_hash(page: Page): Promise<void> {
     });
 
     const page_load_time = await page.evaluate(() => zulip_test.page_load_time);
+    assert(page_load_time !== undefined);
     assert.ok(page_load_time > initial_page_load_time, "Page not reloaded.");
 
     const hash = await page.evaluate(() => window.location.hash);
@@ -88,7 +92,7 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await navigate_to_settings(page);
 
-    const verona_id = await page.evaluate((): number => zulip_test.get_stream_id("Verona"));
+    const verona_id = await page.evaluate(() => zulip_test.get_stream_id("Verona"));
     const verona_narrow = `narrow/stream/${verona_id}-Verona`;
 
     await navigate_using_left_sidebar(page, verona_narrow);

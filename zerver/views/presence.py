@@ -18,7 +18,8 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.lib.users import check_can_access_user
+from zerver.lib.user_status import get_user_status
+from zerver.lib.users import access_user_by_id, check_can_access_user
 from zerver.models import UserActivity, UserPresence, UserProfile, UserStatus
 from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
 
@@ -64,6 +65,13 @@ def get_presence_backend(
         val.pop("client", None)
         val.pop("pushable", None)
     return json_success(request, data=result)
+
+
+def get_status_backend(
+    request: HttpRequest, user_profile: UserProfile, user_id: int
+) -> HttpResponse:
+    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    return json_success(request, data={"status": get_user_status(target_user)})
 
 
 @human_users_only
@@ -146,7 +154,13 @@ def update_active_status_backend(
     ping_only: Json[bool] = False,
     new_user_input: Json[bool] = False,
     slim_presence: Json[bool] = False,
+    last_update_id: Optional[Json[int]] = None,
 ) -> HttpResponse:
+    if last_update_id is not None:
+        # This param being submitted by the client, means they want to use
+        # the modern API.
+        slim_presence = True
+
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: {status}").format(status=status))
@@ -158,7 +172,9 @@ def update_active_status_backend(
     if ping_only:
         ret: Dict[str, Any] = {}
     else:
-        ret = get_presence_response(user_profile, slim_presence)
+        ret = get_presence_response(
+            user_profile, slim_presence, last_update_id_fetched_by_client=last_update_id
+        )
 
     if user_profile.realm.is_zephyr_mirror_realm:
         # In zephyr mirroring realms, users can't see the presence of other
@@ -182,4 +198,8 @@ def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> H
     # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
-    return json_success(request, data=get_presence_response(user_profile, slim_presence=False))
+    data = get_presence_response(user_profile, slim_presence=False)
+
+    # We're not interested in the last_update_id field in this context.
+    data.pop("presence_last_update_id", None)
+    return json_success(request, data=data)

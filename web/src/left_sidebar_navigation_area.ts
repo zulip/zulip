@@ -1,8 +1,10 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import type {Filter} from "./filter";
 import {localstorage} from "./localstorage";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
 import * as settings_config from "./settings_config";
@@ -86,6 +88,7 @@ function deselect_top_left_corner_items(): void {
     remove($(".top_left_mentions"));
     remove($(".top_left_recent_view"));
     remove($(".top_left_inbox"));
+    remove($(".top_left_my_reactions"));
 }
 
 export function handle_narrow_activated(filter: Filter): void {
@@ -97,14 +100,14 @@ export function handle_narrow_activated(filter: Filter): void {
 
     // TODO: handle confused filters like "in:all stream:foo"
     ops = filter.operands("in");
-    if (ops.length >= 1) {
+    if (ops[0] !== undefined) {
         filter_name = ops[0];
         if (filter_name === "home") {
             highlight_all_messages_view();
         }
     }
     ops = filter.operands("is");
-    if (ops.length >= 1) {
+    if (ops[0] !== undefined) {
         filter_name = ops[0];
         if (filter_name === "starred") {
             $filter_li = $(".top_left_starred_messages");
@@ -113,6 +116,14 @@ export function handle_narrow_activated(filter: Filter): void {
             $filter_li = $(".top_left_mentions");
             $filter_li.addClass("active-filter");
         }
+    }
+    const term_types = filter.sorted_term_types();
+    if (
+        _.isEqual(term_types, ["sender", "has-reaction"]) &&
+        filter.operands("sender")[0] === people.my_current_email()
+    ) {
+        $filter_li = $(".top_left_my_reactions");
+        $filter_li.addClass("active-filter");
     }
 }
 

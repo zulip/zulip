@@ -1,9 +1,10 @@
 # After editing this file, you MUST afterward run
 # /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
-mypy==1.5.*  # https://github.com/dry-python/returns/issues/1711
+mypy
 
 boto3-stubs[s3,ses,sns,sqs]
+django-stubs
 lxml-stubs
 SQLAlchemy[mypy]
 types-beautifulsoup4
@@ -23,7 +24,5 @@ types-python-dateutil
 types-PyYAML
 types-redis
 types-regex
-types-requests<2.31.0.7  # https://github.com/python/typeshed/issues/10825
+types-requests
 types-zxcvbn
-
-django-stubs

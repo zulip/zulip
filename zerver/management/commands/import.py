@@ -8,14 +8,15 @@ from typing import Any
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
 from zerver.forms import OverridableValidationError, check_subdomain_available
 from zerver.lib.import_realm import do_import_realm
+from zerver.lib.management import ZulipBaseCommand
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Import extracted Zulip database dump directories into a fresh Zulip instance.
 
 This command should be used only on a newly created, empty Zulip instance to

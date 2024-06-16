@@ -1,7 +1,4 @@
-import $ from "jquery";
-
 import {all_messages_data} from "./all_messages_data";
-import * as loading from "./loading";
 import type {MessageListData} from "./message_list_data";
 import type {MessageList, RenderInfo} from "./message_lists";
 import * as message_store from "./message_store";
@@ -27,8 +24,6 @@ export function add_messages(
     if (!messages) {
         return undefined;
     }
-
-    loading.destroy_indicator($("#page_loading_indicator"));
 
     const render_info = msg_list.add_messages(messages, append_to_view_opts);
 
@@ -100,7 +95,7 @@ export function get_max_message_id_in_stream(stream_id: number): number {
 }
 
 export function get_topics_for_message_ids(message_ids: number[]): Map<string, [number, string]> {
-    const topics = new Map(); // key = stream_id:topic
+    const topics = new Map<string, [number, string]>(); // key = stream_id:topic
     for (const msg_id of message_ids) {
         // message_store still has data on deleted messages when this runs.
         const message = message_store.get(msg_id);

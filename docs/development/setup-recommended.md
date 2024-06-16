@@ -26,7 +26,7 @@ Contents:
 environment,** check [troubleshooting and common
 errors](#troubleshooting-and-common-errors). If that doesn't help,
 please visit [#provision
-help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
+help](https://chat.zulip.org/#narrow/channel/21-provision-help) in the
 [Zulip development community
 server](https://zulip.com/development-community/) for real-time help or
 [file an issue](https://github.com/zulip/zulip/issues).
@@ -175,6 +175,7 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
+3. Open the Docker desktop app's settings panel, and choose `osxfs (legacy)` under "Choose file sharing implementation for your containers."
    :::
 
 :::{tab-item} Ubuntu/Debian
@@ -311,7 +312,7 @@ $ vagrant up --provider=docker
 ```
 
 **Important note**: There is a [known upstream issue on
-macOS](https://chat.zulip.org/#narrow/stream/21-provision-help/topic/provision.20error.20ERR_PNPM_LINKING_FAILED/near/1649241)
+macOS](https://chat.zulip.org/#narrow/channel/21-provision-help/topic/provision.20error.20ERR_PNPM_LINKING_FAILED/near/1649241)
 that can cause provisioning to fail with `ERR_PNPM_LINKING_FAILED` or
 other errors. The temporary fix is to open the Docker desktop app's
 settings panel, and choose `osxfs (legacy)` under "Choose file sharing
@@ -491,7 +492,7 @@ After provisioning, you'll want to
 [(re)start the Zulip development server](/development/setup-recommended.md#step-3-start-the-development-environment).
 
 If you run into any trouble, [#provision
-help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
+help](https://chat.zulip.org/#narrow/channel/21-provision-help) in the
 [Zulip development community
 server](https://zulip.com/development-community/) is a great place to ask for
 help.
@@ -708,7 +709,7 @@ equivalently `vagrant provision` from outside).
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
-- Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
+- Ask in [#provision help](https://chat.zulip.org/#narrow/channel/21-provision-help)
   in the [Zulip development community server](https://zulip.com/development-community/).
 - [File an issue](https://github.com/zulip/zulip/issues).
 

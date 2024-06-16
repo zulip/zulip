@@ -1,6 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-USER=zulip
-
-# Run update analytics tables every 5 minutes past the hour
-5 * * * * zulip /home/zulip/deployments/current/manage.py update_analytics_counts

@@ -2,7 +2,7 @@
    content from the edge of the window */
 $far_left_gutter_size: 10px;
 /* This represents the space in the sidebar reserved for symbols like
-   the #; labels like the the stream name go to the right of this. */
+   the #; labels like the stream name go to the right of this. */
 $left_col_size: 19px;
 /* The full topic indentation includes 4px of indent in addition to
    the above (and another 5px of padding not measured here) */
@@ -23,28 +23,6 @@ $before_unread_count_padding: 3px;
             font-size: 18px;
             font-weight: 700;
         }
-    }
-}
-
-#streams_list .stream-privacy {
-    height: 16px;
-    font-weight: 700;
-    text-align: center;
-
-    .zulip-icon.zulip-icon-globe {
-        font-size: 12px;
-    }
-
-    .zulip-icon.zulip-icon-hashtag {
-        font-size: 13px;
-    }
-
-    .zulip-icon.zulip-icon-lock {
-        font-size: 13px;
-        /* Slight vertical adjustment so the lock
-           doesn't sit too high, relative to the
-           other stream icons. */
-        padding-top: 2px;
     }
 }
 
@@ -130,7 +108,7 @@ li.show-more-topics {
             margin-left: 0;
 
             &.topic-list li {
-                padding: 2px 0;
+                padding: 0;
 
                 &.filter-topics {
                     padding-bottom: 0;
@@ -243,7 +221,7 @@ li.show-more-topics {
 
     #private_messages_section_header {
         grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
-        grid-template-rows: 24px;
+        grid-template-rows: var(--line-height-sidebar-row-prominent);
         /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
            value and the styles dependent on it so that this kind of
            1990s layout shenanigans is made unnecessary. */
@@ -286,6 +264,7 @@ li.show-more-topics {
         font-weight: 400;
         margin-left: 0;
         margin-bottom: 0;
+        line-height: var(--line-height-sidebar-row);
 
         & span.fa-group {
             font-size: 90%;
@@ -305,15 +284,10 @@ li.show-more-topics {
 
         & li#show-more-direct-messages {
             cursor: pointer;
-            padding-right: 26px;
-            /* TODO: Rewrite the show-more and show-less
-               buttons as grids alongside the left sidebar
-               header rewrites. This padding value
-               is a stopgap to provide the same lefthand
-               alignment as the "more topics" text, which
-               aligns with the topic above--just as this
-               aligns with the DM row above. */
-            padding-left: 29px;
+            /* The 'more conversations' line has no icons,
+               so vertically align the text with the unread
+               count, when one appears there. */
+            align-items: baseline;
 
             & a {
                 font-size: 12px;
@@ -415,15 +389,28 @@ li.show-more-topics {
     }
 }
 
-#login-link-container .login_button {
+#login-link-container {
+    color: var(--color-text-url);
     display: flex;
     align-items: center;
+
+    &:hover {
+        cursor: pointer;
+        color: var(--color-text-url-hover);
+
+        &.login_button .login-text {
+            color: var(--color-text-url-hover);
+            text-decoration: underline;
+        }
+    }
 }
 
 ul.filters {
     list-style-type: none;
     margin-left: 0;
     color: hsl(0deg 0% 20% / 100%);
+    /* Streams take a standard row height. */
+    line-height: var(--line-height-sidebar-row);
 
     & a {
         color: inherit;
@@ -621,6 +608,7 @@ li.active-sub-filter {
        named grid area. */
     display: grid;
     grid-template-areas: "selected-home-view";
+    line-height: var(--line-height-sidebar-row);
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
@@ -654,6 +642,7 @@ li.active-sub-filter {
 }
 
 /* Don't show unread counts on views... */
+.top_left_my_reactions,
 .top_left_inbox,
 .top_left_recent_view,
 .top_left_all_messages {
@@ -695,20 +684,6 @@ li.top_left_scheduled_messages {
        children. Same template areas, different
        column widths. */
     grid-template-columns: 0 22px minmax(0, 1fr) max-content 0 0;
-    /* This is a legacy value, from a former
-       1px of top padding on top_left_row plus
-       an inner 1px top margin on `<a>` elements.
-
-       These are added here, rather than on the label
-       container, to keep all hovered/highlighted areas
-       clickable.
-
-       This complicates true centering within a
-       row highlight. It might be better to make
-       these both 2px.
-    */
-    padding-top: 2px;
-    padding-bottom: 1px;
 
     .filter-icon {
         grid-area: starting-anchor-element;
@@ -730,10 +705,6 @@ li.top_left_scheduled_messages {
 
 .conversation-partners {
     grid-area: row-content;
-    /* Set an 18px line-height to better vertically
-       center user circles and icons (both of which
-       have even heights). */
-    line-height: 18px;
     overflow: hidden;
     text-overflow: ellipsis;
     /* Use an inline grid to provide a modern layout
@@ -762,7 +733,8 @@ li.top_left_scheduled_messages {
 .left-sidebar-navigation-label-container,
 .dm-box,
 .subscription_block,
-.topic-box {
+.topic-box,
+.searching-for-more-topics {
     display: grid;
     align-items: center;
     /* This general pattern of elements applies to every single row in the left
@@ -802,8 +774,7 @@ li.top_left_scheduled_messages {
     grid-template-columns:
         0 15px minmax(0, 0.5fr) minmax(0, 1fr)
         30px 12px;
-    /* Base height on 24px icon-target area from Vlad's design. */
-    grid-template-rows: 24px;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
     /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
        value and the styles dependent on it so that this kind of
        1990s layout shenanigans is made unnecessary. */
@@ -905,6 +876,23 @@ li.top_left_scheduled_messages {
 
     .stream-privacy {
         grid-area: starting-anchor-element;
+        display: flex;
+        place-content: center center;
+
+        .zulip-icon.zulip-icon-globe {
+            /* 12px at 14px/1em */
+            font-size: 0.8571em;
+        }
+
+        .zulip-icon.zulip-icon-hashtag {
+            /* 13px at 14px/1em */
+            font-size: 0.9286em;
+        }
+
+        .zulip-icon.zulip-icon-lock {
+            /* 13px at 14px/1em */
+            font-size: 0.9286em;
+        }
     }
 
     .stream-name {
@@ -912,45 +900,44 @@ li.top_left_scheduled_messages {
     }
 }
 
-.topic-box {
-    /* Padding from original .topic-box definition. */
-    padding-top: 1px;
+.topic-box,
+.searching-for-more-topics {
     grid-template-columns:
         25px $topic_resolve_width minmax(0, 1fr) minmax(0, max-content)
         30px 0;
-
-    .topic-name {
-        cursor: pointer;
-        grid-area: row-content;
-        padding: 1px $before_unread_count_padding 1px 0;
-
-        /* TODO: We should figure out how to remove this without changing the spacing */
-        line-height: 1.1;
-
-        /* TODO: Consolidate these styles with conversation partners and stream name
-            once grid rewrite is complete on all sidebar rows.
-
-            Also: note that these styles will be moot for topic names once we allow
-            for multiline topics. If we hold multiline topics to a certain number
-            of lines, we'll likely need a JavaScript-based solution like Clamp.js
-            to display an ellipsis on the final visible line. */
-        white-space: nowrap;
-        /* Both `hidden` and `clip` are shown for the sake
-            of older browsers that do not support `clip`. */
-        overflow-x: hidden;
-        overflow-x: clip;
-        text-overflow: ellipsis;
-    }
 }
 
 .topic-box .zero_count {
     display: none;
 }
 
+.sidebar-topic-name {
+    cursor: pointer;
+    grid-area: row-content;
+    padding: 0 $before_unread_count_padding 0 0;
+    /* TODO: Consolidate these styles with conversation partners and stream name
+        once grid rewrite is complete on all sidebar rows.
+
+        Also: note that these styles will be moot for topic names once we allow
+        for multiline topics. If we hold multiline topics to a certain number
+        of lines, we'll likely need a JavaScript-based solution like Clamp.js
+        to display an ellipsis on the final visible line. */
+    white-space: nowrap;
+    /* Both `hidden` and `clip` are shown for the sake
+        of older browsers that do not support `clip`. */
+    overflow-x: hidden;
+    overflow-x: clip;
+    text-overflow: ellipsis;
+}
+
+.searching-for-more-topics img {
+    height: 16px;
+    grid-area: row-content;
+}
+
 .sidebar-topic-check {
     grid-area: starting-anchor-element;
     font-size: 15px;
-    height: 20px;
 }
 
 .stream-markers-and-controls,
@@ -984,7 +971,7 @@ li.top_left_scheduled_messages {
     overflow-x: hidden;
     overflow-x: clip;
     text-overflow: ellipsis;
-    padding: 1px $before_unread_count_padding 1px 0;
+    padding: 0 $before_unread_count_padding 0 0;
 }
 
 .conversation-partners-list {
@@ -1024,7 +1011,7 @@ li.top_left_scheduled_messages {
 
     /*
         Hover does not work for touch-based devices like mobile phones.
-        Hence the the icons does not appear, making the user unaware of its
+        Hence the icons does not appear, making the user unaware of its
         presence on such devices. The following media property displays the
         icon by default for such behaviour.
     */
@@ -1081,6 +1068,7 @@ li.top_left_scheduled_messages {
 }
 
 ul.topic-list {
+    line-height: var(--line-height-sidebar-row-prominent);
     list-style-type: none;
     font-weight: normal;
 }
@@ -1092,12 +1080,14 @@ li.topic-list-item {
 
 .dm-box {
     grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
-    /* This padding maintains a 22px height on DM rows. */
-    padding: 2px 0;
 
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
         place-self: center;
+    }
+
+    .dm-name {
+        grid-area: row-content;
     }
 
     .user_circle {
@@ -1149,7 +1139,7 @@ li.topic-list-item {
     top: 0;
     z-index: 2;
     grid-template-columns: 0 0 minmax(0, 1fr) max-content 0 42px;
-    grid-template-rows: 24px;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
     padding-top: $sections_vertical_gutter;
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
@@ -1176,7 +1166,7 @@ li.topic-list-item {
 #streams_header {
     grid-template-columns: 0 0 minmax(0, 1fr) minmax(17px, max-content) 30px 12px;
     /* Keep the stream-search area rows collapsed. */
-    grid-template-rows: 24px 0 0;
+    grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
     padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
     position: sticky;
@@ -1191,7 +1181,7 @@ li.topic-list-item {
         /* Open up the stream-search rows. The 10px
            row maintains space with the streams list
            below. */
-        grid-template-rows: 24px 28px 10px;
+        grid-template-rows: var(--line-height-sidebar-row-prominent) 28px 10px;
     }
 
     .left-sidebar-title {
@@ -1330,6 +1320,8 @@ li.topic-list-item {
 .streams_subheader {
     font-size: 0.8em;
     font-weight: normal;
+    /* 16px line-height at 0.8em (11.2px at 14px legacy em) */
+    line-height: 1.4286em;
     padding-left: $far_left_gutter_size;
     cursor: pointer;
     text-align: center;
@@ -1386,11 +1378,6 @@ li.topic-list-item {
     margin-right: 30px;
 }
 
-.searching-for-more-topics img {
-    height: 16px;
-    margin-left: 6px;
-}
-
 .zoom-in {
     .narrow-filter > .bottom_left_row {
         position: sticky;
@@ -1425,7 +1412,7 @@ li.topic-list-item {
             /* TODO: Rewrite the show-more and show-less
                buttons as grids alongside the left sidebar
                header rewrites. The 12px left padding here
-               aligns the "back to streams" text with the
+               aligns the "back to channels" text with the
                DIRECT MESSAGES heading above, which itself
                is offset -3 px to the left, but reserves
                15px for the arrow marker. 15px - 3px = 12px. */

@@ -33,11 +33,11 @@ It's also easy to try out Zulip for yourself.
       and [settings for new users](/help/customize-settings-for-new-users), but
       plan to adjust the details as you go.
 
-    - [Create](/help/create-streams) your initial
-      [streams](/help/streams-and-topics), including a dedicated stream for
+    - [Create](/help/create-channels) your initial
+      [channels](/help/introduction-to-channels), including a dedicated channel for
       questions and feedback about using Zulip.
 
-    - Educate others about how to use Zulip's [topics](/help/streams-and-topics),
+    - Educate others about how to use Zulip's [topics](/help/introduction-to-topics),
       and how to [move](/help/move-content-to-another-topic) any messages that
       belong elsewhere.
 

@@ -10,7 +10,7 @@ mirroring content from a Slack instance into Zulip.
      integrations, which take advantage of Zulip's topics. There may also be
      some quirks when Slack's formatting system is translated into Zulip's.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

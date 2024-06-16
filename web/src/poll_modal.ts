@@ -9,20 +9,20 @@ function create_option_row($last_option_row_input: JQuery): void {
     $row_container.append($(row_html));
 }
 
-function add_option_row(e: JQuery.TriggeredEvent): void {
+function add_option_row(this: HTMLElement): void {
     // if the option triggering the input event e is not the last,
     // that is, its next sibling has the class `option-row`, we
     // do not add a new option row and return from this function
     // This handles a case when the next empty input row is already
     // added and user is updating the above row(s).
-    if ($(e.target).closest(".option-row").next().hasClass("option-row")) {
+    if ($(this).closest(".option-row").next().hasClass("option-row")) {
         return;
     }
-    create_option_row($(e.target));
+    create_option_row($(this));
 }
 
-function delete_option_row(e: JQuery.ClickEvent): void {
-    const $row = $(e.target).closest(".option-row");
+function delete_option_row(this: HTMLElement): void {
+    const $row = $(this).closest(".option-row");
     $row.remove();
 }
 
@@ -46,7 +46,7 @@ export function poll_options_setup(): void {
 
     // setTimeout is needed to here to give time for simplebar to initialise
     setTimeout(() => {
-        SortableJS.create($("#add-poll-form .poll-options-list .simplebar-content")[0], {
+        SortableJS.create($("#add-poll-form .poll-options-list .simplebar-content")[0]!, {
             onUpdate() {
                 // Do nothing on drag; the order is only processed on submission.
             },

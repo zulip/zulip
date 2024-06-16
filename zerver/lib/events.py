@@ -20,7 +20,6 @@ from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
-from zerver.lib.hotspots import get_next_onboarding_steps
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
     WEBHOOK_INTEGRATIONS,
@@ -38,8 +37,9 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
-from zerver.lib.narrow import check_narrow_for_events, read_stop_words
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_helpers import NarrowTerm, read_stop_words
+from zerver.lib.narrow_predicate import check_narrow_for_events
+from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
@@ -57,10 +57,11 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import (
+    get_group_setting_value_for_api,
     get_server_supported_permission_settings,
     user_groups_in_realm_serialized,
 )
-from zerver.lib.user_status import get_user_status_dict
+from zerver.lib.user_status import get_all_users_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
@@ -69,6 +70,7 @@ from zerver.lib.users import (
     is_administrator_role,
     max_message_id_for_user,
 )
+from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
     Client,
     CustomProfileField,
@@ -87,7 +89,12 @@ from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
-from zerver.models.realms import get_realm_domains
+from zerver.models.realms import (
+    CommonMessagePolicyEnum,
+    EditTopicPolicyEnum,
+    get_corresponding_policy_value_for_group_setting,
+    get_realm_domains,
+)
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
@@ -122,6 +129,7 @@ def fetch_initial_state_data(
     user_avatar_url_field_optional: bool = False,
     user_settings_object: bool = False,
     slim_presence: bool = False,
+    presence_last_update_id_fetched_by_client: Optional[int] = None,
     include_subscribers: bool = True,
     include_streams: bool = True,
     spectator_requested_language: Optional[str] = None,
@@ -228,11 +236,23 @@ def fetch_initial_state_data(
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
 
     if want("presence"):
-        state["presences"] = (
-            {}
-            if user_profile is None
-            else get_presences_for_realm(realm, slim_presence, user_profile)
-        )
+        if presence_last_update_id_fetched_by_client is not None:
+            # This param being submitted by the client, means they want to use
+            # the modern API.
+            slim_presence = True
+
+        if user_profile is not None:
+            presences, presence_last_update_id_fetched_by_server = get_presences_for_realm(
+                realm,
+                slim_presence,
+                last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
+                requesting_user_profile=user_profile,
+            )
+            state["presences"] = presences
+            state["presence_last_update_id"] = presence_last_update_id_fetched_by_server
+        else:
+            state["presences"] = {}
+
         # Send server_timestamp, to match the format of `GET /presence` requests.
         state["server_timestamp"] = time.time()
 
@@ -265,7 +285,18 @@ def fetch_initial_state_data(
             setting_name,
             permission_configuration,
         ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                setting_value = getattr(realm, setting_name)
+                state["realm_" + setting_name] = get_group_setting_value_for_api(setting_value)
+                continue
+
             state["realm_" + setting_name] = getattr(realm, permission_configuration.id_field_name)
+
+        state["realm_create_public_stream_policy"] = (
+            get_corresponding_policy_value_for_group_setting(
+                realm, "can_create_public_channel_group", Realm.COMMON_POLICY_TYPES
+            )
+        )
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -285,10 +316,12 @@ def fetch_initial_state_data(
             False if user_profile is None else realm.allow_message_editing
         )
         state["realm_edit_topic_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
+            EditTopicPolicyEnum.ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
         state["realm_delete_own_message_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
+            CommonMessagePolicyEnum.ADMINS_ONLY
+            if user_profile is None
+            else realm.delete_own_message_policy
         )
 
         # This setting determines whether to send presence and also
@@ -301,13 +334,16 @@ def fetch_initial_state_data(
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
-        state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
+        upload_quota_bytes = realm.upload_quota_bytes()
+        state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
 
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
         add_realm_logo_fields(state, realm)
 
-        state["realm_uri"] = realm.uri
+        # TODO/compatibility: realm_uri is a deprecated alias for realm_url that
+        # can be removed once there are no longer clients relying on it.
+        state["realm_url"] = state["realm_uri"] = realm.url
         state["realm_bot_domain"] = realm.get_bot_domain()
         state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
         state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
@@ -675,7 +711,7 @@ def fetch_initial_state_data(
         state["user_status"] = (
             {}
             if user_profile is None
-            else get_user_status_dict(realm=realm, user_profile=user_profile)
+            else get_all_users_status_dict(realm=realm, user_profile=user_profile)
         )
 
     if want("user_topic"):
@@ -1157,7 +1193,9 @@ def apply_event(
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
                 state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
-                state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
+                # upload_quota is in bytes, so we need to convert it to MiB.
+                upload_quota_bytes = event["extra_data"]["upload_quota"]
+                state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
 
             if field == "realm_jitsi_server_url":
                 state["jitsi_server_url"] = (
@@ -1167,7 +1205,6 @@ def apply_event(
                 )
 
             policy_permission_dict = {
-                "create_public_stream_policy": "can_create_public_streams",
                 "create_private_stream_policy": "can_create_private_streams",
                 "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
@@ -1207,6 +1244,21 @@ def apply_event(
                         value["Email"]["enabled"] or value["LDAP"]["enabled"]
                     )
                     state["realm_email_auth_enabled"] = value["Email"]["enabled"]
+
+                if key == "can_create_public_channel_group":
+                    state["realm_create_public_stream_policy"] = (
+                        get_corresponding_policy_value_for_group_setting(
+                            user_profile.realm,
+                            "can_create_public_channel_group",
+                            Realm.COMMON_POLICY_TYPES,
+                        )
+                    )
+                    state["can_create_public_streams"] = user_profile.has_permission(key)
+                    state["can_create_streams"] = (
+                        state["can_create_private_streams"]
+                        or state["can_create_public_streams"]
+                        or state["can_create_web_public_streams"]
+                    )
         elif event["op"] == "deactivated":
             # The realm has just been deactivated.  If our request had
             # arrived a moment later, we'd have rendered the
@@ -1296,6 +1348,15 @@ def apply_event(
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
+        # Note: Fetch_initial_state_data includes
+        # a presence_last_update_id value, reflecting the Max .last_update_id
+        # value of the UserPresence objects in the data. Events don't carry
+        # information about the last_update_id of the UserPresence object
+        # to which they correspond, so we don't (and can't) attempt to update that initial
+        # presence data here.
+        # This means that the state resulting from fetch_initial_state + apply_events will not
+        # match the state of a hypothetical fetch_initial_state fetch that included the fully
+        # updated data. This is intended and not a bug.
         if slim_presence:
             user_key = str(event["user_id"])
         else:
@@ -1551,6 +1612,7 @@ def do_events_register(
     apply_markdown: bool = True,
     client_gravatar: bool = False,
     slim_presence: bool = False,
+    presence_last_update_id_fetched_by_client: Optional[int] = None,
     event_types: Optional[Sequence[str]] = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
@@ -1600,8 +1662,9 @@ def do_events_register(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             user_list_incomplete=user_list_incomplete,
-            # slim_presence is a noop, because presence is not included.
+            # These presence params are a noop, because presence is not included.
             slim_presence=True,
+            presence_last_update_id_fetched_by_client=None,
             # Force include_subscribers=False for security reasons.
             include_subscribers=include_subscribers,
             # Force include_streams=False for security reasons.
@@ -1648,6 +1711,7 @@ def do_events_register(
         user_avatar_url_field_optional=user_avatar_url_field_optional,
         user_settings_object=user_settings_object,
         slim_presence=slim_presence,
+        presence_last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
         include_subscribers=include_subscribers,
         include_streams=include_streams,
         pronouns_field_type_supported=pronouns_field_type_supported,

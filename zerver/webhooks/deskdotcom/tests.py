@@ -4,8 +4,8 @@ from zerver.lib.test_classes import WebhookTestCase
 
 # Tests for the Desk.com webhook integration.
 #
-# The stream name must be provided in the URL-encoded test fixture data,
-# and must match STREAM_NAME set here.
+# The channel name must be provided in the URL-encoded test fixture data,
+# and must match CHANNEL_NAME set here.
 #
 # Example:
 #
@@ -14,7 +14,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class DeskDotComHookTests(WebhookTestCase):
-    STREAM_NAME = "deskdotcom"
+    CHANNEL_NAME = "deskdotcom"
     URL_TEMPLATE = "/api/v1/external/deskdotcom?stream={stream}"
     WEBHOOK_DIR_NAME = "deskdotcom"
 
@@ -22,7 +22,7 @@ class DeskDotComHookTests(WebhookTestCase):
         expected_topic_name = "static text notification"
         expected_message = "This is a custom action."
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "static_text",
             expected_topic_name,
@@ -38,7 +38,7 @@ class DeskDotComHookTests(WebhookTestCase):
             "I have a question</a>"
         )
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "case_updated",
             expected_topic_name,
@@ -54,7 +54,7 @@ class DeskDotComHookTests(WebhookTestCase):
             "Il mio hovercraft è pieno di anguille.</a>"
         )
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "unicode_text_italian",
             expected_topic_name,
@@ -70,7 +70,7 @@ class DeskDotComHookTests(WebhookTestCase):
             "私のホバークラフトは鰻でいっぱいです</a>"
         )
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "unicode_text_japanese",
             expected_topic_name,

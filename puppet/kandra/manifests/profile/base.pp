@@ -50,7 +50,7 @@ class kandra::profile::base {
     mode   => '0644',
     source => 'puppet:///modules/kandra/apt/apt.conf.d/50unattended-upgrades',
   }
-  if $::os['distro']['release']['major'] == '22.04' {
+  if $facts['os']['distro']['release']['major'] == '22.04' {
     file { '/etc/needrestart/conf.d/zulip.conf':
       ensure => file,
       mode   => '0644',
@@ -73,7 +73,7 @@ class kandra::profile::base {
   }
 
   service { 'ssh':
-    ensure     => running,
+    ensure => running,
   }
 
   include kandra::aws_tools
@@ -83,7 +83,7 @@ class kandra::profile::base {
     file { '/etc/chrony/chrony.conf':
       ensure  => file,
       mode    => '0644',
-      source  => "puppet:///modules/kandra/chrony-${::os['distro']['release']['major']}.conf",
+      source  => "puppet:///modules/kandra/chrony-${facts['os']['distro']['release']['major']}.conf",
       require => Package['chrony'],
       notify  => Service['chrony'],
     }

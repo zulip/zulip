@@ -10,7 +10,7 @@ from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 from sqlalchemy.types import Integer
 
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import topic_match_sa
+from zerver.lib.topic_sqlalchemy import topic_match_sa
 from zerver.lib.types import UserTopicDict
 from zerver.models import UserProfile, UserTopic
 from zerver.models.streams import get_stream
@@ -78,6 +78,7 @@ def get_topic_mutes(
     ]
 
 
+@transaction.atomic(savepoint=False)
 def set_topic_visibility_policy(
     user_profile: UserProfile,
     topics: List[List[str]],

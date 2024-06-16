@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import CASCADE, Q
 from typing_extensions import override
 
-from zerver.models.groups import UserGroup
+from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import Realm
 from zerver.models.streams import Stream
 from zerver.models.users import UserProfile
@@ -219,7 +219,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
         on_delete=CASCADE,
     )
     modified_user_group = models.ForeignKey(
-        UserGroup,
+        NamedUserGroup,
         null=True,
         on_delete=CASCADE,
     )
@@ -227,6 +227,10 @@ class RealmAuditLog(AbstractRealmAuditLog):
 
     class Meta:
         indexes = [
+            models.Index(
+                name="zerver_realmauditlog_realm__event_type__event_time",
+                fields=["realm", "event_type", "event_time"],
+            ),
             models.Index(
                 name="zerver_realmauditlog_user_subscriptions_idx",
                 fields=["modified_user", "modified_stream"],
@@ -237,7 +241,20 @@ class RealmAuditLog(AbstractRealmAuditLog):
                         AbstractRealmAuditLog.SUBSCRIPTION_DEACTIVATED,
                     ]
                 ),
-            )
+            ),
+            models.Index(
+                # Used in analytics/lib/counts.py for computing active users for realm_active_humans
+                name="zerver_realmauditlog_user_activations_idx",
+                fields=["modified_user", "event_time"],
+                condition=Q(
+                    event_type__in=[
+                        AbstractRealmAuditLog.USER_CREATED,
+                        AbstractRealmAuditLog.USER_ACTIVATED,
+                        AbstractRealmAuditLog.USER_DEACTIVATED,
+                        AbstractRealmAuditLog.USER_REACTIVATED,
+                    ]
+                ),
+            ),
         ]
 
     @override

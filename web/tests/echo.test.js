@@ -31,7 +31,7 @@ const message_store = mock_esm("../src/message_store", {
 
     update_booleans() {},
 
-    set_message_booleans() {},
+    convert_raw_message_to_message_with_booleans() {},
 });
 
 message_lists.current = {
@@ -41,14 +41,15 @@ message_lists.current = {
     },
     change_message_id: noop,
 };
-message_lists.home = {
+const home_msg_list = {
     view: {
         rerender_messages: noop,
         change_message_id: noop,
     },
+    preserver_rendered_state: true,
     change_message_id: noop,
 };
-message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
+message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 
 const echo = zrequire("echo");
 const people = zrequire("people");
@@ -76,7 +77,7 @@ run_test("process_from_server for un-echoed messages", () => {
 run_test("process_from_server for differently rendered messages", ({override}) => {
     let messages_to_rerender = [];
 
-    override(message_lists.home.view, "rerender_messages", (msgs) => {
+    override(home_msg_list.view, "rerender_messages", (msgs) => {
         messages_to_rerender = msgs;
     });
 
@@ -193,13 +194,13 @@ run_test("build_display_recipient", () => {
 });
 
 run_test("update_message_lists", () => {
-    message_lists.home.view = {};
+    home_msg_list.view = {};
 
     const stub = make_stub();
     const view_stub = make_stub();
 
-    message_lists.home.change_message_id = stub.f;
-    message_lists.home.view.change_message_id = view_stub.f;
+    home_msg_list.change_message_id = stub.f;
+    home_msg_list.view.change_message_id = view_stub.f;
 
     echo.update_message_lists({old_id: 401, new_id: 402});
 
@@ -239,6 +240,7 @@ run_test("insert_local_message streams", ({override}) => {
         assert.equal(message.sender_full_name, "Iago");
         assert.equal(message.sender_id, 123);
         insert_message_called = true;
+        return [message];
     };
 
     const message_request = {
@@ -279,6 +281,7 @@ run_test("insert_local_message direct message", ({override}) => {
     const insert_new_messages = ([message]) => {
         assert.equal(message.display_recipient.length, 3);
         insert_message_called = true;
+        return [message];
     };
 
     override(markdown, "render", () => {
@@ -310,7 +313,7 @@ run_test("test reify_message_id", ({override}) => {
         sender_id: 123,
         draft_id: 100,
     };
-    echo.insert_local_message(message_request, local_id_float, noop);
+    echo.insert_local_message(message_request, local_id_float, (messages) => messages);
 
     let message_store_reify_called = false;
     let notifications_reify_called = false;

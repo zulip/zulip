@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class WekanHookTests(WebhookTestCase):
-    STREAM_NAME = "wekan"
+    CHANNEL_NAME = "wekan"
     URL_TEMPLATE = "/api/v1/external/wekan?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = "wekan"
 

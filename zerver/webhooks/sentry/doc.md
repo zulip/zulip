@@ -4,7 +4,7 @@ This integration supports Sentry's Node, Python, and Go
 [platforms](https://sentry.io/platforms/).  [Contact
 us](/help/contact-support) if a platform you care about is missing.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

@@ -1,7 +1,7 @@
 # Desktop notifications
 
 Zulip offers visual and audible desktop notifications. You can
-customize whether [stream messages](/help/stream-notifications),
+customize whether [channel messages](/help/channel-notifications),
 [direct messages](/help/dm-mention-alert-notifications) and
 [mentions](/help/dm-mention-alert-notifications#wildcard-mentions)
 trigger desktop notifications.
@@ -10,7 +10,7 @@ trigger desktop notifications.
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Streams** and **DMs, mentions, and alerts**
+1. Toggle the checkboxes for **Channels** and **DMs, mentions, and alerts**
    in the **Desktop** column of the **Notification triggers** table.
 
 {end_tabs}
@@ -41,7 +41,7 @@ By default, Zulip displays a count of your unmuted unread messages on the
 can configure the badge to only count [direct messages](/help/direct-messages)
 and [mentions](/help/mention-a-user-or-group), or to include messages in
 [followed topics](/help/follow-a-topic) but not other
-[stream](/help/streams-and-topics) messages.
+[channel](/help/introduction-to-channels) messages.
 
 ### Configure unread count badge
 
@@ -69,7 +69,7 @@ and [mentions](/help/mention-a-user-or-group), or to include messages in
 
 First, make sure you have enabled
 [desktop notifications for DMs](/help/dm-mention-alert-notifications) or for the
-[stream](/help/stream-notifications) you are testing with.
+[channel](/help/channel-notifications) you are testing with.
 
 Desktop notifications are triggered when a message arrives, and Zulip is not
 in focus or the message is offscreen. You must have Zulip open in a browser
@@ -143,7 +143,7 @@ Alternate instructions:
 
 ## Related articles
 
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
 * [Mobile notifications](/help/mobile-notifications)

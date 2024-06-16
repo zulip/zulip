@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_section_header from "../templates/buddy_list/section_header.hbs";
 import render_view_all_subscribers from "../templates/buddy_list/view_all_subscribers.hbs";
@@ -46,7 +46,11 @@ function total_subscriber_count(
         const pm_ids_list = [...pm_ids_set];
         // Plus one for the "me" user, who isn't in the recipients list (except
         // for when it's a private message conversation with only "me" in it).
-        if (pm_ids_list.length === 1 && people.is_my_user_id(pm_ids_list[0])) {
+        if (
+            pm_ids_list.length === 1 &&
+            pm_ids_list[0] !== undefined &&
+            people.is_my_user_id(pm_ids_list[0])
+        ) {
             return 1;
         }
         return pm_ids_list.length + 1;
@@ -154,75 +158,79 @@ export class BuddyList extends BuddyListConf {
     $other_users_container = $(this.other_user_list_selector);
 
     initialize_tooltips(): void {
-        $("#right-sidebar").on("mouseenter", ".buddy-list-heading", (e) => {
-            e.stopPropagation();
-            const $elem = $(e.currentTarget);
-            let placement: "left" | "auto" = "left";
-            if (window.innerWidth < media_breakpoints_num.md) {
-                // On small devices display tooltips based on available space.
-                // This will default to "bottom" placement for this tooltip.
-                placement = "auto";
-            }
-            tippy($elem[0], {
-                // Because the buddy list subheadings are potential click targets
-                // for purposes having nothing to do with the subscriber count
-                // (collapsing/expanding), we delay showing the tooltip until the
-                // user lingers a bit longer.
-                delay: INTERACTIVE_HOVER_DELAY,
-                // Don't show tooltip on touch devices (99% mobile) since touch
-                // pressing on users in the left or right sidebar leads to narrow
-                // being changed and the sidebar is hidden. So, there is no user
-                // displayed to show tooltip for. It is safe to show the tooltip
-                // on long press but it not worth the inconvenience of having a
-                // tooltip hanging around on a small mobile screen if anything
-                // going wrong.
-                touch: false,
-                arrow: true,
-                placement,
-                showOnCreate: true,
-                onShow(instance) {
-                    let tooltip_text;
-                    const current_sub = narrow_state.stream_sub();
-                    const pm_ids_set = narrow_state.pm_ids_set();
-                    const subscriber_count = total_subscriber_count(current_sub, pm_ids_set);
-                    const elem_id = $elem.attr("id");
-                    if (elem_id === "buddy-list-users-matching-view-section-heading") {
-                        if (current_sub) {
-                            tooltip_text = $t(
-                                {
-                                    defaultMessage:
-                                        "{N, plural, one {# subscriber} other {# subscribers}}",
-                                },
-                                {N: subscriber_count},
-                            );
+        $("#right-sidebar").on(
+            "mouseenter",
+            ".buddy-list-heading",
+            function (this: HTMLElement, e) {
+                e.stopPropagation();
+                const $elem = $(this);
+                let placement: "left" | "auto" = "left";
+                if (window.innerWidth < media_breakpoints_num.md) {
+                    // On small devices display tooltips based on available space.
+                    // This will default to "bottom" placement for this tooltip.
+                    placement = "auto";
+                }
+                tippy.default($elem[0]!, {
+                    // Because the buddy list subheadings are potential click targets
+                    // for purposes having nothing to do with the subscriber count
+                    // (collapsing/expanding), we delay showing the tooltip until the
+                    // user lingers a bit longer.
+                    delay: INTERACTIVE_HOVER_DELAY,
+                    // Don't show tooltip on touch devices (99% mobile) since touch
+                    // pressing on users in the left or right sidebar leads to narrow
+                    // being changed and the sidebar is hidden. So, there is no user
+                    // displayed to show tooltip for. It is safe to show the tooltip
+                    // on long press but it not worth the inconvenience of having a
+                    // tooltip hanging around on a small mobile screen if anything
+                    // going wrong.
+                    touch: false,
+                    arrow: true,
+                    placement,
+                    showOnCreate: true,
+                    onShow(instance) {
+                        let tooltip_text;
+                        const current_sub = narrow_state.stream_sub();
+                        const pm_ids_set = narrow_state.pm_ids_set();
+                        const subscriber_count = total_subscriber_count(current_sub, pm_ids_set);
+                        const elem_id = $elem.attr("id");
+                        if (elem_id === "buddy-list-users-matching-view-section-heading") {
+                            if (current_sub) {
+                                tooltip_text = $t(
+                                    {
+                                        defaultMessage:
+                                            "{N, plural, one {# subscriber} other {# subscribers}}",
+                                    },
+                                    {N: subscriber_count},
+                                );
+                            } else {
+                                tooltip_text = $t(
+                                    {
+                                        defaultMessage:
+                                            "{N, plural, one {# participant} other {# participants}}",
+                                    },
+                                    {N: subscriber_count},
+                                );
+                            }
                         } else {
+                            const total_user_count = people.get_active_human_count();
+                            const other_users_count = total_user_count - subscriber_count;
                             tooltip_text = $t(
                                 {
                                     defaultMessage:
-                                        "{N, plural, one {# participant} other {# participants}}",
+                                        "{N, plural, one {# other user} other {# other users}}",
                                 },
-                                {N: subscriber_count},
+                                {N: other_users_count},
                             );
                         }
-                    } else {
-                        const total_user_count = people.get_active_human_count();
-                        const other_users_count = total_user_count - subscriber_count;
-                        tooltip_text = $t(
-                            {
-                                defaultMessage:
-                                    "{N, plural, one {# other user} other {# other users}}",
-                            },
-                            {N: other_users_count},
-                        );
-                    }
-                    instance.setContent(tooltip_text);
-                },
-                onHidden(instance) {
-                    instance.destroy();
-                },
-                appendTo: () => document.body,
-            });
-        });
+                        instance.setContent(tooltip_text);
+                    },
+                    onHidden(instance) {
+                        instance.destroy();
+                    },
+                    appendTo: () => document.body,
+                });
+            },
+        );
     }
 
     populate(opts: {all_user_ids: number[]}): void {
@@ -287,21 +295,24 @@ export class BuddyList extends BuddyListConf {
             }
         }
 
-        $("#buddy-list-users-matching-view").data(
-            "search-results-empty",
+        $("#buddy-list-users-matching-view").attr(
+            "data-search-results-empty",
             matching_view_empty_list_message,
         );
         if ($("#buddy-list-users-matching-view .empty-list-message").length) {
             const empty_list_widget_html = render_empty_list_widget_for_list({
-                matching_view_empty_list_message,
+                empty_list_message: matching_view_empty_list_message,
             });
             $("#buddy-list-users-matching-view").html(empty_list_widget_html);
         }
 
-        $("#buddy-list-other-users").data("search-results-empty", other_users_empty_list_message);
+        $("#buddy-list-other-users").attr(
+            "data-search-results-empty",
+            other_users_empty_list_message,
+        );
         if ($("#buddy-list-other-users .empty-list-message").length) {
             const empty_list_widget_html = render_empty_list_widget_for_list({
-                other_users_empty_list_message,
+                empty_list_message: other_users_empty_list_message,
             });
             $("#buddy-list-other-users").html(empty_list_widget_html);
         }
@@ -328,7 +339,7 @@ export class BuddyList extends BuddyListConf {
 
         let header_text;
         if (current_sub) {
-            header_text = $t({defaultMessage: "In this stream"});
+            header_text = $t({defaultMessage: "In this channel"});
         } else {
             header_text = $t({defaultMessage: "In this conversation"});
         }
@@ -475,7 +486,10 @@ export class BuddyList extends BuddyListConf {
             stream_data.can_view_subscribers(current_sub) &&
             has_inactive_users_matching_view
         ) {
-            const stream_edit_hash = hash_util.stream_edit_url(current_sub, "subscribers");
+            const stream_edit_hash = hash_util.channels_settings_edit_url(
+                current_sub,
+                "subscribers",
+            );
             $("#buddy-list-users-matching-view-container").append(
                 $(
                     render_view_all_subscribers({
@@ -600,22 +614,16 @@ export class BuddyList extends BuddyListConf {
 
     find_position(opts: {user_id: number; user_id_list: number[]}): number {
         const user_id = opts.user_id;
-        let i;
-
         const user_id_list = opts.user_id_list;
 
         const current_sub = narrow_state.stream_sub();
         const pm_ids_set = narrow_state.pm_ids_set();
 
-        for (i = 0; i < user_id_list.length; i += 1) {
-            const list_user_id = user_id_list[i];
-
-            if (this.compare_function(user_id, list_user_id, current_sub, pm_ids_set) < 0) {
-                return i;
-            }
-        }
-
-        return user_id_list.length;
+        const i = user_id_list.findIndex(
+            (list_user_id) =>
+                this.compare_function(user_id, list_user_id, current_sub, pm_ids_set) < 0,
+        );
+        return i === -1 ? user_id_list.length : i;
     }
 
     force_render(opts: {pos: number}): void {
@@ -678,35 +686,27 @@ export class BuddyList extends BuddyListConf {
     insert_new_html(opts: {
         new_user_id: number | undefined;
         html: string;
-        new_pos_in_all_users: number;
         is_subscribed_user: boolean;
     }): void {
         const user_id_following_insertion = opts.new_user_id;
         const html = opts.html;
-        const new_pos_in_all_users = opts.new_pos_in_all_users;
         const is_subscribed_user = opts.is_subscribed_user;
 
         // This means we're inserting at the end
         if (user_id_following_insertion === undefined) {
-            if (new_pos_in_all_users === this.render_count) {
-                this.render_count += 1;
-                if (is_subscribed_user) {
-                    this.$users_matching_view_container.append($(html));
-                } else {
-                    this.$other_users_container.append($(html));
-                }
-                this.update_padding();
+            if (is_subscribed_user) {
+                this.$users_matching_view_container.append($(html));
+            } else {
+                this.$other_users_container.append($(html));
             }
-            return;
-        }
-
-        if (new_pos_in_all_users < this.render_count) {
-            this.render_count += 1;
+        } else {
             const $li = this.find_li({key: user_id_following_insertion});
             assert($li !== undefined);
             $li.before($(html));
-            this.update_padding();
         }
+
+        this.render_count += 1;
+        this.update_padding();
     }
 
     insert_or_move(opts: {user_id: number; item: BuddyUserInfo}): void {
@@ -745,7 +745,6 @@ export class BuddyList extends BuddyListConf {
 
         const html = this.item_to_html({item});
         this.insert_new_html({
-            new_pos_in_all_users,
             html,
             new_user_id,
             is_subscribed_user,
@@ -757,7 +756,7 @@ export class BuddyList extends BuddyListConf {
 
         const elem = scroll_util
             .get_scroll_element($(this.scroll_container_selector))
-            .expectOne()[0];
+            .expectOne()[0]!;
 
         // Add a fudge factor.
         height += 10;

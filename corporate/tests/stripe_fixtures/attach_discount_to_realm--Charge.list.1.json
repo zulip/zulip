@@ -10,15 +10,15 @@
       "balance_transaction": "txn_NORMALIZED00000000000001",
       "billing_details": {
         "address": {
-          "city": null,
-          "country": null,
-          "line1": null,
+          "city": "San Francisco",
+          "country": "US",
+          "line1": "123 Main St",
           "line2": null,
-          "postal_code": null,
-          "state": null
+          "postal_code": "94105",
+          "state": "CA"
         },
         "email": null,
-        "name": null,
+        "name": "John Doe",
         "phone": null
       },
       "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
@@ -51,7 +51,7 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1OqStqDEQaroqDjs6pAvfeVl",
+      "payment_method": "pm_1P41jrDEQaroqDjsiQzzbH0M",
       "payment_method_details": {
         "card": {
           "amount_authorized": 7200,
@@ -62,7 +62,7 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 3,
+          "exp_month": 4,
           "exp_year": 2025,
           "extended_authorization": {
             "status": "disabled"
@@ -94,7 +94,7 @@
       "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKOOUla8GMgaDq8DDpZg6LBbv31E3zueUvwYq3uIlJrVrusTHsRxd2RtELfEmOROjozmVolYO9ESfR6Uf?s=ap",
+      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKJ-42rAGMgZun3uKhDs6LBbWvNXt9D0oCbjLGRVU-6pxeswrpXZSRRAZ0Fr6pu76dvnnq5nYtX85tcdc?s=ap",
       "refunded": false,
       "refunds": {
         "data": [],

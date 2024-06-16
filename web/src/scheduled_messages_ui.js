@@ -5,7 +5,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import {$t} from "./i18n";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
 import * as stream_data from "./stream_data";
@@ -19,10 +19,10 @@ export function hide_scheduled_message_success_compose_banner(scheduled_message_
 
 function narrow_via_edit_scheduled_message(compose_args) {
     if (compose_args.message_type === "stream") {
-        narrow.activate(
+        message_view.show(
             [
                 {
-                    operator: "stream",
+                    operator: "channel",
                     operand: stream_data.get_stream_name_from_id(compose_args.stream_id),
                 },
                 {operator: "topic", operand: compose_args.topic},
@@ -30,7 +30,7 @@ function narrow_via_edit_scheduled_message(compose_args) {
             {trigger: "edit scheduled message"},
         );
     } else {
-        narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
+        message_view.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
             trigger: "edit scheduled message",
         });
     }
@@ -59,6 +59,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
             message_type: scheduled_msg.type,
             private_message_recipient: recipient_emails.join(","),
             content: scheduled_msg.content,
+            keep_composebox_empty: true,
         };
     }
 

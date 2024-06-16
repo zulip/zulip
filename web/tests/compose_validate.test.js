@@ -235,7 +235,7 @@ test_ui("validate", ({mock_template}) => {
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
-        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a stream."}));
+        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a channel."}));
         empty_stream_error_rendered = true;
         return "<banner-stub>";
     });
@@ -395,7 +395,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     let wildcards_not_allowed_rendered = false;
     mock_template("compose_banner/wildcard_mention_not_allowed_error.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.wildcards_not_allowed);
-        assert.equal(data.stream_wildcard_mention, "all");
+        assert.equal(data.wildcard_mention_string, "all");
         wildcards_not_allowed_rendered = true;
         return "<banner-stub>";
     });
@@ -428,7 +428,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
         assert.equal(
             data.banner_text,
             $t({
-                defaultMessage: "You do not have permission to post in this stream.",
+                defaultMessage: "You do not have permission to post in this channel.",
             }),
         );
         banner_rendered = true;
@@ -473,7 +473,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
         assert.equal(
             data.banner_text,
             $t({
-                defaultMessage: "You do not have permission to post in this stream.",
+                defaultMessage: "You do not have permission to post in this channel.",
             }),
         );
         banner_rendered = true;
@@ -509,7 +509,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
         assert.equal(
             data.banner_text,
             $t({
-                defaultMessage: "You do not have permission to post in this stream.",
+                defaultMessage: "You do not have permission to post in this channel.",
             }),
         );
         banner_rendered = true;
@@ -520,23 +520,10 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
 });
 
 test_ui("test_check_overflow_text", ({mock_template}) => {
-    mock_banners();
     realm.max_message_length = 10000;
 
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
-    let banner_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.message_too_long);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage: "Message length shouldn't be greater than 10000 characters.",
-            }),
-        );
-        banner_rendered = true;
-        return "<banner-stub>";
-    });
 
     // Indicator should show red colored text
     let limit_indicator_html;
@@ -546,29 +533,24 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     $textarea.val("a".repeat(10000 + 1));
     compose_validate.check_overflow_text();
     assert.ok($indicator.hasClass("over_limit"));
-    assert.equal(limit_indicator_html, "10001&ZeroWidthSpace;/10000\n");
+    assert.equal(limit_indicator_html, "-1\n");
     assert.ok($textarea.hasClass("over_limit"));
-    assert.ok(banner_rendered);
     assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     // Indicator should show orange colored text
-    banner_rendered = false;
-    $textarea.val("a".repeat(9000 + 1));
+    $textarea.val("a".repeat(9100));
     compose_validate.check_overflow_text();
     assert.ok(!$indicator.hasClass("over_limit"));
-    assert.equal(limit_indicator_html, "9001&ZeroWidthSpace;/10000\n");
+    assert.equal(limit_indicator_html, "900\n");
     assert.ok(!$textarea.hasClass("over_limit"));
     assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
-    assert.ok(!banner_rendered);
 
     // Indicator must be empty
-    banner_rendered = false;
-    $textarea.val("a".repeat(9000));
+    $textarea.val("a".repeat(9100 - 1));
     compose_validate.check_overflow_text();
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal($indicator.text(), "");
     assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!banner_rendered);
 });
 
 test_ui("needs_subscribe_warning", () => {
@@ -627,7 +609,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     let banner_rendered = false;
     mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
-        assert.equal(data.stream_name, "Denmark");
+        assert.equal(data.channel_name, "Denmark");
         banner_rendered = true;
         return "<banner-stub>";
     });
@@ -665,10 +647,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
 
     // Simulate that the row was added to the DOM.
     const $warning_row = $("#compose_banners .private_stream_warning");
-    $warning_row.data = (key) =>
-        ({
-            "stream-id": "22",
-        })[key];
+    $warning_row.attr("data-stream-id", "22");
     $("#compose_banners .private_stream_warning").length = 1;
     $("#compose_banners .private_stream_warning")[0] = $warning_row;
 
@@ -687,7 +666,9 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned_details = {
-        email: "foo@bar.com",
+        user: {
+            email: "foo@bar.com",
+        },
     };
 
     let new_banner_rendered = false;
@@ -700,19 +681,19 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         return "<banner-stub>";
     });
 
-    function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
+    function test_noop_case(is_private, is_zephyr_mirror, type) {
         new_banner_rendered = false;
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
         realm.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
-        mentioned_details.is_broadcast = is_broadcast;
+        mentioned_details.type = type;
         compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
         assert.ok(!new_banner_rendered);
     }
 
-    test_noop_case(true, false, false);
-    test_noop_case(false, true, false);
-    test_noop_case(false, false, true);
+    test_noop_case(true, false, "user");
+    test_noop_case(false, true, "user");
+    test_noop_case(false, false, "broadcast");
 
     $("#compose_invite_users").hide();
     compose_state.set_message_type("stream");
@@ -738,11 +719,14 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     // Test mentioning a user that should gets a warning.
     mentioned_details = {
-        email: "foo@bar.com",
-        user_id: 34,
-        full_name: "Foo Barson",
+        type: "user",
+        user: {
+            email: "foo@bar.com",
+            user_id: 34,
+            full_name: "Foo Barson",
+        },
     };
-    people.add_active_user(mentioned_details);
+    people.add_active_user(mentioned_details.user);
 
     new_banner_rendered = false;
     const $banner_container = $("#compose_banners");
@@ -753,11 +737,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     // Simulate that the row was added to the DOM.
     const $warning_row = $("#compose_banners .recipient_not_subscribed");
-    $warning_row.data = (key) =>
-        ({
-            "user-id": "34",
-            "stream-id": "111",
-        })[key];
+    $warning_row.attr("data-user-id", "34");
+    $warning_row.attr("data-stream-id", "111");
     $("#compose_banners .recipient_not_subscribed").length = 1;
     $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
 

@@ -29,25 +29,53 @@ emojisets.set("text", emojisets.get("google")!);
 let current_emojiset: EmojiSet | undefined;
 
 async function fetch_emojiset(name: string, url: string): Promise<void> {
-    return new Promise((resolve, _reject) => {
-        const get_emojiset = (): void => {
-            const sheet = new Image();
-            sheet.addEventListener("load", () => {
-                window.removeEventListener("online", get_emojiset);
-                resolve();
-            });
-            sheet.addEventListener("error", () => {
-                // If there's an error, try again when the browser is online
-                window.addEventListener("online", get_emojiset);
-                blueslip.warn(
-                    `Failed to load emojiset ${name} from ${url}. A retry will be attempted when the browser is online.`,
-                );
-            });
-            sheet.src = url;
-        };
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 10000; // 10 seconds
 
-        get_emojiset();
-    });
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // If the fetch is successful, resolve the promise and return
+            return;
+        } catch (error) {
+            if (!navigator.onLine) {
+                // If the user is offline, retry once they are online.
+                await new Promise<void>((resolve) => {
+                    // We don't want to throw an error here since this is clearly something wrong with user's network.
+                    blueslip.warn(
+                        `Failed to load emojiset ${name} from ${url}. Retrying when online.`,
+                    );
+                    window.addEventListener(
+                        "online",
+                        () => {
+                            resolve();
+                        },
+                        {once: true},
+                    );
+                });
+            } else {
+                blueslip.warn(
+                    `Failed to load emojiset ${name} from ${url}. Attempt ${attempt} of ${MAX_RETRIES}.`,
+                );
+
+                // If this was the last attempt, rethrow the error
+                if (attempt === MAX_RETRIES) {
+                    blueslip.error(
+                        `Failed to load emojiset ${name} from ${url} after ${MAX_RETRIES} attempts.`,
+                    );
+                    throw error;
+                }
+
+                // Wait before the next attempt
+                await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+            }
+        }
+    }
 }
 
 export async function select(name: string): Promise<void> {

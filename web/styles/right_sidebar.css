@@ -60,6 +60,7 @@ $user_status_emoji_width: 24px;
     margin-bottom: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
+    line-height: var(--line-height-sidebar-row);
 
     & li {
         overflow: hidden;
@@ -67,35 +68,30 @@ $user_status_emoji_width: 24px;
         text-overflow: ellipsis;
         list-style-type: none;
         border-radius: 4px;
-        padding-top: 1px;
-        padding-bottom: 2px;
+        padding: 0;
 
         .user-list-sidebar-menu-icon {
-            position: absolute;
-            top: 1px;
-            right: 0;
-            font-size: 1em;
-            display: none;
-            text-align: center;
-            padding: 0 6px;
+            visibility: hidden;
+            justify-self: center;
 
             & i {
-                padding-right: 0.35em;
-                display: inline-block;
-                width: 13px;
                 font-size: 17px;
-                vertical-align: middle;
+                /* Ensure the icon takes the same baseline
+                   as the rest of the row, for perfect
+                   vertical alignment with the username and
+                   status circle. */
+                line-height: inherit;
             }
 
             /*
             Hover does not work for touch-based devices like mobile phones.
-            Hence the the icons does not appear, making the user unaware of its
+            Hence the icons does not appear, making the user unaware of its
             presence on such devices. The following media property displays the
             icon by default for such behaviour.
             */
 
             @media (hover: none) {
-                display: inline;
+                visibility: visible;
                 /* Show dots on touchscreens in a less distracting,
                    lighter shade. */
                 color: var(--color-vdots-hint);
@@ -104,7 +100,7 @@ $user_status_emoji_width: 24px;
 
         &:hover {
             .user-list-sidebar-menu-icon {
-                display: inline;
+                visibility: visible;
                 cursor: pointer;
                 color: var(--color-vdots-visible);
 
@@ -121,10 +117,10 @@ $user_status_emoji_width: 24px;
     }
 
     .user_circle {
-        min-width: 8px;
+        width: 8px;
         height: 8px;
-        margin: 0 5px;
-        display: block;
+        grid-area: starting-anchor-element;
+        place-self: center center;
     }
 
     .empty-list-message {
@@ -184,7 +180,6 @@ $user_status_emoji_width: 24px;
 
 .user-presence-link,
 .user_sidebar_entry .selectable_sidebar_block {
-    display: flex;
     overflow: hidden;
 
     .user-name {
@@ -194,22 +189,19 @@ $user_status_emoji_width: 24px;
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
-    width: calc(100% - 26px);
-    display: flex;
-    flex-direction: row;
-}
-
-.user-name-and-status-wrapper {
-    display: block;
-    width: 100%;
+    grid-area: row-content;
+    display: grid;
+    grid-template:
+        "starting-anchor-element row-content markers-and-controls" var(
+            --line-height-sidebar-row
+        )
+        ".                       row-content ." auto / 20px minmax(0, 1fr)
+        minmax(0, auto);
+    align-items: baseline;
 }
 
 .user-presence-link {
-    width: calc(100% - $user_status_emoji_width);
-
-    .status-emoji {
-        top: 9px;
-    }
+    grid-area: row-content;
 }
 
 .my_user_status {
@@ -246,9 +238,19 @@ $user_status_emoji_width: 24px;
 }
 
 .user_sidebar_entry {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    display: grid;
+    /* We establish a two-row, two-column outer grid so
+       that controls remain aligned with the username,
+       even when there is a status line shown below.
+
+       The 26px column for the vdots is less than the
+       30px allotted in the left sidebar, but it holds
+       the username area constant, so that no ellipsis
+       appears on the username on hover. */
+    grid-template:
+        "row-content ending-anchor-element" var(--line-height-sidebar-row)
+        "row-content ." auto / minmax(0, 1fr) 26px;
+    align-content: baseline;
 
     .user-name-and-status-emoji {
         display: flex;
@@ -256,7 +258,6 @@ $user_status_emoji_width: 24px;
 
     .status-text {
         display: block;
-        width: 170px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -265,12 +266,15 @@ $user_status_emoji_width: 24px;
     }
 
     & span.status-text:not(:empty) {
-        margin-top: -3px;
+        /* Cinch up the status text by one quarter of the
+           sidebar row's line-height. */
+        margin-top: calc((var(--line-height-sidebar-row) / 4) * -1);
     }
 
     .unread_count {
+        grid-area: markers-and-controls;
+        align-self: center;
         display: none;
-        margin-top: 2.5px;
     }
 
     .unread_count:not(.hide) {
@@ -354,19 +358,6 @@ $user_status_emoji_width: 24px;
 
     .clear_search_button {
         margin-left: -1px;
-    }
-}
-
-@media (width < $sm_min) {
-    #userlist-toggle {
-        height: 30px;
-        line-height: 30px;
-    }
-
-    #userlist-toggle-button {
-        height: 30px;
-        padding-top: 0;
-        padding-bottom: 0;
     }
 }
 

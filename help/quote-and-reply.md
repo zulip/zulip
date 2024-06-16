@@ -59,7 +59,7 @@ to avoid unnecessarily mentioning someone twice.
 
 1. Click **Quote and reply**.
 
-1. Select the desired destination stream or **Direct message** from the dropdown
+1. Select the desired destination channel or **Direct message** from the dropdown
    in the top left of the compose box.
 
 1. Enter a topic name, or recipient names for a direct message.
@@ -79,13 +79,13 @@ to avoid unnecessarily mentioning someone twice.
 1. *(optional)* Delete any parts of the quoted message that you don't want to
    forward.
 
-1. If you are in a stream view, choose a destination topic by tapping the
+1. If you are in a channel view, choose a destination topic by tapping the
    compose box and selecting an existing topic or typing a new topic name.
 
 1. Send your message.
 
 !!! tip ""
-    To forward a message to a different stream or direct message recipient,
+    To forward a message to a different channel or direct message recipient,
     you will need to copy-paste the contents of the compose box.
 
 {end_tabs}

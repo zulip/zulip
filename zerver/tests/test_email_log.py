@@ -12,7 +12,8 @@ class EmailLogTest(ZulipTestCase):
         with self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"), mock.patch(
             "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
         ), self.assertLogs(level="INFO") as m, self.settings(DEVELOPMENT_LOG_EMAILS=True):
-            result = self.client_get("/emails/generate/")
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.client_get("/emails/generate/")
             self.assertEqual(result.status_code, 302)
             self.assertIn("emails", result["Location"])
 

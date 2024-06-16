@@ -1,7 +1,7 @@
 <div class="compose-control-buttons-container preview_mode_disabled {{#if inside_popover}} show_in_popover {{/if}}">
-    <a role="button" data-format-type="link" class="compose_control_button zulip-icon zulip-icon-link formatting_button" aria-label="{{t 'Link' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Link' }}"></a>
-    <a role="button" data-format-type="bold" class="compose_control_button zulip-icon zulip-icon-bold formatting_button" aria-label="{{t 'Bold' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Bold' }}"></a>
-    <a role="button" data-format-type="italic" class="compose_control_button zulip-icon zulip-icon-italic formatting_button" aria-label="{{t 'Italic' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Italic' }}"></a>
+    <a role="button" data-format-type="link" class="compose_control_button zulip-icon zulip-icon-link formatting_button" aria-label="{{t 'Link' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tooltip-template-id="link-tooltip" data-tippy-maxWidth="none"></a>
+    <a role="button" data-format-type="bold" class="compose_control_button zulip-icon zulip-icon-bold formatting_button" aria-label="{{t 'Bold' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tooltip-template-id="bold-tooltip" data-tippy-maxWidth="none"></a>
+    <a role="button" data-format-type="italic" class="compose_control_button zulip-icon zulip-icon-italic formatting_button" aria-label="{{t 'Italic' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tooltip-template-id="italic-tooltip" data-tippy-maxWidth="none"></a>
     <a role="button" data-format-type="strikethrough" class="compose_control_button zulip-icon zulip-icon-strikethrough formatting_button" aria-label="{{t 'Strikethrough' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Strikethrough' }}"></a>
     {{#if inside_popover}}
         <div class="divider">|</div>

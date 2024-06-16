@@ -1188,7 +1188,7 @@ Parser.prototype.parse = function(src) {
     if (!safe) {
       html = escape(html);
     }
-    output = output.replace('<p>' + key + '</p>', html)
+    output = output.replace('<p>' + key + '</p>', () => html)
   }
   return output;
  };

@@ -4,98 +4,102 @@ we only use parts of the marked API and are using a fork
 of the upstream library.
 */
 
-import { PrimitiveValue } from "url-template";
+import {PrimitiveValue} from "url-template";
 
-export class Renderer {
+declare class Renderer {
     code: (code: string) => string;
     link: (href: string, title: string, text: string) => string;
     br: () => string;
 }
 
-export type RegExpOrStub = RegExp | {
-    exec(string: string): RegExpExecArray | null;
-};
+declare namespace marked {
+    type RegExpOrStub =
+        | RegExp
+        | {
+              exec(string: string): RegExpExecArray | null;
+          };
 
-export type LinkifierMatch = PrimitiveValue | PrimitiveValue[] | Record<string, PrimitiveValue>;
+    type LinkifierMatch = PrimitiveValue | PrimitiveValue[] | Record<string, PrimitiveValue>;
 
-export type ParseOptions = {
-    get_linkifier_regexes: () => RegExp[];
-    linkifierHandler: (pattern: RegExp, matches: LinkifierMatch[]) => string;
-    emojiHandler: (emoji_name: string) => string;
-    unicodeEmojiHandler: (unicode_emoji: string) => string;
-    streamHandler: (stream_name: string) => string | undefined;
-    streamTopicHandler: (stream_name: string, topic: string) => string | undefined;
-    texHandler: (tex: string, fullmatch: string) => string;
-    timestampHandler: (time_string: string) => string;
-    gfm: boolean;
-    tables: boolean;
-    breaks: boolean;
-    pedantic: boolean;
-    sanitize: boolean;
-    smartLists: boolean;
-    smartypants: boolean;
-    zulip: boolean;
-    renderer: Renderer;
-    preprocessors: ((src: string) => string)[];
-};
+    type ParseOptions = {
+        get_linkifier_regexes: () => RegExp[];
+        linkifierHandler: (pattern: RegExp, matches: LinkifierMatch[]) => string;
+        emojiHandler: (emoji_name: string) => string;
+        unicodeEmojiHandler: (unicode_emoji: string) => string;
+        streamHandler: (stream_name: string) => string | undefined;
+        streamTopicHandler: (stream_name: string, topic: string) => string | undefined;
+        texHandler: (tex: string, fullmatch: string) => string;
+        timestampHandler: (time_string: string) => string;
+        gfm: boolean;
+        tables: boolean;
+        breaks: boolean;
+        pedantic: boolean;
+        sanitize: boolean;
+        smartLists: boolean;
+        smartypants: boolean;
+        zulip: boolean;
+        renderer: Renderer;
+        preprocessors: ((src: string) => string)[];
+    };
 
-type MarkedOptions = ParseOptions & {
-    userMentionHandler: (mention: string, silently: boolean) => string | undefined;
-    groupMentionHandler: (name: string, silently: boolean) => string | undefined;
-    silencedMentionHandler: (quote: string) => string;
-};
+    type MarkedOptions = ParseOptions & {
+        userMentionHandler: (mention: string, silently: boolean) => string | undefined;
+        groupMentionHandler: (name: string, silently: boolean) => string | undefined;
+        silencedMentionHandler: (quote: string) => string;
+    };
+}
 
 declare const marked: {
     // Note: We don't use the `callback` option in any of our code.
-    (src: string, opt: MarkedOptions, callback?: any): string;
+    (src: string, opt: marked.MarkedOptions, callback?: any): string;
     Lexer: {
         rules: {
             tables: {
-                newline: RegExpOrStub;
-                code: RegExpOrStub;
-                fences: RegExpOrStub;
-                hr: RegExpOrStub;
-                heading: RegExpOrStub;
-                nptable: RegExpOrStub;
-                blockquote: RegExpOrStub;
-                list: RegExpOrStub;
-                html: RegExpOrStub;
-                def: RegExpOrStub;
-                table: RegExpOrStub;
-                paragraph: RegExpOrStub;
-                text: RegExpOrStub;
-                bullet: RegExpOrStub;
-                item: RegExpOrStub;
-                _ta: RegExpOrStub;
+                newline: marked.RegExpOrStub;
+                code: marked.RegExpOrStub;
+                fences: marked.RegExpOrStub;
+                hr: marked.RegExpOrStub;
+                heading: marked.RegExpOrStub;
+                nptable: marked.RegExpOrStub;
+                blockquote: marked.RegExpOrStub;
+                list: marked.RegExpOrStub;
+                html: marked.RegExpOrStub;
+                def: marked.RegExpOrStub;
+                table: marked.RegExpOrStub;
+                paragraph: marked.RegExpOrStub;
+                text: marked.RegExpOrStub;
+                bullet: marked.RegExpOrStub;
+                item: marked.RegExpOrStub;
+                _ta: marked.RegExpOrStub;
             };
         };
     };
     InlineLexer: {
         rules: {
             zulip: {
-                escape: RegExpOrStub;
-                autolink: RegExpOrStub;
-                url: RegExpOrStub;
-                tag: RegExpOrStub;
-                link: RegExpOrStub;
-                reflink: RegExpOrStub;
-                nolink: RegExpOrStub;
-                strong: RegExpOrStub;
-                em: RegExpOrStub;
-                code: RegExpOrStub;
-                br: RegExpOrStub;
-                del: RegExpOrStub;
-                emoji: RegExpOrStub;
-                unicodeemoji: RegExpOrStub;
-                usermention: RegExpOrStub;
-                groupmention: RegExpOrStub;
-                stream: RegExpOrStub;
-                tex: RegExpOrStub;
-                timestamp: RegExpOrStub;
-                text: RegExpOrStub;
-                _inside: RegExpOrStub;
-                _href: RegExpOrStub;
-                stream_topic: RegExpOrStub;
+                escape: marked.RegExpOrStub;
+                autolink: marked.RegExpOrStub;
+                url: marked.RegExpOrStub;
+                tag: marked.RegExpOrStub;
+                link: marked.RegExpOrStub;
+                reflink: marked.RegExpOrStub;
+                nolink: marked.RegExpOrStub;
+                strong: marked.RegExpOrStub;
+                em: marked.RegExpOrStub;
+                code: marked.RegExpOrStub;
+                br: marked.RegExpOrStub;
+                del: marked.RegExpOrStub;
+                emoji: marked.RegExpOrStub;
+                unicodeemoji: marked.RegExpOrStub;
+                usermention: marked.RegExpOrStub;
+                groupmention: marked.RegExpOrStub;
+                stream: marked.RegExpOrStub;
+                tex: marked.RegExpOrStub;
+                timestamp: marked.RegExpOrStub;
+                text: marked.RegExpOrStub;
+                _inside: marked.RegExpOrStub;
+                _href: marked.RegExpOrStub;
+                stream_topic: marked.RegExpOrStub;
             };
         };
     };
@@ -103,4 +107,4 @@ declare const marked: {
     stashHtml: (html: string, safe: boolean) => string;
 };
 
-export default marked;
+export = marked;

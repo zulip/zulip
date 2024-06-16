@@ -2,6 +2,8 @@
 # in a cluster.
 
 class zulip::app_frontend_once {
+  include zulip::hooks::send_zulip_update_announcements
+
   $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
   $proxy_port = zulipconf('http_proxy', 'port', '4750')
   if $proxy_host != '' and $proxy_port != '' {
@@ -19,67 +21,43 @@ class zulip::app_frontend_once {
     notify  => Service[$zulip::common::supervisor_service],
   }
 
-  file { '/etc/cron.d/send-digest-emails':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/send-digest-emails',
+  # Every-hour
+  zulip::cron { 'update-analytics-counts':
+    minute => '5',
+  }
+  zulip::cron { 'check-analytics-state':
+    minute => '30',
+  }
+  zulip::cron { 'promote-new-full-members':
+    minute => '35',
+  }
+  zulip::cron { 'send_zulip_update_announcements':
+    minute => '47',
   }
 
-  file { '/etc/cron.d/update-analytics-counts':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/update-analytics-counts',
+  # Daily
+  zulip::cron { 'soft-deactivate-users':
+    hour   => '5',
+    minute => '0',
+    manage => 'soft_deactivate_users -d',
+  }
+  zulip::cron { 'delete-old-unclaimed-attachments':
+    hour   => '5',
+    minute => '0',
+    manage => 'delete_old_unclaimed_attachments -f',
+  }
+  zulip::cron { 'archive-messages':
+    hour   => '6',
+    minute => '0',
+  }
+  zulip::cron { 'send-digest-emails':
+    hour   => '18',
+    minute => '0',
+    manage => 'enqueue_digest_emails',
+  }
+  zulip::cron { 'clearsessions':
+    hour   => '22',
+    minute => '22',
   }
 
-  file { '/etc/cron.d/check-analytics-state':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/check-analytics-state',
-  }
-
-  file { '/etc/cron.d/soft-deactivate-users':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/soft-deactivate-users',
-  }
-
-  file { '/etc/cron.d/promote-new-full-members':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/promote-new-full-members',
-  }
-
-  file { '/etc/cron.d/archive-messages':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/archive-messages',
-  }
-
-  file { '/etc/cron.d/clearsessions':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/clearsessions',
-  }
-
-  file { '/etc/cron.d/send_zulip_update_announcements':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/send_zulip_update_announcements',
-  }
 }

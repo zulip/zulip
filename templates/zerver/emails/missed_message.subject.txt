@@ -9,8 +9,8 @@
         advantage of this to retain thread continuity in email notifications
         even after a topic is resolved.
         #}
-        {% if topic_resolved %}{% trans %}[resolved] #{{ stream_name }} > {{ topic_name }}{% endtrans %}
-        {% else %}#{{ stream_name }} > {{ topic_name }}
+        {% if topic_resolved %}{% trans %}[resolved] #{{ channel_name }} > {{ topic_name }}{% endtrans %}
+        {% else %}#{{ channel_name }} > {{ topic_name }}
         {% endif %}
     {% endif %}
 {% else %}

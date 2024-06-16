@@ -24,8 +24,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_subscription, timeout_mock
-from zerver.lib.timeout import TimeoutExpiredError
+from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import (
     Message,
@@ -67,8 +66,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.login("hamlet")
 
         # Mark all existing messages as read
-        with timeout_mock("zerver.views.message_flags"):
-            result = self.client_post("/json/mark_all_as_read")
+        result = self.client_post("/json/mark_all_as_read")
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
 
@@ -128,8 +126,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
     def test_visible_messages_use_first_unread_anchor(self) -> None:
         self.login("hamlet")
 
-        with timeout_mock("zerver.views.message_flags"):
-            result = self.client_post("/json/mark_all_as_read")
+        result = self.client_post("/json/mark_all_as_read")
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
 
@@ -398,9 +395,128 @@ class UnreadCountTests(ZulipTestCase):
             .values_list("message_id", flat=True),
             message_ids[5::2],
         )
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[3],
+                    "include_anchor": "false",
+                    "num_before": 0,
+                    "num_after": 5,
+                    "narrow": orjson.dumps([["stream", "Verona"], ["topic", "topic 1"]]).decode(),
+                    "op": "add",
+                    "flag": "starred",
+                },
+            )
+        )
+        cordelia = self.example_user("cordelia")
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[3],
+                    "include_anchor": "false",
+                    "num_before": 0,
+                    "num_after": 5,
+                    "narrow": orjson.dumps([{"operator": "dm", "operand": [cordelia.id]}]).decode(),
+                    "op": "add",
+                    "flag": "starred",
+                },
+            )
+        )
 
     def test_update_flags_for_narrow_misuse(self) -> None:
         self.login("hamlet")
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": "[[],[]]",
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "Invalid narrow[0]: Value error, element is not a string pair",
+        )
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": None, "operand": "Verona"},
+                            {"operator": "topic", "operand": "topic 1"},
+                        ]
+                    ).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "Invalid narrow[0]: Value error, operator is missing",
+        )
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": "stream", "operand": None},
+                            {"operator": "topic", "operand": "topic 1"},
+                        ]
+                    ).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "Invalid narrow[0]: Value error, operand is missing",
+        )
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": orjson.dumps(["asadasd"]).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "Invalid narrow[0]: Value error, dict or list required",
+        )
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": orjson.dumps([{"operator": "search", "operand": ""}]).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "operand cannot be blank.",
+        )
 
         response = self.client_post(
             "/json/messages/flags/narrow",
@@ -474,7 +590,7 @@ class UnreadCountTests(ZulipTestCase):
                 "stream_id": invalid_stream_id,
             },
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_mark_all_topics_unread_with_invalid_stream_name(self) -> None:
         self.login("hamlet")
@@ -486,7 +602,7 @@ class UnreadCountTests(ZulipTestCase):
                 "topic_name": "whatever",
             },
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_mark_all_in_stream_topic_read(self) -> None:
         self.login("hamlet")
@@ -756,8 +872,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             [third_message_id, fourth_message_id],
         )
 
-        with timeout_mock("zerver.views.message_flags"):
-            result = self.client_post("/json/mark_all_as_read", {})
+        result = self.client_post("/json/mark_all_as_read", {})
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
         mock_push_notifications.assert_called()
 
@@ -779,8 +894,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
             .count()
         )
         self.assertNotEqual(unread_count, 0)
-        with timeout_mock("zerver.views.message_flags"):
-            result = self.client_post("/json/mark_all_as_read", {})
+        result = self.client_post("/json/mark_all_as_read", {})
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
 
@@ -793,7 +907,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
 
     def test_mark_all_as_read_timeout_response(self) -> None:
         self.login("hamlet")
-        with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpiredError):
+        with mock.patch("time.monotonic", side_effect=[10000, 10051]):
             result = self.client_post("/json/mark_all_as_read", {})
             result_dict = self.assert_json_success(result)
             self.assertFalse(result_dict["complete"])

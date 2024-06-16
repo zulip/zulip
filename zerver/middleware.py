@@ -25,10 +25,9 @@ from sentry_sdk import set_tag
 from typing_extensions import Annotated, Concatenate, ParamSpec, override
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
-from zerver.lib.db import reset_queries
+from zerver.lib.db_connections import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
-from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitResult
@@ -570,7 +569,10 @@ class HostDomainMiddleware(MiddlewareMixin):
                 # organizations even if it does not host a realm.
                 return None
 
-            return render(request, "zerver/invalid_realm.html", status=404)
+            context = {
+                "current_url": request.get_host(),
+            }
+            return render(request, "zerver/invalid_realm.html", status=404, context=context)
 
         set_tag("realm", request_notes.realm.string_id)
 
@@ -580,7 +582,7 @@ class HostDomainMiddleware(MiddlewareMixin):
             formal_host = request_notes.realm.host
             if host != formal_host and not host.startswith(formal_host + ":"):
                 return HttpResponseRedirect(
-                    urljoin(request_notes.realm.uri, request.get_full_path())
+                    urljoin(request_notes.realm.url, request.get_full_path())
                 )
         return None
 
@@ -667,28 +669,6 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
             and request.META["REMOTE_ADDR"] not in ("127.0.0.1", "::1")
         ):
             raise ProxyMisconfigurationError(proxy_state_header)
-
-
-def alter_content(request: HttpRequest, content: bytes) -> bytes:
-    first_paragraph_text = get_content_description(content, request)
-    placeholder_open_graph_description = RequestNotes.get_notes(
-        request
-    ).placeholder_open_graph_description
-    assert placeholder_open_graph_description is not None
-    return content.replace(
-        placeholder_open_graph_description.encode(),
-        first_paragraph_text.encode(),
-    )
-
-
-class FinalizeOpenGraphDescription(MiddlewareMixin):
-    def process_response(
-        self, request: HttpRequest, response: HttpResponseBase
-    ) -> HttpResponseBase:
-        if RequestNotes.get_notes(request).placeholder_open_graph_description is not None:
-            assert isinstance(response, HttpResponse)
-            response.content = alter_content(request, response.content)
-        return response
 
 
 def validate_scim_bearer_token(request: HttpRequest) -> bool:

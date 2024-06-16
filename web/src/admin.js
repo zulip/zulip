@@ -1,5 +1,5 @@
 import $ from "jquery";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
@@ -29,8 +29,8 @@ const admin_settings_label = {
     }),
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
-    realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
-    realm_new_stream_announcements_stream: $t({defaultMessage: "New stream announcements"}),
+    realm_mandatory_topics: $t({defaultMessage: "Require topics in channel messages"}),
+    realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
     realm_inline_image_preview: $t({
@@ -42,7 +42,7 @@ const admin_settings_label = {
         defaultMessage: "Allow message content in message notification emails",
     }),
     realm_enable_spectator_access: $t({
-        defaultMessage: "Allow creating web-public streams (visible to anyone on the Internet)",
+        defaultMessage: "Allow creating web-public channels (visible to anyone on the Internet)",
     }),
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
@@ -226,6 +226,9 @@ export function build_page() {
         automatically_unmute_topics_in_muted_streams_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
         realm_enable_guest_user_indicator: realm.realm_enable_guest_user_indicator,
+        active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
+        deactivated_user_list_dropdown_widget_name:
+            settings_users.deactivated_user_list_dropdown_widget_name,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -269,7 +272,7 @@ export function build_page() {
             }),
         };
 
-        tippy($("#realm_can_access_all_users_group_widget_container")[0], opts);
+        tippy.default($("#realm_can_access_all_users_group_widget_container")[0], opts);
     }
 }
 

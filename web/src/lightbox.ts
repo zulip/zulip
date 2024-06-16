@@ -114,12 +114,12 @@ export class PanZoomControl {
         // See https://github.com/anvaka/panzoom/issues/112 for upstream discussion.
 
         const {scale, x, y} = e.getTransform();
-        const image_width = $(".zoom-element > img")[0].clientWidth * scale;
-        const image_height = $(".zoom-element > img")[0].clientHeight * scale;
-        const zoom_element_width = $(".zoom-element")[0].clientWidth * scale;
-        const zoom_element_height = $(".zoom-element")[0].clientHeight * scale;
-        const max_translate_x = $(".image-preview")[0].clientWidth;
-        const max_translate_y = $(".image-preview")[0].clientHeight;
+        const image_width = $(".zoom-element > img")[0]!.clientWidth * scale;
+        const image_height = $(".zoom-element > img")[0]!.clientHeight * scale;
+        const zoom_element_width = $(".zoom-element")[0]!.clientWidth * scale;
+        const zoom_element_height = $(".zoom-element")[0]!.clientHeight * scale;
+        const max_translate_x = $(".image-preview")[0]!.clientWidth;
+        const max_translate_y = $(".image-preview")[0]!.clientHeight;
 
         // When the image is dragged out of the image-preview container
         // (max_translate) it will be "snapped" back so that the number
@@ -202,11 +202,9 @@ export function clear_for_testing(): void {
 
 export function render_lightbox_media_list(preview_source: string): void {
     if (!is_open) {
-        const media_list = Array.prototype.slice.call(
-            $(
-                ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
-            ),
-        );
+        const media_list = $(
+            ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
+        ).toArray();
         const $media_list = $("#lightbox_overlay .image-list").empty();
 
         for (const media of media_list) {
@@ -231,7 +229,7 @@ export function render_lightbox_media_list(preview_source: string): void {
                 $node = $("<div>")
                     .addClass(className)
                     .attr("data-src", src)
-                    .css({backgroundImage: "url(" + src + ")"});
+                    .css({backgroundImage: `url(${CSS.escape(src)})`});
             }
 
             $media_list.append($node);
@@ -260,7 +258,7 @@ function display_image(payload: Payload): void {
     $(".media-description .title")
         .text(payload.title ?? "N/A")
         .attr("aria-label", payload.title ?? "N/A")
-        .prop("data-filename", filename ?? "N/A");
+        .attr("data-filename", filename ?? "N/A");
     if (payload.user !== undefined) {
         $(".media-description .user").text(payload.user).prop("title", payload.user);
     }
@@ -305,7 +303,7 @@ function display_video(payload: Payload): void {
         $(".media-description .title")
             .text(payload.title ?? "N/A")
             .attr("aria-label", payload.title ?? "N/A")
-            .prop("data-filename", filename ?? "N/A");
+            .attr("data-filename", filename ?? "N/A");
         if (payload.user !== undefined) {
             $(".media-description .user").text(payload.user).prop("title", payload.user);
         }
@@ -379,7 +377,7 @@ export function build_open_media_function(
                 payload = asset_map.get($preview_src);
             }
             if (payload === undefined) {
-                payload = parse_media_data($media[0]);
+                payload = parse_media_data($media[0]!);
             }
         }
 
@@ -564,7 +562,7 @@ export function initialize(): void {
 
     // Bind the pan/zoom control the newly created element.
     const pan_zoom_control = new PanZoomControl(
-        $("#lightbox_overlay .image-preview > .zoom-element")[0],
+        $("#lightbox_overlay .image-preview > .zoom-element")[0]!,
     );
 
     const reset_lightbox_state = function (): void {
@@ -605,7 +603,7 @@ export function initialize(): void {
         this.blur();
     });
 
-    $("#lightbox_overlay").on("click", ".image-list .image", function () {
+    $("#lightbox_overlay").on("click", ".image-list .image", function (this: HTMLElement) {
         const $media_list = $(this).parent();
         let $original_media_element;
         const is_video = $(this).hasClass("lightbox_video");
@@ -628,7 +626,7 @@ export function initialize(): void {
         $(".image-list .image.selected").removeClass("selected");
         $(this).addClass("selected");
 
-        const parentOffset = this.parentNode.clientWidth + this.parentNode.scrollLeft;
+        const parentOffset = this.parentElement!.clientWidth + this.parentElement!.scrollLeft;
         // this is the left and right of the image compared to its parent.
         const coords = {
             left: this.offsetLeft,
@@ -639,11 +637,11 @@ export function initialize(): void {
             // add 2px margin
             $media_list.animate(
                 {
-                    scrollLeft: coords.right - this.parentNode.clientWidth + 2,
+                    scrollLeft: coords.right - this.parentElement!.clientWidth + 2,
                 },
                 100,
             );
-        } else if (coords.left < this.parentNode.scrollLeft) {
+        } else if (coords.left < this.parentElement!.scrollLeft) {
             // subtract 2px margin
             $media_list.animate({scrollLeft: coords.left - 2}, 100);
         }

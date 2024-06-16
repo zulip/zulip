@@ -266,10 +266,10 @@ Some scenarios to consider:
 
 - Try clicking on any interactive elements, multiple times, in a variety of orders.
 - If the feature affects the **message view**, try it out in different types of
-  narrows: topic, stream, All messages, direct messages.
+  narrows: topic, channel, Combined feed, direct messages.
 - If the feature affects the **compose box** in the web app, try both ways of
   [resizing the compose box](https://zulip.com/help/resize-the-compose-box).
-  Test both stream messages and direct messages.
+  Test both channel messages and direct messages.
 - If the feature might require **elevated permissions**, check it out as a user who has
   permissions to use it and one who does not.
 - Think about how the feature might **interact with other features**, and try out
@@ -297,7 +297,7 @@ also some additional ways to ask for a code review:
   can also include a link to this guide.
 
 - If you're not sure who to ask, you can post a message in
-  [#code-review](https://chat.zulip.org/#narrow/stream/91-code-review) on [the Zulip
+  [#code-review](https://chat.zulip.org/#narrow/channel/91-code-review) on [the Zulip
   development community server](https://zulip.com/development-community/) to reach
   out to a wider group of potential reviewers.
 

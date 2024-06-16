@@ -10,15 +10,15 @@ flow through these files.
 ### Core Python files
 
 Zulip uses the [Django web
-framework](https://docs.djangoproject.com/en/3.2/), so a lot of these
+framework](https://docs.djangoproject.com/en/5.0/), so a lot of these
 paths will be familiar to Django developers.
 
 - `zproject/urls.py` Main
-  [Django routes file](https://docs.djangoproject.com/en/3.2/topics/http/urls/).
+  [Django routes file](https://docs.djangoproject.com/en/5.0/topics/http/urls/).
   Defines which URLs are handled by which view functions or templates.
 
 - `zerver/models/*.py`
-  [Django models](https://docs.djangoproject.com/en/3.2/topics/db/models/)
+  [Django models](https://docs.djangoproject.com/en/5.0/topics/db/models/)
   files. Defines Zulip's database tables.
 
 - `zerver/lib/*.py` Most library code.
@@ -28,17 +28,17 @@ paths will be familiar to Django developers.
   all code calling `send_event` to trigger [pushing data to
   clients](../subsystems/events-system.md) must live here.
 
-- `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/3.2/topics/http/views/).
+- `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/5.0/topics/http/views/).
 
 - `zerver/webhooks/` Webhook views and tests for [Zulip's incoming webhook integrations](https://zulip.com/api/incoming-webhooks-overview).
 
 - `zerver/tornado/views.py` Tornado views.
 
-- `zerver/worker/queue_processors.py` [Queue workers](../subsystems/queuing.md).
+- `zerver/worker/` [Queue workers](../subsystems/queuing.md).
 
 - `zerver/lib/markdown/` [Backend Markdown processor](../subsystems/markdown.md).
 
-- `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/3.2/topics/auth/customizing/).
+- `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/5.0/topics/auth/customizing/).
 
 ---
 

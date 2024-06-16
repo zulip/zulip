@@ -11,7 +11,7 @@
 {tab|curl}
 
 ``` curl
-# For stream messages
+# For channel messages
 curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     --data-urlencode type=stream \
@@ -34,7 +34,7 @@ You can use `zulip-send`
 the command-line, providing the message content via STDIN.
 
 ```bash
-# For stream messages
+# For channel messages
 zulip-send --stream Denmark --subject Castle \
     --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 

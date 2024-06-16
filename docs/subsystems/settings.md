@@ -26,7 +26,7 @@ convenient for:
 ## Server settings
 
 Zulip uses the [Django settings
-system](https://docs.djangoproject.com/en/3.2/topics/settings/), which
+system](https://docs.djangoproject.com/en/5.0/topics/settings/), which
 means that the settings files are Python programs that set a lot of
 variables with all-capital names like `EMAIL_GATEWAY_PATTERN`. You can
 access these anywhere in the Zulip Django code using e.g.:
@@ -159,7 +159,7 @@ accessed in initialization of Django (or Zulip) internals
 (e.g. `DATABASES`). See the [Django docs on overriding settings in
 tests][django-test-settings] for more details.
 
-[django-test-settings]: https://docs.djangoproject.com/en/3.2/topics/testing/tools/#overriding-settings
+[django-test-settings]: https://docs.djangoproject.com/en/5.0/topics/testing/tools/#overriding-settings
 
 ## Realm settings
 

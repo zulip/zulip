@@ -50,7 +50,6 @@
             </div>
             <div class="user-realm-information-section">
                 {% with %}
-                    {% set format_discount = format_discount %}
                     {% set dollar_amount = dollar_amount %}
                     {% include "corporate/support/realm_details.html" %}
                 {% endwith %}
@@ -61,7 +60,6 @@
         {% for realm in realms %}
         <div class="support-query-result">
             {% with %}
-                {% set format_discount = format_discount %}
                 {% set dollar_amount = dollar_amount %}
                 {% include "corporate/support/realm_details.html" %}
             {% endwith %}
@@ -100,7 +98,7 @@
                 <b>Email</b>: {{ email }}<br />
                 {% endif %}
                 <b>Link</b>: {{ confirmation.url }}
-                <a title="Copy link" class="copy-button" data-copytext="{{ confirmation.url }}">
+                <a title="Copy link" class="copy-button" data-clipboard-text="{{ confirmation.url }}">
                     <i class="fa fa-copy"></i>
                 </a><br />
                 <b>Expires in</b>: {{ confirmation.expires_in }}<br />
@@ -111,7 +109,6 @@
             <div class="confirmation-realm-section">
                 {% if show_realm_details %}
                     {% with %}
-                        {% set format_discount = format_discount %}
                         {% set dollar_amount = dollar_amount %}
                         {% include "corporate/support/realm_details.html" %}
                     {% endwith %}

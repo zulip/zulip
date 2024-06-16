@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {delegate} from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_compose_control_buttons_popover from "../templates/popovers/compose_control_buttons/compose_control_buttons_popover.hbs";
 import render_mobile_message_buttons_popover from "../templates/popovers/mobile_message_buttons_popover.hbs";
@@ -16,7 +16,7 @@ export function initialize() {
     // compose box buttons popover shown on mobile widths.
     // We want this click event to propagate and hide other popovers
     // that could possibly obstruct user from using this popover.
-    delegate("body", {
+    tippy.delegate("body", {
         ...popover_menus.default_popover_props,
         // Attach the click event to `.mobile_button_container`, since
         // the button (`.compose_mobile_button`) already has a hover
@@ -40,7 +40,7 @@ export function initialize() {
             const $popper = $(instance.popper);
             $popper.one("click", ".compose_mobile_stream_button", (e) => {
                 compose_actions.start({
-                    mesage_type: "stream",
+                    message_type: "stream",
                     trigger: "clear topic button",
                 });
                 e.stopPropagation();

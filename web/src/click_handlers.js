@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 // You won't find every click handler here, but it's a good place to start!
 
@@ -20,7 +20,7 @@ import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
@@ -185,7 +185,7 @@ export function initialize() {
         assert(message_lists.current !== undefined);
         message_lists.current.select_id(id);
 
-        if (message_edit.is_editing(id)) {
+        if (message_edit.currently_editing_messages.has(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
             return;
         }
@@ -289,9 +289,14 @@ export function initialize() {
         navigate.to_end();
     });
 
+    $("body").on("click", ".message_row", function () {
+        $(".selected_msg_for_touchscreen").removeClass("selected_msg_for_touchscreen");
+        $(this).addClass("selected_msg_for_touchscreen");
+    });
+
     // MESSAGE EDITING
 
-    $("body").on("click", ".edit_content_button, .view_source_button", function (e) {
+    $("body").on("click", ".edit_content_button", function (e) {
         assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         message_lists.current.select_id(rows.id($row));
@@ -464,25 +469,29 @@ export function initialize() {
     }
 
     $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.by_recipient(row_id, {trigger: "message header"});
+        message_view.narrow_by_recipient(row_id, {trigger: "message header"});
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.by_topic(row_id, {trigger: "message header"});
+        message_view.narrow_by_topic(row_id, {trigger: "message header"});
     });
 
     // SIDEBARS
     $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         const $li = $(e.target).parents("li");
 
         activity_ui.narrow_for_user({$li});
@@ -510,7 +519,7 @@ export function initialize() {
             // This will default to "bottom" placement for this tooltip.
             placement = "auto";
         }
-        tippy($elem[0], {
+        tippy.default($elem[0], {
             // Quickly display and hide right sidebar tooltips
             // so that they don't stick and overlap with
             // each other.
@@ -773,7 +782,7 @@ export function initialize() {
         ".direct-messages-container.zoom-out #private_messages_section_header",
         (e) => {
             if ($(e.target).closest("#show_all_private_messages").length === 1) {
-                // Let the browser handle the "all direct messages" widget.
+                // Let the browser handle the "direct message feed" widget.
                 return;
             }
 
@@ -841,6 +850,10 @@ export function initialize() {
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 

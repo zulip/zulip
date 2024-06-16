@@ -48,6 +48,7 @@ export type UserSettings = (StreamNotificationSettings &
     pm_content_in_desktop_notifications: boolean;
     presence_enabled: boolean;
     realm_name_in_email_notifications_policy: number;
+    receives_typing_notifications: boolean;
     send_private_typing_notifications: boolean;
     send_read_receipts: boolean;
     send_stream_typing_notifications: boolean;
@@ -66,6 +67,6 @@ export type UserSettings = (StreamNotificationSettings &
 
 export let user_settings: UserSettings;
 
-export function initialize_user_settings(params: Record<string, UserSettings>): void {
+export function initialize_user_settings(params: {user_settings: UserSettings}): void {
     user_settings = params.user_settings;
 }

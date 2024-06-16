@@ -2,7 +2,7 @@ Zapier supports integrations with
 [hundreds of popular products](https://zapier.com/apps). Get notifications
 sent by Zapier directly in Zulip.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

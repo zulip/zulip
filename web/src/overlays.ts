@@ -111,7 +111,9 @@ export function open_overlay(opts: OverlayOptions): void {
             reset_state();
         },
     };
-
+    if (document.activeElement) {
+        $(document.activeElement).trigger("blur");
+    }
     overlay_util.disable_scrolling();
     opts.$overlay.addClass("show");
     opts.$overlay.attr("aria-hidden", "false");

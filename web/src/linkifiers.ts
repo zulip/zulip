@@ -29,7 +29,7 @@ function python_to_js_linkifier(
     let current_group = 1;
     const group_number_to_name: Record<number, string> = {};
     while (match) {
-        const name = match[1];
+        const name = match[1]!;
         // Replace named group with regular matching group
         pattern = pattern.replace("(?P<" + name + ">", "(");
         // Map numbered reference to named reference for template expansion
@@ -49,7 +49,7 @@ function python_to_js_linkifier(
     // JS regexes only support i (case insensitivity) and m (multiline)
     // flags, so keep those and ignore the rest
     if (match) {
-        const py_flags = match[1];
+        const py_flags = match[1]!;
 
         for (const flag of py_flags) {
             if ("im".includes(flag)) {

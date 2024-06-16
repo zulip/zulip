@@ -52,4 +52,4 @@ inconsistent syntax, were removed.
 [help-spoilers]: /help/spoilers
 [help-global-time]: /help/global-times
 [help-mentions]: /help/mention-a-user-or-group
-[help-mention-all]: /help/mention-a-user-or-group#mention-everyone-on-a-stream
+[help-mention-all]: /help/mention-a-user-or-group#mention-everyone-on-a-channel

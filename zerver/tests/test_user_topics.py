@@ -190,15 +190,15 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
 
         data = {"stream_id": 999999999, "topic": "Verona3", "op": "add"}
         result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         data = {"topic": "Verona3", "op": "add"}
         result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Please supply 'stream'.")
+        self.assert_json_error(result, "Missing 'stream_id' argument")
 
         data = {"stream": stream.name, "stream_id": stream.id, "topic": "Verona3", "op": "add"}
         result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Please choose one: 'stream' or 'stream_id'.")
+        self.assert_json_error(result, "Unsupported parameter combination: stream_id, stream")
 
         data = {"stream_id": stream.id, "topic": "a" * (MAX_TOPIC_NAME_LENGTH + 1), "op": "add"}
         result = self.api_patch(user, url, data)
@@ -234,11 +234,11 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
 
         data = {"topic": "Verona3", "op": "remove"}
         result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Please supply 'stream'.")
+        self.assert_json_error(result, "Missing 'stream_id' argument")
 
         data = {"stream": stream.name, "stream_id": stream.id, "topic": "Verona3", "op": "remove"}
         result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Please choose one: 'stream' or 'stream_id'.")
+        self.assert_json_error(result, "Unsupported parameter combination: stream_id, stream")
 
         data = {"stream_id": stream.id, "topic": "a" * (MAX_TOPIC_NAME_LENGTH + 1), "op": "remove"}
         result = self.api_patch(user, url, data)
@@ -447,7 +447,7 @@ class MutedTopicsTests(ZulipTestCase):
             "visibility_policy": UserTopic.VisibilityPolicy.MUTED,
         }
         result = self.api_post(user, url, data)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         stream = get_stream("Verona", user.realm)
         data = {
@@ -472,7 +472,7 @@ class MutedTopicsTests(ZulipTestCase):
         }
 
         result = self.api_post(user, url, data)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         stream = get_stream("Verona", user.realm)
         data = {
@@ -663,7 +663,7 @@ class UnmutedTopicsTests(ZulipTestCase):
         }
 
         result = self.api_post(user, url, data)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_unmuted_topic_remove_invalid(self) -> None:
         user = self.example_user("hamlet")
@@ -677,7 +677,7 @@ class UnmutedTopicsTests(ZulipTestCase):
         }
 
         result = self.api_post(user, url, data)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
 
 class AutomaticallyFollowTopicsTests(ZulipTestCase):

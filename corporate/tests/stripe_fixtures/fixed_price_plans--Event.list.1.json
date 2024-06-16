@@ -8,9 +8,9 @@
           "account_country": "US",
           "account_name": "Kandra Labs, Inc.",
           "account_tax_ids": null,
-          "amount_due": 960000,
+          "amount_due": 320000,
           "amount_paid": 0,
-          "amount_remaining": 960000,
+          "amount_remaining": 320000,
           "amount_shipping": 0,
           "application": null,
           "application_fee_amount": null,
@@ -47,9 +47,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm8ydG1qTVRhZ2kyWFZkSGVHcEE4b1FJcG9jZjlILDEwMDA2NDk4Nw0200jSmSHF4m?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdFMzcTBrQlpYNWtjZXhhSXVCd3FUbUpNTHVwMVJnLDEwMzI5ODIyMQ0200lIXJh5Ge?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm8ydG1qTVRhZ2kyWFZkSGVHcEE4b1FJcG9jZjlILDEwMDA2NDk4Nw0200jSmSHF4m/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdFMzcTBrQlpYNWtjZXhhSXVCd3FUbUpNTHVwMVJnLDEwMzI5ODIyMQ0200lIXJh5Ge/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -58,10 +58,10 @@
           "lines": {
             "data": [
               {
-                "amount": 960000,
-                "amount_excluding_tax": 960000,
+                "amount": 320000,
+                "amount_excluding_tax": 320000,
                 "currency": "usd",
-                "description": "Zulip Cloud Standard - renewal",
+                "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -72,8 +72,8 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1420167845,
-                  "start": 1388631845
+                  "end": 1000000000,
+                  "start": 1000000000
                 },
                 "plan": null,
                 "price": {
@@ -101,7 +101,7 @@
                 "proration_details": {
                   "credited_items": null
                 },
-                "quantity": 120,
+                "quantity": 40,
                 "subscription": null,
                 "tax_amounts": [],
                 "tax_rates": [],
@@ -115,7 +115,13 @@
             "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
           },
           "livemode": false,
-          "metadata": {},
+          "metadata": {
+            "billing_schedule": "1",
+            "license_management": "manual",
+            "licenses": "40",
+            "plan_tier": "1",
+            "user_id": "10"
+          },
           "next_payment_attempt": null,
           "number": "NORMALI-0001",
           "object": "invoice",
@@ -156,19 +162,19 @@
           "subscription_details": {
             "metadata": null
           },
-          "subtotal": 960000,
-          "subtotal_excluding_tax": 960000,
+          "subtotal": 320000,
+          "subtotal_excluding_tax": 320000,
           "tax": null,
           "test_clock": null,
-          "total": 960000,
+          "total": 320000,
           "total_discount_amounts": [],
-          "total_excluding_tax": 960000,
+          "total_excluding_tax": 320000,
           "total_tax_amounts": [],
           "transfer_data": null,
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1OqSX9DEQaroqDjsbAdfYJ8d",
+      "id": "evt_1P41e6DEQaroqDjsrWc42JLN",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,

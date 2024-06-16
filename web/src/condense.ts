@@ -151,7 +151,7 @@ function get_message_height(elem: HTMLElement): number {
     // This needs to be very fast. This function runs hundreds of times
     // when displaying a message feed view that has hundreds of message
     // history, which ideally should render in <100ms.
-    return $(elem).find(".message_content")[0].scrollHeight;
+    return $(elem).find(".message_content")[0]!.scrollHeight;
 }
 
 export function hide_message_expander($row: JQuery): void {
@@ -259,7 +259,7 @@ export function condense_and_collapse(elems: JQuery): void {
 }
 
 export function initialize(): void {
-    $("#message_feed_container").on("click", ".message_expander", function (e) {
+    $("#message_feed_container").on("click", ".message_expander", function (this: HTMLElement, e) {
         // Expanding a message can mean either uncollapsing or
         // uncondensing it.
         const $row = $(this).closest(".message_row");
@@ -284,7 +284,7 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    $("#message_feed_container").on("click", ".message_condenser", function (e) {
+    $("#message_feed_container").on("click", ".message_condenser", function (this: HTMLElement, e) {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
         // Focus on the condensed message.

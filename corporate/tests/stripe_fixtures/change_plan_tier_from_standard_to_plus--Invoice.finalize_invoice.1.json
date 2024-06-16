@@ -2,9 +2,9 @@
   "account_country": "US",
   "account_name": "Kandra Labs, Inc.",
   "account_tax_ids": null,
-  "amount_due": 7200,
+  "amount_due": 3600,
   "amount_paid": 0,
-  "amount_remaining": 7200,
+  "amount_remaining": 3600,
   "amount_shipping": 0,
   "application": null,
   "application_fee_amount": null,
@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9NcGJaS085amJrdVQwN21ocTV0aVFFeTlvZTJ6LDEwMDA2NTc1MQ0200SFYjB9Id?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qdnl1SmpnTWZ2Smc5QnhjdDJQTkY1SFpYZWt0RXU1LDEwMzc5NTI1Ng0200K50EuBcH?s=ap",
   "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9NcGJaS085amJrdVQwN21ocTV0aVFFeTlvZTJ6LDEwMDA2NTc1MQ0200SFYjB9Id/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qdnl1SmpnTWZ2Smc5QnhjdDJQTkY1SFpYZWt0RXU1LDEwMzc5NTI1Ng0200K50EuBcH/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -52,8 +52,8 @@
   "lines": {
     "data": [
       {
-        "amount": 14400,
-        "amount_excluding_tax": 14400,
+        "amount": 10800,
+        "amount_excluding_tax": 10800,
         "currency": "usd",
         "description": "Zulip Cloud Plus - renewal",
         "discount_amounts": [],
@@ -88,8 +88,8 @@
           "tiers_mode": null,
           "transform_quantity": null,
           "type": "one_time",
-          "unit_amount": 1600,
-          "unit_amount_decimal": "1600"
+          "unit_amount": 1200,
+          "unit_amount_decimal": "1200"
         },
         "proration": false,
         "proration_details": {
@@ -100,7 +100,7 @@
         "tax_amounts": [],
         "tax_rates": [],
         "type": "invoiceitem",
-        "unit_amount_excluding_tax": "1600"
+        "unit_amount_excluding_tax": "1200"
       }
     ],
     "has_more": false,
@@ -150,14 +150,14 @@
   "subscription_details": {
     "metadata": null
   },
-  "subtotal": 14400,
-  "subtotal_excluding_tax": 14400,
+  "subtotal": 10800,
+  "subtotal_excluding_tax": 10800,
   "tax": null,
   "test_clock": null,
-  "total": 14400,
+  "total": 10800,
   "total_discount_amounts": [],
-  "total_excluding_tax": 14400,
+  "total_excluding_tax": 10800,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

@@ -70,7 +70,17 @@ export function create_update_next_cycle_license_request(): void {
     );
 }
 
+function remove_unused_get_parameters(): void {
+    // Remove `success_message` as get parameter from URL to avoid
+    // it being displayed repeatedly on reloads.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("success_message");
+    window.history.replaceState(null, "", url.toString());
+}
+
 export function initialize(): void {
+    remove_unused_get_parameters();
+
     $("#update-card-button").on("click", (e) => {
         $("#update-card-button .billing-button-text").text("");
         $("#update-card-button .loader").show();
@@ -383,8 +393,9 @@ export function initialize(): void {
                 );
             },
             error(xhr) {
-                if (xhr.responseJSON?.msg) {
-                    $("#org-billing-frequency-change-error").text(xhr.responseJSON.msg);
+                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                if (parsed.success) {
+                    $("#org-billing-frequency-change-error").text(parsed.data.msg);
                 }
             },
         });

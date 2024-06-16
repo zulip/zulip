@@ -206,14 +206,14 @@ installing Zulip with a dedicated database server.
 - **Disk for database:** SSD disk is highly recommended. For
   installations where most messages have <100 recipients, 10 GB per 1M
   messages of history is sufficient plus 1 GB per 1000 users is
-  sufficient. If most messages are to public streams with 10K+ users
+  sufficient. If most messages are to public channels with 10K+ users
   subscribed (like on chat.zulip.org), add 20 GB per (1000 user
-  accounts) per (1M messages to public streams).
+  accounts) per (1M messages to public channels).
 
 - **Example:** When
   [the Zulip development community](https://zulip.com/development-community/) server
   had 12K user accounts (~300 daily actives) and 800K messages of
-  history (400K to public streams), it was a default configuration
+  history (400K to public channels), it was a default configuration
   single-server installation with 16 GB of RAM, 4 cores (essentially
   always idle), and its database was using about 100 GB of disk.
 
@@ -248,5 +248,5 @@ impact Zulip's scalability, this [performance and scalability design
 document](../subsystems/performance.md) may also be of interest.
 
 [s3-uploads]: upload-backends.md#s3-backend-configuration
-[streaming-replication]: deployment.md#postgresql-warm-standby
+[streaming-replication]: postgresql.md#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support

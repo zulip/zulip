@@ -1,6 +1,6 @@
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
-    Keep in mind you still need to create the stream first even
+    Keep in mind you still need to create the channel first even
     if you are using this recommendation.
 
 1. {!create-an-incoming-webhook.md!}
@@ -42,7 +42,7 @@
     {% endraw %}
 
     The "appended URL path" will be the same for every notification —
-    it makes sure the notification goes to the appropriate stream and topic
+    it makes sure the notification goes to the appropriate channel and topic
     within Zulip.
 
 1. Next, copy this template Zulip message into **Message to POST**:
@@ -102,4 +102,4 @@
 ![](/static/images/integrations/desk/009.png)
 
 When a case is updated, you'll see a notification like the one above,
-to the stream `desk`, with a topic that matches the case's subject name.
+to the channel `desk`, with a topic that matches the case's subject name.

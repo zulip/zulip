@@ -1,6 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
-import type {Instance} from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 import render_integration_events from "../templates/settings/integration_events.hbs";
@@ -37,7 +37,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let integration_input_dropdown_widget: DropdownWidget;
         let previous_selected_integration = "";
 
-        const $override_topic = $("#integration-url-override-topic");
+        const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
@@ -52,11 +52,13 @@ export function show_generate_integration_url_modal(api_key: string): void {
             },
         });
         clipboard.on("success", () => {
-            show_copied_confirmation($("#generate-integration-url-modal .dialog_submit_button")[0]);
+            show_copied_confirmation(
+                $("#generate-integration-url-modal .dialog_submit_button")[0]!,
+            );
         });
 
         $override_topic.on("change", function () {
-            const checked = $(this).prop("checked");
+            const checked = this.checked;
             $topic_input.parent().toggleClass("hide", !checked);
         });
 
@@ -136,7 +138,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
             const selected_events = set_events_param(params);
 
-            const realm_url = realm.realm_uri;
+            const realm_url = realm.realm_url;
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
             $dialog_submit_button.prop("disabled", false);
@@ -177,7 +179,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
         function integration_item_click_callback(
             event: JQuery.ClickEvent,
-            dropdown: Instance,
+            dropdown: tippy.Instance,
         ): void {
             integration_input_dropdown_widget.render();
             $(".integration-url-name-wrapper").trigger("input");
@@ -214,7 +216,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
             return options;
         }
 
-        function stream_item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void {
+        function stream_item_click_callback(
+            event: JQuery.ClickEvent,
+            dropdown: tippy.Instance,
+        ): void {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
             const user_selected_option = stream_input_dropdown_widget.value();

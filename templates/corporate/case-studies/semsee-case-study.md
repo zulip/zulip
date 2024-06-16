@@ -56,7 +56,7 @@ rarely used for internal communications. For jumping on a call, Zulip’s native
 call integration is an easy starting point. System monitoring and software
 development processes are integrated with Zulip via the API. For example, a
 custom integration sends logging data from Semsee’s product into Zulip, with a
-stream and topic configured based on the deployed environment.
+channel and topic configured based on the deployed environment.
 
 New employees adapt easily to Zulip’s organized conversations. By reading
 ongoing discussions, they quickly get an intuition for when to start a new
@@ -66,7 +66,7 @@ With conversations organized by topic, “people don’t have to scroll through 
 cherry-pick out the messages they need to read,” James says.
 
 Semsee invites customers to join the company Zulip chat as guests. “Our
-customers just see one stream with one or two topics, so it’s very easy for
+customers just see one channel with one or two topics, so it’s very easy for
 them,” James explains. On the flip side, when Semsee employees are invited to
 join customers’ Slack chats, they miss Zulip. “I don’t like going back to Slack
 now. It’s just not as efficient a way to organize communication,” says James. “A

@@ -80,7 +80,7 @@ be merged into the existing help center documentation where appropriate.
 
 If you are unsure about how and where to document the feature, you
 can always ask in
-[#documentation](https://chat.zulip.org/#narrow/stream/19-documentation)
+[#documentation](https://chat.zulip.org/#narrow/channel/19-documentation)
 on the [Zulip community server](https://zulip.com/development-community/).
 
 ### Updating an existing article
@@ -103,7 +103,7 @@ existing help center articles:
   would be appropriate in the description of the feature. For example,
   your new feature might relate to general Zulip features like
   [keyboard shortcuts](https://zulip.com/help/keyboard-shortcuts)
-  or [streams and topics](https://zulip.com/help/streams-and-topics).
+  or [channels and topics](https://zulip.com/help/streams-and-topics).
 
 - Make sure there is a **Related articles** section at the end
   of the article that again links to any help center documentation
@@ -210,10 +210,20 @@ as guidance when documenting Zulip's features.
 When you refer to the features in the Zulip UI, you should **bold** the
 feature's name followed by the feature itself (e.g. **Settings** page,
 **Change password** button, **Email** field). No quotation marks should be
-used. Use **bold** for stream names, and quotation marks for topic names.
+used. Use **bold** for channel names, and quotation marks for topic names.
 
 Keep in mind that the UI may change — don’t describe it in more detail than
-is needed. **Never identify or refer to a button by its color.**
+is needed. In particular:
+
+- Do not specify what the default configuration is. This might change in the
+  future, or may even be different for different types of organizations.
+- Do not list out the options the user is choosing from. Once the user finds the
+  right menu in the UI, they'll be able to see the options. In some cases, we
+  may describe the options in more detail outside of the instructions block.
+- Never identify or refer to a button by its color. You _can_ describe its
+  location.
+- Use screenshots only when it's very difficult to get your point across without
+  them.
 
 ### Voice
 
@@ -364,7 +374,7 @@ The source for macros is the Markdown files under `help/include` in the
 - **Save changes** `{!save-changes.md!}`: Save changes after modifying
   organization settings.
 
-- **Stream actions** `{!stream-actions.md!}`: Navigate to the stream actions
+- **Channel actions** `{!channel-actions.md!}`: Navigate to the channel actions
   menu from the left sidebar.
 
 - **Start composing** `{!start-composing.md!}`: Open the compose box.
@@ -399,7 +409,7 @@ Tips are more common than warnings.
 ```md
 !!! warn ""
 
-    **Note:** If you attempt to input a nonexistent stream name, an error
+    **Note:** If you attempt to input a nonexistent channel name, an error
     message will appear.
 ```
 

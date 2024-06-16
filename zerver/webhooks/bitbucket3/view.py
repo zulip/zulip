@@ -2,10 +2,10 @@ import string
 from typing import Dict, List, Optional, Protocol
 
 from django.http import HttpRequest, HttpResponse
-from returns.curry import partial
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
@@ -84,8 +84,8 @@ def ping_handler(
 
 
 def repo_comment_handler(
-    payload: WildValue,
     action: str,
+    payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
@@ -336,8 +336,8 @@ def get_pr_reassigned_body(payload: WildValue, include_title: Optional[str]) -> 
 
 
 def pr_handler(
-    payload: WildValue,
     action: str,
+    payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
@@ -363,8 +363,8 @@ def pr_handler(
 
 
 def pr_comment_handler(
-    payload: WildValue,
     action: str,
+    payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
@@ -398,24 +398,24 @@ class EventHandler(Protocol):
 
 EVENT_HANDLER_MAP: Dict[str, EventHandler] = {
     "diagnostics:ping": ping_handler,
-    "repo:comment:added": partial(repo_comment_handler, action="commented"),
-    "repo:comment:edited": partial(repo_comment_handler, action="edited their comment"),
-    "repo:comment:deleted": partial(repo_comment_handler, action="deleted their comment"),
+    "repo:comment:added": partial(repo_comment_handler, "commented"),
+    "repo:comment:edited": partial(repo_comment_handler, "edited their comment"),
+    "repo:comment:deleted": partial(repo_comment_handler, "deleted their comment"),
     "repo:forked": repo_forked_handler,
     "repo:modified": repo_modified_handler,
     "repo:refs_changed": repo_push_handler,
-    "pr:comment:added": partial(pr_comment_handler, action="commented on"),
-    "pr:comment:edited": partial(pr_comment_handler, action="edited their comment on"),
-    "pr:comment:deleted": partial(pr_comment_handler, action="deleted their comment on"),
-    "pr:declined": partial(pr_handler, action="declined"),
-    "pr:deleted": partial(pr_handler, action="deleted"),
-    "pr:merged": partial(pr_handler, action="merged"),
-    "pr:modified": partial(pr_handler, action="modified"),
-    "pr:opened": partial(pr_handler, action="opened"),
-    "pr:reviewer:approved": partial(pr_handler, action="approved"),
-    "pr:reviewer:needs_work": partial(pr_handler, action="needs_work"),
-    "pr:reviewer:updated": partial(pr_handler, action="reviewers_updated"),
-    "pr:reviewer:unapproved": partial(pr_handler, action="unapproved"),
+    "pr:comment:added": partial(pr_comment_handler, "commented on"),
+    "pr:comment:edited": partial(pr_comment_handler, "edited their comment on"),
+    "pr:comment:deleted": partial(pr_comment_handler, "deleted their comment on"),
+    "pr:declined": partial(pr_handler, "declined"),
+    "pr:deleted": partial(pr_handler, "deleted"),
+    "pr:merged": partial(pr_handler, "merged"),
+    "pr:modified": partial(pr_handler, "modified"),
+    "pr:opened": partial(pr_handler, "opened"),
+    "pr:reviewer:approved": partial(pr_handler, "approved"),
+    "pr:reviewer:needs_work": partial(pr_handler, "needs_work"),
+    "pr:reviewer:updated": partial(pr_handler, "reviewers_updated"),
+    "pr:reviewer:unapproved": partial(pr_handler, "unapproved"),
 }
 
 ALL_EVENT_TYPES = list(EVENT_HANDLER_MAP.keys())

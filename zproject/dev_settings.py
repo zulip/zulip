@@ -121,9 +121,6 @@ PASSWORD_MIN_GUESSES = 0
 TWO_FACTOR_CALL_GATEWAY = "two_factor.gateways.fake.Fake"
 TWO_FACTOR_SMS_GATEWAY = "two_factor.gateways.fake.Fake"
 
-# Set this True to send all hotspots in development
-ALWAYS_SEND_ALL_HOTSPOTS = False
-
 # FAKE_LDAP_MODE supports using a fake LDAP database in the
 # development environment, without needing an LDAP server!
 #
@@ -210,3 +207,10 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
 SELF_HOSTING_MANAGEMENT_SUBDOMAIN = "selfhosting"
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = True
 PUSH_NOTIFICATION_BOUNCER_URL = f"http://push.{EXTERNAL_HOST}"
+
+# Breaks the UI if used, but enabled for development environment testing.
+ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = True
+
+# This value needs to be lower in development than usual to allow
+# for quicker testing of the feature.
+RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5

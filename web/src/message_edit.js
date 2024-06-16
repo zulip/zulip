@@ -8,6 +8,7 @@ import render_delete_message_modal from "../templates/confirm_dialog/confirm_del
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
+import render_message_moved_widget_body from "../templates/message_moved_widget_body.hbs";
 import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
@@ -25,7 +26,9 @@ import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
+import * as feedback_widget from "./feedback_widget";
 import * as giphy from "./giphy";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
@@ -41,12 +44,16 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
 
-const currently_editing_messages = new Map();
+// Stores the message ID of the message being edited, and the
+// textarea element which has the modified content.
+// Storing textarea makes it easy to get the current content.
+export const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
@@ -410,10 +417,9 @@ function timer_text(seconds_left) {
     return $t({defaultMessage: "{seconds} sec to edit"}, {seconds: seconds.toString()});
 }
 
-function create_copy_to_clipboard_handler($row, source, message_id) {
+function create_copy_to_clipboard_handler($row, source, $message_edit_content) {
     const clipboard = new ClipboardJS(source, {
-        target: () =>
-            document.querySelector(`#edit_form_${CSS.escape(message_id)} .message_edit_content`),
+        target: () => $message_edit_content[0],
     });
 
     clipboard.on("success", () => {
@@ -430,12 +436,16 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
 }
 
 function edit_message($row, raw_content) {
+    // Open the message-edit UI for a given message.
+    //
+    // Notably, when switching views, this can be called for a row
+    // that hasn't been added to the DOM yet so, keep all the selector
+    // queries and events to operate on `$row` or `$form`.
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($row));
     $row.find(".message_reactions").hide();
     condense.hide_message_expander($row);
     condense.hide_message_condenser($row);
-    const content_top = $row.find(".message_controls")[0].getBoundingClientRect().top;
 
     // We potentially got to this function by clicking a button that implied the
     // user would be able to edit their message.  Give a little bit of buffer in
@@ -449,7 +459,7 @@ function edit_message($row, raw_content) {
     const max_file_upload_size = realm.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
-    if (max_file_upload_size > 0) {
+    if (max_file_upload_size > 0 && upload.feature_check()) {
         file_upload_enabled = true;
     }
 
@@ -467,9 +477,10 @@ function edit_message($row, raw_content) {
         }),
     );
 
-    const edit_obj = {$form, raw_content};
-    currently_editing_messages.set(message.id, edit_obj);
-    message_lists.current.show_edit_message($row, edit_obj);
+    const $message_edit_content = $form.find("textarea.message_edit_content");
+    assert($message_edit_content.length === 1);
+    currently_editing_messages.set(message.id, $message_edit_content);
+    message_lists.current.show_edit_message($row, $form);
 
     $form.on("keydown", handle_message_row_edit_keydown);
 
@@ -479,29 +490,23 @@ function edit_message($row, raw_content) {
     $form
         .find(".message-edit-feature-group .audio_link")
         .toggle(compose_call.compute_show_audio_chat_button());
-    upload.feature_check($(`#edit_form_${CSS.escape(rows.id($row))} .compose_upload_file`));
 
-    const $message_edit_content = $row.find("textarea.message_edit_content");
     const $message_edit_countdown_timer = $row.find(".message_edit_countdown_timer");
     const $copy_message = $row.find(".copy_message");
 
     if (!is_editable) {
         $message_edit_content.attr("readonly", "readonly");
-        create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
+        create_copy_to_clipboard_handler($row, $copy_message[0], $message_edit_content);
     } else {
         $copy_message.remove();
-        const edit_id = `#edit_form_${CSS.escape(rows.id($row))} .message_edit_content`;
-        const listeners = resize.watch_manual_resize(edit_id);
-        if (listeners) {
-            currently_editing_messages.get(rows.id($row)).listeners = listeners;
-        }
-        composebox_typeahead.initialize_compose_typeahead(edit_id);
-        compose_ui.handle_keyup(null, $(edit_id).expectOne());
-        $(edit_id).on("keydown", function (event) {
-            compose_ui.handle_keydown(event, $(this).expectOne());
+        resize.watch_manual_resize_for_element($message_edit_content[0]);
+        composebox_typeahead.initialize_compose_typeahead($message_edit_content);
+        compose_ui.handle_keyup(null, $message_edit_content);
+        $message_edit_content.on("keydown", (event) => {
+            compose_ui.handle_keydown(event, $message_edit_content);
         });
-        $(edit_id).on("keyup", function (event) {
-            compose_ui.handle_keyup(event, $(this).expectOne());
+        $message_edit_content.on("keyup", (event) => {
+            compose_ui.handle_keyup(event, $message_edit_content);
         });
     }
 
@@ -553,17 +558,12 @@ function edit_message($row, raw_content) {
         $message_edit_content.val("");
         $message_edit_content.val(contents);
     }
-
-    // Scroll to keep the top of the message content text in the same
-    // place visually, adjusting for border and padding.
-    const edit_top = $message_edit_content[0].getBoundingClientRect().top;
-    const scroll_by = edit_top - content_top + 5 - 14;
-
-    edit_obj.scrolled_by = scroll_by;
-    message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 }
 
 function start_edit_maintaining_scroll($row, content) {
+    // This function makes the bottom of the edit form visible, so
+    // call this for cases where it is important to show the bottom
+    // like showing error messages or upload status.
     edit_message($row, content);
     const row_bottom = $row.get_offset_to_window().bottom;
     const composebox_top = $("#compose").get_offset_to_window().top;
@@ -578,10 +578,7 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
         edit_box_open_callback();
     }
     const row_id = rows.id($row);
-    upload.setup_upload({
-        mode: "edit",
-        row: row_id,
-    });
+    upload.setup_upload(upload.edit_config(row_id));
 }
 
 export function start($row, edit_box_open_callback) {
@@ -785,10 +782,6 @@ export function start_inline_topic_edit($recipient_row) {
     );
 }
 
-export function is_editing(id) {
-    return currently_editing_messages.has(id);
-}
-
 export function end_inline_topic_edit($row) {
     assert(message_lists.current !== undefined);
     message_lists.current.hide_edit_topic_on_recipient_row($row);
@@ -799,28 +792,12 @@ export function end_message_row_edit($row) {
     const row_id = rows.id($row);
 
     // Clean up the upload handler
-    upload.deactivate_upload({mode: "edit", row: row_id});
+    upload.deactivate_upload(upload.edit_config(row_id));
 
     const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
-        const scroll_by = currently_editing_messages.get(message.id).scrolled_by;
-        const original_scrollTop = message_viewport.scrollTop();
-
-        // Clean up resize event listeners
-        const listeners = currently_editing_messages.get(message.id).listeners;
-        const edit_box = document.querySelector(
-            `#edit_form_${CSS.escape(message.id)} .message_edit_content`,
-        );
-        if (listeners !== undefined) {
-            // Event listeners to clean up are only set in some edit types
-            edit_box.removeEventListener("mousedown", listeners[0]);
-            document.body.removeEventListener("mouseup", listeners[1]);
-        }
-
         currently_editing_messages.delete(message.id);
         message_lists.current.hide_edit_message($row);
-        message_viewport.scrollTop(original_scrollTop - scroll_by);
-
         compose_call.abort_video_callbacks(message.id);
     }
     if ($row.find(".condensed").length !== 0) {
@@ -1084,7 +1061,7 @@ export function save_message_row_edit($row) {
                     });
 
                     $row = message_lists.current.get_row(message_id);
-                    if (!is_editing(message_id)) {
+                    if (!currently_editing_messages.has(message_id)) {
                         // Return to the message editing open UI state with the edited content.
                         start_edit_maintaining_scroll($row, echo_data.raw_content);
                     }
@@ -1130,7 +1107,8 @@ export function maybe_show_edit($row, id) {
     }
 
     if (currently_editing_messages.has(id)) {
-        message_lists.current.show_edit_message($row, currently_editing_messages.get(id));
+        const $message_edit_content = currently_editing_messages.get(id);
+        edit_message($row, $message_edit_content.val());
     }
 }
 
@@ -1237,12 +1215,12 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
     });
 }
 
-export function handle_narrow_deactivated() {
+export function restore_edit_state_after_message_view_change() {
     assert(message_lists.current !== undefined);
-    for (const [idx, elem] of currently_editing_messages) {
+    for (const [idx, $content] of currently_editing_messages) {
         if (message_lists.current.get(idx) !== undefined) {
             const $row = message_lists.current.get_row(idx);
-            message_lists.current.show_edit_message($row, elem);
+            edit_message($row, $content.val());
         }
     }
 }
@@ -1280,6 +1258,25 @@ function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm, on_h
     });
 }
 
+function show_message_moved_toast(toast_params) {
+    const new_stream_name = sub_store.maybe_get_stream_name(toast_params.new_stream_id);
+    const stream_topic = `#${new_stream_name} > ${toast_params.new_topic_name}`;
+    const new_location_url = hash_util.by_stream_topic_url(
+        toast_params.new_stream_id,
+        toast_params.new_topic_name,
+    );
+    feedback_widget.show({
+        populate($container) {
+            const widget_body_html = render_message_moved_widget_body({
+                stream_topic,
+                new_location_url,
+            });
+            $container.html(widget_body_html);
+        },
+        title_text: $t({defaultMessage: "Message moved"}),
+    });
+}
+
 export function move_topic_containing_message_to_stream(
     message_id,
     new_stream_id,
@@ -1287,6 +1284,7 @@ export function move_topic_containing_message_to_stream(
     send_notification_to_new_thread,
     send_notification_to_old_thread,
     propagate_mode,
+    toast_params,
 ) {
     function reset_modal_ui() {
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
@@ -1320,6 +1318,9 @@ export function move_topic_containing_message_to_stream(
             // from server_events.js.
             reset_modal_ui();
             dialog_widget.close();
+            if (toast_params) {
+                show_message_moved_toast(toast_params);
+            }
         },
         error(xhr) {
             reset_modal_ui();
@@ -1366,7 +1367,7 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
         num_before: 1,
         num_after: 0,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };
@@ -1394,7 +1395,7 @@ export function is_message_oldest_or_newest(
         num_before: 1,
         num_after: 1,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };

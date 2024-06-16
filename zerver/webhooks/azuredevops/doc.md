@@ -4,7 +4,7 @@ Get Azure DevOps notifications in Zulip!
 
 {start_tabs}
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

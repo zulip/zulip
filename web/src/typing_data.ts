@@ -64,6 +64,14 @@ export function get_topic_typists(stream_id: number, topic: string): number[] {
     return muted_users.filter_muted_user_ids(typists);
 }
 
+export function clear_typing_data(): void {
+    for (const [, timer] of inbound_timer_dict.entries()) {
+        clearTimeout(timer);
+    }
+    inbound_timer_dict.clear();
+    typists_dict.clear();
+}
+
 // The next functions aren't pure data, but it is easy
 // enough to mock the setTimeout/clearTimeout functions.
 export function clear_inbound_timer(key: string): void {

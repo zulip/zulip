@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import z from "zod";
+import {z} from "zod";
 
 export type PollDataConfig = {
     message_sender_id: number;
@@ -30,16 +30,11 @@ export type WidgetData = {
     question: string;
 };
 
-export type InboundData = Record<string, unknown> & {type: string};
+export type InboundData = unknown;
 export type NewOptionOutboundData = {type: string; idx: number; option: string};
 export type QuestionOutboundData = {type: string; question: string};
 export type VoteOutboundData = {type: string; key: string; vote: number};
 export type PollHandle = {
-    // Add generic key property to allow string indexing on PollHandle type in `handle_event` method.
-    [key: string]: {
-        outbound: (arg: string) => InboundData | undefined;
-        inbound: (sender_id: number, data: InboundData) => void;
-    };
     new_option: {
         outbound: (option: string) => NewOptionOutboundData;
         inbound: (sender_id: number | string, data: InboundData) => void;
@@ -148,7 +143,7 @@ export class PollData {
                     }
 
                     const key = `${sender_id},${idx}`;
-                    const votes = new Map();
+                    const votes = new Map<number, number>();
 
                     this.key_to_option.set(key, {
                         option,
@@ -294,8 +289,14 @@ export class PollData {
     }
 
     handle_event(sender_id: number, data: InboundData): void {
+        assert(
+            typeof data === "object" &&
+                data !== null &&
+                "type" in data &&
+                typeof data.type === "string",
+        );
         const type = data.type;
-        if (this.handle[type]) {
+        if (type === "new_option" || type === "question" || type === "vote") {
             this.handle[type].inbound(sender_id, data);
         } else {
             this.report_error_function(`poll widget: unknown inbound type: ${type}`);

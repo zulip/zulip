@@ -16,8 +16,8 @@ When you invite users, you can:
 * Set the [role](/help/roles-and-permissions) that they will have when
   they join.
 
-* Configure which streams they will be added to. The organization's
-  [default streams](/help/set-default-streams-for-new-users) will be preselected.
+* Configure which channels they will be added to. The organization's
+  [default channels](/help/set-default-channels-for-new-users) will be preselected.
 
 Organization administrators can
 [configure](/help/restrict-account-creation#change-who-can-send-invitations)
@@ -39,7 +39,7 @@ permission to invite users.
 
 1. Select what [role](/help/roles-and-permissions) the users will join as.
 
-1. Configure which streams they will be added to.
+1. Configure which channels they will be added to.
 
 1. Click **Invite**.
 
@@ -51,9 +51,10 @@ permission to invite users.
 {end_tabs}
 
 !!! warn ""
-    **Warning**: Creating an account using a personal invitation link does
-    not require the user to authenticate using a [configured
-    authentication method](/help/configure-authentication-methods).
+    **Warning**: When an account is created by accepting an email
+    invitation, the user is immediately logged in to their new account.
+    Any restrictions on [allowed authentication
+    methods](/help/configure-authentication-methods) are not applied.
 
 ## Create a reusable invitation link
 
@@ -67,7 +68,7 @@ permission to invite users.
 
 1. Select what [role](/help/roles-and-permissions) the users will join as.
 
-1. Configure which streams they will be added to.
+1. Configure which channels they will be added to.
 
 1. Click **Generate invite link**.
 
@@ -93,7 +94,7 @@ for invitations for the organization owners role.
 ## Related articles
 
 * [Restrict account creation](/help/restrict-account-creation)
-* [Set default streams for new users](/help/set-default-streams-for-new-users)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language for automated messages and invitation emails][org-lang]
 * [Roles and permissions](/help/roles-and-permissions)

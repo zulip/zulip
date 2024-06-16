@@ -72,16 +72,16 @@ export function build_widget(
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
-        get_file_input()[0].files = files;
+        get_file_input()[0]!.files = files;
         e.preventDefault();
         return false;
     });
 
     get_file_input().attr("accept", supported_types.toString());
     get_file_input().on("change", (e) => {
-        if (e.target.files?.length === 0) {
+        if (e.target.files?.[0] === undefined) {
             $input_error.hide();
-        } else if (e.target.files?.length === 1) {
+        } else if (e.target.files.length === 1) {
             const file = e.target.files[0];
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 $input_error.text(
@@ -160,16 +160,16 @@ export function build_direct_upload_widget(
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
-        get_file_input()[0].files = files;
+        get_file_input()[0]!.files = files;
         e.preventDefault();
         return false;
     });
 
     get_file_input().attr("accept", supported_types.toString());
     get_file_input().on("change", (e) => {
-        if (e.target.files?.length === 0) {
+        if (e.target.files?.[0] === undefined) {
             $input_error.hide();
-        } else if (e.target.files?.length === 1) {
+        } else if (e.target.files.length === 1) {
             const file = e.target.files[0];
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 $input_error.text(

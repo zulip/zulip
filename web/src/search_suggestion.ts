@@ -2,8 +2,8 @@ import Handlebars from "handlebars/runtime";
 import assert from "minimalistic-assert";
 
 import * as common from "./common";
+import * as direct_message_group_data from "./direct_message_group_data";
 import {Filter} from "./filter";
-import * as huddle_data from "./huddle_data";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -24,7 +24,7 @@ type UserPillItem = {
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
-type Suggestion = {
+export type Suggestion = {
     description_html: string;
     search_string: string;
     is_person?: boolean;
@@ -33,8 +33,8 @@ type Suggestion = {
 
 export const max_num_of_search_results = 12;
 
-function stream_matches_query(stream_name: string, q: string): boolean {
-    return common.phrase_match(q, stream_name);
+function channel_matches_query(channel_name: string, q: string): boolean {
+    return common.phrase_match(q, channel_name);
 }
 
 function make_person_highlighter(query: string): (person: User) => string {
@@ -92,24 +92,31 @@ function format_as_suggestion(terms: NarrowTerm[]): Suggestion {
     };
 }
 
-function compare_by_huddle(huddle_emails: string[]): (person1: User, person2: User) => number {
-    const user_ids = huddle_emails.slice(0, -1).flatMap((person) => {
+function compare_by_direct_message_group(
+    direct_message_group_emails: string[],
+): (person1: User, person2: User) => number {
+    const user_ids = direct_message_group_emails.slice(0, -1).flatMap((person) => {
         const user = people.get_by_email(person);
         return user?.user_id ?? [];
     });
-    // Construct dict for all huddles, so we can look up each's recency
-    const huddles = huddle_data.get_huddles();
-    const huddle_dict = new Map<string, number>();
-    for (const [i, huddle] of huddles.entries()) {
-        huddle_dict.set(huddle, i + 1);
+    // Construct dict for all direct message groups, so we can
+    // look up each's recency
+    const direct_message_groups = direct_message_group_data.get_direct_message_groups();
+    const direct_message_group_dict = new Map<string, number>();
+    for (const [i, direct_message_group] of direct_message_groups.entries()) {
+        direct_message_group_dict.set(direct_message_group, i + 1);
     }
 
     return function (person1: User, person2: User): number {
-        const huddle1 = people.concat_huddle(user_ids, person1.user_id);
-        const huddle2 = people.concat_huddle(user_ids, person2.user_id);
+        const direct_message_group1 = people.concat_direct_message_group(user_ids, person1.user_id);
+        const direct_message_group2 = people.concat_direct_message_group(user_ids, person2.user_id);
         // If not in the dict, assign an arbitrarily high index
-        const score1 = huddle_dict.get(huddle1) ?? huddles.length + 1;
-        const score2 = huddle_dict.get(huddle2) ?? huddles.length + 1;
+        const score1 =
+            direct_message_group_dict.get(direct_message_group1) ??
+            direct_message_groups.length + 1;
+        const score2 =
+            direct_message_group_dict.get(direct_message_group2) ??
+            direct_message_groups.length + 1;
         const diff = score1 - score2;
 
         if (diff !== 0) {
@@ -119,11 +126,13 @@ function compare_by_huddle(huddle_emails: string[]): (person1: User, person2: Us
     };
 }
 
-function get_stream_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    const valid = ["stream", "search", ""];
+function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+    // For users with "stream" in their muscle memory, still
+    // have suggestions with "channel:" operator.
+    const valid = ["stream", "channel", "search", ""];
     const incompatible_patterns = [
-        {operator: "stream"},
-        {operator: "streams"},
+        {operator: "channel"},
+        {operator: "channels"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
@@ -133,23 +142,23 @@ function get_stream_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggesti
     }
 
     const query = last.operand;
-    let streams = stream_data.subscribed_streams();
+    let channels = stream_data.subscribed_streams();
 
-    streams = streams.filter((stream) => stream_matches_query(stream, query));
+    channels = channels.filter((channel) => channel_matches_query(channel, query));
 
-    streams = typeahead_helper.sorter(query, streams, (x) => x);
+    channels = typeahead_helper.sorter(query, channels, (x) => x);
 
     const regex = typeahead_helper.build_highlight_regex(query);
     const highlight_query = typeahead_helper.highlight_with_escaping_and_regex;
 
-    const objs = streams.map((stream) => {
-        const prefix = "stream";
-        const highlighted_stream = highlight_query(regex, stream);
+    const objs = channels.map((channel) => {
+        const prefix = "channel";
+        const highlighted_channel = highlight_query(regex, channel);
         const verb = last.negated ? "exclude " : "";
-        const description_html = verb + prefix + " " + highlighted_stream;
+        const description_html = verb + prefix + " " + highlighted_channel;
         const term = {
-            operator: "stream",
-            operand: stream,
+            operator: "channel",
+            operand: channel,
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
@@ -162,7 +171,7 @@ function get_stream_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggesti
 function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     // For users with "pm-with" in their muscle memory, still
     // have group direct message suggestions with "dm:" operator.
-    if (!check_validity(last, terms, ["dm", "pm-with"], [{operator: "stream"}])) {
+    if (!check_validity(last, terms, ["dm", "pm-with"], [{operator: "channel"}])) {
         return [];
     }
 
@@ -196,7 +205,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         return last_part === "" || person_matcher(person);
     });
 
-    persons.sort(compare_by_huddle(parts));
+    persons.sort(compare_by_direct_message_group(parts));
 
     // Take top 15 persons, since they're ordered by pm_recipient_count.
     persons = persons.slice(0, 15);
@@ -286,14 +295,14 @@ function get_person_suggestions(
 
     switch (autocomplete_operator) {
         case "dm-including":
-            incompatible_patterns = [{operator: "stream"}, {operator: "is", operand: "resolved"}];
+            incompatible_patterns = [{operator: "channel"}, {operator: "is", operand: "resolved"}];
             break;
         case "dm":
         case "pm-with":
             incompatible_patterns = [
                 {operator: "dm"},
                 {operator: "pm-with"},
-                {operator: "stream"},
+                {operator: "channel"},
                 {operator: "is", operand: "resolved"},
             ];
             break;
@@ -363,7 +372,7 @@ export function get_topic_suggestions_from_candidates({
     const max_num_topics = 10;
 
     if (guess === "") {
-        // In the search UI, once you autocomplete the stream,
+        // In the search UI, once you autocomplete the channel,
         // we just show you the most recent topics before you even
         // need to start typing any characters.
         return candidate_topics.slice(0, max_num_topics);
@@ -375,7 +384,7 @@ export function get_topic_suggestions_from_candidates({
     // so we do an aggressive search here.
     //
     // The following loop can be expensive if you have lots
-    // of topics in a stream, so we try to exit the loop as
+    // of topics in a channel, so we try to exit the loop as
     // soon as we find enough matches.
     const topics: string[] = [];
     for (const topic of candidate_topics) {
@@ -397,27 +406,27 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         {operator: "dm-including"},
         {operator: "topic"},
     ];
-    if (!check_validity(last, terms, ["stream", "topic", "search"], incompatible_patterns)) {
+    if (!check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns)) {
         return [];
     }
 
     const operator = Filter.canonicalize_operator(last.operator);
     const operand = last.operand;
     const negated = operator === "topic" && last.negated;
-    let stream: string | undefined;
+    let channel: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
     const suggest_terms: NarrowTerm[] = [];
 
-    // stream:Rome -> show all Rome topics
-    // stream:Rome topic: -> show all Rome topics
-    // stream:Rome f -> show all Rome topics with a word starting in f
-    // stream:Rome topic:f -> show all Rome topics with a word starting in f
-    // stream:Rome topic:f -> show all Rome topics with a word starting in f
+    // channel:Rome -> show all Rome topics
+    // channel:Rome topic: -> show all Rome topics
+    // channel:Rome f -> show all Rome topics with a word starting in f
+    // channel:Rome topic:f -> show all Rome topics with a word starting in f
+    // channel:Rome topic:f -> show all Rome topics with a word starting in f
 
-    // When narrowed to a stream:
-    //   topic: -> show all topics in current stream
-    //   foo -> show all topics in current stream with words starting with foo
+    // When narrowed to a channel:
+    //   topic: -> show all topics in current channel
+    //   foo -> show all topics in current channel with words starting with foo
 
     // If somebody explicitly types search:, then we might
     // not want to suggest topics, but I feel this is a very
@@ -425,36 +434,36 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // in terms of telling us whether they provided the operator,
     // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
     switch (operator) {
-        case "stream":
+        case "channel":
             guess = "";
-            stream = operand;
+            channel = operand;
             suggest_terms.push(last);
             break;
         case "topic":
         case "search":
             guess = operand;
-            if (filter.has_operator("stream")) {
-                stream = filter.operands("stream")[0];
+            if (filter.has_operator("channel")) {
+                channel = filter.operands("channel")[0];
             } else {
-                stream = narrow_state.stream_name();
-                if (stream) {
-                    suggest_terms.push({operator: "stream", operand: stream});
+                channel = narrow_state.stream_name();
+                if (channel) {
+                    suggest_terms.push({operator: "channel", operand: channel});
                 }
             }
             break;
     }
 
-    if (!stream) {
+    if (!channel) {
         return [];
     }
 
-    const stream_sub = stream_data.get_sub(stream);
-    if (!stream_sub) {
+    const subscription = stream_data.get_sub(channel);
+    if (!subscription) {
         return [];
     }
 
-    if (stream_data.can_access_topic_history(stream_sub)) {
-        stream_topic_history_util.get_server_history(stream_sub.stream_id, () => {
+    if (stream_data.can_access_topic_history(subscription)) {
+        stream_topic_history_util.get_server_history(subscription.stream_id, () => {
             // Fetch topic history from the server, in case we will need it.
             // Note that we won't actually use the results from the server here
             // for this particular keystroke from the user, because we want to
@@ -465,7 +474,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         });
     }
 
-    const candidate_topics = stream_topic_history.get_recent_topic_names(stream_sub.stream_id);
+    const candidate_topics = stream_topic_history.get_recent_topic_names(subscription.stream_id);
 
     if (!candidate_topics?.length) {
         return [];
@@ -488,9 +497,9 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 }
 
 function get_term_subset_suggestions(terms: NarrowTerm[]): Suggestion[] {
-    // For stream:a topic:b search:c, suggest:
-    //  stream:a topic:b
-    //  stream:a
+    // For channel:a topic:b search:c, suggest:
+    //  channel:a topic:b
+    //  channel:a
     if (terms.length < 1) {
         return [];
     }
@@ -546,18 +555,24 @@ function get_special_filter_suggestions(
     return filtered_suggestions;
 }
 
-function get_streams_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+    let search_string = "channels:public";
+    // show "channels:public" option for users who
+    // have "streams" in their muscle memory
+    if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
+        search_string = "streams:public";
+    }
     const suggestions = [
         {
-            search_string: "streams:public",
-            description_html: "All public streams in organization",
+            search_string,
+            description_html: "All public channels in organization",
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
-                {operator: "stream"},
+                {operator: "channel"},
                 {operator: "dm-including"},
                 {operator: "dm"},
                 {operator: "in"},
-                {operator: "streams"},
+                {operator: "channels"},
             ],
         },
     ];
@@ -571,7 +586,7 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
                 {operator: "is", operand: "resolved"},
-                {operator: "stream"},
+                {operator: "channel"},
                 {operator: "dm"},
                 {operator: "in"},
             ],
@@ -627,6 +642,11 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
             description_html: "messages that contain attachments",
             incompatible_patterns: [{operator: "has", operand: "attachment"}],
         },
+        {
+            search_string: "has:reaction",
+            description_html: "messages that contain reactions",
+            incompatible_patterns: [{operator: "has", operand: "reaction"}],
+        },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
 }
@@ -639,9 +659,8 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     const verb = negated ? "exclude " : "";
 
     const sender_query = negated_symbol + "sender:" + people.my_current_email();
-    const from_query = negated_symbol + "from:" + people.my_current_email();
     const sender_me_query = negated_symbol + "sender:me";
-    const from_me_query = negated_symbol + "from:me";
+    const from_string = negated_symbol + "from";
     const sent_string = negated_symbol + "sent";
     const description_html = verb + "sent by me";
 
@@ -655,18 +674,12 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
         last.operator === "" ||
         sender_query.startsWith(last_string) ||
         sender_me_query.startsWith(last_string) ||
+        from_string.startsWith(last_string) ||
         last_string === sent_string
     ) {
         return [
             {
                 search_string: sender_query,
-                description_html,
-            },
-        ];
-    } else if (from_query.startsWith(last_string) || from_me_query.startsWith(last_string)) {
-        return [
-            {
-                search_string: from_query,
                 description_html,
             },
         ];
@@ -694,7 +707,17 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
         last_operand = last_operand.slice(1);
     }
 
-    let choices = ["stream", "topic", "dm", "dm-including", "sender", "near", "from", "pm-with"];
+    let choices = [
+        "channel",
+        "topic",
+        "dm",
+        "dm-including",
+        "sender",
+        "near",
+        "from",
+        "pm-with",
+        "stream",
+    ];
     choices = choices.filter((choice) => common.phrase_match(last_operand, choice));
 
     return choices.map((choice) => {
@@ -702,6 +725,11 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
         // who have "pm-with" in their muscle memory.
         if (choice === "pm-with") {
             choice = "dm";
+        }
+        // Map results for "channel:" operator for users
+        // who have "stream" in their muscle memory.
+        if (choice === "stream") {
+            choice = "channel";
         }
         const op = [{operator: choice, operand: "", negated}];
         return format_as_suggestion(op);
@@ -818,10 +846,10 @@ export function get_search_result(query: string): Suggestion[] {
 
     // Remember to update the spectator list when changing this.
     let filterers = [
-        get_streams_filter_suggestions,
+        get_channels_filter_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
-        get_stream_suggestions,
+        get_channel_suggestions,
         get_people("sender"),
         get_people("dm"),
         get_people("dm-including"),
@@ -834,7 +862,7 @@ export function get_search_result(query: string): Suggestion[] {
 
     if (page_params.is_spectator) {
         filterers = [
-            get_stream_suggestions,
+            get_channel_suggestions,
             get_people("sender"),
             get_people("from"),
             get_topic_suggestions,

@@ -4,17 +4,18 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import {localstorage} from "./localstorage";
 import * as message_fetch from "./message_fetch";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
 
 export function initialize() {
-    // location.hash should be e.g. `#reload:12345123412312`
-    if (!location.hash.startsWith("#reload:")) {
+    // window.location.hash should be e.g. `#reload:12345123412312`
+    if (!window.location.hash.startsWith("#reload:")) {
         return;
     }
-    const hash_fragment = location.hash.slice("#".length);
+    const hash_fragment = window.location.hash.slice("#".length);
+    const trigger = "reload";
 
     // Using the token, recover the saved pre-reload data from local
     // storage.  Afterwards, we clear the reload entry from local
@@ -27,7 +28,7 @@ export function initialize() {
         // exist, but be log it so that it's available for future
         // debugging if an exception happens later.
         blueslip.info("Invalid hash change reload token");
-        narrow.changehash("");
+        message_view.changehash("", trigger);
         return;
     }
     ls.remove(hash_fragment);
@@ -68,17 +69,19 @@ export function initialize() {
         }
     }
 
-    const pointer = Number.parseInt(vars.pointer, 10);
-    const offset = Number.parseInt(vars.offset, 10);
+    // We only restore pointer and offset for the current narrow, even if there are narrows that
+    // were cached before the reload, they are no longer cached after the reload. We could possibly
+    // store the pointer and offset for these narrows but it might lead to a confusing experience if
+    // user gets back to these narrow much later (maybe days) and finds them at a random position in
+    // narrow which they didn't navigate to while they were trying to just get to the latest unread
+    // message in that narrow which will now take more effort to find.
     const narrow_pointer = Number.parseInt(vars.narrow_pointer, 10);
     const narrow_offset = Number.parseInt(vars.narrow_offset, 10);
     message_fetch.set_initial_pointer_and_offset({
-        pointer: Number.isNaN(pointer) ? undefined : pointer,
-        offset: Number.isNaN(offset) ? undefined : offset,
         narrow_pointer: Number.isNaN(narrow_pointer) ? undefined : narrow_pointer,
         narrow_offset: Number.isNaN(narrow_offset) ? undefined : narrow_offset,
     });
 
     activity.set_new_user_input(false);
-    narrow.changehash(vars.oldhash);
+    message_view.changehash(vars.oldhash, trigger);
 }

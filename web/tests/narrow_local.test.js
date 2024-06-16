@@ -10,7 +10,7 @@ const all_messages_data = mock_esm("../src/all_messages_data");
 const {Filter} = zrequire("../src/filter");
 const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
-const narrow = zrequire("narrow");
+const message_view = zrequire("message_view");
 const message_lists = zrequire("message_lists");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 
@@ -65,7 +65,7 @@ function test_with(fixture) {
 
     narrow_state.__Rewire__("get_first_unread_info", () => fixture.unread_info);
 
-    narrow.maybe_add_local_messages({
+    message_view.maybe_add_local_messages({
         id_info,
         msg_data,
     });

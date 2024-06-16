@@ -13,6 +13,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.clients import get_client
+from zerver.models.presence import PresenceSequence
 from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
 
@@ -47,6 +48,8 @@ def create_internal_realm() -> None:
             for backend_name in all_default_backend_names()
         ]
     )
+
+    PresenceSequence.objects.create(realm=realm, last_update_id=0)
 
     # Create some client objects for common requests.  Not required;
     # just ensures these get low IDs in production, and in development

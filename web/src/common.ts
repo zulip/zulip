@@ -1,6 +1,5 @@
 import $ from "jquery";
-import type {ReferenceElement} from "tippy.js";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import {$t} from "./i18n";
 
@@ -8,33 +7,7 @@ export const status_classes = "alert-error alert-success alert-info alert-warnin
 
 export function phrase_match(query: string, phrase: string): boolean {
     // match "tes" to "test" and "stream test" but not "hostess"
-    let i;
-    query = query.toLowerCase();
-
-    phrase = phrase.toLowerCase();
-    if (phrase.startsWith(query)) {
-        return true;
-    }
-
-    const parts = phrase.split(" ");
-    for (i = 0; i < parts.length; i += 1) {
-        if (parts[i].startsWith(query)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-export function copy_data_attribute_value($elem: JQuery, key: string): void {
-    // function to copy the value of data-key
-    // attribute of the element to clipboard
-    const $temp = $(document.createElement("input"));
-    $("body").append($temp);
-    $temp.val($elem.data(key)).trigger("select");
-    document.execCommand("copy");
-    $temp.remove();
-    $elem.fadeOut(250);
-    $elem.fadeIn(1000);
+    return (" " + phrase.toLowerCase()).includes(" " + query.toLowerCase());
 }
 
 const keys_map = new Map([
@@ -95,7 +68,7 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
 
 // We convert the hotkey hints used in the tooltips to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
-export function adjust_mac_tooltip_keys(hotkeys: string[]): void {
+export function adjust_mac_hotkey_hints(hotkeys: string[]): void {
     if (!has_mac_keyboard()) {
         return;
     }
@@ -113,6 +86,19 @@ export function adjust_mac_tooltip_keys(hotkeys: string[]): void {
     }
 }
 
+// We convert the Shift key with ⇧ (Level 2 Select Symbol) in the
+// popover menu hotkey hints. This helps us reduce the width of
+// the popover menus.
+export function adjust_shift_hotkey(hotkeys: string[]): boolean {
+    for (const [index, hotkey] of hotkeys.entries()) {
+        if (hotkey === "Shift") {
+            hotkeys[index] = "⇧";
+            return true;
+        }
+    }
+    return false;
+}
+
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation
 // for design details on this feature.
 function set_password_toggle_label(
@@ -122,8 +108,8 @@ function set_password_toggle_label(
 ): void {
     $(password_selector).attr("aria-label", label);
     if (tippy_tooltips) {
-        const element: ReferenceElement = $(password_selector)[0];
-        const tippy_instance = element._tippy ?? tippy(element);
+        const element: tippy.ReferenceElement = $(password_selector)[0]!;
+        const tippy_instance = element._tippy ?? tippy.default(element);
         tippy_instance.setContent(label);
     } else {
         $(password_selector).attr("title", label);

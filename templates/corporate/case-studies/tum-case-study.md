@@ -35,7 +35,7 @@ Tobias evaluated Zulip by [visiting the Zulip development
 community](/try-zulip/) to see it in action. “It takes a bit of
 time to get used to, but Zulip has the best user experience of all the
 chat apps I’ve tried,” Tobias says. “With the discussion organized by
-topic within each stream, Zulip is the only app that makes hundreds of
+topic within each channel, Zulip is the only app that makes hundreds of
 conversations manageable.”
 
 Despite initially asking to use Slack, students came to love Zulip’s
@@ -84,5 +84,5 @@ and [research](/for/research/)!
 
 
 [tum-ranking]: https://www.in.tum.de/en/the-department/profile-of-the-department/facts-figures/facts-and-figures-2020/
-[czo-patch-thread]: https://chat.zulip.org/#narrow/stream/3-backend/topic/Tornado.20performance/near/1111686
+[czo-patch-thread]: https://chat.zulip.org/#narrow/channel/3-backend/topic/Tornado.20performance/near/1111686
 [zulip-4-blog]: https://blog.zulip.com/2021/05/13/zulip-4-0-released/

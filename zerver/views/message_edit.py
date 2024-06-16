@@ -14,7 +14,12 @@ from zerver.actions.message_edit import check_update_message
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
-from zerver.lib.message import access_message, access_web_public_message, messages_for_ids
+from zerver.lib.message import (
+    access_message,
+    access_message_and_usermessage,
+    access_web_public_message,
+    messages_for_ids,
+)
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -197,9 +202,7 @@ def json_fetch_raw_message(
         message = access_web_public_message(realm, message_id)
         user_profile = None
     else:
-        (message, user_message) = access_message(
-            maybe_user_profile, message_id, get_user_message="object"
-        )
+        (message, user_message) = access_message_and_usermessage(maybe_user_profile, message_id)
         user_profile = maybe_user_profile
 
     flags = ["read"]

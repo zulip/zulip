@@ -530,28 +530,23 @@ input[type="checkbox"] {
 }
 
 #id_org_profile_preview {
-    margin-bottom: 20px;
-    display: inline-flex;
-    justify-content: space-evenly;
+    width: max-content;
+    display: flex;
+    gap: 5px;
     align-items: center;
+    margin-bottom: 20px;
 }
 
 .inline-block.organization-permissions-parent div:first-of-type {
     margin-top: 10px;
 }
 
-.language_selection_widget {
-    .title {
-        margin-bottom: 3px;
-    }
+.language_selection_widget .language_selection_button {
+    text-decoration: none;
+    color: hsl(0deg 0% 20%);
 
-    .language_selection_button {
-        text-decoration: none;
-        color: hsl(0deg 0% 20%);
-
-        .fa.fa-pencil {
-            margin-left: 5px;
-        }
+    .fa.fa-pencil {
+        margin-left: 5px;
     }
 }
 
@@ -836,8 +831,7 @@ input[type="checkbox"] {
     margin: 20px 0 0;
 }
 
-#org-join-settings,
-#org-guest-settings {
+#organization-permissions {
     .dropdown-widget-button {
         width: 325px;
         color: hsl(0deg 0% 33%);
@@ -857,7 +851,7 @@ input[type="checkbox"] {
     width: 100%;
 }
 
-#admin-default-streams-list .progressive-table-wrapper {
+#admin-default-channels-list .progressive-table-wrapper {
     max-height: calc(95vh - 280px);
 }
 
@@ -1308,10 +1302,20 @@ $option_title_width: 180px;
         }
 
         & li {
-            padding: 5px 0;
+            display: grid;
+            /* 3.5714em is 50px at 14px/1em -- the legacy height of these rows. */
+            grid-template:
+                "starting-anchor-element row-content ending-anchor-element" 3.5714em / 40px minmax(
+                    0,
+                    1fr
+                )
+                minmax(34px, auto);
+            align-items: center;
             outline: none;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition:
+                background-color 0.2s ease,
+                border-bottom 0.2s ease;
             border-bottom: 1px solid hsl(0deg 0% 93%);
 
             &:last-of-type .text {
@@ -1323,50 +1327,33 @@ $option_title_width: 180px;
                 border-bottom: 1px solid transparent;
             }
 
-            .text,
-            .icon,
-            .locked {
-                display: inline-block;
-                vertical-align: top;
+            .icon {
+                font-size: 1.4em;
+                text-align: center;
+                color: hsl(0deg 0% 53%);
             }
 
             .text {
-                width: calc(100% - 90px);
-                padding: 10px 12px 10px 0;
-            }
-
-            .icon {
-                width: 18px;
-                height: 18px;
-                margin: 10px;
-                text-align: center;
-
-                font-size: 1.4em;
-                color: hsl(0deg 0% 53%);
-
-                background-size: cover;
-                background-repeat: no-repeat;
+                /* Hyphenate for internationalization */
+                hyphens: auto;
             }
 
             .zulip-icon-smart-toy {
                 font-size: 1.6em;
-                margin: 8px 11px 10px 9px;
             }
 
             .locked {
-                width: 18px;
-                height: 18px;
-                margin: 14px 8px 6px;
-
                 font-size: 1em;
+                text-align: center;
                 color: hsl(0deg 0% 62%);
-
-                background-size: cover;
-                background-repeat: no-repeat;
             }
         }
 
         .org-settings-list {
+            display: none;
+        }
+
+        .hide-org-settings {
             display: none;
         }
 
@@ -1488,7 +1475,7 @@ $option_title_width: 180px;
     gap: 15px;
 
     .jitsi_server_url_custom_input_label {
-        margin-bottom: 3px;
+        margin-bottom: var(--margin-bottom-field-description);
     }
 }
 
@@ -1532,13 +1519,6 @@ $option_title_width: 180px;
     #show_my_user_profile_modal i {
         padding-left: 2px;
         vertical-align: middle;
-    }
-
-    .custom_user_field,
-    .user-name-section {
-        .settings-profile-field-user-hint {
-            color: var(--color-text-settings-field-hint);
-        }
     }
 }
 
@@ -1596,8 +1576,23 @@ $option_title_width: 180px;
     }
 }
 
-.dropdown-title {
-    margin-bottom: 3px;
+.settings-field-label {
+    margin-bottom: var(--margin-bottom-field-description);
+}
+
+.settings-profile-user-field-hint {
+    color: var(--color-text-settings-field-hint);
+    /* We effectively eliminate the margin-bottom on
+       .settings-field-label by pulling .field-hint
+       up a corresponding negative value. This cinches
+       things up a little tighter, given the generous
+       line-height (20px) on <label> elements, though
+       note well that that comes care of Bootstrap. */
+    margin-top: calc(var(--margin-bottom-field-description) * -1.5);
+    /* Maintain the same margin-bottom value as appears
+       with .settings-field-label to display text-input
+       combinations uniformly throughout the settings UI. */
+    margin-bottom: var(--margin-bottom-field-description);
 }
 
 .profile-field-choices {
@@ -1653,10 +1648,6 @@ $option_title_width: 180px;
     position: relative;
     margin-top: 13px;
     display: inline-block;
-}
-
-.hide-org-settings {
-    display: none;
 }
 
 .collapse-settings-btn {
@@ -1886,7 +1877,26 @@ $option_title_width: 180px;
         display: inline-block;
     }
 
+    .user_filters {
+        display: flex;
+        float: right;
+        flex-wrap: wrap;
+
+        & .dropdown-widget-button {
+            height: 30px;
+            max-width: 160px;
+            margin-right: 12px;
+            margin-top: 12px;
+        }
+    }
+
     & input.search {
+        /* Without explicitly mentioning the height, it used be just a little
+        bit short of 20px, since we need to maintain the same height with
+        .dropdown-widget-button, we need to explicitly set the height here.
+        We could set the height inside .user_filters but that would make
+        the height a tiny bit inconsistent on pages without .user_filters. */
+        height: 20px;
         float: right;
         font-size: 1em;
         max-width: 160px;

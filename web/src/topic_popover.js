@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
-import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
+import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
@@ -15,11 +15,13 @@ import * as stream_popover from "./stream_popover";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_topics from "./user_topics";
+import * as util from "./util";
 
 export function initialize() {
     popover_menus.register_popover_menu(
         "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
         {
+            theme: "popover-menu",
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
                 popover_menus.popover_instances.topics_menu = instance;
@@ -33,14 +35,14 @@ export function initialize() {
                     const $elt = $(instance.reference);
                     stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
                     topic_name = $elt.attr("data-topic-name");
-                    url = new URL($elt.attr("data-topic-url"), realm.realm_uri);
+                    url = new URL($elt.attr("data-topic-url"), realm.realm_url);
                 } else {
                     const $elt = $(instance.reference)
                         .closest(".topic-sidebar-menu-icon")
                         .expectOne();
                     const $stream_li = $elt.closest(".narrow-filter").expectOne();
                     topic_name = $elt.closest("li").expectOne().attr("data-topic-name");
-                    url = $elt.closest("li").find(".topic-name").expectOne().prop("href");
+                    url = $elt.closest("li").find(".sidebar-topic-name").expectOne().prop("href");
                     stream_id = stream_popover.elem_to_stream_id($stream_li);
                 }
 
@@ -50,7 +52,7 @@ export function initialize() {
                     url,
                 });
                 instance.setContent(
-                    ui_util.parse_html(render_topic_sidebar_actions(instance.context)),
+                    ui_util.parse_html(render_left_sidebar_topic_actions_popover(instance.context)),
                 );
             },
             onMount(instance) {
@@ -62,52 +64,48 @@ export function initialize() {
                     return;
                 }
 
-                $popper.on("click", ".tab-option", (e) => {
-                    $(".tab-option").removeClass("selected-tab");
-                    $(e.currentTarget).addClass("selected-tab");
+                $popper.on("change", "input[name='sidebar-topic-visibility-select']", (e) => {
+                    const start_time = Date.now();
+                    const visibility_policy = Number.parseInt(
+                        $(e.currentTarget).attr("data-visibility-policy"),
+                        10,
+                    );
 
-                    const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
+                    const success_cb = () => {
+                        setTimeout(
+                            () => {
+                                popover_menus.hide_current_popover_if_visible(instance);
+                            },
+                            util.get_remaining_time(start_time, 500),
+                        );
+                    };
+
+                    const error_cb = () => {
+                        const prev_visibility_policy = user_topics.get_topic_visibility_policy(
+                            stream_id,
+                            topic_name,
+                        );
+                        const $prev_visibility_policy_input = $(e.currentTarget)
+                            .parent()
+                            .find(`input[data-visibility-policy="${prev_visibility_policy}"]`);
+                        setTimeout(
+                            () => {
+                                $prev_visibility_policy_input.prop("checked", true);
+                            },
+                            util.get_remaining_time(start_time, 500),
+                        );
+                    };
+
                     user_topics.set_user_topic_visibility_policy(
                         stream_id,
                         topic_name,
                         visibility_policy,
+                        false,
+                        false,
+                        undefined,
+                        success_cb,
+                        error_cb,
                     );
-                });
-
-                $popper.one("click", ".sidebar-popover-unmute-topic", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.UNMUTED,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-remove-unmute", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.INHERIT,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-mute-topic", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.MUTED,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-remove-mute", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.INHERIT,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {

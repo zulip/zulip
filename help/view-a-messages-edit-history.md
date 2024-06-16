@@ -5,7 +5,7 @@ administrators can [disable message edit
 history](/help/disable-message-edit-history).
 
 Messages with any content edits are labeled **EDITED**, while messages that have
-only been [moved to a new stream](/help/move-content-to-another-stream) or
+only been [moved to a new channel](/help/move-content-to-another-channel) or
 [topic](/help/move-content-to-another-topic) are labeled **MOVED**. In
 organizations where message edit history is
 [disabled](/help/disable-message-edit-history), moved messages are simply marked

@@ -1,7 +1,7 @@
 {{#> compose_banner }}
     <p class="banner_message">
         {{#if (eq muted_narrow "stream")}}
-            {{#tr}}Your message was sent to a stream you have muted.{{/tr}}
+            {{#tr}}Your message was sent to a channel you have muted.{{/tr}}
         {{else if (eq muted_narrow "topic")}}
             {{#tr}}Your message was sent to a topic you have muted.{{/tr}}
         {{/if}}

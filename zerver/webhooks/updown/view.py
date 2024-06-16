@@ -88,7 +88,7 @@ def api_updown_webhook(
 
 
 def get_event_type(event: WildValue) -> str:
-    event_type_match = re.match("check.(.*)", event["event"].tame(check_string))
+    event_type_match = re.match(r"check.(.*)", event["event"].tame(check_string))
     if event_type_match:
         event_type = event_type_match.group(1)
         if event_type in EVENT_TYPE_BODY_MAPPER:

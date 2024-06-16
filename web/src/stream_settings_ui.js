@@ -1,9 +1,11 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
+import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
@@ -13,9 +15,10 @@ import * as components from "./components";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
+import * as dialog_widget from "./dialog_widget";
 import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
@@ -223,7 +226,7 @@ export function add_sub_to_table(sub) {
         sub: stream_settings_data.get_sub_for_settings(sub),
     });
     scroll_util
-        .get_content_element($("#streams_overlay_container .settings"))
+        .get_content_element($("#channels_overlay_container .settings"))
         .append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
@@ -244,8 +247,30 @@ export function add_sub_to_table(sub) {
             render_stream_creation_confirmation_banner(context),
         );
         stream_create.reset_created_stream();
+        // goto topic `stream events` of the newly created stream
+        browser_history.go_to_location(hash_util.by_stream_url(sub.stream_id));
+        if (stream_create.should_show_first_stream_created_modal()) {
+            stream_create.set_first_stream_created_modal_shown();
+            show_first_stream_created_modal(sub);
+        }
     }
     update_empty_left_panel_message();
+}
+function show_first_stream_created_modal(stream) {
+    dialog_widget.launch({
+        html_heading: $t_html(
+            {defaultMessage: "Channel <b><z-stream></z-stream></b> created!"},
+            {
+                "z-stream": () => render_inline_decorated_stream_name({stream}),
+            },
+        ),
+        html_body: render_first_stream_created_modal({stream}),
+        id: "first_stream_created_modal",
+        on_click() {},
+        html_submit_button: $t({defaultMessage: "Continue"}),
+        close_on_submit: true,
+        single_footer_button: true,
+    });
 }
 
 export function remove_stream(stream_id) {
@@ -323,8 +348,13 @@ export function update_settings_for_unsubscribed(slim_sub) {
 }
 
 function triage_stream(left_panel_params, sub) {
-    if (left_panel_params.subscribed_only && !sub.subscribed) {
+    if (left_panel_params.show_subscribed && !sub.subscribed) {
         // reject non-subscribed streams
+        return "rejected";
+    }
+
+    if (left_panel_params.show_not_subscribed && sub.subscribed) {
+        // reject subscribed streams
         return "rejected";
     }
 
@@ -387,7 +417,7 @@ export function render_left_panel_superset() {
         subscriptions: stream_settings_data.get_updated_unsorted_subs(),
     });
 
-    scroll_util.get_content_element($("#streams_overlay_container .streams-list")).html(html);
+    scroll_util.get_content_element($("#channels_overlay_container .streams-list")).html(html);
 }
 
 export function update_empty_left_panel_message() {
@@ -400,7 +430,11 @@ export function update_empty_left_panel_message() {
         // displayed in panel or not.
         has_streams =
             stream_data.subscribed_subs().length ||
-            $("#streams_overlay_container .stream-row:not(.notdisplayed)").length;
+            $("#channels_overlay_container .stream-row:not(.notdisplayed)").length;
+    } else if (stream_ui_updates.is_not_subscribed_stream_tab_active()) {
+        has_streams =
+            stream_data.unsubscribed_subs().length ||
+            $("#channels_overlay_container .stream-row:not(.notdisplayed)").length;
     } else {
         has_streams = stream_data.get_unsorted_subs().length;
     }
@@ -408,17 +442,18 @@ export function update_empty_left_panel_message() {
         $(".no-streams-to-show").hide();
         return;
     }
+    $(".no-streams-to-show").children().hide();
     if (stream_ui_updates.is_subscribed_stream_tab_active()) {
-        $(".all_streams_tab_empty_text").hide();
         $(".subscribed_streams_tab_empty_text").show();
+    } else if (stream_ui_updates.is_not_subscribed_stream_tab_active()) {
+        $(".not_subscribed_streams_tab_empty_text").show();
     } else {
-        $(".subscribed_streams_tab_empty_text").hide();
         $(".all_streams_tab_empty_text").show();
     }
     $(".no-streams-to-show").show();
 }
 
-// LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
+// LeftPanelParams { input: String, show_subscribed: Boolean, sort_order: String }
 export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     // We only get left_panel_params passed in from tests.  Real
     // code calls get_left_panel_params().
@@ -432,7 +467,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
 
     const stream_ids = [];
 
-    for (const row of $("#streams_overlay_container .stream-row")) {
+    for (const row of $("#channels_overlay_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
     }
@@ -447,7 +482,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         hidden_ids.add(stream_id);
     }
 
-    for (const row of $("#streams_overlay_container .stream-row")) {
+    for (const row of $("#channels_overlay_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
@@ -466,7 +501,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
 
     for (const stream_id of all_stream_ids) {
         scroll_util
-            .get_content_element($("#streams_overlay_container .streams-list"))
+            .get_content_element($("#channels_overlay_container .streams-list"))
             .append(widgets.get(stream_id));
     }
     update_empty_left_panel_message();
@@ -482,7 +517,8 @@ export function get_left_panel_params() {
     const input = $search_box.expectOne().val().trim();
     const params = {
         input,
-        subscribed_only: stream_ui_updates.subscribed_only,
+        show_subscribed: stream_ui_updates.show_subscribed,
+        show_not_subscribed: stream_ui_updates.show_not_subscribed,
         sort_order,
     };
     return params;
@@ -498,10 +534,23 @@ export function switch_stream_tab(tab_name) {
         use `toggler.goto`.
     */
 
-    if (tab_name === "all-streams") {
-        stream_ui_updates.set_subscribed_only(false);
-    } else if (tab_name === "subscribed") {
-        stream_ui_updates.set_subscribed_only(true);
+    switch (tab_name) {
+        case "all-streams": {
+            stream_ui_updates.set_show_subscribed(false);
+            stream_ui_updates.set_show_not_subscribed(false);
+            break;
+        }
+        case "subscribed": {
+            stream_ui_updates.set_show_subscribed(true);
+            stream_ui_updates.set_show_not_subscribed(false);
+            break;
+        }
+        case "not-subscribed": {
+            stream_ui_updates.set_show_subscribed(false);
+            stream_ui_updates.set_show_not_subscribed(true);
+            break;
+        }
+        // No default
     }
 
     redraw_left_panel();
@@ -568,16 +617,17 @@ export function setup_page(callback) {
             },
         });
 
-        sort_toggler.get().prependTo("#streams_overlay_container .list-toggler-container");
+        sort_toggler.get().prependTo("#channels_overlay_container .list-toggler-container");
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Stream settings".
-        stream_ui_updates.set_subscribed_only(true);
+        stream_ui_updates.set_show_subscribed(true);
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
-                {label: $t({defaultMessage: "All streams"}), key: "all-streams"},
+                {label: $t({defaultMessage: "Not subscribed"}), key: "not-subscribed"},
+                {label: $t({defaultMessage: "All channels"}), key: "all-streams"},
             ],
             callback(_value, key) {
                 switch_stream_tab(key);
@@ -586,10 +636,11 @@ export function setup_page(callback) {
 
         if (should_list_all_streams()) {
             const $toggler_elem = toggler.get();
-            $("#streams_overlay_container .list-toggler-container").prepend($toggler_elem);
+            $("#channels_overlay_container .list-toggler-container").prepend($toggler_elem);
         }
         if (current_user.is_guest) {
             toggler.disable_tab("all-streams");
+            toggler.disable_tab("not-subscribed");
         }
 
         // show the "Stream settings" header by default.
@@ -597,7 +648,7 @@ export function setup_page(callback) {
     }
 
     function populate_and_fill() {
-        $("#streams_overlay_container").empty();
+        $("#channels_overlay_container").empty();
 
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
@@ -633,7 +684,7 @@ export function setup_page(callback) {
         };
 
         const rendered = render_stream_settings_overlay(template_data);
-        $("#streams_overlay_container").append($(rendered));
+        $("#channels_overlay_container").append($(rendered));
 
         render_left_panel_superset();
         initialize_components();
@@ -706,7 +757,7 @@ function show_right_section() {
 }
 
 export function change_state(section, left_side_tab, right_side_tab) {
-    // if in #streams/new form.
+    // if in #channels/new form.
     if (section === "new") {
         do_open_create_stream();
         show_right_section();
@@ -715,6 +766,12 @@ export function change_state(section, left_side_tab, right_side_tab) {
 
     if (section === "all") {
         toggler.goto("all-streams");
+        stream_edit.empty_right_panel();
+        return;
+    }
+
+    if (section === "notsubscribed") {
+        toggler.goto("not-subscribed");
         stream_edit.empty_right_panel();
         return;
     }
@@ -769,9 +826,16 @@ export function launch(section, left_side_tab, right_side_tab) {
 
 export function switch_rows(event) {
     const active_data = stream_settings_components.get_active_data();
+    const $add_subscriber_pill_input = $(".add_subscribers_container .input");
     let $switch_row;
     if (hash_parser.is_create_new_stream_narrow()) {
         // Prevent switching stream rows when creating a new stream
+        return false;
+    } else if (
+        hash_parser.is_subscribers_section_opened_for_stream() &&
+        $add_subscriber_pill_input.is(":focus")
+    ) {
+        // Prevent switching stream rows when adding a subscriber
         return false;
     } else if (!active_data.id || active_data.$row.hasClass("notdisplayed")) {
         $switch_row = $("div.stream-row:not(.notdisplayed)").first();
@@ -813,10 +877,27 @@ export function toggle_view(event) {
     const active_data = stream_settings_components.get_active_data();
     const stream_filter_tab = active_data.$tabs.first().text();
 
-    if (event === "right_arrow" && stream_filter_tab === "Subscribed") {
-        toggler.goto("all-streams");
-    } else if (event === "left_arrow" && stream_filter_tab === "All streams") {
-        toggler.goto("subscribed");
+    switch (event) {
+        case "right_arrow":
+            switch (stream_filter_tab) {
+                case "Subscribed":
+                    toggler.goto("not-subscribed");
+                    break;
+                case "Not subscribed":
+                    toggler.goto("all-streams");
+                    break;
+            }
+            break;
+        case "left_arrow":
+            switch (stream_filter_tab) {
+                case "Not subscribed":
+                    toggler.goto("subscribed");
+                    break;
+                case "All channels":
+                    toggler.goto("not-subscribed");
+                    break;
+            }
+            break;
     }
 }
 
@@ -848,7 +929,7 @@ export function do_open_create_stream() {
 
 export function open_create_stream() {
     do_open_create_stream();
-    browser_history.update("#streams/new");
+    browser_history.update("#channels/new");
 }
 
 export function update_stream_privacy_choices(policy) {
@@ -869,7 +950,7 @@ export function update_stream_privacy_choices(policy) {
     if (policy === "create_private_stream_policy") {
         stream_ui_updates.update_private_stream_privacy_option_state($container);
     }
-    if (policy === "create_public_stream_policy") {
+    if (policy === "can_create_public_channel_group") {
         stream_settings_components.update_public_stream_privacy_option_state($container);
     }
     if (policy === "create_web_public_stream_policy") {
@@ -878,12 +959,12 @@ export function update_stream_privacy_choices(policy) {
 }
 
 export function initialize() {
-    $("#streams_overlay_container").on("click", ".create_stream_button", (e) => {
+    $("#channels_overlay_container").on("click", ".create_stream_button", (e) => {
         e.preventDefault();
         open_create_stream();
     });
 
-    $("#streams_overlay_container").on("click", "#stream_creation_form [data-dismiss]", (e) => {
+    $("#channels_overlay_container").on("click", "#stream_creation_form [data-dismiss]", (e) => {
         e.preventDefault();
         // we want to make sure that the click is not just a simulated
         // click; this fixes an issue where hitting "Enter" would
@@ -893,17 +974,17 @@ export function initialize() {
         }
     });
 
-    $("#streams_overlay_container").on("click", ".email-address", function () {
+    $("#channels_overlay_container").on("click", ".email-address", function () {
         selectText(this);
     });
 
-    $("#streams_overlay_container").on(
+    $("#channels_overlay_container").on(
         "click",
         ".stream-row, .create_stream_button",
         show_right_section,
     );
 
-    $("#streams_overlay_container").on("click", ".fa-chevron-left", () => {
+    $("#channels_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $(".subscriptions-header").removeClass("slide-left");
     });

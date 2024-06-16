@@ -40,19 +40,21 @@ providers like Amazon Web Services and Mailgun to host Zulip Cloud.
 We’re committed to the compliance of all parties including you,
 third-parties, and us.
 
-To deliver the Zulip Cloud service, Kandra Labs, Inc. acts as a
-compliant data processor, with each of our customers acting as the
-data controller.  Kandra Labs receives personal data from our
-customers in the context of providing our Zulip Cloud team chat
-services to the customer.
+- **Zulip Cloud:** To deliver the Zulip Cloud service, Kandra Labs, Inc. acts as
+a compliant data processor, with each of our customers acting as the data
+controller.  Kandra Labs receives personal data from our customers in the
+context of providing our Zulip Cloud team chat services to the customer.
 
-Kandra Labs also acts as a data processor to deliver the
-[Mobile Push Notification Service][mobile-push], which uses the same
-hosting infrastructure and terms of service as Zulip Cloud.
+- **Self-hosted deployments:** Kandra Labs also acts as a data processor to
+deliver the [Mobile Push Notification Service][mobile-push], which uses the same
+hosting infrastructure and terms of service as Zulip Cloud. The [on-premises
+section](#gdpr-compliance-on-premises) of this page discusses how the Zulip
+on-premises software works in relation to GDPR compliance.
 
-The [on-premises section](#gdpr-compliance-on-premises) of this page
-discusses how the Zulip on-premises software works in relation to GDPR
-compliance.
+A [Data Processing Addendum
+(DPA)](https://zulip.com/static/images/policies/Zulip-Data-Processing-Addendum.pdf)
+is incorporated into Zulip's [Terms of
+Service](https://zulip.com/policies/terms).
 
 [mobile-push]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
 
@@ -131,7 +133,7 @@ may be useful:
 * The Zulip server comes with a [command-line tool][management-commands],
   `manage.py export_single_user`, which is a variant of the main server
   [export tool][export-and-import-tool], that exports a single Zulip
-  user's account details, preferences, stream subscriptions, and message
+  user's account details, preferences, channel subscriptions, and message
   history in a structured JSON format.
 * The Django management shell (`manage.py shell`) and database shell
   (`manage.py dbshell`) allows you to query, access, edit, and delete

@@ -2,11 +2,10 @@ import logging
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-from typing import Callable, Dict, Optional, Sequence, Tuple, Type, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection, models
-from django.db.models import F
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 from typing_extensions import TypeAlias, override
 
@@ -312,27 +311,47 @@ def do_increment_logging_stat(
         return
 
     table = stat.data_collector.output_table
+    id_args: Dict[str, Union[int, None]] = {}
+    conflict_args: List[str] = []
     if table == RealmCount:
         assert isinstance(model_object_for_bucket, Realm)
-        id_args: Dict[
-            str, Optional[Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"]]
-        ] = {"realm": model_object_for_bucket}
+        id_args = {"realm_id": model_object_for_bucket.id}
+        conflict_args = ["realm_id"]
     elif table == UserCount:
         assert isinstance(model_object_for_bucket, UserProfile)
-        id_args = {"realm": model_object_for_bucket.realm, "user": model_object_for_bucket}
+        id_args = {
+            "realm_id": model_object_for_bucket.realm_id,
+            "user_id": model_object_for_bucket.id,
+        }
+        conflict_args = ["user_id"]
     elif table == StreamCount:
         assert isinstance(model_object_for_bucket, Stream)
-        id_args = {"realm": model_object_for_bucket.realm, "stream": model_object_for_bucket}
+        id_args = {
+            "realm_id": model_object_for_bucket.realm_id,
+            "stream_id": model_object_for_bucket.id,
+        }
+        conflict_args = ["stream_id"]
     elif table == RemoteInstallationCount:
         assert isinstance(model_object_for_bucket, RemoteZulipServer)
-        id_args = {"server": model_object_for_bucket, "remote_id": None}
+        id_args = {"server_id": model_object_for_bucket.id, "remote_id": None}
+        conflict_args = ["server_id"]
     elif table == RemoteRealmCount:
         assert isinstance(model_object_for_bucket, RemoteRealm)
+        # For RemoteRealmCount (e.g. `mobile_pushes_forwarded::day`),
+        # we have no `remote_id` nor `realm_id`, since they are not
+        # imported from the remote server, which is the source of
+        # truth of those two columns.  Their "ON CONFLICT" is thus the
+        # only unique key we have, which is `remote_realm_id`, and not
+        # `server_id` / `realm_id`.
         id_args = {
-            "server": model_object_for_bucket.server,
-            "remote_realm": model_object_for_bucket,
+            "server_id": model_object_for_bucket.server_id,
+            "remote_realm_id": model_object_for_bucket.id,
             "remote_id": None,
+            "realm_id": None,
         }
+        conflict_args = [
+            "remote_realm_id",
+        ]
     else:
         raise AssertionError("Unsupported CountStat output_table")
 
@@ -343,16 +362,49 @@ def do_increment_logging_stat(
     else:
         raise AssertionError("Unsupported CountStat frequency")
 
-    row, created = table._default_manager.get_or_create(
-        property=stat.property,
-        subgroup=subgroup,
-        end_time=end_time,
-        defaults={"value": increment},
-        **id_args,
+    is_subgroup: SQL = SQL("NULL")
+    if subgroup is not None:
+        is_subgroup = SQL("NOT NULL")
+        # For backwards consistency, we cast the subgroup to a string
+        # in Python; this emulates the behaviour of `get_or_create`,
+        # which was previously used in this function, and performed
+        # this cast because the `subgroup` column is defined as a
+        # `CharField`.  Omitting this explicit cast causes a subgroup
+        # of the boolean False to be passed as the PostgreSQL false,
+        # which it stringifies as the lower-case `'false'`, not the
+        # initial-case `'False'` if Python stringifies it.
+        #
+        # Other parts of the system (e.g. count_message_by_user_query)
+        # already use PostgreSQL to cast bools to strings, resulting
+        # in `subgroup` values of lower-case `'false'` -- for example
+        # in `messages_sent:is_bot:hour`.  Fixing this inconsistency
+        # via a migration is complicated by these records being
+        # exchanged over the wire from remote servers.
+        subgroup = str(subgroup)
+        conflict_args.append("subgroup")
+
+    id_column_names = SQL(", ").join(map(Identifier, id_args.keys()))
+    id_values = SQL(", ").join(map(Literal, id_args.values()))
+    conflict_columns = SQL(", ").join(map(Identifier, conflict_args))
+
+    sql_query = SQL(
+        """
+        INSERT INTO {table_name}(property, subgroup, end_time, value, {id_column_names})
+        VALUES (%s, %s, %s, %s, {id_values})
+        ON CONFLICT (property, end_time, {conflict_columns})
+        WHERE subgroup IS {is_subgroup}
+        DO UPDATE SET
+            value = {table_name}.value + EXCLUDED.value
+        """
+    ).format(
+        table_name=Identifier(table._meta.db_table),
+        id_column_names=id_column_names,
+        id_values=id_values,
+        conflict_columns=conflict_columns,
+        is_subgroup=is_subgroup,
     )
-    if not created:
-        row.value = F("value") + increment
-        row.save(update_fields=["value"])
+    with connection.cursor() as cursor:
+        cursor.execute(sql_query, [stat.property, subgroup, end_time, increment])
 
 
 def do_drop_all_analytics_tables() -> None:
@@ -431,6 +483,40 @@ def sql_data_collector(
         return do_pull_by_sql_query(property, start_time, end_time, query, group_by)
 
     return DataCollector(output_table, pull_function)
+
+
+def count_upload_space_used_by_realm_query(realm: Optional[Realm]) -> QueryFn:
+    if realm is None:
+        realm_clause: Composable = SQL("")
+    else:
+        realm_clause = SQL("zerver_attachment.realm_id = {} AND").format(Literal(realm.id))
+
+    # Note: This query currently has to go through the entire table,
+    # summing all the sizes of attachments for every realm. This can be improved
+    # by having a query which looks at the latest CountStat for each realm,
+    # and sums it with only the new attachments.
+    # There'd be additional complexity added by the fact that attachments can
+    # also be deleted. Partially this can be accounted for by subtracting
+    # ArchivedAttachment sizes, but there's still the issue of attachments
+    # which can be directly deleted via the API.
+
+    return lambda kwargs: SQL(
+        """
+            INSERT INTO analytics_realmcount (realm_id, property, end_time, value)
+            SELECT
+                zerver_attachment.realm_id,
+                %(property)s,
+                %(time_end)s,
+                COALESCE(SUM(zerver_attachment.size), 0)
+            FROM
+                zerver_attachment
+            WHERE
+                {realm_clause}
+                zerver_attachment.create_time < %(time_end)s
+            GROUP BY
+                zerver_attachment.realm_id
+        """
+    ).format(**kwargs, realm_clause=realm_clause)
 
 
 def do_pull_minutes_active(
@@ -592,38 +678,11 @@ def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
     ).format(**kwargs, realm_clause=realm_clause)
 
 
-# Hardcodes the query needed by active_users:is_bot:day, since that is
-# currently the only stat that uses this.
-def count_user_by_realm_query(realm: Optional[Realm]) -> QueryFn:
-    if realm is None:
-        realm_clause: Composable = SQL("")
-    else:
-        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
-    return lambda kwargs: SQL(
-        """
-    INSERT INTO analytics_realmcount
-        (realm_id, value, property, subgroup, end_time)
-    SELECT
-        zerver_realm.id, count(*), %(property)s, {subgroup}, %(time_end)s
-    FROM zerver_realm
-    JOIN zerver_userprofile
-    ON
-        zerver_realm.id = zerver_userprofile.realm_id
-    WHERE
-        zerver_realm.date_created < %(time_end)s AND
-        zerver_userprofile.date_joined >= %(time_start)s AND
-        zerver_userprofile.date_joined < %(time_end)s AND
-        {realm_clause}
-        zerver_userprofile.is_active = TRUE
-    GROUP BY zerver_realm.id {group_by_clause}
-"""
-    ).format(**kwargs, realm_clause=realm_clause)
-
-
-# Currently hardcodes the query needed for active_users_audit:is_bot:day.
-# Assumes that a user cannot have two RealmAuditLog entries with the same event_time and
-# event_type in [RealmAuditLog.USER_CREATED, USER_DEACTIVATED, etc].
-# In particular, it's important to ensure that migrations don't cause that to happen.
+# Hardcodes the query needed for active_users_audit:is_bot:day.
+# Assumes that a user cannot have two RealmAuditLog entries with the
+# same event_time and event_type in [RealmAuditLog.USER_CREATED,
+# USER_DEACTIVATED, etc].  In particular, it's important to ensure
+# that migrations don't cause that to happen.
 def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
@@ -631,28 +690,27 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
         realm_clause = SQL("realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
         """
-    INSERT INTO analytics_usercount
-        (user_id, realm_id, value, property, subgroup, end_time)
+    INSERT INTO analytics_realmcount
+        (realm_id, value, property, subgroup, end_time)
     SELECT
-        ral1.modified_user_id, ral1.realm_id, 1, %(property)s, {subgroup}, %(time_end)s
-    FROM zerver_realmauditlog ral1
+        zerver_userprofile.realm_id, count(*), %(property)s, {subgroup}, %(time_end)s
+    FROM zerver_userprofile
     JOIN (
-        SELECT modified_user_id, max(event_time) AS max_event_time
-        FROM zerver_realmauditlog
-        WHERE
-            event_type in ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated}) AND
-            {realm_clause}
-            event_time < %(time_end)s
-        GROUP BY modified_user_id
-    ) ral2
-    ON
-        ral1.event_time = max_event_time AND
-        ral1.modified_user_id = ral2.modified_user_id
-    JOIN zerver_userprofile
-    ON
-        ral1.modified_user_id = zerver_userprofile.id
+            SELECT DISTINCT ON (modified_user_id)
+                    modified_user_id, event_type
+            FROM
+                    zerver_realmauditlog
+            WHERE
+                    event_type IN ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated}) AND
+                    {realm_clause}
+                    event_time < %(time_end)s
+            ORDER BY
+                    modified_user_id,
+                    event_time DESC
+    ) last_user_event ON last_user_event.modified_user_id = zerver_userprofile.id
     WHERE
-        ral1.event_type in ({user_created}, {user_activated}, {user_reactivated})
+        last_user_event.event_type in ({user_created}, {user_activated}, {user_reactivated})
+    GROUP BY zerver_userprofile.realm_id {group_by_clause}
     """
     ).format(
         **kwargs,
@@ -698,29 +756,45 @@ def count_realm_active_humans_query(realm: Optional[Realm]) -> QueryFn:
     INSERT INTO analytics_realmcount
         (realm_id, value, property, subgroup, end_time)
     SELECT
-        usercount1.realm_id, count(*), %(property)s, NULL, %(time_end)s
+            active_usercount.realm_id, count(*), %(property)s, NULL, %(time_end)s
     FROM (
-        SELECT realm_id, user_id
-        FROM analytics_usercount
-        WHERE
-            property = 'active_users_audit:is_bot:day' AND
-            subgroup = 'false' AND
-            {realm_clause}
-            end_time = %(time_end)s
-    ) usercount1
+            SELECT
+                    realm_id,
+                    user_id
+            FROM
+                    analytics_usercount
+            WHERE
+                    property = '15day_actives::day'
+                    {realm_clause}
+                    AND end_time = %(time_end)s
+    ) active_usercount
+    JOIN zerver_userprofile ON active_usercount.user_id = zerver_userprofile.id
     JOIN (
-        SELECT realm_id, user_id
-        FROM analytics_usercount
-        WHERE
-            property = '15day_actives::day' AND
-            {realm_clause}
-            end_time = %(time_end)s
-    ) usercount2
-    ON
-        usercount1.user_id = usercount2.user_id
-    GROUP BY usercount1.realm_id
+            SELECT DISTINCT ON (modified_user_id)
+                    modified_user_id, event_type
+            FROM
+                    zerver_realmauditlog
+            WHERE
+                    event_type IN ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated})
+                    AND event_time < %(time_end)s
+            ORDER BY
+                    modified_user_id,
+                    event_time DESC
+    ) last_user_event ON last_user_event.modified_user_id = active_usercount.user_id
+    WHERE
+            NOT zerver_userprofile.is_bot
+            AND event_type IN ({user_created}, {user_activated}, {user_reactivated})
+    GROUP BY
+            active_usercount.realm_id
 """
-    ).format(**kwargs, realm_clause=realm_clause)
+    ).format(
+        **kwargs,
+        user_created=Literal(RealmAuditLog.USER_CREATED),
+        user_activated=Literal(RealmAuditLog.USER_ACTIVATED),
+        user_deactivated=Literal(RealmAuditLog.USER_DEACTIVATED),
+        user_reactivated=Literal(RealmAuditLog.USER_REACTIVATED),
+        realm_clause=realm_clause,
+    )
 
 
 # Currently unused and untested
@@ -776,40 +850,19 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
             ),
             CountStat.DAY,
         ),
-        # Number of users stats
-        # Stats that count the number of active users in the UserProfile.is_active sense.
-        # 'active_users_audit:is_bot:day' is the canonical record of which users were
-        # active on which days (in the UserProfile.is_active sense).
+        # Counts the number of active users in the UserProfile.is_active sense.
         # Important that this stay a daily stat, so that 'realm_active_humans::day' works as expected.
         CountStat(
             "active_users_audit:is_bot:day",
             sql_data_collector(
-                UserCount, check_realmauditlog_by_user_query(realm), (UserProfile, "is_bot")
+                RealmCount, check_realmauditlog_by_user_query(realm), (UserProfile, "is_bot")
             ),
             CountStat.DAY,
         ),
-        # Important note: LoggingCountStat objects aren't passed the
-        # Realm argument, because by nature they have a logging
-        # structure, not a pull-from-database structure, so there's no
-        # way to compute them for a single realm after the fact (the
-        # use case for passing a Realm argument).
-        # Sanity check on 'active_users_audit:is_bot:day', and a archetype for future LoggingCountStats.
-        # In RealmCount, 'active_users_audit:is_bot:day' should be the partial
-        # sum sequence of 'active_users_log:is_bot:day', for any realm that
-        # started after the latter stat was introduced.
-        # Included in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER.
-        LoggingCountStat("active_users_log:is_bot:day", RealmCount, CountStat.DAY),
-        # Another sanity check on 'active_users_audit:is_bot:day'. Is only an
-        # approximation, e.g. if a user is deactivated between the end of the
-        # day and when this stat is run, they won't be counted. However, is the
-        # simplest of the three to inspect by hand.
         CountStat(
-            "active_users:is_bot:day",
-            sql_data_collector(
-                RealmCount, count_user_by_realm_query(realm), (UserProfile, "is_bot")
-            ),
+            "upload_quota_used_bytes::day",
+            sql_data_collector(RealmCount, count_upload_space_used_by_realm_query(realm), None),
             CountStat.DAY,
-            interval=TIMEDELTA_MAX,
         ),
         # Messages read stats.  messages_read::hour is the total
         # number of messages read, whereas
@@ -861,7 +914,7 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
             "realm_active_humans::day",
             sql_data_collector(RealmCount, count_realm_active_humans_query(realm), None),
             CountStat.DAY,
-            dependencies=["active_users_audit:is_bot:day", "15day_actives::day"],
+            dependencies=["15day_actives::day"],
         ),
     ]
 
@@ -900,11 +953,12 @@ BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES = [
 # the stat is still in the future). As these logging counts are designed
 # to be used on the self-hosted installation for either debugging or rate
 # limiting, sending these incomplete counts to the bouncer has low value.
-LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER = [
+LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER = {
     "invites_sent::day",
     "mobile_pushes_sent::day",
     "active_users_log:is_bot:day",
-]
+    "active_users:is_bot:day",
+}
 
 # To avoid refactoring for now COUNT_STATS can be used as before
 COUNT_STATS = get_count_stats()

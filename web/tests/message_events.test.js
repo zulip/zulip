@@ -14,7 +14,7 @@ const pm_list = mock_esm("../src/pm_list");
 const stream_list = mock_esm("../src/stream_list");
 const unread_ui = mock_esm("../src/unread_ui");
 message_lists.current = {};
-message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
+message_lists.all_rendered_message_lists = () => [message_lists.current];
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");
@@ -57,7 +57,7 @@ function test_helper(side_effects) {
 }
 
 run_test("update_messages", () => {
-    const original_message = {
+    const raw_message = {
         id: 111,
         display_recipient: denmark.name,
         flags: ["mentioned"],
@@ -67,7 +67,7 @@ run_test("update_messages", () => {
         type: "stream",
     };
 
-    message_helper.process_new_message(original_message);
+    const original_message = message_helper.process_new_message(raw_message);
 
     assert.equal(original_message.mentioned, true);
     assert.equal(original_message.unread, true);
@@ -95,7 +95,6 @@ run_test("update_messages", () => {
         rendered_mgs = msgs_to_rerender;
         assert.equal(message_content_edited, true);
     };
-    message_lists.home = message_lists.current;
 
     const side_effects = [
         [message_edit, "end_message_edit"],
@@ -122,20 +121,22 @@ run_test("update_messages", () => {
 
     assert.deepEqual(rendered_mgs, [
         {
+            display_reply_to: undefined,
             alerted: false,
+            clean_reactions: new Map(),
             collapsed: false,
             content: "<b>new content</b>",
             display_recipient: denmark.name,
             historical: false,
             id: 111,
             is_stream: true,
+            is_private: false,
             last_edit_timestamp: undefined,
             mentioned: false,
             stream_wildcard_mentioned: false,
             topic_wildcard_mentioned: false,
             mentioned_me_directly: false,
             raw_content: "**new content**",
-            reactions: [],
             reply_to: alice.email,
             sender_email: alice.email,
             sender_full_name: alice.full_name,
@@ -144,6 +145,7 @@ run_test("update_messages", () => {
             starred: false,
             status_emoji_info: undefined,
             stream_id: denmark.stream_id,
+            stream: "Denmark",
             topic: "lunch",
             type: "stream",
             unread: true,

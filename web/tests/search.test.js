@@ -18,6 +18,8 @@ mock_esm("../src/filter", {
 
 const search = zrequire("search");
 
+let typeahead_forced_open = false;
+
 run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
@@ -36,7 +38,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     search_suggestion.max_num_of_search_results = 999;
     let terms;
 
-    override(bootstrap_typeahead, "create", (input_element, opts) => {
+    override(bootstrap_typeahead, "Typeahead", (input_element, opts) => {
         assert.equal(input_element.$element, $search_query_box);
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
@@ -207,7 +209,11 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
             $search_query_box.off("blur");
         }
-        return {};
+        return {
+            lookup() {
+                typeahead_forced_open = true;
+            },
+        };
     });
 
     search.initialize({
@@ -306,17 +312,13 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(is_blurred);
 });
 
-run_test("initiate_search", ({override}) => {
+run_test("initiate_search", () => {
     // open typeahead and select text when navbar is open
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
     // this test ever fails unexpectedly.
     narrow_state.filter = () => ({is_keyword_search: () => false});
-    let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
-    override(bootstrap_typeahead, "lookup", () => {
-        typeahead_forced_open = true;
-    });
     $("#search_query").on("select", () => {
         is_searchbox_text_selected = true;
     });

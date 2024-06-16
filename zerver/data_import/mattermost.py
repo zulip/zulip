@@ -317,7 +317,7 @@ def get_mentioned_user_ids(raw_message: Dict[str, Any], user_id_mapper: IdMapper
     content = raw_message["content"]
 
     # usernames can be of the form user.name, user_name, username., username_, user.name_ etc
-    matches = re.findall("(?<=^|(?<=[^a-zA-Z0-9-_.]))@(([A-Za-z0-9]+[_.]?)+)", content)
+    matches = re.findall(r"(?<=^|(?<=[^a-zA-Z0-9-_.]))@(([A-Za-z0-9]+[_.]?)+)", content)
 
     for match in matches:
         possible_username = match[0]
@@ -574,8 +574,8 @@ def process_posts(
         content = post_dict["message"]
 
         if masking_content:
-            content = re.sub("[a-z]", "x", content)
-            content = re.sub("[A-Z]", "X", content)
+            content = re.sub(r"[a-z]", "x", content)
+            content = re.sub(r"[A-Z]", "X", content)
 
         if "reactions" in post_dict:
             reactions = post_dict["reactions"] or []

@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class LinearHookTests(WebhookTestCase):
-    STREAM_NAME = "Linear"
+    CHANNEL_NAME = "Linear"
     URL_TEMPLATE = "/api/v1/external/linear?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "linear"
 

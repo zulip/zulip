@@ -1,6 +1,6 @@
 Get Zulip notifications for your TeamCity builds!
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

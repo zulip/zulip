@@ -9,29 +9,20 @@
         </button>
     </div>
 </div>
-<div class="table_fix_head" data-simplebar>
+<div class="table_fix_head">
     <div class="recent-view-container">
         <table class="table table-responsive">
-            <tbody data-empty="{{t 'No conversations match your filters.' }}" class="required-text"></tbody>
-            <thead>
+            <thead id="recent-view-table-headers">
                 <tr>
-                    <th data-sort="stream_sort">{{t 'Stream' }}</th>
-                    <th data-sort="topic_sort">{{t 'Topic' }}</th>
-                    <th data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}" class="unread_sort tippy-zulip-delayed-tooltip hidden-for-spectators">
+                    <th class="recent-view-stream-header" data-sort="stream_sort">{{t 'Channel' }}</th>
+                    <th class="recent-view-topic-header" data-sort="topic_sort">{{t 'Topic' }}</th>
+                    <th data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}" class="recent-view-unread-header unread_sort tippy-zulip-delayed-tooltip hidden-for-spectators">
                         <i class="zulip-icon zulip-icon-unread"></i>
                     </th>
-                    <th class='participants_header'>{{t 'Participants' }}</th>
-                    <th data-sort="numeric" data-sort-prop="last_msg_id" class="last_msg_time_header active descend">{{t 'Time' }}</th>
+                    <th class='recent-view-participants-header participants_header'>{{t 'Participants' }}</th>
+                    <th data-sort="numeric" data-sort-prop="last_msg_id" class="recent-view-last-msg-time-header last_msg_time_header active descend">{{t 'Time' }}</th>
                 </tr>
             </thead>
         </table>
-        {{!-- Don't show the banner until we have some messages loaded. --}}
-        <div class="recent-view-load-more-container main-view-banner info notvisible">
-            <div class="last-fetched-message banner_content">{{t "This view is still loading messages."}}</div>
-            <button class="fetch-messages-button main-view-banner-action-button right_edge notvisible">
-                <div class="loading-indicator"></div>
-                <span class="button-label">{{t "Load more"}}</span>
-            </button>
-        </div>
     </div>
 </div>

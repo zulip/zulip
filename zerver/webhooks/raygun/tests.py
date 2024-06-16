@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class RaygunHookTests(WebhookTestCase):
-    STREAM_NAME = "raygun"
+    CHANNEL_NAME = "raygun"
     URL_TEMPLATE = "/api/v1/external/raygun?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "raygun"
 

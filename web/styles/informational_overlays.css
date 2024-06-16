@@ -1,8 +1,6 @@
 .informational-overlays {
     .overlay-content {
-        /* because zoom breaks at 525px perhaps due to rounding errors, so add a
-           trivial amount of width so it doesn't break. */
-        width: 550px;
+        width: var(--informational-overlay-max-width);
         margin: 0 auto;
         position: relative;
         top: calc((30vh - 50px) / 2);
@@ -45,6 +43,20 @@
             & th {
                 font-weight: 400;
             }
+        }
+    }
+
+    .overlay-body {
+        table {
+            border-color: var(--color-border-informational-overlays-table);
+        }
+
+        & tr th {
+            border-color: var(--color-border-informational-overlays-table);
+        }
+
+        & tr td {
+            border-color: var(--color-border-informational-overlays-table);
         }
     }
 
@@ -105,6 +117,8 @@
     .informational-overlays {
         .overlay-content {
             width: calc(100% - 20px);
+            /* Constrain to same width as in larger viewports. */
+            max-width: var(--informational-overlay-max-width);
         }
 
         .tab-switcher {

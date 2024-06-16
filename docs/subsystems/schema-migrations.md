@@ -1,7 +1,7 @@
 # Schema migrations
 
 Zulip uses the [standard Django system for doing schema
-migrations](https://docs.djangoproject.com/en/3.2/topics/migrations/).
+migrations](https://docs.djangoproject.com/en/5.0/topics/migrations/).
 There is some example usage in the [new feature
 tutorial](../tutorials/new-feature-tutorial.md).
 
@@ -33,7 +33,7 @@ migrations.
   - If your migrations were automatically generated using
     `manage.py makemigrations`, a good option is to just remove your
     migration and rerun the command after rebasing. Remember to
-    `git rebase` to do this in the the commit that changed `models/*.py`
+    `git rebase` to do this in the commit that changed `models/*.py`
     if you have a multi-commit branch.
   - If you wrote code as part of preparing your migrations, or prefer
     this workflow, you can use run `./tools/renumber-migrations`,
@@ -171,7 +171,7 @@ an incorrect migration messes up a database in a way that's impossible
 to undo without going to backups.
 
 [django-migration-test-blog-post]: https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
-[migrations-non-atomic]: https://docs.djangoproject.com/en/3.2/howto/writing-migrations/#non-atomic-migrations
+[migrations-non-atomic]: https://docs.djangoproject.com/en/5.0/howto/writing-migrations/#non-atomic-migrations
 
 ## Schema and initial data changes
 
@@ -180,12 +180,17 @@ If you follow the processes described above, `tools/provision` and
 migrations and run migrations on (`./manage.py migrate`) or rebuild
 the relevant database automatically as appropriate.
 
-While developing migrations, you may accidentally corrupt
-your databases while debugging your new code.
-You can always rebuild these databases from scratch.
+Notably, both `manage.py migrate` (`git grep post_migrate.connect` for
+details) and restarting `tools/run-dev` will flush `memcached`, so you
+shouldn't have to worry about cached objects from a previous database
+schema.
 
-Use `tools/rebuild-test-database` to rebuild the database
-used for `test-backend` and other automated tests.
+While developing migrations, you may accidentally corrupt your
+databases while debugging your new code. You can always rebuild these
+databases from scratch:
 
-Use `tools/rebuild-dev-database` to rebuild the database
-used in [manual testing](../development/using.md).
+- Use `tools/rebuild-test-database` to rebuild the database
+  used for `test-backend` and other automated tests.
+
+- Use `tools/rebuild-dev-database` to rebuild the database
+  used in [manual testing](../development/using.md).

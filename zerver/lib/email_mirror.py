@@ -6,6 +6,7 @@ from email.message import EmailMessage
 from typing import Dict, List, Match, Optional, Tuple
 
 from django.conf import settings
+from django.utils.translation import gettext as _
 from typing_extensions import override
 
 from zerver.actions.message_send import (
@@ -113,6 +114,7 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
             "user_profile",
             "user_profile__realm",
             "user_profile__realm__can_access_all_users_group",
+            "user_profile__realm__can_access_all_users_group__named_user_group",
             "message",
             "message__sender",
             "message__recipient",
@@ -205,7 +207,9 @@ def send_mm_reply_to_stream(
             message_content=body,
         )
     except JsonableError as error:
-        error_message = f"Error sending message to stream {stream.name} via message notification email reply:\n{error.msg}"
+        error_message = _(
+            "Error sending message to channel {channel_name} via message notification email reply:\n{error_message}"
+        ).format(channel_name=stream.name, error_message=error.msg)
         internal_send_private_message(
             get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id),
             user_profile,
@@ -367,7 +371,7 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
     ]
 
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split("%s")]
-    match_email_re = re.compile(".*?".join(pattern_parts))
+    match_email_re = re.compile(r".*?".join(pattern_parts))
 
     for header_name in recipient_headers:
         for header_value in message.get_all(header_name, []):

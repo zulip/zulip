@@ -19,7 +19,7 @@ from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
 import zerver.openapi.python_examples
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 from zerver.openapi.openapi import (
     NO_EXAMPLE,
     Parameter,
@@ -411,22 +411,22 @@ class APIMarkdownExtension(Extension):
         md.preprocessors.register(
             APICodeExamplesPreprocessor(md, self.getConfigs()),
             "generate_code_example",
-            PREPROCESSOR_PRIORITES["generate_code_example"],
+            PREPROCESSOR_PRIORITIES["generate_code_example"],
         )
         md.preprocessors.register(
             APIHeaderPreprocessor(md, self.getConfigs()),
             "generate_api_header",
-            PREPROCESSOR_PRIORITES["generate_api_header"],
+            PREPROCESSOR_PRIORITIES["generate_api_header"],
         )
         md.preprocessors.register(
             ResponseDescriptionPreprocessor(md, self.getConfigs()),
             "generate_response_description",
-            PREPROCESSOR_PRIORITES["generate_response_description"],
+            PREPROCESSOR_PRIORITIES["generate_response_description"],
         )
         md.preprocessors.register(
             ParameterDescriptionPreprocessor(md, self.getConfigs()),
             "generate_parameter_description",
-            PREPROCESSOR_PRIORITES["generate_parameter_description"],
+            PREPROCESSOR_PRIORITIES["generate_parameter_description"],
         )
 
 

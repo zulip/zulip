@@ -59,14 +59,14 @@ test("stream", () => {
     assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
 
     const expected_terms = [
-        {negated: false, operator: "stream", operand: "Test"},
+        {negated: false, operator: "channel", operand: "Test"},
         {negated: false, operator: "topic", operand: "Bar"},
         {negated: false, operator: "search", operand: "yo"},
     ];
 
     const public_terms = narrow_state.public_search_terms();
     assert.deepEqual(public_terms, expected_terms);
-    assert.equal(narrow_state.search_string(), "stream:Test topic:Bar yo");
+    assert.equal(narrow_state.search_string(), "channel:Test topic:Bar yo");
 });
 
 test("narrowed", () => {
@@ -74,7 +74,6 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_sub(), undefined);
 
@@ -83,7 +82,6 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(narrow_state.narrowed_by_stream_reply());
 
     set_filter([["dm", "steve@zulip.com"]]);
@@ -91,7 +89,6 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_by_reply());
     assert.ok(narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([
@@ -102,7 +99,6 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(narrow_state.narrowed_by_topic_reply());
-    assert.ok(narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([["search", "grail"]]);
@@ -110,7 +106,6 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([["is", "starred"]]);
@@ -118,7 +113,6 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 });
 
@@ -130,7 +124,7 @@ test("terms", () => {
     ]);
     let result = narrow_state.search_terms();
     assert.equal(result.length, 3);
-    assert.equal(result[0].operator, "stream");
+    assert.equal(result[0].operator, "channel");
     assert.equal(result[0].operand, "Foo");
 
     assert.equal(result[1].operator, "topic");
@@ -146,7 +140,7 @@ test("terms", () => {
     page_params.narrow = [{operator: "stream", operand: "Foo"}];
     result = narrow_state.search_terms();
     assert.equal(result.length, 1);
-    assert.equal(result[0].operator, "stream");
+    assert.equal(result[0].operator, "channel");
     assert.equal(result[0].operand, "Foo");
 });
 
@@ -154,7 +148,7 @@ test("excludes_muted_topics", () => {
     let filter = set_filter([["stream", "devel"]]);
     assert.ok(filter.excludes_muted_topics());
 
-    // All messages view.
+    // Combined feed view.
     filter = set_filter([["in", "home"]]);
     assert.ok(filter.excludes_muted_topics());
 
@@ -243,7 +237,7 @@ test("update_email", () => {
     const filter = narrow_state.filter();
     assert.deepEqual(filter.operands("dm"), ["showell@foo.com"]);
     assert.deepEqual(filter.operands("sender"), ["showell@foo.com"]);
-    assert.deepEqual(filter.operands("stream"), ["steve@foo.com"]);
+    assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
 });
 
 test("topic", () => {

@@ -10,8 +10,10 @@ import {
     wrapFieldSelection,
 } from "text-field-edit";
 
+import type {Typeahead} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as common from "./common";
+import type {TypeaheadSuggestion} from "./composebox_typeahead";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
@@ -22,13 +24,15 @@ import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
+export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your message here"});
+
 export type ComposeTriggeredOptions = {
     trigger: string;
 } & (
     | {
           message_type: "stream";
           topic: string;
-          stream_id?: number;
+          stream_id?: number | undefined;
       }
     | {
           message_type: "private";
@@ -56,7 +60,12 @@ type SelectedLinesSections = {
 export let compose_spinner_visible = false;
 export let shift_pressed = false; // true or false
 export let code_formatting_button_triggered = false; // true or false
+export let compose_textarea_typeahead: Typeahead<TypeaheadSuggestion> | undefined;
 let full_size_status = false; // true or false
+
+export function set_compose_textarea_typeahead(typeahead: Typeahead<TypeaheadSuggestion>): void {
+    compose_textarea_typeahead = typeahead;
+}
 
 export function set_code_formatting_button_triggered(value: boolean): void {
     code_formatting_button_triggered = value;
@@ -65,6 +74,10 @@ export function set_code_formatting_button_triggered(value: boolean): void {
 // Some functions to handle the full size status explicitly
 export function set_full_size(is_full: boolean): void {
     full_size_status = is_full;
+    // Show typeahead at bottom of textarea on compose full size.
+    if (compose_textarea_typeahead) {
+        compose_textarea_typeahead.dropup = !is_full;
+    }
 }
 
 export function is_full_size(): boolean {
@@ -85,9 +98,9 @@ export function insert_and_scroll_into_view(
     replace_all = false,
 ): void {
     if (replace_all) {
-        setFieldText($textarea[0], content);
+        setFieldText($textarea[0]!, content);
     } else {
-        insertTextIntoField($textarea[0], content);
+        insertTextIntoField($textarea[0]!, content);
     }
     // Blurring and refocusing ensures the cursor / selection is in view
     // in chromium browsers.
@@ -131,7 +144,7 @@ export function set_focus(opts: ComposeTriggeredOptions): void {
 }
 
 export function smart_insert_inline($textarea: JQuery<HTMLTextAreaElement>, syntax: string): void {
-    function is_space(c: string): boolean {
+    function is_space(c: string | undefined): boolean {
         return c === " " || c === "\t" || c === "\n";
     }
 
@@ -218,7 +231,7 @@ export function insert_syntax_and_focus(
     syntax: string,
     $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
     mode = "inline",
-    padding_newlines: number,
+    padding_newlines?: number,
 ): void {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
@@ -262,7 +275,7 @@ export function replace_syntax(
     // for details.
 
     const old_text = $textarea.val();
-    replaceFieldText($textarea[0], old_syntax, () => new_syntax, "after-replacement");
+    replaceFieldText($textarea[0]!, old_syntax, () => new_syntax, "after-replacement");
     const new_text = $textarea.val();
 
     // When replacing content in a textarea, we need to move the cursor
@@ -304,11 +317,11 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
 
         if (stream_name && opts.topic) {
             return $t(
-                {defaultMessage: "Message #{stream_name} > {topic_name}"},
-                {stream_name, topic_name: opts.topic},
+                {defaultMessage: "Message #{channel_name} > {topic_name}"},
+                {channel_name: stream_name, topic_name: opts.topic},
             );
         } else if (stream_name) {
-            return $t({defaultMessage: "Message #{stream_name}"}, {stream_name});
+            return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
         }
     } else if (opts.direct_message_user_ids.length > 0) {
         const users = people.get_users_from_ids(opts.direct_message_user_ids);
@@ -320,7 +333,7 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
         });
         const recipient_names = util.format_array_as_list(recipient_parts, "long", "conjunction");
 
-        if (users.length === 1) {
+        if (users.length === 1 && users[0] !== undefined) {
             // If it's a single user, display status text if available
             const user = users[0];
             const status = user_status.get_status_text(user.user_id);
@@ -333,7 +346,7 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
         }
         return $t({defaultMessage: "Message {recipient_names}"}, {recipient_names});
     }
-    return $t({defaultMessage: "Compose your message here"});
+    return DEFAULT_COMPOSE_PLACEHOLDER;
 }
 
 export function set_compose_box_top(set_top: boolean): void {
@@ -362,8 +375,6 @@ export function make_compose_box_full_size(): void {
     // Set the `top` property of compose-box.
     set_compose_box_top(true);
 
-    $(".collapse_composebox_button").show();
-    $(".expand_composebox_button").hide();
     $("#scroll-to-bottom-button-container").removeClass("show");
     $("textarea#compose-textarea").trigger("focus");
 }
@@ -380,8 +391,6 @@ export function make_compose_box_original_size(): void {
     // when compose box was made full screen
     autosize($("textarea#compose-textarea"));
 
-    $(".collapse_composebox_button").hide();
-    $(".expand_composebox_button").show();
     $("textarea#compose-textarea").trigger("focus");
 }
 
@@ -433,15 +442,17 @@ export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>)
     const cursor_position = $textarea.caret();
     const current_content = $textarea.val()!;
 
+    return position_inside_code_block(current_content, cursor_position);
+}
+
+export function position_inside_code_block(content: string, position: number): boolean {
     let unique_insert = "UNIQUEINSERT:" + Math.random();
-    while (current_content.includes(unique_insert)) {
+    while (content.includes(unique_insert)) {
         unique_insert = "UNIQUEINSERT:" + Math.random();
     }
-    const content =
-        current_content.slice(0, cursor_position) +
-        unique_insert +
-        current_content.slice(cursor_position);
-    const rendered_content = markdown.parse_non_message(content);
+    const unique_insert_content =
+        content.slice(0, position) + unique_insert + content.slice(position);
+    const rendered_content = markdown.parse_non_message(unique_insert_content);
     const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
     const code_blocks = rendered_html.querySelectorAll("pre > code");
     return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
@@ -881,8 +892,9 @@ export function format_text(
             text.slice(range.start + 1, range.end - 1).includes("](");
 
         if (is_selection_link()) {
-            const description = selected_text.split("](")[0].slice(1);
-            let url = selected_text.split("](")[1].slice(0, -1);
+            const i = selected_text.indexOf("](", 1);
+            const description = selected_text.slice(1, i);
+            let url = selected_text.slice(i + "](".length, -1);
             url = url_to_retain(url);
             text =
                 text.slice(0, range.start) +
@@ -1117,13 +1129,13 @@ export function show_compose_spinner(): void {
     $(".compose-submit-button").addClass("disable-btn");
 }
 
-export function get_compose_click_target(e: JQuery.ClickEvent): Element {
+export function get_compose_click_target(element: HTMLElement): Element {
     const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
     if (
         compose_control_buttons_popover &&
-        $(compose_control_buttons_popover.popper).has(e.target).length
+        $(compose_control_buttons_popover.popper).has(element).length
     ) {
         return compose_control_buttons_popover.reference;
     }
-    return e.target;
+    return element;
 }

@@ -45,6 +45,8 @@ mock_esm("../src/reload_state", {
 mock_esm("../src/drafts", {
     update_draft: noop,
     update_compose_draft_count: noop,
+    get_last_restorable_draft_based_on_compose_state: noop,
+    set_compose_draft_id: noop,
 });
 mock_esm("../src/unread_ops", {
     notify_server_message_read: noop,
@@ -124,6 +126,10 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
+    override(compose_ui, "insert_and_scroll_into_view", (content, $textarea, replace_all) => {
+        $textarea.val(content);
+        assert.ok(replace_all);
+    });
 
     // Start stream message
     compose_defaults = {
@@ -324,7 +330,6 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
         sender_full_name: "Bob Roberts",
         sender_id: 40,
     };
-    override(message_lists.current, "get", (_id) => undefined);
     override(message_lists.current, "selected_message", () => msg);
 
     let syntax_to_insert;
@@ -399,7 +404,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
         sender_id: 90,
     };
     hash_util.by_conversation_and_time_url = () =>
-        "https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado";
+        "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado";
 
     let success_function;
     override(channel, "get", (opts) => {
@@ -421,7 +426,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     replaced = false;
     expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
 
     quote_and_reply(opts);
 
@@ -459,7 +464,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     replaced = false;
     expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
     quote_and_reply(opts);
     assert.ok(replaced);
 });

@@ -1,4 +1,4 @@
-# https://bugs.launchpad.net/ubuntu/+source/file/+bug/2059723
-Package: libmagic1
-Pin: version 1:5.45-2
-Pin-Priority: -1
+# libarrow1600 is missing on Debian 12
+Package: libgroonga0
+Pin: version 14.0.3-1
+Pin-Priority: 499

@@ -28,11 +28,11 @@ type NumberedLine = {
 };
 
 type CleanStackFrame = {
-    full_path?: string;
-    show_path?: string;
-    function_name?: FunctionName;
-    line_number?: number;
-    context?: NumberedLine[];
+    full_path: string | undefined;
+    show_path: string | undefined;
+    function_name: FunctionName | undefined;
+    line_number: number | undefined;
+    context: NumberedLine[] | undefined;
 };
 
 export function exception_msg(
@@ -90,7 +90,7 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     if (fileName === undefined || lineNumber === undefined) {
         return undefined;
     }
-    let sourceContent: string;
+    let sourceContent: string | undefined;
     try {
         sourceContent = await sourceCache[fileName];
     } catch {

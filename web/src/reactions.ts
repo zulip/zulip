@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import render_message_reaction from "../templates/message_reaction.hbs";
 
@@ -10,7 +11,7 @@ import type {EmojiRenderingDetails} from "./emoji";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import type {Message, MessageCleanReaction} from "./message_store";
+import type {Message, MessageCleanReaction, RawMessage} from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as spectators from "./spectators";
@@ -23,7 +24,7 @@ type ReactionEvent = {
     message_id: number;
     user_id: number;
     local_id: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_name: string;
     emoji_code: string;
 };
@@ -33,7 +34,7 @@ export function get_local_reaction_id(rendering_details: EmojiRenderingDetails):
 }
 
 export function current_user_has_reacted_to_emoji(message: Message, local_id: string): boolean {
-    set_clean_reactions(message);
+    update_clean_reactions(message);
 
     const clean_reaction_object = message.clean_reactions.get(local_id);
     return clean_reaction_object?.user_ids.includes(current_user.user_id) ?? false;
@@ -46,13 +47,13 @@ function get_message(message_id: number): Message | undefined {
         return undefined;
     }
 
-    set_clean_reactions(message);
+    update_clean_reactions(message);
     return message;
 }
 
 export type RawReaction = {
     emoji_name: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_code: string;
     user_id: number;
 };
@@ -110,9 +111,11 @@ function update_ui_and_send_reaction_ajax(
         error(xhr: JQuery.jqXHR) {
             waiting_for_server_request_ids.delete(reaction_request_id);
             if (xhr.readyState !== 0) {
+                const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
                 if (
-                    xhr.responseJSON?.code === "REACTION_ALREADY_EXISTS" ||
-                    xhr.responseJSON?.code === "REACTION_DOES_NOT_EXIST"
+                    parsed.success &&
+                    (parsed.data.code === "REACTION_ALREADY_EXISTS" ||
+                        parsed.data.code === "REACTION_DOES_NOT_EXIST")
                 ) {
                     // Don't send error report for simple precondition failures caused by race
                     // conditions; the user already got what they wanted
@@ -273,7 +276,7 @@ export function add_reaction(event: ReactionEvent): void {
         return;
     }
 
-    set_clean_reactions(message);
+    update_clean_reactions(message);
 
     const local_id = get_local_reaction_id(event);
     const user_id = event.user_id;
@@ -388,7 +391,7 @@ export function remove_reaction(event: ReactionEvent): void {
         return;
     }
 
-    set_clean_reactions(message);
+    update_clean_reactions(message);
 
     const clean_reaction_object = message.clean_reactions.get(local_id);
 
@@ -449,7 +452,7 @@ export function get_emojis_used_by_user_for_message_id(message_id: number): stri
     assert(user_id !== undefined);
     const message = message_store.get(message_id);
     assert(message !== undefined);
-    set_clean_reactions(message);
+    update_clean_reactions(message);
 
     const names = [];
     for (const clean_reaction_object of message.clean_reactions.values()) {
@@ -462,33 +465,20 @@ export function get_emojis_used_by_user_for_message_id(message_id: number): stri
 }
 
 export function get_message_reactions(message: Message): MessageCleanReaction[] {
-    set_clean_reactions(message);
+    update_clean_reactions(message);
     return [...message.clean_reactions.values()];
 }
 
-export function set_clean_reactions(message: Message): void {
+export function generate_clean_reactions(message: RawMessage): Map<string, MessageCleanReaction> {
     /*
-      set_clean_reactions processes the raw message.reactions object,
+      generate_clean_reactions processes the raw message.reactions object,
       which will contain one object for each individual reaction, even
       if two users react with the same emoji.
 
-      As output, it sets message.cleaned_reactions, which is a more
-      compressed format with one entry per reaction pill that should
-      be displayed visually to users.
+      Its output, `cleaned_reactions`, is a more compressed format with
+      one entry per reaction pill that should be displayed visually to
+      users.
     */
-
-    if (message.clean_reactions) {
-        // Update display details for the reaction. In particular,
-        // user_settings.display_emoji_reaction_users or the names of
-        // the users appearing in the reaction may have changed since
-        // this reaction was first rendered.
-        const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
-        const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
-        for (const clean_reaction of message.clean_reactions.values()) {
-            update_user_fields(clean_reaction, should_display_reactors);
-        }
-        return;
-    }
 
     // This first loop creates a temporary distinct_reactions data
     // structure, which will accumulate the set of users who have
@@ -515,12 +505,7 @@ export function set_clean_reactions(message: Message): void {
         user_ids.push(user_id);
     }
 
-    // TODO: Rather than adding this field to the message object, it
-    // might be cleaner to create an independent map from message_id
-    // => clean_reactions data for the message, with care being taken
-    // to make sure reify_message_id moves the data structure
-    // properly.
-    message.clean_reactions = new Map();
+    const clean_reactions = new Map<string, MessageCleanReaction>();
 
     const reaction_counts_and_user_ids = [...distinct_reactions.keys()].map((local_id) => {
         const user_ids = user_map.get(local_id);
@@ -538,17 +523,25 @@ export function set_clean_reactions(message: Message): void {
         const user_ids = user_map.get(local_id);
         assert(user_ids !== undefined);
 
-        message.clean_reactions.set(
+        clean_reactions.set(
             local_id,
             make_clean_reaction({local_id, user_ids, should_display_reactors, ...reaction}),
         );
     }
 
-    // We don't maintain message.reactions when users react to
-    // messages we already have a copy of, so it's safest to delete it
-    // after we've processed the reactions data for a message into the
-    // clean_reactions data structure, which we do maintain.
-    delete message.reactions;
+    return clean_reactions;
+}
+
+export function update_clean_reactions(message: Message): void {
+    // Update display details for the reaction. In particular,
+    // user_settings.display_emoji_reaction_users or the names of
+    // the users appearing in the reaction may have changed since
+    // this reaction was first rendered.
+    const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
+    const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
+    for (const clean_reaction of message.clean_reactions.values()) {
+        update_user_fields(clean_reaction, should_display_reactors);
+    }
 }
 
 function make_clean_reaction({
@@ -563,7 +556,7 @@ function make_clean_reaction({
     user_ids: number[];
     emoji_name: string;
     emoji_code: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     should_display_reactors: boolean;
 }): MessageCleanReaction {
     const emoji_details = emoji.get_emoji_details_for_rendering({
@@ -678,7 +671,7 @@ export function update_vote_text_on_message(message: Message): void {
     // users depends on total reactions on the message, we need to
     // recalculate this whenever adjusting reaction rendering on a
     // message.
-    set_clean_reactions(message);
+    update_clean_reactions(message);
     const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     for (const [reaction, clean_reaction] of message.clean_reactions.entries()) {

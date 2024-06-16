@@ -2,12 +2,12 @@
 
 Zulip has a cool analytics system for tracking various useful statistics
 that currently power the `/stats` page, and over time will power other
-features, like showing usage statistics for the various streams. It is
+features, like showing usage statistics for the various channels. It is
 designed around the following goals:
 
 - Minimal impact on scalability and service complexity.
 - Well-tested so that we can count on the results being correct.
-- Efficient to query so that we can display data in-app (e.g. on the streams
+- Efficient to query so that we can display data in-app (e.g. on the channels
   page) with minimum impact on the overall performance of those pages.
 - Storage size smaller than the size of the main Message/UserMessage
   database tables, so that we can store the data in the main PostgreSQL
@@ -35,9 +35,10 @@ The Zulip analytics system is built around collecting time series data in a
 set of database tables. Each of these tables has the following fields:
 
 - property: A human readable string uniquely identifying a `CountStat`
-  object. Example: `"active_users:is_bot:hour"` or `"messages_sent:client:day"`.
+  object. Example: `"active_users_audit:is_bot:hour"` or
+  `"messages_sent:client:day"`.
 - subgroup: Almost all `CountStat` objects are further sliced by subgroup. For
-  `"active_users:is_bot:day"`, this column will be `False` for measurements of
+  `"active_users_audit:is_bot:day"`, this column will be `False` for measurements of
   humans, and `True` for measurements of bots. For `"messages_sent:client:day"`,
   this column is the client_id of the client under consideration.
 - end_time: A datetime indicating the end of a time interval. It will be on
@@ -45,7 +46,7 @@ set of database tables. Each of these tables has the following fields:
   frequency. The time interval is determined by the `CountStat`.
 - various "id" fields: Foreign keys into `Realm`, `UserProfile`, `Stream`, or
   nothing. E.g. the `RealmCount` table has a foreign key into `Realm`.
-- value: The integer counts. For `"active_users:is_bot:hour"` in the
+- value: The integer counts. For `"active_users_audit:is_bot:hour"` in the
   `RealmCount` table, this is the number of active humans or bots (depending
   on subgroup) in a particular realm at a particular `end_time`. For
   `"messages_sent:client:day"` in the `UserCount` table, this is the number of
@@ -164,7 +165,7 @@ a given realm). The only piece that you can't test here is the "Me"
 buttons, which won't have any data. For those, you can instead log in
 as the `shylock@analytics.ds` in the `analytics` realm and visit
 `/stats` there (which is only a bit more work). Note that the
-`analytics` realm is a shell with no streams, so you'll only want to
+`analytics` realm is a shell with no channels, so you'll only want to
 use it for testing the graphs.
 
 If you're adding a new stat/table, you'll want to edit

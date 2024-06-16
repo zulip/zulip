@@ -2,9 +2,9 @@
 
     {{#if (eq this.type "plain_text")~}}
         {{~this.content~}}
-    {{else if (eq this.type "stream_topic")}}
+    {{else if (eq this.type "channel_topic")}}
         {{~!-- squash whitespace --~}}
-        stream {{this.stream}} > {{this.topic}}
+        channel {{this.channel}} > {{this.topic}}
         {{~!-- squash whitespace --~}}
     {{else if (eq this.type "invalid_has")}}
         {{~!-- squash whitespace --~}}

@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import render_confirm_deactivate_custom_emoji from "../templates/confirm_dialog/confirm_deactivate_custom_emoji.hbs";
@@ -220,6 +221,7 @@ function show_modal(): void {
         const emoji: Record<string, string> = {};
 
         function submit_custom_emoji_request(formData: FormData): void {
+            assert(emoji.name !== undefined);
             void channel.post({
                 url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
                 data: formData,
@@ -240,6 +242,7 @@ function show_modal(): void {
         for (const obj of $("#add-custom-emoji-form").serializeArray()) {
             emoji[obj.name] = obj.value;
         }
+        assert(emoji.name !== undefined);
 
         if (emoji.name.trim() === "") {
             ui_report.client_error(
@@ -262,9 +265,9 @@ function show_modal(): void {
         }
 
         const formData = new FormData();
-        for (const [i, file] of Array.prototype.entries.call(
-            $<HTMLInputElement>("input#emoji_file_input")[0].files,
-        )) {
+        const files = $<HTMLInputElement>("input#emoji_file_input")[0]!.files;
+        assert(files !== null);
+        for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);
         }
 

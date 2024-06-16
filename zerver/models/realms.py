@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from enum import Enum
+from enum import IntEnum
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict, Union
 from uuid import uuid4
 
@@ -24,8 +24,8 @@ from zerver.models.groups import SystemGroups
 from zerver.models.users import UserProfile
 
 if TYPE_CHECKING:
-    # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
-    from django.contrib.auth.backends import ModelBackend
+    # We use BaseBackend only for typing. Importing it otherwise causes circular dependency.
+    from django.contrib.auth.backends import BaseBackend
 
     from zerver.models import Stream
 
@@ -37,14 +37,13 @@ SECONDS_PER_DAY = 86400
 # these values cannot change in a running production system, but do
 # regularly change within unit tests; we address the latter by calling
 # clear_supported_auth_backends_cache in our standard tearDown code.
-supported_backends: Optional[List["ModelBackend"]] = None
+supported_backends: Optional[List["BaseBackend"]] = None
 
 
-def supported_auth_backends() -> List["ModelBackend"]:
+def supported_auth_backends() -> List["BaseBackend"]:
     global supported_backends
     # Caching temporarily disabled for debugging
     supported_backends = django.contrib.auth.get_backends()
-    assert supported_backends is not None
     return supported_backends
 
 
@@ -76,7 +75,7 @@ def generate_realm_uuid_owner_secret() -> str:
     return f"zuliprealm_{token}"
 
 
-class OrgTypeEnum(Enum):
+class OrgTypeEnum(IntEnum):
     Unspecified = 0
     Business = 10
     OpenSource = 20
@@ -100,6 +99,88 @@ class OrgTypeDict(TypedDict):
     onboarding_zulip_guide_url: Optional[str]
 
 
+class CommonPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+
+
+class CommonMessagePolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    EVERYONE = 5
+
+
+class EditTopicPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    EVERYONE = 5
+    NOBODY = 6
+
+
+class InviteToRealmPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    NOBODY = 6
+
+
+class CreateWebPublicStreamPolicyEnum(IntEnum):
+    # We don't allow granting roles less than Moderator access to
+    # create web-public streams, since it's a sensitive feature that
+    # can be used to send spam.
+    ADMINS_ONLY = 2
+    MODERATORS_ONLY = 4
+    NOBODY = 6
+    OWNERS_ONLY = 7
+
+
+class BotCreationPolicyEnum(IntEnum):
+    # This value is also being used in web/src/settings_bots.bot_creation_policy_values.
+    # On updating it here, update it there as well.
+    EVERYONE = 1
+    LIMIT_GENERIC_BOTS = 2
+    ADMINS_ONLY = 3
+
+
+class MoveMessagesBetweenStreamsPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    NOBODY = 6
+
+
+class PrivateMessagePolicyEnum(IntEnum):
+    UNLIMITED = 1
+    DISABLED = 2
+
+
+class WildcardMentionPolicyEnum(IntEnum):
+    EVERYONE = 1
+    MEMBERS = 2
+    FULL_MEMBERS = 3
+    ADMINS = 5
+    NOBODY = 6
+    MODERATORS = 7
+
+
+class DigestWeekdayEnum(IntEnum):
+    MONDAY = 0
+    TUESDAY = 1
+    WEDNESDAY = 2
+    THURSDAY = 3
+    FRIDAY = 4
+    SATURDAY = 5
+    SUNDAY = 6
+
+
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -110,6 +191,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     MESSAGE_VISIBILITY_LIMITED = 10000
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
+
+    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
 
     # User-visible display name and description used on e.g. the organization homepage
     name = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
@@ -180,47 +263,27 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     POLICY_NOBODY = 6
     POLICY_OWNERS_ONLY = 7
 
-    COMMON_POLICY_TYPES = [
-        POLICY_MEMBERS_ONLY,
-        POLICY_ADMINS_ONLY,
-        POLICY_FULL_MEMBERS_ONLY,
-        POLICY_MODERATORS_ONLY,
-    ]
+    SYSTEM_GROUPS_ENUM_MAP = {
+        SystemGroups.OWNERS: POLICY_OWNERS_ONLY,
+        SystemGroups.ADMINISTRATORS: POLICY_ADMINS_ONLY,
+        SystemGroups.MODERATORS: POLICY_MODERATORS_ONLY,
+        SystemGroups.FULL_MEMBERS: POLICY_FULL_MEMBERS_ONLY,
+        SystemGroups.MEMBERS: POLICY_MEMBERS_ONLY,
+        SystemGroups.EVERYONE: POLICY_EVERYONE,
+        SystemGroups.NOBODY: POLICY_NOBODY,
+    }
 
-    COMMON_MESSAGE_POLICY_TYPES = [
-        POLICY_MEMBERS_ONLY,
-        POLICY_ADMINS_ONLY,
-        POLICY_FULL_MEMBERS_ONLY,
-        POLICY_MODERATORS_ONLY,
-        POLICY_EVERYONE,
-    ]
+    COMMON_POLICY_TYPES = [field.value for field in CommonPolicyEnum]
 
-    INVITE_TO_REALM_POLICY_TYPES = [
-        POLICY_MEMBERS_ONLY,
-        POLICY_ADMINS_ONLY,
-        POLICY_FULL_MEMBERS_ONLY,
-        POLICY_MODERATORS_ONLY,
-        POLICY_NOBODY,
-    ]
+    COMMON_MESSAGE_POLICY_TYPES = [field.value for field in CommonMessagePolicyEnum]
 
-    # We don't allow granting roles less than Moderator access to
-    # create web-public streams, since it's a sensitive feature that
-    # can be used to send spam.
+    INVITE_TO_REALM_POLICY_TYPES = [field.value for field in InviteToRealmPolicyEnum]
+
     CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = [
-        POLICY_ADMINS_ONLY,
-        POLICY_MODERATORS_ONLY,
-        POLICY_OWNERS_ONLY,
-        POLICY_NOBODY,
+        field.value for field in CreateWebPublicStreamPolicyEnum
     ]
 
-    EDIT_TOPIC_POLICY_TYPES = [
-        POLICY_MEMBERS_ONLY,
-        POLICY_ADMINS_ONLY,
-        POLICY_FULL_MEMBERS_ONLY,
-        POLICY_MODERATORS_ONLY,
-        POLICY_EVERYONE,
-        POLICY_NOBODY,
-    ]
+    EDIT_TOPIC_POLICY_TYPES = [field.value for field in EditTopicPolicyEnum]
 
     MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
 
@@ -235,21 +298,34 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to add custom emojis.
-    add_custom_emoji_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+    add_custom_emoji_policy = models.PositiveSmallIntegerField(
+        default=CommonPolicyEnum.MEMBERS_ONLY
+    )
 
     # Who in the organization is allowed to create streams.
-    create_public_stream_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
-    create_private_stream_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
-    create_web_public_stream_policy = models.PositiveSmallIntegerField(default=POLICY_OWNERS_ONLY)
+    create_private_stream_policy = models.PositiveSmallIntegerField(
+        default=CommonPolicyEnum.MEMBERS_ONLY
+    )
+    create_web_public_stream_policy = models.PositiveSmallIntegerField(
+        default=CreateWebPublicStreamPolicyEnum.OWNERS_ONLY
+    )
+
+    can_create_public_channel_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
 
     # Who in the organization is allowed to delete messages they themselves sent.
-    delete_own_message_policy = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
+    delete_own_message_policy = models.PositiveSmallIntegerField(
+        default=CommonMessagePolicyEnum.EVERYONE
+    )
 
     # Who in the organization is allowed to edit topics of any message.
-    edit_topic_policy = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
+    edit_topic_policy = models.PositiveSmallIntegerField(default=EditTopicPolicyEnum.EVERYONE)
 
     # Who in the organization is allowed to invite other users to organization.
-    invite_to_realm_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+    invite_to_realm_policy = models.PositiveSmallIntegerField(
+        default=InviteToRealmPolicyEnum.MEMBERS_ONLY
+    )
 
     # UserGroup whose members are allowed to create invite link.
     create_multiuse_invite_group = models.ForeignKey(
@@ -265,45 +341,29 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to invite other users to streams.
-    invite_to_stream_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+    invite_to_stream_policy = models.PositiveSmallIntegerField(
+        default=CommonPolicyEnum.MEMBERS_ONLY
+    )
 
     # Who in the organization is allowed to move messages between streams.
     move_messages_between_streams_policy = models.PositiveSmallIntegerField(
         default=POLICY_MEMBERS_ONLY
     )
 
-    user_group_edit_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+    user_group_edit_policy = models.PositiveSmallIntegerField(default=CommonPolicyEnum.MEMBERS_ONLY)
 
-    PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
-    PRIVATE_MESSAGE_POLICY_DISABLED = 2
     private_message_policy = models.PositiveSmallIntegerField(
-        default=PRIVATE_MESSAGE_POLICY_UNLIMITED
+        default=PrivateMessagePolicyEnum.UNLIMITED
     )
-    PRIVATE_MESSAGE_POLICY_TYPES = [
-        PRIVATE_MESSAGE_POLICY_UNLIMITED,
-        PRIVATE_MESSAGE_POLICY_DISABLED,
-    ]
+    PRIVATE_MESSAGE_POLICY_TYPES = [field.value for field in PrivateMessagePolicyEnum]
 
     # Global policy for who is allowed to use wildcard mentions in
     # streams with a large number of subscribers.  Anyone can use
     # wildcard mentions in small streams regardless of this setting.
-    WILDCARD_MENTION_POLICY_EVERYONE = 1
-    WILDCARD_MENTION_POLICY_MEMBERS = 2
-    WILDCARD_MENTION_POLICY_FULL_MEMBERS = 3
-    WILDCARD_MENTION_POLICY_ADMINS = 5
-    WILDCARD_MENTION_POLICY_NOBODY = 6
-    WILDCARD_MENTION_POLICY_MODERATORS = 7
     wildcard_mention_policy = models.PositiveSmallIntegerField(
-        default=WILDCARD_MENTION_POLICY_ADMINS,
+        default=WildcardMentionPolicyEnum.ADMINS,
     )
-    WILDCARD_MENTION_POLICY_TYPES = [
-        WILDCARD_MENTION_POLICY_EVERYONE,
-        WILDCARD_MENTION_POLICY_MEMBERS,
-        WILDCARD_MENTION_POLICY_FULL_MEMBERS,
-        WILDCARD_MENTION_POLICY_ADMINS,
-        WILDCARD_MENTION_POLICY_NOBODY,
-        WILDCARD_MENTION_POLICY_MODERATORS,
-    ]
+    WILDCARD_MENTION_POLICY_TYPES = [field.value for field in WildcardMentionPolicyEnum]
 
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
@@ -333,9 +393,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Defaults for new users
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
-    DEFAULT_NOTIFICATION_STREAM_NAME = "general"
-    INITIAL_PRIVATE_STREAM_NAME = "core team"
-    STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("stream events")
+    ZULIP_DISCUSSION_CHANNEL_NAME = gettext_lazy("Zulip")
+    ZULIP_SANDBOX_CHANNEL_NAME = gettext_lazy("sandbox")
+    DEFAULT_NOTIFICATION_STREAM_NAME = gettext_lazy("general")
+    STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
     new_stream_announcements_stream = models.ForeignKey(
         "Stream",
         related_name="+",
@@ -498,22 +559,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     }
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
-    # This value is also being used in web/src/settings_bots.bot_creation_policy_values.
-    # On updating it here, update it there as well.
-    BOT_CREATION_EVERYONE = 1
-    BOT_CREATION_LIMIT_GENERIC_BOTS = 2
-    BOT_CREATION_ADMINS_ONLY = 3
-    bot_creation_policy = models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE)
-    BOT_CREATION_POLICY_TYPES = [
-        BOT_CREATION_EVERYONE,
-        BOT_CREATION_LIMIT_GENERIC_BOTS,
-        BOT_CREATION_ADMINS_ONLY,
-    ]
+    bot_creation_policy = models.PositiveSmallIntegerField(default=BotCreationPolicyEnum.EVERYONE)
+    BOT_CREATION_POLICY_TYPES = [field.value for field in BotCreationPolicyEnum]
 
-    # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     UPLOAD_QUOTA_LIMITED = 5
-    UPLOAD_QUOTA_STANDARD = 50
-    upload_quota_gb = models.IntegerField(null=True)
+    UPLOAD_QUOTA_STANDARD_FREE = 50
+    custom_upload_quota_gb = models.IntegerField(null=True)
 
     VIDEO_CHAT_PROVIDERS = {
         "disabled": {
@@ -594,7 +645,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
         create_private_stream_policy=int,
-        create_public_stream_policy=int,
         create_web_public_stream_policy=int,
         default_code_block_language=str,
         default_language=str,
@@ -657,7 +707,20 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             id_field_name="can_access_all_users_group_id",
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
+        can_create_public_channel_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_create_public_channel_group_id",
+        ),
     )
+
+    REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
+        "can_create_public_channel_group",
+    ]
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
 
@@ -830,6 +893,34 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     def max_invites(self, value: Optional[int]) -> None:
         self._max_invites = value
 
+    @property
+    def upload_quota_gb(self) -> Optional[int]:
+        # See upload_quota_bytes; don't interpret upload_quota_gb directly.
+
+        if self.custom_upload_quota_gb is not None:
+            return self.custom_upload_quota_gb
+
+        if not settings.CORPORATE_ENABLED:
+            return None
+
+        plan_type = self.plan_type
+        if plan_type == Realm.PLAN_TYPE_SELF_HOSTED:  # nocoverage
+            return None
+        if plan_type == Realm.PLAN_TYPE_LIMITED:
+            return Realm.UPLOAD_QUOTA_LIMITED
+        elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
+            return Realm.UPLOAD_QUOTA_STANDARD_FREE
+        elif plan_type in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
+            from corporate.lib.stripe import get_cached_seat_count
+
+            # Paying customers with few users should get a reasonable minimum quota.
+            return max(
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB,
+                Realm.UPLOAD_QUOTA_STANDARD_FREE,
+            )
+        else:
+            raise AssertionError("Invalid plan type")
+
     def upload_quota_bytes(self) -> Optional[int]:
         if self.upload_quota_gb is None:
             return None
@@ -843,12 +934,26 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         lambda realm: get_realm_used_upload_space_cache_key(realm.id), timeout=3600 * 24 * 7
     )
     def currently_used_upload_space_bytes(realm) -> int:  # noqa: N805
+        from analytics.models import RealmCount, installation_epoch
         from zerver.models import Attachment
 
-        used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
-        if used_space is None:
-            return 0
-        return used_space
+        try:
+            latest_count_stat = RealmCount.objects.filter(
+                realm=realm, property="upload_quota_used_bytes::day"
+            ).latest("end_time")
+            last_recorded_used_space = latest_count_stat.value
+            last_recorded_date = latest_count_stat.end_time
+        except RealmCount.DoesNotExist:
+            last_recorded_used_space = 0
+            last_recorded_date = installation_epoch()
+
+        newly_used_space = Attachment.objects.filter(
+            realm=realm, create_time__gte=last_recorded_date
+        ).aggregate(Sum("size"))["size__sum"]
+
+        if newly_used_space is None:
+            return last_recorded_used_space
+        return last_recorded_used_space + newly_used_space
 
     def ensure_not_on_limited_plan(self) -> None:
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
@@ -871,7 +976,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         return self.string_id
 
     @property
-    def uri(self) -> str:
+    def url(self) -> str:
         return settings.EXTERNAL_URI_SCHEME + self.host
 
     @property
@@ -959,7 +1064,10 @@ post_delete.connect(realm_pre_and_post_delete_handler, sender=Realm)
 
 
 def get_realm(string_id: str) -> Realm:
-    return Realm.objects.get(string_id=string_id)
+    return Realm.objects.select_related(
+        "can_create_public_channel_group",
+        "can_create_public_channel_group__named_user_group",
+    ).get(string_id=string_id)
 
 
 def get_realm_by_id(realm_id: int) -> Realm:
@@ -989,6 +1097,27 @@ def get_org_type_display_name(org_type: int) -> str:
             return realm_type_details["name"]
 
     return ""
+
+
+def get_corresponding_policy_value_for_group_setting(
+    realm: Realm,
+    group_setting_name: str,
+    valid_policy_enums: List[int],
+) -> int:
+    setting_group = getattr(realm, group_setting_name)
+    if (
+        hasattr(setting_group, "named_user_group")
+        and setting_group.named_user_group.is_system_group
+    ):
+        enum_policy_value = Realm.SYSTEM_GROUPS_ENUM_MAP[setting_group.named_user_group.name]
+        if enum_policy_value in valid_policy_enums:
+            return enum_policy_value
+
+    # If the group setting is not set to one of the role based groups
+    # that the previous enum setting allowed, then just return the
+    # enum value corresponding to largest group.
+    assert valid_policy_enums == Realm.COMMON_POLICY_TYPES
+    return Realm.POLICY_MEMBERS_ONLY
 
 
 class RealmDomain(models.Model):

@@ -115,7 +115,6 @@ input::placeholder {
         box-shadow: none;
 
         cursor: pointer;
-        transition: all 0.2s ease;
 
         /* -- button style variations -- */
         &.no-style {
@@ -155,6 +154,15 @@ input::placeholder {
             border-color: hsl(0deg 0% 60%);
             color: inherit;
             background-color: hsl(0deg 0% 95%);
+        }
+
+        &.add-subscription-button {
+            &:focus-visible {
+                border: 1px solid;
+                border-color: var(
+                    --color-border-add-subscription-button-focus
+                ) !important;
+            }
         }
 
         &.sea-green {
@@ -281,7 +289,7 @@ input::placeholder {
             }
 
             &.disabled {
-                pointer-events: none;
+                cursor: default;
                 color: hsl(0deg 0% 80%);
                 border-color: hsl(0deg 0% 87%);
             }
@@ -521,14 +529,14 @@ div.overlay {
 
 .upgrade-tip,
 .upgrade-or-sponsorship-tip,
-.tip {
+.tip,
+.invite-stream-notice {
     position: relative;
     display: block;
     background-color: hsl(46deg 63% 95%);
     border: 1px solid hsl(49deg 20% 84%);
     border-radius: 4px;
     padding: 10px;
-    margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
     color: hsl(0deg 0% 40%);
@@ -539,6 +547,16 @@ div.overlay {
         font-family: FontAwesome;
         font-weight: 600;
     }
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip,
+.tip {
+    margin: 10px 0;
+}
+
+.invite-stream-notice {
+    margin-bottom: 20px;
 }
 
 .tip::before {
@@ -1129,54 +1147,6 @@ div.overlay {
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
-    }
-}
-
-/* Icon-based tab picker used for topics popover. */
-.tabs-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    padding: 1px;
-    height: 33px;
-    gap: 2px;
-    background-color: var(--color-background-tab-picker-container);
-    border-radius: 5px;
-
-    & i {
-        z-index: 2;
-        color: var(--color-tab-picker-icon);
-        font-size: 16px;
-    }
-
-    .selected-tab {
-        background-color: var(--color-background-tab-picker-selected-tab);
-        outline: 1px solid var(--color-outline-tab-picker-tab-option);
-        outline-offset: -1px;
-        z-index: 1;
-    }
-
-    .tab-option {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box;
-        width: 100%;
-        height: 31px;
-        cursor: pointer;
-        border-radius: 5px;
-
-        &:hover:not(.selected-tab) {
-            background-color: var(
-                --color-background-tab-picker-tab-option-hover
-            );
-        }
-
-        &:active:not(.selected-tab) {
-            outline: 1px solid var(--color-outline-tab-picker-tab-option);
-            outline-offset: -1px;
-        }
     }
 }
 

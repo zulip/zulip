@@ -188,7 +188,7 @@ def create_droplet(
         name=name,
         region=region,
         image=template_id,
-        size_slug="s-1vcpu-2gb",
+        size_slug="s-2vcpu-4gb",
         user_data=user_data,
         tags=tags,
         backups=False,
@@ -347,7 +347,7 @@ if __name__ == "__main__":
 
         # define id of image to create new droplets from; see:
         #     curl -u <API_KEY>: "https://api.digitalocean.com/v2/snapshots | jq .
-        template_id = "107085241"
+        template_id = "157280701"
 
     assert_droplet_does_not_exist(
         my_token=api_token, droplet_name=droplet_domain_name, recreate=args.recreate

@@ -7,8 +7,8 @@ import * as browser_history from "./browser_history";
 import * as compose_actions from "./compose_actions";
 import * as drafts from "./drafts";
 import {$t} from "./i18n";
+import * as message_view from "./message_view";
 import * as messages_overlay_ui from "./messages_overlay_ui";
-import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
@@ -24,10 +24,10 @@ function restore_draft(draft_id) {
 
     if (compose_args.type === "stream") {
         if (draft.stream_id !== undefined && draft.topic !== "") {
-            narrow.activate(
+            message_view.show(
                 [
                     {
-                        operator: "stream",
+                        operator: "channel",
                         operand: stream_data.get_stream_name_from_id(compose_args.stream_id),
                     },
                     {operator: "topic", operand: compose_args.topic},
@@ -37,7 +37,7 @@ function restore_draft(draft_id) {
         }
     } else {
         if (compose_args.private_message_recipient !== "") {
-            narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
+            message_view.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
                 trigger: "restore draft",
             });
         }
@@ -52,7 +52,7 @@ function restore_draft(draft_id) {
 
 function remove_draft($draft_row) {
     // Deletes the draft and removes it from the list
-    const draft_id = $draft_row.data("draft-id");
+    const draft_id = $draft_row.attr("data-draft-id");
 
     drafts.draft_model.deleteDraft(draft_id);
 
@@ -91,7 +91,7 @@ const keyboard_handling_context = {
         // It restores draft that is focused.
         const draft_id_arrow = this.get_items_ids();
         const focused_draft_id = messages_overlay_ui.get_focused_element_id(this);
-        if (Object.hasOwn(document.activeElement.parentElement.dataset, "draftId")) {
+        if (focused_draft_id !== undefined) {
             restore_draft(focused_draft_id);
         } else {
             const first_draft = draft_id_arrow.at(-1);
@@ -188,8 +188,8 @@ export function launch() {
             e.stopPropagation();
 
             const $draft_row = $(this).closest(".overlay-message-row");
-            const $draft_id = $draft_row.data("draft-id");
-            restore_draft($draft_id);
+            const draft_id = $draft_row.attr("data-draft-id");
+            restore_draft(draft_id);
         });
 
         $("#drafts_table .overlay_message_controls .delete-overlay-message").on(

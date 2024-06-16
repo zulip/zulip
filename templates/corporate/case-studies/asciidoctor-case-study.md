@@ -58,9 +58,9 @@ With the community continuing to grow, Dan and fellow maintainers decided it was
 time to seek out a better solution. Drawing on advice from leaders of other
 open-source communities, the project decided to give Zulip a try in early 2021.
 
-[Zulip’s streams and topics model](/why-zulip/) immediately clicked. “Streams
+[Zulip’s channels and topics model](/why-zulip/) immediately clicked. “Channels
 partition the community without making it feel divided. When someone has a
-question, they can find the most relevant stream and either make a new topic or
+question, they can find the most relevant channel and either make a new topic or
 contribute to an existing one.” This paradigm was a game-changer. “Literally the
 day we moved to Zulip, all the anxiety and stress of keeping up with the
 discourse was gone,” Dan says.
@@ -90,11 +90,11 @@ If a topic starts in the wrong place or veers off course, Zulip’s [moderation
 tools](/help/moderating-open-organizations) make it easy to fix. Community
 moderators can keep the dialogue organized by reclassifying topics and posts
 without disrupting the ongoing conversation. “If someone accidentally posts to
-the wrong stream or topic, Zulip allows me to [move those messages
-around](/help/move-content-to-another-stream) so they land in the right spot,”
+the wrong channel or topic, Zulip allows me to [move those messages
+around](/help/move-content-to-another-channel) so they land in the right spot,”
 Dan says. “Moving messages also sends a subtle hint to the person posting about
 where to post the next time. And I can use [topic
-references](/help/link-to-a-message-or-conversation#link-to-a-stream-or-topic-within-zulip)
+references](/help/link-to-a-message-or-conversation#link-to-a-channel-or-topic-within-zulip)
 to link to the new topic location, or to a related topic. That’s incredibly
 powerful,” Dan says.
 
@@ -143,12 +143,12 @@ lightweight interactions. “Often times, I participate just [using
 emoji](/help/emoji-reactions). I must use the 👍 and 🎉 reactions dozens of
 times a day,” Dan says.
 
-Streams have also helped the community get to know one another better. “When we
-created the instance, we set up a #social stream. We seeded it with the topic
+Channels have also helped the community get to know one another better. “When we
+created the instance, we set up a #social channel. We seeded it with the topic
 ‘introduce yourself’, and new members took full advantage of it,” Dan says. The
-social stream has brought a more personal touch to the community. “In real life,
+social channel has brought a more personal touch to the community. “In real life,
 no one just walks in and starts asking questions out of the blue,” Dan points
-out. “In the social stream, we’ve talked about non-technical topics like TV
+out. “In the social channel, we’ve talked about non-technical topics like TV
 series, screen setups, and holiday wishes just to get to know the people behind
 the screen name and enrich each other’s lives in other ways. What we learned?
 Everyone enjoys a lot of British TV. ;)”
@@ -166,7 +166,7 @@ happened than it was to search.”
 
 In contrast, Zulip offers a [faceted search](/help/search-for-messages) that
 lets you find past discussions with pinpoint accuracy. “You can narrow the
-search to a stream or topic (with autocomplete!),” Dan points out. The results
+search to a channel or topic (with autocomplete!),” Dan points out. The results
 are presented with topic headings, making it easier to see whether the message
 is relevant. “You can click the topic to see the message in context,” Dan says.
 “It’s not only a great way to search, but it’s a great way to catch up on

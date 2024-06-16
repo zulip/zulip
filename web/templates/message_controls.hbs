@@ -1,6 +1,6 @@
 <div class="message_controls no-select">
     {{#if msg/sent_by_me}}
-    <div class="edit_content message_control_button" data-tooltip-template-id="view-source-tooltip-template"></div>
+    <div class="edit_content message_control_button"></div>
     {{/if}}
 
     {{#unless msg/sent_by_me}}
@@ -22,8 +22,8 @@
             <i class="fa fa-refresh refresh-failed-message" aria-label="{{t 'Retry' }}" role="button" tabindex="0"></i>
         </div>
 
-        <div class="message_control_button failed_message_action" data-tippy-content="{{t 'Cancel' }}">
-            <i class="fa fa-times-circle remove-failed-message" aria-label="{{t 'Cancel' }}" role="button" tabindex="0"></i>
+        <div class="message_control_button failed_message_action" data-tooltip-template-id="dismiss-failed-send-button-tooltip-template">
+            <i class="fa fa-times-circle remove-failed-message" aria-label="{{t 'Dismiss' }}" role="button" tabindex="0"></i>
         </div>
     </div>
 

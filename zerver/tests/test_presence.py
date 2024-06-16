@@ -37,23 +37,28 @@ class UserPresenceModelTests(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         email = user_profile.email
-        presence_dct = get_presence_dict_by_realm(user_profile.realm)
+        presence_dct, last_update_id = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
+        self.assertEqual(last_update_id, -1)
 
         self.login_user(user_profile)
         result = self.client_post("/json/users/me/presence", {"status": "active"})
         self.assert_json_success(result)
 
+        actual_last_update_id = UserPresence.objects.all().latest("last_update_id").last_update_id
+
         slim_presence = False
-        presence_dct = get_presence_dict_by_realm(user_profile.realm, slim_presence)
+        presence_dct, last_update_id = get_presence_dict_by_realm(user_profile.realm, slim_presence)
         self.assert_length(presence_dct, 1)
         self.assertEqual(presence_dct[email]["website"]["status"], "active")
+        self.assertEqual(last_update_id, actual_last_update_id)
 
         slim_presence = True
-        presence_dct = get_presence_dict_by_realm(user_profile.realm, slim_presence)
+        presence_dct, last_update_id = get_presence_dict_by_realm(user_profile.realm, slim_presence)
         self.assert_length(presence_dct, 1)
         info = presence_dct[str(user_profile.id)]
         self.assertEqual(set(info.keys()), {"active_timestamp", "idle_timestamp"})
+        self.assertEqual(last_update_id, actual_last_update_id)
 
         def back_date(num_weeks: int) -> None:
             user_presence = UserPresence.objects.get(user_profile=user_profile)
@@ -64,20 +69,73 @@ class UserPresenceModelTests(ZulipTestCase):
 
         # Simulate the presence being a week old first.  Nothing should change.
         back_date(num_weeks=1)
-        presence_dct = get_presence_dict_by_realm(user_profile.realm)
+        presence_dct, last_update_id = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 1)
+        self.assertEqual(last_update_id, actual_last_update_id)
 
         # If the UserPresence row is three weeks old, we ignore it.
         back_date(num_weeks=3)
-        presence_dct = get_presence_dict_by_realm(user_profile.realm)
+        presence_dct, last_update_id = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
+        self.assertEqual(last_update_id, -1)
 
         # If the values are set to "never", ignore it just like for sufficiently old presence rows.
         UserPresence.objects.filter(id=user_profile.id).update(
             last_active_time=None, last_connected_time=None
         )
-        presence_dct = get_presence_dict_by_realm(user_profile.realm)
+        presence_dct, last_update_id = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
+        self.assertEqual(last_update_id, -1)
+
+    def test_last_update_id_logic(self) -> None:
+        slim_presence = True
+        UserPresence.objects.all().delete()
+
+        user_profile = self.example_user("hamlet")
+        presence_dct, last_update_id = get_presence_dict_by_realm(
+            user_profile.realm, slim_presence, last_update_id_fetched_by_client=-1
+        )
+        self.assert_length(presence_dct, 0)
+        self.assertEqual(last_update_id, -1)
+
+        self.login_user(user_profile)
+        result = self.client_post("/json/users/me/presence", {"status": "active"})
+        self.assert_json_success(result)
+
+        actual_last_update_id = UserPresence.objects.all().latest("last_update_id").last_update_id
+
+        presence_dct, last_update_id = get_presence_dict_by_realm(
+            user_profile.realm, slim_presence, last_update_id_fetched_by_client=-1
+        )
+        self.assert_length(presence_dct, 1)
+        self.assertEqual(last_update_id, actual_last_update_id)
+
+        # Now pass last_update_id as of this latest fetch. The server should only query for data
+        # updated after that. There's no such data, so we get no presence data back and the
+        # returned last_update_id remains the same.
+        presence_dct, last_update_id = get_presence_dict_by_realm(
+            user_profile.realm,
+            slim_presence,
+            last_update_id_fetched_by_client=actual_last_update_id,
+        )
+        self.assert_length(presence_dct, 0)
+        self.assertEqual(last_update_id, actual_last_update_id)
+
+        # Now generate a new update in the realm.
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        result = self.client_post("/json/users/me/presence", {"status": "active"})
+
+        # There's a new update now, so we can expect it to be fetched; and no older data.
+        presence_dct, last_update_id = get_presence_dict_by_realm(
+            user_profile.realm,
+            slim_presence,
+            last_update_id_fetched_by_client=actual_last_update_id,
+        )
+        self.assert_length(presence_dct, 1)
+        self.assertEqual(presence_dct.keys(), {str(iago.id)})
+        # last_update_id is incremented due to the new update.
+        self.assertEqual(last_update_id, actual_last_update_id + 1)
 
     def test_pushable_always_false(self) -> None:
         # This field was never used by clients of the legacy API, so we
@@ -92,7 +150,7 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         def pushable() -> bool:
-            presence_dct = get_presence_dict_by_realm(user_profile.realm)
+            presence_dct, _ = get_presence_dict_by_realm(user_profile.realm)
             self.assert_length(presence_dct, 1)
             return presence_dct[email]["website"]["pushable"]
 
@@ -138,6 +196,108 @@ class UserPresenceTests(ZulipTestCase):
         self.login_user(user)
         result = self.client_post("/json/users/me/presence", {"status": "foo"})
         self.assert_json_error(result, "Invalid status: foo")
+
+    def test_last_update_id_api(self) -> None:
+        UserPresence.objects.all().delete()
+
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        self.login_user(hamlet)
+
+        params = dict(status="idle", last_update_id=-1)
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {str(hamlet.id)})
+
+        # In tests, the presence update is processed immediately rather than in the background
+        # in the queue worker, so we see it reflected immediately.
+        # In production, our presence update may be processed with some delay, so the last_update_id
+        # might not include it yet. In such a case, we'd see the original value of -1 returned,
+        # due to there being no new data to return.
+        last_update_id = UserPresence.objects.latest("last_update_id").last_update_id
+        self.assertEqual(json["presence_last_update_id"], last_update_id)
+
+        # Briefly test that we include presence_last_update_id in the response
+        # also in the legacy format API with slim_presence=False.
+        # Re-doing an idle status so soon doesn't cause updates
+        # so this doesn't mutate any state.
+        params = dict(status="idle", slim_presence="false")
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        self.assertEqual(json["presence_last_update_id"], last_update_id)
+
+        self.login_user(othello)
+        params = dict(status="idle", last_update_id=-1)
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {str(hamlet.id), str(othello.id)})
+        self.assertEqual(json["presence_last_update_id"], last_update_id + 1)
+
+        last_update_id += 1
+        # Immediately sending an idle status again doesn't cause updates, so the server
+        # doesn't have any new data since last_update_id to return.
+        params = dict(status="idle", last_update_id=last_update_id)
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), set())
+        # No new data, so the last_update_id is returned back.
+        self.assertEqual(json["presence_last_update_id"], last_update_id)
+
+        # hamlet sends an active status. othello will next check presence and we'll
+        # want to verify he gets hamlet's update and nothing else.
+        self.login_user(hamlet)
+        params = dict(status="active", last_update_id=-1)
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+
+        # Make sure UserPresence.last_update_id is incremented.
+        self.assertEqual(
+            UserPresence.objects.latest("last_update_id").last_update_id, last_update_id + 1
+        )
+
+        # Now othello checks presence and should get hamlet's update.
+        self.login_user(othello)
+        params = dict(status="idle", last_update_id=last_update_id)
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {str(hamlet.id)})
+        self.assertEqual(json["presence_last_update_id"], last_update_id + 1)
+
+    def test_last_update_id_api_no_data_edge_cases(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        self.login_user(hamlet)
+
+        UserPresence.objects.all().delete()
+
+        params = dict(status="idle", last_update_id=-1)
+        # Make do_update_user_presence a noop. This simulates a production-like environment
+        # where the update is processed in a queue worker, so hamlet may not see his update
+        # reflected back to him in the response. Therefore it is as if there is no presence
+        # data.
+        # In such a situation, he should get his last_update_id=-1 back.
+        with mock.patch("zerver.worker.user_presence.do_update_user_presence"):
+            result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+
+        self.assertEqual(set(json["presences"].keys()), set())
+        self.assertEqual(json["presence_last_update_id"], -1)
+        self.assertFalse(UserPresence.objects.exists())
+
+        # Now check the same, but hamlet doesn't pass last_update_id at all,
+        # like an old slim_presence client would due to an implementation
+        # prior to the introduction of last_update_id.
+        params = dict(status="idle")
+        with mock.patch("zerver.worker.user_presence.do_update_user_presence"):
+            result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), set())
+
+        # When there's no data and the client didn't provide a last_update_id
+        # value that we could reflect back to it, we fall back to -1.
+        self.assertEqual(json["presence_last_update_id"], -1)
+        self.assertFalse(UserPresence.objects.exists())
 
     def test_set_idle(self) -> None:
         client = "website"
@@ -330,6 +490,7 @@ class UserPresenceTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", {"status": "idle"}, subdomain="zephyr")
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["presences"], {})
+        self.assertEqual(response_dict["presence_last_update_id"], -1)
 
     def test_mirror_presence(self) -> None:
         """Zephyr mirror realms find out the status of their mirror bot"""

@@ -17,9 +17,9 @@ from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
-from zerver.models import Realm, RealmUserDefault, Service, Subscription, UserProfile
+from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
 from zerver.models.bots import get_bot_services
-from zerver.models.realms import get_realm
+from zerver.models.realms import BotCreationPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user, is_cross_realm_bot_email
 
@@ -472,7 +472,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "default_sending_stream": "Denmark",
         }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'Denmark'")
+        self.assert_json_error(result, "Invalid channel name 'Denmark'")
 
     def test_add_bot_with_default_events_register_stream(self) -> None:
         bot_email = "hambot-bot@zulip.testserver"
@@ -556,7 +556,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "default_events_register_stream": "Denmark",
         }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'Denmark'")
+        self.assert_json_error(result, "Invalid channel name 'Denmark'")
 
     def test_add_bot_with_default_all_public_streams(self) -> None:
         self.login("hamlet")
@@ -669,6 +669,36 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, "No such user")
         self.assert_num_bots_equal(1)
 
+    def test_activate_bot_with_duplicate_name(self) -> None:
+        self.login("iago")
+        # Create a bot and then deactivate it
+        original_name = "Hamlet"
+        bot_info = {
+            "full_name": original_name,
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(bot_email)
+        do_deactivate_user(bot, False, acting_user=None)
+        self.assertFalse(
+            UserProfile.objects.filter(is_bot=True, id=bot.id, is_active=True).exists()
+        )
+
+        # Create another bot with the same name
+        bot_info2 = {
+            "full_name": original_name,
+            "short_name": "hambot2",
+        }
+        result = self.client_post("/json/bots", bot_info2)
+        self.assert_json_success(result)
+        result = self.client_post(f"/json/users/{bot.id}/reactivate")
+        self.assert_json_error(
+            result,
+            'There is already an active bot named "Hamlet" in this organization. To reactivate this bot, you must rename or deactivate the other one first.',
+        )
+
     def test_bot_permissions(self) -> None:
         self.login("hamlet")
         self.assert_num_bots_equal(0)
@@ -755,7 +785,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         bot_email = "hambot-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         # A regular user cannot create a generic bot
@@ -777,7 +807,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.create_bot(bot_type=UserProfile.DEFAULT_BOT)
 
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         bot_email = "hambot-bot@zulip.testserver"
@@ -793,7 +823,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_no_generic_bots_allowed_for_admins(self) -> None:
         bot_email = "hambot-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         # An administrator can create any type of bot
@@ -811,7 +841,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": 1,
         }
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_ADMINS_ONLY
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.ADMINS_ONLY
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         # A regular user cannot create a generic bot
@@ -832,7 +862,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_no_bots_allowed_for_admins(self) -> None:
         bot_email = "hambot-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = Realm.BOT_CREATION_ADMINS_ONLY
+        bot_realm.bot_creation_policy = BotCreationPolicyEnum.ADMINS_ONLY
         bot_realm.save(update_fields=["bot_creation_policy"])
 
         # An administrator can create any type of bot
@@ -1373,7 +1403,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'Denmark'")
+        self.assert_json_error(result, "Invalid channel name 'Denmark'")
 
     def test_patch_bot_to_stream_not_found(self) -> None:
         self.login("hamlet")
@@ -1388,7 +1418,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'missing'")
+        self.assert_json_error(result, "Invalid channel name 'missing'")
 
     def test_patch_bot_events_register_stream(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1423,7 +1453,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.subscribe(bot_user, stream_name)
         bot_info = dict(default_events_register_stream=stream_name)
         result = self.client_patch(url, bot_info)
-        self.assert_json_error_contains(result, "Invalid stream name")
+        self.assert_json_error_contains(result, "Invalid channel name")
 
         # Subscribing the owner allows us to patch the stream.
         self.subscribe(hamlet, stream_name)
@@ -1490,7 +1520,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'Denmark'")
+        self.assert_json_error(result, "Invalid channel name 'Denmark'")
 
     def test_patch_bot_events_register_stream_none(self) -> None:
         self.login("hamlet")
@@ -1530,7 +1560,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'missing'")
+        self.assert_json_error(result, "Invalid channel name 'missing'")
 
     def test_patch_bot_default_all_public_streams_true(self) -> None:
         self.login("hamlet")
@@ -1691,7 +1721,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # invalid URL test case.
         bot_info["payload_url"] = orjson.dumps("http://127.0.0.:5002").decode()
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "payload_url is not a URL")
+        self.assert_json_error(result, "Invalid payload_url: Value error, Not a URL")
 
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
@@ -1774,7 +1804,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             user_profile=self.example_user("hamlet"),
             service_name="followup",
             config_data=orjson.dumps({"invalid": ["config", "value"]}).decode(),
-            assert_json_error_msg="config_data contains a value that is not a string",
+            assert_json_error_msg='config_data["invalid"] is not a string',
             **extras,
         )
 

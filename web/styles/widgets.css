@@ -1,3 +1,7 @@
+.widget-content {
+    margin-bottom: var(--markdown-interelement-space-px);
+}
+
 .widget-choices {
     & ul {
         padding: 3px;
@@ -19,21 +23,43 @@
 }
 
 .todo-widget {
+    .todo-task-list-title-bar {
+        flex: 1 1 auto;
+        display: flex;
+        /* Ensure controls remain visible on narrower screens. */
+        flex-flow: row wrap;
+        gap: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
+    }
+
+    .add-task-bar {
+        display: flex;
+        /* Ensure controls remain visible on narrower screens. */
+        flex-flow: row wrap;
+        gap: 5px;
+    }
+
     /* For the box-shadow to be visible on the left */
     .add-task,
     .add-desc {
         font-size: 14px;
         font-weight: 400;
-        margin-right: 4px;
     }
 
     & label.checkbox {
         display: flex; /* Arrange that a multi-line description line wraps properly. */
-        position: relative;
-        vertical-align: top;
+        /* Keep checkboxes vertically aligned, including with multi-line tasks. */
+        align-items: baseline;
+        /* Reset things from .new-style */
+        gap: 5px;
+        position: static;
+        min-height: 0;
 
         & input[type="checkbox"] {
-            ~ span {
+            ~ .custom-checkbox {
+                position: static;
+                margin-right: 0;
+
                 height: 12px;
                 width: 12px;
                 border: 2px solid hsl(156deg 28% 70%);
@@ -44,7 +70,7 @@
                 cursor: pointer;
             }
 
-            &:checked ~ span {
+            &:checked ~ .custom-checkbox {
                 background-image: url("../images/checkbox-white.svg");
                 background-size: 75%;
                 background-position: 50% 50%;
@@ -53,16 +79,16 @@
                 border: 2px solid hsl(156deg 41% 40%);
             }
 
-            &:disabled ~ span {
+            &:disabled ~ .custom-checkbox {
                 opacity: 0.5;
                 cursor: not-allowed;
             }
 
-            &:hover ~ span {
+            &:hover ~ .custom-checkbox {
                 border-color: hsl(156deg 30% 50%);
             }
 
-            &:focus ~ span {
+            &:focus ~ .custom-checkbox {
                 outline-color: hsl(0deg 0% 100% / 0%);
             }
         }
@@ -82,8 +108,11 @@
     }
 
     & li {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
         list-style: none;
-        margin: 2px 2px 6px 0;
+        margin: 0 0 5px;
     }
 
     & ul {
@@ -91,16 +120,10 @@
         padding: 0;
     }
 
-    & input {
-        &.poll-question,
-        &.poll-option,
-        &.add-task,
-        &.add-desc {
-            width: 206px;
-        }
-    }
-
     & input[type="text"] {
+        /* Reset from zulip.css */
+        height: unset;
+
         border: 1px solid hsl(0deg 0% 80%);
         box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
         transition:
@@ -119,35 +142,30 @@
 }
 
 .poll-widget {
-    .poll-option {
-        font-weight: 400;
-        font-size: 14px;
+    .poll-option-bar {
+        display: flex;
+        /* Ensure controls remain visible on narrower screens. */
+        flex-flow: row wrap;
+        gap: 5px;
     }
 
-    /* For the box-shadow to be visible on the left */
-    & input.poll-option {
-        margin-right: 4px;
+    .poll-option {
+        font-weight: 400;
     }
 
     & span.poll-option {
         font-weight: 600;
-        padding-top: 28px;
+        /* Start with max-content, but allow options
+           to shrink, so that voting names wrap comfortably. */
+        flex: 0 1 max-content;
     }
 
     .poll-vote {
-        /* This is to ensure that even when the list of poll-names overflows,
-        the voting button remains clickable and on top of all other containers. */
-        position: relative;
-        z-index: 1;
-
         color: hsl(156deg 41% 40%);
         border-color: hsl(156deg 28% 70%);
         border-style: solid;
         font-weight: 600;
         border-radius: 3px;
-        margin-right: 4px;
-        padding-left: 2px; /* padding for Chromium browsers */
-        padding-right: 2px;
         min-width: 25px;
         height: 25px;
         font-size: 13px;
@@ -165,9 +183,10 @@
 
     .poll-names {
         color: hsl(0deg 0% 45%);
-        padding-left: 4px;
-        padding-top: 28px;
-        font-size: 14px;
+        /* Aim for 50% of the flexbox for voting names,
+           but also shrink modestly (.5) adjacent a long
+           option. */
+        flex: 1 0.5 50%;
     }
 }
 
@@ -189,7 +208,8 @@ button {
     &.poll-option {
         color: hsl(156deg 41% 40%);
         border: 1px solid hsl(156deg 28% 70%);
-        width: 100px;
+        width: max-content;
+        flex: 0 0 auto;
         border-radius: 3px;
         background-color: hsl(0deg 0% 100%);
         padding: 4px;
@@ -211,14 +231,14 @@ button {
     }
 }
 
-input,
-button {
+input {
     &.add-task,
     &.add-desc,
     &.poll-option,
-    &.poll-question {
+    &.poll-question,
+    &.todo-task-list-title {
+        flex: 1 0 auto;
         padding: 4px 6px;
-        margin: 2px 0;
     }
 }
 
@@ -228,9 +248,14 @@ button {
 }
 
 .poll-question-check,
-.poll-question-remove {
-    width: 28px !important;
-    height: 28px;
+.poll-question-remove,
+.todo-task-list-title-check,
+.todo-task-list-title-remove {
+    align-self: stretch;
+    /* TODO: Re-express the 30.5px value here
+       as part of information density work. */
+    flex: 0 0 30.5px;
+    min-height: 30.5px;
     border-radius: 3px;
     border: 1px solid hsl(0deg 0% 80%);
     background-color: hsl(0deg 0% 100%);
@@ -240,18 +265,29 @@ button {
     }
 }
 
-.poll-edit-question {
+.poll-edit-question,
+.todo-edit-task-list-title {
     opacity: 0.4;
-    display: inline-block;
-    margin-left: 5px;
 
     &:hover {
         opacity: 1;
     }
 }
 
-.poll-question-header {
-    display: inline;
+.poll-question-bar {
+    flex: 1 1 auto;
+    display: flex;
+    /* Ensure controls remain visible on narrower screens. */
+    flex-flow: row wrap;
+    gap: 5px;
+    margin-bottom: var(--markdown-interelement-space-px);
+}
+
+.poll-widget-header-area,
+.todo-widget-header-area {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
 }
 
 .current-user-vote {

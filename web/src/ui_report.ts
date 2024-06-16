@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import * as channel from "./channel";
 import * as common from "./common";
@@ -54,7 +55,7 @@ export function success(response_html: string, $status_box: JQuery, remove_after
     message(response_html, $status_box, "alert-success", remove_after);
 }
 
-export function generic_embed_error(error_html: string, remove_after: number): void {
+export function generic_embed_error(error_html: string, remove_after?: number): void {
     const $alert = $("<div>").addClass(["alert", "home-error-bar", "show"]);
     const $exit = $("<div>").addClass("exit");
 
@@ -68,8 +69,13 @@ export function generic_embed_error(error_html: string, remove_after: number): v
 }
 
 export function generic_row_button_error(xhr: JQuery.jqXHR, $btn: JQuery): void {
-    if (xhr.status >= 400 && xhr.status < 500 && xhr.responseJSON?.msg) {
-        const $error = $("<p>").addClass("text-error").text(xhr.responseJSON.msg);
+    let parsed;
+    if (
+        xhr.status >= 400 &&
+        xhr.status < 500 &&
+        (parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON)).success
+    ) {
+        const $error = $("<p>").addClass("text-error").text(parsed.data.msg);
         $btn.closest("td").empty().append($error);
     } else {
         $btn.text($t({defaultMessage: "Failed!"}));

@@ -37,7 +37,7 @@ const watchdog = mock_esm("../src/watchdog");
 
 set_global("document", _document);
 
-const huddle_data = zrequire("huddle_data");
+const direct_message_group_data = zrequire("direct_message_group_data");
 const keydown_util = zrequire("keydown_util");
 const muted_users = zrequire("muted_users");
 const presence = zrequire("presence");
@@ -188,13 +188,13 @@ test("sort_users", () => {
     assert.deepEqual(user_ids, [fred.user_id, jill.user_id, alice.user_id]);
 });
 
-test("huddle_data.process_loaded_messages", () => {
-    // TODO: move this to a module for just testing `huddle_data`
+test("direct_message_group_data.process_loaded_messages", () => {
+    // TODO: move this to a module for just testing `direct_message_group_data`
 
-    const huddle1 = "jill@zulip.com,norbert@zulip.com";
+    const direct_message_group1 = "jill@zulip.com,norbert@zulip.com";
     const timestamp1 = 1382479029; // older
 
-    const huddle2 = "alice@zulip.com,fred@zulip.com";
+    const direct_message_group2 = "alice@zulip.com,fred@zulip.com";
     const timestamp2 = 1382479033; // newer
 
     const old_timestamp = 1382479000;
@@ -225,11 +225,14 @@ test("huddle_data.process_loaded_messages", () => {
         },
     ];
 
-    huddle_data.process_loaded_messages(messages);
+    direct_message_group_data.process_loaded_messages(messages);
 
-    const user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
-    const user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
-    assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
+    const user_ids_string1 = people.emails_strings_to_user_ids_string(direct_message_group1);
+    const user_ids_string2 = people.emails_strings_to_user_ids_string(direct_message_group2);
+    assert.deepEqual(direct_message_group_data.get_direct_message_groups(), [
+        user_ids_string2,
+        user_ids_string1,
+    ]);
 });
 
 test("presence_list_full_update", ({override, mock_template}) => {
@@ -489,7 +492,8 @@ test("render_empty_user_list_message", ({override, mock_template}) => {
         append($data) {
             $appended_data = $data;
         },
-        data() {
+        attr(name) {
+            assert.equal(name, "data-search-results-empty");
             return empty_list_message;
         },
         children: () => [],
@@ -804,6 +808,7 @@ test("initialize", ({override, mock_template}) => {
         msg: "",
         result: "success",
         server_timestamp: 0,
+        presence_last_update_id: -1,
     });
     $(window).trigger("focus");
     clear();
@@ -828,6 +833,7 @@ test("initialize", ({override, mock_template}) => {
         msg: "",
         result: "success",
         server_timestamp: 0,
+        presence_last_update_id: -1,
     });
 
     assert.ok($("#zephyr-mirror-error").hasClass("show"));
@@ -879,4 +885,21 @@ test("electron_bridge", ({override_rewire}) => {
 test("test_send_or_receive_no_presence_for_spectator", () => {
     page_params.is_spectator = true;
     activity.send_presence_to_server();
+});
+
+test("check_should_redraw_new_user", () => {
+    presence.presence_info.set(9999, {status: "active"});
+
+    // A user that wasn't yet known, but has presence info should be redrawn
+    // when being added.
+    assert.equal(activity_ui.check_should_redraw_new_user(9999), true);
+
+    // We don't even build the user sidebar if realm_presence_disabled is true,
+    // so nothing to redraw.
+    realm.realm_presence_disabled = true;
+    assert.equal(activity_ui.check_should_redraw_new_user(9999), false);
+
+    realm.realm_presence_disabled = false;
+    // A new user that didn't have presence info should not be redrawn.
+    assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
 });

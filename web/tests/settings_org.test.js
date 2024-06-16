@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("./lib/i18n");
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire, set_global} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
@@ -19,13 +19,13 @@ mock_esm("../src/loading", {
     destroy_indicator: noop,
 });
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
+set_global("document", "document-stub");
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
-const dropdown_widget = zrequire("dropdown_widget");
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -100,7 +100,6 @@ function test_submit_settings_form(override, submit_form) {
         realm_default_language: '"es"',
         realm_invite_to_stream_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_create_private_stream_policy: settings_config.common_policy_values.by_members.code,
-        realm_create_public_stream_policy: settings_config.common_policy_values.by_members.code,
         realm_invite_to_realm_policy: settings_config.common_policy_values.by_members.code,
     });
 
@@ -134,11 +133,6 @@ function test_submit_settings_form(override, submit_form) {
     $invite_to_stream_policy_elem.attr("id", "id_realm_invite_to_stream_policy");
     $invite_to_stream_policy_elem.data = () => "number";
 
-    const $create_public_stream_policy_elem = $("#id_realm_create_public_stream_policy");
-    $create_public_stream_policy_elem.val("2");
-    $create_public_stream_policy_elem.attr("id", "id_realm_create_public_stream_policy");
-    $create_public_stream_policy_elem.data = () => "number";
-
     const $create_private_stream_policy_elem = $("#id_realm_create_private_stream_policy");
     $create_private_stream_policy_elem.val("2");
     $create_private_stream_policy_elem.attr("id", "id_realm_create_private_stream_policy");
@@ -163,7 +157,6 @@ function test_submit_settings_form(override, submit_form) {
     $subsection_elem.set_find_results(".prop-element", [
         $bot_creation_policy_elem,
         $add_custom_emoji_policy_elem,
-        $create_public_stream_policy_elem,
         $create_private_stream_policy_elem,
         $invite_to_realm_policy_elem,
         $invite_to_stream_policy_elem,
@@ -178,7 +171,6 @@ function test_submit_settings_form(override, submit_form) {
         invite_to_realm_policy: 2,
         invite_to_stream_policy: 1,
         add_custom_emoji_policy: 1,
-        create_public_stream_policy: 2,
         create_private_stream_policy: 2,
     };
     assert.deepEqual(data, expected_value);
@@ -334,7 +326,6 @@ function test_sync_realm_settings() {
     }
 
     test_common_policy("create_private_stream_policy");
-    test_common_policy("create_public_stream_policy");
     test_common_policy("invite_to_stream_policy");
     test_common_policy("invite_to_realm_policy");
 
@@ -347,7 +338,6 @@ function test_sync_realm_settings() {
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
 
-        realm.realm_create_public_stream_policy = 1;
         realm.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
@@ -508,10 +498,7 @@ test("set_up", ({override, override_rewire}) => {
         upload_realm_logo_or_icon = f;
     };
 
-    override_rewire(dropdown_widget, "DropdownWidget", () => ({
-        setup: noop,
-        render: noop,
-    }));
+    override_rewire(settings_org, "init_dropdown_widgets", noop);
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
         $.create("<stub edit limit custom input parent>"),
     );

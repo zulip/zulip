@@ -90,7 +90,7 @@ from pygments.util import ClassNotFound
 from typing_extensions import override
 
 from zerver.lib.exceptions import MarkdownRenderingError
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 from zerver.lib.tex import render_tex
 
 # Global vars
@@ -166,7 +166,7 @@ class FencedCodeExtension(Extension):
             md, run_content_validators=self.config["run_content_validators"][0]
         )
         md.preprocessors.register(
-            processor, "fenced_code_block", PREPROCESSOR_PRIORITES["fenced_code_block"]
+            processor, "fenced_code_block", PREPROCESSOR_PRIORITIES["fenced_code_block"]
         )
 
 

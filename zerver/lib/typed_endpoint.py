@@ -108,6 +108,7 @@ OptionalTopic: TypeAlias = Annotated[
     StringConstraints(strip_whitespace=True),
     ApiParamConfig(whence="topic", aliases=("subject",)),
 ]
+ApnsAppId: TypeAlias = Annotated[str, StringConstraints(pattern="^[.a-zA-Z0-9-]+$")]
 
 # Reusable annotation metadata for Annotated types
 
@@ -315,10 +316,12 @@ ERROR_TEMPLATES = {
     "datetime_parsing": _("{var_name} is not a date"),
     "datetime_type": _("{var_name} is not a date"),
     "dict_type": _("{var_name} is not a dict"),
+    "enum": _("Invalid {var_name}"),
     "extra_forbidden": _('Argument "{argument}" at {var_name} is unexpected'),
     "float_parsing": _("{var_name} is not a float"),
     "float_type": _("{var_name} is not a float"),
     "greater_than": _("{var_name} is too small"),
+    "greater_than_equal": _("{var_name} is too small"),
     "int_parsing": _("{var_name} is not an integer"),
     "int_type": _("{var_name} is not an integer"),
     "json_invalid": _("{var_name} is not valid JSON"),
@@ -330,6 +333,8 @@ ERROR_TEMPLATES = {
     "string_too_short": _("{var_name} is too short."),
     "string_type": _("{var_name} is not a string"),
     "unexpected_keyword_argument": _('Argument "{argument}" at {var_name} is unexpected'),
+    "string_pattern_mismatch": _("{var_name} has invalid format"),
+    "string_fixed_length": _("{var_name} is not length {length}"),
 }
 
 

@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class AnsibletowerHookTests(WebhookTestCase):
-    STREAM_NAME = "ansibletower"
+    CHANNEL_NAME = "ansibletower"
     URL_TEMPLATE = "/api/v1/external/ansibletower?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "ansibletower"
 

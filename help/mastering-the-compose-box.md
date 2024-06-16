@@ -17,12 +17,12 @@ will be sent.
 
 {start_tabs}
 
-{tab|stream-compose}
+{tab|channel-compose}
 
 {!start-composing.md!}
 
-1. Select any stream from the dropdown in the top left of the compose box. You can
-   start typing to filter streams.
+1. Select any channel from the dropdown in the top left of the compose box. You can
+   start typing to filter channels.
 
 1. Enter a topic name. Auto-complete will provide suggestions for previously
    used topics.
@@ -48,16 +48,17 @@ currently composing to.
 
 {start_tabs}
 
-{!start-composing.md!}
+1. [Open the compose box](/help/open-the-compose-box).
 
-1. If composing a stream message, click the **Go to conversation**
-   (<i class="zulip-icon zulip-icon-arrow-left-circle"></i>) button in the
-   compose box.
+1. Click the highlighted **Go to conversation** (<i class="zulip-icon
+   zulip-icon-chevron-right"></i>) button at the top of the compose box. It will
+   be clickable only if you're viewing a different conversation from the one you
+   are composing to.
 
 !!! keyboard_tip ""
 
-    For both stream and direct messages, use <kbd>Ctrl</kbd> + <kbd>.</kbd> to
-    go to the conversation you are composing to.
+    Use <kbd>Ctrl</kbd> + <kbd>.</kbd> to go to the conversation you're
+    composing to.
 
 {end_tabs}
 

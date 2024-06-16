@@ -3,7 +3,7 @@
 import $ from "jquery";
 import _, {isNumber} from "lodash";
 import assert from "minimalistic-assert";
-import type {Instance, Placement} from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
@@ -12,7 +12,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import type {ComposePlaceholderOptions, ComposeTriggeredOptions} from "./compose_ui";
+import type {ComposeTriggeredOptions} from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as dropdown_widget from "./dropdown_widget";
@@ -73,7 +73,7 @@ export function update_narrow_to_recipient_visibility(): void {
             !composing_to_current_topic_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
             return;
         }
     } else if (message_type === "private") {
@@ -83,11 +83,11 @@ export function update_narrow_to_recipient_visibility(): void {
             !composing_to_current_private_message_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
             return;
         }
     }
-    $(".narrow_to_compose_recipients").toggleClass("invisible", true);
+    $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
 }
 
 function update_fade(): void {
@@ -131,7 +131,7 @@ export function get_posting_policy_error_message(): string {
     const stream = sub_store.get(compose_state.selected_recipient_id);
     if (stream && !stream_data.can_post_messages_in_stream(stream)) {
         return $t({
-            defaultMessage: "You do not have permission to post in this stream.",
+            defaultMessage: "You do not have permission to post in this channel.",
         });
     }
     return "";
@@ -174,7 +174,7 @@ function update_recipient_label(stream_id?: number): void {
     const stream = stream_id !== undefined ? stream_data.get_sub_by_id(stream_id) : undefined;
     if (stream === undefined) {
         $("#compose_select_recipient_widget .dropdown_widget_value").text(
-            $t({defaultMessage: "Select a stream"}),
+            $t({defaultMessage: "Select a channel"}),
         );
     } else {
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
@@ -226,7 +226,6 @@ export function on_compose_select_recipient_update(): void {
     if (curr_message_type === "stream") {
         // Update stream name in the recipient box.
         const stream_id = compose_state.stream_id();
-        assert(stream_id !== undefined);
         update_recipient_label(stream_id);
     }
 
@@ -239,7 +238,7 @@ export function possibly_update_stream_name_in_compose(stream_id: number): void 
     }
 }
 
-function item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void {
+function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
     const recipient_id_str = $(event.currentTarget).attr("data-unique-id");
     assert(recipient_id_str !== undefined);
     let recipient_id: string | number = recipient_id_str;
@@ -247,6 +246,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void
         recipient_id = Number.parseInt(recipient_id, 10);
     }
     compose_state.set_selected_recipient_id(recipient_id);
+    compose_state.set_recipient_edited_manually(true);
     on_compose_select_recipient_update();
     dropdown.hide();
     event.preventDefault();
@@ -274,7 +274,7 @@ function get_options_for_recipient_widget(): Option[] {
     return options;
 }
 
-function compose_recipient_dropdown_on_show(dropdown: Instance): void {
+function compose_recipient_dropdown_on_show(dropdown: tippy.Instance): void {
     // Offset to display dropdown above compose.
     let top_offset = 5;
     const window_height = window.innerHeight;
@@ -286,7 +286,7 @@ function compose_recipient_dropdown_on_show(dropdown: Instance): void {
     // pixels below compose starting from top of compose box.
     const bottom_space = window_height - recipient_input_top - search_box_and_padding_height;
     // Show dropdown on top / bottom based on available space.
-    let placement: Placement = "top-start";
+    let placement: tippy.Placement = "top-start";
     if (bottom_space > top_space) {
         placement = "bottom-start";
         top_offset = -30;
@@ -315,7 +315,7 @@ function on_hidden_callback(): void {
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
-        ui_util.place_caret_at_end($("input#stream_message_recipient_topic")[0]);
+        ui_util.place_caret_at_end($("input#stream_message_recipient_topic")[0]!);
     } else {
         if (compose_state.private_message_recipient().length === 0) {
             $("#private_message_recipient").trigger("focus").trigger("select");
@@ -363,22 +363,21 @@ export function update_placeholder_text(): void {
         return;
     }
     const message_type = compose_state.get_message_type();
-    assert(message_type !== undefined);
 
-    let opts: ComposePlaceholderOptions;
+    let placeholder = compose_ui.DEFAULT_COMPOSE_PLACEHOLDER;
     if (message_type === "stream") {
         const stream_id = compose_state.stream_id();
-        opts = {
+        placeholder = compose_ui.compute_placeholder_text({
             message_type,
             stream_id,
             topic: compose_state.topic(),
-        };
-    } else {
-        opts = {
+        });
+    } else if (message_type === "private") {
+        placeholder = compose_ui.compute_placeholder_text({
             message_type,
             direct_message_user_ids: compose_pm_pill.get_user_ids(),
-        };
+        });
     }
 
-    $("textarea#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
+    $("textarea#compose-textarea").attr("placeholder", placeholder);
 }

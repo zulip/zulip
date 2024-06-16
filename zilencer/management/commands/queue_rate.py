@@ -2,14 +2,15 @@ import csv
 from timeit import timeit
 from typing import Any, Union
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from typing_extensions import override
 
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
-from zerver.worker.queue_processors import BatchNoopWorker, NoopWorker
+from zerver.worker.test import BatchNoopWorker, NoopWorker
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Times the overhead of enqueuing and dequeuing messages from RabbitMQ."""
 
     @override

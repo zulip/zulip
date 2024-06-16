@@ -35,6 +35,7 @@ async function test_send_messages(page: Page): Promise<void> {
         {recipient: "cordelia@zulip.com", content: "Compose direct message reply test"},
     ]);
 
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     assert.equal((await page.$$(".message-list .message_row")).length, initial_msgs_count + 2);
 }
 
@@ -78,10 +79,9 @@ async function test_reply_by_click_prepopulates_private_message_recipient(
     assert.ok(private_message !== null);
     await private_message.click();
     await page.waitForSelector("#private_message_recipient", {visible: true});
-    await common.pm_recipient.expect(
-        page,
-        await common.get_internal_email_from_name(page, "cordelia"),
-    );
+    const email = await common.get_internal_email_from_name(page, common.fullname.cordelia);
+    assert(email !== undefined);
+    await common.pm_recipient.expect(page, email);
     await close_compose_box(page);
 }
 
@@ -128,14 +128,14 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
 
 async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): Promise<void> {
     const recipients = ["cordelia@zulip.com", "othello@zulip.com"];
-    const multiple_recipients_pm = "A huddle to check spaces";
+    const multiple_recipients_pm = "A direct message group to check spaces";
     await common.send_message(page, "private", {
         recipient: recipients.join(", "),
         outside_view: true,
         content: multiple_recipients_pm,
     });
 
-    // Go back to all messages view and make sure all messages are loaded.
+    // Go back to the combined feed view and make sure all messages are loaded.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
 
     await page.waitForSelector(".message-list .message_row", {visible: true});
@@ -152,8 +152,8 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     await pm.click();
     await page.waitForSelector("#compose-textarea", {visible: true});
     const recipient_internal_emails = [
-        await common.get_internal_email_from_name(page, "othello"),
-        await common.get_internal_email_from_name(page, "cordelia"),
+        await common.get_internal_email_from_name(page, common.fullname.othello),
+        await common.get_internal_email_from_name(page, common.fullname.cordelia),
     ].join(",");
     await common.pm_recipient.expect(page, recipient_internal_emails);
 }

@@ -17,7 +17,7 @@ account and how users access their accounts:
   join](#set-whether-invitations-are-required-to-join) without an invitation.
 
 * You can [restrict the ability to invite new users](#change-who-can-send-invitations) to
- join your Zulip organzation to specific [roles](/help/roles-and-permissions).
+ join your Zulip organization to specific [roles](/help/roles-and-permissions).
 
 Regardless of whether invitations are required, you can:
 
@@ -110,5 +110,5 @@ Regardless of whether invitations are required, you can:
 
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Invite new users](/help/invite-new-users)
-* [Set default streams for new users](/help/set-default-streams-for-new-users)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Configure default new user settings](/help/configure-default-new-user-settings)

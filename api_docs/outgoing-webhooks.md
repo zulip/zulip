@@ -2,7 +2,7 @@
 
 Outgoing webhooks allow you to build or set up Zulip integrations
 which are notified when certain types of messages are sent in
-Zulip. When one of those events is triggered, we'll send a HTTP POST
+Zulip. When one of those events is triggered, we'll send an HTTP POST
 payload to the webhook's configured URL.  Webhooks can be used to
 power a wide range of Zulip integrations.  For example, the
 [Zulip Botserver][zulip-botserver] is built on top of this API.
@@ -18,7 +18,7 @@ with porting an existing Slack integration to work with Zulip.
 To register an outgoing webhook:
 
 * Log in to the Zulip server.
-* Navigate to *Personal settings (<i class="fa fa-cog"></i>)* -> *Bots* ->
+* Navigate to *Personal settings (<i class="zulip-icon zulip-icon-gear"></i>)* -> *Bots* ->
   *Add a new bot*.  Select *Outgoing webhook* for bot type, the URL
   you'd like Zulip to post to as the **Endpoint URL**, the format you
   want, and click on *Create bot*. to submit the form/
@@ -29,8 +29,8 @@ To register an outgoing webhook:
 
 There are currently two ways to trigger an outgoing webhook:
 
-*  **@-mention** the bot user in a stream.  If the bot replies, its
-    reply will be sent to that stream and topic.
+*  **@-mention** the bot user in a channel.  If the bot replies, its
+    reply will be sent to that channel and topic.
 *  **Send a direct message** with the bot as one of the recipients.
     If the bot replies, its reply will be sent to that thread.
 
@@ -124,11 +124,11 @@ Here's how we fill in the fields that a Slack-format webhook expects:
         </tr>
         <tr>
             <td><code>channel_id</code></td>
-            <td>Stream ID prefixed by "C"</td>
+            <td>Channel ID prefixed by "C"</td>
         </tr>
         <tr>
             <td><code>channel_name</code></td>
-            <td>Stream name</td>
+            <td>Channel name</td>
         </tr>
         <tr>
             <td><code>thread_ts</code></td>

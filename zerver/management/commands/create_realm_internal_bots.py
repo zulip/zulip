@@ -1,12 +1,12 @@
 from typing import Any
 
-from django.core.management.base import BaseCommand
 from typing_extensions import override
 
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """\
 Create realm internal bots if absent, in all realms.
 

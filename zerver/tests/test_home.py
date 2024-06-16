@@ -28,7 +28,7 @@ from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
-from zerver.worker.queue_processors import UserActivityWorker
+from zerver.worker.user_activity import UserActivityWorker
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -114,6 +114,7 @@ class HomeTest(ZulipTestCase):
         "password_min_guesses",
         "password_min_length",
         "presences",
+        "presence_last_update_id",
         "queue_id",
         "realm_add_custom_emoji_policy",
         "realm_allow_edit_history",
@@ -125,6 +126,7 @@ class HomeTest(ZulipTestCase):
         "realm_bot_domain",
         "realm_bots",
         "realm_can_access_all_users_group",
+        "realm_can_create_public_channel_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
@@ -192,6 +194,7 @@ class HomeTest(ZulipTestCase):
         "realm_signup_announcements_stream_id",
         "realm_upload_quota_mib",
         "realm_uri",
+        "realm_url",
         "realm_user_group_edit_policy",
         "realm_user_groups",
         "realm_user_settings_defaults",
@@ -256,7 +259,7 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(53):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -561,7 +564,7 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(53):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
@@ -592,7 +595,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(46):
+        with self.assert_database_query_count(48):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -665,7 +668,7 @@ class HomeTest(ZulipTestCase):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
-            self.assert_in_response("your mission-critical communications with Zulip", result)
+            self.assert_in_response("Zulip lets us move faster, connect with each", result)
 
     def test_accept_terms_of_service(self) -> None:
         self.login("hamlet")
@@ -1228,7 +1231,7 @@ class HomeTest(ZulipTestCase):
             with patch("zerver.views.home.get_subdomain", return_value=""):
                 result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response("your mission-critical communications with Zulip", result)
+            self.assert_in_response("Zulip lets us move faster, connect with each", result)
 
             with patch("zerver.views.home.get_subdomain", return_value="subdomain"):
                 result = self._get_home_page()

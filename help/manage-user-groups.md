@@ -68,7 +68,7 @@
 !!! tip ""
 
     To add users in bulk, you can copy members from an
-    existing stream or user group.
+    existing channel or user group.
 
 {end_tabs}
 

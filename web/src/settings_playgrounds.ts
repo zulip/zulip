@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.hbs";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
+import {Typeahead} from "./bootstrap_typeahead";
 import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as channel from "./channel";
@@ -16,6 +17,8 @@ import * as scroll_util from "./scroll_util";
 import {current_user, realm} from "./state_data";
 import {render_typeahead_item} from "./typeahead_helper";
 import * as ui_report from "./ui_report";
+
+let pygments_typeahead: Typeahead<string>;
 
 const meta = {
     loaded: false,
@@ -98,7 +101,7 @@ function build_page(): void {
             html_body,
             id: "confirm_delete_code_playgrounds_modal",
             on_click() {
-                dialog_widget.submit_api_request(channel.del, url);
+                dialog_widget.submit_api_request(channel.del, url, {});
             },
             loading_spinner: true,
         });
@@ -161,13 +164,12 @@ function build_page(): void {
         type: "input",
     };
 
-    bootstrap_typeahead.create(bootstrap_typeahead_input, {
+    pygments_typeahead = new Typeahead(bootstrap_typeahead_input, {
         source(query: string): string[] {
             language_labels = realm_playground.get_pygments_typeahead_list_for_settings(query);
             return [...language_labels.keys()];
         },
         items: 5,
-        fixed: true,
         helpOnEmptyStrings: true,
         highlighter_html: (item: string): string =>
             render_typeahead_item({primary: language_labels.get(item)}),
@@ -181,7 +183,7 @@ function build_page(): void {
     });
 
     $search_pygments_box.on("click", (e) => {
-        bootstrap_typeahead.lookup($search_pygments_box);
+        pygments_typeahead.lookup(false);
         $search_pygments_box.trigger("select");
         e.preventDefault();
         e.stopPropagation();

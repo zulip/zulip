@@ -42,7 +42,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": null,
-  "id": "in_NORMALIZED00000000000011",
+  "id": "in_NORMALIZED00000000000013",
   "invoice_pdf": null,
   "issuer": {
     "type": "self"
@@ -59,9 +59,9 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000011",
-        "invoice": "in_NORMALIZED00000000000011",
-        "invoice_item": "ii_NORMALIZED00000000000011",
+        "id": "il_NORMALIZED00000000000015",
+        "invoice": "in_NORMALIZED00000000000013",
+        "invoice_item": "ii_NORMALIZED00000000000015",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
@@ -76,13 +76,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000002",
+          "id": "price_NORMALIZED00000000000006",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0002",
+          "product": "prod_NORMALIZED0003",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -106,7 +106,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/in_NORMALIZED00000000000011/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000013/lines"
   },
   "livemode": false,
   "metadata": {},
@@ -159,5 +159,5 @@
   "total_excluding_tax": 10000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

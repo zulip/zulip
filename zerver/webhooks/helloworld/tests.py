@@ -6,7 +6,7 @@ from zerver.models.users import get_system_bot
 
 
 class HelloWorldHookTests(WebhookTestCase):
-    STREAM_NAME = "test"
+    CHANNEL_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     DIRECT_MESSAGE_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
     WEBHOOK_DIR_NAME = "helloworld"
@@ -50,11 +50,11 @@ class HelloWorldHookTests(WebhookTestCase):
 
     def test_stream_error_pm_to_bot_owner(self) -> None:
         # Note that this is really just a test for check_send_webhook_message
-        self.STREAM_NAME = "nonexistent"
+        self.CHANNEL_NAME = "nonexistent"
         self.url = self.build_webhook_url()
         realm = get_realm("zulip")
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
-        expected_message = "Your bot `webhook-bot@zulip.com` tried to send a message to stream #**nonexistent**, but that stream does not exist. Click [here](#streams/new) to create it."
+        expected_message = "Your bot `webhook-bot@zulip.com` tried to send a message to channel #**nonexistent**, but that channel does not exist. Click [here](#channels/new) to create it."
         self.send_and_test_private_message(
             "goodbye",
             expected_message=expected_message,

@@ -295,8 +295,6 @@ test_people("basics", ({override}) => {
     const email = "isaac@example.com";
 
     assert.ok(!people.is_known_user_id(32));
-    assert.ok(!people.is_known_user(isaac));
-    assert.ok(!people.is_known_user(undefined));
     assert.ok(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
@@ -306,7 +304,6 @@ test_people("basics", ({override}) => {
 
     assert.ok(people.is_valid_full_name_and_user_id(full_name, 32));
     assert.ok(people.is_known_user_id(32));
-    assert.ok(people.is_known_user(isaac));
     assert.equal(people.get_active_human_count(), 2);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);
@@ -729,33 +726,33 @@ test_people("filtered_users", () => {
 
     const search_term = "a";
     const users = people.get_realm_users();
-    let filtered_people = people.filter_people_by_search_terms(users, [search_term]);
+    let filtered_people = people.filter_people_by_search_terms(users, search_term);
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(ashton.user_id));
     assert.ok(filtered_people.has(maria.user_id));
     assert.ok(!filtered_people.has(charles.user_id));
 
-    filtered_people = people.filter_people_by_search_terms(users, []);
-    assert.equal(filtered_people.size, 0);
+    filtered_people = people.filter_people_by_search_terms(users, "");
+    assert.equal(filtered_people.size, 7);
 
-    filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ltorv");
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(linus.user_id));
 
-    filtered_people = people.filter_people_by_search_terms(users, ["ch di", "maria"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ch di, maria");
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(charles.user_id));
     assert.ok(filtered_people.has(maria.user_id));
 
     // Test filtering of names with diacritics
     // This should match Nöôáàh by ignoring diacritics, and also match Nooaah
-    filtered_people = people.filter_people_by_search_terms(users, ["noOa"]);
+    filtered_people = people.filter_people_by_search_terms(users, "noOa");
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(noah.user_id));
     assert.ok(filtered_people.has(plain_noah.user_id));
 
     // This should match ëmerson, but not emerson
-    filtered_people = people.filter_people_by_search_terms(users, ["ëm"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ëm");
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(noah.user_id));
 });
@@ -808,23 +805,24 @@ test_people("emails_to_full_names_string", () => {
     );
 });
 
-test_people("concat_huddle", () => {
+test_people("concat_direct_message_group", () => {
     /*
         We assume that user_ids passed in
-        to concat_huddle have already been
-        validated, so we don't need actual
-        people for these tests to pass.
+        to concat_direct_message_group have
+        already been validated, so we don't
+        need actual people for these tests
+        to pass.
 
         That may change in the future.
     */
 
     const user_ids = [303, 301, 302];
 
-    assert.equal(people.concat_huddle(user_ids, 304), "301,302,303,304");
+    assert.equal(people.concat_direct_message_group(user_ids, 304), "301,302,303,304");
 
     // IMPORTANT: we always want to sort
-    // ids numerically to create huddle strings.
-    assert.equal(people.concat_huddle(user_ids, 99), "99,301,302,303");
+    // ids numerically to create direct message group strings.
+    assert.equal(people.concat_direct_message_group(user_ids, 99), "99,301,302,303");
 });
 
 test_people("message_methods", () => {
@@ -1153,8 +1151,8 @@ test_people("get_mention_syntax", () => {
     // blueslip warning is not raised for wildcard mentions without a user_id
     assert.equal(people.get_mention_syntax("all"), "@**all**");
     assert.equal(people.get_mention_syntax("everyone", undefined, true), "@_**everyone**");
-    assert.equal(people.get_mention_syntax("stream"), "@**stream**");
-    assert.equal(people.get_mention_syntax("channel"), "@**stream**");
+    assert.equal(people.get_mention_syntax("stream"), "@**channel**");
+    assert.equal(people.get_mention_syntax("channel"), "@**channel**");
     assert.equal(people.get_mention_syntax("topic"), "@**topic**");
 
     people.add_active_user(stephen1);
@@ -1232,7 +1230,7 @@ test_people("initialize", () => {
     assert.equal(page_params.realm_non_active_users, undefined);
 });
 
-test_people("filter_for_user_settings_search", () => {
+test_people("predicate_for_user_settings_filters", () => {
     /*
         This function calls matches_user_settings_search,
         so that is where we do more thorough testing.
@@ -1240,18 +1238,41 @@ test_people("filter_for_user_settings_search", () => {
     */
     current_user.is_admin = false;
 
-    const fred_smith = {full_name: "Fred Smith"};
-    const alice_lee = {full_name: "Alice Lee"};
-    const jenny_franklin = {full_name: "Jenny Franklin"};
+    const fred_smith = {full_name: "Fred Smith", role: 100};
 
-    const persons = [fred_smith, alice_lee, jenny_franklin];
-
-    assert.deepEqual(people.filter_for_user_settings_search(persons, "fr"), [
-        fred_smith,
-        jenny_franklin,
-    ]);
-
-    assert.deepEqual(people.filter_for_user_settings_search(persons, "le"), [alice_lee]);
+    // Test only when text_search filter is true
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "fr", role_code: 0}),
+        true,
+    );
+    // Test only when role_code filter is true
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "", role_code: 100}),
+        true,
+    );
+    // Test only when text_search filter is false
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "ab", role_code: 0}),
+        false,
+    );
+    // Test only when role_code filter is false
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "", role_code: 200}),
+        false,
+    );
+    // Test when both text_search and role_code filter are true
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {
+            text_search: "smi",
+            role_code: 100,
+        }),
+        true,
+    );
+    // Test when both text_search and role_code filter are false
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "de", role_code: 300}),
+        false,
+    );
 });
 
 test_people("matches_user_settings_search", () => {
@@ -1340,11 +1361,11 @@ test_people("get_active_message_people", () => {
     assert.deepEqual(active_message_people, [steven, maria]);
 });
 
-test_people("huddle_string", () => {
-    assert.equal(people.huddle_string({type: "stream"}), undefined);
+test_people("direct_message_group_string", () => {
+    assert.equal(people.direct_message_group_string({type: "stream"}), undefined);
 
-    function huddle(user_ids) {
-        return people.huddle_string({
+    function direct_message_group(user_ids) {
+        return people.direct_message_group_string({
             type: "private",
             display_recipient: user_ids.map((id) => ({id})),
         });
@@ -1353,9 +1374,9 @@ test_people("huddle_string", () => {
     people.add_active_user(maria);
     people.add_active_user(bob);
 
-    assert.equal(huddle([]), undefined);
-    assert.equal(huddle([me.user_id, maria.user_id]), undefined);
-    assert.equal(huddle([me.user_id, maria.user_id, bob.user_id]), "203,302");
+    assert.equal(direct_message_group([]), undefined);
+    assert.equal(direct_message_group([me.user_id, maria.user_id]), undefined);
+    assert.equal(direct_message_group([me.user_id, maria.user_id, bob.user_id]), "203,302");
 });
 
 test_people("get_realm_active_human_users", () => {

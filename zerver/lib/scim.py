@@ -57,7 +57,7 @@ class ZulipSCIMUser(SCIMUser):
 
         # These attributes are custom to this class and will be
         # populated with values in handle_replace and similar methods
-        # in response to a request for the the corresponding
+        # in response to a request for the corresponding
         # UserProfile fields to change. The .save() method inspects
         # these fields an executes the requested changes.
         self._email_new_value: Optional[str] = None
@@ -296,6 +296,13 @@ class ZulipSCIMUser(SCIMUser):
 
         if self.is_new_user():
             assert full_name_new_value is not None
+            add_initial_stream_subscriptions = True
+            if (
+                self.config.get("create_guests_without_streams", False)
+                and role_new_value == UserProfile.ROLE_GUEST
+            ):
+                add_initial_stream_subscriptions = False
+
             self.obj = do_create_user(
                 email_new_value,
                 password,
@@ -303,6 +310,7 @@ class ZulipSCIMUser(SCIMUser):
                 full_name_new_value,
                 role=role_new_value,
                 tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+                add_initial_stream_subscriptions=add_initial_stream_subscriptions,
                 acting_user=None,
             )
             return
@@ -372,13 +380,13 @@ def base_scim_location_getter(request: HttpRequest, *args: Any, **kwargs: Any) -
 
     Since SCIM synchronization is scoped to an individual realm, we
     need these locations to be namespaced within the realm's domain
-    namespace, which is conveniently accessed via realm.uri.
+    namespace, which is conveniently accessed via realm.url.
     """
 
     realm = RequestNotes.get_notes(request).realm
     assert realm is not None
 
-    return realm.uri
+    return realm.url
 
 
 class ConflictError(scim_exceptions.IntegrityError):

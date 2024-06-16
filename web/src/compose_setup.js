@@ -9,6 +9,7 @@ import * as compose_banner from "./compose_banner";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -16,14 +17,14 @@ import * as dialog_widget from "./dialog_widget";
 import * as flatpickr from "./flatpickr";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
+import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as poll_modal from "./poll_modal";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as stream_data from "./stream_data";
 import * as stream_settings_components from "./stream_settings_components";
 import * as sub_store from "./sub_store";
@@ -88,6 +89,10 @@ export function initialize() {
         } else {
             $(".add-poll").parent().removeClass("disabled-on-hover");
         }
+
+        if (compose_state.get_is_content_unedited_restored_draft()) {
+            compose_state.set_is_content_unedited_restored_draft(false);
+        }
     });
 
     $("#compose form").on("submit", (e) => {
@@ -101,8 +106,6 @@ export function initialize() {
     // there is a change in compose height like when a compose banner is displayed.
     const update_compose_max_height = new ResizeObserver(resize.reset_compose_message_max_height);
     update_compose_max_height.observe(document.querySelector("#compose"));
-
-    upload.feature_check($("#compose .compose_upload_file"));
 
     function get_input_info(event) {
         const $edit_banners_container = $(event.target).closest(".edit_form_banners");
@@ -127,7 +130,7 @@ export function initialize() {
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
-                scheduled_messages_popover.open_send_later_menu();
+                compose_send_menu_popover.open_send_later_menu();
 
                 // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
                 // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
@@ -212,13 +215,19 @@ export function initialize() {
         },
     );
 
+    const automatic_new_visibility_policy_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.automatic_new_visibility_policy)}`;
     $("body").on(
         "click",
-        `.${CSS.escape(
-            compose_banner.CLASSNAMES.automatic_new_visibility_policy,
-        )} .main-view-banner-action-button`,
+        `${automatic_new_visibility_policy_banner_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
+            if ($(event.target).attr("data-action") === "mark-as-read") {
+                $(event.target)
+                    .parents(`${automatic_new_visibility_policy_banner_selector}`)
+                    .remove();
+                onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
+                return;
+            }
             window.location.href = "/#settings/notifications";
         },
     );
@@ -231,7 +240,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
             const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
-            scheduled_messages_popover.do_schedule_message(send_at_timestamp);
+            compose_send_menu_popover.do_schedule_message(send_at_timestamp);
         },
     );
 
@@ -245,8 +254,8 @@ export function initialize() {
             const {$banner_container} = get_input_info(event);
             const $invite_row = $(event.target).parents(".main-view-banner");
 
-            const user_id = Number.parseInt($invite_row.data("user-id"), 10);
-            const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
+            const user_id = Number($invite_row.attr("data-user-id"));
+            const stream_id = Number($invite_row.attr("data-stream-id"));
 
             function success() {
                 $invite_row.remove();
@@ -278,7 +287,18 @@ export function initialize() {
         `.${CSS.escape(compose_banner.CLASSNAMES.search_view)} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            narrow.to_compose_target();
+            message_view.to_compose_target();
+        },
+    );
+
+    const jump_to_conversation_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.jump_to_sent_message_conversation)}`;
+    $("body").on(
+        "click",
+        `${jump_to_conversation_banner_selector} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            $(event.target).parents(`${jump_to_conversation_banner_selector}`).remove();
+            onboarding_steps.post_onboarding_step_as_read("jump_to_conversation_banner");
         },
     );
 
@@ -326,13 +346,13 @@ export function initialize() {
         compose_call_ui.generate_and_insert_audio_or_video_call_link($(e.target), true);
     });
 
-    $("body").on("click", ".time_pick", (e) => {
+    $("body").on("click", ".time_pick", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         let $target_textarea;
         let edit_message_id;
-        const compose_click_target = compose_ui.get_compose_click_target(e);
+        const compose_click_target = compose_ui.get_compose_click_target(this);
         if ($(compose_click_target).parents(".message_edit_form").length === 1) {
             edit_message_id = rows.id($(compose_click_target).parents(".message_row"));
             $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
@@ -415,7 +435,7 @@ export function initialize() {
         compose.clear_preview_area();
     });
 
-    $("#compose").on("click", ".expand_composebox_button", (e) => {
+    $("#compose").on("click", ".expand-composebox-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -424,10 +444,10 @@ export function initialize() {
 
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
-        narrow.to_compose_target();
+        message_view.to_compose_target();
     });
 
-    $("#compose").on("click", ".collapse_composebox_button", (e) => {
+    $("#compose").on("click", ".collapse-composebox-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -465,10 +485,10 @@ export function initialize() {
         compose_recipient.update_placeholder_text();
     });
 
-    $("body").on("click", ".formatting_button", (e) => {
-        const $compose_click_target = $(compose_ui.get_compose_click_target(e));
+    $("body").on("click", ".formatting_button", function (e) {
+        const $compose_click_target = $(compose_ui.get_compose_click_target(this));
         const $textarea = $compose_click_target.closest("form").find("textarea");
-        const format_type = $(e.target).attr("data-format-type");
+        const format_type = $(this).attr("data-format-type");
         compose_ui.format_text($textarea, format_type);
         popovers.hide_all();
         $textarea.trigger("focus");

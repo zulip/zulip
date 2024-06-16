@@ -12,7 +12,7 @@ class kandra::profile::zmirror inherits kandra::profile::base {
     'python3-typing-extensions',
   ]
   package { $zmirror_packages:
-    ensure  => installed,
+    ensure => installed,
   }
 
   file { "${zulip::common::supervisor_conf_dir}/zmirror.conf":

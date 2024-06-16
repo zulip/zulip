@@ -21,5 +21,7 @@ for file in "${files[@]}"; do
     uconv -x any-nfc "$file" | sponge -- "$file"
 done
 
+./tools/i18n/update-for-legacy-translations
+
 ./manage.py compilemessages --ignore='*'
 ./tools/i18n/process-mobile-i18n

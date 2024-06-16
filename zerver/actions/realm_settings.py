@@ -20,10 +20,16 @@ from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
+from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
+    get_group_setting_value_for_api,
+    get_group_setting_value_for_audit_log_data,
+)
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
     Message,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     RealmAuthenticationMethod,
@@ -150,22 +156,43 @@ def do_set_push_notifications_enabled_end_timestamp(
 
 @transaction.atomic(savepoint=False)
 def do_change_realm_permission_group_setting(
-    realm: Realm, setting_name: str, user_group: UserGroup, *, acting_user: Optional[UserProfile]
+    realm: Realm,
+    setting_name: str,
+    user_group: UserGroup,
+    old_setting_api_value: Optional[Union[int, AnonymousSettingGroupDict]] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
     user_group to update and and the user who initiated the update.
     """
     assert setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
-    old_user_group_id = getattr(realm, setting_name).id
+    old_value = getattr(realm, setting_name)
 
     setattr(realm, setting_name, user_group)
     realm.save(update_fields=[setting_name])
+
+    if old_setting_api_value is None:
+        # Most production callers will have computed this as part of
+        # verifying whether there's an actual change to make, but it
+        # feels quite clumsy to have to pass it from unit tests, so we
+        # compute it here if not provided by the caller.
+        old_setting_api_value = get_group_setting_value_for_api(old_value)
+    new_setting_api_value = get_group_setting_value_for_api(user_group)
+
+    if not hasattr(old_value, "named_user_group") and hasattr(user_group, "named_user_group"):
+        # We delete the UserGroup which the setting was set to
+        # previously if it does not have any linked NamedUserGroup
+        # object, as it is not used anywhere else. A new UserGroup
+        # object would be created if the setting is later set to
+        # a combination of users and groups.
+        old_value.delete()
 
     event = dict(
         type="realm",
         op="update_dict",
         property="default",
-        data={setting_name: user_group.id},
+        data={setting_name: new_setting_api_value},
     )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
@@ -177,8 +204,12 @@ def do_change_realm_permission_group_setting(
         event_time=event_time,
         acting_user=acting_user,
         extra_data={
-            RealmAuditLog.OLD_VALUE: old_user_group_id,
-            RealmAuditLog.NEW_VALUE: user_group.id,
+            RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
+                old_setting_api_value
+            ),
+            RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
+                new_setting_api_value
+            ),
             "property": setting_name,
         },
     )
@@ -454,7 +485,23 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+RealmDeactivationReasonType = Literal[
+    "owner_request",
+    "tos_violation",
+    "inactivity",
+    "self_hosting_migration",
+    # When we change the subdomain of a realm, we leave
+    # behind a deactivated gravestone realm.
+    "subdomain_change",
+]
+
+
+def do_deactivate_realm(
+    realm: Realm,
+    *,
+    acting_user: Optional[UserProfile],
+    deactivation_reason: RealmDeactivationReasonType,
+) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -480,6 +527,7 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             acting_user=acting_user,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "deactivation_reason": deactivation_reason,
             },
         )
 
@@ -658,7 +706,7 @@ def do_change_realm_plan_type(
         # If downgrading to a plan that no longer has access to change
         # can_access_all_users_group, set it back to the default
         # value.
-        everyone_system_group = UserGroup.objects.get(
+        everyone_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
         )
         if realm.can_access_all_users_group_id != everyone_system_group.id:
@@ -692,23 +740,18 @@ def do_change_realm_plan_type(
     if plan_type == Realm.PLAN_TYPE_PLUS:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
         realm.max_invites = None  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = None
     elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_LIMITED
     else:
         raise AssertionError("Invalid plan type")
 
@@ -719,7 +762,6 @@ def do_change_realm_plan_type(
             "_max_invites",
             "enable_spectator_access",
             "message_visibility_limit",
-            "upload_quota_gb",
         ]
     )
 
@@ -745,7 +787,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
     )
     context = {
         "confirmation_url": url,
-        "realm_uri": realm.uri,
+        "realm_url": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
     }

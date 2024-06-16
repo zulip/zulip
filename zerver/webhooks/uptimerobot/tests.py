@@ -5,7 +5,7 @@ from zerver.webhooks.uptimerobot.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 
 class UptimeRobotHookTests(WebhookTestCase):
-    STREAM_NAME = "uptimerobot"
+    CHANNEL_NAME = "uptimerobot"
     URL_TEMPLATE = "/api/v1/external/uptimerobot?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "uptimerobot"
 

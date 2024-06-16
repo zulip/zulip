@@ -23,7 +23,6 @@ import * as settings_components from "./settings_components";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import {current_user, realm} from "./state_data";
-import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
 import * as user_group_create from "./user_group_create";
@@ -96,7 +95,7 @@ function update_add_members_elements(group) {
         $button_element.prop("disabled", true);
         $add_members_container.addClass("add_members_disabled");
 
-        stream_ui_updates.initialize_disable_btn_hint_popover(
+        settings_components.initialize_disable_btn_hint_popover(
             $add_members_container,
             $t({defaultMessage: "Only group members can add users to a group."}),
         );
@@ -149,7 +148,7 @@ function initialize_tooltip_for_membership_button(group_id) {
     } else {
         tooltip_message = $t({defaultMessage: "You do not have permission to join this group."});
     }
-    stream_ui_updates.initialize_disable_btn_hint_popover($tooltip_wrapper, tooltip_message);
+    settings_components.initialize_disable_btn_hint_popover($tooltip_wrapper, tooltip_message);
 }
 
 function update_group_membership_button(group_id) {
@@ -252,12 +251,7 @@ export function update_settings_pane(group) {
     $edit_container.find(".group-name").text(group.name);
     $edit_container.find(".group-description").text(group.description);
 
-    settings_org.discard_property_element_changes(
-        $("#id_can_mention_group"),
-        false,
-        undefined,
-        group,
-    );
+    settings_org.discard_group_property_element_changes($("#id_can_mention_group"), group);
 }
 
 function update_toggler_for_group_setting() {
@@ -929,10 +923,8 @@ export function initialize() {
 
             const group_id = $save_button.closest(".user_group_settings_wrapper").data("group-id");
             const group = user_groups.get_user_group_from_id(group_id);
-            const data = settings_org.populate_data_for_request(
+            const data = settings_components.populate_data_for_group_request(
                 $subsection_elem,
-                false,
-                undefined,
                 group,
             );
 
@@ -953,7 +945,7 @@ export function initialize() {
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
             for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-                settings_org.discard_property_element_changes(elem, false, undefined, group);
+                settings_org.discard_group_property_element_changes(elem, group);
             }
             const $save_btn_controls = $(e.target).closest(".save-button-controls");
             settings_components.change_save_button_state($save_btn_controls, "discarded");

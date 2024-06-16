@@ -7,6 +7,7 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
+window.scrollTo = noop;
 const test_url = () => "https://www.example.com";
 
 // We assign this in our test() wrapper.
@@ -108,6 +109,9 @@ mock_esm("../src/message_store", {
 });
 mock_esm("../src/message_view_header", {
     render_title_area: noop,
+});
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
 });
 mock_esm("../src/user_topics", {
     is_topic_muted(stream_id, topic) {
@@ -479,6 +483,7 @@ test("test_recent_view_show", ({override, mock_template}) => {
     $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     rt.process_messages(messages);
 
     rt.show();
@@ -515,6 +520,7 @@ test("test_filter_is_spectator", ({mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, all_visibility_policies.INHERIT]]);
     i = row_data.length;
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.process_messages([messages[0]]);
@@ -549,11 +555,12 @@ test("test_no_filter", ({mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, all_visibility_policies.INHERIT]]);
     i = row_data.length;
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.process_messages([messages[0]]);
     assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
+        rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         false,
     );
 
@@ -572,7 +579,7 @@ test("test_no_filter", ({mock_template}) => {
     // stub_out_filter_buttons();
     // rt.process_messages([messages[9]]);
     // assert.equal(
-    //     rt.filters_should_hide_topic({last_msg_id: 10, participated: true, type: "stream"}),
+    //     rt.filters_should_hide_row({last_msg_id: 10, participated: true, type: "stream"}),
     //     true,
     // );
 
@@ -590,7 +597,7 @@ test("test_no_filter", ({mock_template}) => {
     // stub_out_filter_buttons();
     // rt.process_messages([messages[11]]);
     // assert.equal(
-    //     rt.filters_should_hide_topic({last_msg_id: 12, participated: true, type: "stream"}),
+    //     rt.filters_should_hide_row({last_msg_id: 12, participated: true, type: "stream"}),
     //     true,
     // );
 
@@ -609,7 +616,7 @@ test("test_no_filter", ({mock_template}) => {
     // stub_out_filter_buttons();
     // rt.process_messages([messages[12]]);
     // assert.equal(
-    //     rt.filters_should_hide_topic({last_msg_id: 13, participated: true, type: "stream"}),
+    //     rt.filters_should_hide_row({last_msg_id: 13, participated: true, type: "stream"}),
     //     false,
     // );
 
@@ -629,7 +636,7 @@ test("test_no_filter", ({mock_template}) => {
     // stub_out_filter_buttons();
     // rt.process_messages([messages[13]]);
     // assert.equal(
-    //     rt.filters_should_hide_topic({last_msg_id: 14, participated: true, type: "stream"}),
+    //     rt.filters_should_hide_row({last_msg_id: 14, participated: true, type: "stream"}),
     //     false,
     // );
 
@@ -640,7 +647,7 @@ test("test_no_filter", ({mock_template}) => {
     rt.set_default_focus();
     $(".home-page-input").trigger("focus");
     assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
+        rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         false,
     );
 });
@@ -676,6 +683,7 @@ test("test_filter_pm", ({mock_template}) => {
     });
 
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.set_filter("include_private");
@@ -686,9 +694,9 @@ test("test_filter_pm", ({mock_template}) => {
 
     rt.process_messages([private_messages[0]]);
 
-    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 15}), false);
-    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 16}), true);
-    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 17}), false);
+    assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 15}), false);
+    assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 16}), true);
+    assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 17}), false);
 });
 
 test("test_filter_participated", ({mock_template}) => {
@@ -737,6 +745,7 @@ test("test_filter_participated", ({mock_template}) => {
     });
 
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     recent_view_util.set_visible(true);
     rt.set_default_focus();
     stub_out_filter_buttons();
@@ -745,14 +754,14 @@ test("test_filter_participated", ({mock_template}) => {
 
     $(".home-page-input").trigger("focus");
     assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 4, participated: true, type: "stream"}),
+        rt.filters_should_hide_row({last_msg_id: 4, participated: true, type: "stream"}),
         false,
     );
 
     // Set muted filter
     rt.set_filter("muted");
     assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 7, participated: true, type: "stream"}),
+        rt.filters_should_hide_row({last_msg_id: 7, participated: true, type: "stream"}),
         false,
     );
 
@@ -828,6 +837,7 @@ test("test_update_unread_count", () => {
 test("basic assertions", ({mock_template, override_rewire}) => {
     override_rewire(rt, "inplace_rerender", noop);
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
 
     mock_template("recent_view_table.hbs", false, noop);
     mock_template("recent_view_row.hbs", true, (_data, html) => {
@@ -962,6 +972,7 @@ test("test_reify_local_echo_message", ({mock_template}) => {
     mock_template("recent_view_row.hbs", false, noop);
 
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.process_messages(messages);
@@ -1102,7 +1113,7 @@ test("test_topic_edit", ({override}) => {
     messages[0].topic = topic8;
     rt.process_topic_edit(stream3, topic9, topic8, stream5);
     all_topics = rt_data.get_conversations();
-    assert.equal(rt.filters_should_hide_topic(all_topics.get("5:topic-8")), true);
+    assert.equal(rt.filters_should_hide_row(all_topics.get("5:topic-8")), true);
 });
 
 test("test_search", () => {

@@ -11,13 +11,13 @@ class TestRecipientParsing(ZulipTestCase):
         stream_id = extract_stream_id("1")
         self.assertEqual(stream_id, 1)
 
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for channel ID"):
             extract_stream_id("1,2")
 
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for channel ID"):
             extract_stream_id("[1]")
 
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for channel ID"):
             extract_stream_id("general")
 
     def test_extract_recipient_ids(self) -> None:

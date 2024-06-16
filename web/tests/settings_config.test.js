@@ -43,7 +43,7 @@ run_test("all_notifications", () => {
 
     assert.deepEqual(notifications.general_settings, [
         {
-            label: "translated: Streams",
+            label: "translated: Channels",
             notification_settings: [
                 {
                     is_checked: false,

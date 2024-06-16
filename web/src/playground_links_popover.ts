@@ -1,5 +1,5 @@
 import $ from "jquery";
-import type {Instance as PopoverInstance, ReferenceElement} from "tippy.js";
+import type * as tippy from "tippy.js";
 import url_template_lib from "url-template";
 
 import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
@@ -12,13 +12,13 @@ import * as ui_util from "./ui_util";
 
 type RealmPlaygroundWithURL = RealmPlayground & {playground_url: string};
 
-let playground_links_popover_instance: PopoverInstance;
+let playground_links_popover_instance: tippy.Instance;
 
 // Playground_store contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
 // to pop off of.
 function toggle_playground_links_popover(
-    element: ReferenceElement,
+    element: tippy.ReferenceElement,
     playground_store: Map<number, RealmPlaygroundWithURL>,
 ): void {
     if (is_open()) {
@@ -98,18 +98,21 @@ function register_click_handlers(): void {
             const $view_in_playground_button = $(this);
             const $codehilite_div = $(this).closest(".codehilite");
             e.stopPropagation();
-            const playground_info = realm_playground.get_playground_info_for_languages(
+            let playground_info = realm_playground.get_playground_info_for_languages(
                 $codehilite_div.data("code-language"),
             );
-            if (playground_info === undefined) {
+            const language = $codehilite_div.attr("data-code-language");
+            if (language === undefined) {
                 return;
             }
+            playground_info = realm_playground.get_playground_info_for_languages(language);
+
             // We do the code extraction here and set the target href expanding
             // the url_template with the extracted code. Depending on whether
             // the language has multiple playground links configured, a popover
             // is shown.
             const extracted_code = $codehilite_div.find("code").text();
-            if (playground_info.length === 1) {
+            if (playground_info.length === 1 && playground_info[0] !== undefined) {
                 const url_template = url_template_lib.parse(playground_info[0].url_template);
                 $view_in_playground_button.attr(
                     "href",
@@ -124,7 +127,7 @@ function register_click_handlers(): void {
                 }
                 const popover_target = $view_in_playground_button.find(
                     ".playground-links-popover-container",
-                )[0];
+                )[0]!;
                 toggle_playground_links_popover(popover_target, playground_store);
             }
         },

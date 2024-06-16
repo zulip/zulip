@@ -4,11 +4,11 @@ html {
 
 .flex {
     display: flex;
-    padding: 80px 0;
+    padding: 20px 0 80px;
     align-items: center;
     justify-content: center;
 
-    min-height: calc(100vh - 402px);
+    min-height: calc(100vh - var(--height-footer));
 }
 
 .m-10 {
@@ -292,7 +292,7 @@ html {
 .header {
     color: hsl(0deg 0% 27%);
     background-color: hsl(0deg 0% 100%);
-    position: fixed;
+    position: sticky;
     width: 100%;
     top: 0;
 
@@ -527,6 +527,7 @@ html {
         input[type="email"],
         input[type="password"],
         input[type="number"],
+        input[type="url"],
         textarea,
         select {
             padding: 10px 32px 10px 12px;
@@ -843,9 +844,8 @@ html {
 button.login-social-button {
     width: 328px;
     height: auto;
-    /* Using 44px gives us more space between text and icon so that they don't overlap. */
-    /* Tested in Russian language which has the maximum text. */
-    padding-left: 44px;
+    /* Using 16% gives us space between text and icon so that they don't overlap. */
+    padding-left: 16%;
     line-height: 1;
 
     background-size: auto 60%;

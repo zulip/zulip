@@ -113,7 +113,7 @@ class kandra::profile::nagios inherits kandra::profile::base {
     '/etc/nagios4/conf.d/localhost_nagios2.cfg',
     '/etc/nagios4/conf.d/zulip_nagios.cfg',
   ]:
-    ensure     => absent,
+    ensure => absent,
   }
 
   file { "${zulip::common::supervisor_conf_dir}/autossh_tunnels.conf":

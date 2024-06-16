@@ -4,10 +4,10 @@ import string
 from typing import Dict, List, Optional, Protocol
 
 from django.http import HttpRequest, HttpResponse
-from returns.curry import partial
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_string
@@ -187,7 +187,7 @@ def get_type(request: HttpRequest, payload: WildValue) -> str:
         # Note that we only need the HTTP header to determine pullrequest events.
         # We rely on the payload itself to determine the other ones.
         event_key = validate_extract_webhook_http_header(request, "X-Event-Key", "BitBucket")
-        action = re.match("pullrequest:(?P<action>.*)$", event_key)
+        action = re.match(r"pullrequest:(?P<action>.*)$", event_key)
         if action:
             action_group = action.group("action")
             if action_group in PULL_REQUEST_SUPPORTED_ACTIONS:
@@ -312,11 +312,11 @@ def get_issue_commented_body(request: HttpRequest, payload: WildValue, include_t
     action = "[commented]({}) on".format(
         payload["comment"]["links"]["html"]["href"].tame(check_string)
     )
-    return get_issue_action_body(request, payload, action, include_title)
+    return get_issue_action_body(action, request, payload, include_title)
 
 
 def get_issue_action_body(
-    request: HttpRequest, payload: WildValue, action: str, include_title: bool
+    action: str, request: HttpRequest, payload: WildValue, include_title: bool
 ) -> str:
     issue = payload["issue"]
     assignee = None
@@ -338,7 +338,7 @@ def get_issue_action_body(
 
 
 def get_pull_request_action_body(
-    request: HttpRequest, payload: WildValue, action: str, include_title: bool
+    action: str, request: HttpRequest, payload: WildValue, include_title: bool
 ) -> str:
     pull_request = payload["pullrequest"]
     target_branch = None
@@ -359,7 +359,7 @@ def get_pull_request_action_body(
 
 
 def get_pull_request_created_or_updated_body(
-    request: HttpRequest, payload: WildValue, action: str, include_title: bool
+    action: str, request: HttpRequest, payload: WildValue, include_title: bool
 ) -> str:
     pull_request = payload["pullrequest"]
     assignee = None
@@ -399,9 +399,9 @@ def get_pull_request_comment_created_action_body(
 
 
 def get_pull_request_deleted_or_updated_comment_action_body(
+    action: str,
     request: HttpRequest,
     payload: WildValue,
-    action: str,
     include_title: bool,
 ) -> str:
     action = "{} a [comment]({})".format(
@@ -538,21 +538,21 @@ GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER: Dict[str, BodyGetter] = {
     "fork": get_fork_body,
     "commit_comment": get_commit_comment_body,
     "change_commit_status": get_commit_status_changed_body,
-    "issue_updated": partial(get_issue_action_body, action="updated"),
-    "issue_created": partial(get_issue_action_body, action="created"),
+    "issue_updated": partial(get_issue_action_body, "updated"),
+    "issue_created": partial(get_issue_action_body, "created"),
     "issue_commented": get_issue_commented_body,
-    "pull_request_created": partial(get_pull_request_created_or_updated_body, action="created"),
-    "pull_request_updated": partial(get_pull_request_created_or_updated_body, action="updated"),
-    "pull_request_approved": partial(get_pull_request_action_body, action="approved"),
-    "pull_request_unapproved": partial(get_pull_request_action_body, action="unapproved"),
-    "pull_request_fulfilled": partial(get_pull_request_action_body, action="merged"),
-    "pull_request_rejected": partial(get_pull_request_action_body, action="rejected"),
+    "pull_request_created": partial(get_pull_request_created_or_updated_body, "created"),
+    "pull_request_updated": partial(get_pull_request_created_or_updated_body, "updated"),
+    "pull_request_approved": partial(get_pull_request_action_body, "approved"),
+    "pull_request_unapproved": partial(get_pull_request_action_body, "unapproved"),
+    "pull_request_fulfilled": partial(get_pull_request_action_body, "merged"),
+    "pull_request_rejected": partial(get_pull_request_action_body, "rejected"),
     "pull_request_comment_created": get_pull_request_comment_created_action_body,
     "pull_request_comment_updated": partial(
-        get_pull_request_deleted_or_updated_comment_action_body, action="updated"
+        get_pull_request_deleted_or_updated_comment_action_body, "updated"
     ),
     "pull_request_comment_deleted": partial(
-        get_pull_request_deleted_or_updated_comment_action_body, action="deleted"
+        get_pull_request_deleted_or_updated_comment_action_body, "deleted"
     ),
     "repo:updated": get_repo_updated_body,
 }

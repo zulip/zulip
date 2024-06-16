@@ -195,7 +195,7 @@ below.
 To provide the Services, we need your permission to do things like storing your
 User Submissions and showing them to the people you send messages to, or who
 otherwise have permission to see them (for example, any member of your Zulip
-Organization for a message you send to a public stream.) Our Services also
+Organization for a message you send to a public channel.) Our Services also
 provide you with features like sharing and searching. To provide these and other
 features, Zulip may access, use, store, copy, process, adapt, distribute,
 perform, export, and display your User Submissions. Note that the following
@@ -221,7 +221,7 @@ For example:
 - Your Zulip Organization Administrators may [export the Zulip Organization’s
   data](/help/export-your-organization) for archival or backup purposes, or to
   import the data into a self-hosted Zulip server.
-- Messages on a web-public stream may be viewed by anyone on the Internet.
+- Messages on a web-public channel may be viewed by anyone on the Internet.
 
 When you delete your Zulip account, we will stop displaying your User
 Submissions in association with your account, if applicable. You understand that

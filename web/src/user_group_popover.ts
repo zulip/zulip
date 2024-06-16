@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import type {Instance as PopoverInstance, ReferenceElement} from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.hbs";
 
@@ -17,7 +17,7 @@ import * as ui_util from "./ui_util";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
 
-let user_group_popover_instance: PopoverInstance | undefined;
+let user_group_popover_instance: tippy.Instance | undefined;
 
 type PopoverGroupMember = User & {user_circle_class: string; user_last_seen_time_status: string};
 
@@ -53,10 +53,12 @@ export function handle_keyboard(key: string): void {
 }
 
 // element is the target element to pop off of;
-// message_id is the message id containing it, which should be selected;
+// the element could be user group pill or mentions in a message;
+// in case of message, message_id is the message id containing it;
+// in case of user group pill, message_id is not used;
 export function toggle_user_group_info_popover(
-    element: ReferenceElement,
-    message_id: number,
+    element: tippy.ReferenceElement,
+    message_id: number | undefined,
 ): void {
     if (is_open()) {
         hide();
@@ -112,10 +114,10 @@ export function toggle_user_group_info_popover(
 }
 
 export function register_click_handlers(): void {
-    $("#main_div").on("click", ".user-group-mention", (e) => {
+    $("#main_div").on("click", ".user-group-mention", function (this: HTMLElement, e) {
         e.stopPropagation();
 
-        const $elt = $(e.currentTarget);
+        const $elt = $(this);
         const $row = $elt.closest(".message_row");
         const message_id = rows.id($row);
 
@@ -124,12 +126,22 @@ export function register_click_handlers(): void {
         assert(message !== undefined);
 
         try {
-            toggle_user_group_info_popover(e.currentTarget, message.id);
+            toggle_user_group_info_popover(this, message.id);
         } catch {
             // This user group has likely been deleted.
             blueslip.info("Unable to find user group in message" + message.sender_id);
         }
     });
+
+    // Show the user_group_popover when pill clicked in subscriber settings.
+    $("body").on(
+        "click",
+        ".person_picker .pill[data-user-group-id]",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            toggle_user_group_info_popover(this, undefined);
+        },
+    );
 }
 
 function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {

@@ -39,8 +39,8 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     event_time_delta = event_time - timedelta(days=7)
     limit_check = RealmAuditLog.objects.filter(
         realm=realm, event_type=event_type, event_time__gte=event_time_delta
-    )
-    if len(limit_check) >= EXPORT_LIMIT:
+    ).count()
+    if limit_check >= EXPORT_LIMIT:
         raise JsonableError(_("Exceeded rate limit."))
 
     # The RealmCount analytics table lets us efficiently get an

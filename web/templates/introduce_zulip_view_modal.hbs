@@ -7,12 +7,12 @@
         {{/if}}
         {{#tr}}
             In Zulip, a conversation is either a <z-link-direct-message>direct message</z-link-direct-message>
-            thread, or a <z-link-stream-topic>topic in a stream</z-link-stream-topic>.
+            thread, or a <z-link-channel-topic>topic in a channel</z-link-channel-topic>.
             {{#*inline "z-link-direct-message"}}<a href="/help/direct-messages" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
-            {{#*inline "z-link-stream-topic"}}<a href="/help/streams-and-topics" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+            {{#*inline "z-link-channel-topic"}}<a href="/help/introduction-to-topics" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
         {{/tr}}
         {{#if (eq zulip_view "inbox")}}
-            {{t 'The colored bars indicate which stream the conversation is in.' }}
+            {{t 'The colored bars indicate which channel the conversation is in.' }}
         {{/if}}
     </p>
     <p>

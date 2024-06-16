@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, TypeAlias, Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -7,6 +7,8 @@ from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
+from pydantic import AfterValidator, BaseModel, Json, StringConstraints
+from typing_extensions import Annotated
 
 from zerver.actions.bots import (
     do_change_bot_owner,
@@ -46,11 +48,17 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
-from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, Validator
+from zerver.lib.typed_endpoint import (
+    ApiParamConfig,
+    PathOnly,
+    typed_endpoint,
+    typed_endpoint_without_parameters,
+)
+from zerver.lib.typed_endpoint_validators import check_int_in, check_url
+from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
@@ -73,19 +81,6 @@ from zerver.lib.users import (
     validate_user_custom_profile_data,
 )
 from zerver.lib.utils import generate_api_key
-from zerver.lib.validator import (
-    check_bool,
-    check_capped_string,
-    check_dict,
-    check_dict_only,
-    check_int,
-    check_int_in,
-    check_list,
-    check_none_or,
-    check_string,
-    check_union,
-    check_url,
-)
 from zerver.models import Service, Stream, UserProfile
 from zerver.models.realms import (
     DisposableEmailError,
@@ -101,20 +96,31 @@ from zerver.models.users import (
 )
 from zproject.backends import check_password_strength
 
+RoleParamType: TypeAlias = Annotated[
+    int,
+    AfterValidator(
+        lambda x: check_int_in(
+            x,
+            UserProfile.ROLE_TYPES,
+        )
+    ),
+]
+
 
 def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
 
 
-@has_request_variables
+@typed_endpoint
 def deactivate_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_id: int,
-    deactivation_notification_comment: Optional[str] = REQ(
-        str_validator=check_capped_string(max_length=2000), default=None
-    ),
+    *,
+    user_id: PathOnly[int],
+    deactivation_notification_comment: Optional[
+        Annotated[str, StringConstraints(max_length=2000)]
+    ] = None,
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -168,7 +174,7 @@ def _deactivate_user_profile_backend(
             from_address=FromAddress.NOREPLY,
             context={
                 "deactivation_notification_comment": deactivation_notification_comment,
-                "realm_uri": target.realm.uri,
+                "realm_url": target.realm.url,
                 "realm_name": target.realm.name,
             },
         )
@@ -184,43 +190,25 @@ def reactivate_user_backend(
     if target.is_bot:
         assert target.bot_type is not None
         check_bot_creation_policy(user_profile, target.bot_type)
+        check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success(request)
 
 
-check_profile_data: Validator[List[Dict[str, Optional[Union[int, ProfileDataElementValue]]]]] = (
-    check_list(
-        check_dict_only(
-            [
-                ("id", check_int),
-                (
-                    "value",
-                    check_none_or(
-                        check_union([check_string, check_list(check_int)]),
-                    ),
-                ),
-            ]
-        ),
-    )
-)
+class ProfileDataElement(BaseModel):
+    id: int
+    value: Optional[Union[str, List[int]]]
 
 
-@has_request_variables
+@typed_endpoint
 def update_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_id: int,
-    full_name: Optional[str] = REQ(default=None),
-    role: Optional[int] = REQ(
-        default=None,
-        json_validator=check_int_in(
-            UserProfile.ROLE_TYPES,
-        ),
-    ),
-    profile_data: Optional[List[Dict[str, Optional[Union[int, ProfileDataElementValue]]]]] = REQ(
-        default=None,
-        json_validator=check_profile_data,
-    ),
+    *,
+    user_id: PathOnly[int],
+    full_name: Optional[str] = None,
+    role: Optional[Json[RoleParamType]] = None,
+    profile_data: Optional[Json[List[ProfileDataElement]]] = None,
 ) -> HttpResponse:
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
@@ -250,16 +238,16 @@ def update_user_backend(
     if profile_data is not None:
         clean_profile_data: List[ProfileDataElementUpdateDict] = []
         for entry in profile_data:
-            assert isinstance(entry["id"], int)
-            assert not isinstance(entry["value"], int)
-            if entry["value"] is None or not entry["value"]:
-                field_id = entry["id"]
+            assert isinstance(entry.id, int)
+            assert not isinstance(entry.value, int)
+            if entry.value is None or not entry.value:
+                field_id = entry.id
                 check_remove_custom_profile_field_value(target, field_id)
             else:
                 clean_profile_data.append(
                     {
-                        "id": entry["id"],
-                        "value": entry["value"],
+                        "id": entry.id,
+                        "value": entry.value,
                     }
                 )
         validate_user_custom_profile_data(target.realm.id, clean_profile_data)
@@ -346,27 +334,21 @@ def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def patch_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    bot_id: int,
-    full_name: Optional[str] = REQ(default=None),
-    role: Optional[int] = REQ(
-        default=None,
-        json_validator=check_int_in(
-            UserProfile.ROLE_TYPES,
-        ),
-    ),
-    bot_owner_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    config_data: Optional[Dict[str, str]] = REQ(
-        default=None, json_validator=check_dict(value_validator=check_string)
-    ),
-    service_payload_url: Optional[str] = REQ(json_validator=check_url, default=None),
-    service_interface: int = REQ(json_validator=check_int, default=1),
-    default_sending_stream: Optional[str] = REQ(default=None),
-    default_events_register_stream: Optional[str] = REQ(default=None),
-    default_all_public_streams: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    *,
+    bot_id: PathOnly[int],
+    full_name: Optional[str] = None,
+    role: Optional[Json[RoleParamType]] = None,
+    bot_owner_id: Optional[Json[int]] = None,
+    config_data: Optional[Json[Dict[str, str]]] = None,
+    service_payload_url: Optional[Json[Annotated[str, AfterValidator(check_url)]]] = None,
+    service_interface: Json[int] = 1,
+    default_sending_stream: Optional[str] = None,
+    default_events_register_stream: Optional[str] = None,
+    default_all_public_streams: Optional[Json[bool]] = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -453,9 +435,9 @@ def patch_bot_backend(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint_without_parameters
 def regenerate_bot_api_key(
-    request: HttpRequest, user_profile: UserProfile, bot_id: int
+    request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -467,25 +449,28 @@ def regenerate_bot_api_key(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def add_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    full_name_raw: str = REQ("full_name"),
-    short_name_raw: str = REQ("short_name"),
-    bot_type: int = REQ(json_validator=check_int, default=UserProfile.DEFAULT_BOT),
-    payload_url: str = REQ(json_validator=check_url, default=""),
-    service_name: Optional[str] = REQ(default=None),
-    config_data: Mapping[str, str] = REQ(
-        default={}, json_validator=check_dict(value_validator=check_string)
-    ),
-    interface_type: int = REQ(json_validator=check_int, default=Service.GENERIC),
-    default_sending_stream_name: Optional[str] = REQ("default_sending_stream", default=None),
-    default_events_register_stream_name: Optional[str] = REQ(
-        "default_events_register_stream", default=None
-    ),
-    default_all_public_streams: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    *,
+    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
+    short_name_raw: Annotated[str, ApiParamConfig("short_name")],
+    bot_type: Json[int] = UserProfile.DEFAULT_BOT,
+    payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
+    service_name: Optional[str] = None,
+    config_data: Optional[Json[Mapping[str, str]]] = None,
+    interface_type: Json[int] = Service.GENERIC,
+    default_sending_stream_name: Annotated[
+        Optional[str], ApiParamConfig("default_sending_stream")
+    ] = None,
+    default_events_register_stream_name: Annotated[
+        Optional[str], ApiParamConfig("default_events_register_stream")
+    ] = None,
+    default_all_public_streams: Optional[Json[bool]] = None,
 ) -> HttpResponse:
+    if config_data is None:
+        config_data = {}
     short_name = check_short_name(short_name_raw)
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
         service_name = service_name or short_name
@@ -526,6 +511,7 @@ def add_bot_backend(
     check_bot_name_available(
         realm_id=user_profile.realm_id,
         full_name=full_name,
+        is_activation=False,
     )
 
     check_bot_creation_policy(user_profile, bot_type)
@@ -666,13 +652,14 @@ def get_user_data(
     return data
 
 
-@has_request_variables
+@typed_endpoint
 def get_members_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_id: Optional[int] = None,
-    include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
-    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
+    *,
+    include_custom_profile_fields: Json[bool] = False,
+    client_gravatar: Json[bool] = True,
 ) -> HttpResponse:
     target_user = None
     if user_id is not None:
@@ -686,13 +673,14 @@ def get_members_backend(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def create_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    email: str = REQ(),
-    password: str = REQ(),
-    full_name_raw: str = REQ("full_name"),
+    *,
+    email: str,
+    password: str,
+    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
 ) -> HttpResponse:
     if not user_profile.can_create_users:
         raise JsonableError(_("User not authorized to create users"))
@@ -762,12 +750,13 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     return json_success(request, data=result)
 
 
-@has_request_variables
+@typed_endpoint
 def get_subscription_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_id: int = REQ(json_validator=check_int, path_only=True),
-    stream_id: int = REQ(json_validator=check_int, path_only=True),
+    *,
+    user_id: PathOnly[Json[int]],
+    stream_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
     (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
@@ -777,13 +766,14 @@ def get_subscription_backend(
     return json_success(request, data=subscription_status)
 
 
-@has_request_variables
+@typed_endpoint
 def get_user_by_email(
     request: HttpRequest,
     user_profile: UserProfile,
-    email: str,
-    include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
-    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
+    *,
+    email: PathOnly[str],
+    include_custom_profile_fields: Json[bool] = False,
+    client_gravatar: Json[bool] = True,
 ) -> HttpResponse:
     target_user = access_user_by_email(
         user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=False

@@ -1154,9 +1154,10 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_disable_external_notifications(self) -> None:
         # The disable_external_notifications parameter, used for messages sent by welcome bot,
         # should result in no email/push notifications being sent regardless of the message type.
-        msg_id = internal_send_private_message(
-            self.iago, self.user_profile, "Test Content", disable_external_notifications=True
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            msg_id = internal_send_private_message(
+                self.iago, self.user_profile, "Test Content", disable_external_notifications=True
+            )
         assert msg_id is not None
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)

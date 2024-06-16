@@ -1,0 +1,98 @@
+[
+    {
+        "recipient_type": "channel",
+        "channel": "Day 2: Intro to RSA",
+        "color": "#94C849",
+        "topic": "factorization algorithms",
+        "users": {
+            "Manvir Singh": "static/images/characters/starr.png",
+            "Zoe Davis": "static/images/characters/starr.png",
+            "Maxy Stert": ""
+        },
+        "messages": [
+            {
+                "sender": "Manvir Singh",
+                "content": "You could use [Pollard's rho algorithm](#), which factors a number n in time $$O(n^{\\frac{1}{4}})$$, faster than trial division:\n\n```python\ndef pollard_rho(n: int) -> int:\n    g = lambda x: (x ** 2 + 1) % n\n    x, y, d = 2, 2, 1\n    while d == 1:\n        x, y = g(x), g(g(y))\n        d = math.gcd(x - y, n)\n    return d\n```",
+                "reactions": {
+                    "+1": ["Zoe Davis"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 14, "hour": 16, "minute": 59}
+            },
+            {
+                "sender": "Zoe Davis",
+                "content": "The fastest known algorithm is the general number field sieve, which heuristically runs in time:\n$$\\exp\\left(\\left(\\sqrt[3]{\\frac{64}{9}} + o(1)\\right) + (\\ln n)^{\\frac{1}{3}} (\\ln\\ln n)^{\\frac{2}{3}}\\right)$$\n However, it is much more complicated.",
+                "reactions": {
+                    "runner": ["Manvir Singh"],
+                    "thinking": ["Maxy Stert", "Iago"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 14, "hour": 18, "minute": 19}
+            }
+        ],
+        "screenshot": "static/images/landing-page/research/image_1.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "general",
+        "color": "#9987E1",
+        "topic": "paper posted",
+        "users": {
+            "John Lin": "static/images/characters/starr.png",
+            "Anna Smith": "static/images/characters/starr.png",
+            "Bo Lin": ""
+        },
+        "messages": [
+            {
+                "sender": "John Lin",
+                "content": "Hi all! We just posted a pre-publication draft of our paper! Sharing here for feedback, suggestions, etc. [paper.pdf](#)",
+                "reactions": {
+                    "tada": ["John Lin", "Iago", "Anna Smith", "Bo Lin"],
+                    "eyes": ["Anna Smith", "Iago"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 13, "hour": 14, "minute": 39}
+            },
+            {
+                "sender": "Anna Smith",
+                "content": "Just noticed a small typo in Figure 4. The caption says `detales` instead of `details`. :smile:",
+                "reactions": {
+                    "check": ["John Lin"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 13, "hour": 14, "minute": 57}
+            }
+        ],
+        "screenshot": "static/images/landing-page/research/image_2.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "thesis support group",
+        "color": "#95A5FD",
+        "topic": "chat live",
+        "users": {
+            "Zoe Davis": "static/images/characters/starr.png",
+            "James Williams": "static/images/characters/starr.png",
+            "Bo Lin": "",
+            "Nolan Turner": ""
+        },
+        "messages": [
+            {
+                "sender": "Zoe Davis",
+                "content": "Hey! How does <time:2024-05-14T17:00:00+05:30> sound for doing a video call today? My paper just got rejected.",
+                "reactions": {
+                    "+1": ["James Williams", "Iago", "Zoe Davis", "Bo Lin", "Nolan Turner"],
+                    "broken_heart": ["James Williams", "Iago", "Zoe Davis", "Nolan Turner"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 13, "hour": 15, "minute": 15}
+            },
+            {
+                "sender": "James Williams",
+                "content": "I need to send off a draft of chapter 2 to my advisor. Will try to make it!",
+                "date": {"year": 2024, "month": 5, "day": 13, "hour": 15, "minute": 34}
+            },
+            {
+                "sender": "Zoe Davis",
+                "content": "@**everyone** Video call is happening now! [Join video call.](#)",
+                "date": {"year": 2024, "month": 5, "day": 13, "hour": 16, "minute": 30}
+            }
+        ],
+        "screenshot": "static/images/landing-page/research/image_3.png"
+    }
+]

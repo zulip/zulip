@@ -19,6 +19,7 @@ async function navigate_to_user_list(page: Page): Promise<void> {
 
 async function user_row(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
+    assert(user_id !== undefined);
     return `.user_row[data-user-id="${CSS.escape(user_id.toString())}"]`;
 }
 
@@ -31,16 +32,16 @@ async function test_reactivation_confirmation_modal(page: Page, fullname: string
         "Unexpected title for reactivate user modal",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
         "Confirm",
         "Reactivate button has incorrect text.",
     );
-    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_deactivate_user(page: Page): Promise<void> {
-    const cordelia_user_row = await user_row(page, "cordelia");
+    const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row, {visible: true});
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
     await page.click(cordelia_user_row + " .deactivate");
@@ -52,16 +53,16 @@ async function test_deactivate_user(page: Page): Promise<void> {
         "Unexpected title for deactivate user modal",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
         "Deactivate",
         "Deactivate button has incorrect text.",
     );
-    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_reactivate_user(page: Page): Promise<void> {
-    let cordelia_user_row = await user_row(page, "cordelia");
+    let cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row + ".deactivated_user");
     await page.waitForSelector(cordelia_user_row + " .fa-user-plus");
     await page.click(cordelia_user_row + " .reactivate");
@@ -69,12 +70,12 @@ async function test_reactivate_user(page: Page): Promise<void> {
     await test_reactivation_confirmation_modal(page, common.fullname.cordelia);
 
     await page.waitForSelector(cordelia_user_row + ":not(.deactivated_user)", {visible: true});
-    cordelia_user_row = await user_row(page, "cordelia");
+    cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
 }
 
 async function test_deactivated_users_section(page: Page): Promise<void> {
-    const cordelia_user_row = await user_row(page, "cordelia");
+    const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await test_deactivate_user(page);
 
     // "Deactivated users" section doesn't render just deactivated users until reloaded.
@@ -115,11 +116,11 @@ async function test_bot_deactivation_and_reactivation(page: Page): Promise<void>
         "Unexpected title for deactivate bot modal",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
         "Deactivate",
         "Deactivate button has incorrect text.",
     );
-    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(default_bot_user_row + ".deactivated_user", {visible: true});

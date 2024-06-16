@@ -15,7 +15,7 @@
         {{/unless}}
 
         <div class="input-group">
-            <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
+            <label for="twenty_four_hour_time" class="settings-field-label">{{ settings_label.twenty_four_hour_time }}</label>
             <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time prop-element settings_select bootstrap-focus-style" id="{{prefix}}twenty_four_hour_time" data-setting-widget-type="string">
                 {{#each twenty_four_hour_time_values}}
                     <option value='{{ this.value }}'>{{ this.description }}</option>
@@ -23,7 +23,7 @@
             </select>
         </div>
         <div class="input-group">
-            <label for="color_scheme" class="dropdown-title">{{t "Theme" }}</label>
+            <label for="color_scheme" class="settings-field-label">{{t "Theme" }}</label>
             <select name="color_scheme" class="setting_color_scheme prop-element settings_select bootstrap-focus-style" id="{{prefix}}color_scheme" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=color_scheme_values}}
             </select>
@@ -37,7 +37,7 @@
         </div>
 
         <div class="input-group">
-            <label class="emoji-theme title">{{t "Emoji theme" }}</label>
+            <label class="settings-field-label">{{t "Emoji theme" }}</label>
             <div class="emojiset_choices grey-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
                 {{#each settings_object.emojiset_choices}}
                     <label class="preferences-radio-choice-label">
@@ -85,7 +85,7 @@
         </div>
 
         <div class="input-group">
-            <label for="web_mark_read_on_scroll_policy" class="dropdown-title">{{t "Automatically mark messages as read" }}
+            <label for="web_mark_read_on_scroll_policy" class="settings-field-label">{{t "Automatically mark messages as read" }}
                 {{> ../help_link_widget link="/help/marking-messages-as-read" }}
             </label>
             <select name="web_mark_read_on_scroll_policy" class="setting_web_mark_read_on_scroll_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_mark_read_on_scroll_policy"  data-setting-widget-type="number">
@@ -94,7 +94,7 @@
         </div>
 
         <div class="input-group">
-            <label class="title">{{t "User list style" }}</label>
+            <label class="settings-field-label">{{t "User list style" }}</label>
             <div class="user_list_style_values grey-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
                 {{#each user_list_style_values}}
                     <label class="preferences-radio-choice-label">
@@ -125,7 +125,7 @@
         </div>
 
         <div class="input-group thinner setting-next-is-related">
-            <label for="web_home_view" class="dropdown-title">{{t "Home view" }}
+            <label for="web_home_view" class="settings-field-label">{{t "Home view" }}
                 {{> ../help_link_widget link="/help/configure-home-view" }}
             </label>
             <select name="web_home_view" class="setting_web_home_view prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_home_view" data-setting-widget-type="string">
@@ -140,8 +140,8 @@
           prefix=prefix}}
 
         <div class="input-group">
-            <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
-                {{> ../help_link_widget link="/help/manage-inactive-streams" }}
+            <label for="demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
+                {{> ../help_link_widget link="/help/manage-inactive-channels" }}
             </label>
             <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element settings_select bootstrap-focus-style" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
@@ -149,7 +149,7 @@
         </div>
 
         <div class="input-group">
-            <label for="web_stream_unreads_count_display_policy" class="dropdown-title">{{t "Show unread counts for" }}</label>
+            <label for="web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
             <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}
             </select>

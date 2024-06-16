@@ -104,7 +104,6 @@ async function test_changing_create_streams_and_invite_to_stream_policies(
 ): Promise<void> {
     const policies = {
         "create private stream": "#id_realm_create_private_stream_policy",
-        "create public stream": "#id_realm_create_public_stream_policy",
         "invite to stream": "#id_realm_invite_to_stream_policy",
     };
     const policy_values = {
@@ -166,11 +165,11 @@ async function test_organization_permissions(page: Page): Promise<void> {
     await page.click("li[data-section='organization-permissions']");
 
     // Test temporarily disabled 2024-02-07 due to nondeterminsitic failures.
-    // See https://chat.zulip.org/#narrow/stream/43-automated-testing/topic/main.20failing/near/1733342
+    // See https://chat.zulip.org/#narrow/channel/43-automated-testing/topic/main.20failing/near/1733342
     console.log("Skipping", test_changing_create_streams_and_invite_to_stream_policies);
 
     // Test temporarily disabled 2024-02-25 due to nondeterminsitic failures.
-    // See https://chat.zulip.org/#narrow/stream/43-automated-testing/topic/main.20failing/near/1743361
+    // See https://chat.zulip.org/#narrow/channel/43-automated-testing/topic/main.20failing/near/1743361
     console.log("Skipping", test_set_new_user_threshold_to_three_days);
     console.log("Skipping", test_set_new_user_threshold_to_N_days);
 }

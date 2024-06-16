@@ -6,13 +6,13 @@ invited to a company's Zulip chat.
 
 Guest users **can**:
 
-- View and send messages in streams they have been added to, including viewing
-  message history in the same way as other stream subscribers.
+- View and send messages in channels they have been added to, including viewing
+  message history in the same way as other channel subscribers.
 
 Guest users **cannot**:
 
-- See private or public streams, unless they have been specifically added to the stream.
-- Create new streams or user groups.
+- See private or public channels, unless they have been specifically added to the channel.
+- Create new channels or user groups.
 - Add or manage bots.
 - Add custom emoji.
 - Invite users to join the organization.
@@ -52,7 +52,7 @@ following cases:
 
 - The user belongs to a [direct message](/help/direct-messages) thread with the
   guest.
-- The user is subscribed to one or more [streams](/help/streams-and-topics) with
+- The user is subscribed to one or more [channels](/help/introduction-to-channels) with
   the guest.
 
 When a guest cannot see information about a user, the guest's experience will be
@@ -62,14 +62,14 @@ that:
 - The user does not appear in typeahead suggestions, e.g., in the compose box
   and search.
 - Otherwise, such a user will be displayed as an **Unknown user** in the Zulip
-  app. For example, messages and reactions from a former subscriber of a stream
+  app. For example, messages and reactions from a former subscriber of a channel
   will be shown as from an **Unknown user**.
 - An **Unknown user**'s [user card](/help/user-cards) will not display
   information about that user. However, the guest can still search from all
   messages send by a particular **Unknown user** from that user's card.
 
 In practice, guests should rarely encounter content from an **Unknown user**,
-unless users in your organization frequently change their stream subscriptions
+unless users in your organization frequently change their channel subscriptions
 or are [deactivated](/help/deactivate-or-reactivate-a-user).
 
 The only information guests can access about unknown users via the [API](/api/)
