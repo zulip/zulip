@@ -44,7 +44,7 @@
         </div>
     </div>
     <div class="message_comp">
-        <div id="compose_banners" data-simplebar></div>
+        <div id="compose_banners" data-simplebar data-simplebar-tab-index="-1"></div>
         <div class="composition-area">
             <form id="send_message_form" action="/json/messages" method="post">
                 <div class="compose_table">
@@ -72,7 +72,7 @@
                         <div id="message-content-container">
                             <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
                             <div id="preview-message-area-container">
-                                <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
+                                <div class="scrolling_list preview_message_area" data-simplebar data-simplebar-tab-index="-1" id="preview_message_area" style="display:none;">
                                     <div class="markdown_preview_spinner"></div>
                                     <div class="preview_content rendered_markdown"></div>
                                 </div>

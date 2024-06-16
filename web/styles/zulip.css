@@ -2264,10 +2264,6 @@ body:not(.hide-left-sidebar) {
 }
 
 .simplebar-content-wrapper {
-    /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
-        but we don't want it to have an outline when focused anywhere in the app. */
-    outline: none;
-
     /* This prevents the popover from closing once the top/bottom is reached */
     overscroll-behavior: contain;
 }

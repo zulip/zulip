@@ -685,8 +685,6 @@ export function complete_rerender(): void {
     // this, we scroll to top before restoring focus via revive_current_focus.
     $("html").scrollTop(0);
     setTimeout(() => {
-        // We don't want to focus on simplebar ever.
-        $("#inbox-list .simplebar-content-wrapper").attr("tabindex", "-1");
         revive_current_focus();
     }, 0);
 
