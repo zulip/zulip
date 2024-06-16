@@ -9,9 +9,9 @@
                 <span class="emoji-popover-tab-item {{#if @first}} active {{/if}}" data-tab-name='{{name}}' title='{{name}}'><i class="fa {{icon}}"></i></span>
             {{/each}}
         </div>
-        <div class="emoji-popover-emoji-map" data-simplebar data-simplebar-auto-hide="false" data-message-id="{{message_id}}">
+        <div class="emoji-popover-emoji-map" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false" data-message-id="{{message_id}}">
         </div>
-        <div class="emoji-search-results-container" data-simplebar data-simplebar-auto-hide="false" data-message-id="{{message_id}}">
+        <div class="emoji-search-results-container" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false" data-message-id="{{message_id}}">
             <div class="emoji-popover-results-heading">{{t "Search results" }}</div>
             <div class="emoji-search-results"></div>
         </div>
