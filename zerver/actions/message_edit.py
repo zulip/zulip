@@ -1411,24 +1411,28 @@ def check_update_message(
         isinstance(message_edit_request, StreamMessageEditRequest)
         and message_edit_request.is_topic_edited
     ):
-        if not user_profile.can_move_messages_to_another_topic():
-            raise JsonableError(_("You don't have permission to edit this message"))
+        if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
+            if not user_profile.can_resolve_topic():
+                raise JsonableError(_("You don't have permission to resolve topics."))
+        else:
+            if not user_profile.can_move_messages_to_another_topic():
+                raise JsonableError(_("You don't have permission to edit this message"))
 
-        # If there is a change to the topic, check that the user is allowed to
-        # edit it and that it has not been too long. If user is not admin or moderator,
-        # and the time limit for editing topics is passed, raise an error.
-        if (
-            user_profile.realm.move_messages_within_stream_limit_seconds is not None
-            and not user_profile.is_realm_admin
-            and not user_profile.is_moderator
-        ):
-            deadline_seconds = (
-                user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
-            )
-            if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
-                raise JsonableError(
-                    _("The time limit for editing this message's topic has passed.")
+            # If there is a change to the topic, check that the user is allowed to
+            # edit it and that it has not been too long. If user is not admin or moderator,
+            # and the time limit for editing topics is passed, raise an error.
+            if (
+                user_profile.realm.move_messages_within_stream_limit_seconds is not None
+                and not user_profile.is_realm_admin
+                and not user_profile.is_moderator
+            ):
+                deadline_seconds = (
+                    user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
                 )
+                if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
+                    raise JsonableError(
+                        _("The time limit for editing this message's topic has passed.")
+                    )
 
     rendering_result = None
     links_for_embed: set[str] = set()
@@ -1502,6 +1506,8 @@ def check_update_message(
             and not user_profile.is_realm_admin
             and not user_profile.is_moderator
             and message_edit_request.is_message_moved
+            and not message_edit_request.topic_resolved
+            and not message_edit_request.topic_unresolved
         ):
             check_time_limit_for_change_all_propagate_mode(
                 message, user_profile, topic_name, stream_id
