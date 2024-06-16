@@ -18,6 +18,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
@@ -1540,6 +1541,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         # 'prepare_move_topics' sends 3 messages in the first_stream
         messages = get_topic_messages(user_profile, first_stream, "test")
         self.assert_length(messages, 3)
+        realm = messages[0].realm
 
         # Test resolving a topic (test ->  ✔ test) while changing stream (first_stream -> second_stream)
         new_topic_name = "✔ test"
@@ -1578,6 +1580,32 @@ class MessageMoveStreamTest(ZulipTestCase):
             messages[4].content,
             f"This topic was moved here from #**{second_stream.name}>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
+
+        # Test resolving a topic (test ->  ✔ test) while changing stream (first_stream -> second_stream) with no moving messages
+        # between channels permission.
+        new_topic_name = RESOLVED_TOPIC_PREFIX + " test"
+        new_stream = second_stream
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": new_stream.id,
+                "topic": new_topic_name,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(result, "You don't have permission to move this message")
 
     def parameterized_test_move_message_involving_private_stream(
         self,
