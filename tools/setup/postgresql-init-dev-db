@@ -61,7 +61,7 @@ fi
 
 # We need to remove the stamp file indicating that the database
 # is properly provisioned with migrations.
-uuid_var_path=$($(readlink -f "$(dirname "$0")/../../scripts/lib/zulip_tools.py") get_dev_uuid)
+uuid_var_path=$("$(readlink -f "$(dirname "$0")/../../scripts/lib/zulip_tools.py")" get_dev_uuid)
 rm -f "$uuid_var_path/$STATUS_FILE_NAME"
 
 "${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DEFAULT_DB" <<EOF
