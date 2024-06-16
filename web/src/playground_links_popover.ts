@@ -105,9 +105,8 @@ function register_click_handlers(): void {
                 return;
             }
 
-            const playground_info =
-                realm_playground.get_playground_info_for_languages(languageData);
-            if(playground_info===undefined){
+            let playground_info = realm_playground.get_playground_info_for_languages(languageData);
+            if (playground_info === undefined) {
                 return;
             }
             const language = $codehilite_div.attr("data-code-language");
@@ -115,7 +114,9 @@ function register_click_handlers(): void {
                 return;
             }
             playground_info = realm_playground.get_playground_info_for_languages(language);
-
+            if (playground_info === undefined) {
+                return;
+            }
             // We do the code extraction here and set the target href expanding
             // the url_template with the extracted code. Depending on whether
             // the language has multiple playground links configured, a popover
@@ -139,7 +140,7 @@ function register_click_handlers(): void {
                 )[0]!;
                 toggle_playground_links_popover(popover_target, playground_store);
             }
-        }
+        },
     );
 
     $("body").on("click", ".popover_playground_link", (e) => {
