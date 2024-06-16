@@ -1145,6 +1145,28 @@ def do_update_message(
     return changed_messages_count
 
 
+def is_resolve_topic_request(
+    message: Message,
+    new_topic_name: Optional[str],
+    propagate_mode: str,
+    content: Optional[str],
+) -> bool:
+    old_topic_name = message.topic_name()
+
+    if new_topic_name is not None:
+        topic_resolved: bool = new_topic_name.startswith(
+            RESOLVED_TOPIC_PREFIX
+        ) and not old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+        topic_unresolved: bool = old_topic_name.startswith(
+            RESOLVED_TOPIC_PREFIX
+        ) and not new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+
+        if topic_resolved or topic_unresolved:
+            return True
+
+    return False
+
+
 def check_time_limit_for_change_all_propagate_mode(
     message: Message,
     user_profile: UserProfile,
@@ -1244,6 +1266,7 @@ def check_time_limit_for_change_all_or_stream_edit_request(
     topic_name: Optional[str],
     propagate_mode: str,
     edit_limit_buffer: int,
+    is_resolve_topic_request: bool,
 ) -> None:
     if (
         stream_id is not None
@@ -1259,6 +1282,7 @@ def check_time_limit_for_change_all_or_stream_edit_request(
 
     if (
         propagate_mode == "change_all"
+        and not is_resolve_topic_request
         and not user_profile.is_realm_admin
         and not user_profile.is_moderator
         and (topic_name is not None or stream_id is not None)
@@ -1297,6 +1321,15 @@ def check_message_or_topic_edit_permissions(
             raise JsonableError(_("The time limit for editing this message's topic has passed."))
 
 
+def check_resolve_topic_permissions(
+    user_profile: UserProfile,
+    message: Message,
+    stream_id: Optional[int],
+) -> None:
+    if not user_profile.can_resolve_topic():
+        raise JsonableError(_("You don't have permission to resolve/unresolve topics."))
+
+
 @transaction.atomic(durable=True)
 def check_update_message(
     user_profile: UserProfile,
@@ -1333,9 +1366,12 @@ def check_update_message(
 
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
-    check_message_or_topic_edit_permissions(
-        user_profile, message, stream_id, topic_name, propagate_mode, content, edit_limit_buffer
-    )
+    if is_resolve_topic_request(message, topic_name, propagate_mode, content):
+        check_resolve_topic_permissions(user_profile, message, stream_id)
+    else:
+        check_message_or_topic_edit_permissions(
+            user_profile, message, stream_id, topic_name, propagate_mode, content, edit_limit_buffer
+        )
 
     rendering_result = None
     links_for_embed: Set[str] = set()
@@ -1396,7 +1432,13 @@ def check_update_message(
         check_stream_access_based_on_stream_post_policy(user_profile, new_stream)
 
     check_time_limit_for_change_all_or_stream_edit_request(
-        message, user_profile, stream_id, topic_name, propagate_mode, edit_limit_buffer
+        message,
+        user_profile,
+        stream_id,
+        topic_name,
+        propagate_mode,
+        edit_limit_buffer,
+        is_resolve_topic_request(message, topic_name, propagate_mode, content),
     )
 
     number_changed = do_update_message(

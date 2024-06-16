@@ -571,6 +571,7 @@ run_test("realm settings", ({override}) => {
     realm.realm_allow_message_editing = false;
     realm.realm_message_content_edit_limit_seconds = 0;
     realm.realm_edit_topic_policy = 3;
+    realm.realm_can_resolve_topics_group = 5;
     realm.realm_authentication_methods = {Google: {enabled: false, available: true}};
     realm.realm_can_create_public_channel_group = 1;
     override(settings_org, "populate_auth_methods", noop);
@@ -579,6 +580,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_allow_message_editing, true);
     assert_same(realm.realm_message_content_edit_limit_seconds, 5);
     assert_same(realm.realm_edit_topic_policy, 4);
+    assert_same(realm.realm_can_resolve_topics_group, 1);
     assert_same(realm.realm_authentication_methods, {
         Google: {enabled: true, available: true},
     });

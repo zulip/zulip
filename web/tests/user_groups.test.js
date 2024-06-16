@@ -355,6 +355,16 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
                 id_field_name: "can_access_all_users_group_id",
                 allowed_system_groups: ["role:everyone", "role:members"],
             },
+            can_resolve_topics_group: {
+                require_system_group: false,
+                allow_internet_group: false,
+                allow_owners_group: true,
+                allow_nobody_group: true,
+                allow_everyone_group: false,
+                default_group_name: "role:members",
+                id_field_name: "can_resolve_topics_group_id",
+                allowed_system_groups: [],
+            },
         },
     };
 

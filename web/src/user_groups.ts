@@ -3,6 +3,7 @@ import type {z} from "zod";
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
+import {$t} from "./i18n";
 import * as settings_config from "./settings_config";
 import type {StateData, user_group_schema} from "./state_data";
 import {current_user} from "./state_data";
@@ -225,6 +226,19 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
     return false;
 }
 
+function maybe_override_group_display_name_for_dropdown(
+    setting_name: string,
+    group: {
+        name: string;
+        display_name: string;
+    },
+): string {
+    if (setting_name === "can_resolve_topics_group" && group.name === "role:nobody") {
+        return $t({defaultMessage: "Disable resolving topics"});
+    }
+    return group.display_name;
+}
+
 export function get_realm_user_groups_for_dropdown_list_widget(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
@@ -276,6 +290,12 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             if (!user_group) {
                 throw new Error(`Unknown group name: ${group.name}`);
             }
+
+            group.display_name = maybe_override_group_display_name_for_dropdown(
+                setting_name,
+                group,
+            );
+
             return {
                 name: group.display_name,
                 unique_id: user_group.id,

@@ -371,6 +371,51 @@ test_realm_group_settings(
     settings_data.user_can_create_multiuse_invite,
 );
 
+run_test("user_can_resolve_topic", () => {
+    const admin_user_id = 1;
+    const member_user_id = 2;
+    const guest_user_id = 3;
+
+    const admins = {
+        name: "Admins",
+        id: 1,
+        members: new Set([admin_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const members = {
+        name: "role:members",
+        id: 2,
+        members: new Set([member_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const everyone = {
+        name: "role:everyone",
+        id: 3,
+        members: new Set([guest_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    user_groups.initialize({realm_user_groups: [admins, members, everyone]});
+
+    realm.realm_can_resolve_topics_group = 1;
+    current_user.user_id = admin_user_id;
+    assert.equal(settings_data.user_can_resolve_topic(), true);
+
+    realm.realm_can_resolve_topics_group = 2;
+    current_user.user_id = member_user_id;
+    assert.equal(settings_data.user_can_resolve_topic(), true);
+
+    page_params.is_spectator = true;
+    assert.equal(settings_data.user_can_resolve_topic(), false);
+
+    realm.realm_can_resolve_topics_group = 3;
+    current_user.user_id = everyone;
+    assert.equal(settings_data.user_can_resolve_topic(), false);
+});
+
 run_test("can_edit_user_group", () => {
     const students = {
         description: "Students group",

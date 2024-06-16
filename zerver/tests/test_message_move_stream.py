@@ -9,8 +9,9 @@ from zerver.actions.users import do_change_user_role
 from zerver.lib.message import has_message_access
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.url_encoding import near_stream_message_url
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Realm, Stream, UserMessage, UserProfile
 from zerver.models.realms import (
     EditTopicPolicyEnum,
     MoveMessagesBetweenStreamsPolicyEnum,
@@ -1473,6 +1474,27 @@ class MessageMoveStreamTest(ZulipTestCase):
             messages[6].content,
             f"This topic was moved here from #**{second_stream.name}>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
+
+        # Test resolving a topic (test ->  ✔ test) while changing stream (first_stream -> second_stream) with no moving messages
+        # between streams permission.
+        new_topic_name = RESOLVED_TOPIC_PREFIX + " test"
+        new_stream = second_stream
+
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": new_stream.id,
+                "topic": new_topic_name,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(result, "You don't have permission to move this message")
 
     def parameterized_test_move_message_involving_private_stream(
         self,
