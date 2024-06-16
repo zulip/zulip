@@ -223,6 +223,7 @@ def get_recipient_info(
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
@@ -388,26 +389,44 @@ def get_recipient_info(
     user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
     if user_ids:
-        query: ValuesQuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
-            is_active=True
-        ).values(
-            "id",
-            "enable_online_push_notifications",
-            "enable_offline_email_notifications",
-            "enable_offline_push_notifications",
-            "is_bot",
-            "bot_type",
-            "long_term_idle",
-        )
+        user_ids_list = sorted(user_ids)
+        rows: List[ActiveUserDict] = []
 
-        # query_for_ids is fast highly optimized for large queries, and we
-        # need this codepath to be fast (it's part of sending messages)
-        query = query_for_ids(
-            query=query,
-            user_ids=sorted(user_ids),
-            field="id",
-        )
-        rows = list(query)
+        if user_profile_cache:
+            for id in user_ids_list:
+                user = user_profile_cache[id]
+                rows.append(
+                    ActiveUserDict(
+                        id=id,
+                        enable_online_push_notifications=user.enable_online_push_notifications,
+                        enable_offline_email_notifications=user.enable_offline_email_notifications,
+                        enable_offline_push_notifications=user.enable_offline_push_notifications,
+                        long_term_idle=user.long_term_idle,
+                        is_bot=user.is_bot,
+                        bot_type=user.bot_type,
+                    )
+                )
+        else:
+            query: ValuesQuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
+                is_active=True
+            ).values(
+                "id",
+                "enable_online_push_notifications",
+                "enable_offline_email_notifications",
+                "enable_offline_push_notifications",
+                "is_bot",
+                "bot_type",
+                "long_term_idle",
+            )
+
+            # query_for_ids is fast highly optimized for large queries, and we
+            # need this codepath to be fast (it's part of sending messages)
+            query = query_for_ids(
+                query=query,
+                user_ids=user_ids_list,
+                field="id",
+            )
+            rows = list(query)
     else:
         # TODO: We should always have at least one user_id as a recipient
         #       of any message we send.  Right now the exception to this
@@ -580,6 +599,7 @@ def build_message_send_dict(
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
     recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -613,6 +633,7 @@ def build_message_send_dict(
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
+        user_profile_cache=user_profile_cache,
     )
 
     # Render our message_dicts.
@@ -850,6 +871,7 @@ def do_send_messages(
     *,
     mark_as_read: Sequence[int] = [],
     is_channel_unsubscription_notification: bool = False,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> List[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1019,6 +1041,7 @@ def do_send_messages(
             send_request.message,
             realm_id,
             is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+            user_profile_cache=user_profile_cache,
         )
 
         user_flags = user_message_flags.get(send_request.message.id, {})
@@ -1629,6 +1652,7 @@ def check_message(
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1769,6 +1793,7 @@ def check_message(
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        user_profile_cache=user_profile_cache,
     )
 
     if (
@@ -1806,6 +1831,7 @@ def _internal_prep_message(
     disable_external_notifications: bool = False,
     forged: bool = False,
     forged_timestamp: Optional[float] = None,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -1837,6 +1863,7 @@ def _internal_prep_message(
             disable_external_notifications=disable_external_notifications,
             forged=forged,
             forged_timestamp=forged_timestamp,
+            user_profile_cache=user_profile_cache,
         )
     except JsonableError as e:
         logging.exception(
@@ -1907,6 +1934,7 @@ def internal_prep_private_message(
     *,
     mention_backend: Optional[MentionBackend] = None,
     disable_external_notifications: bool = False,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -1924,6 +1952,7 @@ def internal_prep_private_message(
         content=content,
         mention_backend=mention_backend,
         disable_external_notifications=disable_external_notifications,
+        user_profile_cache=user_profile_cache,
     )
 
 
