@@ -585,7 +585,7 @@ def check_user_can_access_all_users(acting_user: Optional[UserProfile]) -> bool:
         return True
 
     realm = acting_user.realm
-    if is_user_in_group(realm.can_access_all_users_group, acting_user):
+    if is_user_in_group(realm.can_access_all_users_group, acting_user.id):
         return True
 
     return False

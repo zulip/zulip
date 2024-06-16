@@ -64,6 +64,7 @@ default_stream_fields = [
     ("rendered_description", str),
     ("stream_id", int),
     ("stream_post_policy", int),
+    ("stream_topic_access_group", int),
 ]
 
 basic_stream_fields = [
@@ -1405,7 +1406,7 @@ def check_stream_update(
     elif prop == "stream_post_policy":
         assert extra_keys == set()
         assert value in Stream.STREAM_POST_POLICY_TYPES
-    elif prop == "can_remove_subscribers_group":
+    elif prop in {"can_remove_subscribers_group", "stream_topic_access_group"}:
         assert extra_keys == set()
         assert isinstance(value, int)
     elif prop == "first_message_id":

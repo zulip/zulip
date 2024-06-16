@@ -487,6 +487,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_public_channel_group":
+        case "stream_topic_access_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,

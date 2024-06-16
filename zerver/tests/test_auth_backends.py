@@ -7537,7 +7537,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
             self.assertFalse(
                 is_user_in_group(
                     user_group,
-                    hamlet,
+                    hamlet.id,
                     direct_member_only=True,
                 )
             )
@@ -7546,7 +7546,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
             self.assertTrue(
                 is_user_in_group(
                     user_group,
-                    hamlet,
+                    hamlet.id,
                     direct_member_only=True,
                 )
             )
@@ -7564,7 +7564,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
             self.assertTrue(
                 is_user_in_group(
                     NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
-                    cordelia,
+                    cordelia.id,
                     direct_member_only=True,
                 )
             )
@@ -7575,7 +7575,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
             self.assertFalse(
                 is_user_in_group(
                     NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
-                    cordelia,
+                    cordelia.id,
                     direct_member_only=True,
                 )
             )

@@ -53,6 +53,7 @@ class ErrorCode(Enum):
     REMOTE_REALM_SERVER_MISMATCH_ERROR = auto()
     PUSH_NOTIFICATIONS_DISALLOWED = auto()
     EXPECTATION_MISMATCH = auto()
+    UNAUTHORIZED_TOPIC_ACCESS = auto()
 
 
 class JsonableError(Exception):
@@ -669,3 +670,17 @@ class PreviousSettingValueMismatchedError(JsonableError):
     @override
     def msg_format() -> str:
         return _("'old' value does not match the expected value.")
+
+
+class UnauthorizedTopicAccessError(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_TOPIC_ACCESS
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "This topic already exists. You are only permitted to send messages in topics created by you."
+        )

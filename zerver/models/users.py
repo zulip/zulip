@@ -764,7 +764,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             allowed_user_group = getattr(self.realm, policy_name)
-            return is_user_in_group(allowed_user_group, self)
+            return is_user_in_group(allowed_user_group, self.id)
 
         policy_value = getattr(self.realm, policy_name)
         if policy_value == Realm.POLICY_NOBODY:

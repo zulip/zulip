@@ -242,6 +242,39 @@ function setup_dropdown(sub, slim_sub) {
         can_remove_subscribers_group_widget,
     );
     can_remove_subscribers_group_widget.setup();
+
+    const stream_topic_access_group_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "stream_topic_access_group",
+        get_options: () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "stream_topic_access_group",
+                "stream",
+            ),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            stream_topic_access_group_widget.render();
+            settings_components.save_discard_stream_settings_widget_status_handler(
+                $("#stream_permission_settings"),
+                slim_sub,
+            );
+        },
+        $events_container: $("#subscription_overlay .subscription_settings"),
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: sub.stream_topic_access_group,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+    });
+    settings_components.set_dropdown_setting_widget(
+        "stream_topic_access_group",
+        stream_topic_access_group_widget,
+    );
+    stream_topic_access_group_widget.setup();
 }
 
 export function show_settings_for(node) {

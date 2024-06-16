@@ -20,6 +20,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import check_access_based_on_stream_topic_access_group
 from zerver.lib.types import APIStreamDict
 from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
@@ -68,6 +69,7 @@ class StreamDict(TypedDict, total=False):
     history_public_to_subscribers: Optional[bool]
     message_retention_days: Optional[int]
     can_remove_subscribers_group: Optional[UserGroup]
+    stream_topic_access_group: Optional[UserGroup]
 
 
 def get_stream_permission_policy_name(
@@ -138,6 +140,7 @@ def create_stream_if_needed(
     stream_description: str = "",
     message_retention_days: Optional[int] = None,
     can_remove_subscribers_group: Optional[UserGroup] = None,
+    stream_topic_access_group: Optional[UserGroup] = None,
     acting_user: Optional[UserProfile] = None,
 ) -> Tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
@@ -149,9 +152,15 @@ def create_stream_if_needed(
             name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
         )
 
+    if stream_topic_access_group is None:
+        stream_topic_access_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, is_system_group=True, realm=realm
+        )
+
     stream_name = stream_name.strip()
 
     assert can_remove_subscribers_group is not None
+    assert stream_topic_access_group is not None
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,
@@ -166,6 +175,7 @@ def create_stream_if_needed(
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             can_remove_subscribers_group=can_remove_subscribers_group,
+            stream_topic_access_group=stream_topic_access_group,
         ),
     )
 
@@ -219,6 +229,7 @@ def create_streams_if_needed(
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            stream_topic_access_group=stream_dict.get("stream_topic_access_group", None),
             acting_user=acting_user,
         )
 
@@ -602,6 +613,11 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
     if stream.is_web_public:
         return True
 
+    if stream.is_support_stream() and not check_access_based_on_stream_topic_access_group(
+        user_profile.id, stream
+    ):
+        return False
+
     if stream.is_history_realm_public() and not user_profile.is_guest:
         return True
 
@@ -640,7 +656,7 @@ def can_remove_subscribers_from_stream(
 
     group_allowed_to_remove_subscribers = stream.can_remove_subscribers_group
     assert group_allowed_to_remove_subscribers is not None
-    return is_user_in_group(group_allowed_to_remove_subscribers, user_profile)
+    return is_user_in_group(group_allowed_to_remove_subscribers, user_profile.id)
 
 
 def filter_stream_authorization(
@@ -881,6 +897,7 @@ def stream_to_dict(
         rendered_description=stream.rendered_description,
         stream_id=stream.id,
         stream_post_policy=stream.stream_post_policy,
+        stream_topic_access_group=stream.stream_topic_access_group_id,
         is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
     )

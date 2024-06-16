@@ -436,6 +436,13 @@ export function update_can_remove_subscribers_group_id(
     sub.can_remove_subscribers_group = can_remove_subscribers_group_id;
 }
 
+export function update_stream_topic_access_group_id(
+    sub: StreamSubscription,
+    stream_topic_access_group_id: number,
+): void {
+    sub.stream_topic_access_group = stream_topic_access_group_id;
+}
+
 export function receives_notifications(
     stream_id: number,
     notification_name: keyof StreamSpecificNotificationSettings,
@@ -511,6 +518,15 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
         (sub.subscribed || (!current_user.is_guest && !sub.invite_only)) &&
         !page_params.is_spectator
     );
+}
+
+export function is_support_stream(sub: StreamSubscription): boolean {
+    const stream_topic_access_group_id = sub.stream_topic_access_group;
+    const stream_topic_access_group = user_groups.get_user_group_from_id(
+        stream_topic_access_group_id,
+    );
+
+    return stream_topic_access_group.name !== "role:everyone";
 }
 
 export function can_access_stream_email(sub: StreamSubscription): boolean {
@@ -628,6 +644,18 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return false;
     }
     return true;
+}
+
+export function can_access_topics_in_stream(stream: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    const group_allowed_to_access_topics = stream.stream_topic_access_group;
+    return user_groups.is_user_in_group(
+        group_allowed_to_access_topics,
+        people.my_current_user_id(),
+    );
 }
 
 export function is_subscribed_by_name(stream_name: string): boolean {

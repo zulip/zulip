@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 265**
+
+* [`GET /streams`](/api/get-streams),
+  [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream),
+  [`GET /events`](/api/get-events): Stream objects now
+  include the `stream_topic_access_group` integer,
+  which specifies the ID of the user group that has
+  access to all the topics in a stream.
+
 **Feature level 264**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

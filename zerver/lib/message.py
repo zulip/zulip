@@ -184,6 +184,7 @@ class SendMessageRequest:
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: Optional[int] = None
     recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None
+    is_support_stream: Optional[bool] = None
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -390,7 +391,9 @@ def has_message_access(
         return has_user_message()
 
     if stream is None:
-        stream = Stream.objects.get(id=message.recipient.type_id)
+        stream = Stream.objects.select_related("stream_topic_access_group__named_user_group").get(
+            id=message.recipient.type_id
+        )
     else:
         assert stream.recipient_id == message.recipient_id
 
@@ -406,7 +409,11 @@ def has_message_access(
             user_profile=user_profile, active=True, recipient=message.recipient
         ).exists()
 
-    if stream.is_public() and user_profile.can_access_public_streams():
+    if (
+        stream.is_public()
+        and not stream.is_support_stream()
+        and user_profile.can_access_public_streams()
+    ):
         return True
 
     if not stream.is_history_public_to_subscribers():
@@ -1234,7 +1241,7 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[i
                 )
             )
 
-        if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
+        if not is_user_in_group(can_mention_group, sender.id, direct_member_only=False):
             raise JsonableError(
                 _("You are not allowed to mention user group '{user_group_name}'.").format(
                     user_group_name=group.name

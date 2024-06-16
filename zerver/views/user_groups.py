@@ -418,7 +418,7 @@ def get_is_user_group_member(
         request,
         data={
             "is_user_group_member": is_user_in_group(
-                user_group, target_user, direct_member_only=direct_member_only
+                user_group, target_user.id, direct_member_only=direct_member_only
             )
         },
     )
