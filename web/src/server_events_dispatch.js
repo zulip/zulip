@@ -225,6 +225,7 @@ export function dispatch_normal_event(event) {
                 can_manage_all_groups: noop,
                 can_move_messages_between_channels_group: noop,
                 can_move_messages_between_topics_group: noop,
+                can_resolve_topics_group: noop,
                 create_multiuse_invite_group: noop,
                 default_code_block_language: noop,
                 default_language: noop,
@@ -346,7 +347,10 @@ export function dispatch_normal_event(event) {
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
-                                if (key === "can_move_messages_between_topics_group") {
+                                if (
+                                    key === "can_move_messages_between_topics_group" ||
+                                    key === "can_resolve_topics_group"
+                                ) {
                                     message_live_update.rerender_messages_view();
                                 }
 

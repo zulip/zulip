@@ -9,7 +9,7 @@ from django.db.models.functions import Cast
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
-from zerver.lib.types import EditHistoryEvent, StreamMessageEditRequest
+from zerver.lib.types import EditHistoryEvent, ResolveTopicRequest, StreamMessageEditRequest
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Reaction, UserMessage, UserProfile
 
@@ -153,7 +153,7 @@ def update_edit_history(
 def update_messages_for_topic_edit(
     acting_user: UserProfile,
     edited_message: Message,
-    message_edit_request: StreamMessageEditRequest,
+    message_edit_request: StreamMessageEditRequest | ResolveTopicRequest,
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
 ) -> tuple[QuerySet[Message], Callable[[], QuerySet[Message]]]:
