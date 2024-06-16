@@ -311,6 +311,7 @@ export const realm_schema = z.object({
     realm_can_mention_many_users_group: group_setting_value_schema,
     realm_can_move_messages_between_channels_group: group_setting_value_schema,
     realm_can_move_messages_between_topics_group: group_setting_value_schema,
+    realm_can_resolve_topics_group: group_setting_value_schema,
     realm_can_summarize_topics_group: group_setting_value_schema,
     realm_create_multiuse_invite_group: group_setting_value_schema,
     realm_date_created: z.number(),

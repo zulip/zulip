@@ -813,6 +813,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_mention_many_users_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
+        case "realm_can_resolve_topics_group":
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
@@ -1071,6 +1072,7 @@ export function populate_data_for_realm_settings_request(
                     "can_mention_many_users_group",
                     "can_move_messages_between_channels_group",
                     "can_move_messages_between_topics_group",
+                    "can_resolve_topics_group",
                     "can_summarize_topics_group",
                     "create_multiuse_invite_group",
                     "direct_message_initiator_group",
@@ -1535,6 +1537,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_can_mention_many_users_group", null],
     ["realm_can_move_messages_between_channels_group", null],
     ["realm_can_move_messages_between_topics_group", null],
+    ["realm_can_resolve_topics_group", null],
     ["realm_can_summarize_topics_group", null],
     ["realm_create_multiuse_invite_group", null],
     ["realm_direct_message_initiator_group", null],

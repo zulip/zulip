@@ -865,6 +865,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_move_messages_to_another_topic(self) -> bool:
         return self.has_permission("can_move_messages_between_topics_group")
 
+    def can_resolve_topic(self) -> bool:
+        return self.has_permission("can_resolve_topics_group")
+
     def can_add_custom_emoji(self) -> bool:
         return self.has_permission("can_add_custom_emoji_group")
 

@@ -357,6 +357,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup which is allowed to resolve topics.
+    can_resolve_topics_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # UserGroup which is allowed to create bots.
     can_create_bots_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -836,6 +841,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+        ),
+        can_resolve_topics_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.MEMBERS,
         ),
         can_summarize_topics_group=GroupPermissionSetting(
             require_system_group=False,

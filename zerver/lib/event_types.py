@@ -526,6 +526,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_mention_many_users_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_channels_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_topics_group: int | UserGroupMembersDict | None = None
+    can_resolve_topics_group: int | UserGroupMembersDict | None = None
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
     direct_message_permission_group: int | UserGroupMembersDict | None = None

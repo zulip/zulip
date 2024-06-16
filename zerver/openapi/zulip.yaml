@@ -4782,6 +4782,17 @@ paths:
                                             In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                                             `edit_topic_policy` enum.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_resolve_topics_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to [resolve topics](/help/resolve-a-topic)
+                                            in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 367). Previously, permission to
+                                            resolve topics was controlled by the more general
+                                            can_move_messages_between_topics_group permission for moving messages.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_manage_all_groups:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -8695,6 +8706,7 @@ paths:
         linked documentation on when users are allowed to update messages are:
 
         - `allow_message_editing`
+        - `can_resolve_topics_group`
         - `can_move_messages_between_channels_group`
         - `can_move_messages_between_topics_group`
         - `message_content_edit_limit_seconds`
@@ -8706,7 +8718,12 @@ paths:
         of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
         event in [`GET /events`](/api/get-events).
 
-        **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+        **Changes**: Prior to Zulip 10.0 (feature level 367), the permission for
+        resolving a topic was managed by `can_move_messages_between_topics_group`.
+        As of this feature level, users belonging to the `can_resolve_topics_group`
+        will have the permission to [resolve topics](/help/resolve-a-topic) in the organization.
+
+        In Zulip 10.0 (feature level 316), `edit_topic_policy`
         was removed and replaced by `can_move_messages_between_topics_group`
         realm setting.
 
@@ -17147,6 +17164,17 @@ paths:
                               **Changes**: New in Zulip 10.0 (feature level 280). Previously
                               `realm_create_web_public_stream_policy` field used to control
                               the permission to create web-public channels.
+                      realm_can_resolve_topics_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to [resolve topics](/help/resolve-a-topic)
+                              in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 367). Previously, permission
+                              to resolve topics was controlled by the more general
+                              `can_move_messages_between_topics_group permission for moving messages`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_create_public_stream_policy:
                         type: integer
                         deprecated: true
