@@ -55,6 +55,8 @@
     */
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
+    /* 15px (left margin) + 40px (toggle icon) + 10px (margin) + 20px logo + 10px right margin */
+    --left-sidebar-width-with-realm-icon-logo: 95px;
     --right-sidebar-width: 250px;
     --left-sidebar-header-icon-width: 15px;
 
