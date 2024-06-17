@@ -313,6 +313,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     can_create_public_channel_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
+    can_create_private_channel_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
 
     # Who in the organization is allowed to delete messages they themselves sent.
     delete_own_message_policy = models.PositiveSmallIntegerField(
@@ -716,9 +719,19 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.MEMBERS,
             id_field_name="can_create_public_channel_group_id",
         ),
+        can_create_private_channel_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_create_private_channel_group_id",
+        ),
     )
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
+        "can_create_private_channel_group",
         "can_create_public_channel_group",
     ]
 
@@ -1081,6 +1094,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_access_all_users_group__named_user_group",
         "can_create_public_channel_group",
         "can_create_public_channel_group__named_user_group",
+        "can_create_private_channel_group",
+        "can_create_private_channel_group__named_user_group",
     ).get(id=realm_id)
 
 

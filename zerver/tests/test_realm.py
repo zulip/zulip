@@ -1594,7 +1594,7 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        leadership_group = check_add_user_group(realm, "leadership", [hamlet], acting_user=None)
+        leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
 
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
@@ -1829,6 +1829,9 @@ class RealmAPITest(ZulipTestCase):
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
 
+        check_add_user_group(
+            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
+        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api_with_anonymous_groups(prop)
