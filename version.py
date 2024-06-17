@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 280  # Last bumped for can_create_web_public_channel_group
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (288, 0)  # bumped 2024-08-01 to upgrade Python requirements
+PROVISION_VERSION = (289, 0)  # bumped 2024-08-02 for adding help-center starlight project

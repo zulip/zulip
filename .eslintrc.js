@@ -156,6 +156,7 @@ module.exports = {
         },
         {
             files: ["**/*.ts"],
+            excludedFiles: "help-beta/**",
             extends: [
                 "plugin:@typescript-eslint/strict-type-checked",
                 "plugin:@typescript-eslint/stylistic-type-checked",
@@ -163,6 +164,57 @@ module.exports = {
             ],
             parserOptions: {
                 project: "tsconfig.json",
+            },
+            settings: {
+                "import/resolver": {
+                    node: {
+                        extensions: [".ts", ".d.ts", ".js"], // https://github.com/import-js/eslint-plugin-import/issues/2267
+                    },
+                },
+            },
+            globals: {
+                JQuery: false,
+            },
+            rules: {
+                // Disable base rule to avoid conflict
+                "no-use-before-define": "off",
+
+                "@typescript-eslint/consistent-type-assertions": [
+                    "error",
+                    {assertionStyle: "never"},
+                ],
+                "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+                "@typescript-eslint/consistent-type-imports": "error",
+                "@typescript-eslint/explicit-function-return-type": [
+                    "error",
+                    {allowExpressions: true},
+                ],
+                "@typescript-eslint/member-ordering": "error",
+                "@typescript-eslint/method-signature-style": "error",
+                "@typescript-eslint/no-non-null-assertion": "off",
+                "@typescript-eslint/no-unnecessary-condition": "off",
+                "@typescript-eslint/no-unnecessary-qualifier": "error",
+                "@typescript-eslint/no-unused-vars": [
+                    "error",
+                    {args: "all", argsIgnorePattern: "^_", ignoreRestSiblings: true},
+                ],
+                "@typescript-eslint/no-use-before-define": ["error", {functions: false}],
+                "@typescript-eslint/parameter-properties": "error",
+                "@typescript-eslint/promise-function-async": "error",
+                "@typescript-eslint/restrict-plus-operands": ["error", {}],
+                "@typescript-eslint/restrict-template-expressions": ["error", {}],
+                "no-undef": "error",
+            },
+        },
+        {
+            files: ["help-beta/**.ts"],
+            extends: [
+                "plugin:@typescript-eslint/strict-type-checked",
+                "plugin:@typescript-eslint/stylistic-type-checked",
+                "plugin:import/typescript",
+            ],
+            parserOptions: {
+                project: "help-beta/tsconfig.json",
             },
             settings: {
                 "import/resolver": {
