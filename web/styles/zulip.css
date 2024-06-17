@@ -1953,6 +1953,12 @@ select.invite-as {
     }
 }
 
+#realm-navbar-icon-logo {
+    display: none;
+    width: 20px;
+    height: 20px;
+}
+
 .hide-right-sidebar {
     @extend %hide-right-sidebar;
 
@@ -2034,6 +2040,22 @@ body:not(.hide-left-sidebar) {
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
+        }
+
+        #realm-navbar-icon-logo {
+            display: inline-block;
+        }
+
+        #realm-logo {
+            display: none;
+        }
+
+        #top_navbar .column-left {
+            width: auto;
+        }
+
+        #navbar-middle {
+            margin-left: var(--left-sidebar-width-with-realm-icon-logo);
         }
     }
 }
