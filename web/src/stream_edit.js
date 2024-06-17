@@ -21,6 +21,7 @@ import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import {postprocess_content} from "./postprocess_content";
+import * as pygments_data from "./pygments_data";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
@@ -240,6 +241,45 @@ function setup_dropdown(sub, slim_sub) {
         can_remove_subscribers_group_widget,
     );
     can_remove_subscribers_group_widget.setup();
+    const stream_default_code_block_language_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "default_code_block_language",
+        get_options() {
+            const options = Object.keys(pygments_data.langs).map((x) => ({
+                name: x,
+                unique_id: x,
+            }));
+
+            const disabled_option = {
+                is_setting_disabled: true,
+                unique_id: "",
+                name: $t({defaultMessage: "No language set"}),
+            };
+
+            options.unshift(disabled_option);
+            return options;
+        },
+        $events_container: $("#subscription_overlay .subscription_settings"),
+        default_id: sub.default_code_block_language,
+        unique_id_type: dropdown_widget.DataTypes.STRING,
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            stream_default_code_block_language_widget.render();
+            settings_components.save_discard_stream_settings_widget_status_handler(
+                $(".advanced-configurations-container"),
+                slim_sub,
+            );
+        },
+    });
+    settings_components.set_dropdown_setting_widget(
+        "default_code_block_language",
+        stream_default_code_block_language_widget,
+    );
+    stream_default_code_block_language_widget.setup();
 }
 
 export function show_settings_for(node) {
