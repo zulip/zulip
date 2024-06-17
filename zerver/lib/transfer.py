@@ -117,6 +117,7 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
     content_type = guess_type(emoji_path)[0]
     emoji_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path) + ".original"
     if content_type is None:  # nocoverage
+        # This should not be possible after zerver/migrations/0553_copy_emoji_images.py
         logging.error("Emoji %d has no recognizable file extension", realm_emoji.id)
         return
     try:
@@ -127,7 +128,8 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
             logging.info("Uploaded emoji file in path %s", emoji_path)
     except FileNotFoundError:  # nocoverage
         logging.error("Emoji %d could not be loaded from local disk", realm_emoji.id)
-    except BadImageError as e:
+    except BadImageError as e:  # nocoverage
+        # This should not be possible after zerver/migrations/0553_copy_emoji_images.py
         logging.error("Emoji %d is invalid: %s", realm_emoji.id, e)
 
 
