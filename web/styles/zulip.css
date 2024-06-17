@@ -850,7 +850,7 @@ strong {
         &:hover,
         &:focus {
             color: var(--color-active-dropdown-item);
-            background-color: var(--background-color-active-dropdown-item);
+            background-color: var(--background-color-active-typeahead-item);
         }
     }
 }
