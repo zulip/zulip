@@ -303,9 +303,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to create streams.
-    create_private_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
-    )
     create_web_public_stream_policy = models.PositiveSmallIntegerField(
         default=CreateWebPublicStreamPolicyEnum.OWNERS_ONLY
     )
@@ -647,7 +644,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
-        create_private_stream_policy=int,
         create_web_public_stream_policy=int,
         default_code_block_language=str,
         default_language=str,
