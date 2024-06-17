@@ -32,7 +32,7 @@ export function split_message(raw_message_content: string): [string, string] {
     if (!is_split_messages_enabled()) {
         return [raw_message_content, ""];
     }
-    // trimming is required to avoid empty messages due to multiple delimiters.
+    // Trim leading newlines to avoid empty messages due to multiple delimiters.
     // Whitespace before text is markdown syntax for code blocks, so we should not trim it.
     const message_content = trim_except_whitespace_before_text(raw_message_content);
     // We do not wish to split inside code blocks, so we ignore delimiters inside code blocks.
