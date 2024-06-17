@@ -4245,6 +4245,20 @@ paths:
                                             **Changes**: New in Zulip 9.0 (feature level 264). Previously
                                             `realm_create_public_stream_policy` field used to control the
                                             permission to create public channels.
+                                    can_create_private_channel_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create private
+                                            channels in this organization.
+
+                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                                            `"role:owners"` and `"role:nobody"` system groups.
+
+                                            **Changes**: New in Zulip 9.0 (feature level 266). Previously
+                                            `realm_create_private_stream_policy` field used to control the
+                                            permission to create private channels.
                                     create_private_stream_policy:
                                       type: integer
                                       description: |
@@ -15250,6 +15264,20 @@ paths:
                               **Changes**: New in Zulip 9.0 (feature level 264). Previously
                               `realm_create_public_stream_policy` field used to control the
                               permission to create public channels.
+                      realm_can_create_private_channel_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create private
+                              channels in this organization.
+
+                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                              `"role:owners"` and `"role:nobody"` system groups.
+
+                              **Changes**: New in Zulip 9.0 (feature level 266). Previously
+                              `realm_create_private_stream_policy` field used to control the
+                              permission to create private channels.
                       realm_create_public_stream_policy:
                         type: integer
                         deprecated: true
