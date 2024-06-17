@@ -157,6 +157,7 @@ def render_incoming_message(
     mention_data: Optional[MentionData] = None,
     url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     email_gateway: bool = False,
+    default_code_block_language: str = "",
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
@@ -168,6 +169,7 @@ def render_incoming_message(
             mention_data=mention_data,
             url_embed_data=url_embed_data,
             email_gateway=email_gateway,
+            default_code_block_language=default_code_block_language,
         )
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
@@ -617,13 +619,17 @@ def build_message_send_dict(
 
     # Render our message_dicts.
     assert message.rendered_content is None
-
+    if stream is not None:
+        default_code_block_language = stream.default_code_block_language
+    else:
+        default_code_block_language = ""
     rendering_result = render_incoming_message(
         message,
         message.content,
         realm,
         mention_data=mention_data,
         email_gateway=email_gateway,
+        default_code_block_language=default_code_block_language or "",
     )
     message.rendered_content = rendering_result.rendered_content
     message.rendered_content_version = markdown_version

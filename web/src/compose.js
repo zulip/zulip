@@ -373,7 +373,10 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
         }
         channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: {
+                content,
+                default_code_block_language: compose_state.stream()?.default_code_block_language,
+            },
             success(response_data) {
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
