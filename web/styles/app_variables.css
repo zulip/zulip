@@ -388,6 +388,9 @@
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
     --color-border-informational-overlays-table: hsl(0deg 0% 87%);
 
+    /* Settings table colors */
+    --color-border-table-striped: hsl(0deg 0% 87%);
+
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
     --color-markdown-code-background: hsl(0deg 0% 0% / 6%);
@@ -739,10 +742,13 @@
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
 
-    /* Markdown color */
+    /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 100% / 20%);
     --color-border-informational-overlays-table: hsl(0deg 0% 0% / 20%);
+
+    /* Settings table colors */
+    --color-border-table-striped: hsl(0deg 0% 0% / 20%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
