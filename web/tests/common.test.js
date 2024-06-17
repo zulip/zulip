@@ -23,6 +23,7 @@ run_test("phrase_match", () => {
     assert.ok(common.phrase_match("Tes", "test"));
     assert.ok(common.phrase_match("Tes", "Test"));
     assert.ok(common.phrase_match("tes", "Stream Test"));
+    assert.ok(common.phrase_match("", "test"));
 
     assert.ok(!common.phrase_match("tests", "test"));
     assert.ok(!common.phrase_match("tes", "hostess"));

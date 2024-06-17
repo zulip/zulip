@@ -622,7 +622,17 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             ],
         },
     ];
-    return get_special_filter_suggestions(last, terms, suggestions);
+    const special_filtered_suggestions = get_special_filter_suggestions(last, terms, suggestions);
+    // Suggest "is:dm" to anyone with "is:private" in their muscle memory
+    const other_suggestions = [];
+    if (last.operator === "is" && common.phrase_match(last.operand, "private")) {
+        const is_dm = format_as_suggestion([
+            {operator: last.operator, operand: "dm", negated: last.negated},
+        ]);
+        other_suggestions.push(is_dm);
+    }
+    const all_suggestions = [...special_filtered_suggestions, ...other_suggestions];
+    return all_suggestions;
 }
 
 function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
@@ -688,14 +698,6 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
 }
 
 function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
-    // Suggest "is:dm" to anyone with "is:private" in their muscle memory
-    if (last.operator === "is" && common.phrase_match(last.operand, "private")) {
-        const is_dm = format_as_suggestion([
-            {operator: last.operator, operand: "dm", negated: last.negated},
-        ]);
-        return [is_dm];
-    }
-
     if (!(last.operator === "search")) {
         return [];
     }
