@@ -54,6 +54,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.url_decoding import is_same_server_message_link
 from zerver.lib.users import check_can_access_user
 from zerver.models import (
     AbstractPushDeviceToken,
@@ -921,20 +922,6 @@ def get_mobile_push_content(rendered_content: str) -> str:
             plain_text += sub_text
             plain_text += elem.tail or ""
         return plain_text
-
-    def is_same_server_message_link(hash: str) -> bool:
-        # A same server message link always has category `narrow`,
-        # section `stream` or `dm`, and ends with `/near/<message_id>`,
-        # where <message_id> is a sequence of digits.
-        match = re.match(r"#([^/]+)", hash)
-        if match is None or match.group(1) != "narrow":
-            return False
-
-        match = re.search(r"#narrow/([^/]+)", hash)
-        if match is None or not (match.group(1) == "stream" or match.group(1) == "dm"):
-            return False
-
-        return re.search(r"/near/\d+$", hash) is not None
 
     def is_user_said_paragraph(element: lxml.html.HtmlElement) -> bool:
         # The user said paragraph has these exact elements:
