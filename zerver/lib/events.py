@@ -545,15 +545,15 @@ def fetch_initial_state_data(
 
         state["can_create_private_streams"] = settings_user.can_create_private_streams()
         state["can_create_public_streams"] = settings_user.can_create_public_streams()
+        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.
         state["can_create_streams"] = (
-            settings_user.can_create_private_streams()
-            or settings_user.can_create_public_streams()
-            or settings_user.can_create_web_public_streams()
+            state["can_create_private_streams"]
+            or state["can_create_public_streams"]
+            or state["can_create_web_public_streams"]
         )
-        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_users_by_email()
         state["is_admin"] = settings_user.is_realm_admin
