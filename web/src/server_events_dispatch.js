@@ -204,7 +204,6 @@ export function dispatch_normal_event(event) {
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 create_multiuse_invite_group: noop,
-                create_private_stream_policy: noop,
                 create_web_public_stream_policy: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
@@ -265,15 +264,10 @@ export function dispatch_normal_event(event) {
                             gear_menu.rerender();
                         }
 
-                        const stream_creation_settings = [
-                            "create_private_stream_policy",
-                            "create_web_public_stream_policy",
-                        ];
-                        if (stream_creation_settings.includes(event.property)) {
-                            stream_settings_ui.update_stream_privacy_choices(event.property);
-                        }
-
-                        if (event.property === "enable_spectator_access") {
+                        if (
+                            event.property === "create_web_public_stream_policy" ||
+                            event.property === "enable_spectator_access"
+                        ) {
                             stream_settings_ui.update_stream_privacy_choices(
                                 "create_web_public_stream_policy",
                             );
@@ -295,7 +289,10 @@ export function dispatch_normal_event(event) {
                                     gear_menu.rerender();
                                 }
 
-                                if (key === "can_create_public_channel_group") {
+                                if (
+                                    key === "can_create_public_channel_group" ||
+                                    key === "can_create_private_channel_group"
+                                ) {
                                     stream_settings_ui.update_stream_privacy_choices(key);
                                 }
 

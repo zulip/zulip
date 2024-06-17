@@ -473,6 +473,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_access_all_users_group", null],
     ["can_mention_group", null],
     ["realm_can_create_public_channel_group", null],
+    ["realm_can_create_private_channel_group", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -779,6 +780,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_public_channel_group":
+        case "realm_can_create_private_channel_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "realm_message_content_edit_limit_seconds":
@@ -976,6 +978,15 @@ export function populate_data_for_realm_settings_request(
                     });
                     continue;
                 }
+
+                if (property_name === "can_create_private_channel_group") {
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: realm.realm_can_create_private_channel_group,
+                    });
+                    continue;
+                }
+
                 data[property_name] = input_value;
             }
         }
