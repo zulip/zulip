@@ -22106,9 +22106,9 @@ components:
               "result": "error",
             }
           description: |
-            ## Invalid API key
+            ### Invalid API key
 
-            A typical failed JSON response for when the API key is invalid:
+            A typical failed JSON response for when the API key is invalid.
     InvitationFailedError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
@@ -22149,10 +22149,12 @@ components:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           description: |
-            ## Missing request parameter(s)
+            ### Missing request parameter
 
             A typical failed JSON response for when a required request parameter
-            is not supplied:
+            is not supplied.
+
+            The value of `var_name` contains information about the missing parameter.
           properties:
             result: {}
             msg: {}
@@ -22173,10 +22175,13 @@ components:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           description: |
-            ## Incompatible request parameters
+            ### Incompatible request parameters
 
             A typical failed JSON response for when two or more, optional
             parameters are supplied that are incompatible with each other.
+
+            The value of `parameters` in the response is string containing
+            the parameters, separated by commas, that are incompatible.
           properties:
             result: {}
             msg: {}
@@ -22203,10 +22208,10 @@ components:
               "result": "error",
             }
           description: |
-            ## User not authorized for query
+            ### User not authorized for query
 
             A typical failed JSON response for when the user is not authorized for
-            a query:
+            a query.
     UserDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -22217,29 +22222,29 @@ components:
               "result": "error",
             }
           description: |
-            ## User account deactivated
+            ### User account deactivated
 
-            **Changes**: These errors used the HTTP 403 status code
-            before Zulip 5.0 (feature level 76).
+            A typical failed json response for when user's account is deactivated.
 
-            A typical failed json response for when user's account is deactivated:
+            **Changes**: As of Zulip 5.0 (feature level 76), these errors use the
+            HTTP 401 status code. Before this feature level, they used the HTTP 403
+            status code.
     RateLimitedError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           description: |
-            ## Rate limit exceeded
+            ### Rate limit exceeded
 
-            The `retry-after` parameter in the response indicates how many seconds
-            the client must wait before making additional requests.
-
+            A typical failed JSON response for when a rate limit is exceeded.
             Zulip sets a few [HTTP response headers][rate-limit-headers]
             to help with preventing rate limit errors.
 
+            The value of `retry-after` in the response indicates how many
+            seconds the client must wait before making additional requests.
+
             **Changes**: The `code` field was not present in rate
             limit errors before Zulip 4.0 (feature level 36).
-
-            A typical failed JSON response for when a rate limit is exceeded:
 
             [rate-limit-headers]: /api/http-headers#rate-limiting-response-headers
           properties:
@@ -22268,12 +22273,13 @@ components:
               "result": "error",
             }
           description: |
-            ## Realm deactivated
+            ### Realm deactivated
 
-            **Changes**: These errors used the HTTP 403 status code
-            before Zulip 5.0 (feature level 76).
+            A typical failed json response for when user's organization is deactivated.
 
-            A typical failed json response for when user's organization is deactivated:
+            **Changes**: As of Zulip 5.0 (feature level 76), these errors use the
+            HTTP 401 status code. Before this feature level, they used the HTTP 403
+            status code.
     InvalidPushDeviceTokenError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
