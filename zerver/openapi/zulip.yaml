@@ -7296,6 +7296,8 @@ paths:
               properties:
                 content:
                   $ref: "#/components/schemas/RequiredContent"
+                default_code_block_language:
+                  $ref: "#/components/schemas/CodeBlockLanguage"
               required:
                 - content
       responses:
