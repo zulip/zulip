@@ -749,6 +749,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         if policy_name not in [
             "add_custom_emoji_policy",
+            "can_create_private_channel_group",
             "can_create_public_channel_group",
             "create_multiuse_invite_group",
             "create_private_stream_policy",
@@ -808,8 +809,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_create_public_channel_group", realm)
 
-    def can_create_private_streams(self) -> bool:
-        return self.has_permission("create_private_stream_policy")
+    def can_create_private_streams(self, realm: Optional["Realm"] = None) -> bool:
+        return self.has_permission("can_create_private_channel_group", realm)
 
     def can_create_web_public_streams(self) -> bool:
         if not self.realm.web_public_streams_enabled():

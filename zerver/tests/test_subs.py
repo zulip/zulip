@@ -4532,8 +4532,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.common_subscribe_to_streams(cordelia, ["new_stream5"], invite_only=invite_only)
 
     def test_user_settings_for_creating_private_streams(self) -> None:
-        self._test_user_settings_for_creating_streams(
-            "create_private_stream_policy",
+        self._test_group_based_settings_for_creating_streams(
+            "can_create_private_channel_group",
             invite_only=True,
             is_web_public=False,
         )
@@ -4591,12 +4591,6 @@ class SubscriptionAPITest(ZulipTestCase):
 
             # Other streams that weren't created using the api should have no creator.
             self.assertIsNone(stream["creator_id"])
-
-    def test_private_stream_policies(self) -> None:
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_create_private_streams()
-
-        self.check_has_permission_policies("create_private_stream_policy", validation_func)
 
     def test_web_public_stream_policies(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
@@ -5599,7 +5593,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(38):
+        with self.assert_database_query_count(40):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
