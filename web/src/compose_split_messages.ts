@@ -1,5 +1,5 @@
-import * as compose_state from "./compose_state";
-import * as compose_textarea from "./compose_textarea";
+import * as compose_state from "./compose_state.ts";
+import * as compose_textarea from "./compose_textarea.ts";
 
 export const SPLIT_DELIMITER = "\n\n\n";
 let split_messages_enabled = false;
