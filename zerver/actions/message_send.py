@@ -817,7 +817,9 @@ def create_user_messages(
     return user_messages
 
 
-def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
+def filter_presence_idle_user_ids(
+    user_ids: Set[int], active_user_id_cache: Optional[Set[int]] = None
+) -> List[int]:
     # Given a set of user IDs (the recipients of a message), accesses
     # the UserPresence table to determine which of these users are
     # currently idle and should potentially get email notifications
@@ -827,12 +829,16 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     if not user_ids:
         return []
 
-    recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
-    rows = UserPresence.objects.filter(
-        user_profile_id__in=user_ids,
-        last_active_time__gte=recent,
-    ).values("user_profile_id")
-    active_user_ids = {row["user_profile_id"] for row in rows}
+    if active_user_id_cache is not None:
+        active_user_ids = active_user_id_cache
+    else:
+        recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
+        rows = UserPresence.objects.filter(
+            user_profile_id__in=user_ids,
+            last_active_time__gte=recent,
+        ).values("user_profile_id")
+        active_user_ids = {row["user_profile_id"] for row in rows}
+
     idle_user_ids = user_ids - active_user_ids
     return sorted(idle_user_ids)
 
@@ -841,6 +847,7 @@ def get_active_presence_idle_user_ids(
     realm: Realm,
     sender_id: int,
     user_notifications_data_list: List[UserMessageNotificationsData],
+    active_user_id_cache: Optional[Set[int]] = None,
 ) -> List[int]:
     """
     Given a list of active_user_ids, we build up a subset
@@ -862,7 +869,7 @@ def get_active_presence_idle_user_ids(
         if user_notifications_data.is_notifiable(sender_id, idle=True):
             user_ids.add(user_notifications_data.user_id)
 
-    return filter_presence_idle_user_ids(user_ids)
+    return filter_presence_idle_user_ids(user_ids, active_user_id_cache=active_user_id_cache)
 
 
 @transaction.atomic(savepoint=False)
@@ -950,6 +957,16 @@ def do_send_messages(
     # * Updating the `first_message_id` field for streams without any message history.
     # * Implementing the Welcome Bot reply hack
     # * Adding links to the embed_links queue for open graph processing.
+
+    active_user_ids = None
+    if user_profile_cache is not None:
+        recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
+        rows = UserPresence.objects.filter(
+            user_profile_id__in=user_profile_cache.keys(),
+            last_active_time__gte=recent,
+        ).values("user_profile_id")
+        active_user_ids = {row["user_profile_id"] for row in rows}
+
     for send_request in send_message_requests:
         realm_id: Optional[int] = None
         if send_request.message.is_stream_message():
@@ -1122,6 +1139,7 @@ def do_send_messages(
             realm=send_request.realm,
             sender_id=sender.id,
             user_notifications_data_list=user_notifications_data_list,
+            active_user_id_cache=active_user_ids,
         )
 
         if send_request.recipients_for_user_creation_events is not None:
