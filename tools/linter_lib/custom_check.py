@@ -839,6 +839,14 @@ markdown_rules = RuleList(
         {
             "pattern": r"\[(?P<url>[^\]]+)\]\((?P=url)\)",
             "description": "Linkified Markdown URLs should use cleaner <http://example.com> syntax.",
+            "exclude": {"help/"},
+        },
+        {
+            "pattern": r"<http(s?)://[^>]+>",
+            "description": """Autolinks are not allowed in /help documentation due to the upcoming migration to mdx.
+            Use Linkified markdown URLs [url](url) instead.
+            See https://github.com/mdx-js/mdx/issues/1049 for more info.""",
+            "include_only": {"help/"},
         },
         {
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",
