@@ -389,6 +389,7 @@
 
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 87%);
+    --color-border-table-bordered: hsl(0deg 0% 87%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -747,6 +748,7 @@
 
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 0% / 20%);
+    --color-border-table-bordered: hsl(0deg 0% 0% / 20%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
