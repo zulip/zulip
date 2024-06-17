@@ -164,8 +164,7 @@ def bulk_set_user_topic_visibility_policy_in_database(
 
     user_profiles_seeking_visibility_policy_update: List[UserProfile] = []
     for row in rows:
-        duplicate_request: bool = row.visibility_policy == visibility_policy
-        if duplicate_request:
+        if row.visibility_policy == visibility_policy:
             logging.info(
                 "User %s tried to set visibility_policy to its current value of %s",
                 row.user_profile_id,
