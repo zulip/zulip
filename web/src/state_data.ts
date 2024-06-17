@@ -85,6 +85,7 @@ export const realm_schema = z.object({
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
     realm_can_create_public_channel_group: z.number(),
+    realm_can_create_private_channel_group: z.number(),
     realm_create_multiuse_invite_group: z.number(),
     realm_create_private_stream_policy: z.number(),
     realm_create_web_public_stream_policy: z.number(),

@@ -142,11 +142,6 @@ function test_policy(label, policy, validation_func) {
 }
 
 test_policy(
-    "user_can_create_private_streams",
-    "realm_create_private_stream_policy",
-    settings_data.user_can_create_private_streams,
-);
-test_policy(
     "user_can_subscribe_other_users",
     "realm_invite_to_stream_policy",
     settings_data.user_can_subscribe_other_users,
@@ -470,4 +465,10 @@ test_realm_group_settings(
     "user_can_create_public_streams",
     "realm_can_create_public_channel_group",
     settings_data.user_can_create_public_streams,
+);
+
+test_realm_group_settings(
+    "user_can_create_private_streams",
+    "realm_can_create_private_channel_group",
+    settings_data.user_can_create_private_streams,
 );

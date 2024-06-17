@@ -489,15 +489,7 @@ run_test("realm settings", ({override}) => {
     }
 
     let update_called = false;
-    let event = event_fixtures.realm__update__create_private_stream_policy;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
-        assert_same(property, "create_private_stream_policy");
-        update_called = true;
-    };
-    test_realm_integer(event, "realm_create_private_stream_policy");
-
-    update_called = false;
-    event = event_fixtures.realm__update__create_web_public_stream_policy;
+    let event = event_fixtures.realm__update__create_web_public_stream_policy;
     stream_settings_ui.update_stream_privacy_choices = (property) => {
         assert_same(property, "create_web_public_stream_policy");
         update_called = true;
