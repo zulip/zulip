@@ -743,7 +743,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             return True
         return False
 
-    def has_permission(self, policy_name: str) -> bool:
+    def has_permission(self, policy_name: str, realm: Optional["Realm"] = None) -> bool:
         from zerver.lib.user_groups import is_user_in_group
         from zerver.models import Realm
 
@@ -763,7 +763,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             raise AssertionError("Invalid policy")
 
         if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-            allowed_user_group = getattr(self.realm, policy_name)
+            if realm is None:
+                # realm is passed by the caller only when we optimize
+                # the number of database queries by fetching the group
+                # setting fields using select_related.
+                realm = self.realm
+            allowed_user_group = getattr(realm, policy_name)
             return is_user_in_group(allowed_user_group, self)
 
         policy_value = getattr(self.realm, policy_name)
@@ -800,8 +805,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         assert policy_value == Realm.POLICY_FULL_MEMBERS_ONLY
         return not self.is_provisional_member
 
-    def can_create_public_streams(self) -> bool:
-        return self.has_permission("can_create_public_channel_group")
+    def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
+        return self.has_permission("can_create_public_channel_group", realm)
 
     def can_create_private_streams(self) -> bool:
         return self.has_permission("create_private_stream_policy")

@@ -1170,7 +1170,7 @@ class FetchQueriesTest(ZulipTestCase):
         # count in production.
         realm = get_realm_with_settings(realm_id=user.realm_id)
 
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(43):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user, realm=realm)
 
