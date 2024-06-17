@@ -25,6 +25,7 @@ from zerver.lib.email_notifications import (
     include_realm_name_in_missedmessage_emails_subject,
     relative_to_full_url,
 )
+from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserMessage, UserProfile, UserTopic
@@ -1175,9 +1176,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "Extremely personal message with a realm emoji :green_tick:!",
         )
         realm_emoji_dict = get_name_keyed_dict_for_active_realm_emoji(realm.id)
-        realm_emoji_id = realm_emoji_dict["green_tick"]["id"]
+        realm_emoji_file_name = get_emoji_file_name(
+            "image/png", int(realm_emoji_dict["green_tick"]["id"])
+        )
         realm_emoji_url = (
-            f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_id}.png"
+            f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_file_name}"
         )
         verify_body_include = [
             f'<img alt=":green_tick:" src="{realm_emoji_url}" title="green tick" style="height: 20px;">'

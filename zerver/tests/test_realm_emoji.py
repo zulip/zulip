@@ -5,6 +5,7 @@ from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.users import do_change_user_role
+from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
@@ -112,7 +113,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_realm_emoji_repr(self) -> None:
         realm_emoji = RealmEmoji.objects.get(name="green_tick")
-        file_name = str(realm_emoji.id) + ".png"
+        file_name = get_emoji_file_name("image/png", realm_emoji.id)
         self.assertEqual(
             repr(realm_emoji),
             f"<RealmEmoji: zulip: {realm_emoji.id} green_tick False {file_name}>",
