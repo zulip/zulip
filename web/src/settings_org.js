@@ -483,6 +483,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
+        case "default_code_block_language":
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_public_channel_group":
@@ -549,6 +550,7 @@ export function discard_stream_property_element_changes(elem, sub) {
     );
     switch (property_name) {
         case "can_remove_subscribers_group":
+        case "default_code_block_language":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
