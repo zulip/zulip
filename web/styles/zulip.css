@@ -1421,10 +1421,13 @@ nav {
         justify-content: left;
         gap: 4px;
 
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+
         .nav-logo {
             display: inline-block;
-            vertical-align: top;
-            margin-top: 10px;
             height: 20px;
             max-width: 200px;
 
