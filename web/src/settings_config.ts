@@ -131,7 +131,7 @@ export const twenty_four_hour_time_values = {
 
 export type DisplaySettings = {
     settings: {
-        user_display_settings: string[];
+        user_preferences: string[];
     };
     render_group?: boolean;
     render_only: {
@@ -145,7 +145,7 @@ export type DisplaySettings = {
 /* istanbul ignore next */
 export const get_all_preferences = (): DisplaySettings => ({
     settings: {
-        user_display_settings: [
+        user_preferences: [
             "dense_mode",
             "high_contrast_mode",
             "starred_message_counts",
@@ -167,7 +167,7 @@ export const get_information_density_preferences = (): DisplaySettings => ({
         web_line_height_percent: page_params.development_environment,
     },
     settings: {
-        user_display_settings: ["web_font_size_px", "web_line_height_percent"],
+        user_preferences: ["web_font_size_px", "web_line_height_percent"],
     },
 });
 

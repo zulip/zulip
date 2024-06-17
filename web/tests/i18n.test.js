@@ -92,7 +92,7 @@ run_test("tr_tag", ({mock_template}) => {
         information_density_settings: {
             settings: {},
         },
-        display_settings: {
+        preferences: {
             settings: {},
         },
         notification_settings: {},
