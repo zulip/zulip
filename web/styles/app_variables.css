@@ -384,7 +384,6 @@
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
-    --color-border-informational-overlays-table: hsl(0deg 0% 87%);
 
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 87%);
@@ -743,7 +742,6 @@
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 100% / 20%);
-    --color-border-informational-overlays-table: hsl(0deg 0% 0% / 20%);
 
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 0% / 20%);
