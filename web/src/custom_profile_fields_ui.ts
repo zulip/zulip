@@ -151,7 +151,12 @@ export function initialize_custom_user_type_fields(
 }
 
 export function initialize_custom_date_type_fields(element_id: string): void {
-    flatpickr($(element_id).find(".custom_user_field .datepicker")[0]!, {
+    const $date_picker_elements = $(element_id).find(".custom_user_field .datepicker");
+    if ($date_picker_elements.length === 0) {
+        return;
+    }
+
+    flatpickr($date_picker_elements, {
         altInput: true,
         altFormat: "F j, Y",
         allowInput: true,
