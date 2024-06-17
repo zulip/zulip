@@ -32,7 +32,6 @@ from zerver.lib.logging_util import log_to_file
 from zerver.models import Realm, ScheduledEmail, UserProfile
 from zerver.models.scheduled_jobs import EMAIL_TYPES
 from zerver.models.users import get_user_profile_by_id
-from zproject.email_backends import EmailLogBackEnd, PersistentSMTPEmailBackend, get_forward_address
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
@@ -316,40 +315,7 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
         connection = get_connection()
         assert connection is not None
 
-    if connection.open():
-        # If it's a new connection, no need to no-op to check connectivity
-        return connection
-
-    if isinstance(connection, EmailLogBackEnd) and not get_forward_address():
-        # With the development environment backend and without a
-        # configured forwarding address, we don't actually send emails.
-        #
-        # As a result, the connection cannot be closed by the server
-        # (as there is none), and `connection.noop` is not
-        # implemented, so we need to return the connection early.
-        return connection
-
-    # No-op to ensure that we don't return a connection that has been
-    # closed by the mail server.
-    if isinstance(connection, PersistentSMTPEmailBackend):
-        time_elapsed = (timezone_now() - connection.opened_at).seconds / 60
-        if (
-            settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES is not None
-            and time_elapsed >= settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES
-        ):
-            status = -2
-        else:
-            try:
-                assert connection.connection is not None
-                status = connection.connection.noop()[0]
-            except Exception:
-                status = -1
-
-        if status != 250:
-            # Close and connect again.
-            connection.close()
-            connection.open()
-
+    connection.open()
     return connection
 
 

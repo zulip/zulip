@@ -112,10 +112,36 @@ class EmailLogBackEnd(EmailBackend):
 
 
 class PersistentSMTPEmailBackend(EmailBackend):
-    @override
-    def open(self, **kwargs: Any) -> bool | None:
+    def _open(self, **kwargs: Any) -> bool | None:
         is_opened = super().open()
         if is_opened:
             self.opened_at = timezone_now()
+            return True
+
+        return is_opened
+
+    @override
+    def open(self, **kwargs: Any) -> bool | None:
+        is_opened = self._open()
+
+        time_elapsed = (timezone_now() - self.opened_at).seconds / 60
+        if (
+            settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES is not None
+            and time_elapsed >= settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES
+        ):
+            status = -2
+        else:
+            # No-op to ensure that we don't return a connection that has been
+            # closed by the mail server.
+            try:
+                assert self.connection is not None
+                status = self.connection.noop()[0]
+            except Exception:
+                status = -1
+
+        if status != 250:
+            # Close and connect again.
+            self.close()
+            is_opened = self._open()
 
         return is_opened
