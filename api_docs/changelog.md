@@ -26,6 +26,14 @@ format used by the Zulip server that they are interacting with.
   [`GET /events`](/api/get-events): Added `can_create_private_channel_group`
   realm setting, which is a [group-setting value](/api/group-setting-values)
   describing the set of users with permission to create private channels.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `create_private_stream_policy` property, as the permission to create private
+  channels is now controlled by `can_create_private_channel_group` setting.
+* [`POST /register`](/api/register-queue): `realm_create_private_stream_policy`
+  field is deprecated, having been replaced by `can_create_private_channel_group`.
+  Notably, this backwards-compatible `realm_create_private_stream_policy` value
+  now contains the superset of the true value that best approximates the actual
+  permission setting.
 
 **Feature level 265**
 
