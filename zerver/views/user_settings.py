@@ -202,6 +202,8 @@ def json_change_settings(
     old_password: Optional[str] = REQ(default=None),
     new_password: Optional[str] = REQ(default=None),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    custom_default_days: Optional[int] = REQ(json_validator=check_int, default=None),
+    custom_default_hours: Optional[int] = REQ(json_validator=check_int, default=None),
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     web_mark_read_on_scroll_policy: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),

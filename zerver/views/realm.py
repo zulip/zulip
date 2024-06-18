@@ -640,6 +640,8 @@ def update_realm_user_settings_defaults(
         json_validator=check_int, default=None
     ),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    custom_default_days: Optional[int] = REQ(json_validator=check_int, default=None),
+    custom_default_hours: Optional[int] = REQ(json_validator=check_int, default=None),
     send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     send_private_typing_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
