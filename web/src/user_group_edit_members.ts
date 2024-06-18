@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
@@ -11,21 +12,25 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
+import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as people from "./people";
+import type {User} from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
 import {current_user} from "./state_data";
+import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 import * as user_sort from "./user_sort";
 
-export let pill_widget;
-let current_group_id;
-let member_list_widget;
+export let pill_widget: CombinedPillContainer;
+let current_group_id: number;
+let member_list_widget: ListWidgetType<User, User>;
 
-function get_potential_members() {
+function get_potential_members(): User[] {
     const group = user_groups.get_user_group_from_id(current_group_id);
-    function is_potential_member(person) {
-        // user  verbose style filter to have room
+    function is_potential_member(person: User): boolean {
+        // user verbose style filter to have room
         // to add more potential checks easily.
         if (group.members.has(person.user_id)) {
             return false;
@@ -36,20 +41,20 @@ function get_potential_members() {
     return people.filter_all_users(is_potential_member);
 }
 
-function get_user_group_members(group) {
+function get_user_group_members(group: UserGroup): User[] {
     const member_ids = [...group.members];
     const active_member_ids = member_ids.filter((user_id) => people.is_person_active(user_id));
     return people.get_users_from_ids(active_member_ids);
 }
 
-export function update_member_list_widget(group) {
+export function update_member_list_widget(group: UserGroup): void {
     assert(group.id === current_group_id, "Unexpected group rerendering members list");
     const users = get_user_group_members(group);
     people.sort_but_pin_current_user_on_top(users);
     member_list_widget.replace_list_data(users);
 }
 
-function format_member_list_elem(person) {
+function format_member_list_elem(person: User): string {
     return render_user_group_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
@@ -61,7 +66,15 @@ function format_member_list_elem(person) {
     });
 }
 
-function make_list_widget({$parent_container, name, users}) {
+function make_list_widget({
+    $parent_container,
+    name,
+    users,
+}: {
+    $parent_container: JQuery;
+    name: string;
+    users: User[];
+}): ListWidgetType<User, User> {
     people.sort_but_pin_current_user_on_top(users);
 
     const $list_container = $parent_container.find(".member_table");
@@ -82,7 +95,7 @@ function make_list_widget({$parent_container, name, users}) {
             return format_member_list_elem(item);
         },
         filter: {
-            $element: $parent_container.find(".search"),
+            $element: $parent_container.find<HTMLInputElement>("input.search"),
             predicate(person, value) {
                 const matcher = people.build_person_matcher(value);
                 const match = matcher(person);
@@ -94,7 +107,13 @@ function make_list_widget({$parent_container, name, users}) {
     });
 }
 
-export function enable_member_management({group, $parent_container}) {
+export function enable_member_management({
+    group,
+    $parent_container,
+}: {
+    group: UserGroup;
+    $parent_container: JQuery;
+}): void {
     const group_id = group.id;
 
     const $pill_container = $parent_container.find(".pill-container");
@@ -124,7 +143,13 @@ function show_user_group_membership_request_result({
     remove_class,
     already_added_users,
     ignored_deactivated_users,
-}) {
+}: {
+    message: string;
+    add_class: string;
+    remove_class: string;
+    already_added_users?: User[] | undefined;
+    ignored_deactivated_users?: User[] | undefined;
+}): void {
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
     ).expectOne();
@@ -142,8 +167,20 @@ function show_user_group_membership_request_result({
     }
 }
 
-export function edit_user_group_membership({group, added = [], removed = [], success, error}) {
-    channel.post({
+export function edit_user_group_membership({
+    group,
+    added = [],
+    removed = [],
+    success,
+    error,
+}: {
+    group: UserGroup;
+    added?: number[];
+    removed?: number[];
+    success: () => void;
+    error: (xhr?: JQuery.jqXHR) => void;
+}): void {
+    void channel.post({
         url: "/json/user_groups/" + group.id + "/members",
         data: {
             add: JSON.stringify(added),
@@ -154,14 +191,14 @@ export function edit_user_group_membership({group, added = [], removed = [], suc
     });
 }
 
-function add_new_members({pill_user_ids}) {
+function add_new_members({pill_user_ids}: {pill_user_ids: number[]}): void {
     const group = user_groups.get_user_group_from_id(current_group_id);
     if (!group) {
         return;
     }
 
-    const deactivated_users = new Set();
-    const already_added_users = new Set();
+    const deactivated_users = new Set<number>();
+    const already_added_users = new Set<number>();
 
     const active_user_ids = pill_user_ids.filter((user_id) => {
         if (!people.is_person_active(user_id)) {
@@ -191,17 +228,17 @@ function add_new_members({pill_user_ids}) {
         user_id_set.delete(current_user.user_id);
     }
 
-    let ignored_deactivated_users;
-    let ignored_already_added_users;
+    let ignored_deactivated_users: User[] | undefined;
+    let ignored_already_added_users: User[] | undefined;
     if (deactivated_users.size > 0) {
-        ignored_deactivated_users = [...deactivated_users];
-        ignored_deactivated_users = ignored_deactivated_users.map((user_id) =>
+        const ignored_deactivated_users_ids = [...deactivated_users];
+        ignored_deactivated_users = ignored_deactivated_users_ids.map((user_id) =>
             people.get_by_user_id(user_id),
         );
     }
     if (already_added_users.size > 0) {
-        ignored_already_added_users = [...already_added_users];
-        ignored_already_added_users = ignored_already_added_users.map((user_id) =>
+        const ignored_already_added_users_ids = [...already_added_users];
+        ignored_already_added_users = ignored_already_added_users_ids.map((user_id) =>
             people.get_by_user_id(user_id),
         );
     }
@@ -218,7 +255,7 @@ function add_new_members({pill_user_ids}) {
     }
     const user_ids = [...user_id_set];
 
-    function invite_success() {
+    function invite_success(): void {
         pill_widget.clear();
         show_user_group_membership_request_result({
             message: $t({defaultMessage: "Added successfully."}),
@@ -229,10 +266,18 @@ function add_new_members({pill_user_ids}) {
         });
     }
 
-    function invite_failure(xhr) {
+    function invite_failure(xhr?: JQuery.jqXHR): void {
         let message = "Failed to add user!";
-        if (xhr.responseJSON?.msg) {
-            message = xhr.responseJSON.msg;
+
+        const parsed = z
+            .object({
+                result: z.literal("error"),
+                msg: z.string(),
+            })
+            .safeParse(xhr?.responseJSON);
+
+        if (parsed.success) {
+            message = parsed.data.msg;
         }
         show_user_group_membership_request_result({
             message,
@@ -249,13 +294,21 @@ function add_new_members({pill_user_ids}) {
     });
 }
 
-function remove_member({group_id, target_user_id, $list_entry}) {
+function remove_member({
+    group_id,
+    target_user_id,
+    $list_entry,
+}: {
+    group_id: number;
+    target_user_id: number;
+    $list_entry: JQuery;
+}): void {
     const group = user_groups.get_user_group_from_id(current_group_id);
     if (!group) {
         return;
     }
 
-    function removal_success() {
+    function removal_success(): void {
         if (group_id !== current_group_id) {
             blueslip.info("Response for subscription removal came too late.");
             return;
@@ -270,7 +323,7 @@ function remove_member({group_id, target_user_id, $list_entry}) {
         });
     }
 
-    function removal_failure() {
+    function removal_failure(): void {
         show_user_group_membership_request_result({
             message: $t({defaultMessage: "Error removing user from this group."}),
             add_class: "text-error",
@@ -278,7 +331,7 @@ function remove_member({group_id, target_user_id, $list_entry}) {
         });
     }
 
-    function do_remove_user_from_group() {
+    function do_remove_user_from_group(): void {
         edit_user_group_membership({
             group,
             removed: [target_user_id],
@@ -305,7 +358,7 @@ function remove_member({group_id, target_user_id, $list_entry}) {
     do_remove_user_from_group();
 }
 
-export function initialize() {
+export function initialize(): void {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
         $parent_container: $("#groups_overlay_container"),
@@ -317,11 +370,11 @@ export function initialize() {
     $("#groups_overlay_container").on(
         "submit",
         ".edit_members_for_user_group .subscriber_list_remove form",
-        (e) => {
+        function (this: HTMLElement, e): void {
             e.preventDefault();
 
-            const $list_entry = $(e.target).closest("tr");
-            const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id"), 10);
+            const $list_entry = $(this).closest("tr");
+            const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id")!, 10);
             const group_id = current_group_id;
 
             remove_member({group_id, target_user_id, $list_entry});
