@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest
 from django.http.response import HttpResponse
@@ -6,8 +6,9 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.response import json_slack_challenge_response, json_success
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -21,13 +22,30 @@ def api_slack_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_name: str,
-    text: str,
-    channel_name: str,
+    payload: JsonBodyPayload[WildValue],
+    user_name: Optional[str] = None,
+    text: Optional[str] = None,
+    channel_name: Optional[str] = None,
     channels_map_to_topics: Optional[str] = None,
 ) -> HttpResponse:
     content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
     topic_name = "Message from Slack"
+
+    outer_data: Dict[str, Any] = {
+        "type": payload.get("type").tame(check_none_or(check_string)),
+        "challenge": payload.get("challenge").tame(check_none_or(check_string)),
+    }
+
+    # Handle Slacks "challenge" handshake when first registering endpoint
+    # to Event API.
+    if outer_data["type"] == "url_verification" and outer_data["challenge"]:
+        check_send_webhook_message(
+            request,
+            user_profile,
+            "Integration notification",
+            "Successfully registered endpoint to Slack!",
+        )
+        return json_slack_challenge_response(outer_data["challenge"])
 
     if channels_map_to_topics is None:
         check_send_webhook_message(

@@ -104,6 +104,22 @@ def json_response(
     )
 
 
+def json_slack_challenge_response(slack_challenge: str, status: int = 200) -> HttpResponse:
+    """
+    The only use for this is to handle Slack Event APIs "handshake" when
+    trying to register a new endpoint for Slack webhook integration.
+
+    https://api.slack.com/apis/events-api#challenge
+    """
+    content = {"challenge": slack_challenge}
+
+    return MutableJsonResponse(
+        data=content,
+        content_type="application/json",
+        status=status,
+    )
+
+
 def json_success(request: HttpRequest, data: Mapping[str, Any] = {}) -> MutableJsonResponse:
     return json_response(data=data)
 
