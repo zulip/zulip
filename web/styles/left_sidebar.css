@@ -812,6 +812,11 @@ li.top_left_scheduled_messages {
         }
     }
 
+    /* Remove the cursor: pointer property of Views label for the spectators. */
+    &.remove-pointer-for-spectator {
+        cursor: default;
+    }
+
     #toggle-top-left-navigation-area-icon {
         grid-area: starting-anchor-element;
     }
