@@ -747,6 +747,7 @@
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 0% / 20%);
     --color-border-table-bordered: hsl(0deg 0% 0% / 20%);
+    --color-background-notification-table-thead: hsl(0deg 0% 0% / 20%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
