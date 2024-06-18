@@ -147,6 +147,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "api",
     "assets",
     "audio",
+    "avatar",
     "badges",
     "beta",
     "billing",
