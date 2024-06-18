@@ -457,7 +457,8 @@
     line-height: var(--message-box-sender-line-height);
     grid-area: time;
     display: block;
-    font-size: 13px;
+    /* 13px at 14px/1em */
+    font-size: 0.9286em;
     font-weight: 350;
     text-align: end;
     opacity: 0.8;
