@@ -630,7 +630,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#realm-logo",
+        target: "#realm-navbar-wide-logo",
         placement: "right",
         appendTo: () => document.body,
         onShow(instance) {
