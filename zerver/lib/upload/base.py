@@ -26,6 +26,14 @@ MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024 * 1024  # 128 kb
 
 INLINE_MIME_TYPES = [
     "application/pdf",
+    "audio/aac",
+    "audio/flac",
+    "audio/mp4",
+    "audio/mpeg",
+    "audio/wav",
+    "audio/webm",
+    "image/apng",
+    "image/avif",
     "image/gif",
     "image/jpeg",
     "image/png",
