@@ -5,12 +5,17 @@ from django.utils.translation import gettext as _
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: {text}"
 VALID_OPTIONS = {"SHOULD_NOT_BE_MAPPED": "0", "SHOULD_BE_MAPPED": "1"}
+
+
+def is_challenge_handshake(payload: WildValue) -> bool:
+    return payload.get("type").tame(check_string) == "url_verification"
 
 
 @webhook_view("Slack", notify_bot_owner_on_invalid_json=False)
@@ -19,6 +24,7 @@ def api_slack_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    payload: JsonBodyPayload[WildValue],
     user_name: str,
     text: str,
     channel_name: str,
@@ -26,6 +32,17 @@ def api_slack_webhook(
 ) -> HttpResponse:
     content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
     topic_name = "Message from Slack"
+
+    # Handle initial URL verification handshake for Slack Events API.
+    if is_challenge_handshake(payload):
+        challenge = payload.get("challenge").tame(check_string)
+        check_send_webhook_message(
+            request,
+            user_profile,
+            "Integration events",
+            "Successfully verified webhook URL with Slack!",
+        )
+        return json_success(request=request, data={"challenge": challenge})
 
     if channels_map_to_topics is None:
         check_send_webhook_message(
