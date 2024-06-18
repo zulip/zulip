@@ -22243,8 +22243,8 @@ components:
             The value of `retry-after` in the response indicates how many
             seconds the client must wait before making additional requests.
 
-            **Changes**: The `code` field was not present in rate
-            limit errors before Zulip 4.0 (feature level 36).
+            **Changes**: Before Zulip 4.0 (feature level 36), the `code` key
+            was not present in rate limit errors.
 
             [rate-limit-headers]: /api/http-headers#rate-limiting-response-headers
           properties:
