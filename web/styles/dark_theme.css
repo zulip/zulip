@@ -176,14 +176,6 @@
         background-color: var(--color-background-navbar);
     }
 
-    & body,
-    .app-main,
-    .column-middle,
-    #streams_header,
-    .direct-messages-container {
-        background-color: var(--color-background);
-    }
-
     #scroll-to-bottom-button-container {
         background: transparent;
 
