@@ -22,7 +22,6 @@ management-commands
 schema-migrations
 hashchange-system
 emoji
-hotspots
 full-text-search
 email
 analytics

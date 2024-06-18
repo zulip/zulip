@@ -106,9 +106,6 @@ markdown_whitespace_rules: List["Rule"] = [
     {
         "pattern": "^#+[A-Za-z0-9]",
         "description": "Missing space after # in heading",
-        "exclude_line": {
-            ("docs/subsystems/hotspots.md", "#hotspot_new_hotspot_name_icon {"),
-        },
         "good_lines": ["### some heading", "# another heading"],
         "bad_lines": ["###some heading", "#another heading"],
     },
