@@ -51,6 +51,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 # larger "subscription" events that also contain personal settings.
 default_stream_fields = [
     ("can_remove_subscribers_group", int),
+    ("can_unsubscribe_group", OptionalType(int)),
     ("creator_id", OptionalType(int)),
     ("date_created", int),
     ("description", str),
@@ -1407,6 +1408,9 @@ def check_stream_update(
         assert extra_keys == set()
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop == "can_remove_subscribers_group":
+        assert extra_keys == set()
+        assert isinstance(value, int)
+    elif prop == "can_unsubscribe_group":
         assert extra_keys == set()
         assert isinstance(value, int)
     elif prop == "first_message_id":

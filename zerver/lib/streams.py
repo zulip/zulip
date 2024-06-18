@@ -68,6 +68,7 @@ class StreamDict(TypedDict, total=False):
     history_public_to_subscribers: Optional[bool]
     message_retention_days: Optional[int]
     can_remove_subscribers_group: Optional[UserGroup]
+    can_unsubscribe_group: Optional[UserGroup]
 
 
 def get_stream_permission_policy_name(
@@ -138,6 +139,7 @@ def create_stream_if_needed(
     stream_description: str = "",
     message_retention_days: Optional[int] = None,
     can_remove_subscribers_group: Optional[UserGroup] = None,
+    can_unsubscribe_group: Optional[UserGroup] = None,
     acting_user: Optional[UserProfile] = None,
 ) -> Tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
@@ -149,9 +151,15 @@ def create_stream_if_needed(
             name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
         )
 
+    if can_unsubscribe_group is None:
+        can_unsubscribe_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, is_system_group=True, realm=realm
+        )
+
     stream_name = stream_name.strip()
 
     assert can_remove_subscribers_group is not None
+    assert can_unsubscribe_group is not None
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,
@@ -166,6 +174,7 @@ def create_stream_if_needed(
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             can_remove_subscribers_group=can_remove_subscribers_group,
+            can_unsubscribe_group=can_unsubscribe_group,
         ),
     )
 
@@ -219,6 +228,7 @@ def create_streams_if_needed(
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            can_unsubscribe_group=stream_dict.get("can_unsubscribe_group", None),
             acting_user=acting_user,
         )
 
@@ -643,6 +653,19 @@ def can_remove_subscribers_from_stream(
     return is_user_in_group(group_allowed_to_remove_subscribers, user_profile)
 
 
+def can_unsubscribe_from_stream(
+    stream: Stream, user_profile: UserProfile, sub: Optional[Subscription]
+) -> bool:
+    if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
+        print("shah")
+        return False
+
+    # print(f"sujal{stream.can_unsubscribe_group} : {is_user_in_group(can_unsubscribe_group, user_profile)}")
+    can_unsubscribe_group = stream.can_unsubscribe_group
+    assert can_unsubscribe_group is not None
+    return is_user_in_group(can_unsubscribe_group, user_profile)
+
+
 def filter_stream_authorization(
     user_profile: UserProfile, streams: Collection[Stream]
 ) -> Tuple[List[Stream], List[Stream]]:
@@ -683,6 +706,7 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
+    self_unsubscribing: bool = False,
 ) -> Tuple[List[Stream], List[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -711,15 +735,23 @@ def list_to_streams(
     missing_stream_dicts: List[StreamDict] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
+    existing_recipient_ids = [stream.recipient_id for stream in existing_stream_map.values()]
+    subs = Subscription.objects.filter(
+        user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
+    )
+    sub_map = {sub.recipient_id: sub for sub in subs}
     if unsubscribing_others:
-        existing_recipient_ids = [stream.recipient_id for stream in existing_stream_map.values()]
-        subs = Subscription.objects.filter(
-            user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
-        )
-        sub_map = {sub.recipient_id: sub for sub in subs}
         for stream in existing_stream_map.values():
             sub = sub_map.get(stream.recipient_id, None)
+            print("remove")
             if not can_remove_subscribers_from_stream(stream, user_profile, sub):
+                raise JsonableError(_("Insufficient permission"))
+    elif self_unsubscribing:
+        for stream in existing_stream_map.values():
+            sub = sub_map.get(stream.recipient_id, None)
+
+            print("unsubscribe")
+            if not can_unsubscribe_from_stream(stream, user_profile, sub):
                 raise JsonableError(_("Insufficient permission"))
 
     message_retention_days_not_none = False
@@ -869,6 +901,7 @@ def stream_to_dict(
 
     return APIStreamDict(
         can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
+        can_unsubscribe_group=stream.can_unsubscribe_group_id,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,

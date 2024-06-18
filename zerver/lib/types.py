@@ -139,6 +139,7 @@ class RawStreamDict(TypedDict):
     """
 
     can_remove_subscribers_group_id: int
+    can_unsubscribe_group_id: int | None
     creator_id: Optional[int]
     date_created: datetime
     description: str
@@ -179,6 +180,7 @@ class SubscriptionStreamDict(TypedDict):
 
     audible_notifications: Optional[bool]
     can_remove_subscribers_group: int
+    can_unsubscribe_group: int | None
     color: str
     creator_id: Optional[int]
     date_created: int
@@ -206,6 +208,7 @@ class SubscriptionStreamDict(TypedDict):
 
 class NeverSubscribedStreamDict(TypedDict):
     can_remove_subscribers_group: int
+    can_unsubscribe_group: int | None
     creator_id: Optional[int]
     date_created: int
     description: str
@@ -230,6 +233,7 @@ class DefaultStreamDict(TypedDict):
     """
 
     can_remove_subscribers_group: int
+    can_unsubscribe_group: int | None
     creator_id: Optional[int]
     date_created: int
     description: str

@@ -184,6 +184,11 @@ export function update_can_remove_subscribers_group_id(sub, new_value) {
     stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group");
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
+export function update_can_unsubscribe_group_id(sub, new_value) {
+    stream_data.update_can_unsubscribe_group_id(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "can_unsubscribe_group");
+    stream_edit_subscribers.rerender_subscribers_list(sub);
+}
 
 export function update_is_default_stream() {
     const active_stream_id = stream_settings_components.get_active_data().id;
@@ -413,6 +418,7 @@ export function render_left_panel_superset() {
     // For annoying legacy reasons we render all the subs we are
     // allowed to know about and put them in the DOM, then we do
     // a second pass where we filter/sort them.
+    console.log(stream_settings_data.get_updated_unsorted_subs())
     const html = render_browse_streams_list({
         subscriptions: stream_settings_data.get_updated_unsorted_subs(),
     });

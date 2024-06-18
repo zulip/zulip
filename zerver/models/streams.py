@@ -136,6 +136,10 @@ class Stream(models.Model):
     # when realm itself is deleted.
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
 
+    can_unsubscribe_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="can_unsubscribe", null=True
+    )
+
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
     # stream based on what messages they have cached.
@@ -150,6 +154,15 @@ class Stream(models.Model):
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="can_remove_subscribers_group_id",
+        ),
+        "can_unsubscribe_group": GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="can_unsubscribe_group_id",
         ),
     }
 
@@ -193,10 +206,12 @@ class Stream(models.Model):
         "rendered_description",
         "stream_post_policy",
         "can_remove_subscribers_group_id",
+        "can_unsubscribe_group_id",
     ]
 
     def to_dict(self) -> DefaultStreamDict:
         return DefaultStreamDict(
+            can_unsubscribe_group=self.can_unsubscribe_group_id,
             can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             creator_id=self.creator_id,
             date_created=datetime_to_timestamp(self.date_created),

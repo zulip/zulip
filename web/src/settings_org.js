@@ -554,6 +554,12 @@ export function discard_stream_property_element_changes(elem, sub) {
                 property_value,
             );
             break;
+        case "can_unsubscribe_group":
+            settings_components.set_dropdown_list_widget_setting_value(
+                property_name,
+                property_value,
+            );
+            break;
         case "stream_privacy": {
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
 

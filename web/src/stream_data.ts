@@ -436,6 +436,13 @@ export function update_can_remove_subscribers_group_id(
     sub.can_remove_subscribers_group = can_remove_subscribers_group_id;
 }
 
+export function update_can_unsubscribe_group_id(
+    sub: StreamSubscription,
+    can_unsubscribe_group_id: number,
+): void {
+    sub.can_unsubscribe_group = can_unsubscribe_group_id;
+}
+
 export function receives_notifications(
     stream_id: number,
     notification_name: keyof StreamSpecificNotificationSettings,
@@ -586,6 +593,18 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         sub.can_remove_subscribers_group,
         people.my_current_user_id(),
     );
+}
+
+export function can_unsubscribe(sub: StreamSubscription): boolean {
+    if (!can_view_subscribers(sub)) {
+        return false;
+    }
+
+    // if (current_user.is_admin) {
+    //     return true;
+    // }
+
+    return user_groups.is_user_in_group(sub.can_unsubscribe_group, people.my_current_user_id());
 }
 
 export function can_post_messages_in_stream(stream: StreamSubscription): boolean {

@@ -22,12 +22,14 @@ export type SettingsSubscription = StreamSubscription & {
     can_access_subscribers: boolean;
     can_add_subscribers: boolean;
     can_remove_subscribers: boolean;
+    can_unsubscribe: boolean;
     preview_url: string;
     is_old_stream: boolean;
     subscriber_count: number;
 };
 
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
+    console.log(stream_data.can_unsubscribe(sub))
     return {
         ...sub,
 
@@ -50,6 +52,7 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
         can_access_subscribers: stream_data.can_view_subscribers(sub),
         can_add_subscribers: stream_data.can_subscribe_others(sub),
         can_remove_subscribers: stream_data.can_unsubscribe_others(sub),
+        can_unsubscribe: stream_data.can_unsubscribe(sub),
 
         preview_url: hash_util.by_stream_url(sub.stream_id),
         is_old_stream: sub.stream_weekly_traffic !== null,

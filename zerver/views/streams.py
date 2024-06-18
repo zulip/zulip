@@ -243,6 +243,9 @@ def update_stream_backend(
     can_remove_subscribers_group_id: Optional[int] = REQ(
         "can_remove_subscribers_group", json_validator=check_int, default=None
     ),
+    can_unsubscribe_group_id: Optional[int] = REQ(
+        "can_unsubscribe_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -474,11 +477,14 @@ def remove_subscriptions_backend(
 ) -> HttpResponse:
     realm = user_profile.realm
 
+    # if UserProfile.
+
     streams_as_dict: List[StreamDict] = [
         {"name": stream_name.strip()} for stream_name in streams_raw
     ]
 
     unsubscribing_others = False
+    self_unsubscribing = False
     if principals:
         people_to_unsub = set()
         for principal in principals:
@@ -488,11 +494,13 @@ def remove_subscriptions_backend(
                 unsubscribing_others = True
     else:
         people_to_unsub = {user_profile}
+        self_unsubscribing = True
 
     streams, __ = list_to_streams(
         streams_as_dict,
         user_profile,
         unsubscribing_others=unsubscribing_others,
+        self_unsubscribing=self_unsubscribing,
     )
 
     result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
@@ -555,6 +563,9 @@ def add_subscriptions_backend(
     can_remove_subscribers_group_id: Optional[int] = REQ(
         "can_remove_subscribers_group", json_validator=check_int, default=None
     ),
+    can_unsubscribe_group_id: Optional[int] = REQ(
+        "can_unsubscribe_group", json_validator=check_int, default=None
+    ),
     announce: bool = REQ(json_validator=check_bool, default=False),
     principals: Union[Sequence[str], Sequence[int]] = REQ(
         json_validator=check_principals,
@@ -586,6 +597,24 @@ def add_subscriptions_backend(
             is_system_group=True,
         )
 
+    if can_unsubscribe_group_id is not None:
+        permission_configuration = Stream.stream_permission_group_settings["can_unsubscribe_group"]
+        can_unsubscribe_group = access_user_group_for_setting(
+            can_unsubscribe_group_id,
+            user_profile,
+            setting_name="can_unsubscribe_group",
+            permission_configuration=permission_configuration,
+        )
+    else:
+        can_unsubscribe_group_default_name = Stream.stream_permission_group_settings[
+            "can_unsubscribe_group"
+        ].default_group_name
+        can_unsubscribe_group = NamedUserGroup.objects.get(
+            name=can_unsubscribe_group_default_name,
+            realm=user_profile.realm,
+            is_system_group=True,
+        )
+
     for stream_dict in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -607,6 +636,7 @@ def add_subscriptions_backend(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
         stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
+        stream_dict_copy["can_unsubscribe_group"] = can_unsubscribe_group
 
         stream_dicts.append(stream_dict_copy)
 
@@ -629,7 +659,10 @@ def add_subscriptions_backend(
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
     existing_streams, created_streams = list_to_streams(
-        stream_dicts, user_profile, autocreate=True, is_default_stream=is_default_stream
+        stream_dicts,
+        user_profile,
+        autocreate=True,
+        is_default_stream=is_default_stream,
     )
     authorized_streams, unauthorized_streams = filter_stream_authorization(
         user_profile, existing_streams

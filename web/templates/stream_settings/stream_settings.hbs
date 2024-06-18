@@ -11,7 +11,7 @@
                     {{/tr}}
                 </span>
             </template>
-            <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
+            <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless (and can_unsubscribe should_display_subscription_button)}}disabled="disabled"{{/unless}}>
                 {{#if subscribed }}
                     {{t "Unsubscribe" }}
                 {{else}}
@@ -64,7 +64,7 @@
               org_level_message_retention_setting=../org_level_message_retention_setting
               is_stream_edit=true
               can_remove_subscribers_setting_widget_name="can_remove_subscribers_group"
-              }}
+              can_unsubscribe_setting_widget_name="can_unsubscribe_group" }}
             {{/with}}
             <div class="stream_details_box">
                 <div class="stream_details_box_header">

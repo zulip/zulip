@@ -42,6 +42,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
     for stream in get_web_public_streams_queryset(realm):
         # Add Stream fields.
         can_remove_subscribers_group_id = stream.can_remove_subscribers_group_id
+        can_unsubscribe_group_id = stream.can_unsubscribe_group_id
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
         description = stream.description
@@ -74,6 +75,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         sub = SubscriptionStreamDict(
             audible_notifications=audible_notifications,
             can_remove_subscribers_group=can_remove_subscribers_group_id,
+            can_unsubscribe_group=can_unsubscribe_group_id,
             color=color,
             creator_id=creator_id,
             date_created=date_created,
@@ -112,6 +114,7 @@ def build_unsubscribed_sub_from_stream_dict(
     # This function is only called from `apply_event` code.
     raw_stream_dict = RawStreamDict(
         can_remove_subscribers_group_id=stream_dict["can_remove_subscribers_group"],
+        can_unsubscribe_group_id=stream_dict["can_unsubscribe_group"],
         creator_id=stream_dict["creator_id"],
         date_created=timestamp_to_datetime(stream_dict["date_created"]),
         description=stream_dict["description"],
@@ -144,6 +147,7 @@ def build_stream_dict_for_sub(
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
+    can_unsubscribe_group_id = raw_stream_dict["can_unsubscribe_group_id"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
     description = raw_stream_dict["description"]
@@ -188,6 +192,7 @@ def build_stream_dict_for_sub(
     return SubscriptionStreamDict(
         audible_notifications=audible_notifications,
         can_remove_subscribers_group=can_remove_subscribers_group_id,
+        can_unsubscribe_group=can_unsubscribe_group_id,
         color=color,
         creator_id=creator_id,
         date_created=date_created,
@@ -218,6 +223,7 @@ def build_stream_dict_for_never_sub(
     recent_traffic: Optional[Dict[int, int]],
 ) -> NeverSubscribedStreamDict:
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
+    can_unsubscribe_group_id = raw_stream_dict["can_unsubscribe_group_id"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
     description = raw_stream_dict["description"]
@@ -244,6 +250,7 @@ def build_stream_dict_for_never_sub(
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
         can_remove_subscribers_group=can_remove_subscribers_group_id,
+        can_unsubscribe_group=can_unsubscribe_group_id,
         creator_id=creator_id,
         date_created=date_created,
         description=description,

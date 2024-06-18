@@ -242,6 +242,39 @@ function setup_dropdown(sub, slim_sub) {
         can_remove_subscribers_group_widget,
     );
     can_remove_subscribers_group_widget.setup();
+
+    const can_unsubscribe_group_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "can_unsubscribe_group",
+        get_options: () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "can_unsubscribe_group",
+                "stream",
+            ),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            can_unsubscribe_group_widget.render();
+            settings_components.save_discard_stream_settings_widget_status_handler(
+                $(".advanced-configurations-container"),
+                slim_sub,
+            );
+        },
+        $events_container: $("#subscription_overlay .subscription_settings"),
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: sub.can_unsubscribe_group,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+    });
+    settings_components.set_dropdown_setting_widget(
+        "can_unsubscribe_group",
+        can_unsubscribe_group_widget,
+    );
+    can_unsubscribe_group_widget.setup();
 }
 
 export function show_settings_for(node) {
