@@ -779,6 +779,7 @@ export function dispatch_normal_event(event) {
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less-dense-mode");
                 $("body").toggleClass("more-dense-mode");
+                information_density.set_base_typography_css_variables();
             }
             if (
                 event.property === "web_font_size_px" ||

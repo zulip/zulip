@@ -955,6 +955,7 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__dense_mode;
     user_settings.dense_mode = false;
+    override(information_density, "set_base_typography_css_variables", noop);
     toggled = [];
     dispatch(event);
     assert_same(user_settings.dense_mode, true);
