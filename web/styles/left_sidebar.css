@@ -959,13 +959,6 @@ li.top_left_scheduled_messages {
     padding: 0 $before_unread_count_padding 0 0;
 }
 
-.conversation-partners-list {
-    /* TODO: See about consolidating or re-expressing
-       .stream-name spacing so as to not require
-       padding there, either. */
-    padding: 0;
-}
-
 /*
     All of our left sidebar handlers use absolute
     positioning.  We should fix that.
