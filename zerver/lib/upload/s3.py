@@ -384,6 +384,7 @@ class S3UploadBackend(ZulipUploadBackend):
             content_type,
             user_profile,
             image_data,
+            cache_control="public, max-age=31536000, immutable",
         )
 
     @override
