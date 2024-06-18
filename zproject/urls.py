@@ -417,7 +417,7 @@ v1_api_and_json_patterns = [
     ),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
-    # users/me/onboarding_steps -> zerver.views.hotspots
+    # users/me/onboarding_steps -> zerver.views.onboarding_steps
     rest_path(
         "users/me/onboarding_steps",
         POST=(
