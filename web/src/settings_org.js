@@ -663,7 +663,7 @@ export function discard_group_settings_subsection_changes($subsection, group) {
     settings_components.change_save_button_state($save_btn_controls, "discarded");
 }
 
-function discard_realm_default_settings_subsection_changes($subsection) {
+export function discard_realm_default_settings_subsection_changes($subsection) {
     for (const elem of settings_components.get_subsection_property_elements($subsection)) {
         discard_realm_default_property_element_changes(elem);
     }
@@ -710,7 +710,12 @@ export function sync_realm_settings(property) {
     }
     const $element = $(`#id_realm_${CSS.escape(property)}`);
     if ($element.length) {
-        discard_realm_property_element_changes($element);
+        const $subsection = $element.closest(".settings-subsection-parent");
+        if ($subsection.find(".save-button-controls").hasClass("hide")) {
+            discard_realm_property_element_changes($element);
+        } else {
+            discard_realm_settings_subsection_changes($subsection);
+        }
     }
 }
 

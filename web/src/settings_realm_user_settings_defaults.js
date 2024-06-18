@@ -34,7 +34,12 @@ export function update_page(property) {
 
     const $element = $(`#realm_${CSS.escape(property)}`);
     if ($element.length) {
-        settings_org.discard_realm_default_property_element_changes($element[0]);
+        const $subsection = $element.closest(".settings-subsection-parent");
+        if ($subsection.find(".save-button-controls").hasClass("hide")) {
+            settings_org.discard_realm_default_property_element_changes($element[0]);
+        } else {
+            settings_org.discard_realm_default_settings_subsection_changes($subsection);
+        }
     }
 }
 
