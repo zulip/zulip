@@ -154,6 +154,15 @@ class S3UploadBackend(ZulipUploadBackend):
         # hundreds of avatar URLs in single `GET /messages` request,
         # we instead back-compute the URL pattern here.
 
+        # The S3_AVATAR_PUBLIC_URL_PREFIX setting is used to override
+        # this prefix, for instance if a CloudFront distribution is
+        # used.
+        if settings.S3_AVATAR_PUBLIC_URL_PREFIX is not None:
+            prefix = settings.S3_AVATAR_PUBLIC_URL_PREFIX
+            if not prefix.endswith("/"):
+                prefix += "/"
+            return prefix
+
         DUMMY_KEY = "dummy_key_ignored"
 
         # We do not access self.avatar_bucket.meta.client directly,

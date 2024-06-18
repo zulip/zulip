@@ -248,6 +248,25 @@ class S3Test(ZulipTestCase):
         self.send_stream_message(hamlet, "Denmark", body, "test")
 
     @use_s3_backend
+    def test_user_avatars_base(self) -> None:
+        backend = zerver.lib.upload.upload_backend
+        assert isinstance(backend, S3UploadBackend)
+        self.assertEqual(
+            backend.construct_public_upload_url_base(),
+            f"https://{settings.S3_AVATAR_BUCKET}.s3.amazonaws.com/",
+        )
+
+        with self.settings(S3_AVATAR_PUBLIC_URL_PREFIX="https://avatars.example.com"):
+            self.assertEqual(
+                backend.construct_public_upload_url_base(), "https://avatars.example.com/"
+            )
+
+        with self.settings(S3_AVATAR_PUBLIC_URL_PREFIX="https://avatars.example.com/"):
+            self.assertEqual(
+                backend.construct_public_upload_url_base(), "https://avatars.example.com/"
+            )
+
+    @use_s3_backend
     def test_user_avatars_redirect(self) -> None:
         create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
         self.login("hamlet")
