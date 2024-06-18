@@ -74,6 +74,7 @@ def upload_image_to_s3(
         "STANDARD",
         "STANDARD_IA",
     ] = "STANDARD",
+    cache_control: Optional[str] = None,
 ) -> None:
     key = bucket.Object(file_name)
     metadata = {
@@ -86,6 +87,8 @@ def upload_image_to_s3(
         content_type = ""
     if content_type not in INLINE_MIME_TYPES:
         extras["ContentDisposition"] = "attachment"
+    if cache_control is not None:
+        extras["CacheControl"] = cache_control
 
     key.put(
         Body=contents,
