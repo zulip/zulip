@@ -1,7 +1,7 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area">
-        <div id="views-label-container" class="showing-expanded-navigation hidden-for-spectators">
-            <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down views-tooltip-target" aria-hidden="true"></i>
+        <div id="views-label-container" class="showing-expanded-navigation {{#if is_spectator}}remove-pointer-for-spectator{{/if}}">
+            <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down views-tooltip-target hidden-for-spectators" aria-hidden="true"></i>
             {{~!-- squash whitespace --~}}
             <h4 class="left-sidebar-title"><span class="views-tooltip-target">{{t 'VIEWS' }}</span></h4>
             <ul id="left-sidebar-navigation-list-condensed" class="filters">

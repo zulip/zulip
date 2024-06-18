@@ -130,6 +130,12 @@ export function handle_narrow_activated(filter: Filter): void {
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+
+    if (page_params.is_spectator) {
+        // We don't support collapsing VIEWS for spectators, so exit early.
+        return;
+    }
+
     if ($views_label_container.hasClass("showing-expanded-navigation")) {
         // Toggle into the condensed state
         $views_label_container.addClass("showing-condensed-navigation");
