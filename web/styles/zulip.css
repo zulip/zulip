@@ -2046,7 +2046,7 @@ body:not(.hide-left-sidebar) {
             display: inline-block;
         }
 
-        #realm-logo {
+        #realm-navbar-wide-logo {
             display: none;
         }
 
