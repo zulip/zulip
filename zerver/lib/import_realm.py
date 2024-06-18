@@ -4,7 +4,6 @@ import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
-from mimetypes import guess_type
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import bmemcached
@@ -28,6 +27,7 @@ from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, Table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.mime_types import guess_type
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
