@@ -203,6 +203,12 @@ export function set_up(settings_panel: SettingsPanel): void {
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
     $container
+        .find(".setting_custom_default_days")
+        .val(JSON.stringify(settings_object.custom_default_days));
+    $container
+        .find(".setting_custom_default_hours")
+        .val(JSON.stringify(settings_object.custom_default_hours));
+    $container
         .find(".setting_web_mark_read_on_scroll_policy")
         .val(settings_object.web_mark_read_on_scroll_policy);
     $container

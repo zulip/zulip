@@ -142,6 +142,152 @@ export type DisplaySettings = {
     };
 };
 
+export const custom_days = {
+    today: {
+        text: $t({defaultMessage: "Today"}),
+        value: 0,
+    },
+    tommorow: {
+        text: $t({defaultMessage: "Tomorrow"}),
+        value: 1,
+    },
+    in_two_days: {
+        text: $t({defaultMessage: "2 days"}),
+        value: 2,
+    },
+    in_three_days: {
+        text: $t({defaultMessage: "3 days"}),
+        value: 3,
+    },
+    in_four_days: {
+        text: $t({defaultMessage: "4 days"}),
+        value: 4,
+    },
+    in_five_days: {
+        text: $t({defaultMessage: "5 days"}),
+        value: 5,
+    },
+    in_six_days: {
+        text: $t({defaultMessage: "6 days"}),
+        value: 6,
+    },
+    in_seven_days: {
+        text: $t({defaultMessage: "7 days"}),
+        value: 7,
+    },
+    in_two_weeks: {
+        text: $t({defaultMessage: "2 weeks"}),
+        value: 14,
+    },
+    in_three_weeks: {
+        text: $t({defaultMessage: "3 weeks"}),
+        value: 21,
+    },
+    in_four_weeks: {
+        text: $t({defaultMessage: "4 weeks"}),
+        value: 28,
+    },
+};
+
+export const custom_hours = {
+    twelve_am: {
+        text: $t({defaultMessage: "12:00 AM"}),
+        value: 0,
+    },
+    one_am: {
+        text: $t({defaultMessage: "1:00 AM"}),
+        value: 1,
+    },
+    two_am: {
+        text: $t({defaultMessage: "2:00 AM"}),
+        value: 2,
+    },
+    three_am: {
+        text: $t({defaultMessage: "3:00 AM"}),
+        value: 3,
+    },
+    four_am: {
+        text: $t({defaultMessage: "4:00 AM"}),
+        value: 4,
+    },
+    five_am: {
+        text: $t({defaultMessage: "5:00 AM"}),
+        value: 5,
+    },
+    six_am: {
+        text: $t({defaultMessage: "6:00 AM"}),
+        value: 6,
+    },
+    seven_am: {
+        text: $t({defaultMessage: "7:00 AM"}),
+        value: 7,
+    },
+    eight_am: {
+        text: $t({defaultMessage: "8:00 AM"}),
+        value: 8,
+    },
+    nine_am: {
+        text: $t({defaultMessage: "9:00 AM"}),
+        value: 9,
+    },
+    ten_am: {
+        text: $t({defaultMessage: "10:00 AM"}),
+        value: 10,
+    },
+    eleven_am: {
+        text: $t({defaultMessage: "11:00 AM"}),
+        value: 11,
+    },
+    twelve_pm: {
+        text: $t({defaultMessage: "12:00 PM"}),
+        value: 12,
+    },
+    one_pm: {
+        text: $t({defaultMessage: "1:00 PM"}),
+        value: 13,
+    },
+    two_pm: {
+        text: $t({defaultMessage: "2:00 PM"}),
+        value: 14,
+    },
+    three_pm: {
+        text: $t({defaultMessage: "3:00 PM"}),
+        value: 15,
+    },
+    four_pm: {
+        text: $t({defaultMessage: "4:00 PM"}),
+        value: 16,
+    },
+    five_pm: {
+        text: $t({defaultMessage: "5:00 PM"}),
+        value: 17,
+    },
+    six_pm: {
+        text: $t({defaultMessage: "6:00 PM"}),
+        value: 18,
+    },
+    seven_pm: {
+        text: $t({defaultMessage: "7:00 PM"}),
+        value: 19,
+    },
+    eight_pm: {
+        text: $t({defaultMessage: "8:00 PM"}),
+        value: 20,
+    },
+    nine_pm: {
+        text: $t({defaultMessage: "9:00 PM"}),
+        value: 21,
+    },
+    ten_pm: {
+        text: $t({defaultMessage: "10:00 PM"}),
+        value: 22,
+    },
+    eleven_pm: {
+        text: $t({defaultMessage: "11:00 PM"}),
+        value: 23,
+    },
+};
+
 /* istanbul ignore next */
 export const get_all_preferences = (): DisplaySettings => ({
     settings: {
@@ -567,6 +713,8 @@ export const preferences_settings_labels = {
     receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
+    custom_default_days: $t({defaultMessage: "Custom default message scheduling date"}),
+    custom_default_hours: $t({defaultMessage: "Choose custom message time"}),
     translate_emoticons: new Handlebars.SafeString(
         $t_html({
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",

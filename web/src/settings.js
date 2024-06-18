@@ -109,6 +109,8 @@ export function build_page() {
         color_scheme_values: settings_config.color_scheme_values,
         web_home_view_values: settings_config.web_home_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
+        custom_days: settings_config.custom_days,
+        custom_hours: settings_config.custom_hours,
         general_settings: settings_config.all_notifications(user_settings).general_settings,
         notification_settings: settings_config.all_notifications(user_settings).settings,
         email_notifications_batching_period_values:

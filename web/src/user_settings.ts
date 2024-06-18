@@ -56,6 +56,8 @@ export type UserSettings = (StreamNotificationSettings &
     timezone: string;
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;
+    custom_default_days: number;
+    custom_default_hours: number;
     user_list_style: number;
     web_escape_navigates_to_home_view: boolean;
     web_font_size_px: number;

@@ -23,6 +23,19 @@
             </select>
         </div>
         <div class="input-group">
+            <label for="custom_default_days" class="dropdown-title">{{ settings_label.custom_default_days }}</label>
+            <select name="custom_default_days" class="setting_custom_default_days prop-element settings_select bootstrap-focus-style" id="{{prefix}}custom_default_days" data-setting-widget-type="string">
+                {{#each custom_days}}
+                    <option value='{{ this.value }}'>{{ this.text }}</option>
+                {{/each}}
+            </select>
+            <select name="custom_default_hours" class="setting_custom_default_hours prop-element settings_select bootstrap-focus-style" id="{{prefix}}custom_default_hours" data-setting-widget-type="string">
+                {{#each custom_hours}}
+                    <option value='{{ this.value }}'>{{ this.text }}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="input-group">
             <label for="color_scheme" class="settings-field-label">{{t "Theme" }}</label>
             <select name="color_scheme" class="setting_color_scheme prop-element settings_select bootstrap-focus-style" id="{{prefix}}color_scheme" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=color_scheme_values}}

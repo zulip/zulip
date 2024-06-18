@@ -319,6 +319,8 @@ class UserBaseSettings(models.Model):
 
     modern_settings = dict(
         # Add new general settings here.
+        custom_default_days=int,
+        custom_default_hours=int,
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
         web_escape_navigates_to_home_view=bool,

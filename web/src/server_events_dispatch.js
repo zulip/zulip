@@ -714,6 +714,8 @@ export function dispatch_normal_event(event) {
                 "receives_typing_notifications",
                 "timezone",
                 "twenty_four_hour_time",
+                "custom_default_days",
+                "custom_default_hours",
                 "translate_emoticons",
                 "display_emoji_reaction_users",
                 "user_list_style",
