@@ -71,6 +71,8 @@ class UserBaseSettings(models.Model):
     translate_emoticons = models.BooleanField(default=False)
     display_emoji_reaction_users = models.BooleanField(default=True)
     twenty_four_hour_time = models.BooleanField(default=False)
+    custom_default_days = models.PositiveIntegerField(default=0)
+    custom_default_hours = models.PositiveIntegerField(default=0)
     starred_message_counts = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_NIGHT = 2
