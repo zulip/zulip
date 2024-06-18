@@ -364,10 +364,6 @@
         color: inherit;
     }
 
-    .active-direct-messages-section {
-        background-color: hsl(199deg 33% 46% / 20%);
-    }
-
     /* these are converting grey things to "new grey" */
     :disabled,
     input:not([type="radio"]):read-only,

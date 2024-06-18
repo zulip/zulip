@@ -326,7 +326,7 @@ li.show-more-topics {
 }
 
 .active-direct-messages-section {
-    background-color: hsl(202deg 56% 91%);
+    background-color: var(--color-background-active-narrow-filter);
 
     #private_messages_section {
         border-radius: 4px 4px 0 0;
