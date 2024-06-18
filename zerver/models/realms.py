@@ -1064,10 +1064,7 @@ post_delete.connect(realm_pre_and_post_delete_handler, sender=Realm)
 
 
 def get_realm(string_id: str) -> Realm:
-    return Realm.objects.select_related(
-        "can_create_public_channel_group",
-        "can_create_public_channel_group__named_user_group",
-    ).get(string_id=string_id)
+    return Realm.objects.get(string_id=string_id)
 
 
 def get_realm_by_id(realm_id: int) -> Realm:
