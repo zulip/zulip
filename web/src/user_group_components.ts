@@ -82,15 +82,15 @@ export const show_user_group_settings_pane = {
         set_active_group_id(group.id);
         $("#groups_overlay .user-group-info-title").text(group.name);
     },
-    create_user_group(container_name = "configure_user_group_settings") {
+    create_user_group(container_name = "configure_user_group_settings", group_name: string) {
         $(".user_group_creation").hide();
         if (container_name === "configure_user_group_settings") {
             $("#groups_overlay .user-group-info-title").text(
-                $t_html({defaultMessage: "Create user group: configure settings"}),
+                $t_html({defaultMessage: "Configure new group settings"}),
             );
         } else {
             $("#groups_overlay .user-group-info-title").text(
-                $t_html({defaultMessage: "Create user group: add members"}),
+                $t_html({defaultMessage: "Add members to {group_name}"}, {group_name}),
             );
         }
         update_footer_buttons(container_name);
