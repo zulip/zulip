@@ -649,6 +649,10 @@ input[type="checkbox"] {
 
 #user-notification-settings {
     .notification-table {
+        thead {
+            background-color: var(--color-background-notification-table-thead);
+        }
+
         & th,
         td {
             text-align: center;
