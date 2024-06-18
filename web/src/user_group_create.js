@@ -99,6 +99,7 @@ $("body").on("click", ".settings-sticky-footer #user_group_go_to_members", (e) =
     if (is_user_group_name_valid) {
         user_group_components.show_user_group_settings_pane.create_user_group(
             "user_group_members_container",
+            group_name,
         );
     }
 });
