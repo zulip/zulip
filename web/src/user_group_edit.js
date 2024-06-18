@@ -250,7 +250,15 @@ export function update_settings_pane(group) {
     $edit_container.find(".group-name").text(group.name);
     $edit_container.find(".group-description").text(group.description);
 
-    settings_org.discard_group_property_element_changes($("#id_can_mention_group"), group);
+    const $subsection = $edit_container.find(".settings-subsection-parent");
+    // We currently have only one group-level setting, so it is
+    // fine to just call the function to discard changes in the
+    // complete subsection.
+    //
+    // We can update this code to be similar to how we handle realm
+    // settings in settings_org.sync_realm_settings when we add more
+    // group-level settings.
+    settings_org.discard_group_settings_subsection_changes($subsection, group);
 }
 
 function update_toggler_for_group_setting() {
