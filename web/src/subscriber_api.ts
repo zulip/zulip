@@ -12,7 +12,7 @@ import type {StreamSubscription} from "./sub_store";
 export function add_user_ids_to_stream(
     user_ids: number[],
     sub: StreamSubscription,
-    success: () => void,
+    success: (data: unknown) => void,
     failure: (xhr: JQuery.jqXHR<unknown>) => void,
 ): void {
     // TODO: use stream_id when backend supports it
@@ -40,9 +40,9 @@ export function add_user_ids_to_stream(
 }
 
 export function remove_user_id_from_stream(
-    user_id: number[],
+    user_id: number,
     sub: StreamSubscription,
-    success: () => void,
+    success: (data: unknown) => void,
     failure: (xhr: JQuery.jqXHR<unknown>) => void,
 ): void {
     // TODO: use stream_id when backend supports it
