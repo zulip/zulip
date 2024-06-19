@@ -67,6 +67,12 @@ export function get_user_ids(): number[] {
     return [...presence_info.keys()];
 }
 
+export function get_active_or_idle_user_ids(): number[] {
+    return [...presence_info.entries()]
+        .filter((entry) => entry[1].status !== "offline")
+        .map((entry) => entry[0]);
+}
+
 export function status_from_raw(raw: RawPresence): PresenceStatus {
     /*
         Example of `raw`:
@@ -124,7 +130,7 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
 
 export function update_info_from_event(
     user_id: number,
-    info: PresenceInfoFromEvent,
+    info: PresenceInfoFromEvent | null,
     server_timestamp: number,
 ): void {
     /*
@@ -153,7 +159,7 @@ export function update_info_from_event(
 
     raw.server_timestamp = server_timestamp;
 
-    for (const rec of Object.values(info)) {
+    for (const rec of Object.values(info ?? {})) {
         if (rec.status === "active" && rec.timestamp > (raw.active_timestamp ?? 0)) {
             raw.active_timestamp = rec.timestamp;
         }
@@ -185,9 +191,13 @@ export function set_info(
     */
 
     presence_last_update_id = last_update_id;
+    const all_active_or_idle_user_ids = new Set(get_active_or_idle_user_ids());
 
     for (const [user_id_str, info] of Object.entries(presences)) {
         const user_id = Number.parseInt(user_id_str, 10);
+        // Remove the user from all_active_or_idle_user_ids since we already
+        // updated their presence info.
+        all_active_or_idle_user_ids.delete(user_id);
 
         // Note: In contrast with all other state updates received
         // from the server, presence data is updated via a
@@ -230,6 +240,9 @@ export function set_info(
 
         const status = status_from_raw(raw);
         presence_info.set(user_id, status);
+    }
+    for (const user_id of all_active_or_idle_user_ids) {
+        update_info_from_event(user_id, null, server_timestamp);
     }
     update_info_for_small_realm();
 }
