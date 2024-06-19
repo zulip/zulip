@@ -16,7 +16,6 @@ from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
     NarrowParameter,
-    OptionalNarrowListT,
     add_narrow_conditions,
     fetch_messages,
     is_spectator_compatible,
@@ -83,7 +82,9 @@ def get_search_fields(
     }
 
 
-def clean_narrow_for_web_public_api(narrow: OptionalNarrowListT) -> OptionalNarrowListT:
+def clean_narrow_for_web_public_api(
+    narrow: Optional[List[NarrowParameter]],
+) -> Optional[List[NarrowParameter]]:
     if narrow is None:
         return None
 
@@ -93,7 +94,7 @@ def clean_narrow_for_web_public_api(narrow: OptionalNarrowListT) -> OptionalNarr
     return [
         term
         for term in narrow
-        if not (term["operator"] == "in" and term["operand"] == "home" and not term["negated"])
+        if not (term.operator == "in" and term.operand == "home" and not term.negated)
     ]
 
 
@@ -123,11 +124,6 @@ def get_messages_backend(
     if num_before > 0 and num_after > 0 and not include_anchor:
         raise JsonableError(_("The anchor can only be excluded at an end of the range"))
 
-    if narrow is not None and len(narrow) > 0:
-        narrow_parameter_list: OptionalNarrowListT = [x.model_dump() for x in narrow]
-    else:
-        narrow_parameter_list = None
-
     realm = get_valid_realm_from_request(request)
     if not maybe_user_profile.is_authenticated:
         # If user is not authenticated, clients must include
@@ -142,11 +138,11 @@ def get_messages_backend(
         # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError
-        narrow_parameter_list = clean_narrow_for_web_public_api(narrow_parameter_list)
-        if not is_web_public_narrow(narrow_parameter_list):
+        narrow = clean_narrow_for_web_public_api(narrow)
+        if not is_web_public_narrow(narrow):
             raise MissingAuthenticationError
-        assert narrow_parameter_list is not None
-        if not is_spectator_compatible(narrow_parameter_list):
+        assert narrow is not None
+        if not is_spectator_compatible(narrow):
             raise MissingAuthenticationError
 
         # We use None to indicate unauthenticated requests as it's more
@@ -168,14 +164,14 @@ def get_messages_backend(
         # email_address_visibility setting.
         client_gravatar = False
 
-    if narrow_parameter_list is not None:
+    if narrow is not None:
         # Add some metadata to our logging data for narrows
         verbose_operators = []
-        for term in narrow_parameter_list:
-            if term["operator"] == "is":
-                verbose_operators.append("is:" + term["operand"])
+        for term in narrow:
+            if term.operator == "is":
+                verbose_operators.append("is:" + term.operand)
             else:
-                verbose_operators.append(term["operator"])
+                verbose_operators.append(term.operator)
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
@@ -206,7 +202,7 @@ def get_messages_backend(
             cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
 
         query_info = fetch_messages(
-            narrow=narrow_parameter_list,
+            narrow=narrow,
             user_profile=user_profile,
             realm=realm,
             is_web_public_query=is_web_public_query,
@@ -297,8 +293,6 @@ def messages_in_narrow_backend(
     msg_ids: Json[List[int]],
     narrow: Json[List[NarrowParameter]],
 ) -> HttpResponse:
-    narrow_parameter_list: OptionalNarrowListT = [x.model_dump() for x in narrow]
-
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
@@ -326,7 +320,7 @@ def messages_in_narrow_backend(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
-        narrow=narrow_parameter_list,
+        narrow=narrow,
         is_web_public_query=False,
         realm=user_profile.realm,
     )
