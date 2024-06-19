@@ -811,7 +811,9 @@ function is_list_focused(): boolean {
 }
 
 function get_all_rows(): JQuery {
-    return $(".inbox-header, .inbox-row").not(".hidden_by_filters, .collapsed_container");
+    return $("#inbox-main .inbox-header, #inbox-main .inbox-row").not(
+        ".hidden_by_filters, .collapsed_container",
+    );
 }
 
 function get_row_index($elt: JQuery): number {
@@ -1369,7 +1371,7 @@ function center_focus_if_offscreen(): void {
 function move_focus_to_visible_area(): void {
     // Focus on the row below inbox filters if the focused
     // row is not visible.
-    if (!is_list_focused()) {
+    if (!is_visible() || !is_list_focused()) {
         return;
     }
 
