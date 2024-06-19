@@ -15,7 +15,6 @@ import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
-import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as gear_menu from "./gear_menu";
@@ -77,6 +76,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
+import * as theme from "./theme";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -791,7 +791,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "color_scheme") {
                 requestAnimationFrame(() => {
-                    dark_theme.set_theme_and_update(event.value);
+                    theme.set_theme_and_update(event.value);
                 });
             }
             if (event.property === "starred_message_counts") {

@@ -29,7 +29,7 @@ const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
-const dark_theme = mock_esm("../src/dark_theme");
+const theme = mock_esm("../src/theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
 const information_density = mock_esm("../src/information_density");
@@ -969,7 +969,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_automatic;
         user_settings.color_scheme = 2;
-        override(dark_theme, "set_theme_and_update", stub.f); // automatically checks if called
+        override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
         assert.equal(stub.num_calls, 1);
@@ -980,7 +980,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_dark;
         user_settings.color_scheme = 1;
-        override(dark_theme, "set_theme_and_update", stub.f); // automatically checks if called
+        override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
         assert.equal(stub.num_calls, 1);
@@ -991,7 +991,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_light;
         user_settings.color_scheme = 1;
-        override(dark_theme, "set_theme_and_update", stub.f); // automatically checks if called
+        override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
         assert.equal(stub.num_calls, 1);
