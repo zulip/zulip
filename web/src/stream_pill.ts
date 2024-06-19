@@ -1,3 +1,4 @@
+import {$t} from "./i18n";
 import type {InputPillContainer, InputPillItem} from "./input_pill";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
@@ -16,7 +17,10 @@ export type StreamPillData = StreamSubscription & {type: "stream"};
 
 function format_stream_name_and_subscriber_count(sub: StreamSubscription): string {
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
-    return "#" + sub.name +": " + sub_count + " users";
+    return $t(
+        {defaultMessage: "#{stream_name}: {sub_count} users"},
+        {stream_name: sub.name, sub_count},
+    );
 }
 
 export function create_item_from_stream_name(
