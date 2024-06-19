@@ -438,6 +438,19 @@ export function get_remaining_time(start_time: number, duration: number): number
     return Math.max(0, start_time + duration - Date.now());
 }
 
+export function get_custom_time_in_minutes(time_unit: string, time_input: number): number {
+    switch (time_unit) {
+        case "hours":
+            return time_input * 60;
+        case "days":
+            return time_input * 24 * 60;
+        case "weeks":
+            return time_input * 7 * 24 * 60;
+        default:
+            return time_input;
+    }
+}
+
 // Helper for shorthand for Typescript to get an item from a list with
 // exactly one item.
 export function the<T>(items: T[] | JQuery<T>): T {

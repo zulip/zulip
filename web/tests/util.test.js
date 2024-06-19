@@ -388,6 +388,22 @@ run_test("get_remaining_time", () => {
     MockDate.reset();
 });
 
+run_test("get_custom_time_in_minutes", () => {
+    const time_input = 15;
+    assert.equal(util.get_custom_time_in_minutes("weeks", time_input), time_input * 7 * 24 * 60);
+    assert.equal(util.get_custom_time_in_minutes("days", time_input), time_input * 24 * 60);
+    assert.equal(util.get_custom_time_in_minutes("hours", time_input), time_input * 60);
+    assert.equal(util.get_custom_time_in_minutes("minutes", time_input), time_input);
+    // Unknown time unit returns same time input
+    assert.equal(util.get_custom_time_in_minutes("invalid", time_input), time_input);
+    /// NaN time input returns NaN
+    const invalid_time_input = Number.NaN;
+    assert.equal(
+        util.get_custom_time_in_minutes("minutes", invalid_time_input),
+        invalid_time_input,
+    );
+});
+
 run_test("the", () => {
     const list_with_one_item = ["foo"];
     assert.equal(util.the(list_with_one_item), "foo");
