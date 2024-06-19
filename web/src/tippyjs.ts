@@ -487,6 +487,9 @@ export function initialize(): void {
         },
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     tippy.delegate("body", {
