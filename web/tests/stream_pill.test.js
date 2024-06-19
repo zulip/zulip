@@ -33,7 +33,7 @@ const sweden_pill = {
     stream_name: sweden.name,
     stream_id: sweden.stream_id,
     type: "stream",
-    display_value: "#Sweden: 5 users",
+    display_value: "translated: #Sweden: 5 users",
 };
 
 const subs = [denmark, sweden];
