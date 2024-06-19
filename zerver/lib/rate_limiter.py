@@ -1,6 +1,7 @@
 import logging
 import time
 from abc import ABC, abstractmethod
+from ipaddress import IPv6Network
 from typing import Dict, List, Optional, Set, Tuple, Type, cast
 
 import orjson
@@ -138,8 +139,11 @@ class RateLimitedUser(RateLimitedObject):
 
 
 class RateLimitedIPAddr(RateLimitedObject):
-    def __init__(self, ip_addr: str, domain: str = "api_by_ip") -> None:
+    def __init__(
+        self, ip_addr: str, ipv6_prefix: Optional[int] = None, domain: str = "api_by_ip"
+    ) -> None:
         self.ip_addr = ip_addr
+        self.ipv6_prefix = ipv6_prefix
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
             backend: Optional[Type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
@@ -149,8 +153,16 @@ class RateLimitedIPAddr(RateLimitedObject):
 
     @override
     def key(self) -> str:
+        # ipv6, we use the network portion as the key.
+        if self.ipv6_prefix is not None:
+            ip_addr_key = get_ipv6_network(self.ip_addr, self.ipv6_prefix)
+
+        # ipv4, we use the whole ip as the key.
+        else:
+            ip_addr_key = self.ip_addr
+
         # The angle brackets are important since IPv6 addresses contain :.
-        return f"{type(self).__name__}:<{self.ip_addr}>:{self.domain}"
+        return f"{type(self).__name__}:<{ip_addr_key}>:{self.domain}"
 
     @override
     def rules(self) -> List[Tuple[int, int]]:
@@ -600,7 +612,23 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
         # We log a warning so that this endpoint being taken out of
         # service doesn't silently remove this functionality.
         logger.warning("Failed to fetch TOR exit node list: %s", err)
-    RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
+
+    # for ipv6 we we track separate rate limits at the /64, /48, and /32 level all the time,
+    # with higher limits for higher levels.
+    if ":" in ip_addr:
+        RateLimitedIPAddr(ip_addr, ipv6_prefix=64, domain=domain).rate_limit_request(request)
+        RateLimitedIPAddr(ip_addr, ipv6_prefix=48, domain=domain).rate_limit_request(request)
+        RateLimitedIPAddr(ip_addr, ipv6_prefix=32, domain=domain).rate_limit_request(request)
+    else:
+        RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
+
+
+def get_ipv6_network(ipv6: str, prefix: int) -> str:
+    """returns the network portion (used as the key) of ipv6, determined by the prefix length.
+
+    e.g. 2002:DB8::21f:5bff:febf:ce22:1111 with /64 as the prefix returns 2002:DB8::21f.
+    """
+    return str(IPv6Network(f"{ipv6}/{prefix}", strict=False).network_address)
 
 
 def should_rate_limit(request: HttpRequest) -> bool:
