@@ -200,6 +200,11 @@
        We expect `resize.ts` to update this once UI is initialized. */
     --recent-topics-filters-height: 50px;
 
+    /* Pill dimensions. */
+    /* 1.4286em is 20px at 14px/1em */
+    --height-input-pill: 1.4286em;
+    --length-input-pill-image: var(--height-input-pill);
+
     /* Overlay heights for streams modal */
     --overlay-container-height: 95vh;
     --overlay-container-max-height: 1000px;

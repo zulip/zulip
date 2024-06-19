@@ -16,7 +16,7 @@
         max-width: 100%;
         min-width: 0;
 
-        height: 20px;
+        height: var(--height-input-pill);
         margin: 1px 2px;
 
         color: inherit;
@@ -32,8 +32,8 @@
         }
 
         .pill-image {
-            height: 20px;
-            width: 20px;
+            height: var(--length-input-pill-image);
+            width: var(--length-input-pill-image);
             border-radius: 4px 0 0 4px;
         }
 
@@ -137,7 +137,10 @@
 
     .input {
         display: inline-block;
-        padding: 2px 4px;
+        /* This keeps the input sized to
+           the same height as pills. */
+        line-height: var(--height-input-pill);
+        padding: 0 4px;
 
         min-width: 2px;
         word-break: break-all;
