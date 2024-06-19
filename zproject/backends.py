@@ -149,18 +149,18 @@ class RestApiAuthBackend(BaseBackend):
         #response = requests.post(api_url, json=payload)
         print(response.status_code)
         # Check the response
-        if response.status_code == 500:
+        if response.status_code == 200:
             user_info = response.json()
             return self.get_or_create_user(user_info)
         return None
 
     def get_or_create_user(self, user_info):
-        #email = user_info['data']['email']
-        #full_name = user_info['full_name']
-        email = 'user100@redbangle.com'
+        email = user_info['data']['email']
+        full_name = user_info['data']['name']
+        # email = 'user100@redbangle.com'
         print(email)
         #email = 'user27@zulipdev.com'
-        full_name = 'a3'
+        # full_name = 'a3'
         if email is None or full_name is None:
             return None
 
