@@ -17,7 +17,7 @@
         min-width: 0;
 
         height: var(--height-input-pill);
-        margin: 1px 2px;
+        margin: 0;
 
         color: inherit;
         border: 1px solid transparent;
@@ -157,7 +157,8 @@
 }
 
 #compose-direct-recipient .pill-container {
-    padding: 0 2px;
+    gap: var(--vertical-spacing-input-pill) var(--horizontal-spacing-input-pill);
+    padding: var(--vertical-spacing-input-pill);
     border: 1px solid hsl(0deg 0% 0% / 20%);
     background-color: hsl(0deg 0% 100%);
 
