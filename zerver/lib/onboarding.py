@@ -52,80 +52,55 @@ def send_initial_direct_message(user: UserProfile) -> None:
     # request and thus may not have the user's language context yet.
     with override_language(user.default_language):
         if education_organization:
-            getting_started_help = user.realm.url + "/help/using-zulip-for-a-class"
-            getting_started_string = (
-                _(
-                    "If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!"
-                )
-            ).format(getting_started_url=getting_started_help)
+            getting_started_string = _("""
+If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!
+""").format(getting_started_url="/help/using-zulip-for-a-class")
         else:
-            getting_started_help = user.realm.url + "/help/getting-started-with-zulip"
-            getting_started_string = (
-                _(
-                    "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
-                )
-            ).format(getting_started_url=getting_started_help)
+            getting_started_string = _("""
+If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!
+""").format(getting_started_url="/help/getting-started-with-zulip")
 
         organization_setup_string = ""
         # Add extra content on setting up a new organization for administrators.
         if user.is_realm_admin:
             if education_organization:
-                organization_setup_help = user.realm.url + "/help/setting-up-zulip-for-a-class"
-                organization_setup_string = (
-                    " "
-                    + _(
-                        "We also have a guide for [Setting up Zulip for a class]({organization_setup_url})."
-                    )
-                ).format(organization_setup_url=organization_setup_help)
+                organization_setup_string = _("""
+We also have a guide for [Setting up Zulip for a class]({organization_setup_url}).
+""").format(organization_setup_url="/help/setting-up-zulip-for-a-class")
             else:
-                organization_setup_help = (
-                    user.realm.url + "/help/getting-your-organization-started-with-zulip"
-                )
-                organization_setup_string = (
-                    " "
-                    + _(
-                        "We also have a guide for [Setting up your organization]({organization_setup_url})."
-                    )
-                ).format(organization_setup_url=organization_setup_help)
+                organization_setup_string = _("""
+We also have a guide for [Setting up your organization]({organization_setup_url}).
+""").format(organization_setup_url="/help/getting-your-organization-started-with-zulip")
 
         demo_organization_warning_string = ""
         # Add extra content about automatic deletion for demo organization owners.
         if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
-            demo_organization_help = user.realm.url + "/help/demo-organizations"
-            demo_organization_warning_string = (
-                _(
-                    "Note that this is a [demo organization]({demo_organization_help_url}) and will be "
-                    "**automatically deleted** in 30 days."
-                )
-                + "\n\n"
-            ).format(demo_organization_help_url=demo_organization_help)
+            demo_organization_warning_string = _("""
+Note that this is a [demo organization]({demo_organization_help_url}) and
+will be **automatically deleted** in 30 days.
+""").format(demo_organization_help_url="/help/demo-organizations")
 
-        content = "".join(
-            [
-                _("Hello, and welcome to Zulip!") + "👋" + " ",
-                _("This is a direct message from me, Welcome Bot.") + "\n\n",
-                "{getting_started_text}",
-                "{organization_setup_text}\n\n",
-                "{demo_organization_text}",
-                _(
-                    "I can also help you get set up! Just click anywhere on this message or press `r` to reply."
-                )
-                + "\n\n",
-                _("Here are a few messages I understand:") + " ",
-                bot_commands(),
-            ]
+        content = _("""
+Hello, and welcome to Zulip!👋 This is a direct message from me, Welcome Bot.
+
+{getting_started_text} {organization_setup_text}
+
+{demo_organization_text}
+
+I can also help you get set up! Just click anywhere on this message or press `r` to reply.
+
+Here are a few messages I understand: {bot_commands}
+""").format(
+            getting_started_text=getting_started_string,
+            organization_setup_text=organization_setup_string,
+            demo_organization_text=demo_organization_warning_string,
+            bot_commands=bot_commands(),
         )
-
-    content = content.format(
-        getting_started_text=getting_started_string,
-        organization_setup_text=organization_setup_string,
-        demo_organization_text=demo_organization_warning_string,
-    )
 
     internal_send_private_message(
         get_system_bot(settings.WELCOME_BOT, user.realm_id),
         user,
-        content,
+        remove_single_newlines(content),
         # Note: Welcome bot doesn't trigger email/push notifications,
         # as this is intended to be seen contextually in the application.
         disable_external_notifications=True,
