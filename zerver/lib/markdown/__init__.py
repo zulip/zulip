@@ -1957,6 +1957,9 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
         if db_data is not None:
             user_group = db_data.mention_data.get_user_group(name)
             if user_group:
+                if user_group.deactivated:
+                    silent = True
+
                 if not silent:
                     self.zmd.zulip_rendering_result.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
