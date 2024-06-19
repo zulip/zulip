@@ -1017,7 +1017,8 @@
         }
     }
 
-    .panel_user_list > .pill-container {
+    .panel_user_list > .pill-container,
+    .stream_creator_details > .display_only_pill {
         &:hover {
             color: inherit;
         }
