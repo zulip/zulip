@@ -1416,7 +1416,6 @@ div.focused-message-list {
 nav {
     .column-left {
         text-align: left;
-        margin-left: 15px;
         display: flex;
         justify-content: left;
         gap: 4px;
@@ -1436,13 +1435,9 @@ nav {
             }
         }
 
-        .left-sidebar-toggle-button {
-            margin-right: 5px;
-
-            .left-sidebar-toggle-unreadcount {
-                top: 10px;
-                left: 21px;
-            }
+        .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
+            top: 10px;
+            left: 21px;
         }
     }
 
@@ -2015,8 +2010,8 @@ body:not(.hide-left-sidebar) {
         }
 
         #navbar-middle {
-            /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
-            margin-right: calc(var(--header-height) * 4 + 10px);
+            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+            margin-right: calc(var(--header-height) * 4 + 3px);
         }
 
         #typing_notifications,
@@ -2365,9 +2360,6 @@ body:not(.hide-left-sidebar) {
     width: calc(var(--right-sidebar-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
-    /* Move the column to the right with absolute
-       positioning, rather than margin. */
-    right: 7px;
 
     & a:focus {
         filter: none;
