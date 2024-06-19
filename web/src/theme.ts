@@ -21,9 +21,9 @@ function set_automatic_theme(): void {
 }
 
 export function set_theme(color_scheme: number): void {
-    if (color_scheme === settings_config.color_scheme_values.night.code) {
+    if (color_scheme === settings_config.color_scheme_values.dark.code) {
         set_dark_theme();
-    } else if (color_scheme === settings_config.color_scheme_values.day.code) {
+    } else if (color_scheme === settings_config.color_scheme_values.light.code) {
         set_light_theme();
     } else {
         // If the color_scheme_code is not valid, fallback to automatic.

@@ -108,11 +108,11 @@ export const color_scheme_values = {
         code: 1,
         description: $t({defaultMessage: "Automatic (follows system settings)"}),
     },
-    day: {
+    light: {
         code: 3,
         description: $t({defaultMessage: "Light"}),
     },
-    night: {
+    dark: {
         code: 2,
         description: $t({defaultMessage: "Dark"}),
     },

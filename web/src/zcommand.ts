@@ -64,11 +64,11 @@ export function tell_user(msg: string): void {
 
 export function switch_to_light_theme(): void {
     send({
-        command: "/day",
+        command: "/light",
         on_success(raw_data) {
             const data = data_schema.parse(raw_data);
             requestAnimationFrame(() => {
-                theme.set_theme_and_update(settings_config.color_scheme_values.day.code);
+                theme.set_theme_and_update(settings_config.color_scheme_values.light.code);
             });
             feedback_widget.show({
                 populate($container) {
@@ -77,7 +77,7 @@ export function switch_to_light_theme(): void {
                 },
                 on_undo() {
                     send({
-                        command: "/night",
+                        command: "/dark",
                     });
                 },
                 title_text: $t({defaultMessage: "Light theme"}),
@@ -89,11 +89,11 @@ export function switch_to_light_theme(): void {
 
 export function switch_to_dark_theme(): void {
     send({
-        command: "/night",
+        command: "/dark",
         on_success(raw_data) {
             const data = data_schema.parse(raw_data);
             requestAnimationFrame(() => {
-                theme.set_theme_and_update(settings_config.color_scheme_values.night.code);
+                theme.set_theme_and_update(settings_config.color_scheme_values.dark.code);
             });
             feedback_widget.show({
                 populate($container) {
@@ -102,7 +102,7 @@ export function switch_to_dark_theme(): void {
                 },
                 on_undo() {
                     send({
-                        command: "/day",
+                        command: "/light",
                     });
                 },
                 title_text: $t({defaultMessage: "Dark theme"}),
@@ -131,14 +131,14 @@ export function process(message_content: string): boolean {
         return true;
     }
 
-    const day_commands = ["/day", "/light"];
-    if (day_commands.includes(content)) {
+    const light_commands = ["/day", "/light"];
+    if (light_commands.includes(content)) {
         switch_to_light_theme();
         return true;
     }
 
-    const night_commands = ["/night", "/dark"];
-    if (night_commands.includes(content)) {
+    const dark_commands = ["/night", "/dark"];
+    if (dark_commands.includes(content)) {
         switch_to_dark_theme();
         return true;
     }
