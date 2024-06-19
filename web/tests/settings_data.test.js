@@ -234,7 +234,7 @@ test_message_policy(
 );
 
 run_test("using_dark_theme", () => {
-    user_settings.color_scheme = settings_config.color_scheme_values.night.code;
+    user_settings.color_scheme = settings_config.color_scheme_values.dark.code;
     assert.equal(settings_data.using_dark_theme(), true);
 
     user_settings.color_scheme = settings_config.color_scheme_values.automatic.code;
@@ -251,7 +251,7 @@ run_test("using_dark_theme", () => {
     };
     assert.equal(settings_data.using_dark_theme(), false);
 
-    user_settings.color_scheme = settings_config.color_scheme_values.day.code;
+    user_settings.color_scheme = settings_config.color_scheme_values.light.code;
     assert.equal(settings_data.using_dark_theme(), false);
 });
 

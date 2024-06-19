@@ -91,11 +91,11 @@
                 <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-automatic-theme" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
                     <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
                 </label>
-                <input type="radio" id="select-light-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.day.code}}" {{#if (eq user_color_scheme color_scheme_values.day.code)}}checked{{/if}} />
+                <input type="radio" id="select-light-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.light.code}}" {{#if (eq user_color_scheme color_scheme_values.light.code)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-light-theme" aria-label="{{t 'Select light theme' }}" data-tippy-content="{{t 'Light theme' }}" tabindex="0">
                     <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i>
                 </label>
-                <input type="radio" id="select-dark-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.night.code}}" {{#if (eq user_color_scheme color_scheme_values.night.code)}}checked{{/if}} />
+                <input type="radio" id="select-dark-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.dark.code}}" {{#if (eq user_color_scheme color_scheme_values.dark.code)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-dark-theme" aria-label="{{t 'Select dark theme' }}" data-tippy-content="{{t 'Dark theme' }}" tabindex="0">
                     <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i>
                 </label>
