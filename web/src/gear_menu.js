@@ -90,6 +90,7 @@ function render(instance) {
         popover_menus_data.get_gear_menu_content_context(),
     );
     instance.setContent(parse_html(rendered_gear_menu));
+    $("#gear-menu").addClass("active");
 }
 
 export function initialize() {
@@ -183,6 +184,7 @@ export function initialize() {
         },
         onShow: render,
         onHidden(instance) {
+            $("#gear-menu").removeClass("active");
             instance.destroy();
             popover_menus.popover_instances.gear_menu = undefined;
         },

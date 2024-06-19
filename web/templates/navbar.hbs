@@ -47,17 +47,17 @@
                     <i class="zulip-icon zulip-icon-user-list"></i>
                 </a>
             </div>
-            <div id="help-menu">
+            <div id="help-menu" class="navbar-item">
                 <a class="header-button tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-tooltip-template-id="help-menu-tooltip-template">
                     <i class="zulip-icon zulip-icon-help-bigger" aria-hidden="true"></i>
                 </a>
             </div>
-            <div id="gear-menu" class="{{#if embedded}}hide-navbar-buttons-visibility{{/if}}">
+            <div id="gear-menu" class="{{#if embedded}}hide-navbar-buttons-visibility{{/if}} navbar-item">
                 <a id="settings-dropdown" tabindex="0" role="button" class="header-button tippy-zulip-delayed-tooltip" data-tooltip-template-id="gear-menu-tooltip-template">
                     <i class="zulip-icon zulip-icon-gear" aria-hidden="true"></i>
                 </a>
             </div>
-            <div id="personal-menu" class="hidden-for-spectators">
+            <div id="personal-menu" class="hidden-for-spectators navbar-item">
                 <a class="header-button tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-tooltip-template-id="personal-menu-tooltip-template">
                     <img class="header-button-avatar" src="{{user_avatar}}"/>
                 </a>
