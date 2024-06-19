@@ -5,11 +5,11 @@ import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as dark_theme from "./dark_theme";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as settings_preferences from "./settings_preferences";
+import * as theme from "./theme";
 import {parse_html} from "./ui_util";
 
 /*
@@ -159,7 +159,7 @@ export function initialize() {
             $popper.on("change", "input[name='theme-select']", (e) => {
                 const theme_code = Number.parseInt($(e.currentTarget).attr("data-theme-code"), 10);
                 requestAnimationFrame(() => {
-                    dark_theme.set_theme_for_spectator(theme_code);
+                    theme.set_theme_for_spectator(theme_code);
                 });
             });
         },

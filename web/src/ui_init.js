@@ -35,7 +35,6 @@ import * as compose_tooltips from "./compose_tooltips";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
-import * as dark_theme from "./dark_theme";
 import * as desktop_integration from "./desktop_integration";
 import * as desktop_notifications from "./desktop_notifications";
 import * as drafts from "./drafts";
@@ -124,6 +123,7 @@ import * as stream_list_sort from "./stream_list_sort";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
+import * as theme from "./theme";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -420,7 +420,7 @@ export function initialize_everything(state_data) {
     sidebar_ui.restore_sidebar_toggle_status();
     information_density.initialize();
     if (page_params.is_spectator) {
-        dark_theme.initialize_theme_for_spectator();
+        theme.initialize_theme_for_spectator();
     }
 
     i18n.initialize({language_list: page_params.language_list});

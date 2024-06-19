@@ -3,11 +3,11 @@ import {z} from "zod";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
-import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as markdown from "./markdown";
 import * as settings_config from "./settings_config";
+import * as theme from "./theme";
 
 /*
 
@@ -68,7 +68,7 @@ export function switch_to_light_theme(): void {
         on_success(raw_data) {
             const data = data_schema.parse(raw_data);
             requestAnimationFrame(() => {
-                dark_theme.set_theme_and_update(settings_config.color_scheme_values.day.code);
+                theme.set_theme_and_update(settings_config.color_scheme_values.day.code);
             });
             feedback_widget.show({
                 populate($container) {
@@ -93,7 +93,7 @@ export function switch_to_dark_theme(): void {
         on_success(raw_data) {
             const data = data_schema.parse(raw_data);
             requestAnimationFrame(() => {
-                dark_theme.set_theme_and_update(settings_config.color_scheme_values.night.code);
+                theme.set_theme_and_update(settings_config.color_scheme_values.night.code);
             });
             feedback_widget.show({
                 populate($container) {
