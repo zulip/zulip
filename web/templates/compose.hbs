@@ -49,10 +49,7 @@
             <form id="send_message_form" action="/json/messages" method="post">
                 <div class="compose_table">
                     <div id="compose_top">
-                        <div id="compose_top_right" class="order-2">
-                            <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
-                        </div>
-                        <div id="compose-recipient" class="order-1">
+                        <div id="compose-recipient">
                             {{> dropdown_widget_wrapper
                               widget_name="compose_select_recipient"}}
                             <div class="topic-marker-container">
@@ -110,5 +107,6 @@
                 </div>
             </form>
         </div>
+        <button type="button" class="close zulip-icon zulip-icon-close" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
     </div>
 </div>

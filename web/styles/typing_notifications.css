@@ -9,3 +9,10 @@
     list-style: none;
     margin: 0;
 }
+
+#mark_as_read_turned_off_banner {
+    /* override the margin of main-view-banner since it causes
+       more gap than we want between mark as read banner and typing
+       notification.  */
+    margin: 5px 0;
+}

@@ -142,6 +142,9 @@
     #compose_banners {
         max-height: min(25vh, 240px);
         overflow-y: auto;
+        /* Align to compose controls; that's 112px width,
+           plus 6px of grid gap for 118px here. */
+        margin-right: calc(var(--compose-send-controls-width) + 6px);
     }
 }
 
@@ -256,25 +259,15 @@
         display: grid;
         /* Vlad's design calls for 122px for the send column
            at its widest; 112px accounts for 6px of gap and
-           4px outside padding.
-
-           TODO: get this value into a CSS variable. */
-        grid-template: minmax(0, 1fr) 32px / minmax(0, 1fr) 112px;
+           4px outside padding. */
+        grid-template: minmax(0, 1fr) 32px / minmax(0, 1fr) var(
+                --compose-send-controls-width
+            );
         grid-template-areas:
             "message-content-container message-send-controls-container"
             "message-formatting-controls-container . ";
         gap: 4px 6px;
         margin-top: 5px;
-
-        @media ((width >= $sm_min) and (width < $mc_min)) {
-            /* Drop to a 62px wide send column. */
-            grid-template-columns: minmax(0, 1fr) 62px;
-        }
-
-        @media (width < $sm_min) {
-            /* Drop to a 28px wide send column. */
-            grid-template-columns: minmax(0, 1fr) 28px;
-        }
     }
 
     .message_content {
@@ -419,53 +412,32 @@
     align-items: flex-start;
     /* Matched to 6px grid-gap on .messagebox grid. */
     padding-bottom: 6px;
-}
-
-#compose_top_right {
-    display: flex;
-    align-items: center;
-    height: var(--compose-recipient-box-min-height);
     /* Align to compose controls; that's 112px width,
-       plus 6px of grid gap for 118px here.
-
-       TODO: Make variables here; expanded use of grid
-       on the compose box will make these unnecessary,
-       eventually. */
-    width: calc(112px + 6px);
-    justify-content: flex-end;
-
-    @media ((width >= $sm_min) and (width < $mc_min)) {
-        /* Align to compose controls at narrower widths */
-        width: calc(62px + 6px);
-    }
-
-    @media (width < $sm_min) {
-        /* Don't attempt to control the width
-           at narrowest widths. */
-        width: auto;
-    }
-
-    & button {
-        background: transparent;
-        color: inherit;
-        font-size: 15px;
-        font-weight: normal;
-        line-height: 20px;
-        opacity: 0.7;
-        border: 0;
-        padding: 0;
-        margin-left: 4px;
-        vertical-align: unset;
-        text-shadow: none;
-
-        &:hover {
-            opacity: 1;
-        }
-    }
+       plus 6px of grid gap for 118px here. */
+    margin-right: calc(var(--compose-send-controls-width) + 6px);
 }
 
 #compose_close {
-    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: var(--color-compose-send-control-button);
+    background: transparent;
+    font-size: 15px;
+    font-weight: normal;
+    line-height: 20px;
+    opacity: 0.7;
+    border: 0;
+    padding: 5px 7px;
+    border-radius: 8px;
+    vertical-align: unset;
+    text-shadow: none;
+
+    &:hover {
+        opacity: 1;
+        background: var(--color-compose-embedded-button-background-hover);
+        color: var(--color-compose-send-control-button-interactive);
+    }
 }
 
 .main-view-banner {
