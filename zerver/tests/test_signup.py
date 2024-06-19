@@ -1046,7 +1046,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(93), self.assert_memcached_count(14):
+        with self.assert_database_query_count(94), self.assert_memcached_count(14):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -1731,8 +1731,9 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         # Make sure the correct Welcome Bot direct message is sent.
+        realm = get_realm(string_id)
         welcome_msg = Message.objects.filter(
-            realm_id=get_realm(string_id).id,
+            realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
             recipient__type=Recipient.PERSONAL,
         ).latest("id")
@@ -1743,6 +1744,22 @@ class RealmCreationTest(ZulipTestCase):
         self.assertIn("Getting started guide", welcome_msg.content)
         self.assertNotIn("Using Zulip for a class guide", welcome_msg.content)
         self.assertNotIn("demo organization", welcome_msg.content)
+
+        # Organization has tracked onboarding messages.
+        self.assertTrue(OnboardingUserMessage.objects.filter(realm_id=realm.id).exists())
+        self.assertIn("I've kicked off some conversations", welcome_msg.content)
+
+        # Verify that Organization without 'OnboardingUserMessage' records
+        # doesn't include "I've kicked off..." text in welcome_msg content.
+        OnboardingUserMessage.objects.filter(realm_id=realm.id).delete()
+        do_create_user("hamlet", "password", realm, "hamlet", acting_user=None)
+        welcome_msg = Message.objects.filter(
+            realm_id=realm.id,
+            sender__email="welcome-bot@zulip.com",
+            recipient__type=Recipient.PERSONAL,
+        ).latest("id")
+        self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertNotIn("I've kicked off some conversations", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:

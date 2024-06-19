@@ -53,11 +53,11 @@ def send_initial_direct_message(user: UserProfile) -> int:
     with override_language(user.default_language):
         if education_organization:
             getting_started_string = _("""
-If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!
+To learn more, check out our [Using Zulip for a class guide]({getting_started_url})!
 """).format(getting_started_url="/help/using-zulip-for-a-class")
         else:
             getting_started_string = _("""
-If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!
+To learn more, check out our [Getting started guide]({getting_started_url})!
 """).format(getting_started_url="/help/getting-started-with-zulip")
 
         organization_setup_string = ""
@@ -80,8 +80,15 @@ Note that this is a [demo organization]({demo_organization_help_url}) and
 will be **automatically deleted** in 30 days.
 """).format(demo_organization_help_url="/help/demo-organizations")
 
+        inform_about_tracked_onboarding_messages_text = ""
+        if OnboardingUserMessage.objects.filter(realm_id=user.realm_id).exists():
+            inform_about_tracked_onboarding_messages_text = _("""
+I've kicked off some conversations to help you get started. You can find
+them in your [Inbox](/#inbox).
+""")
+
         content = _("""
-Hello, and welcome to Zulip!👋 This is a direct message from me, Welcome Bot.
+Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
 
 {getting_started_text} {organization_setup_text}
 
@@ -91,6 +98,7 @@ I can also help you get set up! Just click anywhere on this message or press `r`
 
 Here are a few messages I understand: {bot_commands}
 """).format(
+            inform_about_tracked_onboarding_messages_text=inform_about_tracked_onboarding_messages_text,
             getting_started_text=getting_started_string,
             organization_setup_text=organization_setup_string,
             demo_organization_text=demo_organization_warning_string,
