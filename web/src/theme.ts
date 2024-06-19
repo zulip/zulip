@@ -8,26 +8,26 @@ import {user_settings} from "./user_settings";
 
 const ls = localstorage();
 
-function enable(): void {
+function set_dark_theme(): void {
     $(":root").removeClass("color-scheme-automatic").addClass("dark-theme");
 }
 
-function disable(): void {
+function set_light_theme(): void {
     $(":root").removeClass("color-scheme-automatic").removeClass("dark-theme");
 }
 
-function default_preference_checker(): void {
+function set_automatic_theme(): void {
     $(":root").removeClass("dark-theme").addClass("color-scheme-automatic");
 }
 
 export function set_theme(color_scheme: number): void {
     if (color_scheme === settings_config.color_scheme_values.night.code) {
-        enable();
+        set_dark_theme();
     } else if (color_scheme === settings_config.color_scheme_values.day.code) {
-        disable();
+        set_light_theme();
     } else {
         // If the color_scheme_code is not valid, fallback to automatic.
-        default_preference_checker();
+        set_automatic_theme();
     }
 }
 
