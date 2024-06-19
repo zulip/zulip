@@ -438,6 +438,14 @@
         background: var(--color-compose-embedded-button-background-hover);
         color: var(--color-compose-send-control-button-interactive);
     }
+
+    &:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline-color: var(--color-outline-focus);
+    }
 }
 
 .main-view-banner {
@@ -1054,6 +1062,14 @@ textarea.new_message_textarea,
             opacity: 1;
             background-color: hsl(0deg 0% 0% / 10%);
         }
+
+        &:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline-color: var(--color-outline-focus);
+        }
     }
 
     .compose_control_button_container.disabled-on-hover:hover {
@@ -1295,12 +1311,12 @@ textarea.new_message_textarea,
         transform: scale(0.96);
     }
 
-    &:focus {
-        outline: 0;
+    &:focus:not(:focus-visible) {
+        outline: none;
     }
 
     &:focus-visible {
-        outline: 2px solid var(--color-outline-focus);
+        outline-color: var(--color-outline-focus);
     }
 
     &:hover {
