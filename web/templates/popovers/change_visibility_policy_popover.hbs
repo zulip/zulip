@@ -5,24 +5,24 @@
                 <input type="radio" id="select-muted-policy" class="tab-option" name="visibility-policy-select" data-visibility-policy="{{all_visibility_policies.MUTED}}" {{#if (eq visibility_policy all_visibility_policies.MUTED)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content" for="select-muted-policy" tabindex="0">
                     <i class="zulip-icon zulip-icon-mute-new" aria-hidden="true"></i>
-                    {{t "Mute"}}
+                    <span class="popover-menu-label">{{t "Mute"}}</span>
                 </label>
                 <input type="radio" id="select-inherit-policy" class="tab-option" name="visibility-policy-select" data-visibility-policy="{{all_visibility_policies.INHERIT}}" {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content" for="select-inherit-policy" tabindex="0">
                     <i class="zulip-icon zulip-icon-inherit" aria-hidden="true"></i>
-                    {{t "Default"}}
+                    <span class="popover-menu-label">{{t "Default"}}</span>
                 </label>
                 {{#if (or stream_muted topic_unmuted)}}
                 <input type="radio" id="select-unmuted-policy" class="tab-option" name="visibility-policy-select" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content" for="select-unmuted-policy" tabindex="0">
                     <i class="zulip-icon zulip-icon-unmute-new" aria-hidden="true"></i>
-                    {{t "Unmute"}}
+                    <span class="popover-menu-label">{{t "Unmute"}}</span>
                 </label>
                 {{/if}}
                 <input type="radio" id="select-followed-policy" class="tab-option" name="visibility-policy-select" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content" for="select-followed-policy" tabindex="0">
                     <i class="zulip-icon zulip-icon-follow" aria-hidden="true"></i>
-                    {{t "Follow"}}
+                    <span class="popover-menu-label">{{t "Follow"}}</span>
                 </label>
                 <span class="slider"></span>
             </div>
