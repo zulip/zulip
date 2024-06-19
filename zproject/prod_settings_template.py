@@ -149,6 +149,7 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 ## enabled.  If you want to disable it, do so after creating the
 ## initial realm and user.
 AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
+    'zproject.backends.RestApiAuthBackend',
     "zproject.backends.EmailAuthBackend",  # Email and password; just requires SMTP setup
     # "zproject.backends.GoogleAuthBackend",  # Google auth, setup below
     # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
@@ -161,6 +162,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     # "zproject.backends.GenericOpenIdConnectBackend",  # Generic OIDC integration, setup below
 )
 
+EXTERNAL_API_URL = 'http://3.111.67.39:8005/redbangle/user/api/login'
 ## LDAP integration.
 ##
 ## Zulip supports retrieving information about users via LDAP, and
