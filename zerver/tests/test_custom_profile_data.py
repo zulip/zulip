@@ -39,7 +39,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         realm = get_realm("zulip")
         data: Dict[str, Any] = {"name": "Phone", "field_type": "text id"}
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, 'Argument "field_type" is not valid JSON.')
+        self.assert_json_error(result, "field_type is not valid JSON")
 
         data["name"] = ""
         data["field_type"] = 100
@@ -106,7 +106,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = "invalid"
         result = self.client_post("/json/realm/profile_fields", info=data)
-        error_msg = 'Argument "field_data" is not valid JSON.'
+        error_msg = "field_data is not valid JSON"
         self.assert_json_error(result, error_msg)
 
         data["field_data"] = orjson.dumps(
@@ -116,7 +116,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "field_data contains a value that is not an allowed_type")
+        self.assert_json_error(result, 'field_data["python"]["dict[str,str]"] is not a dict')
 
         data["field_data"] = orjson.dumps(
             {
@@ -152,7 +152,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "field_data contains a value that is not an allowed_type")
+        self.assert_json_error(result, 'field_data["0"]["dict[str,str]"]["order"] is not a string')
 
         data["field_data"] = orjson.dumps({}).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -247,7 +247,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = "invalid"
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, 'Argument "field_data" is not valid JSON.')
+        self.assert_json_error(result, "field_data is not valid JSON")
 
         data["field_data"] = orjson.dumps({}).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -307,7 +307,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "field_data contains a value that is not an allowed_type")
+        self.assert_json_error(result, 'field_data["url_pattern"]["dict[str,str]"] is not a dict')
 
         data["field_data"] = orjson.dumps(
             {
@@ -493,7 +493,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
                 "required": "invalid value",
             },
         )
-        msg = 'Argument "required" is not valid JSON.'
+        msg = "required is not valid JSON"
         self.assert_json_error(result, msg)
 
         result = self.client_patch(
@@ -555,7 +555,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
                 "display_in_profile_summary": "invalid value",
             },
         )
-        msg = 'Argument "display_in_profile_summary" is not valid JSON.'
+        msg = "display_in_profile_summary is not valid JSON"
         self.assert_json_error(result, msg)
 
         result = self.client_patch(
@@ -613,7 +613,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             f"/json/realm/profile_fields/{field.id}",
             info={"field_data": "invalid"},
         )
-        self.assert_json_error(result, 'Argument "field_data" is not valid JSON.')
+        self.assert_json_error(result, "field_data is not valid JSON")
 
         field_data = orjson.dumps(
             {
