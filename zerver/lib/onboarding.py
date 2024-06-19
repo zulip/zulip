@@ -52,80 +52,55 @@ def send_initial_direct_message(user: UserProfile) -> None:
     # request and thus may not have the user's language context yet.
     with override_language(user.default_language):
         if education_organization:
-            getting_started_help = user.realm.url + "/help/using-zulip-for-a-class"
-            getting_started_string = (
-                _(
-                    "If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!"
-                )
-            ).format(getting_started_url=getting_started_help)
+            getting_started_string = _("""
+If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!
+""").format(getting_started_url="/help/using-zulip-for-a-class")
         else:
-            getting_started_help = user.realm.url + "/help/getting-started-with-zulip"
-            getting_started_string = (
-                _(
-                    "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
-                )
-            ).format(getting_started_url=getting_started_help)
+            getting_started_string = _("""
+If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!
+""").format(getting_started_url="/help/getting-started-with-zulip")
 
         organization_setup_string = ""
         # Add extra content on setting up a new organization for administrators.
         if user.is_realm_admin:
             if education_organization:
-                organization_setup_help = user.realm.url + "/help/setting-up-zulip-for-a-class"
-                organization_setup_string = (
-                    " "
-                    + _(
-                        "We also have a guide for [Setting up Zulip for a class]({organization_setup_url})."
-                    )
-                ).format(organization_setup_url=organization_setup_help)
+                organization_setup_string = _("""
+We also have a guide for [Setting up Zulip for a class]({organization_setup_url}).
+""").format(organization_setup_url="/help/setting-up-zulip-for-a-class")
             else:
-                organization_setup_help = (
-                    user.realm.url + "/help/getting-your-organization-started-with-zulip"
-                )
-                organization_setup_string = (
-                    " "
-                    + _(
-                        "We also have a guide for [Setting up your organization]({organization_setup_url})."
-                    )
-                ).format(organization_setup_url=organization_setup_help)
+                organization_setup_string = _("""
+We also have a guide for [Setting up your organization]({organization_setup_url}).
+""").format(organization_setup_url="/help/getting-your-organization-started-with-zulip")
 
         demo_organization_warning_string = ""
         # Add extra content about automatic deletion for demo organization owners.
         if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
-            demo_organization_help = user.realm.url + "/help/demo-organizations"
-            demo_organization_warning_string = (
-                _(
-                    "Note that this is a [demo organization]({demo_organization_help_url}) and will be "
-                    "**automatically deleted** in 30 days."
-                )
-                + "\n\n"
-            ).format(demo_organization_help_url=demo_organization_help)
+            demo_organization_warning_string = _("""
+Note that this is a [demo organization]({demo_organization_help_url}) and
+will be **automatically deleted** in 30 days.
+""").format(demo_organization_help_url="/help/demo-organizations")
 
-        content = "".join(
-            [
-                _("Hello, and welcome to Zulip!") + "👋" + " ",
-                _("This is a direct message from me, Welcome Bot.") + "\n\n",
-                "{getting_started_text}",
-                "{organization_setup_text}\n\n",
-                "{demo_organization_text}",
-                _(
-                    "I can also help you get set up! Just click anywhere on this message or press `r` to reply."
-                )
-                + "\n\n",
-                _("Here are a few messages I understand:") + " ",
-                bot_commands(),
-            ]
+        content = _("""
+Hello, and welcome to Zulip!👋 This is a direct message from me, Welcome Bot.
+
+{getting_started_text} {organization_setup_text}
+
+{demo_organization_text}
+
+I can also help you get set up! Just click anywhere on this message or press `r` to reply.
+
+Here are a few messages I understand: {bot_commands}
+""").format(
+            getting_started_text=getting_started_string,
+            organization_setup_text=organization_setup_string,
+            demo_organization_text=demo_organization_warning_string,
+            bot_commands=bot_commands(),
         )
-
-    content = content.format(
-        getting_started_text=getting_started_string,
-        organization_setup_text=organization_setup_string,
-        demo_organization_text=demo_organization_warning_string,
-    )
 
     internal_send_private_message(
         get_system_bot(settings.WELCOME_BOT, user.realm_id),
         user,
-        content,
+        remove_single_newlines(content),
         # Note: Welcome bot doesn't trigger email/push notifications,
         # as this is intended to be seen contextually in the application.
         disable_external_notifications=True,
@@ -151,97 +126,64 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
     # Given the raw (pre-markdown-rendering) content for a private
     # message from the user to Welcome Bot, select the appropriate reply.
     if human_response_lower in ["app", "apps"]:
-        return _(
-            "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
-            "Zulip also works great in a browser."
-        )
+        return _("""
+You can [download](/apps/) the [mobile and desktop apps](/apps/).
+Zulip also works great in a browser.
+""")
     elif human_response_lower == "profile":
-        return _(
-            "Go to [Profile settings](#settings/profile) "
-            "to add a [profile picture](/help/change-your-profile-picture) "
-            "and edit your [profile information](/help/edit-your-profile)."
-        )
+        return _("""
+Go to [Profile settings](#settings/profile) to add a [profile picture](/help/change-your-profile-picture)
+and edit your [profile information](/help/edit-your-profile).
+""")
     elif human_response_lower == "theme":
-        return _(
-            "Go to [Preferences](#settings/preferences) "
-            "to [switch between the light and dark themes](/help/dark-theme), "
-            "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
-            "[change your language](/help/change-your-language), "
-            "and make other tweaks to your Zulip experience."
-        )
+        return _("""
+Go to [Preferences](#settings/preferences) to [switch between the light and dark themes](/help/dark-theme),
+[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set),
+[change your language](/help/change-your-language), and make other tweaks
+to your Zulip experience.
+""")
     elif human_response_lower in ["stream", "streams", "channel", "channels"]:
-        return "".join(
-            [
-                _("In Zulip, channels [determine who gets a message]({help_link}).").format(
-                    help_link="/help/introduction-to-channels"
-                )
-                + "\n\n",
-                _("[Browse and subscribe to channels]({settings_link}).").format(
-                    settings_link="#channels/all"
-                ),
-            ]
-        )
+        return _("""
+In Zulip, channels [determine who gets a message]({help_link}).
+
+[Browse and subscribe to channels]({settings_link}).
+""").format(help_link="/help/introduction-to-channels", settings_link="#channels/all")
     elif human_response_lower in ["topic", "topics"]:
-        return "".join(
-            [
-                _(
-                    "In Zulip, topics [tell you what a message is about](/help/introduction-to-topics). "
-                    "They are light-weight subjects, very similar to the subject line of an email."
-                )
-                + "\n\n",
-                _(
-                    "Check out [Recent conversations](#recent) to see what's happening! "
-                    'You can return to this conversation by clicking "Direct messages" in the upper left.'
-                ),
-            ]
-        )
+        return _("""
+In Zulip, topics [tell you what a message is about](/help/introduction-to-topics).
+They are light-weight subjects, very similar to the subject line of an email.
+
+Check out [Recent conversations](#recent) to see what's happening!
+You can return to this conversation by clicking "Direct messages" in the upper left.
+""")
     elif human_response_lower in ["keyboard", "shortcuts", "keyboard shortcuts"]:
-        return "".join(
-            [
-                _(
-                    "Zulip's [keyboard shortcuts](#keyboard-shortcuts) "
-                    "let you navigate the app quickly and efficiently."
-                )
-                + "\n\n",
-                _("Press `?` any time to see a [cheat sheet](#keyboard-shortcuts)."),
-            ]
-        )
+        return _("""
+Zulip's [keyboard shortcuts](#keyboard-shortcuts) let you navigate the app
+quickly and efficiently.
+
+Press `?` any time to see a [cheat sheet](#keyboard-shortcuts).
+""")
     elif human_response_lower in ["formatting", "message formatting"]:
-        return "".join(
-            [
-                _(
-                    "Zulip uses [Markdown](/help/format-your-message-using-markdown), "
-                    "an intuitive format for **bold**, *italics*, bulleted lists, and more. "
-                    "Click [here](#message-formatting) for a cheat sheet."
-                )
-                + "\n\n",
-                _(
-                    "Check out our [messaging tips](/help/messaging-tips) "
-                    "to learn about emoji reactions, code blocks and much more!"
-                ),
-            ]
-        )
+        return _("""
+Zulip uses [Markdown](/help/format-your-message-using-markdown),
+an intuitive format for **bold**, *italics*, bulleted lists, and more.
+Click [here](#message-formatting) for a cheat sheet.
+
+Check out our [messaging tips](/help/messaging-tips) to learn
+about emoji reactions, code blocks and much more!
+""")
     elif human_response_lower in ["help", "?"]:
-        return "".join(
-            [
-                _("Here are a few messages I understand:") + " ",
-                bot_commands(no_help_command=True) + "\n\n",
-                _(
-                    "Check out our [Getting started guide](/help/getting-started-with-zulip), "
-                    "or browse the [Help center](/help/) to learn more!"
-                ),
-            ]
-        )
+        return _("""
+Here are a few messages I understand: {bot_commands}
+
+Check out our [Getting started guide](/help/getting-started-with-zulip),
+or browse the [Help center](/help/) to learn more!
+""").format(bot_commands=bot_commands(no_help_command=True))
     else:
-        return "".join(
-            [
-                _(
-                    "I’m sorry, I did not understand your message. Please try one of the following commands:"
-                )
-                + " ",
-                bot_commands(),
-            ]
-        )
+        return _("""
+I’m sorry, I did not understand your message. Please try
+one of the following commands: {bot_commands}
+""").format(bot_commands=bot_commands())
 
 
 def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
@@ -254,7 +196,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     internal_send_private_message(
         welcome_bot,
         send_request.message.sender,
-        content,
+        remove_single_newlines(content),
         # Note: Welcome bot doesn't trigger email/push notifications,
         # as this is intended to be seen contextually in the application.
         disable_external_notifications=True,
