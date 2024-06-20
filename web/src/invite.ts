@@ -433,8 +433,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             set_expires_on_text();
         });
 
-        $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
-
         $("#custom-expiration-time-input").on("keydown", (e) => {
             if (e.key === "Enter") {
                 e.preventDefault();
