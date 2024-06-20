@@ -58,6 +58,8 @@ function change_active_navbar_menu($current_navbar_menu, $next_navbar_menu) {
                 personal_menu_popover.toggle();
                 break;
             case "userlist-toggle-button":
+            case "login_button":
+            case "signup_button":
                 if ($elt.is(":focus")) {
                     $elt.trigger("blur");
                 } else {
