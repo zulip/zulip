@@ -34,8 +34,7 @@ from zerver.lib.server_initialization import create_internal_realm, server_initi
 from zerver.lib.streams import render_stream_description
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import ensure_avatar_image, upload_backend
-from zerver.lib.upload.base import sanitize_name
+from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend
 from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm

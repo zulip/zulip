@@ -37,8 +37,8 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
 )
 from zerver.lib.thumbnail import BadImageError, resize_emoji
-from zerver.lib.upload import upload_message_attachment
-from zerver.lib.upload.base import ZulipUploadBackend, sanitize_name
+from zerver.lib.upload import sanitize_name, upload_message_attachment
+from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key

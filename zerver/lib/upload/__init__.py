@@ -1,6 +1,8 @@
 import io
 import logging
 import os
+import re
+import unicodedata
 from datetime import datetime
 from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple, Union
 from urllib.parse import unquote, urljoin
@@ -20,8 +22,9 @@ from zerver.lib.thumbnail import (
     resize_avatar,
     resize_emoji,
 )
-from zerver.lib.upload.base import ZulipUploadBackend, create_attachment, sanitize_name
+from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
+from zerver.models.users import is_cross_realm_bot_email
 
 
 class RealmUploadQuotaError(JsonableError):
@@ -35,6 +38,24 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
     used_space = realm.currently_used_upload_space_bytes()
     if (used_space + uploaded_file_size) > upload_quota:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
+
+
+def create_attachment(
+    file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
+) -> None:
+    assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
+        user_profile.delivery_email
+    )
+    attachment = Attachment.objects.create(
+        file_name=file_name,
+        path_id=path_id,
+        owner=user_profile,
+        realm=realm,
+        size=file_size,
+    )
+    from zerver.actions.uploads import notify_attachment_update
+
+    notify_attachment_update(user_profile, "add", attachment.to_dict())
 
 
 def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
@@ -73,6 +94,26 @@ else:  # nocoverage
 
 def get_public_upload_root_url() -> str:
     return upload_backend.get_public_upload_root_url()
+
+
+def sanitize_name(value: str) -> str:
+    """
+    Sanitizes a value to be safe to store in a Linux filesystem, in
+    S3, and in a URL.  So Unicode is allowed, but not special
+    characters other than ".", "-", and "_".
+
+    This implementation is based on django.utils.text.slugify; it is
+    modified by:
+    * adding '.' to the list of allowed characters.
+    * preserving the case of the value.
+    * not stripping trailing dashes and underscores.
+    """
+    value = unicodedata.normalize("NFKC", value)
+    value = re.sub(r"[^\w\s.-]", "", value).strip()
+    value = re.sub(r"[-\s]+", "-", value)
+    if value in {"", ".", ".."}:
+        return "uploaded-file"
+    return value
 
 
 def upload_message_attachment(

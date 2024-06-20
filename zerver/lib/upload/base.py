@@ -1,11 +1,8 @@
 import os
-import re
-import unicodedata
 from datetime import datetime
 from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple
 
-from zerver.models import Attachment, Realm, UserProfile
-from zerver.models.users import is_cross_realm_bot_email
+from zerver.models import Realm, UserProfile
 
 INLINE_MIME_TYPES = [
     "application/pdf",
@@ -27,26 +24,6 @@ INLINE_MIME_TYPES = [
     # as application/xhtml+xml, application/x-shockwave-flash,
     # image/svg+xml, text/html, or text/xml.
 ]
-
-
-def sanitize_name(value: str) -> str:
-    """
-    Sanitizes a value to be safe to store in a Linux filesystem, in
-    S3, and in a URL.  So Unicode is allowed, but not special
-    characters other than ".", "-", and "_".
-
-    This implementation is based on django.utils.text.slugify; it is
-    modified by:
-    * adding '.' to the list of allowed characters.
-    * preserving the case of the value.
-    * not stripping trailing dashes and underscores.
-    """
-    value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s.-]", "", value).strip()
-    value = re.sub(r"[-\s]+", "-", value)
-    if value in {"", ".", ".."}:
-        return "uploaded-file"
-    return value
 
 
 class ZulipUploadBackend:
@@ -152,21 +129,3 @@ class ZulipUploadBackend:
 
     def delete_export_tarball(self, export_path: str) -> Optional[str]:
         raise NotImplementedError
-
-
-def create_attachment(
-    file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
-) -> None:
-    assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
-        user_profile.delivery_email
-    )
-    attachment = Attachment.objects.create(
-        file_name=file_name,
-        path_id=path_id,
-        owner=user_profile,
-        realm=realm,
-        size=file_size,
-    )
-    from zerver.actions.uploads import notify_attachment_update
-
-    notify_attachment_update(user_profile, "add", attachment.to_dict())
