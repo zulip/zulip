@@ -80,11 +80,9 @@ class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_attachment(
         self,
         path_id: str,
-        uploaded_file_size: int,
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Realm,
     ) -> None:
         write_local_file("files", path_id, file_data)
 

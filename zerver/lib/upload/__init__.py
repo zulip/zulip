@@ -137,11 +137,9 @@ def upload_message_attachment(
     )
     upload_backend.upload_message_attachment(
         path_id,
-        uploaded_file_size,
         content_type,
         file_data,
         user_profile,
-        target_realm,
     )
     create_attachment(
         uploaded_file_name,
