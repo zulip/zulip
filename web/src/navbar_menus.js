@@ -14,6 +14,16 @@ export function is_navbar_menus_displayed() {
     );
 }
 
+export function any_focused() {
+    return $(".navbar-item:visible").is(":focus");
+}
+
+export function blur_focused() {
+    if (any_focused()) {
+        $(".navbar-item:visible").filter(":focus").trigger("blur");
+    }
+}
+
 export function handle_keyboard_events(event_name) {
     const allowed_events = new Set(["gear_menu", "left_arrow", "right_arrow"]);
     if (!allowed_events.has(event_name)) {
@@ -21,10 +31,11 @@ export function handle_keyboard_events(event_name) {
     }
 
     if (event_name === "gear_menu") {
+        blur_focused();
         gear_menu.toggle();
         return true;
     }
-    const $current_navbar_menu = $(".navbar-item:visible").filter(".active-navbar-menu");
+    const $current_navbar_menu = $(".navbar-item:visible").filter(".active-navbar-menu, :focus");
     const target_menu = get_target_navbar_menu(event_name, $current_navbar_menu);
 
     if (!target_menu) {
@@ -35,6 +46,7 @@ export function handle_keyboard_events(event_name) {
 
 function change_active_navbar_menu(target_menu) {
     popovers.hide_all();
+    blur_focused();
     switch (target_menu) {
         case "gear-menu":
             gear_menu.toggle();
@@ -44,6 +56,9 @@ function change_active_navbar_menu(target_menu) {
             return true;
         case "personal-menu":
             personal_menu_popover.toggle();
+            return true;
+        case "userlist-toggle-button":
+            $(`#${target_menu}`).trigger("focus");
             return true;
         default:
             return false;

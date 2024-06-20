@@ -308,6 +308,11 @@ export function process_escape_key(e) {
         return true;
     }
 
+    if (navbar_menus.any_focused()) {
+        navbar_menus.blur_focused();
+        return true;
+    }
+
     if (processing_text()) {
         if (activity_ui.searching()) {
             activity_ui.clear_search();
@@ -832,7 +837,7 @@ export function process_hotkey(e, hotkey) {
 
     // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
     if (
-        navbar_menus.is_navbar_menus_displayed() &&
+        (navbar_menus.is_navbar_menus_displayed() || navbar_menus.any_focused()) &&
         navbar_menus.handle_keyboard_events(event_name)
     ) {
         return true;
