@@ -19,6 +19,16 @@ export const custom_time_unit_values = {
     },
 };
 
+export function valid_custom_time_input(input: number): boolean {
+    if (input < 0) {
+        return false;
+    }
+    if (Number.isInteger(input)) {
+        return true;
+    }
+    return false;
+}
+
 export function get_custom_time_in_minutes(time_unit: string, time_input: number): number {
     switch (time_unit) {
         case "hours":
