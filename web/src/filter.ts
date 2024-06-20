@@ -683,8 +683,6 @@ export class Filter {
                 };
             }
             if (canonicalized_operator === "has") {
-                // search_suggestion.get_suggestions takes care that this message will
-                // only be shown if the `has` operator is not at the last.
                 const valid_has_operands = [
                     "image",
                     "images",

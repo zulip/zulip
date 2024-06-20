@@ -53,6 +53,7 @@ const example_avatar_url = "http://example.com/example.png";
 
 function init() {
     current_user.is_admin = true;
+    page_params.is_spectator = false;
 
     people.init();
     people.add_active_user(bob);
@@ -101,7 +102,6 @@ test("basic_get_suggestions_for_spectator", () => {
         "has:attachment",
         "has:reaction",
     ]);
-    page_params.is_spectator = false;
 });
 
 test("get_is_suggestions_for_spectator", () => {
@@ -111,7 +111,6 @@ test("get_is_suggestions_for_spectator", () => {
     const suggestions = get_suggestions(query);
     // The list of suggestions should be empty for a spectator
     assert.deepEqual(suggestions.strings, []);
-    page_params.is_spectator = false;
 });
 
 test("subset_suggestions", ({mock_template}) => {
@@ -163,7 +162,7 @@ test("dm_suggestions", ({override, mock_template}) => {
     // in their muscle memory.
     query = "is:pr";
     suggestions = get_suggestions(query);
-    expected = ["is:dm"];
+    expected = ["is:pr", "is:dm"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:private";
@@ -304,10 +303,7 @@ test("group_suggestions", ({mock_template}) => {
 
     query = "-dm:bob@zulip.co";
     suggestions = get_suggestions(query);
-    expected = [
-        "-dm:bob@zulip.co",
-        "is:dm -dm:bob@zulip.com",
-    ];
+    expected = ["-dm:bob@zulip.co", "is:dm -dm:bob@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-dm:bob@zulip.com,red";
@@ -440,17 +436,17 @@ test("has_suggestions", ({override, mock_template}) => {
 
     query = "has:";
     suggestions = get_suggestions(query);
-    expected = ["has:link", "has:image", "has:attachment", "has:reaction"];
+    expected = ["has:", "has:link", "has:image", "has:attachment", "has:reaction"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "has:im";
     suggestions = get_suggestions(query);
-    expected = ["has:image"];
+    expected = ["has:im", "has:image"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-has:im";
     suggestions = get_suggestions(query);
-    expected = ["-has:image"];
+    expected = ["-has:im", "-has:image"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "att";
@@ -461,6 +457,7 @@ test("has_suggestions", ({override, mock_template}) => {
     query = "channel:Denmark is:alerted has:lin";
     suggestions = get_suggestions(query);
     expected = [
+        "channel:Denmark is:alerted has:lin",
         "channel:Denmark is:alerted has:link",
         "channel:Denmark is:alerted",
         "channel:Denmark",
@@ -533,6 +530,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     query = "is:";
     suggestions = get_suggestions(query);
     expected = [
+        "is:",
         "is:dm",
         "is:starred",
         "is:mentioned",
@@ -545,12 +543,12 @@ test("check_is_suggestions", ({override, mock_template}) => {
 
     query = "is:st";
     suggestions = get_suggestions(query);
-    expected = ["is:starred"];
+    expected = ["is:st", "is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-is:st";
     suggestions = get_suggestions(query);
-    expected = ["-is:starred"];
+    expected = ["-is:st", "-is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Still returns suggestions for "streams:public",
@@ -563,6 +561,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     query = "channel:Denmark has:link is:sta";
     suggestions = get_suggestions(query);
     expected = [
+        "channel:Denmark has:link is:sta",
         "channel:Denmark has:link is:starred",
         "channel:Denmark has:link",
         "channel:Denmark",

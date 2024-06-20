@@ -1423,8 +1423,9 @@ test("describe", ({mock_template}) => {
     string = "followed topics";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
+    // This is validated through the pill creation process
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
-    string = "invalid something_we_do_not_support operand for is operator";
+    string = "is:something_we_do_not_support";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     // this should be unreachable, but just in case
@@ -1464,7 +1465,8 @@ test("describe", ({mock_template}) => {
         {operator: "has", operand: "abc", negated: true},
         {operator: "channel", operand: "devel"},
     ];
-    string = "invalid abc operand for has operator, channel devel";
+    // This is validated through the pill creation process
+    string = "has:abc, channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
