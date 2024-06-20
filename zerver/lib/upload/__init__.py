@@ -119,7 +119,7 @@ def sanitize_name(value: str) -> str:
 def upload_message_attachment(
     uploaded_file_name: str,
     uploaded_file_size: int,
-    content_type: Optional[str],
+    content_type: str,
     file_data: bytes,
     user_profile: UserProfile,
     target_realm: Optional[Realm] = None,

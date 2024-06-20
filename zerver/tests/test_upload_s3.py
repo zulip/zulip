@@ -96,18 +96,6 @@ class S3Test(ZulipTestCase):
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
 
     @use_s3_backend
-    def test_upload_message_attachment_s3_with_undefined_content_type(self) -> None:
-        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
-
-        user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", len(b"zulip!"), None, b"zulip!", user_profile)
-
-        path_id = re.sub(r"/user_uploads/", "", url)
-        self.assertEqual(b"zulip!", bucket.Object(path_id).get()["Body"].read())
-        uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
-        self.assert_length(b"zulip!", uploaded_file.size)
-
-    @use_s3_backend
     def test_delete_message_attachment(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 

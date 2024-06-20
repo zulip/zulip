@@ -205,7 +205,7 @@ class S3UploadBackend(ZulipUploadBackend):
         self,
         path_id: str,
         uploaded_file_size: int,
-        content_type: Optional[str],
+        content_type: str,
         file_data: bytes,
         user_profile: UserProfile,
         target_realm: Realm,
