@@ -408,20 +408,24 @@ run_test("check_and_validate_custom_time_input", () => {
     const input_is_nan = "24abc";
     let checked_input = util.check_time_input(input_is_nan);
     assert.equal(checked_input, Number.NaN);
+    assert.equal(util.validate_custom_time_input(checked_input), false);
 
     const input_is_negative = "-24";
     checked_input = util.check_time_input(input_is_negative);
     assert.equal(checked_input, -24);
+    assert.equal(util.validate_custom_time_input(input_is_negative), false);
 
     const input_is_float = "24.5";
     checked_input = util.check_time_input(input_is_float);
     assert.equal(checked_input, 24);
     checked_input = util.check_time_input(input_is_float, true);
     assert.equal(checked_input, 24.5);
+    assert.equal(util.validate_custom_time_input(input_is_float), true);
 
     const input_is_integer = "10";
     checked_input = util.check_time_input(input_is_integer);
     assert.equal(checked_input, 10);
+    assert.equal(util.validate_custom_time_input(input_is_integer), true);
 });
 
 run_test("the", () => {
