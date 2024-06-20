@@ -167,6 +167,16 @@ export function initialize(): void {
             if ($container.data("view-code") === user_settings.web_home_view) {
                 $container.find(".views-tooltip-home-view-note").removeClass("hide");
             }
+
+            // Since the tooltip is attached the anchor tag which doesn't
+            // include with of the ellipsis icon, we need to offset the
+            // tooltip so that the tooltip is displayed to right of the
+            // ellipsis icon.
+            if (instance.reference.classList.contains("left-sidebar-navigation-label-container")) {
+                instance.setProps({
+                    offset: [0, 40],
+                });
+            }
         },
         onHidden(instance) {
             instance.destroy();
