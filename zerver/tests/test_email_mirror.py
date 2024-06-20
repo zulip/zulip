@@ -601,7 +601,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(
                 "image.png",
-                len(image_bytes),
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
@@ -728,7 +727,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(
                 utf8_filename,
-                len(image_bytes),
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
@@ -775,7 +773,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(
                 "image.png",
-                len(image_bytes),
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),

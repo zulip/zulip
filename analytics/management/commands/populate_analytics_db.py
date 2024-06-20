@@ -1,4 +1,3 @@
-import os
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Type, Union
 
@@ -145,10 +144,8 @@ class Command(ZulipBaseCommand):
 
         # Create an attachment in the database for set_storage_space_used_statistic.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
-        file_info = os.stat(IMAGE_FILE_PATH)
-        file_size = file_info.st_size
         with open(IMAGE_FILE_PATH, "rb") as fp:
-            upload_message_attachment_from_request(UploadedFile(fp), shylock, file_size)
+            upload_message_attachment_from_request(UploadedFile(fp), shylock)
 
         FixtureData: TypeAlias = Mapping[Union[str, int, None], List[int]]
 

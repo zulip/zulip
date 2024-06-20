@@ -124,7 +124,6 @@ def sanitize_name(value: str) -> str:
 
 def upload_message_attachment(
     uploaded_file_name: str,
-    uploaded_file_size: int,
     content_type: str,
     file_data: bytes,
     user_profile: UserProfile,
@@ -146,7 +145,7 @@ def upload_message_attachment(
         path_id,
         user_profile,
         target_realm,
-        uploaded_file_size,
+        len(file_data),
         content_type,
     )
     return f"/user_uploads/{path_id}"
@@ -175,11 +174,11 @@ def claim_attachment(
 
 
 def upload_message_attachment_from_request(
-    user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
+    user_file: UploadedFile, user_profile: UserProfile
 ) -> str:
     uploaded_file_name, content_type = get_file_info(user_file)
     return upload_message_attachment(
-        uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
+        uploaded_file_name, content_type, user_file.read(), user_profile
     )
 
 
