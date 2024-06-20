@@ -1836,14 +1836,14 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(0, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
 
         data = b"zulip!"
-        upload_message_attachment("dummy.txt", len(data), "text/plain", data, self.user_profile)
+        upload_message_attachment("dummy.txt", "text/plain", data, self.user_profile)
         # notify_attachment_update function calls currently_used_upload_space_bytes which
         # updates the cache.
         self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
         self.assert_length(data, self.realm.currently_used_upload_space_bytes())
 
         data2 = b"more-data!"
-        upload_message_attachment("dummy2.txt", len(data2), "text/plain", data2, self.user_profile)
+        upload_message_attachment("dummy2.txt", "text/plain", data2, self.user_profile)
         self.assertEqual(
             len(data) + len(data2),
             cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0],
@@ -1876,7 +1876,7 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assert_length(data2, self.realm.currently_used_upload_space_bytes())
 
         data3 = b"even-more-data!"
-        upload_message_attachment("dummy3.txt", len(data3), "text/plain", data3, self.user_profile)
+        upload_message_attachment("dummy3.txt", "text/plain", data3, self.user_profile)
         self.assertEqual(len(data2) + len(data3), self.realm.currently_used_upload_space_bytes())
 
 
