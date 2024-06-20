@@ -58,6 +58,7 @@ function change_active_navbar_menu(target_menu) {
             personal_menu_popover.toggle();
             return true;
         case "userlist-toggle-button":
+        case "login_button":
             $(`#${target_menu}`).trigger("focus");
             return true;
         default:
