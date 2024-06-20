@@ -219,7 +219,7 @@ li.show-more-topics {
        in the DM section. */
     margin-right: 12px;
 
-    #private_messages_section_header {
+    #direct-messages-section-header {
         grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
         grid-template-rows: var(--line-height-sidebar-row-prominent);
         /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
@@ -229,7 +229,7 @@ li.show-more-topics {
         cursor: pointer;
         white-space: nowrap;
 
-        #toggle_private_messages_section_icon {
+        #toggle-direct-messages-section-icon {
             grid-area: starting-anchor-element;
         }
 
@@ -244,7 +244,7 @@ li.show-more-topics {
             align-items: center;
         }
 
-        #show_all_private_messages {
+        #show-all-direct-messages {
             width: var(--left-sidebar-header-icon-width);
             display: flex;
             align-items: center;
@@ -300,7 +300,7 @@ li.show-more-topics {
     }
 }
 
-#toggle_private_messages_section_icon,
+#toggle-direct-messages-section-icon,
 #toggle-top-left-navigation-area-icon {
     opacity: 0.7;
 
@@ -325,23 +325,15 @@ li.show-more-topics {
     }
 }
 
-.active_private_messages_section {
-    #private_messages_section,
-    #direct-messages-list,
-    #hide-more-direct-messages {
-        background-color: hsl(202deg 56% 91%);
-    }
+.active-direct-messages-section {
+    background-color: var(--color-background-active-narrow-filter);
 
-    #private_messages_section {
+    #direct-messages-section {
         border-radius: 4px 4px 0 0;
     }
 
     #direct-messages-list {
         border-radius: 0 0 4px 4px;
-    }
-
-    #more_private_messages_sidebar_title {
-        font-weight: 600;
     }
 }
 
@@ -752,7 +744,7 @@ li.top_left_scheduled_messages {
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
 }
 
-#private_messages_section_header,
+#direct-messages-section-header,
 #streams_header,
 #topics_header {
     display: grid;
@@ -1378,10 +1370,6 @@ li.topic-list-item {
 
     &.direct-messages-container ul.dm-list {
         margin-bottom: $bottom_scrolling_buffer;
-    }
-
-    #more_private_messages_sidebar_title {
-        display: inline;
     }
 
     #hide-more-direct-messages {

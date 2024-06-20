@@ -779,9 +779,9 @@ export function initialize() {
 
     $("body").on(
         "click",
-        ".direct-messages-container.zoom-out #private_messages_section_header",
+        ".direct-messages-container.zoom-out #direct-messages-section-header",
         (e) => {
-            if ($(e.target).closest("#show_all_private_messages").length === 1) {
+            if ($(e.target).closest("#show-all-direct-messages").length === 1) {
                 // Let the browser handle the "direct message feed" widget.
                 return;
             }
@@ -813,7 +813,7 @@ export function initialize() {
      * this click handler rather than just a link. */
     $("body").on(
         "click",
-        ".direct-messages-container.zoom-in #private_messages_section_header",
+        ".direct-messages-container.zoom-in #direct-messages-section-header",
         (e) => {
             e.preventDefault();
             e.stopPropagation();

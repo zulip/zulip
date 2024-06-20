@@ -139,7 +139,7 @@ export function initialize(): void {
     // thus hovering it is a way to find out what it does, give
     // it the faster LONG_HOVER_DELAY.
     tippy.delegate("body", {
-        target: "#show_all_private_messages",
+        target: "#show-all-direct-messages",
         placement: "right",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -474,7 +474,7 @@ export function initialize(): void {
                 return false;
             }
 
-            if ($("#toggle_private_messages_section_icon").hasClass("fa-caret-down")) {
+            if ($("#toggle-direct-messages-section-icon").hasClass("fa-caret-down")) {
                 instance.setContent(
                     $t({
                         defaultMessage: "Collapse direct messages",
@@ -487,6 +487,9 @@ export function initialize(): void {
         },
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     tippy.delegate("body", {

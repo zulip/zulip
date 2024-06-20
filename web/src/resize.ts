@@ -30,7 +30,7 @@ function get_new_heights(): {
         Number.parseInt($("#left-sidebar-navigation-area").css("marginTop"), 10) -
         Number.parseInt($("#left-sidebar-navigation-area").css("marginBottom"), 10) -
         ($("#left-sidebar-navigation-list").outerHeight(true) ?? 0) -
-        ($("#private_messages_sticky_header").outerHeight(true) ?? 0);
+        ($("#direct-messages-sticky-header").outerHeight(true) ?? 0);
 
     // Don't let us crush the stream sidebar completely out of view
     stream_filters_max_height = Math.max(80, stream_filters_max_height);

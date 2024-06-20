@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
@@ -33,6 +34,7 @@ from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperatorError,
     NarrowBuilder,
+    NarrowParameter,
     exclude_muting_conditions,
     find_first_unread_anchor,
     is_spectator_compatible,
@@ -67,6 +69,12 @@ from zerver.views.message_fetch import get_messages_backend
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
+
+@dataclass
+class InvalidParam:
+    value: object
+    expected_error: str
 
 
 def get_sqlalchemy_sql(query: ClauseElement) -> str:
@@ -115,31 +123,31 @@ class NarrowBuilderTest(ZulipTestCase):
         self.othello_email = self.example_user("othello").email
 
     def test_add_term_using_not_defined_operator(self) -> None:
-        term = dict(operator="not-defined", operand="any")
+        term = NarrowParameter(operator="not-defined", operand="any")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_channel_operator(self) -> None:
-        term = dict(operator="channel", operand="Scotland")
+        term = NarrowParameter(operator="channel", operand="Scotland")
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_channel_operator_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="channel", operand="Scotland", negated=True)
+        term = NarrowParameter(operator="channel", operand="Scotland", negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
     def test_add_term_using_channel_operator_and_non_existing_operand_should_raise_error(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="channel", operand="non-existing-channel")
+        term = NarrowParameter(operator="channel", operand="non-existing-channel")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_channels_operator_and_invalid_operand_should_raise_error(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="channels", operand="invalid_operands")
+        term = NarrowParameter(operator="channels", operand="invalid_operands")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_channels_operator_and_public_operand(self) -> None:
-        term = dict(operator="channels", operand="public")
+        term = NarrowParameter(operator="channels", operand="public")
         self._do_add_term_test(
             term,
             "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
@@ -175,7 +183,7 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
     def test_add_term_using_channels_operator_and_public_operand_negated(self) -> None:
-        term = dict(operator="channels", operand="public", negated=True)
+        term = NarrowParameter(operator="channels", operand="public", negated=True)
         self._do_add_term_test(
             term,
             "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
@@ -211,28 +219,28 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
     def test_add_term_using_is_operator_and_dm_operand(self) -> None:
-        term = dict(operator="is", operand="dm")
+        term = NarrowParameter(operator="is", operand="dm")
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
     def test_add_term_using_is_operator_dm_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="is", operand="dm", negated=True)
+        term = NarrowParameter(operator="is", operand="dm", negated=True)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
     def test_add_term_using_is_operator_and_non_dm_operand(self) -> None:
         for operand in ["starred", "mentioned", "alerted"]:
-            term = dict(operator="is", operand=operand)
+            term = NarrowParameter(operator="is", operand=operand)
             self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
     def test_add_term_using_is_operator_and_unread_operand(self) -> None:
-        term = dict(operator="is", operand="unread")
+        term = NarrowParameter(operator="is", operand="unread")
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
     def test_add_term_using_is_operator_and_unread_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="is", operand="unread", negated=True)
+        term = NarrowParameter(operator="is", operand="unread", negated=True)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
     def test_add_term_using_is_operator_non_dm_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="is", operand="starred", negated=True)
+        term = NarrowParameter(operator="is", operand="starred", negated=True)
         where_clause = "WHERE (flags & %(flags_1)s) = %(param_1)s"
         params = dict(
             flags_1=UserMessage.flags.starred.mask,
@@ -240,7 +248,7 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         self._do_add_term_test(term, where_clause, params)
 
-        term = dict(operator="is", operand="alerted", negated=True)
+        term = NarrowParameter(operator="is", operand="alerted", negated=True)
         where_clause = "WHERE (flags & %(flags_1)s) = %(param_1)s"
         params = dict(
             flags_1=UserMessage.flags.has_alert_word.mask,
@@ -248,7 +256,7 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         self._do_add_term_test(term, where_clause, params)
 
-        term = dict(operator="is", operand="mentioned", negated=True)
+        term = NarrowParameter(operator="is", operand="mentioned", negated=True)
         where_clause = "WHERE (flags & %(flags_1)s) = %(param_1)s"
         mention_flags_mask = (
             UserMessage.flags.mentioned.mask
@@ -263,63 +271,63 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, where_clause, params)
 
     def test_add_term_using_is_operator_for_resolved_topics(self) -> None:
-        term = dict(operator="is", operand="resolved")
+        term = NarrowParameter(operator="is", operand="resolved")
         self._do_add_term_test(term, "WHERE (subject LIKE %(subject_1)s || '%%'")
 
     def test_add_term_using_is_operator_for_negated_resolved_topics(self) -> None:
-        term = dict(operator="is", operand="resolved", negated=True)
+        term = NarrowParameter(operator="is", operand="resolved", negated=True)
         self._do_add_term_test(term, "WHERE (subject NOT LIKE %(subject_1)s || '%%'")
 
     def test_add_term_using_is_operator_for_followed_topics(self) -> None:
-        term = dict(operator="is", operand="followed", negated=False)
+        term = NarrowParameter(operator="is", operand="followed", negated=False)
         self._do_add_term_test(
             term,
             "EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id)",
         )
 
     def test_add_term_using_is_operator_for_negated_followed_topics(self) -> None:
-        term = dict(operator="is", operand="followed", negated=True)
+        term = NarrowParameter(operator="is", operand="followed", negated=True)
         self._do_add_term_test(
             term,
             "NOT (EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id))",
         )
 
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
-        term = dict(operator="is", operand="non_supported")
+        term = NarrowParameter(operator="is", operand="non_supported")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
-        term = dict(operator="topic", operand="lunch")
+        term = NarrowParameter(operator="topic", operand="lunch")
         self._do_add_term_test(term, "WHERE upper(subject) = upper(%(param_1)s)")
 
     def test_add_term_using_topic_operator_lunch_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="topic", operand="lunch", negated=True)
+        term = NarrowParameter(operator="topic", operand="lunch", negated=True)
         self._do_add_term_test(term, "WHERE upper(subject) != upper(%(param_1)s)")
 
     def test_add_term_using_topic_operator_and_personal_operand(self) -> None:
-        term = dict(operator="topic", operand="personal")
+        term = NarrowParameter(operator="topic", operand="personal")
         self._do_add_term_test(term, "WHERE upper(subject) = upper(%(param_1)s)")
 
     def test_add_term_using_topic_operator_personal_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="topic", operand="personal", negated=True)
+        term = NarrowParameter(operator="topic", operand="personal", negated=True)
         self._do_add_term_test(term, "WHERE upper(subject) != upper(%(param_1)s)")
 
     def test_add_term_using_sender_operator(self) -> None:
-        term = dict(operator="sender", operand=self.othello_email)
+        term = NarrowParameter(operator="sender", operand=self.othello_email)
         self._do_add_term_test(term, "WHERE sender_id = %(param_1)s")
 
     def test_add_term_using_sender_operator_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="sender", operand=self.othello_email, negated=True)
+        term = NarrowParameter(operator="sender", operand=self.othello_email, negated=True)
         self._do_add_term_test(term, "WHERE sender_id != %(param_1)s")
 
     def test_add_term_using_sender_operator_with_non_existing_user_as_operand(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="sender", operand="non-existing@zulip.com")
+        term = NarrowParameter(operator="sender", operand="non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_dm_operator_and_not_the_same_user_as_operand(self) -> None:
-        term = dict(operator="dm", operand=self.othello_email)
+        term = NarrowParameter(operator="dm", operand=self.othello_email)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
@@ -329,15 +337,15 @@ class NarrowBuilderTest(ZulipTestCase):
         expected_error_message = (
             "Invalid narrow operator: No message can be both a channel message and direct message"
         )
-        term1 = dict(operator="dm", operand=self.othello_email)
+        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
         self._build_query(term1)
 
-        topic_term = dict(operator="topic", operand="bogus")
+        topic_term = NarrowParameter(operator="topic", operand="bogus")
         with self.assertRaises(BadNarrowOperatorError) as error:
             self._build_query(topic_term)
         self.assertEqual(expected_error_message, str(error.exception))
 
-        channels_term = dict(operator="channels", operand="public")
+        channels_term = NarrowParameter(operator="channels", operand="public")
         with self.assertRaises(BadNarrowOperatorError) as error:
             self._build_query(channels_term)
         self.assertEqual(expected_error_message, str(error.exception))
@@ -345,14 +353,14 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="dm", operand=self.othello_email, negated=True)
+        term = NarrowParameter(operator="dm", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = dict(operator="dm", operand=self.hamlet_email)
+        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
@@ -361,7 +369,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="dm", operand=self.hamlet_email, negated=True)
+        term = NarrowParameter(operator="dm", operand=self.hamlet_email, negated=True)
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
@@ -371,7 +379,7 @@ class NarrowBuilderTest(ZulipTestCase):
         myself_and_other = (
             f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
-        term = dict(operator="dm", operand=myself_and_other)
+        term = NarrowParameter(operator="dm", operand=myself_and_other)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
@@ -380,7 +388,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_huddle(self) -> None:
         # If the group doesn't exist, it's a flat false
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = dict(operator="dm", operand=two_others)
+        term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
@@ -393,7 +401,7 @@ class NarrowBuilderTest(ZulipTestCase):
             ]
         )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = dict(operator="dm", operand=two_others)
+        term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
@@ -402,7 +410,7 @@ class NarrowBuilderTest(ZulipTestCase):
         myself_and_other = (
             f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
-        term = dict(operator="dm", operand=myself_and_other, negated=True)
+        term = NarrowParameter(operator="dm", operand=myself_and_other, negated=True)
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
@@ -413,7 +421,7 @@ class NarrowBuilderTest(ZulipTestCase):
     ) -> None:  # NEGATED
         # If the group doesn't exist, it's a flat true
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = dict(operator="dm", operand=two_others, negated=True)
+        term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE true")
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
@@ -428,26 +436,28 @@ class NarrowBuilderTest(ZulipTestCase):
             ]
         )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = dict(operator="dm", operand=two_others, negated=True)
+        term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = dict(operator="dm", operand=" ,,, ,,, ,")
+        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
-        term = dict(operator="dm", operand=self.othello_email + ",non-existing@zulip.com")
+        term = NarrowParameter(
+            operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
+        )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_dm_including_operator_with_logged_in_user_email(self) -> None:
-        term = dict(operator="dm-including", operand=self.hamlet_email)
+        term = NarrowParameter(operator="dm-including", operand=self.hamlet_email)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
     def test_add_term_using_dm_including_operator_with_different_user_email(self) -> None:
         # Test without any such group direct messages existing
-        term = dict(operator="dm-including", operand=self.othello_email)
+        term = NarrowParameter(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
@@ -458,7 +468,7 @@ class NarrowBuilderTest(ZulipTestCase):
             self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
         )
 
-        term = dict(operator="dm-including", operand=self.othello_email)
+        term = NarrowParameter(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
@@ -467,37 +477,37 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_including_operator_with_different_user_email_and_negated(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="dm-including", operand=self.othello_email, negated=True)
+        term = NarrowParameter(operator="dm-including", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
     def test_add_term_using_id_operator_integer(self) -> None:
-        term = dict(operator="id", operand=555)
+        term = NarrowParameter(operator="id", operand=555)
         self._do_add_term_test(term, "WHERE id = %(param_1)s")
 
     def test_add_term_using_id_operator_string(self) -> None:
-        term = dict(operator="id", operand="555")
+        term = NarrowParameter(operator="id", operand="555")
         self._do_add_term_test(term, "WHERE id = %(param_1)s")
 
     def test_add_term_using_id_operator_invalid(self) -> None:
-        term = dict(operator="id", operand="")
+        term = NarrowParameter(operator="id", operand="")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-        term = dict(operator="id", operand="notanint")
+        term = NarrowParameter(operator="id", operand="notanint")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-        term = dict(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
+        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="id", operand=555, negated=True)
+        term = NarrowParameter(operator="id", operand=555, negated=True)
         self._do_add_term_test(term, "WHERE id != %(param_1)s")
 
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self) -> None:
-        term = dict(operator="search", operand='"french fries"')
+        term = NarrowParameter(operator="search", operand='"french fries"')
         self._do_add_term_test(
             term,
             "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
@@ -505,7 +515,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="search", operand='"french fries"', negated=True)
+        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
             term,
             "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
@@ -513,113 +523,113 @@ class NarrowBuilderTest(ZulipTestCase):
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = dict(operator="search", operand='"french fries"')
+        term = NarrowParameter(operator="search", operand='"french fries"')
         self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = dict(operator="search", operand='"french fries"', negated=True)
+        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
             term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
         )
 
     def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = dict(operator="has", operand="attachment")
+        term = NarrowParameter(operator="has", operand="attachment")
         self._do_add_term_test(term, "WHERE has_attachment")
 
     def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="has", operand="attachment", negated=True)
+        term = NarrowParameter(operator="has", operand="attachment", negated=True)
         self._do_add_term_test(term, "WHERE NOT has_attachment")
 
     def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = dict(operator="has", operand="image")
+        term = NarrowParameter(operator="has", operand="image")
         self._do_add_term_test(term, "WHERE has_image")
 
     def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="has", operand="image", negated=True)
+        term = NarrowParameter(operator="has", operand="image", negated=True)
         self._do_add_term_test(term, "WHERE NOT has_image")
 
     def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = dict(operator="has", operand="link")
+        term = NarrowParameter(operator="has", operand="link")
         self._do_add_term_test(term, "WHERE has_link")
 
     def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="has", operand="link", negated=True)
+        term = NarrowParameter(operator="has", operand="link", negated=True)
         self._do_add_term_test(term, "WHERE NOT has_link")
 
     def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = dict(operator="has", operand="reaction")
+        term = NarrowParameter(operator="has", operand="reaction")
         self._do_add_term_test(
             term,
             "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
         )
 
     def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = dict(operator="has", operand="reaction", negated=True)
+        term = NarrowParameter(operator="has", operand="reaction", negated=True)
         self._do_add_term_test(
             term,
             "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
         )
 
     def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = dict(operator="has", operand="non_supported")
+        term = NarrowParameter(operator="has", operand="non_supported")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_in_operator(self) -> None:
         mute_channel(self.realm, self.user_profile, "Verona")
-        term = dict(operator="in", operand="home")
+        term = NarrowParameter(operator="in", operand="home")
         self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_in_operator_and_negated(self) -> None:
         # negated = True should not change anything
         mute_channel(self.realm, self.user_profile, "Verona")
-        term = dict(operator="in", operand="home", negated=True)
+        term = NarrowParameter(operator="in", operand="home", negated=True)
         self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_in_operator_and_all_operand(self) -> None:
         mute_channel(self.realm, self.user_profile, "Verona")
-        term = dict(operator="in", operand="all")
+        term = NarrowParameter(operator="in", operand="all")
         query = self._build_query(term)
         self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
 
     def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
         # negated = True should not change anything
         mute_channel(self.realm, self.user_profile, "Verona")
-        term = dict(operator="in", operand="all", negated=True)
+        term = NarrowParameter(operator="in", operand="all", negated=True)
         query = self._build_query(term)
         self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
 
     def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = dict(operator="in", operand="not_defined")
+        term = NarrowParameter(operator="in", operand="not_defined")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_near_operator(self) -> None:
-        term = dict(operator="near", operand="operand")
+        term = NarrowParameter(operator="near", operand="operand")
         query = self._build_query(term)
         self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
 
     def test_add_term_non_web_public_channel_in_web_public_query(self) -> None:
         self.make_stream("non-web-public-channel", realm=self.realm)
-        term = dict(operator="channel", operand="non-web-public-channel")
+        term = NarrowParameter(operator="channel", operand="non-web-public-channel")
         builder = NarrowBuilder(self.user_profile, column("id", Integer), self.realm, True)
 
-        def _build_query(term: Dict[str, Any]) -> Select:
+        def _build_query(term: NarrowParameter) -> Select:
             return builder.add_term(self.raw_query, term)
 
         self.assertRaises(BadNarrowOperatorError, _build_query, term)
 
     # Test "is:private" (legacy alias for "is:dm")
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
-        term = dict(operator="is", operand="private")
+        term = NarrowParameter(operator="is", operand="private")
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
     def test_add_term_using_is_operator_private_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="is", operand="private", negated=True)
+        term = NarrowParameter(operator="is", operand="private", negated=True)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
     # Test that "pm-with" (legacy alias for "dm") works.
     def test_add_term_using_pm_with_operator(self) -> None:
-        term = dict(operator="pm-with", operand=self.hamlet_email)
+        term = NarrowParameter(operator="pm-with", operand=self.hamlet_email)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
@@ -627,7 +637,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     # Test that the underscore version of "pm-with" works.
     def test_add_term_using_underscore_version_of_pm_with_operator(self) -> None:
-        term = dict(operator="pm_with", operand=self.hamlet_email)
+        term = NarrowParameter(operator="pm_with", operand=self.hamlet_email)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
@@ -635,11 +645,11 @@ class NarrowBuilderTest(ZulipTestCase):
 
     # Test that deprecated "group-pm-with" (replaced by "dm-including" ) works.
     def test_add_term_using_dm_including_operator_with_non_existing_user(self) -> None:
-        term = dict(operator="dm-including", operand="non-existing@zulip.com")
+        term = NarrowParameter(operator="dm-including", operand="non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
-        term = dict(operator="group-pm-with", operand=self.othello_email)
+        term = NarrowParameter(operator="group-pm-with", operand=self.othello_email)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
@@ -648,19 +658,19 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="group-pm-with", operand=self.othello_email, negated=True)
+        term = NarrowParameter(operator="group-pm-with", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
-        term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
+        term = NarrowParameter(operator="group-pm-with", operand="non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     # Test that the underscore version of "group-pm-with" works.
     def test_add_term_using_underscore_version_of_group_pm_with_operator(self) -> None:
-        term = dict(operator="group_pm_with", operand=self.othello_email)
+        term = NarrowParameter(operator="group_pm_with", operand=self.othello_email)
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
@@ -668,42 +678,42 @@ class NarrowBuilderTest(ZulipTestCase):
 
     # Test that "stream" (legacy alias for "channel" operator) works.
     def test_add_term_using_stream_operator(self) -> None:
-        term = dict(operator="stream", operand="Scotland")
+        term = NarrowParameter(operator="stream", operand="Scotland")
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_stream_operator_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="stream", operand="Scotland", negated=True)
+        term = NarrowParameter(operator="stream", operand="Scotland", negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
     def test_add_term_using_stream_operator_and_non_existing_operand_should_raise_error(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="stream", operand="non-existing-channel")
+        term = NarrowParameter(operator="stream", operand="non-existing-channel")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     # Test that "streams" (legacy alias for "channels" operator) works.
     def test_add_term_using_streams_operator_and_invalid_operand_should_raise_error(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="streams", operand="invalid_operands")
+        term = NarrowParameter(operator="streams", operand="invalid_operands")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_streams_operator_and_public_operand(self) -> None:
-        term = dict(operator="streams", operand="public")
+        term = NarrowParameter(operator="streams", operand="public")
         self._do_add_term_test(
             term,
             "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
         )
 
     def test_add_term_using_streams_operator_and_public_operand_negated(self) -> None:
-        term = dict(operator="streams", operand="public", negated=True)
+        term = NarrowParameter(operator="streams", operand="public", negated=True)
         self._do_add_term_test(
             term,
             "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
     def _do_add_term_test(
-        self, term: Dict[str, Any], where_clause: str, params: Optional[Dict[str, Any]] = None
+        self, term: NarrowParameter, where_clause: str, params: Optional[Dict[str, Any]] = None
     ) -> None:
         query = self._build_query(term)
         if params is not None:
@@ -711,7 +721,7 @@ class NarrowBuilderTest(ZulipTestCase):
             self.assertEqual(actual_params, params)
         self.assertIn(where_clause, get_sqlalchemy_sql(query))
 
-    def _build_query(self, term: Dict[str, Any]) -> Select:
+    def _build_query(self, term: NarrowParameter) -> Select:
         return self.builder.add_term(self.raw_query, term)
 
 
@@ -970,62 +980,86 @@ class NarrowLibraryTest(ZulipTestCase):
 
     def test_is_spectator_compatible(self) -> None:
         self.assertTrue(is_spectator_compatible([]))
-        self.assertTrue(is_spectator_compatible([{"operator": "has", "operand": "attachment"}]))
-        self.assertTrue(is_spectator_compatible([{"operator": "has", "operand": "image"}]))
-        self.assertTrue(is_spectator_compatible([{"operator": "search", "operand": "magic"}]))
-        self.assertTrue(is_spectator_compatible([{"operator": "near", "operand": "15"}]))
         self.assertTrue(
-            is_spectator_compatible(
-                [{"operator": "id", "operand": "15"}, {"operator": "has", "operand": "attachment"}]
-            )
+            is_spectator_compatible([NarrowParameter(operator="has", operand="attachment")])
         )
+        self.assertTrue(is_spectator_compatible([NarrowParameter(operator="has", operand="image")]))
         self.assertTrue(
-            is_spectator_compatible([{"operator": "sender", "operand": "hamlet@zulip.com"}])
+            is_spectator_compatible([NarrowParameter(operator="search", operand="magic")])
         )
-        self.assertFalse(
-            is_spectator_compatible([{"operator": "dm", "operand": "hamlet@zulip.com"}])
-        )
-        self.assertFalse(
-            is_spectator_compatible([{"operator": "dm-including", "operand": "hamlet@zulip.com"}])
-        )
-        self.assertTrue(is_spectator_compatible([{"operator": "channel", "operand": "Denmark"}]))
+        self.assertTrue(is_spectator_compatible([NarrowParameter(operator="near", operand="15")]))
         self.assertTrue(
             is_spectator_compatible(
                 [
-                    {"operator": "channel", "operand": "Denmark"},
-                    {"operator": "topic", "operand": "logic"},
+                    NarrowParameter(operator="id", operand="15"),
+                    NarrowParameter(operator="has", operand="attachment"),
                 ]
             )
         )
-        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "starred"}]))
-        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "dm"}]))
-        self.assertTrue(is_spectator_compatible([{"operator": "channels", "operand": "public"}]))
-
-        # Malformed input not allowed
-        self.assertFalse(is_spectator_compatible([{"operator": "has"}]))
-
-        # "is:private" is a legacy alias for "is:dm".
-        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "private"}]))
-        # "pm-with:"" is a legacy alias for "dm:"
-        self.assertFalse(
-            is_spectator_compatible([{"operator": "pm-with", "operand": "hamlet@zulip.com"}])
+        self.assertTrue(
+            is_spectator_compatible(
+                [NarrowParameter(operator="sender", operand="hamlet@zulip.com")]
+            )
         )
-        # "group-pm-with:" was deprecated by the addition of "dm-including:"
         self.assertFalse(
-            is_spectator_compatible([{"operator": "group-pm-with", "operand": "hamlet@zulip.com"}])
+            is_spectator_compatible([NarrowParameter(operator="dm", operand="hamlet@zulip.com")])
         )
-        # "stream" is a legacy alias for "channel" operator
-        self.assertTrue(is_spectator_compatible([{"operator": "stream", "operand": "Denmark"}]))
+        self.assertFalse(
+            is_spectator_compatible(
+                [NarrowParameter(operator="dm-including", operand="hamlet@zulip.com")]
+            )
+        )
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="channel", operand="Denmark")])
+        )
         self.assertTrue(
             is_spectator_compatible(
                 [
-                    {"operator": "stream", "operand": "Denmark"},
-                    {"operator": "topic", "operand": "logic"},
+                    NarrowParameter(operator="channel", operand="Denmark"),
+                    NarrowParameter(operator="topic", operand="logic"),
+                ]
+            )
+        )
+        self.assertFalse(
+            is_spectator_compatible([NarrowParameter(operator="is", operand="starred")])
+        )
+        self.assertFalse(is_spectator_compatible([NarrowParameter(operator="is", operand="dm")]))
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="channels", operand="public")])
+        )
+
+        # "is:private" is a legacy alias for "is:dm".
+        self.assertFalse(
+            is_spectator_compatible([NarrowParameter(operator="is", operand="private")])
+        )
+        # "pm-with:"" is a legacy alias for "dm:"
+        self.assertFalse(
+            is_spectator_compatible(
+                [NarrowParameter(operator="pm-with", operand="hamlet@zulip.com")]
+            )
+        )
+        # "group-pm-with:" was deprecated by the addition of "dm-including:"
+        self.assertFalse(
+            is_spectator_compatible(
+                [NarrowParameter(operator="group-pm-with", operand="hamlet@zulip.com")]
+            )
+        )
+        # "stream" is a legacy alias for "channel" operator
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="stream", operand="Denmark")])
+        )
+        self.assertTrue(
+            is_spectator_compatible(
+                [
+                    NarrowParameter(operator="stream", operand="Denmark"),
+                    NarrowParameter(operator="topic", operand="logic"),
                 ]
             )
         )
         # "streams" is a legacy alias for "channels" operator
-        self.assertTrue(is_spectator_compatible([{"operator": "streams", "operand": "public"}]))
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="streams", operand="public")])
+        )
 
 
 class IncludeHistoryTest(ZulipTestCase):
@@ -1035,19 +1069,19 @@ class IncludeHistoryTest(ZulipTestCase):
 
         # Negated channel searches should not include history.
         narrow = [
-            dict(operator="channel", operand="public_channel", negated=True),
+            NarrowParameter(operator="channel", operand="public_channel", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # channels:public searches should include history for non-guest members.
         narrow = [
-            dict(operator="channels", operand="public"),
+            NarrowParameter(operator="channels", operand="public"),
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
         # Negated -channels:public searches should not include history.
         narrow = [
-            dict(operator="channels", operand="public", negated=True),
+            NarrowParameter(operator="channels", operand="public", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1056,7 +1090,7 @@ class IncludeHistoryTest(ZulipTestCase):
         subscribed_user_profile = self.example_user("cordelia")
         self.subscribe(subscribed_user_profile, "private_channel")
         narrow = [
-            dict(operator="channel", operand="private_channel"),
+            NarrowParameter(operator="channel", operand="private_channel"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1071,69 +1105,69 @@ class IncludeHistoryTest(ZulipTestCase):
         subscribed_user_profile = self.example_user("cordelia")
         self.subscribe(subscribed_user_profile, "private_channel_2")
         narrow = [
-            dict(operator="channel", operand="private_channel_2"),
+            NarrowParameter(operator="channel", operand="private_channel_2"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
 
         # History doesn't apply to direct messages.
         narrow = [
-            dict(operator="is", operand="dm"),
+            NarrowParameter(operator="is", operand="dm"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         # "is:private" is a legacy alias for "is:dm".
         narrow = [
-            dict(operator="is", operand="private"),
+            NarrowParameter(operator="is", operand="private"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # History doesn't apply to unread messages.
         narrow = [
-            dict(operator="is", operand="unread"),
+            NarrowParameter(operator="is", operand="unread"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # If we are looking for something like starred messages, there is
         # no point in searching historical messages.
         narrow = [
-            dict(operator="channel", operand="public_channel"),
-            dict(operator="is", operand="starred"),
+            NarrowParameter(operator="channel", operand="public_channel"),
+            NarrowParameter(operator="is", operand="starred"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # No point in searching history for is operator even if included with
         # channels:public
         narrow = [
-            dict(operator="channels", operand="public"),
-            dict(operator="is", operand="mentioned"),
+            NarrowParameter(operator="channels", operand="public"),
+            NarrowParameter(operator="is", operand="mentioned"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
-            dict(operator="channels", operand="public"),
-            dict(operator="is", operand="unread"),
+            NarrowParameter(operator="channels", operand="public"),
+            NarrowParameter(operator="is", operand="unread"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
-            dict(operator="channels", operand="public"),
-            dict(operator="is", operand="alerted"),
+            NarrowParameter(operator="channels", operand="public"),
+            NarrowParameter(operator="is", operand="alerted"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
-            dict(operator="channels", operand="public"),
-            dict(operator="is", operand="resolved"),
+            NarrowParameter(operator="channels", operand="public"),
+            NarrowParameter(operator="is", operand="resolved"),
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
         # simple True case
         narrow = [
-            dict(operator="channel", operand="public_channel"),
+            NarrowParameter(operator="channel", operand="public_channel"),
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
         narrow = [
-            dict(operator="channel", operand="public_channel"),
-            dict(operator="topic", operand="whatever"),
-            dict(operator="search", operand="needle in haystack"),
+            NarrowParameter(operator="channel", operand="public_channel"),
+            NarrowParameter(operator="topic", operand="whatever"),
+            NarrowParameter(operator="search", operand="needle in haystack"),
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
@@ -1144,14 +1178,14 @@ class IncludeHistoryTest(ZulipTestCase):
 
         # channels:public searches should not include history for guest members.
         narrow = [
-            dict(operator="channels", operand="public"),
+            NarrowParameter(operator="channels", operand="public"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
 
         # Guest user can't access public channel
         self.subscribe(subscribed_user_profile, "public_channel_2")
         narrow = [
-            dict(operator="channel", operand="public_channel_2"),
+            NarrowParameter(operator="channel", operand="public_channel_2"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
@@ -1159,7 +1193,7 @@ class IncludeHistoryTest(ZulipTestCase):
         # Definitely, a guest user can't access the unsubscribed private channel
         self.subscribe(subscribed_user_profile, "private_channel_3")
         narrow = [
-            dict(operator="channel", operand="private_channel_3"),
+            NarrowParameter(operator="channel", operand="private_channel_3"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
@@ -1168,7 +1202,7 @@ class IncludeHistoryTest(ZulipTestCase):
         self.subscribe(guest_user_profile, "private_channel_4")
         self.subscribe(subscribed_user_profile, "private_channel_4")
         narrow = [
-            dict(operator="channel", operand="private_channel_4"),
+            NarrowParameter(operator="channel", operand="private_channel_4"),
         ]
         self.assertTrue(ok_to_include_history(narrow, guest_user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
@@ -3499,18 +3533,24 @@ class GetOldMessagesTest(ZulipTestCase):
         other_params = {"narrow": {}, "anchor": 0}
         int_params = ["num_before", "num_after"]
 
-        bad_types = (False, "", "-1", -1)
+        invalid_parameters: List[InvalidParam] = [
+            InvalidParam(value=False, expected_error="is not valid JSON"),
+            InvalidParam(value="", expected_error="is not valid JSON"),
+            InvalidParam(value="-1", expected_error="is too small"),
+            InvalidParam(value=-1, expected_error="is too small"),
+        ]
         for idx, param in enumerate(int_params):
-            for type in bad_types:
+            for invalid_parameter in invalid_parameters:
                 # Rotate through every bad type for every integer
                 # parameter, one at a time.
                 post_params = {
                     **other_params,
-                    param: type,
+                    param: invalid_parameter.value,
                     **dict.fromkeys(int_params[:idx] + int_params[idx + 1 :], 0),
                 }
                 result = self.client_get("/json/messages", post_params)
-                self.assert_json_error(result, f"Bad value for '{param}': {type}")
+
+                self.assert_json_error(result, f"{param} {invalid_parameter.expected_error}")
 
     def test_bad_include_anchor(self) -> None:
         self.login("hamlet")
@@ -3527,19 +3567,25 @@ class GetOldMessagesTest(ZulipTestCase):
 
         other_params = {"anchor": 0, "num_before": 0, "num_after": 0}
 
-        bad_types: Tuple[Union[int, str, bool], ...] = (
-            False,
-            0,
-            "",
-            "{malformed json,",
-            "{foo: 3}",
-            "[1,2]",
-            '[["x","y","z"]]',
-        )
-        for type in bad_types:
-            post_params = {**other_params, "narrow": type}
+        invalid_parameters: List[InvalidParam] = [
+            InvalidParam(value=False, expected_error="narrow is not valid JSON"),
+            InvalidParam(value=0, expected_error="narrow is not a list"),
+            InvalidParam(value="", expected_error="narrow is not valid JSON"),
+            InvalidParam(value="{malformed json,", expected_error="narrow is not valid JSON"),
+            InvalidParam(value="{foo: 3}", expected_error="narrow is not valid JSON"),
+            InvalidParam(
+                value="[1,2]",
+                expected_error="Invalid narrow[0]: Value error, dict or list required",
+            ),
+            InvalidParam(
+                value='[["x","y","z"]]',
+                expected_error="Invalid narrow[0]: Value error, element is not a string pair",
+            ),
+        ]
+        for invalid_parameter in invalid_parameters:
+            post_params = {**other_params, "narrow": invalid_parameter.value}
             result = self.client_get("/json/messages", post_params)
-            self.assert_json_error(result, f"Bad value for 'narrow': {type}")
+            self.assert_json_error(result, invalid_parameter.expected_error)
 
     def test_bad_narrow_operator(self) -> None:
         """
@@ -3557,51 +3603,70 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # str or int is required for "id", "sender", "channel", "dm-including" and "group-pm-with"
         # operators
-        invalid_operands = [["1"], [2], None]
-        error_msg = 'elem["operand"] is not a string or integer'
+        invalid_operands: List[InvalidParam] = [
+            InvalidParam(value=["1"], expected_error="operand is not a string or integer"),
+            InvalidParam(value=["2"], expected_error="operand is not a string or integer"),
+            InvalidParam(
+                value=None, expected_error="Invalid narrow[0]: Value error, operand is missing"
+            ),
+        ]
+
         for operand in ["id", "sender", "channel", "dm-including", "group-pm-with"]:
-            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # str or int list is required for "dm" and "pm-with" operator
-        invalid_operands = [None]
-        error_msg = 'elem["operand"] is not a string or an integer list'
-        for operand in ["dm", "pm-with"]:
-            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+        # First set of invalid operands
+        invalid_operands = [
+            InvalidParam(
+                value=None, expected_error="Invalid narrow[0]: Value error, operand is missing"
+            )
+        ]
 
-        invalid_operands = [["2"]]
-        error_msg = 'elem["operand"][0] is not an integer'
         for operand in ["dm", "pm-with"]:
-            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
-        # For others only str is acceptable
-        invalid_operands = [2, None, [1]]
-        error_msg = 'elem["operand"] is not a string'
+        # Second set of invalid operands
+        invalid_operands = [
+            InvalidParam(value=["2"], expected_error="operand[0] is not an integer"),
+        ]
+        for operand in ["dm", "pm-with"]:
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
+
+        # Third set of invalid operands
+        invalid_operands = [
+            InvalidParam(value=2, expected_error="operand is not a string"),
+            InvalidParam(
+                value=None, expected_error="Invalid narrow[0]: Value error, operand is missing"
+            ),
+            InvalidParam(value=[1], expected_error="operand is not a string"),
+        ]
         for operand in ["is", "near", "has"]:
-            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # Disallow empty search terms
-        error_msg = 'elem["operand"] cannot be blank.'
-        self.exercise_bad_narrow_operand_using_dict_api("search", [""], error_msg)
+        invalid_operands = [InvalidParam(value="", expected_error="operand cannot be blank.")]
+        self.exercise_bad_narrow_operand_using_dict_api("search", invalid_operands)
 
     # The exercise_bad_narrow_operand helper method uses legacy tuple format to
     # test bad narrow, this method uses the current dict API format
     def exercise_bad_narrow_operand_using_dict_api(
-        self, operator: str, operands: Sequence[Any], error_msg: str
+        self, operator: str, operands: Sequence[InvalidParam]
     ) -> None:
         for operand in operands:
-            narrow = [dict(operator=operator, operand=operand)]
+            narrow = [dict(operator=operator, operand=operand.value)]
             params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())
             result = self.client_get("/json/messages", params)
-            self.assert_json_error_contains(result, error_msg)
+            self.assert_json_error_contains(result, operand.expected_error)
 
-    def exercise_bad_narrow_operand(
-        self, operator: str, operands: Sequence[Any], error_msg: str
-    ) -> None:
+    def exercise_bad_narrow_operand(self, operator: str, operands: Sequence[InvalidParam]) -> None:
         other_params = {"anchor": "0", "num_before": "0", "num_after": "0"}
         for operand in operands:
-            post_params = {**other_params, "narrow": orjson.dumps([[operator, operand]]).decode()}
+            post_params = {
+                **other_params,
+                "narrow": orjson.dumps([[operator, operand.value]]).decode(),
+            }
             result = self.client_get("/json/messages", post_params)
-            self.assert_json_error_contains(result, error_msg)
+            self.assert_json_error_contains(result, operand.expected_error)
 
     def test_bad_narrow_channel_content(self) -> None:
         """
@@ -3609,8 +3674,13 @@ class GetOldMessagesTest(ZulipTestCase):
         returned.
         """
         self.login("hamlet")
-        bad_channel_content: Tuple[int, List[None], List[str]] = (0, [], ["x", "y"])
-        self.exercise_bad_narrow_operand("channel", bad_channel_content, "Bad value for 'narrow'")
+        error_msg = "Invalid narrow[0]: Value error, element is not a string pair"
+        bad_channel_content: List[InvalidParam] = [
+            InvalidParam(value=0, expected_error=error_msg),
+            InvalidParam(value=[], expected_error=error_msg),
+            InvalidParam(value=["x", "y"], expected_error=error_msg),
+        ]
+        self.exercise_bad_narrow_operand("channel", bad_channel_content)
 
     def test_bad_narrow_one_on_one_email_content(self) -> None:
         """
@@ -3618,29 +3688,51 @@ class GetOldMessagesTest(ZulipTestCase):
         an error is returned.
         """
         self.login("hamlet")
-        bad_channel_content: Tuple[int, List[None], List[str]] = (0, [], ["x", "y"])
-        self.exercise_bad_narrow_operand("dm", bad_channel_content, "Bad value for 'narrow'")
+        error_msg = "Invalid narrow[0]: Value error, element is not a string pair"
+        bad_channel_content: List[InvalidParam] = [
+            InvalidParam(value=0, expected_error=error_msg),
+            InvalidParam(value=[], expected_error=error_msg),
+            InvalidParam(value=["x", "y"], expected_error=error_msg),
+        ]
+        self.exercise_bad_narrow_operand("dm", bad_channel_content)
 
     def test_bad_narrow_nonexistent_channel(self) -> None:
         self.login("hamlet")
-        self.exercise_bad_narrow_operand(
-            "channel", ["non-existent channel"], "Invalid narrow operator: unknown channel"
-        )
 
-        non_existing_channel_id = 1232891381239
-        self.exercise_bad_narrow_operand_using_dict_api(
-            "channel", [non_existing_channel_id], "Invalid narrow operator: unknown channel"
-        )
+        non_existing_channel_id_operand: List[InvalidParam] = [
+            InvalidParam(
+                value="non-existent channel",
+                expected_error="Invalid narrow operator: unknown channel",
+            ),
+        ]
+
+        self.exercise_bad_narrow_operand("channel", non_existing_channel_id_operand)
+
+        non_existing_channel_id_operand = [
+            InvalidParam(
+                value=1232891381239, expected_error="Invalid narrow operator: unknown channel"
+            ),
+        ]
+
+        self.exercise_bad_narrow_operand_using_dict_api("channel", non_existing_channel_id_operand)
 
     def test_bad_narrow_nonexistent_email(self) -> None:
         self.login("hamlet")
-        self.exercise_bad_narrow_operand(
-            "dm", ["non-existent-user@zulip.com"], "Invalid narrow operator: unknown user"
-        )
+        error_msg = "Invalid narrow operator: unknown user"
+        invalid_operands: List[InvalidParam] = [
+            InvalidParam(value="non-existent-user@zulip.com", expected_error=error_msg),
+        ]
+        self.exercise_bad_narrow_operand("dm", invalid_operands)
 
     def test_bad_narrow_dm_id_list(self) -> None:
         self.login("hamlet")
-        self.exercise_bad_narrow_operand("dm", [-24], "Bad value for 'narrow': [[\"dm\",-24]]")
+        invalid_operands: List[InvalidParam] = [
+            InvalidParam(
+                value=-24,
+                expected_error="Invalid narrow[0]: Value error, element is not a string pair",
+            )
+        ]
+        self.exercise_bad_narrow_operand("dm", invalid_operands)
 
     def test_message_without_rendered_content(self) -> None:
         """Older messages may not have rendered_content in the database"""
@@ -3655,13 +3747,16 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         self.assertEqual(final_dict["content"], "<p>test content</p>")
 
-    def common_check_get_messages_query(
-        self, query_params: Dict[str, object], expected: str
-    ) -> None:
+    def common_check_get_messages_query(self, query_params: Dict[str, Any], expected: str) -> None:
         user_profile = self.example_user("hamlet")
         request = HostRequestMock(query_params, user_profile)
         with queries_captured() as queries:
-            get_messages_backend(request, user_profile)
+            get_messages_backend(
+                request,
+                user_profile,
+                num_before=query_params["num_before"],
+                num_after=query_params["num_after"],
+            )
 
         for query in queries:
             sql = str(query.sql)
@@ -3721,7 +3816,12 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         request = HostRequestMock(query_params, user_profile)
 
-        payload = get_messages_backend(request, user_profile)
+        payload = get_messages_backend(
+            request,
+            user_profile,
+            num_before=10,
+            num_after=10,
+        )
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], first_message_id)
         self.assertEqual(result["found_newest"], True)
@@ -3758,7 +3858,12 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         request = HostRequestMock(query_params, user_profile)
 
-        payload = get_messages_backend(request, user_profile)
+        payload = get_messages_backend(
+            request,
+            user_profile,
+            num_before=10,
+            num_after=10,
+        )
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], first_message_id)
 
@@ -3771,7 +3876,12 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         request = HostRequestMock(query_params, user_profile)
 
-        payload = get_messages_backend(request, user_profile)
+        payload = get_messages_backend(
+            request,
+            user_profile,
+            num_before=10,
+            num_after=10,
+        )
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], 0)
 
@@ -3785,7 +3895,12 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         request = HostRequestMock(query_params, user_profile)
 
-        payload = get_messages_backend(request, user_profile)
+        payload = get_messages_backend(
+            request,
+            user_profile,
+            num_before=10,
+            num_after=10,
+        )
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
 
@@ -3799,7 +3914,12 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         request = HostRequestMock(query_params, user_profile)
 
-        payload = get_messages_backend(request, user_profile)
+        payload = get_messages_backend(
+            request,
+            user_profile,
+            num_before=10,
+            num_after=10,
+        )
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], 0)
 
@@ -3813,7 +3933,12 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         request = HostRequestMock(query_params, user_profile)
 
-        payload = get_messages_backend(request, user_profile)
+        payload = get_messages_backend(
+            request,
+            user_profile,
+            num_before=10,
+            num_after=10,
+        )
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
 
@@ -3842,7 +3967,12 @@ class GetOldMessagesTest(ZulipTestCase):
         request = HostRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
-            get_messages_backend(request, user_profile)
+            get_messages_backend(
+                request,
+                user_profile,
+                num_before=10,
+                num_after=10,
+            )
 
         # Verify the query for old messages looks correct.
         queries = [q for q in all_queries if "/* get_messages */" in q.sql]
@@ -3889,7 +4019,12 @@ class GetOldMessagesTest(ZulipTestCase):
         first_visible_message_id = first_unread_message_id + 2
         with first_visible_id_as(first_visible_message_id):
             with queries_captured() as all_queries:
-                get_messages_backend(request, user_profile)
+                get_messages_backend(
+                    request,
+                    user_profile,
+                    num_before=10,
+                    num_after=10,
+                )
 
         queries = [q for q in all_queries if "/* get_messages */" in q.sql]
         self.assert_length(queries, 1)
@@ -3913,7 +4048,12 @@ class GetOldMessagesTest(ZulipTestCase):
         request = HostRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
-            get_messages_backend(request, user_profile)
+            get_messages_backend(
+                request,
+                user_profile,
+                num_before=10,
+                num_after=10,
+            )
 
         queries = [q for q in all_queries if "/* get_messages */" in q.sql]
         self.assert_length(queries, 1)
@@ -3927,7 +4067,12 @@ class GetOldMessagesTest(ZulipTestCase):
         first_visible_message_id = 5
         with first_visible_id_as(first_visible_message_id):
             with queries_captured() as all_queries:
-                get_messages_backend(request, user_profile)
+                get_messages_backend(
+                    request,
+                    user_profile,
+                    num_before=10,
+                    num_after=10,
+                )
             queries = [q for q in all_queries if "/* get_messages */" in q.sql]
             sql = queries[0].sql
             self.assertNotIn("AND message_id <=", sql)
@@ -3966,7 +4111,12 @@ class GetOldMessagesTest(ZulipTestCase):
         request = HostRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
-            get_messages_backend(request, user_profile)
+            get_messages_backend(
+                request,
+                user_profile,
+                num_before=0,
+                num_after=0,
+            )
 
         # Do some tests on the main query, to verify the muting logic
         # runs on this code path.
@@ -4000,8 +4150,8 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # If nothing relevant is muted, then exclude_muting_conditions()
         # should return an empty list.
-        narrow: List[Dict[str, object]] = [
-            dict(operator="channel", operand="Scotland"),
+        narrow: List[NarrowParameter] = [
+            NarrowParameter(operator="channel", operand="Scotland"),
         ]
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
         self.assertEqual(muting_conditions, [])
@@ -4009,7 +4159,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Also test that passing channel ID works
         channel_id = get_stream("Scotland", realm).id
         narrow = [
-            dict(operator="channel", operand=channel_id),
+            NarrowParameter(operator="channel", operand=channel_id),
         ]
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
         self.assertEqual(muting_conditions, [])
@@ -4023,7 +4173,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # And verify that our query will exclude them.
         narrow = [
-            dict(operator="channel", operand="Scotland"),
+            NarrowParameter(operator="channel", operand="Scotland"),
         ]
 
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
@@ -4050,7 +4200,7 @@ WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_
         # Using a bogus channel name should be similar to using no narrow at
         # all, and we'll exclude all mutes.
         narrow = [
-            dict(operator="channel", operand="bogus-channel-name"),
+            NarrowParameter(operator="channel", operand="bogus-channel-name"),
         ]
 
         muting_conditions = exclude_muting_conditions(user_profile, narrow)

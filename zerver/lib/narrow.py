@@ -15,7 +15,6 @@ from typing import (
     Union,
 )
 
-import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
@@ -67,7 +66,6 @@ from zerver.lib.types import Validator
 from zerver.lib.user_topics import exclude_topic_mutes
 from zerver.lib.validator import (
     check_bool,
-    check_dict,
     check_required_string,
     check_string,
     check_string_or_int,
@@ -152,7 +150,7 @@ class NarrowParameter(BaseModel):
         return self
 
 
-def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
+def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
     # This implementation should agree with is_spectator_compatible in hash_parser.ts.
     supported_operators = [
         *channel_operators,
@@ -165,15 +163,13 @@ def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
         "id",
     ]
     for element in narrow:
-        operator = element["operator"]
-        if "operand" not in element:
-            return False
+        operator = element.operator
         if operator not in supported_operators:
             return False
     return True
 
 
-def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
+def is_web_public_narrow(narrow: Optional[Iterable[NarrowParameter]]) -> bool:
     if narrow is None:
         return False
 
@@ -181,9 +177,9 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
         # Web-public queries are only allowed for limited types of narrows.
         # term == {'operator': 'channels', 'operand': 'web-public', 'negated': False}
         # or term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
-        term["operator"] in channels_operators
-        and term["operand"] == "web-public"
-        and term["negated"] is False
+        term.operator in channels_operators
+        and term.operand == "web-public"
+        and term.negated is False
         for term in narrow
     )
 
@@ -205,8 +201,6 @@ class BadNarrowOperatorError(JsonableError):
 
 
 ConditionTransform: TypeAlias = Callable[[ClauseElement], ClauseElement]
-
-OptionalNarrowListT: TypeAlias = Optional[List[Dict[str, Any]]]
 
 # These delimiters will not appear in rendered messages or HTML-escaped topics.
 TS_START = "<ts-match>"
@@ -309,7 +303,7 @@ class NarrowBuilder:
                 "No message can be both a channel message and direct message"
             )
 
-    def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
+    def add_term(self, query: Select, term: NarrowParameter) -> Select:
         """
         Extend the given query to one narrowed by the given term, and return the result.
 
@@ -322,10 +316,10 @@ class NarrowBuilder:
         # methods to the same criterion.  See the class's block comment
         # for details.
 
-        operator = term["operator"]
-        operand = term["operand"]
+        operator = term.operator
+        operand = term.operand
 
-        negated = term.get("negated", False)
+        negated = term.negated
 
         if operator in self.by_method_map:
             method = self.by_method_map[operator]
@@ -805,75 +799,10 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
 
-def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
-    data = orjson.loads(json)
-    if not isinstance(data, list):
-        raise ValueError("argument is not a list")
-    if len(data) == 0:
-        # The "empty narrow" should be None, and not []
-        return None
-
-    def convert_term(elem: Union[Dict[str, Any], List[str]]) -> Dict[str, Any]:
-        # We have to support a legacy tuple format.
-        if isinstance(elem, list):
-            if len(elem) != 2 or any(not isinstance(x, str) for x in elem):
-                raise ValueError("element is not a string pair")
-            return dict(operator=elem[0], operand=elem[1])
-
-        if isinstance(elem, dict):
-            # Make sure to sync this list to frontend also when adding a new operator that
-            # supports integer IDs. Relevant code is located in web/src/message_fetch.js
-            # in handle_operators_supporting_id_based_api function where you will need to
-            # update operators_supporting_id, or operators_supporting_ids array.
-            operators_supporting_id = [
-                *channel_operators,
-                "id",
-                "sender",
-                "group-pm-with",
-                "dm-including",
-            ]
-            operators_supporting_ids = ["pm-with", "dm"]
-            operators_non_empty_operand = {"search"}
-
-            operator = elem.get("operator", "")
-            if operator in operators_supporting_id:
-                operand_validator: Validator[object] = check_string_or_int
-            elif operator in operators_supporting_ids:
-                operand_validator = check_string_or_int_list
-            elif operator in operators_non_empty_operand:
-                operand_validator = check_required_string
-            else:
-                operand_validator = check_string
-
-            validator = check_dict(
-                required_keys=[
-                    ("operator", check_string),
-                    ("operand", operand_validator),
-                ],
-                optional_keys=[
-                    ("negated", check_bool),
-                ],
-            )
-
-            try:
-                validator("elem", elem)
-            except ValidationError as error:
-                raise JsonableError(error.message)
-
-            # whitelist the fields we care about for now
-            return dict(
-                operator=elem["operator"],
-                operand=elem["operand"],
-                negated=elem.get("negated", False),
-            )
-
-        raise ValueError("element is not a dictionary")
-
-    return list(map(convert_term, data))
-
-
 def ok_to_include_history(
-    narrow: OptionalNarrowListT, user_profile: Optional[UserProfile], is_web_public_query: bool
+    narrow: Optional[List[NarrowParameter]],
+    user_profile: Optional[UserProfile],
+    is_web_public_query: bool,
 ) -> bool:
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
@@ -899,16 +828,16 @@ def ok_to_include_history(
     include_history = False
     if narrow is not None:
         for term in narrow:
-            if term["operator"] in channel_operators and not term.get("negated", False):
-                operand: Union[str, int] = term["operand"]
+            if term.operator in channel_operators and not term.negated:
+                operand: Union[str, int] = term.operand
                 if isinstance(operand, str):
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (
-                term["operator"] in channels_operators
-                and term["operand"] == "public"
-                and not term.get("negated", False)
+                term.operator in channels_operators
+                and term.operand == "public"
+                and not term.negated
                 and user_profile.can_access_public_streams()
             ):
                 include_history = True
@@ -916,24 +845,24 @@ def ok_to_include_history(
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
         for term in narrow:
-            if term["operator"] == "is" and term["operand"] not in {"resolved", "followed"}:
+            if term.operator == "is" and term.operand not in {"resolved", "followed"}:
                 include_history = False
 
     return include_history
 
 
 def get_channel_from_narrow_access_unchecked(
-    narrow: OptionalNarrowListT, realm: Realm
+    narrow: Optional[List[NarrowParameter]], realm: Realm
 ) -> Optional[Stream]:
     if narrow is not None:
         for term in narrow:
-            if term["operator"] in channel_operators:
-                return get_stream_by_narrow_operand_access_unchecked(term["operand"], realm)
+            if term.operator in channel_operators:
+                return get_stream_by_narrow_operand_access_unchecked(term.operand, realm)
     return None
 
 
 def exclude_muting_conditions(
-    user_profile: UserProfile, narrow: OptionalNarrowListT
+    user_profile: UserProfile, narrow: Optional[List[NarrowParameter]]
 ) -> List[ClauseElement]:
     conditions: List[ClauseElement] = []
     channel_id = None
@@ -1026,7 +955,7 @@ def add_narrow_conditions(
     user_profile: Optional[UserProfile],
     inner_msg_id_col: ColumnElement[Integer],
     query: Select,
-    narrow: OptionalNarrowListT,
+    narrow: Optional[List[NarrowParameter]],
     is_web_public_query: bool,
     realm: Realm,
 ) -> Tuple[Select, bool]:
@@ -1043,15 +972,15 @@ def add_narrow_conditions(
     # our query, but we need to collect the search operands and handle
     # them after the loop.
     for term in narrow:
-        if term["operator"] == "search":
-            search_operands.append(term["operand"])
+        if term.operator == "search":
+            search_operands.append(term.operand)
         else:
             query = builder.add_term(query, term)
 
     if search_operands:
         is_search = True
         query = query.add_columns(topic_column_sa(), column("rendered_content", Text))
-        search_term = dict(
+        search_term = NarrowParameter(
             operator="search",
             operand=" ".join(search_operands),
         )
@@ -1061,7 +990,9 @@ def add_narrow_conditions(
 
 
 def find_first_unread_anchor(
-    sa_conn: Connection, user_profile: Optional[UserProfile], narrow: OptionalNarrowListT
+    sa_conn: Connection,
+    user_profile: Optional[UserProfile],
+    narrow: Optional[List[NarrowParameter]],
 ) -> int:
     # For anonymous web users, all messages are treated as read, and so
     # always return LARGER_THAN_MAX_MESSAGE_ID.
@@ -1322,7 +1253,7 @@ class FetchedMessages(LimitedMessages[Row]):
 
 def fetch_messages(
     *,
-    narrow: OptionalNarrowListT,
+    narrow: Optional[List[NarrowParameter]],
     user_profile: Optional[UserProfile],
     realm: Realm,
     is_web_public_query: bool,

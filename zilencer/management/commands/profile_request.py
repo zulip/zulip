@@ -21,9 +21,16 @@ class MockSession(SessionBase):
         self.modified = False
 
 
-def profile_request(request: HttpRequest) -> HttpResponseBase:
+def profile_request(request: HttpRequest, num_before: int, num_after: int) -> HttpResponseBase:
     def get_response(request: HttpRequest) -> HttpResponseBase:
-        return prof.runcall(get_messages_backend, request, request.user, apply_markdown=True)
+        return prof.runcall(
+            get_messages_backend,
+            request,
+            request.user,
+            num_before=num_before,
+            num_after=num_after,
+            apply_markdown=True,
+        )
 
     prof = cProfile.Profile()
     with tempfile.NamedTemporaryFile(prefix="profile.data.", delete=False) as stats_file:
@@ -58,4 +65,4 @@ class Command(ZulipBaseCommand):
         mock_request.session = MockSession()
         RequestNotes.get_notes(mock_request).log_data = None
 
-        profile_request(mock_request)
+        profile_request(mock_request, num_before=1200, num_after=200)

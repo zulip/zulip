@@ -23,9 +23,7 @@ let private_messages_collapsed = false;
 let zoomed = false;
 
 function get_private_messages_section_header(): JQuery {
-    return $(
-        ".direct-messages-container #private_messages_section #private_messages_section_header",
-    );
+    return $(".direct-messages-container #direct-messages-section #direct-messages-section-header");
 }
 
 export function set_count(count: number): void {
@@ -34,8 +32,8 @@ export function set_count(count: number): void {
 
 export function close(): void {
     private_messages_collapsed = true;
-    $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
-    $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
+    $("#toggle-direct-messages-section-icon").removeClass("fa-caret-down");
+    $("#toggle-direct-messages-section-icon").addClass("fa-caret-right");
 
     update_private_messages();
 }
@@ -104,8 +102,8 @@ export function update_private_messages(): void {
 export function expand(): void {
     private_messages_collapsed = false;
 
-    $("#toggle_private_messages_section_icon").addClass("fa-caret-down");
-    $("#toggle_private_messages_section_icon").removeClass("fa-caret-right");
+    $("#toggle-direct-messages-section-icon").addClass("fa-caret-down");
+    $("#toggle-direct-messages-section-icon").removeClass("fa-caret-right");
     update_private_messages();
 }
 
@@ -121,16 +119,16 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
 }
 
 export function highlight_all_private_messages_view(): void {
-    $(".direct-messages-container").addClass("active_private_messages_section");
+    $(".direct-messages-container").addClass("active-direct-messages-section");
 }
 
 function unhighlight_all_private_messages_view(): void {
-    $(".direct-messages-container").removeClass("active_private_messages_section");
+    $(".direct-messages-container").removeClass("active-direct-messages-section");
 }
 
 function scroll_pm_into_view($target_li: JQuery): void {
     const $container = $("#left_sidebar_scroll_container");
-    const pm_header_height = $("#private_messages_section_header").outerHeight();
+    const pm_header_height = $("#direct-messages-section-header").outerHeight();
     if ($target_li.length > 0) {
         scroll_util.scroll_element_into_container($target_li, $container, pm_header_height);
     }

@@ -176,14 +176,6 @@
         background-color: var(--color-background-navbar);
     }
 
-    & body,
-    .app-main,
-    .column-middle,
-    #streams_header,
-    .direct-messages-container {
-        background-color: var(--color-background);
-    }
-
     #scroll-to-bottom-button-container {
         background: transparent;
 
@@ -370,14 +362,6 @@
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
-    }
-
-    .active_private_messages_section {
-        #private_messages_section,
-        #direct-messages-list,
-        #hide-more-direct-messages {
-            background-color: hsl(199deg 33% 46% / 20%);
-        }
     }
 
     /* these are converting grey things to "new grey" */

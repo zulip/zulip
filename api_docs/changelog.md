@@ -1699,11 +1699,17 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 76**
 
-* [`POST /fetch_api_key`](/api/fetch-api-key), [`POST
-  /dev_fetch_api_key`](/api/dev-fetch-api-key): The HTTP status for
-  authentication errors is now 401. This was previously 403.
-* All API endpoints now use the HTTP 401 error status for API requests
-  involving a deactivated user or realm. This was previously 403.
+* [`POST /fetch_api_key`](/api/fetch-api-key),
+  [`POST /dev_fetch_api_key`](/api/dev-fetch-api-key): The HTTP status
+  for authentication errors is now 401. These previously used the HTTP
+  403 error status.
+* [Error handling](/api/rest-error-handling#common-error-responses): API
+  requests that involve a deactivated user or organization now use the
+  HTTP 401 error status. These previously used the HTTP 403 error status.
+* [Error handling](/api/rest-error-handling): All error responses
+  now include a `code` key with a machine-readable string value. The
+  default value for this key is `"BAD_REQUEST"` for general error
+  responses.
 * Mobile push notifications now include the `mentioned_user_group_id`
   and `mentioned_user_group_name` fields when a user group containing
   the user is mentioned.  Previously, these were indistinguishable
@@ -1969,8 +1975,9 @@ field with an integer field `invite_to_realm_policy`.
 
 * [`POST /users`](/api/create-user): Restricted access to organization
   administrators with the `can_create_users` permission.
-* [Error handling](/api/rest-error-handling): The `code` property will
-  now be present in errors due to rate limits.
+* [Error handling](/api/rest-error-handling#common-error-responses): The
+  `code` key will now be present in errors that are due to rate
+  limits, with a value of `"RATE_LIMIT_HIT"`.
 
 **Feature level 35**
 

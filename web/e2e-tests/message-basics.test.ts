@@ -319,7 +319,7 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
 
-    const all_private_messages_icon = "#show_all_private_messages";
+    const all_private_messages_icon = "#show-all-direct-messages";
     await page.waitForSelector(all_private_messages_icon, {visible: true});
     await page.click(all_private_messages_icon);
     await expect_all_direct_messages(page);

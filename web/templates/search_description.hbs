@@ -14,6 +14,17 @@
         {{~!-- squash whitespace --~}}
         {{this.prefix_for_operator}} {{this.operand}}
         {{~!-- squash whitespace --~}}
+    {{else if (eq this.type "user_pill")}}
+        {{~!-- squash whitespace --~}}
+        {{this.operator}}
+        {{~#each this.users}}
+            {{#if this.valid_user}}
+                {{> user_pill}}
+            {{else}}
+                {{this.operand}}
+            {{/if}}
+        {{~/each~}}
+        {{~!-- squash whitespace --~}}
     {{else if (eq this.type "is_operator")}}
         {{#if (eq this.operand "mentioned")}}
             {{~!-- squash whitespace --~}}

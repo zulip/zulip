@@ -45,7 +45,7 @@ type DisplayObject = {
 };
 
 export function get_conversations(): DisplayObject[] {
-    const private_messages = pm_conversations.recent.get();
+    const conversations = pm_conversations.recent.get();
     const display_objects = [];
 
     // The user_ids_string for the current view, if any.
@@ -53,12 +53,14 @@ export function get_conversations(): DisplayObject[] {
 
     if (
         active_user_ids_string !== undefined &&
-        !private_messages.map((obj) => obj.user_ids_string).includes(active_user_ids_string)
+        !conversations
+            .map((conversation) => conversation.user_ids_string)
+            .includes(active_user_ids_string)
     ) {
-        private_messages.unshift({user_ids_string: active_user_ids_string, max_message_id: -1});
+        conversations.unshift({user_ids_string: active_user_ids_string, max_message_id: -1});
     }
 
-    for (const conversation of private_messages) {
+    for (const conversation of conversations) {
         const user_ids_string = conversation.user_ids_string;
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         assert(reply_to !== undefined);

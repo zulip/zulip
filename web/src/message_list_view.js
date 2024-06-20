@@ -1693,6 +1693,12 @@ export class MessageListView {
             return;
         }
 
+        const dom_updates = {
+            add_classes: [],
+            remove_classes: [],
+            html_updates: [],
+        };
+
         const $current_sticky_header = $(".sticky_header");
         if ($current_sticky_header.length === 1) {
             // Reset the date on the header in case we changed it.
@@ -1702,17 +1708,21 @@ export class MessageListView {
             const group = this._find_message_group(message_group_id);
             if (group !== undefined) {
                 const rendered_date = group.date;
-                $current_sticky_header.find(".recipient_row_date").html(rendered_date);
-                /* Intentionally remove sticky headers class here to make calculations simpler. */
+                dom_updates.html_updates.push({
+                    $element: $current_sticky_header.find(".recipient_row_date"),
+                    rendered_date,
+                });
             }
-            $current_sticky_header.removeClass("sticky_header");
+            dom_updates.remove_classes.push({
+                $element: $current_sticky_header,
+                class: "sticky_header",
+            });
         }
 
-        /* visible_top is navbar top position + height for us. */
-        const visible_top = message_viewport.message_viewport_info().visible_top;
+        const navbar_bottom = $("#navbar-fixed-container").outerHeight();
         /* We need date to be properly visible on the header, so partially visible headers
            who are about to be scrolled out of view are not acceptable. */
-        const partially_hidden_header_position = visible_top - 1;
+        const partially_hidden_header_position = navbar_bottom - 1;
 
         function is_sticky(header) {
             // header has a box-shadow of `1px` at top but since it doesn't impact
@@ -1721,7 +1731,7 @@ export class MessageListView {
             // This value is dependent upon space between two `recipient_row` message groups.
             const margin_between_recipient_rows = 10;
             const sticky_or_about_to_be_sticky_header_position =
-                visible_top + header_props.height + margin_between_recipient_rows;
+                navbar_bottom + header_props.height + margin_between_recipient_rows;
             if (header_props.top < partially_hidden_header_position) {
                 return -1;
             } else if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
@@ -1765,7 +1775,7 @@ export class MessageListView {
             $sticky_header = $headers.first();
             $message_row = $sticky_header.nextAll(".message_row").first();
         } else {
-            $sticky_header.addClass("sticky_header");
+            dom_updates.add_classes.push({$element: $sticky_header, class: "sticky_header"});
             const sticky_header_props = $sticky_header[0].getBoundingClientRect();
             /* date separator starts to be hidden at this height difference. */
             const date_separator_padding = 7;
@@ -1806,7 +1816,10 @@ export class MessageListView {
         this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
         const rendered_date = timerender.render_date(time);
-        $sticky_header.find(".recipient_row_date").html(rendered_date);
+        dom_updates.html_updates.push({
+            $element: $sticky_header.find(".recipient_row_date"),
+            rendered_date,
+        });
 
         // The following prevents a broken looking situation where
         // there's a recipient row (possibly partially) visible just
@@ -1814,7 +1827,10 @@ export class MessageListView {
         // date. (E.g., both displaying "today"). We avoid this by
         // hiding the date display on the non-sticky previous
         // recipient row.
-        $(".hide-date-separator-header").removeClass("hide-date-separator-header");
+        dom_updates.remove_classes.push({
+            $element: $(".hide-date-separator-header"),
+            class: "hide-date-separator-header",
+        });
         // This corner case only occurs when the date is unchanged
         // from the previous recipient row.
         if ($sticky_header.find(".recipient_row_date.recipient_row_date_unchanged").length) {
@@ -1827,8 +1843,23 @@ export class MessageListView {
             const $prev_header_date_row = $prev_recipient_row.find(".recipient_row_date");
             // Check if the recipient row before sticky header is a date separator.
             if (!$prev_header_date_row.hasClass("recipient_row_date_unchanged")) {
-                $prev_header_date_row.addClass("hide-date-separator-header");
+                dom_updates.add_classes.push({
+                    $element: $prev_header_date_row,
+                    class: "hide-date-separator-header",
+                });
             }
+        }
+
+        // Apply all the updates to the DOM at the end for improved performance.
+        for (const update of dom_updates.remove_classes) {
+            update.$element.removeClass(update.class);
+        }
+        for (const update of dom_updates.add_classes) {
+            update.$element.addClass(update.class);
+        }
+        for (const update of dom_updates.html_updates) {
+            const rendered_date = update.rendered_date;
+            update.$element.html(rendered_date);
         }
     }
 
