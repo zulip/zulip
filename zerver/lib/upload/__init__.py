@@ -44,7 +44,7 @@ def create_attachment(
     file_name: str,
     path_id: str,
     content_type: str,
-    file_size: int,
+    file_data: bytes,
     user_profile: UserProfile,
     realm: Realm,
 ) -> None:
@@ -56,7 +56,7 @@ def create_attachment(
         path_id=path_id,
         owner=user_profile,
         realm=realm,
-        size=file_size,
+        size=len(file_data),
         content_type=content_type,
     )
     from zerver.actions.uploads import notify_attachment_update
@@ -144,7 +144,7 @@ def upload_message_attachment(
         uploaded_file_name,
         path_id,
         content_type,
-        len(file_data),
+        file_data,
         user_profile,
         target_realm,
     )
