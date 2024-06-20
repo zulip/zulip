@@ -683,6 +683,8 @@ class AbstractAttachment(models.Model):
     # Size of the uploaded file, in bytes
     size = models.IntegerField()
 
+    content_type = models.TextField(null=True)
+
     # The two fields below serve as caches to let us avoid looking up
     # the corresponding messages/streams to check permissions before
     # serving these files.
