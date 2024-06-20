@@ -19,6 +19,7 @@ import zerver.lib.upload
 from analytics.models import RealmCount
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.message_send import internal_send_private_message
+from zerver.actions.realm_background import do_change_background_source
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
@@ -28,6 +29,7 @@ from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import cache_delete, cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
+from zerver.lib.realm_background import realm_background_url
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
@@ -991,6 +993,10 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             backend.get_realm_logo_url(15, 1, False), "/user_avatars/15/realm/logo.png?version=1"
         )
         self.assertEqual(
+            backend.get_realm_background_url(15, 1),
+            "/user_avatars/15/realm/background.png?version=1",
+        )
+        self.assertEqual(
             backend.get_realm_logo_url(15, 1, True),
             "/user_avatars/15/realm/night_logo.png?version=1",
         )
@@ -1011,6 +1017,10 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(
                 backend.get_realm_logo_url(15, 1, False),
                 "https://bucket.s3.amazonaws.com/15/realm/logo.png?version=1",
+            )
+            self.assertEqual(
+                backend.get_realm_background_url(15, 1),
+                "https://bucket.s3.amazonaws.com/15/realm/background.png?version=1",
             )
             self.assertEqual(
                 backend.get_realm_logo_url(15, 1, True),
@@ -1587,6 +1597,139 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
 
+class RealmBackgroundTest(UploadSerializeMixin, ZulipTestCase):
+    def test_multiple_upload_failure(self) -> None:
+        """
+        Attempting to upload two files should fail.
+        """
+        # Log in as admin
+        self.login("iago")
+        with get_test_image_file("img.png") as fp1, get_test_image_file("img.png") as fp2:
+            result = self.client_post("/json/realm/background", {"f1": fp1, "f2": fp2})
+        self.assert_json_error(result, "You must upload exactly one background image.")
+
+    def test_no_file_upload_failure(self) -> None:
+        """
+        Calling this endpoint with no files should fail.
+        """
+        self.login("iago")
+
+        result = self.client_post("/json/realm/background")
+        self.assert_json_error(result, "You must upload exactly one background image.")
+
+    correct_files = [
+        ("img.png", "png_resized.png"),
+        ("img.jpg", None),  # jpeg resizing is platform-dependent
+        ("img.gif", "gif_resized.png"),
+        ("img.tif", "tif_resized.png"),
+        ("cmyk.jpg", None),
+    ]
+    corrupt_files = ["text.txt", "corrupt.png", "corrupt.gif"]
+
+    def test_no_admin_user_upload(self) -> None:
+        self.login("hamlet")
+        with get_test_image_file(self.correct_files[0][0]) as fp:
+            result = self.client_post("/json/realm/background", {"file": fp})
+        self.assert_json_error(result, "Must be an organization administrator")
+
+    def test_get_default_background(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        do_change_background_source(realm, Realm.BACKGROUND_DEFAULT, acting_user=user_profile)
+        response = self.client_get("/json/realm/background")
+        redirect_url = response["Location"]
+        self.assertEqual(
+            redirect_url,
+            "http://testserver/static/images/login-background/default-background.png?version=0",
+        )
+
+    def test_get_settings_background(self) -> None:
+        self.login("hamlet")
+        with self.settings(DEFAULT_BACKGROUND_URI="http://other.server/background.svg"):
+            response = self.client_get("/json/realm/background")
+            redirect_url = response["Location"]
+            self.assertEqual(redirect_url, "http://other.server/background.svg")
+
+    def test_get_uploaded_realm_background(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        do_change_background_source(realm, Realm.BACKGROUND_UPLOADED, acting_user=user_profile)
+        response = self.client_get("/json/realm/background")
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith(realm_background_url(realm)))
+
+    def test_valid_backgrounds(self) -> None:
+        """
+        A PUT request to /json/realm/background with a valid file should return a URL
+        and actually create an realm background.
+        """
+        for fname, rfname in self.correct_files:
+            with self.subTest(fname=fname):
+                self.login("iago")
+                with get_test_image_file(fname) as fp:
+                    result = self.client_post("/json/realm/background", {"file": fp})
+                realm = get_realm("zulip")
+                response_dict = self.assert_json_success(result)
+                self.assertIn("background_url", response_dict)
+                base = f"/user_avatars/{realm.id}/realm/background.png"
+                url = response_dict["background_url"]
+                self.assertEqual(base, url[: len(base)])
+
+                if rfname is not None:
+                    response = self.client_get(url)
+                    data = response.getvalue()
+                    self.assertEqual(Image.open(io.BytesIO(data)).size, (1280, 720))
+
+    def test_invalid_backgrounds(self) -> None:
+        """
+        A PUT request to /json/realm/background with an invalid file should fail.
+        """
+        for fname in self.corrupt_files:
+            with self.subTest(fname=fname):
+                self.login("iago")
+                with get_test_image_file(fname) as fp:
+                    result = self.client_post("/json/realm/background", {"file": fp})
+
+                self.assert_json_error(
+                    result, "Could not decode image; did you upload an image file?"
+                )
+
+    def test_delete_background(self) -> None:
+        """
+        A DELETE request to /json/realm/background should delete the realm background and return gravatar URL
+        """
+        self.login("iago")
+        realm = get_realm("zulip")
+        do_change_background_source(realm, Realm.BACKGROUND_UPLOADED, acting_user=None)
+
+        result = self.client_delete("/json/realm/background")
+
+        response_dict = self.assert_json_success(result)
+        self.assertIn("background_url", response_dict)
+        realm = get_realm("zulip")
+        self.assertEqual(response_dict["background_url"], realm_background_url(realm))
+        self.assertEqual(realm.background_source, Realm.BACKGROUND_DEFAULT)
+
+    def test_realm_background_version(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        background_version = realm.background_version
+        self.assertEqual(background_version, 1)
+        with get_test_image_file(self.correct_files[0][0]) as fp:
+            self.client_post("/json/realm/background", {"file": fp})
+        realm = get_realm("zulip")
+        self.assertEqual(realm.background_version, background_version + 1)
+
+    def test_realm_background_upload_file_size_error(self) -> None:
+        self.login("iago")
+        with get_test_image_file(self.correct_files[0][0]) as fp:
+            with self.settings(MAX_BACKGROUND_FILE_SIZE_MIB=0):
+                result = self.client_post("/json/realm/background", {"file": fp})
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
+
+
 class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     night = False
 
@@ -1870,6 +2013,7 @@ class DecompressionBombTests(ZulipTestCase):
         self.test_urls = [
             "/json/users/me/avatar",
             "/json/realm/logo",
+            "/json/realm/background",
             "/json/realm/icon",
             "/json/realm/emoji/bomb_emoji",
         ]

@@ -113,6 +113,11 @@ from zerver.views.realm import (
     update_realm,
     update_realm_user_settings_defaults,
 )
+from zerver.views.realm_background import (
+    delete_background_backend,
+    get_background_backend,
+    upload_background,
+)
 from zerver.views.realm_domains import (
     create_realm_domain,
     delete_realm_domain,
@@ -279,6 +284,13 @@ v1_api_and_json_patterns = [
     rest_path("realm/icon", POST=upload_icon, DELETE=delete_icon_backend, GET=get_icon_backend),
     # realm/logo -> zerver.views.realm_logo
     rest_path("realm/logo", POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
+    # realm/background -> zerver.views.realm_background
+    rest_path(
+        "realm/background",
+        POST=upload_background,
+        DELETE=delete_background_backend,
+        GET=get_background_backend,
+    ),
     # realm/filters and realm/linkifiers -> zerver.views.realm_linkifiers
     rest_path("realm/linkifiers", GET=list_linkifiers, PATCH=reorder_linkifiers),
     rest_path("realm/filters", POST=create_linkifier),

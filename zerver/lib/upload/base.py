@@ -17,6 +17,9 @@ DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
 DEFAULT_EMOJI_SIZE = 64
 
+DEFAULT_BAKGROUND_SIZE = 1280
+DEFAULT_BAKGROUND_HEIGHT = 720
+
 # These sizes were selected based on looking at the maximum common
 # sizes in a library of animated custom emoji, balanced against the
 # network cost of very large emoji images.
@@ -75,6 +78,24 @@ def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
         im = Image.open(io.BytesIO(image_data))
         im = ImageOps.exif_transpose(im)
         im = ImageOps.fit(im, (size, size), Image.Resampling.LANCZOS)
+    except OSError:
+        raise BadImageError(_("Could not decode image; did you upload an image file?"))
+    except DecompressionBombError:
+        raise BadImageError(_("Image size exceeds limit."))
+    out = io.BytesIO()
+    if im.mode == "CMYK":
+        im = im.convert("RGB")
+    im.save(out, format="png")
+    return out.getvalue()
+
+
+def resize_background(
+    image_data: bytes, size: int = DEFAULT_BAKGROUND_SIZE, height: int = DEFAULT_BAKGROUND_HEIGHT
+) -> bytes:
+    try:
+        im = Image.open(io.BytesIO(image_data))
+        im = ImageOps.exif_transpose(im)
+        im = ImageOps.fit(im, (size, height), Image.Resampling.LANCZOS)
     except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
@@ -260,6 +281,14 @@ class ZulipUploadBackend:
 
     def upload_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
+    ) -> None:
+        raise NotImplementedError
+
+    def get_realm_background_url(self, realm_id: int, version: int) -> str:
+        raise NotImplementedError
+
+    def upload_realm_background_image(
+        self, background_file: IO[bytes], user_profile: UserProfile
     ) -> None:
         raise NotImplementedError
 

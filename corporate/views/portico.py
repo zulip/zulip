@@ -28,6 +28,7 @@ from zerver.lib.github import (
     InvalidPlatformError,
     get_latest_github_release_download_link_for_platform,
 )
+from zerver.lib.realm_background import get_realm_background_url
 from zerver.lib.realm_description import get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.subdomains import is_subdomain_root_or_alias
@@ -338,6 +339,7 @@ def communities_view(request: HttpRequest) -> HttpResponse:
                     "name": realm.name,
                     "realm_url": realm.url,
                     "logo_url": get_realm_icon_url(realm),
+                    "background_url": get_realm_background_url(realm),
                     "description": get_realm_text_description(realm),
                     "org_type_key": org_type,
                 }

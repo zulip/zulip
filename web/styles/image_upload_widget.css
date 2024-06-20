@@ -142,7 +142,8 @@
 
 .user-avatar-section,
 .realm-logo-section,
-.realm-icon-section {
+.realm-icon-section,
+.realm-background-section {
     margin: 20px 0;
 }
 
@@ -170,6 +171,12 @@
         top: 5px;
         right: 5px;
     }
+}
+
+#realm-background-upload-widget {
+    width: 192px;
+    height: 108px;
+    background-color: hsl(0deg 0% 0% / 10%);
 }
 
 /* CSS related to settings page realm day/night logo upload widget only */

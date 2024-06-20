@@ -64,6 +64,7 @@ export const realm_schema = z.object({
     max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
+    max_background_file_size_mib: z.number(),
     max_message_length: z.number(),
     max_topic_length: z.number(),
     realm_add_custom_emoji_policy: z.number(),
@@ -117,6 +118,8 @@ export const realm_schema = z.object({
     realm_enable_spectator_access: z.boolean(),
     realm_icon_source: z.string(),
     realm_icon_url: z.string(),
+    realm_background_url: z.string(),
+    realm_background_source: z.string(),
     realm_incoming_webhook_bots: z.array(
         z.object({
             display_name: z.string(),

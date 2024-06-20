@@ -90,6 +90,7 @@ import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as pygments_data from "./pygments_data";
+import * as realm_background from "./realm_background";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
@@ -544,6 +545,7 @@ export function initialize_everything(state_data) {
         "max_avatar_file_size_mib",
         "max_file_upload_size_mib",
         "max_icon_file_size_mib",
+        "max_background_file_size_mib",
         "max_logo_file_size_mib",
         "max_message_length",
         "max_stream_description_length",
@@ -594,6 +596,8 @@ export function initialize_everything(state_data) {
         "realm_is_zephyr_mirror_realm",
         "realm_jitsi_server_url",
         "realm_linkifiers",
+        "realm_background_source",
+        "realm_background_url",
         "realm_logo_source",
         "realm_logo_url",
         "realm_mandatory_topics",
@@ -729,6 +733,7 @@ export function initialize_everything(state_data) {
     initialize_message_feed_errors();
 
     realm_logo.initialize();
+    realm_background.rerender();
     message_lists.initialize();
     recent_view_ui.initialize({
         on_click_participant(avatar_element, participant_user_id) {

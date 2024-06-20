@@ -179,6 +179,7 @@ EXEMPT_FILES = make_set(
         "web/src/popperjs.d.ts",
         "web/src/read_receipts.ts",
         "web/src/ready.ts",
+        "web/src/realm_background.ts",
         "web/src/realm_icon.ts",
         "web/src/realm_logo.ts",
         "web/src/realm_playground.ts",

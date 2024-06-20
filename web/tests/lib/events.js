@@ -361,6 +361,16 @@ exports.fixtures = {
         value: 42,
     },
 
+    realm__update_dict__background: {
+        type: "realm",
+        op: "update_dict",
+        property: "background",
+        data: {
+            background_url: "background.png",
+            background_source: "U",
+        },
+    },
+
     realm__update_dict__default: {
         type: "realm",
         op: "update_dict",

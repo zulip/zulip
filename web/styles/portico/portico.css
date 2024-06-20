@@ -1270,9 +1270,28 @@ label.label-title {
     font-weight: 600;
 }
 
+img.background-image {
+    min-height: 100%;
+    min-width: 1024px;
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+@media screen and (width <= 1024px) {
+    img.background-image {
+        left: 50%;
+        margin-left: -512px;
+    }
+}
+
 .inline-block {
     display: inline-block;
     vertical-align: top;
+    position: relative;
 }
 
 .float-left {
