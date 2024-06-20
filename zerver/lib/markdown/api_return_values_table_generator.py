@@ -147,6 +147,39 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             + description
         )
 
+    def render_oneof_block(self, object_schema: Dict[str, Any], spacing: int) -> List[str]:
+        ans = []
+        block_spacing = spacing
+        for element in object_schema["oneOf"]:
+            spacing = block_spacing
+            if "description" not in element:
+                # If the description is not present, we still need to render the rest
+                # of the documentation of the element shifted towards left of the page.
+                spacing -= 4
+            else:
+                # Add the specialized description of the oneOf element.
+                data_type = generate_data_type(element)
+                ans.append(self.render_desc(element["description"], spacing, data_type))
+            # If the oneOf element is an object schema then render the documentation
+            # of its keys.
+            if "properties" in element:
+                ans += self.render_table(element["properties"], spacing + 4)
+            if element.get("additionalProperties", False):
+                additional_properties = element["additionalProperties"]
+                if "description" in additional_properties:
+                    data_type = generate_data_type(additional_properties)
+                    ans.append(
+                        self.render_desc(
+                            additional_properties["description"], spacing + 4, data_type
+                        )
+                    )
+                if "properties" in additional_properties:
+                    ans += self.render_table(
+                        additional_properties["properties"],
+                        spacing + 8,
+                    )
+        return ans
+
     def render_table(self, return_values: Dict[str, Any], spacing: int) -> List[str]:
         IGNORE = ["result", "msg", "ignored_parameters_unsupported"]
         ans = []
@@ -165,16 +198,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                         return_values[return_value]["description"], spacing, data_type, return_value
                     )
                 )
-                for element in return_values[return_value]["oneOf"]:
-                    if "description" not in element:
-                        continue
-                    # Add the specialized description of the oneOf element.
-                    data_type = generate_data_type(element)
-                    ans.append(self.render_desc(element["description"], spacing + 4, data_type))
-                    # If the oneOf element is an object schema then render the documentation
-                    # of its keys.
-                    if "properties" in element:
-                        ans += self.render_table(element["properties"], spacing + 8)
+                ans += self.render_oneof_block(return_values[return_value], spacing + 4)
                 continue
             description = return_values[return_value]["description"]
             data_type = generate_data_type(return_values[return_value])
@@ -198,6 +222,10 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                         return_values[return_value]["additionalProperties"]["properties"],
                         spacing + 8,
                     )
+                elif "oneOf" in return_values[return_value]["additionalProperties"]:
+                    ans += self.render_oneof_block(
+                        return_values[return_value]["additionalProperties"], spacing + 8
+                    )
                 elif return_values[return_value]["additionalProperties"].get(
                     "additionalProperties", False
                 ):
@@ -220,13 +248,15 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                         ],
                         spacing + 12,
                     )
-            if (
-                "items" in return_values[return_value]
-                and "properties" in return_values[return_value]["items"]
-            ):
-                ans += self.render_table(
-                    return_values[return_value]["items"]["properties"], spacing + 4
-                )
+            if "items" in return_values[return_value]:
+                if "properties" in return_values[return_value]["items"]:
+                    ans += self.render_table(
+                        return_values[return_value]["items"]["properties"], spacing + 4
+                    )
+                elif "oneOf" in return_values[return_value]["items"]:
+                    ans += self.render_oneof_block(
+                        return_values[return_value]["items"], spacing + 4
+                    )
         return ans
 
     def generate_event_strings(self, event_data: EventData) -> List[str]:
