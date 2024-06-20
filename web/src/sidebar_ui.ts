@@ -104,10 +104,12 @@ function fix_invite_user_button_flicker(): void {
 }
 
 export function initialize(): void {
-    $("body").on("click", ".login_button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.location.href = spectators.build_login_link();
+    $("body").on("click keydown", ".login_button", (e) => {
+        if (e.type === "click" || (e.type === "keydown" && e.key === "Enter")) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = spectators.build_login_link();
+        }
     });
 
     $("#userlist-toggle-button").on("click", (e) => {
