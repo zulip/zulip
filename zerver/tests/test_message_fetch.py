@@ -4527,7 +4527,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         for file_name, path_id, size in dummy_files:
             create_attachment(
-                file_name, path_id, user_profile, user_profile.realm, size, "text/plain"
+                file_name, path_id, "text/plain", size, user_profile, user_profile.realm
             )
 
         # return path ids
