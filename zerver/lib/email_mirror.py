@@ -325,7 +325,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, bytes):
-                s3_url = upload_message_attachment(
+                upload_url = upload_message_attachment(
                     filename,
                     len(attachment),
                     content_type,
@@ -333,7 +333,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
                     sender,
                     target_realm=realm,
                 )
-                formatted_link = f"[{filename}]({s3_url})"
+                formatted_link = f"[{filename}]({upload_url})"
                 attachment_links.append(formatted_link)
             else:
                 logger.warning(
