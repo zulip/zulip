@@ -43,10 +43,10 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 def create_attachment(
     file_name: str,
     path_id: str,
+    content_type: str,
+    file_size: int,
     user_profile: UserProfile,
     realm: Realm,
-    file_size: int,
-    content_type: str,
 ) -> None:
     assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
         user_profile.delivery_email
@@ -143,10 +143,10 @@ def upload_message_attachment(
     create_attachment(
         uploaded_file_name,
         path_id,
+        content_type,
+        len(file_data),
         user_profile,
         target_realm,
-        len(file_data),
-        content_type,
     )
     return f"/user_uploads/{path_id}"
 
