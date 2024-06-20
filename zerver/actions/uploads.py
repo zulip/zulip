@@ -3,8 +3,16 @@ from typing import Any
 
 from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.upload import claim_attachment, delete_message_attachments
-from zerver.models import Attachment, Message, ScheduledMessage, Stream, UserProfile
+from zerver.lib.thumbnail import StoredThumbnailFormat
+from zerver.lib.upload import claim_attachment, delete_message_attachments, get_image_thumbnail_path
+from zerver.models import (
+    Attachment,
+    ImageAttachment,
+    Message,
+    ScheduledMessage,
+    Stream,
+    UserProfile,
+)
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -77,6 +85,12 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     storage_paths = []
     for attachment in old_unclaimed_attachments:
         storage_paths.append(attachment.path_id)
+        image_row = ImageAttachment.objects.filter(path_id=attachment.path_id).first()
+        if image_row:
+            for existing_thumbnail in image_row.thumbnail_metadata:
+                thumb = StoredThumbnailFormat(**existing_thumbnail)
+                storage_paths.append(get_image_thumbnail_path(image_row, thumb))
+            image_row.delete()
         already_removed.add(attachment.path_id)
         attachment.delete()
         if len(storage_paths) >= DELETE_BATCH_SIZE:
@@ -85,6 +99,12 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     for archived_attachment in old_unclaimed_archived_attachments:
         if archived_attachment.path_id not in already_removed:
             storage_paths.append(archived_attachment.path_id)
+            image_row = ImageAttachment.objects.filter(path_id=archived_attachment.path_id).first()
+            if image_row:  # nocoverage
+                for existing_thumbnail in image_row.thumbnail_metadata:
+                    thumb = StoredThumbnailFormat(**existing_thumbnail)
+                    storage_paths.append(get_image_thumbnail_path(image_row, thumb))
+                image_row.delete()
         archived_attachment.delete()
         if len(storage_paths) >= DELETE_BATCH_SIZE:
             delete_message_attachments(storage_paths)

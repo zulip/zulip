@@ -557,7 +557,11 @@ def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     @override_settings(LOCAL_AVATARS_DIR=None)
     @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
-        with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
+        backend = S3UploadBackend()
+        with (
+            mock.patch("zerver.lib.upload.upload_backend", backend),
+            mock.patch("zerver.worker.thumbnail.upload_backend", backend),
+        ):
             return method(*args, **kwargs)
 
     return new_method

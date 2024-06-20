@@ -40,7 +40,7 @@ class ZulipUploadBackend:
         path_id: str,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
+        user_profile: UserProfile | None,
     ) -> None:
         raise NotImplementedError
 
@@ -54,7 +54,9 @@ class ZulipUploadBackend:
         for path_id in path_ids:
             self.delete_message_attachment(path_id)
 
-    def all_message_attachments(self) -> Iterator[tuple[str, datetime]]:
+    def all_message_attachments(
+        self, include_thumbnails: bool = False
+    ) -> Iterator[tuple[str, datetime]]:
         raise NotImplementedError
 
     # Avatar image uploads

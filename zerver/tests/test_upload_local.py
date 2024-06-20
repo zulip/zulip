@@ -114,6 +114,15 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         found_files = [r[0] for r in all_message_attachments()]
         self.assertEqual(sorted(found_files), ["bar/baz", "bar/troz", "foo", "test/other/file"])
 
+        write_local_file("files", "thumbnail/thing", b"content")
+        found_files = [r[0] for r in all_message_attachments()]
+        self.assertEqual(sorted(found_files), ["bar/baz", "bar/troz", "foo", "test/other/file"])
+        found_files = [r[0] for r in all_message_attachments(include_thumbnails=True)]
+        self.assertEqual(
+            sorted(found_files),
+            ["bar/baz", "bar/troz", "foo", "test/other/file", "thumbnail/thing"],
+        )
+
     def test_avatar_url(self) -> None:
         self.login("hamlet")
         with get_test_image_file("img.png") as image_file:
