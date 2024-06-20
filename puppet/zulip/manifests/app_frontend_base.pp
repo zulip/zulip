@@ -141,6 +141,7 @@ class zulip::app_frontend_base {
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
+    'thumbnail',
     'user_activity',
     'user_activity_interval',
     'user_presence',

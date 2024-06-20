@@ -91,7 +91,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         path_id: str,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
+        user_profile: UserProfile | None,
     ) -> None:
         write_local_file("files", path_id, file_data)
 
@@ -104,9 +104,14 @@ class LocalUploadBackend(ZulipUploadBackend):
         return delete_local_file("files", path_id)
 
     @override
-    def all_message_attachments(self) -> Iterator[tuple[str, datetime]]:
+    def all_message_attachments(
+        self, include_thumbnails: bool = False
+    ) -> Iterator[tuple[str, datetime]]:
         assert settings.LOCAL_UPLOADS_DIR is not None
-        for dirname, _, files in os.walk(settings.LOCAL_UPLOADS_DIR + "/files"):
+        top = settings.LOCAL_UPLOADS_DIR + "/files"
+        for dirname, subdirnames, files in os.walk(top):
+            if not include_thumbnails and dirname == top and "thumbnail" in subdirnames:
+                subdirnames.remove("thumbnail")
             for f in files:
                 fullpath = os.path.join(dirname, f)
                 yield (

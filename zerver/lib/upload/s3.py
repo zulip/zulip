@@ -64,7 +64,7 @@ def upload_image_to_s3(
     bucket: Bucket,
     file_name: str,
     content_type: str | None,
-    user_profile: UserProfile,
+    user_profile: UserProfile | None,
     contents: bytes,
     *,
     storage_class: Literal[
@@ -79,10 +79,10 @@ def upload_image_to_s3(
     extra_metadata: dict[str, str] | None = None,
 ) -> None:
     key = bucket.Object(file_name)
-    metadata = {
-        "user_profile_id": str(user_profile.id),
-        "realm_id": str(user_profile.realm_id),
-    }
+    metadata: dict[str, str] = {}
+    if user_profile:
+        metadata["user_profile_id"] = str(user_profile.id)
+        metadata["realm_id"] = str(user_profile.realm_id)
     if extra_metadata is not None:
         metadata.update(extra_metadata)
 
@@ -213,7 +213,7 @@ class S3UploadBackend(ZulipUploadBackend):
         path_id: str,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
+        user_profile: UserProfile | None,
     ) -> None:
         upload_image_to_s3(
             self.uploads_bucket,
@@ -240,7 +240,9 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def all_message_attachments(self) -> Iterator[tuple[str, datetime]]:
+    def all_message_attachments(
+        self, include_thumbnails: bool = False
+    ) -> Iterator[tuple[str, datetime]]:
         client = self.uploads_bucket.meta.client
         paginator = client.get_paginator("list_objects_v2")
         page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name)
@@ -248,6 +250,8 @@ class S3UploadBackend(ZulipUploadBackend):
         for page in page_iterator:
             if page["KeyCount"] > 0:
                 for item in page["Contents"]:
+                    if not include_thumbnails and item["Key"].startswith("thumbnail/"):
+                        continue
                     yield (
                         item["Key"],
                         item["LastModified"],

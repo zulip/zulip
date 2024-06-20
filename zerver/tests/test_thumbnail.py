@@ -1,13 +1,30 @@
+import re
+from dataclasses import asdict
 from io import StringIO
 from unittest.mock import patch
 
 import orjson
 import pyvips
+from django.conf import settings
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import ratelimit_rule, read_test_image_file
-from zerver.lib.thumbnail import BadImageError, resize_emoji
+from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule, read_test_image_file
+from zerver.lib.thumbnail import (
+    BadImageError,
+    BaseThumbnailFormat,
+    StoredThumbnailFormat,
+    ThumbnailFormat,
+    missing_thumbnails,
+    resize_emoji,
+)
+from zerver.lib.upload import (
+    all_message_attachments,
+    get_image_thumbnail_path,
+    split_thumbnail_path,
+)
+from zerver.models import Attachment, ImageAttachment
+from zerver.worker.thumbnail import ensure_thumbnails
 
 
 class ThumbnailRedirectEndpointTest(ZulipTestCase):
@@ -180,3 +197,275 @@ class ThumbnailEmojiTest(ZulipTestCase):
         non_img_data = read_test_image_file("text.txt")
         with self.assertRaises(BadImageError):
             resize_emoji(non_img_data, "text.png", size=50)
+
+
+class ThumbnailClassesTest(ZulipTestCase):
+    def test_class_equivalence(self) -> None:
+        self.assertNotEqual(
+            ThumbnailFormat("webp", 150, 100, animated=True, opts="Q=90"),
+            "150x100-anim.webp",
+        )
+
+        self.assertEqual(
+            ThumbnailFormat("webp", 150, 100, animated=True, opts="Q=90"),
+            ThumbnailFormat("webp", 150, 100, animated=True, opts="Q=10"),
+        )
+
+        self.assertEqual(
+            ThumbnailFormat("webp", 150, 100, animated=True, opts="Q=90"),
+            BaseThumbnailFormat("webp", 150, 100, animated=True),
+        )
+
+        self.assertNotEqual(
+            ThumbnailFormat("jpeg", 150, 100, animated=True, opts="Q=90"),
+            ThumbnailFormat("webp", 150, 100, animated=True, opts="Q=90"),
+        )
+
+        self.assertNotEqual(
+            ThumbnailFormat("webp", 300, 100, animated=True, opts="Q=90"),
+            ThumbnailFormat("webp", 150, 100, animated=True, opts="Q=90"),
+        )
+
+        self.assertNotEqual(
+            ThumbnailFormat("webp", 150, 100, animated=False, opts="Q=90"),
+            ThumbnailFormat("webp", 150, 100, animated=True, opts="Q=90"),
+        )
+
+        # We can compare stored thumbnails, with much more metadata,
+        # to the thumbnail formats that spec how they are generated
+        self.assertEqual(
+            ThumbnailFormat("webp", 150, 100, animated=False, opts="Q=90"),
+            StoredThumbnailFormat(
+                "webp",
+                150,
+                100,
+                animated=False,
+                content_type="image/webp",
+                width=120,
+                height=100,
+                byte_size=123,
+            ),
+        )
+
+        # But differences in the base four properties mean they are not equal
+        self.assertNotEqual(
+            ThumbnailFormat("webp", 150, 100, animated=False, opts="Q=90"),
+            StoredThumbnailFormat(
+                "webp",
+                150,
+                100,
+                animated=True,  # Note this change
+                content_type="image/webp",
+                width=120,
+                height=100,
+                byte_size=123,
+            ),
+        )
+
+    def test_stringification(self) -> None:
+        # These formats need to be stable, since they are written into URLs in the messages.
+        self.assertEqual(
+            str(ThumbnailFormat("webp", 150, 100, animated=False)),
+            "150x100.webp",
+        )
+
+        self.assertEqual(
+            str(ThumbnailFormat("webp", 150, 100, animated=True)),
+            "150x100-anim.webp",
+        )
+
+        # And they should round-trip into BaseThumbnailFormat, losing the opts= which we do not serialize
+        thumb_format = ThumbnailFormat("webp", 150, 100, animated=True, opts="Q=90")
+        self.assertEqual(thumb_format.extension, "webp")
+        self.assertEqual(thumb_format.max_width, 150)
+        self.assertEqual(thumb_format.max_height, 100)
+        self.assertEqual(thumb_format.animated, True)
+
+        round_trip = BaseThumbnailFormat.from_string(str(thumb_format))
+        assert round_trip is not None
+        self.assertEqual(thumb_format, round_trip)
+        self.assertEqual(round_trip.extension, "webp")
+        self.assertEqual(round_trip.max_width, 150)
+        self.assertEqual(round_trip.max_height, 100)
+        self.assertEqual(round_trip.animated, True)
+
+        self.assertIsNone(BaseThumbnailFormat.from_string("bad.webp"))
+
+
+class TestStoreThumbnail(ZulipTestCase):
+    @patch(
+        "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS",
+        [ThumbnailFormat("webp", 100, 75, animated=True)],
+    )
+    def test_upload_image(self) -> None:
+        assert settings.LOCAL_FILES_DIR
+        self.login_user(self.example_user("hamlet"))
+
+        with self.captureOnCommitCallbacks(execute=True):
+            with get_test_image_file("animated_unequal_img.gif") as image_file:
+                response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
+
+            image_attachment = ImageAttachment.objects.get(path_id=path_id)
+            self.assertEqual(image_attachment.original_height_px, 56)
+            self.assertEqual(image_attachment.original_width_px, 128)
+            self.assertEqual(image_attachment.frames, 3)
+            self.assertEqual(image_attachment.thumbnail_metadata, [])
+
+            self.assertEqual(
+                [r[0] for r in all_message_attachments(include_thumbnails=True)],
+                [path_id],
+            )
+
+            # The worker triggers when we exit this block and call the pending callbacks
+        image_attachment = ImageAttachment.objects.get(path_id=path_id)
+        self.assert_length(image_attachment.thumbnail_metadata, 1)
+        generated_thumbnail = StoredThumbnailFormat(**image_attachment.thumbnail_metadata[0])
+
+        self.assertEqual(str(generated_thumbnail), "100x75-anim.webp")
+        self.assertEqual(generated_thumbnail.animated, True)
+        self.assertEqual(generated_thumbnail.width, 100)
+        self.assertEqual(generated_thumbnail.height, 44)
+        self.assertEqual(generated_thumbnail.content_type, "image/webp")
+        self.assertGreater(generated_thumbnail.byte_size, 200)
+        self.assertLess(generated_thumbnail.byte_size, 2 * 1024)
+
+        self.assertEqual(
+            get_image_thumbnail_path(image_attachment, generated_thumbnail),
+            f"thumbnail/{path_id}/100x75-anim.webp",
+        )
+        parsed_path = split_thumbnail_path(f"thumbnail/{path_id}/100x75-anim.webp")
+        self.assertEqual(parsed_path[0], path_id)
+        self.assertIsInstance(parsed_path[1], BaseThumbnailFormat)
+        self.assertEqual(str(parsed_path[1]), str(generated_thumbnail))
+
+        self.assertEqual(
+            sorted([r[0] for r in all_message_attachments(include_thumbnails=True)]),
+            sorted([path_id, f"thumbnail/{path_id}/100x75-anim.webp"]),
+        )
+
+        self.assertEqual(ensure_thumbnails(image_attachment), 0)
+
+        bigger_thumb_format = ThumbnailFormat("webp", 150, 100, opts="Q=90", animated=False)
+        with patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [bigger_thumb_format]):
+            self.assertEqual(ensure_thumbnails(image_attachment), 1)
+        self.assert_length(image_attachment.thumbnail_metadata, 2)
+
+        bigger_thumbnail = StoredThumbnailFormat(**image_attachment.thumbnail_metadata[1])
+
+        self.assertEqual(str(bigger_thumbnail), "150x100.webp")
+        self.assertEqual(bigger_thumbnail.animated, False)
+        # We don't scale up, so these are the original dimensions
+        self.assertEqual(bigger_thumbnail.width, 128)
+        self.assertEqual(bigger_thumbnail.height, 56)
+        self.assertEqual(bigger_thumbnail.content_type, "image/webp")
+        self.assertGreater(bigger_thumbnail.byte_size, 200)
+        self.assertLess(bigger_thumbnail.byte_size, 2 * 1024)
+
+        self.assertEqual(
+            sorted([r[0] for r in all_message_attachments(include_thumbnails=True)]),
+            sorted(
+                [
+                    path_id,
+                    f"thumbnail/{path_id}/100x75-anim.webp",
+                    f"thumbnail/{path_id}/150x100.webp",
+                ]
+            ),
+        )
+
+    @patch(
+        "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS",
+        [ThumbnailFormat("webp", 100, 75, animated=False)],
+    )
+    def test_bad_upload(self) -> None:
+        assert settings.LOCAL_FILES_DIR
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            with get_test_image_file("truncated.gif") as image_file:
+                response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
+
+            # This doesn't generate an ImageAttachment row because it's corrupted
+            self.assertEqual(ImageAttachment.objects.filter(path_id=path_id).count(), 0)
+
+        # Fake making one, based on if just part of the file is readable
+        image_attachment = ImageAttachment.objects.create(
+            realm_id=hamlet.realm_id,
+            path_id=path_id,
+            original_height_px=128,
+            original_width_px=128,
+            frames=1,
+            thumbnail_metadata=[],
+        )
+        self.assert_length(missing_thumbnails(image_attachment), 1)
+        with self.assertLogs("zerver.worker.thumbnail", level="ERROR") as error_log:
+            self.assertEqual(ensure_thumbnails(image_attachment), 0)
+            libvips_version = (pyvips.version(0), pyvips.version(1))
+            # This error message changed
+            if libvips_version < (8, 13):  # nocoverage # branch varies with version
+                expected_message = "gifload_buffer: Insufficient data to do anything"
+            else:  # nocoverage # branch varies with version
+                expected_message = "gifload_buffer: no frames in GIF"
+            self.assertTrue(expected_message in error_log.output[0])
+
+        # It should have now been removed
+        self.assertEqual(ImageAttachment.objects.filter(path_id=path_id).count(), 0)
+
+    def test_missing_thumbnails(self) -> None:
+        image_attachment = ImageAttachment(
+            path_id="example",
+            original_width_px=150,
+            original_height_px=100,
+            frames=1,
+            thumbnail_metadata=[],
+        )
+        with patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", []):
+            self.assertEqual(missing_thumbnails(image_attachment), [])
+
+        still_webp = ThumbnailFormat("webp", 100, 75, animated=False, opts="Q=90")
+        with patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp]):
+            self.assertEqual(missing_thumbnails(image_attachment), [still_webp])
+
+        anim_webp = ThumbnailFormat("webp", 100, 75, animated=True, opts="Q=90")
+        with patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp]):
+            # It's not animated, so the animated format doesn't appear at all
+            self.assertEqual(missing_thumbnails(image_attachment), [still_webp])
+
+        still_jpeg = ThumbnailFormat("jpeg", 100, 75, animated=False, opts="Q=90")
+        with patch(
+            "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp, still_jpeg]
+        ):
+            # But other still formats do
+            self.assertEqual(missing_thumbnails(image_attachment), [still_webp, still_jpeg])
+
+        # If we have a rendered 150x100.webp, then we're not missing it
+        rendered_still_webp = StoredThumbnailFormat(
+            "webp",
+            100,
+            75,
+            animated=False,
+            width=150,
+            height=50,
+            content_type="image/webp",
+            byte_size=1234,
+        )
+        image_attachment.thumbnail_metadata = [asdict(rendered_still_webp)]
+        with patch(
+            "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp, still_jpeg]
+        ):
+            self.assertEqual(missing_thumbnails(image_attachment), [still_jpeg])
+
+        # If we have the still, and it's animated, we do still need the animated
+        image_attachment.frames = 10
+        with patch(
+            "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp, still_jpeg]
+        ):
+            self.assertEqual(missing_thumbnails(image_attachment), [anim_webp, still_jpeg])

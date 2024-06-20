@@ -136,6 +136,7 @@ ALL_ZULIP_TABLES = {
     "zerver_emailchangestatus",
     "zerver_groupgroupmembership",
     "zerver_huddle",
+    "zerver_imageattachment",
     "zerver_message",
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
