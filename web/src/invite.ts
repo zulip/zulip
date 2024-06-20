@@ -267,10 +267,8 @@ function valid_to(time_valid: number): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function set_expires_on_text(): void {
-    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-    if ($expires_in.val() === "custom") {
-        $("#expires_on").hide();
+function set_custom_expires_on_text(): void {
+    if (util.validate_custom_time_input(custom_expiration_time_input)) {
         $("#custom_expires_on").text(
             valid_to(
                 util.get_custom_time_in_minutes(
@@ -279,6 +277,16 @@ function set_expires_on_text(): void {
                 ),
             ),
         );
+    } else {
+        $("#custom_expires_on").text($t({defaultMessage: "Invalid custom time"}));
+    }
+}
+
+function set_expires_on_text(): void {
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
+    if ($expires_in.val() === "custom") {
+        $("#expires_on").hide();
+        set_custom_expires_on_text();
     } else {
         $("#expires_on").show();
         $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
@@ -406,12 +414,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                     .find(".selected")
                     .attr("data-tab-key");
             }
+            const valid_custom_time = util.validate_custom_time_input(custom_expiration_time_input);
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
-                selected_tab === "invite-email-tab" &&
+                (selected_tab === "invite-email-tab" &&
                     pills.items().length === 0 &&
-                    email_pill.get_current_email(pills) === null,
+                    email_pill.get_current_email(pills) === null) ||
+                    ($expires_in.val() === "custom" && !valid_custom_time),
             );
             if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
@@ -431,6 +441,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         $expires_in.on("change", () => {
             set_custom_time_inputs_visibility();
             set_expires_on_text();
+            toggle_invite_submit_button();
         });
 
         $("#custom-expiration-time-input").on("keydown", (e) => {
@@ -441,20 +452,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         });
 
         $(".custom-expiration-time").on("change", () => {
-            custom_expiration_time_input = Number.parseFloat(
+            custom_expiration_time_input = util.check_time_input(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
             custom_expiration_time_unit = $<HTMLSelectOneElement>(
                 "select:not([multiple])#custom-expiration-time-unit",
             ).val()!;
-            $("#custom_expires_on").text(
-                valid_to(
-                    util.get_custom_time_in_minutes(
-                        custom_expiration_time_unit,
-                        custom_expiration_time_input,
-                    ),
-                ),
-            );
+            set_custom_expires_on_text();
+            toggle_invite_submit_button();
         });
 
         $("#invite_check_all_button").on("click", () => {
