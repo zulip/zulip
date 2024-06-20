@@ -64,7 +64,7 @@ def upload_image_to_s3(
     bucket: Bucket,
     file_name: str,
     content_type: Optional[str],
-    user_profile: UserProfile,
+    user_profile: Optional[UserProfile],
     contents: bytes,
     *,
     storage_class: Literal[
@@ -79,10 +79,10 @@ def upload_image_to_s3(
     extra_metadata: Optional[Dict[str, str]] = None,
 ) -> None:
     key = bucket.Object(file_name)
-    metadata = {
-        "user_profile_id": str(user_profile.id),
-        "realm_id": str(user_profile.realm_id),
-    }
+    metadata: Dict[str, str] = {}
+    if user_profile:
+        metadata["user_profile_id"] = str(user_profile.id)
+        metadata["realm_id"] = str(user_profile.realm_id)
     if extra_metadata is not None:
         metadata.update(extra_metadata)
 
@@ -213,7 +213,7 @@ class S3UploadBackend(ZulipUploadBackend):
         path_id: str,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
+        user_profile: Optional[UserProfile],
     ) -> None:
         upload_image_to_s3(
             self.uploads_bucket,

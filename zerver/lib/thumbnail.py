@@ -1,15 +1,20 @@
 import logging
 import os
+import re
 from contextlib import contextmanager
-from typing import Iterator, Optional, Tuple
+from dataclasses import dataclass
+from typing import Iterator, Optional, Tuple, Type, TypeVar
 from urllib.parse import urljoin
 
 import pyvips
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
+from typing_extensions import override
 
 from zerver.lib.camo import get_camo_url
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.queue import queue_event_on_commit
+from zerver.models import AbstractAttachment, ImageAttachment
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -20,6 +25,83 @@ IMAGE_BOMB_TOTAL_PIXELS = 90000000
 
 # Reject emoji which, after resizing, have stills larger than this
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
+
+# These are the image content-types which the server supports parsing
+# and thumbnailing; these do not need to supported on all browsers,
+# since we will the serving thumbnailed versions of them.
+THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
+    [
+        "image/avif",
+        "image/gif",
+        "image/heic",
+        "image/jpeg",
+        "image/png",
+        "image/svg+xml",
+        "image/webp",
+    ]
+)
+
+T = TypeVar("T", bound="BaseThumbnailFormat")
+
+
+@dataclass(frozen=True, eq=True)
+class BaseThumbnailFormat:
+    extension: str
+    max_width: int
+    max_height: int
+    animated: bool
+
+    @override
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, BaseThumbnailFormat):
+            return False
+        return str(self) == str(other)
+
+    @override
+    def __str__(self) -> str:
+        animated = "-anim" if self.animated else ""
+        return f"{self.max_width}x{self.max_height}{animated}.{self.extension}"
+
+    @classmethod
+    def from_string(cls: Type[T], format_string: str) -> Optional[T]:
+        format_parts = re.match(r"(\d+)x(\d+)(-anim)?\.(\w+)$", format_string)
+        if format_parts is None:
+            return None
+
+        return cls(
+            max_width=int(format_parts[1]),
+            max_height=int(format_parts[2]),
+            animated=format_parts[3] is not None,
+            extension=format_parts[4],
+        )
+
+
+@dataclass(frozen=True, eq=True)
+class ThumbnailFormat(BaseThumbnailFormat):
+    opts: Optional[str] = ""
+
+
+# Note that this is serialized into a JSONB column in the database,
+# and as such fields cannot be removed without a migration.
+@dataclass(frozen=True, eq=True)
+class StoredThumbnailFormat(BaseThumbnailFormat):
+    content_type: str
+    width: int
+    height: int
+    byte_size: int
+
+
+# Formats that we generate; the first animated and non-animated
+# options on this list are the ones which are written into
+# rendered_content.
+THUMBNAIL_OUTPUT_FORMATS = [
+    ThumbnailFormat("webp", 150, 100, animated=True),
+    ThumbnailFormat("webp", 150, 100, animated=False),
+    ThumbnailFormat("avif", 150, 100, animated=False),
+    ThumbnailFormat("jpg", 150, 100, animated=False),
+    ThumbnailFormat("avif", 600, 400, animated=False),
+    ThumbnailFormat("webp", 600, 400, animated=False),
+]
 
 
 class BadImageError(JsonableError):
@@ -149,3 +231,25 @@ def resize_emoji(
             ]
             animated = frames[0].pagejoin(frames[1:])
         return (animated.write_to_buffer(write_file_ext), first_still)
+
+
+def maybe_thumbnail(attachment: AbstractAttachment, content: bytes) -> Optional[ImageAttachment]:
+    if attachment.content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        # If it doesn't self-report as an image file that we might want
+        # to thumbnail, don't parse the bytes at all.
+        return None
+    try:
+        # This only attempts to read the header, not the full image content
+        with libvips_check_image(content) as image:
+            image_row = ImageAttachment.objects.create(
+                realm_id=attachment.realm_id,
+                path_id=attachment.path_id,
+                original_width_px=image.width,
+                original_height_px=image.height,
+                frames=image.get_n_pages(),
+                thumbnail_metadata=[],
+            )
+            queue_event_on_commit("thumbnail", {"id": image_row.id})
+            return image_row
+    except BadImageError:
+        return None

@@ -39,7 +39,7 @@ class ZulipUploadBackend:
         path_id: str,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
+        user_profile: Optional[UserProfile],
     ) -> None:
         raise NotImplementedError
 

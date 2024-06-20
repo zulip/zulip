@@ -82,7 +82,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         path_id: str,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
+        user_profile: Optional[UserProfile],
     ) -> None:
         write_local_file("files", path_id, file_data)
 
