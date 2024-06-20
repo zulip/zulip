@@ -4517,17 +4517,16 @@ class MessageHasKeywordsTest(ZulipTestCase):
     """Test for keywords like has_link, has_image, has_attachment."""
 
     def setup_dummy_attachments(self, user_profile: UserProfile) -> List[str]:
-        sample_size = 10
         realm_id = user_profile.realm_id
         dummy_files = [
-            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt", sample_size),
-            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py", sample_size),
-            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py", sample_size),
+            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt"),
+            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py"),
+            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"),
         ]
 
-        for file_name, path_id, size in dummy_files:
+        for file_name, path_id in dummy_files:
             create_attachment(
-                file_name, path_id, "text/plain", size, user_profile, user_profile.realm
+                file_name, path_id, "text/plain", b"1234567890", user_profile, user_profile.realm
             )
 
         # return path ids
