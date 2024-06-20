@@ -41,7 +41,12 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 
 
 def create_attachment(
-    file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
+    file_name: str,
+    path_id: str,
+    user_profile: UserProfile,
+    realm: Realm,
+    file_size: int,
+    content_type: str,
 ) -> None:
     assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
         user_profile.delivery_email
@@ -52,6 +57,7 @@ def create_attachment(
         owner=user_profile,
         realm=realm,
         size=file_size,
+        content_type=content_type,
     )
     from zerver.actions.uploads import notify_attachment_update
 
@@ -143,6 +149,7 @@ def upload_message_attachment(
         user_profile,
         target_realm,
         uploaded_file_size,
+        content_type,
     )
     return f"/user_uploads/{path_id}"
 

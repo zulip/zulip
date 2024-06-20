@@ -204,7 +204,12 @@ class AnalyticsTestCase(ZulipTestCase):
         return Message.objects.create(**kwargs)
 
     def create_attachment(
-        self, user_profile: UserProfile, filename: str, size: int, create_time: datetime
+        self,
+        user_profile: UserProfile,
+        filename: str,
+        size: int,
+        create_time: datetime,
+        content_type: str,
     ) -> Attachment:
         return Attachment.objects.create(
             file_name=filename,
@@ -213,6 +218,7 @@ class AnalyticsTestCase(ZulipTestCase):
             realm=user_profile.realm,
             size=size,
             create_time=create_time,
+            content_type=content_type,
         )
 
     # kwargs should only ever be a UserProfile or Stream.
@@ -551,9 +557,9 @@ class TestCountStats(AnalyticsTestCase):
         user2 = self.create_user()
         user_second_realm = self.create_user(realm=self.second_realm)
 
-        self.create_attachment(user1, "file1", 100, self.TIME_LAST_HOUR)
-        attachment2 = self.create_attachment(user2, "file2", 200, self.TIME_LAST_HOUR)
-        self.create_attachment(user_second_realm, "file3", 10, self.TIME_LAST_HOUR)
+        self.create_attachment(user1, "file1", 100, self.TIME_LAST_HOUR, "text/plain")
+        attachment2 = self.create_attachment(user2, "file2", 200, self.TIME_LAST_HOUR, "text/plain")
+        self.create_attachment(user_second_realm, "file3", 10, self.TIME_LAST_HOUR, "text/plain")
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
