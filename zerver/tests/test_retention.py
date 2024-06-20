@@ -191,7 +191,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
         for file_name, path_id, size in dummy_files:
             create_attachment(
-                file_name, path_id, user_profile, user_profile.realm, size, "text/plain"
+                file_name, path_id, "text/plain", size, user_profile, user_profile.realm
             )
 
         self.subscribe(user_profile, "Denmark")
@@ -606,7 +606,7 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
         user_profile = self.example_user("hamlet")
         for file_name, path_id, size in dummy_files:
             create_attachment(
-                file_name, path_id, user_profile, user_profile.realm, size, "text/plain"
+                file_name, path_id, "text/plain", size, user_profile, user_profile.realm
             )
 
     def _assert_archive_empty(self) -> None:
