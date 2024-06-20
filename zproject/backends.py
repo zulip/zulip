@@ -127,7 +127,7 @@ from zerver.models.users import (
 from zproject.settings_types import OIDCIdPConfigDict
 
 redis_client = get_redis_client()
-
+from zerver.models import Realm
 
 class RestApiAuthBackend(BaseBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
@@ -165,7 +165,8 @@ class RestApiAuthBackend(BaseBackend):
             return None
 
         # Get the realm
-        realm = get_realm('zulip')  # Use your Zulip realm name here
+        # realm = get_realm('zulip')  # Use your Zulip realm name here
+        realm = Realm.objects.get(id=2)
 
         try:
             print(email)
