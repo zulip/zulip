@@ -241,12 +241,12 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     type: "prefix_for_operator",
                 },
             ];
-            expected_pill_display_value = "ver";
+            expected_pill_display_value = null;
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
-            assert.equal(opts.updater("ver"), "");
-            assert.ok(input_pill_displayed);
+            assert.equal(opts.updater("ver"), "ver");
+            assert.ok(!input_pill_displayed);
 
             terms = [
                 {

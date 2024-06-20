@@ -63,6 +63,7 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         create_item_from_text: create_item_from_search_string,
         get_text_from_item: get_search_string_from_item,
         split_text_on_comma: false,
+        convert_to_pill_on_enter: false,
     });
     // We don't automatically create pills on paste. When the user
     // presses enter, we validate the input then.
@@ -108,6 +109,7 @@ export function set_search_bar_contents(
     pill_widget.clear();
     let partial_pill = "";
     const invalid_inputs = [];
+    const search_operator_strings = [];
 
     for (const term of search_terms) {
         const input = Filter.unparse([term]);
@@ -136,14 +138,15 @@ export function set_search_bar_contents(
                 return user;
             });
             append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
-            continue;
+        } else if (term.operator === "search") {
+            search_operator_strings.push(input);
+        } else {
+            pill_widget.appendValue(input);
         }
-
-        pill_widget.appendValue(input);
     }
     pill_widget.clear_text();
 
-    const search_bar_text_strings = [...invalid_inputs];
+    const search_bar_text_strings = [...search_operator_strings, ...invalid_inputs];
     if (partial_pill !== "") {
         search_bar_text_strings.push(partial_pill);
     }

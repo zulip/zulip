@@ -47,12 +47,22 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     }
 
     assert(search_pill_widget !== null);
-    const search_query = search_pill.get_current_search_string_for_widget(search_pill_widget);
+    const search_query = [
+        search_pill.get_current_search_string_for_widget(search_pill_widget),
+        get_search_bar_text(),
+    ]
+        .join(" ")
+        .trim();
     if (search_query === "") {
         exit_search({keep_search_narrow_open: true});
         return "";
     }
     const terms = Filter.parse(search_query);
+    // Reset the search bar to display as many pills as possible for `terms`.
+    // We do this in case some of these terms haven't been pillified yet
+    // because convert_to_pill_on_enter is false.
+    search_pill_widget.clear();
+    search_pill.set_search_bar_contents(terms, search_pill_widget, set_search_bar_text);
     on_narrow_search(terms, {trigger: "search"});
 
     // It's sort of annoying that this is not in a position to
@@ -130,6 +140,11 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
         shouldHighlightFirstResult(): boolean {
             return get_search_bar_text() !== "";
         },
+        hideAfterSelect(): boolean {
+            const search_bar_text = get_search_bar_text();
+            const text_terms = Filter.parse(search_bar_text);
+            return text_terms.at(-1)?.operator === "search";
+        },
         matcher(): boolean {
             return true;
         },
@@ -155,9 +170,9 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
             return items;
         },
         // Turns off `stopPropagation` in the typeahead code for
-        // backspace, arrow left, arrow right, so that we can
-        // manage those events for input pills.
-        advanceKeyCodes: [8, 37, 39],
+        // backspace, arrow left, arrow right, and enter so that
+        // we can manage those events for search pills.
+        advanceKeyCodes: [8, 13, 37, 39],
 
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
@@ -192,6 +207,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
         is_using_input_method = true;
     });
 
+    let typeahead_was_open_on_enter = false;
     $searchbox_form
         .on("keydown", (e: JQuery.KeyDownEvent): void => {
             if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
@@ -199,6 +215,14 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
                 // handle our Enter keypress. Any searching that needs
                 // to be done will be handled in the keyup.
                 e.preventDefault();
+            }
+
+            // Record this on keydown before the typeahead code closes the
+            // typeahead, so we can use this information on keyup.
+            if (keydown_util.is_enter_event(e) && $("#searchbox_form .typeahead").is(":visible")) {
+                typeahead_was_open_on_enter = true;
+            } else {
+                typeahead_was_open_on_enter = false;
             }
         })
         .on("keyup", (e: JQuery.KeyUpEvent): void => {
@@ -211,11 +235,22 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
                 exit_search({keep_search_narrow_open: false});
             } else if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
                 const text_terms = Filter.parse(get_search_bar_text());
-                if (text_terms.every((term) => Filter.is_valid_search_term(term))) {
-                    narrow_or_search_for_term({on_narrow_search});
-                } else {
-                    $("#search_query").addClass("shake");
+                // If the typeahead was open, the action was this Enter was to select
+                // an item from the typeahead and create a pill, so we don't search.
+                // The user can press Enter again to trigger the search. The one
+                // exception to this is if the user added a search term, which stays
+                // as text and is not turned into a pill, so to still have Enter complete
+                // an action, we initiate a search.
+                if (typeahead_was_open_on_enter && text_terms.at(-1)?.operator !== "search") {
+                    return;
                 }
+                // The shake animation will show if there is any invalid term in the,
+                // search bar, even if it's not what the user just typed or selected.
+                if (!text_terms.every((term) => Filter.is_valid_search_term(term))) {
+                    $("#search_query").addClass("shake");
+                    return;
+                }
+                narrow_or_search_for_term({on_narrow_search});
             }
         });
 
