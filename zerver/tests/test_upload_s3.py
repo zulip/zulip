@@ -46,9 +46,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
@@ -67,9 +65,7 @@ class S3Test(ZulipTestCase):
     def test_save_attachment_contents(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
@@ -90,7 +86,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(user_profile.realm, internal_realm)
 
         url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
+            "dummy.txt", "text/plain", b"zulip!", user_profile, zulip_realm
         )
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
@@ -100,9 +96,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         path_id = re.sub(r"/user_uploads/", "", url)
         self.assertIsNotNone(bucket.Object(path_id).get())
@@ -117,9 +111,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 5):
-            url = upload_message_attachment(
-                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-            )
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
             path_id = re.sub(r"/user_uploads/", "", url)
             self.assertIsNotNone(bucket.Object(path_id).get())
             path_ids.append(path_id)
@@ -152,9 +144,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 5):
-            url = upload_message_attachment(
-                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-            )
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
             path_ids.append(re.sub(r"/user_uploads/", "", url))
         found_paths = [r[0] for r in all_message_attachments()]
         self.assertEqual(sorted(found_paths), sorted(path_ids))
