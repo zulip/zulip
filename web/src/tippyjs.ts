@@ -622,7 +622,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#userlist-toggle",
+        target: "#userlist-toggle-button",
         delay: LONG_HOVER_DELAY,
         placement: "bottom",
         appendTo: () => document.body,
