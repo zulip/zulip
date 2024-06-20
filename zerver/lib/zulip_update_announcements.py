@@ -94,6 +94,31 @@ to be updated. [Learn more]({introduction_to_channels_help_url}).
             introduction_to_channels_help_url="/help/introduction-to-channels",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=5,
+        message="""
+**Web and desktop updates**
+- Use the new **Reactions** view to see how others have reacted to your
+messages. [Learn more]({view_your_messages_with_reactions_help_url}).
+- For a more focused reading experience, you can now hide the
+[left]({left_sidebar_help_url}) and [right]({user_list_help_url})
+sidebars any time using the buttons in the top navigation bar. When the left
+sidebar is hidden, use [keyboard
+navigation]({keyboard_shortcuts_navigation_help_url}) to jump to the next unread
+topic or go back to your [home view]({configure_home_view_help_url}).
+- You can now search for messages in topics you
+  [follow]({follow_a_topic_help_url}) using the `is:followed` filter. [Learn
+  more]({search_by_message_status_help_url}).
+""".format(
+            view_your_messages_with_reactions_help_url="/help/emoji-reactions#view-your-messages-with-reactions",
+            left_sidebar_help_url="/help/left-sidebar",
+            user_list_help_url="/help/user-list",
+            keyboard_shortcuts_navigation_help_url="/help/keyboard-shortcuts#navigation",
+            configure_home_view_help_url="/help/configure-home-view",
+            follow_a_topic_help_url="/help/follow-a-topic",
+            search_by_message_status_help_url="/help/search-for-messages#search-by-message-status",
+        ),
+    ),
 ]
 
 
