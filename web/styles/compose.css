@@ -267,7 +267,6 @@
             "message-content-container message-send-controls-container"
             "message-formatting-controls-container message-send-controls-container";
         gap: 0 6px;
-        margin-top: 5px;
     }
 
     .message_content {
