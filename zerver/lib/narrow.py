@@ -109,7 +109,7 @@ class NarrowParameter(BaseModel):
     @model_validator(mode="after")
     def validate_terms(self) -> "NarrowParameter":
         # Make sure to sync this list to frontend also when adding a new operator that
-        # supports integer IDs. Relevant code is located in web/src/message_fetch.js
+        # supports integer IDs. Relevant code is located in web/src/message_fetch.ts
         # in handle_operators_supporting_id_based_api function where you will need to
         # update operators_supporting_id, or operators_supporting_ids array.
         operators_supporting_id = [
