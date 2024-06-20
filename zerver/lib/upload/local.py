@@ -12,7 +12,7 @@ from typing_extensions import override
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.upload.base import ZulipUploadBackend, create_attachment, sanitize_name
+from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmEmoji, UserProfile
 
@@ -65,35 +65,28 @@ class LocalUploadBackend(ZulipUploadBackend):
         return "/user_avatars/"
 
     @override
-    def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
+    def generate_message_upload_path(self, realm_id: str, sanitized_file_name: str) -> str:
         # Split into 256 subdirectories to prevent directories from getting too big
         return "/".join(
             [
                 realm_id,
                 format(random.randint(0, 255), "x"),
                 secrets.token_urlsafe(18),
-                sanitize_name(uploaded_file_name),
+                sanitized_file_name,
             ]
         )
 
     @override
     def upload_message_attachment(
         self,
-        uploaded_file_name: str,
+        path_id: str,
         uploaded_file_size: int,
         content_type: Optional[str],
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
-    ) -> str:
-        if target_realm is None:
-            target_realm = user_profile.realm
-
-        path = self.generate_message_upload_path(str(target_realm.id), uploaded_file_name)
-
-        write_local_file("files", path, file_data)
-        create_attachment(uploaded_file_name, path, user_profile, target_realm, uploaded_file_size)
-        return "/user_uploads/" + path
+        target_realm: Realm,
+    ) -> None:
+        write_local_file("files", path_id, file_data)
 
     @override
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:

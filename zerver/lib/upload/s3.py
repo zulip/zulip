@@ -14,12 +14,7 @@ from typing_extensions import override
 
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import resize_avatar, resize_logo
-from zerver.lib.upload.base import (
-    INLINE_MIME_TYPES,
-    ZulipUploadBackend,
-    create_attachment,
-    sanitize_name,
-)
+from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
 
 # Duration that the signed upload URLs that we redirect to when
@@ -196,43 +191,33 @@ class S3UploadBackend(ZulipUploadBackend):
         return urljoin(self.public_upload_url_base, key)
 
     @override
-    def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
+    def generate_message_upload_path(self, realm_id: str, sanitized_file_name: str) -> str:
         return "/".join(
             [
                 realm_id,
                 secrets.token_urlsafe(18),
-                sanitize_name(uploaded_file_name),
+                sanitized_file_name,
             ]
         )
 
     @override
     def upload_message_attachment(
         self,
-        uploaded_file_name: str,
+        path_id: str,
         uploaded_file_size: int,
         content_type: Optional[str],
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
-    ) -> str:
-        if target_realm is None:
-            target_realm = user_profile.realm
-        s3_file_name = self.generate_message_upload_path(str(target_realm.id), uploaded_file_name)
-        url = f"/user_uploads/{s3_file_name}"
-
+        target_realm: Realm,
+    ) -> None:
         upload_image_to_s3(
             self.uploads_bucket,
-            s3_file_name,
+            path_id,
             content_type,
             user_profile,
             file_data,
             settings.S3_UPLOADS_STORAGE_CLASS,
         )
-
-        create_attachment(
-            uploaded_file_name, s3_file_name, user_profile, target_realm, uploaded_file_size
-        )
-        return url
 
     @override
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:

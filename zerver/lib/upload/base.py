@@ -59,13 +59,13 @@ class ZulipUploadBackend:
 
     def upload_message_attachment(
         self,
-        uploaded_file_name: str,
+        path_id: str,
         uploaded_file_size: int,
         content_type: Optional[str],
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
-    ) -> str:
+        target_realm: Realm,
+    ) -> None:
         raise NotImplementedError
 
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:

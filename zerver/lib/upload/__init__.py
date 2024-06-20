@@ -20,7 +20,7 @@ from zerver.lib.thumbnail import (
     resize_avatar,
     resize_emoji,
 )
-from zerver.lib.upload.base import ZulipUploadBackend
+from zerver.lib.upload.base import ZulipUploadBackend, create_attachment, sanitize_name
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 
 
@@ -83,14 +83,27 @@ def upload_message_attachment(
     user_profile: UserProfile,
     target_realm: Optional[Realm] = None,
 ) -> str:
-    return upload_backend.upload_message_attachment(
-        uploaded_file_name,
+    if target_realm is None:
+        target_realm = user_profile.realm
+    path_id = upload_backend.generate_message_upload_path(
+        str(target_realm.id), sanitize_name(uploaded_file_name)
+    )
+    upload_backend.upload_message_attachment(
+        path_id,
         uploaded_file_size,
         content_type,
         file_data,
         user_profile,
-        target_realm=target_realm,
+        target_realm,
     )
+    create_attachment(
+        uploaded_file_name,
+        path_id,
+        user_profile,
+        target_realm,
+        uploaded_file_size,
+    )
+    return f"/user_uploads/{path_id}"
 
 
 def claim_attachment(
