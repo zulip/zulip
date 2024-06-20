@@ -462,7 +462,8 @@ body.has-overlay-scrollbar {
                 --color-navbar-spectator-medium-attention-brand-button-background
             );
 
-            &:hover {
+            &:hover,
+            &:focus {
                 color: var(
                     --color-navbar-spectator-medium-attention-brand-button-text
                 );
