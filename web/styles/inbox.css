@@ -363,6 +363,7 @@
 
                 & a {
                     padding: 1px 0;
+                    white-space: pre;
                 }
             }
 

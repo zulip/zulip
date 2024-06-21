@@ -24,9 +24,9 @@
               href="{{topic_url}}"
               data-tippy-content="{{t 'Go to #{display_recipient} > {topic}' }}">
                 {{#if use_match_properties}}
-                    {{{match_topic}}}
+                    <span class="stream-topic-inner">{{{match_topic}}}</span>
                 {{else}}
-                    {{topic}}
+                    <span class="stream-topic-inner">{{topic}}</span>
                 {{/if}}
             </a>
         </span>
