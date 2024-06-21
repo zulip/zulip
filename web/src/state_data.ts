@@ -169,6 +169,11 @@ export const unread_direct_message_group_info_schema = z.object({
     unread_message_ids: z.array(z.number()),
 });
 
+export const presence_schema = z.object({
+    active_timestamp: z.number().optional(),
+    idle_timestamp: z.number().optional(),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -396,9 +401,9 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                presences: NOT_TYPED_YET,
-                server_timestamp: NOT_TYPED_YET,
-                presence_last_update_id: NOT_TYPED_YET,
+                presences: z.record(z.coerce.number(), presence_schema),
+                server_timestamp: z.number(),
+                presence_last_update_id: z.number().optional(),
             })
             .transform((presence) => ({presence})),
     )
