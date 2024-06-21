@@ -1,4 +1,4 @@
-import {z} from "zod";
+import type {z} from "zod";
 
 import render_topic_muted from "../templates/topic_muted.hbs";
 
@@ -10,6 +10,7 @@ import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as settings_ui from "./settings_ui";
+import type {StateData, user_topic_schema} from "./state_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -25,13 +26,6 @@ export type UserTopic = {
     date_updated_str: string;
     visibility_policy: number;
 };
-
-const user_topic_schema = z.object({
-    stream_id: z.number(),
-    topic_name: z.string(),
-    last_updated: z.number(),
-    visibility_policy: z.number(),
-});
 
 const all_user_topics = new Map<
     number,
@@ -233,8 +227,6 @@ export function set_user_topics(user_topics: ServerUserTopic[]): void {
     }
 }
 
-export function initialize(params: {user_topics: ServerUserTopic[]}): void {
-    const user_topics = user_topic_schema.array().parse(params.user_topics);
-
-    set_user_topics(user_topics);
+export function initialize(params: StateData["user_topics"]): void {
+    set_user_topics(params.user_topics);
 }

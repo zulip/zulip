@@ -139,6 +139,13 @@ export const user_group_schema = z.object({
     can_mention_group: z.number(),
 });
 
+export const user_topic_schema = z.object({
+    stream_id: z.number(),
+    topic_name: z.string(),
+    last_updated: z.number(),
+    visibility_policy: z.number(),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -394,7 +401,11 @@ export const state_data_schema = z
     )
     .and(z.object({unread_msgs: NOT_TYPED_YET}).transform((unread) => ({unread})))
     .and(z.object({muted_users: NOT_TYPED_YET}).transform((muted_users) => ({muted_users})))
-    .and(z.object({user_topics: NOT_TYPED_YET}).transform((user_topics) => ({user_topics})))
+    .and(
+        z
+            .object({user_topics: z.array(user_topic_schema)})
+            .transform((user_topics) => ({user_topics})),
+    )
     .and(z.object({user_status: NOT_TYPED_YET}).transform((user_status) => ({user_status})))
     .and(
         z
