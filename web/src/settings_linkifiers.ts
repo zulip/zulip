@@ -14,11 +14,10 @@ import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as scroll_util from "./scroll_util";
 import * as settings_ui from "./settings_ui";
-import type {realm_schema} from "./state_data";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 
-type RealmLinkifiers = z.infer<typeof realm_schema>["realm_linkifiers"];
+type RealmLinkifiers = typeof realm.realm_linkifiers;
 
 const configure_linkifier_api_response_schema = z.object({
     id: z.number(),

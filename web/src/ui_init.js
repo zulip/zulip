@@ -405,260 +405,20 @@ export function initialize_everything(state_data) {
         any data that you see in the app soon after page
         load comes from `state_data`.
 
-        ## Mostly static data
-
-        Now, we mostly leave `state_data` intact through
-        the duration of the app.  Most of the data in
-        `state_data` is fairly static in nature, and we
-        will simply update it for basic changes like
-        the following (meant as examples, not gospel):
-
-            - I changed my 24-hour time preference.
-            - The realm admin changed who can edit topics.
-            - The team's realm icon has changed.
-            - I switched from light theme to dark theme.
-
-        Especially for things that are settings-related,
-        we rarely abstract away the data from `state_data`.
-        As of this writing, over 90 modules refer directly
-        to `state_data` for some reason or another.
-
-        ## Dynamic data
-
-        Some of the data in `state_data` is either
-        more highly dynamic than settings data, or
-        has more performance requirements than
-        simple settings data, or both.  Examples
-        include:
-
-            - tracking all users (we want to have
-              multiple Maps to find users, for example)
-            - tracking all streams
-            - tracking presence data
-            - tracking user groups and bots
-            - tracking recent direct messages
-
-        Using stream data as an example, we use a
-        module called `stream_data` to actually track
-        all the info about the streams that a user
-        can know about.  We populate this module
-        with data from `state_data`, but thereafter
-        `stream_data.js` "owns" the stream data:
-
-            - other modules should ask `stream_data`
-              for stuff (and not go to `state_data`)
-            - when server events come in, they should
-              be processed by stream_data to update
-              its own data structures
-
-        To help enforce this paradigm, we do the
-        following:
-
-            - only pass `stream_data` what it needs
-              from `state_data`
-            - delete the reference to data owned by
-              `stream_data` in `state_data` itself
+        The version of `state_data` that we've been passed has already been
+        split using Zod `.transform` invocations into a number of parts; see
+        `state_data_schema` in `state_data.ts`. Below we pass each part to the
+        initialization function for the corresponding module.
     */
 
-    function pop_fields(...fields) {
-        const result = {};
-
-        for (const field of fields) {
-            result[field] = state_data[field];
-            delete state_data[field];
-        }
-
-        return result;
-    }
-
-    const alert_words_params = pop_fields("alert_words");
-
-    const emoji_params = pop_fields("realm_emoji");
-
-    const bot_params = pop_fields("realm_bots");
-
-    const people_params = pop_fields("realm_users", "realm_non_active_users", "cross_realm_bots");
-
-    const pm_conversations_params = pop_fields("recent_private_conversations");
-
-    const presence_params = pop_fields("presences", "server_timestamp", "presence_last_update_id");
-
-    const starred_messages_params = pop_fields("starred_messages");
-    const stream_data_params = pop_fields(
-        "subscriptions",
-        "unsubscribed",
-        "never_subscribed",
-        "realm_default_streams",
-    );
-
-    const user_groups_params = pop_fields("realm_user_groups");
-
-    const unread_params = pop_fields("unread_msgs");
-
-    const muted_users_params = pop_fields("muted_users");
-
-    const user_topics_params = pop_fields("user_topics");
-
-    const user_status_params = pop_fields("user_status");
-    const user_settings_params = pop_fields("user_settings");
-    const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
-    const scheduled_messages_params = pop_fields("scheduled_messages");
-    const server_events_params = pop_fields(
-        "queue_id",
-        "server_generation",
-        "event_queue_longpoll_timeout_seconds",
-        "last_event_id",
-    );
-    const local_message_params = pop_fields("max_message_id");
-
-    const onboarding_steps_params = pop_fields("onboarding_steps");
-
-    const current_user_params = pop_fields(
-        "avatar_source",
-        "avatar_url",
-        "avatar_url_medium",
-        "can_create_private_streams",
-        "can_create_public_streams",
-        "can_create_streams",
-        "can_create_web_public_streams",
-        "can_invite_others_to_realm",
-        "can_subscribe_other_users",
-        "delivery_email",
-        "email",
-        "full_name",
-        "has_zoom_token",
-        "is_admin",
-        "is_billing_admin",
-        "is_guest",
-        "is_moderator",
-        "is_owner",
-        "user_id",
-    );
-
-    const realm_params = pop_fields(
-        "custom_profile_field_types",
-        "custom_profile_fields",
-        "demo_organization_scheduled_deletion_date",
-        "giphy_api_key",
-        "giphy_rating_options",
-        "max_avatar_file_size_mib",
-        "max_file_upload_size_mib",
-        "max_icon_file_size_mib",
-        "max_logo_file_size_mib",
-        "max_message_length",
-        "max_stream_description_length",
-        "max_stream_name_length",
-        "max_topic_length",
-        "password_min_guesses",
-        "password_min_length",
-        "realm_add_custom_emoji_policy",
-        "realm_allow_edit_history",
-        "realm_allow_message_editing",
-        "realm_authentication_methods",
-        "realm_available_video_chat_providers",
-        "realm_avatar_changes_disabled",
-        "realm_bot_creation_policy",
-        "realm_bot_domain",
-        "realm_can_access_all_users_group",
-        "realm_can_create_private_channel_group",
-        "realm_can_create_public_channel_group",
-        "realm_create_multiuse_invite_group",
-        "realm_create_web_public_stream_policy",
-        "realm_date_created",
-        "realm_default_code_block_language",
-        "realm_default_external_accounts",
-        "realm_default_language",
-        "realm_delete_own_message_policy",
-        "realm_description",
-        "realm_digest_emails_enabled",
-        "realm_digest_weekday",
-        "realm_disallow_disposable_email_addresses",
-        "realm_domains",
-        "realm_edit_topic_policy",
-        "realm_email_auth_enabled",
-        "realm_email_changes_disabled",
-        "realm_emails_restricted_to_domains",
-        "realm_embedded_bots",
-        "realm_enable_guest_user_indicator",
-        "realm_enable_read_receipts",
-        "realm_enable_spectator_access",
-        "realm_giphy_rating",
-        "realm_icon_source",
-        "realm_icon_url",
-        "realm_incoming_webhook_bots",
-        "realm_inline_image_preview",
-        "realm_inline_url_embed_preview",
-        "realm_invite_required",
-        "realm_invite_to_realm_policy",
-        "realm_invite_to_stream_policy",
-        "realm_is_zephyr_mirror_realm",
-        "realm_jitsi_server_url",
-        "realm_linkifiers",
-        "realm_logo_source",
-        "realm_logo_url",
-        "realm_mandatory_topics",
-        "realm_message_content_allowed_in_email_notifications",
-        "realm_message_content_delete_limit_seconds",
-        "realm_message_content_edit_limit_seconds",
-        "realm_message_retention_days",
-        "realm_move_messages_between_streams_limit_seconds",
-        "realm_move_messages_between_streams_policy",
-        "realm_move_messages_within_stream_limit_seconds",
-        "realm_name",
-        "realm_name_changes_disabled",
-        "realm_new_stream_announcements_stream_id",
-        "realm_night_logo_source",
-        "realm_night_logo_url",
-        "realm_org_type",
-        "realm_password_auth_enabled",
-        "realm_plan_type",
-        "realm_playgrounds",
-        "realm_presence_disabled",
-        "realm_private_message_policy",
-        "realm_push_notifications_enabled",
-        "realm_push_notifications_enabled_end_timestamp",
-        "realm_require_unique_names",
-        "realm_send_welcome_emails",
-        "realm_signup_announcements_stream_id",
-        "realm_upload_quota_mib",
-        "realm_url",
-        "realm_user_group_edit_policy",
-        "realm_video_chat_provider",
-        "realm_waiting_period_threshold",
-        "realm_want_advertise_in_communities_directory",
-        "realm_wildcard_mention_policy",
-        "realm_zulip_update_announcements_stream_id",
-        "server_avatar_changes_disabled",
-        "server_emoji_data_url",
-        "server_inline_image_preview",
-        "server_inline_url_embed_preview",
-        "server_jitsi_server_url",
-        "server_name_changes_disabled",
-        "server_needs_upgrade",
-        "server_presence_offline_threshold_seconds",
-        "server_presence_ping_interval_seconds",
-        "server_supported_permission_settings",
-        "server_typing_started_expiry_period_milliseconds",
-        "server_typing_started_wait_period_milliseconds",
-        "server_typing_stopped_wait_period_milliseconds",
-        "server_web_public_streams_enabled",
-        "settings_send_digest_emails",
-        "stop_words",
-        "upgrade_text_for_wide_organization_logo",
-        "zulip_feature_level",
-        "zulip_merge_base",
-        "zulip_plan_is_not_limited",
-        "zulip_version",
-    );
-
-    set_current_user(current_user_params);
-    set_realm(realm_params);
+    set_current_user(state_data.current_user);
+    set_realm(state_data.realm);
     sentry.initialize();
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */
-    initialize_user_settings(user_settings_params);
+    initialize_user_settings(state_data.user_settings);
     sidebar_ui.restore_sidebar_toggle_status();
     information_density.initialize();
     if (page_params.is_spectator) {
@@ -678,7 +438,7 @@ export function initialize_everything(state_data) {
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
     // This populates data for scheduled messages.
-    scheduled_messages.initialize(scheduled_messages_params);
+    scheduled_messages.initialize(state_data.scheduled_messages);
     scheduled_messages_ui.initialize();
     popover_menus.initialize();
     compose_popovers.initialize();
@@ -688,9 +448,9 @@ export function initialize_everything(state_data) {
     message_actions_popover.initialize();
     compose_send_menu_popover.initialize();
 
-    realm_user_settings_defaults.initialize(realm_settings_defaults_params);
-    people.initialize(current_user.user_id, people_params);
-    starred_messages.initialize(starred_messages_params);
+    realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
+    people.initialize(current_user.user_id, state_data.people);
+    starred_messages.initialize(state_data.starred_messages);
 
     let date_joined;
     if (!page_params.is_spectator) {
@@ -707,14 +467,14 @@ export function initialize_everything(state_data) {
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.
     emoji.initialize({
-        realm_emoji: emoji_params.realm_emoji,
+        realm_emoji: state_data.emoji.realm_emoji,
         emoji_codes: generated_emoji_codes,
     });
 
     // The user_group must be initialized before right sidebar
     // module, so that we can tell whether user is member of
     // user_group whose members are allowed to create multiuse invite.
-    user_groups.initialize(user_groups_params);
+    user_groups.initialize(state_data.user_groups);
 
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
@@ -749,14 +509,14 @@ export function initialize_everything(state_data) {
         },
     });
     inbox_ui.initialize();
-    alert_words.initialize(alert_words_params);
+    alert_words.initialize(state_data.alert_words);
     emojisets.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
-    local_message.initialize(local_message_params);
+    local_message.initialize(state_data.local_message);
     echo.initialize({
         on_send_message_success: compose.send_message_success,
         send_message: transmit.send_message,
@@ -764,11 +524,11 @@ export function initialize_everything(state_data) {
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
-    stream_data.initialize(stream_data_params);
+    stream_data.initialize(state_data.stream_data);
     user_group_edit_members.initialize();
-    pm_conversations.recent.initialize(pm_conversations_params);
-    user_topics.initialize(user_topics_params);
-    muted_users.initialize(muted_users_params);
+    pm_conversations.recent.initialize(state_data.pm_conversations);
+    user_topics.initialize(state_data.user_topics);
+    muted_users.initialize(state_data.muted_users);
     stream_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();
     stream_list.initialize({
@@ -802,8 +562,8 @@ export function initialize_everything(state_data) {
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
-    server_events.initialize(server_events_params);
-    user_status.initialize(user_status_params);
+    server_events.initialize(state_data.server_events);
+    user_status.initialize(state_data.user_status);
     compose_recipient.initialize();
     compose_pm_pill.initialize({
         on_pill_create_or_remove: compose_recipient.update_placeholder_text,
@@ -812,8 +572,8 @@ export function initialize_everything(state_data) {
     compose_reply.initialize();
     drafts.initialize(); // Must happen before reload_setup.initialize()
     reload_setup.initialize();
-    unread.initialize(unread_params);
-    bot_data.initialize(bot_params); // Must happen after people.initialize()
+    unread.initialize(state_data.unread);
+    bot_data.initialize(state_data.bot); // Must happen after people.initialize()
     message_fetch.initialize(() => {
         recent_view_ui.set_initial_message_fetch_status(false);
         recent_view_ui.revive_current_focus();
@@ -848,7 +608,7 @@ export function initialize_everything(state_data) {
     gear_menu.initialize();
     navbar_help_menu.initialize();
     giphy.initialize();
-    presence.initialize(presence_params);
+    presence.initialize(state_data.presence);
     settings_preferences.initialize();
     settings_notifications.initialize();
     settings_realm_user_settings_defaults.initialize();
@@ -899,7 +659,7 @@ export function initialize_everything(state_data) {
     });
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
-    onboarding_steps.initialize(onboarding_steps_params);
+    onboarding_steps.initialize(state_data.onboarding_steps);
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();
