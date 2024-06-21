@@ -178,7 +178,7 @@ export function update_info_from_event(
 export function set_info(
     presences: Record<number, Omit<RawPresence, "server_timestamp">>,
     server_timestamp: number,
-    last_update_id: number,
+    last_update_id = -1,
 ): void {
     /*
         Example `presences` data:
@@ -297,7 +297,7 @@ export function last_active_date(user_id: number): Date | undefined {
 export function initialize(params: {
     presences: Record<number, Omit<RawPresence, "server_timestamp">>;
     server_timestamp: number;
-    presence_last_update_id: number;
+    presence_last_update_id: number | undefined;
 }): void {
     set_info(params.presences, params.server_timestamp, params.presence_last_update_id);
 }
