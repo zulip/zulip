@@ -8,10 +8,12 @@ import pyvips
 from django.db import transaction
 from typing_extensions import override
 
+from zerver.actions.message_edit import do_update_embedded_data
+from zerver.actions.message_send import render_incoming_message
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import THUMBNAIL_OUTPUT_FORMATS, StoredThumbnailFormat
 from zerver.lib.upload import save_attachment_contents, upload_backend
-from zerver.models import ImageAttachment
+from zerver.models import ArchivedMessage, ImageAttachment, Message
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -129,5 +131,26 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
         logging.exception(e)
 
     image_attachment.save(update_fields=["thumbnail_metadata"])
+
+    if not seen_thumbnails:
+        # If we previously had no thumbnails, go looking for messages
+        # which we should re-render now that we have thumbnailed this
+        # path_id
+        for message_class in [Message, ArchivedMessage]:
+            messages_with_image = (
+                message_class.objects.filter(  # type: ignore[attr-defined]  # TODO: ?
+                    realm_id=image_attachment.realm_id, attachment__path_id=image_attachment.path_id
+                )
+                .select_for_update()
+                .order_by("id")
+            )
+            for message in messages_with_image:
+                rendering_result = render_incoming_message(
+                    message,
+                    message.content,
+                    message.realm,
+                )
+                # Perform a silent update push to the clients
+                do_update_embedded_data(message.sender, message, message.content, rendering_result)
 
     return written_images

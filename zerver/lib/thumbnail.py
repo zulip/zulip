@@ -3,7 +3,7 @@ import os
 import re
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Iterator, Optional, Tuple, Type, TypeVar
+from typing import Dict, Iterator, Optional, Tuple, Type, TypeVar
 from urllib.parse import urljoin
 
 import pyvips
@@ -106,12 +106,6 @@ THUMBNAIL_OUTPUT_FORMATS = [
 
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
-
-
-def user_uploads_or_external(url: str) -> bool:
-    return not url_has_allowed_host_and_scheme(url, allowed_hosts=None) or url.startswith(
-        "/user_uploads/"
-    )
 
 
 def generate_thumbnail_url(path: str, size: str = "0x0") -> str:
@@ -253,3 +247,34 @@ def maybe_thumbnail(attachment: AbstractAttachment, content: bytes) -> Optional[
             return image_row
     except BadImageError:
         return None
+
+
+def get_user_upload_previews(realm_id: int, content: str) -> Dict[str, Optional[Tuple[str, bool]]]:
+    matches = re.findall(r"/user_uploads/(\d+/[/\w.-]+)", content)
+    upload_preview_data: Dict[str, Optional[Tuple[str, bool]]] = {}
+    for image_attachment in ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=matches):
+        if image_attachment.thumbnail_metadata == []:
+            # Image exists, but has not been thumbnailed yet; we will
+            # render a spinner.
+            upload_preview_data[image_attachment.path_id] = None
+        else:
+            # For "dumb" clients which cannot rewrite it into their
+            # preferred format and size, we choose the first one in
+            # THUMBNAIL_OUTPUT_FORMATS which matches the animated/not
+            # nature of the source image.
+            found_format: Optional[ThumbnailFormat] = None
+            for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS:
+                if thumbnail_format.animated == (image_attachment.frames > 1):
+                    found_format = thumbnail_format
+                    break
+            if found_format is None:
+                # No animated thumbnail formats exist somehow, and the
+                # image is animated?  Just take the first thumbnail
+                # format.
+                found_format = THUMBNAIL_OUTPUT_FORMATS[0]
+
+            upload_preview_data[image_attachment.path_id] = (
+                f"/user_uploads/thumbnail/{image_attachment.path_id}/{found_format!s}",
+                found_format.animated,
+            )
+    return upload_preview_data
