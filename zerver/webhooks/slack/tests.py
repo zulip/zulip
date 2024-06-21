@@ -1,3 +1,6 @@
+from typing import Any
+from unittest.mock import patch
+
 from typing_extensions import override
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -5,8 +8,8 @@ from zerver.lib.test_classes import WebhookTestCase
 EXPECTED_TOPIC = "Message from Slack"
 
 MESSAGE_WITH_NORMAL_TEXT = "Hello, this is a normal text message"
-USER = "U06NU4E26M9"
-CHANNEL = "C06NRA6JLER"
+USER = "John Doe"
+CHANNEL = "general"
 EXPECTED_MESSAGE = "**{user}**: {message}"
 TOPIC_WITH_CHANNEL = "channel: {channel}"
 
@@ -15,8 +18,34 @@ LEGACY_USER = "slack_user"
 
 class SlackWebhookTests(WebhookTestCase):
     CHANNEL_NAME = "slack"
-    URL_TEMPLATE = "/api/v1/external/slack?stream={stream}&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/slack?stream={stream}&api_key={api_key}&slack_app_token=xoxp-XXXXXXXXXXXXXXXXXXXXX"
     WEBHOOK_DIR_NAME = "slack"
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.get_slack_api_data_patcher = patch("zerver.webhooks.slack.view.get_slack_api_data")
+        self.check_slack_token_patcher = patch("zerver.webhooks.slack.view.check_token_access")
+
+        self.mock_check_slack_token = self.check_slack_token_patcher.start()
+        self.mock_get_slack_api_data = self.get_slack_api_data_patcher.start()
+        self.mock_get_slack_api_data.side_effect = self.mocked_get_slack_api_data
+
+    @override
+    def tearDown(self) -> None:
+        self.get_slack_api_data_patcher.stop()
+        self.check_slack_token_patcher.stop()
+        super().tearDown()
+
+    def mocked_get_slack_api_data(
+        self, url: str, get_param: str, token: str, **kwargs: dict[str, Any]
+    ) -> dict[str, Any]:
+        slack_api_endpoints: dict[str, Any] = {
+            "https://slack.com/api/users.info": {"name": USER},
+            "https://slack.com/api/conversations.info": {"name": CHANNEL},
+        }
+        self.assertIn(url, slack_api_endpoints)
+        return slack_api_endpoints[url]
 
     def test_slack_only_stream_parameter(self) -> None:
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
@@ -121,8 +150,14 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     def test_message_with_channel_and_user_mentions(self) -> None:
-        # TODO
-        pass
+        message_body = "@**John Doe** **#general** message with both channel and user mentions"
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
+        self.check_webhook(
+            "message_with_channel_and_user_mentions",
+            EXPECTED_TOPIC,
+            expected_message,
+            content_type="application/json",
+        )
 
     def test_message_with_channel_mentions(self) -> None:
         message_body = "**#zulip-mirror** **#general** message with channel mentions"
@@ -178,9 +213,8 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     def test_message_with_user_mentions(self) -> None:
-        # TODO
         message_body = (
-            "<@U074VRHQ11T> <@U074G5E1ANR> <@U06NU4E26M9> hello, this is a message with mentions"
+            "@**John Doe** @**John Doe** @**John Doe** hello, this is a message with mentions"
         )
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
@@ -246,7 +280,7 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     def test_message_with_complex_formatted_mentions(self) -> None:
-        message_body = "~~***<@U074VRHQ11T>***~~ **#general** ~~***@**all*****~"
+        message_body = "@**John Doe** **#general** ~~***@**all*****~"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_complex_formatted_mentions",
