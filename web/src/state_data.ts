@@ -1,5 +1,6 @@
 import {z} from "zod";
 
+import {realm_default_settings_schema} from "./realm_user_settings_defaults";
 import {user_settings_schema} from "./user_settings";
 
 const NOT_TYPED_YET = z.unknown();
@@ -312,7 +313,7 @@ export const state_data_schema = z
     )
     .and(
         z
-            .object({realm_user_settings_defaults: NOT_TYPED_YET})
+            .object({realm_user_settings_defaults: realm_default_settings_schema})
             .transform((realm_settings_defaults) => ({realm_settings_defaults})),
     )
     .and(
