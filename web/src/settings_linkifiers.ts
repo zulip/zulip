@@ -262,12 +262,12 @@ export function build_page(): void {
             void channel.post({
                 url: "/json/realm/filters",
                 data: $(this).serialize(),
-                success(data) {
-                    const clean_data = configure_linkifier_api_response_schema.parse(data);
+                success(raw_data) {
+                    const data = configure_linkifier_api_response_schema.parse(raw_data);
                     $("#linkifier_pattern").val("");
                     $("#linkifier_template").val("");
                     $add_linkifier_button.prop("disabled", false);
-                    linkifier.id = clean_data.id;
+                    linkifier.id = data.id;
                     ui_report.success(
                         $t_html({defaultMessage: "Custom linkifier added!"}),
                         $linkifier_status,
