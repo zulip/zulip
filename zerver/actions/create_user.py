@@ -62,14 +62,14 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
 
 
-MAX_NUM_ONBOARDING_MESSAGES = 1000
-MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
+MAX_NUM_RECENT_MESSAGES = 1000
+MAX_NUM_RECENT_UNREAD_MESSAGES = 20
 
 # We don't want to mark years-old messages as unread, since that might
 # feel like Zulip is buggy, but in low-traffic or bursty-traffic
 # organizations, it's reasonable for the most recent 20 messages to be
 # several weeks old and still be a good place to start.
-ONBOARDING_RECENT_TIMEDELTA = timedelta(weeks=12)
+RECENT_MESSAGES_TIMEDELTA = timedelta(weeks=12)
 
 
 def send_message_to_signup_notification_stream(
@@ -186,7 +186,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     ]
 
     # Start by finding recent messages matching those recipients.
-    cutoff_date = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
+    cutoff_date = timezone_now() - RECENT_MESSAGES_TIMEDELTA
     recent_message_ids = set(
         Message.objects.filter(
             # Uses index: zerver_message_realm_recipient_id
@@ -195,7 +195,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
             date_sent__gt=cutoff_date,
         )
         .order_by("-id")
-        .values_list("id", flat=True)[0:MAX_NUM_ONBOARDING_MESSAGES]
+        .values_list("id", flat=True)[0:MAX_NUM_RECENT_MESSAGES]
     )
 
     if len(recent_message_ids) > 0:
@@ -212,7 +212,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 
         # Find which message ids we should mark as read.
         # (We don't want too many unread messages.)
-        older_message_ids = set(backfill_message_ids[:-MAX_NUM_ONBOARDING_UNREAD_MESSAGES])
+        older_message_ids = set(backfill_message_ids[:-MAX_NUM_RECENT_UNREAD_MESSAGES])
 
         # Create UserMessage rows for the backfill.
         ums_to_create = []
