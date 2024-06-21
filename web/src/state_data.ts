@@ -146,6 +146,11 @@ export const user_topic_schema = z.object({
     visibility_policy: z.number(),
 });
 
+export const muted_user_schema = z.object({
+    id: z.number(),
+    timestamp: z.number(),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -400,7 +405,11 @@ export const state_data_schema = z
             .transform((user_groups) => ({user_groups})),
     )
     .and(z.object({unread_msgs: NOT_TYPED_YET}).transform((unread) => ({unread})))
-    .and(z.object({muted_users: NOT_TYPED_YET}).transform((muted_users) => ({muted_users})))
+    .and(
+        z
+            .object({muted_users: z.array(muted_user_schema)})
+            .transform((muted_users) => ({muted_users})),
+    )
     .and(
         z
             .object({user_topics: z.array(user_topic_schema)})
