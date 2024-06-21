@@ -224,13 +224,13 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
 
     const user_ids = [...user_id_set];
 
-    function invite_success(data: unknown): void {
-        const clean_data = add_user_ids_api_response_schema.parse(data);
+    function invite_success(raw_data: unknown): void {
+        const data = add_user_ids_api_response_schema.parse(raw_data);
         pill_widget.clear();
-        const subscribed_users = Object.keys(clean_data.subscribed).map(
+        const subscribed_users = Object.keys(data.subscribed).map(
             (email) => people.get_by_email(email)!,
         );
-        const already_subscribed_users = Object.keys(clean_data.already_subscribed).map(
+        const already_subscribed_users = Object.keys(data.already_subscribed).map(
             (email) => people.get_by_email(email)!,
         );
 
@@ -284,8 +284,8 @@ function remove_subscriber({
         return;
     }
 
-    function removal_success(data: unknown): void {
-        const clean_data = remove_user_id_api_response_schema.parse(data);
+    function removal_success(raw_data: unknown): void {
+        const data = remove_user_id_api_response_schema.parse(raw_data);
         let message;
 
         if (stream_id !== current_stream_id) {
@@ -293,7 +293,7 @@ function remove_subscriber({
             return;
         }
 
-        if (clean_data.removed.length > 0) {
+        if (data.removed.length > 0) {
             // Remove the user from the subscriber list.
             $list_entry.remove();
 
