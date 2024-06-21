@@ -152,6 +152,22 @@ export const muted_user_schema = z.object({
     timestamp: z.number(),
 });
 
+const unread_stream_info_schema = z.object({
+    stream_id: z.number(),
+    topic: z.string(),
+    unread_message_ids: z.array(z.number()),
+});
+
+export const unread_direct_message_info_schema = z.object({
+    other_user_id: z.number(),
+    unread_message_ids: z.array(z.number()),
+});
+
+export const unread_direct_message_group_info_schema = z.object({
+    user_ids_string: z.string(),
+    unread_message_ids: z.array(z.number()),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -405,7 +421,20 @@ export const state_data_schema = z
             .object({realm_user_groups: z.array(user_group_schema)})
             .transform((user_groups) => ({user_groups})),
     )
-    .and(z.object({unread_msgs: NOT_TYPED_YET}).transform((unread) => ({unread})))
+    .and(
+        z
+            .object({
+                unread_msgs: z.object({
+                    pms: z.array(unread_direct_message_info_schema),
+                    streams: z.array(unread_stream_info_schema),
+                    huddles: z.array(unread_direct_message_group_info_schema),
+                    mentions: z.array(z.number()),
+                    count: z.number(),
+                    old_unreads_missing: z.boolean(),
+                }),
+            })
+            .transform((unread) => ({unread})),
+    )
     .and(
         z
             .object({muted_users: z.array(muted_user_schema)})
