@@ -159,12 +159,8 @@ function show_user_group_membership_request_result({
         ignored_deactivated_users,
     });
     scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
-    if (add_class) {
-        $user_group_subscription_req_result_elem.addClass(add_class);
-    }
-    if (remove_class) {
-        $user_group_subscription_req_result_elem.removeClass(remove_class);
-    }
+    $user_group_subscription_req_result_elem.addClass(add_class);
+    $user_group_subscription_req_result_elem.removeClass(remove_class);
 }
 
 export function edit_user_group_membership({
