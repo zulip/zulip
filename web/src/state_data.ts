@@ -1,5 +1,7 @@
 import {z} from "zod";
 
+import {user_settings_schema} from "./user_settings";
+
 const NOT_TYPED_YET = z.unknown();
 
 const group_permission_setting_schema = z.object({
@@ -281,7 +283,11 @@ export const state_data_schema = z
     .and(z.object({muted_users: NOT_TYPED_YET}).transform((muted_users) => ({muted_users})))
     .and(z.object({user_topics: NOT_TYPED_YET}).transform((user_topics) => ({user_topics})))
     .and(z.object({user_status: NOT_TYPED_YET}).transform((user_status) => ({user_status})))
-    .and(z.object({user_settings: NOT_TYPED_YET}).transform((user_settings) => ({user_settings})))
+    .and(
+        z
+            .object({user_settings: user_settings_schema})
+            .transform((user_settings) => ({user_settings})),
+    )
     .and(
         z
             .object({realm_user_settings_defaults: NOT_TYPED_YET})
