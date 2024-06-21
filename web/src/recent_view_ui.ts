@@ -1836,6 +1836,11 @@ export function initialize({
         window.location.href = $(e.currentTarget).find("a").attr("href")!;
     });
 
+    $("body").on("click", "#recent-view-content-table .change_visibility_policy", (e) => {
+        const topic_row_index = $(e.target).closest("tr").index();
+        focus_clicked_element(topic_row_index, COLUMNS.mute);
+    });
+
     // Search for all table rows (this combines stream & topic names)
     $("body").on(
         "keyup",
