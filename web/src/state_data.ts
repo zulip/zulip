@@ -37,6 +37,28 @@ export const custom_profile_field_schema = z.object({
 
 export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
 
+export const scheduled_message_schema = z
+    .object({
+        scheduled_message_id: z.number(),
+        content: z.string(),
+        rendered_content: z.string(),
+        scheduled_delivery_timestamp: z.number(),
+        failed: z.boolean(),
+    })
+    .and(
+        z.discriminatedUnion("type", [
+            z.object({
+                type: z.literal("private"),
+                to: z.array(z.number()),
+            }),
+            z.object({
+                type: z.literal("stream"),
+                to: z.number(),
+                topic: z.string(),
+            }),
+        ]),
+    );
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -295,7 +317,7 @@ export const state_data_schema = z
     )
     .and(
         z
-            .object({scheduled_messages: NOT_TYPED_YET})
+            .object({scheduled_messages: z.array(scheduled_message_schema)})
             .transform((scheduled_messages) => ({scheduled_messages})),
     )
     .and(
