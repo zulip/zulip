@@ -658,6 +658,10 @@ urls += [
         GET=(serve_file_download_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     rest_path(
+        "user_uploads/thumbnail/<realm_id_str>/<path:filename>/<str:thumbnail_format>",
+        GET=(serve_file_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
+    rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",
         GET=(serve_file_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),

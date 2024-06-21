@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
 from django.core.signing import BadSignature, TimestampSigner
+from django.db import transaction
 from django.http import (
     FileResponse,
     HttpRequest,
@@ -29,15 +30,22 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mime_types import guess_type
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
+from zerver.lib.thumbnail import (
+    THUMBNAIL_OUTPUT_FORMATS,
+    BaseThumbnailFormat,
+    StoredThumbnailFormat,
+)
 from zerver.lib.upload import (
     check_upload_within_quota,
+    get_image_thumbnail_path,
     get_public_upload_root_url,
     upload_message_attachment_from_request,
 )
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
-from zerver.models import UserProfile
+from zerver.models import ImageAttachment, UserProfile
+from zerver.worker.thumbnail import ensure_thumbnails
 
 
 def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
@@ -155,8 +163,16 @@ def serve_file_backend(
     maybe_user_profile: UserProfile | AnonymousUser,
     realm_id_str: str,
     filename: str,
+    thumbnail_format: str | None = None,
 ) -> HttpResponseBase:
-    return serve_file(request, maybe_user_profile, realm_id_str, filename, url_only=False)
+    return serve_file(
+        request,
+        maybe_user_profile,
+        realm_id_str,
+        filename,
+        url_only=False,
+        thumbnail_format=thumbnail_format,
+    )
 
 
 def serve_file_url_backend(
@@ -192,6 +208,7 @@ def serve_file(
     maybe_user_profile: UserProfile | AnonymousUser,
     realm_id_str: str,
     filename: str,
+    thumbnail_format: str | None = None,
     url_only: bool = False,
     force_download: bool = False,
 ) -> HttpResponseBase:
@@ -226,6 +243,50 @@ def serve_file(
     if url_only:
         url = generate_unauthed_file_access_url(path_id)
         return json_success(request, data=dict(url=url))
+
+    if thumbnail_format is not None:
+        # Check if this is something that we thumbnail at all
+        try:
+            image_attachment = ImageAttachment.objects.get(path_id=path_id)
+        except ImageAttachment.DoesNotExist:
+            return serve_image_error(404, "images/errors/image-not-exist.png")
+
+        # Validate that this is a potential thumbnail format
+        requested_format = BaseThumbnailFormat.from_string(thumbnail_format)
+        if requested_format is None:
+            return serve_image_error(404, "images/errors/image-not-exist.png")
+
+        rendered_formats = [StoredThumbnailFormat(**f) for f in image_attachment.thumbnail_metadata]
+
+        # We never generate animated versions if the input was still,
+        # so filter those out
+        if image_attachment.frames == 1:
+            potential_output_formats = [
+                thumbnail_format
+                for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS
+                if not thumbnail_format.animated
+            ]
+        else:
+            potential_output_formats = THUMBNAIL_OUTPUT_FORMATS
+        if requested_format not in potential_output_formats:
+            if requested_format in rendered_formats:
+                # Not a _current_ format, but we did render it at the time, so fine to serve
+                pass
+            else:
+                return serve_image_error(404, "images/errors/image-not-exist.png")
+        elif requested_format not in rendered_formats:
+            # They requested a valid format, but one we've not
+            # rendered yet.  Take a lock on the row, then render every
+            # missing format, synchronously.  The lock prevents us
+            # from doing double-work if the background worker is
+            # currently processing the row.
+            with transaction.atomic(savepoint=False):
+                ensure_thumbnails(
+                    ImageAttachment.objects.select_for_update().get(id=image_attachment.id)
+                )
+
+        # Update the path that we are fetching to be the thumbnail
+        path_id = get_image_thumbnail_path(image_attachment, requested_format)
 
     if settings.LOCAL_UPLOADS_DIR is not None:
         return serve_local(request, path_id, force_download=force_download)

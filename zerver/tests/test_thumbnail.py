@@ -1,4 +1,6 @@
 import re
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import asdict
 from io import StringIO
 from unittest.mock import patch
@@ -469,3 +471,136 @@ class TestStoreThumbnail(ZulipTestCase):
             "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp, still_jpeg]
         ):
             self.assertEqual(missing_thumbnails(image_attachment), [anim_webp, still_jpeg])
+
+
+class TestThumbnailRetrieval(ZulipTestCase):
+    @contextmanager
+    def mock_formats(self, thumbnail_formats: list[ThumbnailFormat]) -> Iterator[None]:
+        with (
+            patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
+            patch("zerver.views.upload.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
+        ):
+            yield
+
+    def test_get_thumbnail(self) -> None:
+        assert settings.LOCAL_FILES_DIR
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        webp_anim = ThumbnailFormat("webp", 100, 75, animated=True)
+        webp_still = ThumbnailFormat("webp", 100, 75, animated=False)
+        with self.mock_formats([webp_anim, webp_still]):
+            with (
+                self.captureOnCommitCallbacks(execute=True),
+                get_test_image_file("animated_unequal_img.gif") as image_file,
+            ):
+                json_response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+                path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+
+                # Image itself is available immediately
+                response = self.client_get(f"/user_uploads/{path_id}")
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.headers["Content-Type"], "image/gif")
+
+                # Exit the block, triggering the thumbnailing worker
+
+            thumbnail_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
+            self.assertEqual(thumbnail_response.status_code, 200)
+            self.assertEqual(thumbnail_response.headers["Content-Type"], "image/webp")
+            self.assertLess(
+                int(thumbnail_response.headers["Content-Length"]),
+                int(response.headers["Content-Length"]),
+            )
+
+            animated_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_anim!s}")
+            self.assertEqual(animated_response.status_code, 200)
+            self.assertEqual(animated_response.headers["Content-Type"], "image/webp")
+            self.assertLess(
+                int(thumbnail_response.headers["Content-Length"]),
+                int(animated_response.headers["Content-Length"]),
+            )
+
+            # Invalid thumbnail format
+            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/bogus")
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.headers["Content-Type"], "image/png")
+
+            # Format we don't have
+            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/1x1.png")
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.headers["Content-Type"], "image/png")
+
+            # path_id for a non-image
+            with (
+                self.captureOnCommitCallbacks(execute=True),
+                get_test_image_file("text.txt") as text_file,
+            ):
+                json_response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": text_file})
+                )
+                text_path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+            response = self.client_get(f"/user_uploads/thumbnail/{text_path_id}/{webp_still!s}")
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.headers["Content-Type"], "image/png")
+
+        # Shrink the list of formats, and check that we can still get
+        # the thumbnails that were generated at the time
+        with self.mock_formats([webp_still]):
+            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
+            self.assertEqual(response.status_code, 200)
+
+            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_anim!s}")
+            self.assertEqual(response.status_code, 200)
+
+        # Grow the format list, and check that fetching that new
+        # format generates all of the missing formats
+        jpeg_still = ThumbnailFormat("jpg", 100, 75, animated=False)
+        big_jpeg_still = ThumbnailFormat("jpg", 200, 150, animated=False)
+        with (
+            self.mock_formats([webp_still, jpeg_still, big_jpeg_still]),
+            patch.object(
+                pyvips.Image, "thumbnail_buffer", wraps=pyvips.Image.thumbnail_buffer
+            ) as thumb_mock,
+        ):
+            small_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{jpeg_still!s}")
+            self.assertEqual(small_response.status_code, 200)
+            self.assertEqual(small_response.headers["Content-Type"], "image/jpeg")
+            # This made two thumbnails
+            self.assertEqual(thumb_mock.call_count, 2)
+
+            thumb_mock.reset_mock()
+            big_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{big_jpeg_still!s}")
+            self.assertEqual(big_response.status_code, 200)
+            self.assertEqual(big_response.headers["Content-Type"], "image/jpeg")
+            thumb_mock.assert_not_called()
+
+            self.assertLess(
+                int(small_response.headers["Content-Length"]),
+                int(big_response.headers["Content-Length"]),
+            )
+
+        # Upload a static image, and verify that we only generate the still versions
+        with self.mock_formats([webp_anim, webp_still, jpeg_still]):
+            with (
+                self.captureOnCommitCallbacks(execute=True),
+                get_test_image_file("img.tif") as image_file,
+            ):
+                json_response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+                path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+                # Exit the block, triggering the thumbnailing worker
+
+            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.headers["Content-Type"], "image/webp")
+
+            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_anim!s}")
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.headers["Content-Type"], "image/png")
+
+            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{jpeg_still!s}")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.headers["Content-Type"], "image/jpeg")
