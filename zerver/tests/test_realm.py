@@ -111,7 +111,6 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
         self.assertEqual(
             realm.move_messages_between_streams_policy,
@@ -132,7 +131,6 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
         self.assertEqual(
             realm.move_messages_between_streams_policy,
@@ -761,7 +759,6 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
-            create_private_stream_policy=10,
             create_web_public_stream_policy=10,
             invite_to_stream_policy=10,
             message_retention_days=10,
@@ -1480,7 +1477,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
@@ -1594,7 +1590,7 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        leadership_group = check_add_user_group(realm, "leadership", [hamlet], acting_user=None)
+        leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
 
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
@@ -1829,6 +1825,9 @@ class RealmAPITest(ZulipTestCase):
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
 
+        check_add_user_group(
+            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
+        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api_with_anonymous_groups(prop)

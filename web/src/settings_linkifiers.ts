@@ -14,11 +14,10 @@ import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as scroll_util from "./scroll_util";
 import * as settings_ui from "./settings_ui";
-import type {realm_schema} from "./state_data";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 
-type RealmLinkifiers = z.infer<typeof realm_schema>["realm_linkifiers"];
+type RealmLinkifiers = typeof realm.realm_linkifiers;
 
 const configure_linkifier_api_response_schema = z.object({
     id: z.number(),
@@ -263,12 +262,12 @@ export function build_page(): void {
             void channel.post({
                 url: "/json/realm/filters",
                 data: $(this).serialize(),
-                success(data) {
-                    const clean_data = configure_linkifier_api_response_schema.parse(data);
+                success(raw_data) {
+                    const data = configure_linkifier_api_response_schema.parse(raw_data);
                     $("#linkifier_pattern").val("");
                     $("#linkifier_template").val("");
                     $add_linkifier_button.prop("disabled", false);
-                    linkifier.id = clean_data.id;
+                    linkifier.id = data.id;
                     ui_report.success(
                         $t_html({defaultMessage: "Custom linkifier added!"}),
                         $linkifier_status,

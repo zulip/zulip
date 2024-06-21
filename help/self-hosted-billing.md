@@ -134,11 +134,7 @@ An organization is considered to be a new customer if:
 
 {tab|by-invoice}
 
-!!! warn ""
-
-    Only [manual license
-    management](#how-does-manual-license-management-work) is available
-    when paying by invoice.
+{!pay-by-invoice-warning.md!}
 
 {!self-hosted-billing-log-in-step.md!}
 
@@ -175,11 +171,7 @@ An organization is considered to be a new customer if:
 
 {tab|by-invoice}
 
-!!! warn ""
-
-    Only [manual license
-    management](#how-does-manual-license-management-work) is available
-    when paying by invoice.
+{!pay-by-invoice-warning.md!}
 
 {!self-hosted-billing-log-in-step.md!}
 
@@ -357,6 +349,10 @@ eligibility prior to setting up a self-hosted server, contact
 ### What are my payment options?
 
 {!payment-options.md!}
+
+### International SWIFT transfers
+
+{!international-wire-transfers.md!}
 
 ### How does automatic license management work?
 

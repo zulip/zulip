@@ -1,24 +1,11 @@
+import type {z} from "zod";
+
 import * as channel from "./channel";
 import {$t} from "./i18n";
+import type {StateData, scheduled_message_schema} from "./state_data";
 import * as timerender from "./timerender";
 
-export type ScheduledMessage = {
-    scheduled_message_id: number;
-    content: string;
-    rendered_content: string;
-    scheduled_delivery_timestamp: number;
-    failed: boolean;
-} & (
-    | {
-          type: "private";
-          to: number[];
-      }
-    | {
-          type: "stream";
-          to: number;
-          topic: string;
-      }
-);
+export type ScheduledMessage = z.infer<typeof scheduled_message_schema>;
 
 type TimeKey =
     | "today_nine_am"
@@ -225,8 +212,6 @@ export function reset_selected_schedule_timestamp(): void {
     selected_send_later_timestamp = undefined;
 }
 
-export function initialize(scheduled_messages_params: {
-    scheduled_messages: ScheduledMessage[];
-}): void {
+export function initialize(scheduled_messages_params: StateData["scheduled_messages"]): void {
     add_scheduled_messages(scheduled_messages_params.scheduled_messages);
 }

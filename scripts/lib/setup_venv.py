@@ -31,6 +31,7 @@ VENV_DEPENDENCIES = [
     "pkg-config",
     "jq",  # No longer used in production (clean me up later)
     "libsasl2-dev",  # For building python-ldap from source
+    "libvips",  # For thumbnailing
 ]
 
 COMMON_YUM_VENV_DEPENDENCIES = [
@@ -51,6 +52,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "postgresql-libs",  # libpq-dev on apt
     "openssl-devel",
     "jq",
+    "libvips",  # For thumbnailing
 ]
 
 REDHAT_VENV_DEPENDENCIES = [

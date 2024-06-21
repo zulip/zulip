@@ -454,10 +454,6 @@
         border-color: hsl(3deg 73% 74%);
     }
 
-    .deactivated-pill {
-        background-color: hsl(0deg 86% 14%) !important;
-    }
-
     #compose-direct-recipient .pill-container {
         background-color: hsl(0deg 0% 0% / 20%);
     }

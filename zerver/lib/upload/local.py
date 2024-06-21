@@ -10,16 +10,9 @@ from django.conf import settings
 from typing_extensions import override
 
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_emoji, resize_logo
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.upload.base import (
-    MEDIUM_AVATAR_SIZE,
-    ZulipUploadBackend,
-    create_attachment,
-    resize_avatar,
-    resize_emoji,
-    resize_logo,
-    sanitize_name,
-)
+from zerver.lib.upload.base import ZulipUploadBackend, create_attachment, sanitize_name
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmEmoji, UserProfile
 

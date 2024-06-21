@@ -210,13 +210,11 @@ export function set_up_attachments(): void {
 
     void channel.get({
         url: "/json/attachments",
-        success(data) {
-            const clean_data = attachment_api_response_schema.parse(data);
+        success(raw_data) {
+            const data = attachment_api_response_schema.parse(raw_data);
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            attachments = clean_data.attachments.map((attachment) =>
-                format_attachment_data(attachment),
-            );
-            upload_space_used = clean_data.upload_space_used;
+            attachments = data.attachments.map((attachment) => format_attachment_data(attachment));
+            upload_space_used = data.upload_space_used;
             render_attachments_ui();
         },
         error(xhr) {

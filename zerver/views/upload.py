@@ -2,7 +2,6 @@ import base64
 import binascii
 import os
 from datetime import timedelta
-from mimetypes import guess_type
 from typing import List, Optional, Union
 from urllib.parse import quote, urlsplit
 
@@ -28,6 +27,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import zulip_redirect_to_login
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mime_types import guess_type
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.upload import (

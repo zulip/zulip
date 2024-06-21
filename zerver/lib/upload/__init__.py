@@ -1,7 +1,6 @@
 import io
 import logging
 from datetime import datetime
-from mimetypes import guess_type
 from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple, Union
 from urllib.parse import unquote, urljoin
 
@@ -10,6 +9,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.mime_types import guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile

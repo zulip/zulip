@@ -119,7 +119,6 @@ export function get_org_type_dropdown_options() {
 }
 
 const simple_dropdown_properties = [
-    "realm_create_private_stream_policy",
     "realm_create_web_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
@@ -487,6 +486,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_public_channel_group":
+        case "realm_can_create_private_channel_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,

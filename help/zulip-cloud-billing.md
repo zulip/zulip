@@ -19,11 +19,7 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {tab|by-invoice}
 
-!!! warn ""
-
-    Only [manual license
-    management](#how-does-manual-license-management-work) is available
-    when paying by invoice.
+{!pay-by-invoice-warning.md!}
 
 {relative|gear|plans}
 
@@ -175,6 +171,10 @@ tool.
 ### What are my payment options?
 
 {!payment-options.md!}
+
+### International SWIFT transfers
+
+{!international-wire-transfers.md!}
 
 ### How does automatic license management work?
 

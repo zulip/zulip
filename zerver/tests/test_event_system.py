@@ -1194,7 +1194,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_filters=0,
             realm_linkifiers=0,
             realm_playgrounds=1,
-            realm_user=4,
+            realm_user=5,
             realm_user_groups=5,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,

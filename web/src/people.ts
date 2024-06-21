@@ -1,5 +1,6 @@
 import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
+import type {z} from "zod";
 
 import * as typeahead from "../shared/src/typeahead";
 
@@ -13,50 +14,19 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import type {
+    StateData,
+    cross_realm_bot_schema,
+    profile_datum_schema,
+    user_schema,
+} from "./state_data";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
-export type ProfileDatum = {
-    value: string;
-    rendered_value?: string | undefined;
-};
-
-export type User = {
-    user_id: number;
-    delivery_email: string | null;
-    email: string;
-    full_name: string;
-    // used for caching result of remove_diacritics.
-    name_with_diacritics_removed?: string | undefined;
-    date_joined: string;
-    is_active: boolean;
-    is_owner: boolean;
-    is_admin: boolean;
-    is_guest: boolean;
-    is_moderator: boolean;
-    is_billing_admin: boolean;
-    role: number;
-    timezone: string;
-    avatar_url?: string | null;
-    avatar_version: number;
-    profile_data: Record<number, ProfileDatum>;
-    // used for fake user objects.
-    is_missing_server_data?: boolean;
-    // used for inaccessible user objects.
-    is_inaccessible_user?: boolean;
-} & (
-    | {
-          is_bot: false;
-          bot_type: null;
-      }
-    | {
-          is_bot: true;
-          bot_type: number;
-          bot_owner_id: number | null;
-      }
-);
+export type ProfileDatum = z.infer<typeof profile_datum_schema>;
+export type User = z.infer<typeof user_schema>;
 
 export type SenderInfo = User & {
     avatar_url_small: string;
@@ -72,15 +42,7 @@ export type PseudoMentionUser = {
     idx: number;
 };
 
-export type CrossRealmBot = User & {
-    is_system_bot: boolean;
-};
-
-export type PeopleParams = {
-    realm_users: User[];
-    realm_non_active_users: User[];
-    cross_realm_bots: CrossRealmBot[];
-};
+export type CrossRealmBot = z.infer<typeof cross_realm_bot_schema>;
 
 let people_dict: FoldDict<User>;
 let people_by_name_dict: FoldDict<User>;
@@ -1667,6 +1629,7 @@ export function set_custom_profile_field_data(
         return;
     }
     const person = get_by_user_id(user_id);
+    assert(person.profile_data !== undefined);
     person.profile_data[field.id] = {
         value: field.value,
         rendered_value: field.rendered_value,
@@ -1756,7 +1719,7 @@ export function sort_but_pin_current_user_on_top(users: User[]): void {
     }
 }
 
-export function initialize(my_user_id: number, params: PeopleParams): void {
+export function initialize(my_user_id: number, params: StateData["people"]): void {
     for (const person of params.realm_users) {
         add_active_user(person);
     }

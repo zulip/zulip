@@ -303,14 +303,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to create streams.
-    create_private_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
-    )
     create_web_public_stream_policy = models.PositiveSmallIntegerField(
         default=CreateWebPublicStreamPolicyEnum.OWNERS_ONLY
     )
 
     can_create_public_channel_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+    can_create_private_channel_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
@@ -644,7 +644,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
-        create_private_stream_policy=int,
         create_web_public_stream_policy=int,
         default_code_block_language=str,
         default_language=str,
@@ -716,9 +715,19 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.MEMBERS,
             id_field_name="can_create_public_channel_group_id",
         ),
+        can_create_private_channel_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_create_private_channel_group_id",
+        ),
     )
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
+        "can_create_private_channel_group",
         "can_create_public_channel_group",
     ]
 
@@ -1064,10 +1073,7 @@ post_delete.connect(realm_pre_and_post_delete_handler, sender=Realm)
 
 
 def get_realm(string_id: str) -> Realm:
-    return Realm.objects.select_related(
-        "can_create_public_channel_group",
-        "can_create_public_channel_group__named_user_group",
-    ).get(string_id=string_id)
+    return Realm.objects.get(string_id=string_id)
 
 
 def get_realm_by_id(realm_id: int) -> Realm:
@@ -1084,6 +1090,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_access_all_users_group__named_user_group",
         "can_create_public_channel_group",
         "can_create_public_channel_group__named_user_group",
+        "can_create_private_channel_group",
+        "can_create_private_channel_group__named_user_group",
     ).get(id=realm_id)
 
 

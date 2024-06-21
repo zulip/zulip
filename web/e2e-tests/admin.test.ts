@@ -103,7 +103,6 @@ async function test_changing_create_streams_and_invite_to_stream_policies(
     page: Page,
 ): Promise<void> {
     const policies = {
-        "create private stream": "#id_realm_create_private_stream_policy",
         "invite to stream": "#id_realm_invite_to_stream_policy",
     };
     const policy_values = {

@@ -294,6 +294,11 @@ def fetch_initial_state_data(
                 realm, "can_create_public_channel_group", Realm.COMMON_POLICY_TYPES
             )
         )
+        state["realm_create_private_stream_policy"] = (
+            get_corresponding_policy_value_for_group_setting(
+                realm, "can_create_private_channel_group", Realm.COMMON_POLICY_TYPES
+            )
+        )
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -543,17 +548,17 @@ def fetch_initial_state_data(
             client_gravatar=False,
         )
 
-        state["can_create_private_streams"] = settings_user.can_create_private_streams()
-        state["can_create_public_streams"] = settings_user.can_create_public_streams()
+        state["can_create_private_streams"] = settings_user.can_create_private_streams(realm)
+        state["can_create_public_streams"] = settings_user.can_create_public_streams(realm)
+        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.
         state["can_create_streams"] = (
-            settings_user.can_create_private_streams()
-            or settings_user.can_create_public_streams()
-            or settings_user.can_create_web_public_streams()
+            state["can_create_private_streams"]
+            or state["can_create_public_streams"]
+            or state["can_create_web_public_streams"]
         )
-        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_users_by_email()
         state["is_admin"] = settings_user.is_realm_admin
@@ -1202,7 +1207,6 @@ def apply_event(
                 )
 
             policy_permission_dict = {
-                "create_private_stream_policy": "can_create_private_streams",
                 "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
@@ -1242,15 +1246,26 @@ def apply_event(
                     )
                     state["realm_email_auth_enabled"] = value["Email"]["enabled"]
 
-                if key == "can_create_public_channel_group":
-                    state["realm_create_public_stream_policy"] = (
-                        get_corresponding_policy_value_for_group_setting(
-                            user_profile.realm,
-                            "can_create_public_channel_group",
-                            Realm.COMMON_POLICY_TYPES,
+                if key in ["can_create_public_channel_group", "can_create_private_channel_group"]:
+                    if key == "can_create_public_channel_group":
+                        state["realm_create_public_stream_policy"] = (
+                            get_corresponding_policy_value_for_group_setting(
+                                user_profile.realm,
+                                "can_create_public_channel_group",
+                                Realm.COMMON_POLICY_TYPES,
+                            )
                         )
-                    )
-                    state["can_create_public_streams"] = user_profile.has_permission(key)
+                        state["can_create_public_streams"] = user_profile.has_permission(key)
+                    else:
+                        state["realm_create_private_stream_policy"] = (
+                            get_corresponding_policy_value_for_group_setting(
+                                user_profile.realm,
+                                "can_create_private_channel_group",
+                                Realm.COMMON_POLICY_TYPES,
+                            )
+                        )
+                        state["can_create_private_streams"] = user_profile.has_permission(key)
+
                     state["can_create_streams"] = (
                         state["can_create_private_streams"]
                         or state["can_create_public_streams"]
