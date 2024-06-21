@@ -6,27 +6,28 @@ from django.db import connection, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
+from pydantic import Json, NonNegativeInt
 from sqlalchemy.sql import and_, column, join, literal, literal_column, select, table
 from sqlalchemy.types import Integer, Text
+from typing_extensions import Annotated
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
-    OptionalNarrowListT,
+    NarrowParameter,
     add_narrow_conditions,
     fetch_messages,
     is_spectator_compatible,
     is_web_public_narrow,
-    narrow_parameter,
     parse_anchor_value,
 )
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC
 from zerver.lib.topic_sqlalchemy import topic_column_sa
-from zerver.lib.validator import check_bool, check_int, check_list, to_non_negative_int
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import UserMessage, UserProfile
 
 MAX_MESSAGES_PER_FETCH = 5000
@@ -81,7 +82,9 @@ def get_search_fields(
     }
 
 
-def clean_narrow_for_web_public_api(narrow: OptionalNarrowListT) -> OptionalNarrowListT:
+def clean_narrow_for_web_public_api(
+    narrow: Optional[List[NarrowParameter]],
+) -> Optional[List[NarrowParameter]]:
     if narrow is None:
         return None
 
@@ -91,24 +94,25 @@ def clean_narrow_for_web_public_api(narrow: OptionalNarrowListT) -> OptionalNarr
     return [
         term
         for term in narrow
-        if not (term["operator"] == "in" and term["operand"] == "home" and not term["negated"])
+        if not (term.operator == "in" and term.operand == "home" and not term.negated)
     ]
 
 
-@has_request_variables
+@typed_endpoint
 def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
-    anchor_val: Optional[str] = REQ("anchor", default=None),
-    include_anchor: bool = REQ(json_validator=check_bool, default=True),
-    num_before: int = REQ(converter=to_non_negative_int),
-    num_after: int = REQ(converter=to_non_negative_int),
-    narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
-    use_first_unread_anchor_val: bool = REQ(
-        "use_first_unread_anchor", json_validator=check_bool, default=False
-    ),
-    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
-    apply_markdown: bool = REQ(json_validator=check_bool, default=True),
+    *,
+    anchor_val: Annotated[Optional[str], ApiParamConfig("anchor")] = None,
+    include_anchor: Json[bool] = True,
+    num_before: Json[NonNegativeInt],
+    num_after: Json[NonNegativeInt],
+    narrow: Json[Optional[List[NarrowParameter]]] = None,
+    use_first_unread_anchor_val: Annotated[
+        Json[bool], ApiParamConfig("use_first_unread_anchor")
+    ] = False,
+    client_gravatar: Json[bool] = True,
+    apply_markdown: Json[bool] = True,
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
@@ -164,10 +168,10 @@ def get_messages_backend(
         # Add some metadata to our logging data for narrows
         verbose_operators = []
         for term in narrow:
-            if term["operator"] == "is":
-                verbose_operators.append("is:" + term["operand"])
+            if term.operator == "is":
+                verbose_operators.append("is:" + term.operand)
             else:
-                verbose_operators.append(term["operator"])
+                verbose_operators.append(term.operator)
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
@@ -281,12 +285,13 @@ def get_messages_backend(
     return json_success(request, data=ret)
 
 
-@has_request_variables
+@typed_endpoint
 def messages_in_narrow_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    msg_ids: List[int] = REQ(json_validator=check_list(check_int)),
-    narrow: OptionalNarrowListT = REQ(converter=narrow_parameter),
+    *,
+    msg_ids: Json[List[int]],
+    narrow: Json[List[NarrowParameter]],
 ) -> HttpResponse:
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]

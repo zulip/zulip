@@ -28,6 +28,9 @@ const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
 let set_timeout_called;

@@ -10,6 +10,7 @@ import * as util from "./util";
 
 export function initialize() {
     popover_menus.register_popover_menu(".change_visibility_policy", {
+        theme: "popover-menu",
         placement: "bottom",
         popperOptions: {
             modifiers: [

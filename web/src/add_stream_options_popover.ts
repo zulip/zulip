@@ -10,6 +10,7 @@ import {parse_html} from "./ui_util";
 
 export function initialize(): void {
     popover_menus.register_popover_menu("#streams_inline_icon", {
+        theme: "popover-menu",
         onShow(instance) {
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||

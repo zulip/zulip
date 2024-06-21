@@ -93,7 +93,7 @@ for details.
 <div class="centered_table"></div>
 |                       | Owners and admins | Moderators | Members   | Guests
 |---                    |---                |            |---        |---
-| View channel name      | &#10004;          | &#9726;    | &#9726;   | &#9726;
+| View channel name     | &#10004;          | &#9726;    | &#9726;   | &#9726;
 | Join                  |                   |            |           |
 | Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
 | Add others            | &#9726;           | &#10038;   | &#10038;  |

@@ -417,7 +417,7 @@ class RateLimitTests(ZulipTestCase):
         server.save()
 
         endpoint = "/api/v1/remotes/push/register"
-        payload = {"user_id": 10, "token": "111222", "token_kind": PushDeviceToken.GCM}
+        payload = {"user_id": 10, "token": "111222", "token_kind": PushDeviceToken.FCM}
         try:
             # Remote servers can only make requests to the root subdomain.
             original_default_subdomain = self.DEFAULT_SUBDOMAIN

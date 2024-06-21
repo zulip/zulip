@@ -333,7 +333,7 @@ test("muted_message_vars", () => {
 
     (function test_hidden_message_variables() {
         // We want to have no search results, which apparently works like this.
-        // See https://chat.zulip.org/#narrow/stream/6-frontend/topic/set_find_results.20with.20no.20results/near/1414799
+        // See https://chat.zulip.org/#narrow/channel/6-frontend/topic/set_find_results.20with.20no.20results/near/1414799
         const empty_list_stub = $.create("empty-stub", {children: []});
         $("<message-stub-1>").set_find_results(".user-mention:not(.silent)", empty_list_stub);
         $("<message-stub2>").set_find_results(".user-mention:not(.silent)", empty_list_stub);

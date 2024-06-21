@@ -19,7 +19,6 @@ export const narrow_term_schema = z.object({
     operand: z.string(),
 });
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
-// Sync this with zerver.lib.events.do_events_register.
 
 export const custom_profile_field_schema = z.object({
     display_in_profile_summary: z.optional(z.boolean()),
@@ -34,6 +33,7 @@ export const custom_profile_field_schema = z.object({
 
 export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
 
+// Sync this with zerver.lib.events.do_events_register.
 export const current_user_schema = z.object({
     avatar_source: z.string(),
     delivery_email: z.string(),
@@ -45,8 +45,8 @@ export const current_user_schema = z.object({
     is_owner: z.boolean(),
     user_id: z.number(),
 });
-// Sync this with zerver.lib.events.do_events_register.
 
+// Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
     custom_profile_field_types: z.object({
@@ -84,9 +84,10 @@ export const realm_schema = z.object({
     realm_avatar_changes_disabled: z.boolean(),
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
+    realm_can_create_public_channel_group: z.number(),
+    realm_can_create_private_channel_group: z.number(),
     realm_create_multiuse_invite_group: z.number(),
     realm_create_private_stream_policy: z.number(),
-    realm_create_public_stream_policy: z.number(),
     realm_create_web_public_stream_policy: z.number(),
     realm_date_created: z.number(),
     realm_default_code_block_language: z.string(),

@@ -179,6 +179,11 @@ export class DropdownWidget {
             );
             return;
         }
+
+        if (this.disable_for_spectators && page_params.is_spectator) {
+            return;
+        }
+
         this.instance = tippy.delegate(delegate_container, {
             ...popover_menus.default_popover_props,
             target: this.widget_selector,

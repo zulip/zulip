@@ -11,9 +11,9 @@ perspectives, respectfully shared.
 
 Most design discussions take place in the [#design][design channel] channel in the
 development community. Discussions about mobile app design happen in
-[#mobile-team](https://chat.zulip.org/#narrow/stream/243-mobile-team), and
+[#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team), and
 design of the terminal app is discussed in
-[#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal).
+[#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal).
 
 ## Guidelines for all participants
 
@@ -168,7 +168,7 @@ Sometimes it helps to move (part of) a thread to a different channel, so that
 it's seen by the appropriate audience.
 
 - We generally aim to discuss raw user feedback on the product’s design in
-  [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback).
+  [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback).
   The [#design][design channel] should be reserved for design aspects that we’re
   actively (considering) working on. This lets the design team focus on
   discussions that are expected to result in actionable decisions.
@@ -178,13 +178,13 @@ it's seen by the appropriate audience.
   follow the conversation.
 
 - Discussion of implementation-related decisions should ideally happen in
-  [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend). The line can
+  [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend). The line can
   sometimes blur (and that’s OK), but we should aim to move (parts of) the
   thread if there is an extensive conversation that belongs in the other channel.
 
-- We use [#mobile-team](https://chat.zulip.org/#narrow/stream/243-mobile-team)
+- We use [#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team)
   for discussions of mobile app design, and
-  [#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal) for
+  [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal) for
   terminal app design.
 
 ## Guidelines for decision makers
@@ -268,4 +268,4 @@ to a decision:
   - If the thread has died down, and the decision makers feel that they have
     enough information to go on. (If they don’t, the thread can be bumped.)
 
-[design channel]: https://chat.zulip.org/#narrow/stream/101-design
+[design channel]: https://chat.zulip.org/#narrow/channel/101-design

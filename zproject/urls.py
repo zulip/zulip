@@ -318,7 +318,7 @@ v1_api_and_json_patterns = [
     # invites -> zerver.views.invite
     rest_path("invites", GET=get_user_invites, POST=invite_users_backend),
     rest_path("invites/<int:invite_id>", DELETE=revoke_user_invite),
-    rest_path("invites/<int:prereg_id>/resend", POST=resend_user_invite_email),
+    rest_path("invites/<int:invite_id>/resend", POST=resend_user_invite_email),
     # invites/multiuse -> zerver.views.invite
     rest_path("invites/multiuse", POST=generate_multiuse_invite_backend),
     # invites/multiuse -> zerver.views.invite
@@ -417,7 +417,7 @@ v1_api_and_json_patterns = [
     ),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
-    # users/me/onboarding_steps -> zerver.views.hotspots
+    # users/me/onboarding_steps -> zerver.views.onboarding_steps
     rest_path(
         "users/me/onboarding_steps",
         POST=(

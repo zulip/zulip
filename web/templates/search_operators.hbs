@@ -1,5 +1,5 @@
 <div class="overlay-modal hide" id="search-operators" tabindex="-1" role="dialog" aria-label="{{t 'Search filters' }}">
-    <div class="overlay-scroll-container" data-simplebar data-simplebar-auto-hide="false">
+    <div class="overlay-scroll-container" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
         <div id="operators-instructions">
             <table class="table table-striped table-rounded table-bordered help-table">
                 <thead>
@@ -100,6 +100,12 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="operator">has:reaction</td>
+                        <td class="definition">
+                            {{t 'Narrow to messages with emoji reactions.'}}
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="operator">is:alerted</td>
                         <td class="definition">
                             {{t 'Narrow to messages with alert words.'}}
@@ -121,6 +127,12 @@
                         <td class="operator">is:resolved</td>
                         <td class="definition">
                             {{t 'Narrow to messages in resolved topics.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">is:followed</td>
+                        <td class="definition">
+                            {{t 'Narrow to messages in followed topics.'}}
                         </td>
                     </tr>
                     <tr>

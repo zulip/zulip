@@ -204,7 +204,6 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 type simple_dropdown_realm_settings = Pick<
     typeof realm,
     | "realm_create_private_stream_policy"
-    | "realm_create_public_stream_policy"
     | "realm_create_web_public_stream_policy"
     | "realm_invite_to_stream_policy"
     | "realm_user_group_edit_policy"
@@ -437,8 +436,7 @@ export function read_field_data_from_form(
 ): FieldData | undefined {
     const field_types = realm.custom_profile_field_types;
 
-    // Only read field data if we are creating a select field
-    // or external account field.
+    // Only the following field types support associated field data.
     if (field_type_id === field_types.SELECT.id) {
         return read_select_field_data_from_form($profile_field_form, old_field_data);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
@@ -463,72 +461,41 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
     return JSON.stringify(proposed_value);
 }
 
-export let default_code_language_widget: DropdownWidget | null = null;
-export let new_stream_announcements_stream_widget: DropdownWidget | null = null;
-export let signup_announcements_stream_widget: DropdownWidget | null = null;
-export let zulip_update_announcements_stream_widget: DropdownWidget | null = null;
-export let create_multiuse_invite_group_widget: DropdownWidget | null = null;
-export let can_remove_subscribers_group_widget: DropdownWidget | null = null;
-export let can_access_all_users_group_widget: DropdownWidget | null = null;
-export let can_mention_group_widget: DropdownWidget | null = null;
 export let new_group_can_mention_group_widget: DropdownWidget | null = null;
+
+const dropdown_widget_map = new Map<string, DropdownWidget | null>([
+    ["realm_new_stream_announcements_stream_id", null],
+    ["realm_signup_announcements_stream_id", null],
+    ["realm_zulip_update_announcements_stream_id", null],
+    ["realm_default_code_block_language", null],
+    ["realm_create_multiuse_invite_group", null],
+    ["can_remove_subscribers_group", null],
+    ["realm_can_access_all_users_group", null],
+    ["can_mention_group", null],
+    ["realm_can_create_public_channel_group", null],
+    ["realm_can_create_private_channel_group", null],
+]);
 
 export function get_widget_for_dropdown_list_settings(
     property_name: string,
 ): DropdownWidget | null {
-    switch (property_name) {
-        case "realm_new_stream_announcements_stream_id":
-            return new_stream_announcements_stream_widget;
-        case "realm_signup_announcements_stream_id":
-            return signup_announcements_stream_widget;
-        case "realm_zulip_update_announcements_stream_id":
-            return zulip_update_announcements_stream_widget;
-        case "realm_default_code_block_language":
-            return default_code_language_widget;
-        case "realm_create_multiuse_invite_group":
-            return create_multiuse_invite_group_widget;
-        case "can_remove_subscribers_group":
-            return can_remove_subscribers_group_widget;
-        case "realm_can_access_all_users_group":
-            return can_access_all_users_group_widget;
-        case "can_mention_group":
-            return can_mention_group_widget;
-        default:
-            blueslip.error("No dropdown list widget for property", {property_name});
-            return null;
+    const dropdown_widget = dropdown_widget_map.get(property_name);
+
+    if (dropdown_widget === undefined) {
+        blueslip.error("No dropdown list widget for property", {property_name});
+        return null;
     }
+
+    return dropdown_widget;
 }
 
-export function set_default_code_language_widget(widget: DropdownWidget): void {
-    default_code_language_widget = widget;
-}
+export function set_dropdown_setting_widget(property_name: string, widget: DropdownWidget): void {
+    if (dropdown_widget_map.get(property_name) === undefined) {
+        blueslip.error("No dropdown list widget for property", {property_name});
+        return;
+    }
 
-export function set_new_stream_announcements_stream_widget(widget: DropdownWidget): void {
-    new_stream_announcements_stream_widget = widget;
-}
-
-export function set_signup_announcements_stream_widget(widget: DropdownWidget): void {
-    signup_announcements_stream_widget = widget;
-}
-
-export function set_zulip_update_announcements_stream_widget(widget: DropdownWidget): void {
-    zulip_update_announcements_stream_widget = widget;
-}
-
-export function set_create_multiuse_invite_group_widget(widget: DropdownWidget): void {
-    create_multiuse_invite_group_widget = widget;
-}
-
-export function set_can_remove_subscribers_group_widget(widget: DropdownWidget): void {
-    can_remove_subscribers_group_widget = widget;
-}
-
-export function set_can_access_all_users_group_widget(widget: DropdownWidget): void {
-    can_access_all_users_group_widget = widget;
-}
-
-export function set_can_mention_group_widget(widget: DropdownWidget): void {
-    can_mention_group_widget = widget;
+    dropdown_widget_map.set(property_name, widget);
 }
 
 export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
@@ -812,6 +779,8 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_default_code_block_language":
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
+        case "realm_can_create_public_channel_group":
+        case "realm_can_create_private_channel_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "realm_message_content_edit_limit_seconds":
@@ -1001,6 +970,23 @@ export function populate_data_for_realm_settings_request(
                     };
                     continue;
                 }
+
+                if (property_name === "can_create_public_channel_group") {
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: realm.realm_can_create_public_channel_group,
+                    });
+                    continue;
+                }
+
+                if (property_name === "can_create_private_channel_group") {
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: realm.realm_can_create_private_channel_group,
+                    });
+                    continue;
+                }
+
                 data[property_name] = input_value;
             }
         }

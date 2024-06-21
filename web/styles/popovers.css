@@ -1067,8 +1067,10 @@ ul {
     }
 }
 
-.visibility_policy_popover {
-    padding: 0 4px;
+.visibility-policy-popover {
+    .popover-menu-list {
+        padding: 2px;
+    }
 }
 
 .recipient-bar-topic-visibility-switcher {
@@ -1176,6 +1178,7 @@ ul {
         /* Keep menu items on a single line, unless forced to wrap
         by a max-width on the popover. */
         width: max-content;
+        flex: 1 0 0;
     }
 
     .text-item,
@@ -1240,6 +1243,19 @@ ul {
             &:active {
                 background: var(--color-background-active-popover-menu);
             }
+        }
+    }
+
+    .tab-picker {
+        &.popover-menu-tab-group {
+            margin: 2px 10px;
+        }
+
+        .tab-option-content:focus-visible {
+            border-radius: 4px;
+            /* Override the default focus style */
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -1px;
         }
     }
 
@@ -1425,17 +1441,5 @@ ul.popover-menu-list {
         padding: 2px 4px;
         border-radius: 3px;
         border: 1px solid var(--color-border-popover-hotkey-hint);
-    }
-}
-
-#theme-switcher,
-.sidebar-topic-visibility-switcher {
-    margin: 2px 10px;
-
-    .tab-option-content:focus-visible {
-        border-radius: 4px;
-        /* Override the default focus style */
-        outline: 1px solid var(--color-outline-focus) !important;
-        outline-offset: -1px;
     }
 }

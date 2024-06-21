@@ -523,7 +523,7 @@ h4.user_group_setting_subsection_title {
     }
 
     #announce-new-stream {
-        margin: 25px auto;
+        margin: 20px auto;
 
         & div[class^="fa"] {
             margin-left: 3px;
@@ -731,6 +731,8 @@ h4.user_group_setting_subsection_title {
         }
 
         .settings-sticky-footer {
+            display: flex;
+            justify-content: space-between;
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
@@ -1063,7 +1065,7 @@ div.settings-radio-input-parent {
     }
 
     .default-stream {
-        margin: 25px 0;
+        margin: 20px 0;
         width: fit-content;
 
         .inline {

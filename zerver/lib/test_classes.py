@@ -2572,6 +2572,6 @@ class BouncerTestCase(ZulipTestCase):
     def get_generic_payload(self, method: str = "register") -> Dict[str, Any]:
         user_id = 10
         token = "111222"
-        token_kind = PushDeviceToken.GCM
+        token_kind = PushDeviceToken.FCM
 
         return {"user_id": user_id, "token": token, "token_kind": token_kind}

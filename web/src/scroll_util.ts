@@ -26,7 +26,7 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
     } else if ("simplebar" in element.dataset) {
         // The SimpleBar mutation observer hasn’t processed this element yet.
         // Create the SimpleBar early in case we need to add event listeners.
-        return $(new SimpleBar(element).getScrollElement()!);
+        return $(new SimpleBar(element, {tabIndex: -1}).getScrollElement()!);
     }
     return $element;
 }

@@ -86,7 +86,7 @@ Some useful tips for your translating journey:
   the string with `Ctrl+F` in your browser.
 
 - When in doubt, ask for context in
-  [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
+  [#translation](https://chat.zulip.org/#narrow/channel/58-translation) in
   the [Zulip development community server](https://zulip.com/development-community/).
 
 - If there are multiple possible translations for a term, search for it in
@@ -225,4 +225,4 @@ suite](../testing/testing.md#other-test-suites)
 (`./tools/check-capitalization`; `tools/lib/capitalization.py` has
 some exclude lists, e.g. `IGNORED_PHRASES`).
 
-[translation-channel]: https://chat.zulip.org/#narrow/stream/58-translation
+[translation-channel]: https://chat.zulip.org/#narrow/channel/58-translation

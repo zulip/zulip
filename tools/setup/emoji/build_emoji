@@ -402,7 +402,7 @@ def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> 
     # switch to that which would allow us to drop the existing file. But
     # we'll probably instead do #18121 which will make this file obsolete.
     # So this is a temporary solution. CZO discussion:
-    # https://chat.zulip.org/#narrow/stream/378-api-design/topic/currently.20supported.20emoji/near/1394598
+    # https://chat.zulip.org/#narrow/channel/378-api-design/topic/currently.20supported.20emoji/near/1394598
     EMOJI_API_FILE_PATH = os.path.join(cache_path, "emoji_api.json")
     with open(EMOJI_API_FILE_PATH, "wb") as emoji_api_file:
         emoji_api_file.write(

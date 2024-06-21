@@ -297,7 +297,7 @@ also some additional ways to ask for a code review:
   can also include a link to this guide.
 
 - If you're not sure who to ask, you can post a message in
-  [#code-review](https://chat.zulip.org/#narrow/stream/91-code-review) on [the Zulip
+  [#code-review](https://chat.zulip.org/#narrow/channel/91-code-review) on [the Zulip
   development community server](https://zulip.com/development-community/) to reach
   out to a wider group of potential reviewers.
 

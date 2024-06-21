@@ -19,6 +19,7 @@ const settings_account = mock_esm("../src/settings_account", {
 const settings_users = mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
+    update_view_on_reactivate() {},
 });
 mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},

@@ -1,7 +1,7 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area">
-        <div id="views-label-container" class="showing-expanded-navigation hidden-for-spectators">
-            <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down views-tooltip-target" aria-hidden="true"></i>
+        <div id="views-label-container" class="showing-expanded-navigation {{#if is_spectator}}remove-pointer-for-spectator{{/if}}">
+            <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down views-tooltip-target hidden-for-spectators" aria-hidden="true"></i>
             {{~!-- squash whitespace --~}}
             <h4 class="left-sidebar-title"><span class="views-tooltip-target">{{t 'VIEWS' }}</span></h4>
             <ul id="left-sidebar-navigation-list-condensed" class="filters">
@@ -98,6 +98,16 @@
                     <span class="unread_count"></span>
                 </a>
             </li>
+            <li class="tippy-views-tooltip top_left_my_reactions top_left_row hidden-for-spectators" data-tooltip-template-id="my-reactions-tooltip-template">
+                <a class="left-sidebar-navigation-label-container" href="#narrow/has/reaction/sender/me">
+                    <span class="filter-icon">
+                        <i class="zulip-icon zulip-icon-smile" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span class="left-sidebar-navigation-label">{{t 'Reactions' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+            </li>
             <li class="top_left_starred_messages top_left_row hidden-for-spectators">
                 <a class="left-sidebar-navigation-label-container" href="#narrow/is/starred">
                     <span class="filter-icon">
@@ -133,13 +143,13 @@
         </ul>
     </div>
 
-    <div id="private_messages_sticky_header" class="direct-messages-container zoom-out hidden-for-spectators">
-        <div id="private_messages_section">
-            <div id="private_messages_section_header" class="zoom-out zoom-in-sticky">
-                <i id="toggle_private_messages_section_icon" class="fa fa-sm fa-caret-down dm-tooltip-target toggle_private_messages_section zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
-                <h4 class="left-sidebar-title toggle_private_messages_section"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
+    <div id="direct-messages-sticky-header" class="direct-messages-container zoom-out hidden-for-spectators">
+        <div id="direct-messages-section">
+            <div id="direct-messages-section-header" class="zoom-out zoom-in-sticky">
+                <i id="toggle-direct-messages-section-icon" class="fa fa-sm fa-caret-down dm-tooltip-target zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
+                <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
                 <div class="heading-markers-and-controls">
-                    <a id="show_all_private_messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-pms-template">
+                    <a id="show-all-direct-messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-direct-messages-template">
                         <i class="fa fa-align-right" aria-label="{{t 'Direct message feed' }}"></i>
                     </a>
                     <span class="unread_count"></span>
@@ -151,7 +161,7 @@
         </a>
     </div>
     {{~!-- squash whitespace --~}}
-    <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar>
+    <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar data-simplebar-tab-index="-1">
         <div class="direct-messages-container zoom-out hidden-for-spectators">
             <div id="direct-messages-list"></div>
         </div>

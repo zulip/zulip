@@ -48,7 +48,7 @@ When you deactivate a user:
 
 {tab|via-organization-settings}
 
-{settings_tab|user-list-admin}
+{settings_tab|users}
 
 1. In the **Actions** column, click the **deactivate** (<i class="fa
    fa-user-times"></i>) icon for the user you want to deactivate.
@@ -80,7 +80,7 @@ bots will be deactivated until the user manually
 
 {tab|via-organization-settings}
 
-{settings_tab|deactivated-users-admin}
+{settings_tab|deactivated}
 
 1. Click the **Reactivate** button to the right of the user account that you
    want to reactivate.

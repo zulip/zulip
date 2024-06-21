@@ -139,7 +139,7 @@ export function initialize(): void {
     // thus hovering it is a way to find out what it does, give
     // it the faster LONG_HOVER_DELAY.
     tippy.delegate("body", {
-        target: "#show_all_private_messages",
+        target: "#show-all-direct-messages",
         placement: "right",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -258,10 +258,9 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "#compose_top_right [data-tippy-content]",
-            "#compose_top_right [data-tooltip-template-id]",
-        ].join(","),
+        target: ["#compose_close", ".expand-composebox-button", ".collapse-composebox-button"].join(
+            ",",
+        ),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
@@ -475,7 +474,7 @@ export function initialize(): void {
                 return false;
             }
 
-            if ($("#toggle_private_messages_section_icon").hasClass("fa-caret-down")) {
+            if ($("#toggle-direct-messages-section-icon").hasClass("fa-caret-down")) {
                 instance.setContent(
                     $t({
                         defaultMessage: "Collapse direct messages",
@@ -488,6 +487,9 @@ export function initialize(): void {
         },
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     tippy.delegate("body", {
@@ -592,6 +594,24 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".header-main .column-left .left-sidebar-toggle-button",
+        delay: LONG_HOVER_DELAY,
+        placement: "bottom",
+        appendTo: () => document.body,
+        onShow(instance) {
+            let template = "show-left-sidebar-tooltip-template";
+            if ($("#left-sidebar-container").is(":visible")) {
+                template = "hide-left-sidebar-tooltip-template";
+            }
+            $(instance.reference).attr("data-tooltip-template-id", template);
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#userlist-toggle",
         delay: LONG_HOVER_DELAY,
         placement: "bottom",
@@ -610,7 +630,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#realm-logo",
+        target: "#realm-navbar-wide-logo",
         placement: "right",
         appendTo: () => document.body,
         onShow(instance) {

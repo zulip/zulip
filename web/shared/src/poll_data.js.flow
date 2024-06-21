@@ -5,7 +5,7 @@
  *
  * In reality these are more specific than this type.  But they're currently
  * completely undocumented in the API:
- *   https://chat.zulip.org/#narrow/stream/412-api-documentation/topic/.60.2Esubmessages.60.20on.20message.20objects/near/1358493
+ *   https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/.60.2Esubmessages.60.20on.20message.20objects/near/1358493
  * so we don't attempt to go any further here.
  */
 type PollEvent = {...};

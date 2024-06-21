@@ -82,19 +82,19 @@
       "name": "fenced_normal_quote",
       "input": "Hamlet said:\n~~~ quote\nTo be or **not** to be.\n\nThat is the question\n~~~",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>To be or <strong>not</strong> to be.</p>\n<p>That is the question</p>\n</blockquote>",
-      "text_content": "Hamlet said:\n> To be or not to be.\n> That is the question\n"
+      "text_content": "Hamlet said:\n[…]"
     },
     {
       "name": "fenced_nested_quote",
       "input": "Hamlet said:\n~~~ quote\nPolonius said:\n> This above all: to thine ownself be true,\nAnd it must follow, as the night the day,\nThou canst not then be false to any man.\n\nWhat good advice!\n~~~",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Polonius said:</p>\n<blockquote>\n<p>This above all: to thine ownself be true,<br>\nAnd it must follow, as the night the day,<br>\nThou canst not then be false to any man.</p>\n</blockquote>\n<p>What good advice!</p>\n</blockquote>",
-      "text_content": "Hamlet said:\n> Polonius said:\n> > This above all: to thine ownself be true,\n> > And it must follow, as the night the day,\n> > Thou canst not then be false to any man.\n> What good advice!\n"
+      "text_content": "Hamlet said:\n[…]"
     },
     {
       "name": "fenced_complexly_nested_quote",
       "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n~~~\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n~~~",
       "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span><code>def hello(): print &#39;hello\n</code></pre></div>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span><code>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</code></pre></div>",
-      "text_content": "I heard about this second hand...\n> He said:\n> > The customer is complaining.\n> > They looked at this code:\n> > def hello(): print 'hello\n> > They would prefer:\n> def hello()\n>   puts 'hello'\n> end\n\nPlease advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n"
+      "text_content": "I heard about this second hand...\n[…]Please advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n"
     },
     {
       "name": "fenced_quotes_inside_mathblock",
@@ -130,7 +130,7 @@
       "name": "multiple_blockquote_with_quote_and_reply",
       "input": "Hamlet said:\n~~~quote\nCan we talk ?\n~~~\n> Yes !!\n\nWelcome to Open Source.",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Can we talk ?</p>\n</blockquote>\n<blockquote>\n<p>Yes !!</p>\n</blockquote>\n<p>Welcome to Open Source.</p>",
-      "text_content": "Hamlet said:\n> Can we talk ?\n\n> Yes !!\n\nWelcome to Open Source."
+      "text_content": "Hamlet said:\n[…]\nWelcome to Open Source."
     },
     {
       "name": "fenced_quote_with_hashtag",
@@ -142,7 +142,7 @@
       "name": "fenced_quote_and_list",
       "input": "Before:\n* One.\n* Two.\n\n```quote\nLists should work after a quote\n```\n\nAfter:\n* One.\n* Two.",
       "expected_output": "<p>Before:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>\n<blockquote>\n<p>Lists should work after a quote</p>\n</blockquote>\n<p>After:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>",
-      "text_content": "Before:\n\nOne.\nTwo.\n\n> Lists should work after a quote\n\nAfter:\n\nOne.\nTwo.\n"
+      "text_content": "Before:\n\nOne.\nTwo.\n\n[…]After:\n\nOne.\nTwo.\n"
     },
     {
       "name": "dangerous_block_having_x",
@@ -982,7 +982,7 @@
       "name": "spoilers_block_quote",
       "input": "~~~quote\n```spoiler header\ncontent\n```\noutside spoiler\n~~~\noutside quote",
       "expected_output": "<blockquote>\n<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>",
-      "text_content": "> header (…)\n> outside spoiler\n\noutside quote"
+      "text_content": "[…]outside quote"
     },
     {
       "name": "spoilers_with_header_markdown",
@@ -1047,6 +1047,26 @@
       "input": "```php\n  $var = function($var, 'string');\n```\nPHP\n```css+php\n  $var = function($var, 'string');\n```\nCSS + PHP\n```html+php\n  $var = function($var, 'string');\n```\nHTML + PHP\n```javascript+php\n  $var = function($var, 'string');\n```\nJAVASCRIPT + PHP\n```xml+php\n  $var = function($var, 'string');\n```\nXML + PHP\n```php\n  <?php\n  $var = function($var, 'string');\n```\nWITH MARKER",
       "expected_output": "<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>PHP</p>\n<div class=\"codehilite\" data-code-language=\"CSS+PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>CSS + PHP</p>\n<div class=\"codehilite\" data-code-language=\"HTML+PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>HTML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"JavaScript+PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>JAVASCRIPT + PHP</p>\n<div class=\"codehilite\" data-code-language=\"XML+PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>XML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  <span class=\"o\">&lt;?</span><span class=\"nx\">php</span>\n  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>WITH MARKER</p>",
       "marked_expected_output": "<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>PHP</p>\n<div class=\"codehilite\" data-code-language=\"CSS+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>CSS + PHP</p>\n<div class=\"codehilite\" data-code-language=\"HTML+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>HTML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"JavaScript+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>JAVASCRIPT + PHP</p>\n<div class=\"codehilite\" data-code-language=\"XML+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>XML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  &lt;?php\n  $var = function($var, 'string');\n</code></pre></div>\n<p>WITH MARKER</p>"
+    },
+    {
+      "name": "normal_quote_and_reply",
+      "input": "@_**Zoe|7** [said](http://zulip.testserver/#narrow/stream/13-social/topic/party/near/103):\n```quote\nHow are you?\n```\n\nGreat",
+      "expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"#narrow/stream/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
+      "marked_expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"http://zulip.testserver/#narrow/stream/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
+      "text_content": "[…]\nGreat"
+    },
+    {
+      "name": "user_mention_with_no_message_link",
+      "input": "Hello @_**Zoe|7** see [this](http://zulip.testserver/#narrow/search/database).",
+      "expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"#narrow/search/database\">this</a>.</p>",
+      "marked_expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"http://zulip.testserver/#narrow/search/database\">this</a>.</p>",
+      "text_content": "Hello Zoe see this."
+    },
+    {
+      "name": "user_mention_with_no_narrow_link",
+      "input": "Hello @_**Zoe|7** see [this](https://google.com).",
+      "expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"https://google.com\">this</a>.</p>",
+      "text_content": "Hello Zoe see this."
     }
   ],
   "linkify_tests": [

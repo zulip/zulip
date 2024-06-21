@@ -9,8 +9,8 @@ import * as compose_fade from "./compose_fade";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
+import * as direct_message_group_data from "./direct_message_group_data";
 import * as drafts from "./drafts";
-import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
@@ -114,7 +114,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
-    huddle_data.process_loaded_messages(messages);
+    direct_message_group_data.process_loaded_messages(messages);
 
     // all_messages_data is the data that we use to populate
     // other lists, so we always update this

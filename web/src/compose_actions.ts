@@ -149,7 +149,6 @@ export function autosize_message_content(opts: ComposeActionsStartOpts): void {
 
 export function expand_compose_box(): void {
     $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
-    $("#compose_close").show();
     $("#compose_controls").hide();
     $(".message_comp").show();
 }
@@ -395,7 +394,6 @@ export function cancel(): void {
         return;
     }
     hide_box();
-    $("#compose_close").hide();
     clear_box();
     compose_banner.clear_message_sent_banners();
     call_hooks(compose_cancel_hooks);

@@ -272,7 +272,7 @@ As with other installation methods, please visit [#provision
 help][provision-help] in the [Zulip development community
 server](https://zulip.com/development-community/) if you need help.
 
-[provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
+[provision-help]: https://chat.zulip.org/#narrow/channel/21-provision-help
 
 ## Newer versions of supported platforms
 
@@ -287,7 +287,7 @@ Ubuntu that you're using, we'd love to add support for it. It's
 likely only a few lines of changes to `tools/lib/provision.py` and
 `scripts/lib/setup-apt-repo` if you'd like to do it yourself and
 submit a pull request, or you can ask for help in
-[#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
+[#development help](https://chat.zulip.org/#narrow/channel/49-development-help)
 in [the Zulip development community](https://zulip.com/development-community/),
 and a core team member can help guide you through adding support for the platform.
 

@@ -4,44 +4,47 @@ import render_new_user_group_user from "../templates/stream_settings/new_stream_
 import render_new_user_group_users from "../templates/user_group_settings/new_user_group_users.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
+import type {InputPillContainer} from "./input_pill";
 import * as ListWidget from "./list_widget";
+import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as people from "./people";
 import {current_user} from "./state_data";
+import type {CombinedPillItem} from "./typeahead_helper";
 import * as user_group_create_members_data from "./user_group_create_members_data";
 import * as user_sort from "./user_sort";
 
-let pill_widget;
-let all_users_list_widget;
+let pill_widget: InputPillContainer<CombinedPillItem>;
+let all_users_list_widget: ListWidgetType<number, people.User>;
 
-export function get_principals() {
+export function get_principals(): number[] {
     return user_group_create_members_data.get_principals();
 }
 
-function redraw_member_list() {
+function redraw_member_list(): void {
     all_users_list_widget.replace_list_data(user_group_create_members_data.sorted_user_ids());
 }
 
-function add_user_ids(user_ids) {
+function add_user_ids(user_ids: number[]): void {
     user_group_create_members_data.add_user_ids(user_ids);
     redraw_member_list();
 }
 
-function add_all_users() {
+function add_all_users(): void {
     const user_ids = user_group_create_members_data.get_all_user_ids();
     add_user_ids(user_ids);
 }
 
-function remove_user_ids(user_ids) {
+function remove_user_ids(user_ids: number[]): void {
     user_group_create_members_data.remove_user_ids(user_ids);
     redraw_member_list();
 }
 
-export function clear_member_list() {
+export function clear_member_list(): void {
     user_group_create_members_data.initialize_with_current_user();
     redraw_member_list();
 }
 
-function build_pill_widget({$parent_container}) {
+function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
     const $pill_container = $parent_container.find(".pill-container");
     const get_potential_members = user_group_create_members_data.get_potential_members;
 
@@ -51,7 +54,7 @@ function build_pill_widget({$parent_container}) {
     });
 }
 
-export function create_handlers($container) {
+export function create_handlers($container: JQuery): void {
     $container.on("click", ".add_all_users_to_user_group", (e) => {
         e.preventDefault();
         add_all_users();
@@ -61,11 +64,11 @@ export function create_handlers($container) {
     $container.on("click", ".remove_potential_subscriber", (e) => {
         e.preventDefault();
         const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-user-id"), 10);
+        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
         remove_user_ids([user_id]);
     });
 
-    function add_users({pill_user_ids}) {
+    function add_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         add_user_ids(pill_user_ids);
         pill_widget.clear();
     }
@@ -79,7 +82,7 @@ export function create_handlers($container) {
     });
 }
 
-export function build_widgets() {
+export function build_widgets(): void {
     const $add_people_container = $("#people_to_add_in_group");
     $add_people_container.html(render_new_user_group_users({}));
 

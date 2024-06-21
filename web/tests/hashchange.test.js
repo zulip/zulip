@@ -22,6 +22,9 @@ const overlays = mock_esm("../src/overlays");
 const popovers = mock_esm("../src/popovers");
 const recent_view_ui = mock_esm("../src/recent_view_ui");
 const settings = mock_esm("../src/settings");
+mock_esm("../src/settings_data", {
+    user_can_create_public_streams: () => true,
+});
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const ui_util = mock_esm("../src/ui_util");
 const ui_report = mock_esm("../src/ui_report");
@@ -169,7 +172,13 @@ function test_helper({override, override_rewire, change_tab}) {
         };
     }
 
-    stub(admin, "launch");
+    function stub_with_args(module, func_name) {
+        module[func_name] = (...args) => {
+            events.push([module, func_name, args]);
+        };
+    }
+
+    stub_with_args(admin, "launch");
     stub(admin, "build_page");
     stub(drafts_overlay_ui, "launch");
     stub(message_viewport, "stop_auto_scrolling");
@@ -352,7 +361,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [settings, "launch"],
     ]);
 
-    window.location.hash = "#organization/user-list-admin";
+    window.location.hash = "#organization/users/active";
 
     helper.clear_events();
     $window_stub.trigger("hashchange");
@@ -360,7 +369,22 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [overlays, "close_for_hash_change"],
         [settings, "build_page"],
         [admin, "build_page"],
-        [admin, "launch"],
+        [admin, "launch", ["users", "active"]],
+    ]);
+
+    window.location.hash = "#organization/user-list-admin";
+
+    // Check whether `user-list-admin` is redirect to `users`, we
+    // cannot test the exact hashchange here, since the section url
+    // takes effect in `admin.launch` and that's why we're checking
+    // the arguments passed to `admin.launch`.
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [settings, "build_page"],
+        [admin, "build_page"],
+        [admin, "launch", ["users", "active"]],
     ]);
 
     helper.clear_events();

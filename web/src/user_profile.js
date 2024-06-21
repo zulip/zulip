@@ -102,6 +102,10 @@ export function update_profile_modal_ui(user, new_data) {
     if (!(modals.any_active() && modals.active_modal() === "#user-profile-modal")) {
         return;
     }
+    if (original_values?.user_id === undefined) {
+        // This occurs if say, the "channel" tab is open.
+        return;
+    }
     const current_user_id = Number.parseInt(original_values.user_id, 10);
     if (current_user_id !== user.user_id) {
         return;
@@ -111,7 +115,10 @@ export function update_profile_modal_ui(user, new_data) {
         $bot_owner_field.attr("data-field-id", new_data.bot_owner_id);
     }
     if (new_data.avatar_url !== undefined) {
-        $("#avatar").css("background-image", `url(${people.medium_avatar_url_for_person(user)})`);
+        $("#avatar").css(
+            "background-image",
+            `url(${CSS.escape(people.medium_avatar_url_for_person(user))})`,
+        );
     }
     if (new_data.delivery_email !== undefined) {
         $("#email").find(".value").text(new_data.delivery_email);
@@ -525,7 +532,6 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
                     break;
             }
             setTimeout(() => {
-                $(".modal__body .simplebar-content-wrapper").attr("tabindex", "-1");
                 $(".modal__container .ind-tab").attr("tabindex", "-1");
                 $(".modal__container .ind-tab.selected").attr("tabindex", "0");
             }, 0);

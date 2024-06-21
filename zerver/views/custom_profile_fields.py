@@ -1,10 +1,11 @@
-from typing import List, Optional, cast
+from typing import Annotated, List, Optional
 
 import orjson
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json, StringConstraints
 
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
@@ -18,21 +19,11 @@ from zerver.actions.custom_profile_fields import (
 from zerver.decorator import human_users_only, require_realm_admin
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import validate_external_account_field_data
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, Validator
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
 from zerver.lib.users import validate_user_custom_profile_data
-from zerver.lib.validator import (
-    check_bool,
-    check_capped_string,
-    check_dict,
-    check_dict_only,
-    check_int,
-    check_list,
-    check_string,
-    check_union,
-    validate_select_field_data,
-)
+from zerver.lib.validator import check_capped_string, validate_select_field_data
 from zerver.models import CustomProfileField, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 
@@ -147,11 +138,6 @@ def validate_custom_profile_field_update(
     )
 
 
-check_profile_field_data: Validator[ProfileFieldData] = check_dict(
-    value_validator=check_union([check_dict(value_validator=check_string), check_string])
-)
-
-
 def update_only_display_in_profile_summary(
     existing_field: CustomProfileField,
     requested_field_data: Optional[ProfileFieldData] = None,
@@ -180,17 +166,20 @@ def display_in_profile_summary_limit_reached(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def create_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: str = REQ(default="", converter=lambda var_name, x: x.strip()),
-    hint: str = REQ(default=""),
-    field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
-    field_type: int = REQ(json_validator=check_int),
-    display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
-    required: bool = REQ(default=False, json_validator=check_bool),
+    *,
+    name: Annotated[str, StringConstraints(strip_whitespace=True)] = "",
+    hint: str = "",
+    field_data: Optional[Json[ProfileFieldData]] = None,
+    field_type: Json[int],
+    display_in_profile_summary: Json[bool] = False,
+    required: Json[bool] = False,
 ) -> HttpResponse:
+    if field_data is None:
+        field_data = {}
     if display_in_profile_summary and display_in_profile_summary_limit_reached(user_profile.realm):
         raise JsonableError(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
@@ -237,18 +226,17 @@ def delete_realm_custom_profile_field(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def update_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
-    field_id: int,
-    name: Optional[str] = REQ(default=None, converter=lambda var_name, x: x.strip()),
-    hint: Optional[str] = REQ(default=None),
-    field_data: Optional[ProfileFieldData] = REQ(
-        default=None, json_validator=check_profile_field_data
-    ),
-    required: Optional[bool] = REQ(default=None, json_validator=check_bool),
-    display_in_profile_summary: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    *,
+    field_id: PathOnly[int],
+    name: Optional[Annotated[str, StringConstraints(strip_whitespace=True)]] = None,
+    hint: Optional[str] = None,
+    field_data: Optional[Json[ProfileFieldData]] = None,
+    required: Optional[Json[bool]] = None,
+    display_in_profile_summary: Optional[Json[bool]] = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -295,49 +283,37 @@ def update_realm_custom_profile_field(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def reorder_realm_custom_profile_fields(
     request: HttpRequest,
     user_profile: UserProfile,
-    order: List[int] = REQ(json_validator=check_list(check_int)),
+    *,
+    order: Json[List[int]],
 ) -> HttpResponse:
     try_reorder_realm_custom_profile_fields(user_profile.realm, order)
     return json_success(request)
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def remove_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
-    data: List[int] = REQ(json_validator=check_list(check_int)),
+    *,
+    data: Json[List[int]],
 ) -> HttpResponse:
     for field_id in data:
         check_remove_custom_profile_field_value(user_profile, field_id)
     return json_success(request)
 
 
-check_profile_data_element_update_dict = cast(
-    Validator[ProfileDataElementUpdateDict],
-    check_dict_only(
-        [
-            ("id", check_int),
-            ("value", check_union([check_string, check_list(check_int)])),
-        ]
-    ),
-)
-
-
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def update_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
-    data: List[ProfileDataElementUpdateDict] = REQ(
-        json_validator=check_list(
-            check_profile_data_element_update_dict,
-        )
-    ),
+    *,
+    data: Json[List[ProfileDataElementUpdateDict]],
 ) -> HttpResponse:
     validate_user_custom_profile_data(user_profile.realm.id, data)
     do_update_user_custom_profile_data_if_changed(user_profile, data)

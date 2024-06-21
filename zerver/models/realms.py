@@ -263,6 +263,16 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     POLICY_NOBODY = 6
     POLICY_OWNERS_ONLY = 7
 
+    SYSTEM_GROUPS_ENUM_MAP = {
+        SystemGroups.OWNERS: POLICY_OWNERS_ONLY,
+        SystemGroups.ADMINISTRATORS: POLICY_ADMINS_ONLY,
+        SystemGroups.MODERATORS: POLICY_MODERATORS_ONLY,
+        SystemGroups.FULL_MEMBERS: POLICY_FULL_MEMBERS_ONLY,
+        SystemGroups.MEMBERS: POLICY_MEMBERS_ONLY,
+        SystemGroups.EVERYONE: POLICY_EVERYONE,
+        SystemGroups.NOBODY: POLICY_NOBODY,
+    }
+
     COMMON_POLICY_TYPES = [field.value for field in CommonPolicyEnum]
 
     COMMON_MESSAGE_POLICY_TYPES = [field.value for field in CommonMessagePolicyEnum]
@@ -293,14 +303,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to create streams.
-    create_public_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
-    )
-    create_private_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
-    )
     create_web_public_stream_policy = models.PositiveSmallIntegerField(
         default=CreateWebPublicStreamPolicyEnum.OWNERS_ONLY
+    )
+
+    can_create_public_channel_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+    can_create_private_channel_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
     # Who in the organization is allowed to delete messages they themselves sent.
@@ -633,8 +644,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
-        create_private_stream_policy=int,
-        create_public_stream_policy=int,
         create_web_public_stream_policy=int,
         default_code_block_language=str,
         default_language=str,
@@ -697,7 +706,30 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             id_field_name="can_access_all_users_group_id",
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
+        can_create_public_channel_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_create_public_channel_group_id",
+        ),
+        can_create_private_channel_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_create_private_channel_group_id",
+        ),
     )
+
+    REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
+        "can_create_private_channel_group",
+        "can_create_public_channel_group",
+    ]
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
 
@@ -1048,6 +1080,21 @@ def get_realm_by_id(realm_id: int) -> Realm:
     return Realm.objects.get(id=realm_id)
 
 
+def get_realm_with_settings(realm_id: int) -> Realm:
+    # Prefetch all the settings that can be set to anonymous groups.
+    # This also prefetches can_access_all_users_group setting,
+    # even when it cannot be set to anonymous groups because
+    # the setting is used when fetching users in the realm.
+    return Realm.objects.select_related(
+        "can_access_all_users_group",
+        "can_access_all_users_group__named_user_group",
+        "can_create_public_channel_group",
+        "can_create_public_channel_group__named_user_group",
+        "can_create_private_channel_group",
+        "can_create_private_channel_group__named_user_group",
+    ).get(id=realm_id)
+
+
 def require_unique_names(realm: Optional[Realm]) -> bool:
     if realm is None:
         # realm is None when a new realm is being created.
@@ -1071,6 +1118,27 @@ def get_org_type_display_name(org_type: int) -> str:
             return realm_type_details["name"]
 
     return ""
+
+
+def get_corresponding_policy_value_for_group_setting(
+    realm: Realm,
+    group_setting_name: str,
+    valid_policy_enums: List[int],
+) -> int:
+    setting_group = getattr(realm, group_setting_name)
+    if (
+        hasattr(setting_group, "named_user_group")
+        and setting_group.named_user_group.is_system_group
+    ):
+        enum_policy_value = Realm.SYSTEM_GROUPS_ENUM_MAP[setting_group.named_user_group.name]
+        if enum_policy_value in valid_policy_enums:
+            return enum_policy_value
+
+    # If the group setting is not set to one of the role based groups
+    # that the previous enum setting allowed, then just return the
+    # enum value corresponding to largest group.
+    assert valid_policy_enums == Realm.COMMON_POLICY_TYPES
+    return Realm.POLICY_MEMBERS_ONLY
 
 
 class RealmDomain(models.Model):

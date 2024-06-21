@@ -116,6 +116,8 @@ TAB_SECTION_LABELS = {
     "v6": "Zulip Server 6.0+",
     "v4": "Zulip Server 4.0+",
     "all-versions": "All versions",
+    "by-card": "Pay by credit card",
+    "by-invoice": "Pay by invoice",
     "for-a-bot": "For a bot",
     "for-yourself": "For yourself",
 }

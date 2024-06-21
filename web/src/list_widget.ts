@@ -271,6 +271,10 @@ export function create<Key, Item = Key>(
         // We still keep `html` as `$scroll_container` to use
         // its various methods as `HTMLElement`.
         $scroll_listening_element = $(window);
+    } else {
+        // When `$scroll_container` is a specific element, we listen
+        // for scroll events on that element.
+        $scroll_listening_element = scroll_util.get_scroll_element(opts.$simplebar_container);
     }
 
     const meta: ListWidgetMeta<Key, Item> = {

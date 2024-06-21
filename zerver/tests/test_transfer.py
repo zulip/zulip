@@ -13,6 +13,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     read_test_image_file,
 )
+from zerver.lib.thumbnail import resize_emoji
 from zerver.lib.transfer import (
     transfer_avatars_to_s3,
     transfer_emoji_to_s3,
@@ -20,7 +21,6 @@ from zerver.lib.transfer import (
     transfer_uploads_to_s3,
 )
 from zerver.lib.upload import upload_message_attachment
-from zerver.lib.upload.base import resize_emoji
 from zerver.models import Attachment, RealmEmoji
 
 

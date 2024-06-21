@@ -36,6 +36,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_user_default_setting,
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
+from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
@@ -105,8 +106,11 @@ class RealmTest(ZulipTestCase):
             org_type=Realm.ORG_TYPES["education_nonprofit"]["id"],
         )
 
-        self.assertEqual(realm.create_public_stream_policy, CommonPolicyEnum.ADMINS_ONLY)
-        self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
+
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
         self.assertEqual(
             realm.move_messages_between_streams_policy,
@@ -122,8 +126,11 @@ class RealmTest(ZulipTestCase):
             org_type=Realm.ORG_TYPES["education"]["id"],
         )
 
-        self.assertEqual(realm.create_public_stream_policy, CommonPolicyEnum.ADMINS_ONLY)
-        self.assertEqual(realm.create_private_stream_policy, CommonPolicyEnum.MEMBERS_ONLY)
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
+
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
         self.assertEqual(
             realm.move_messages_between_streams_policy,
@@ -752,8 +759,6 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
-            create_public_stream_policy=10,
-            create_private_stream_policy=10,
             create_web_public_stream_policy=10,
             invite_to_stream_policy=10,
             message_retention_days=10,
@@ -1472,8 +1477,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
-            create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
@@ -1541,6 +1544,14 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(getattr(realm, setting_name), default_group.usergroup_ptr)
 
         for user_group in all_system_user_groups:
+            value = orjson.dumps(user_group.id).decode()
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                value = orjson.dumps(
+                    {
+                        "new": user_group.id,
+                    }
+                ).decode()
+
             if (
                 (
                     user_group.name == SystemGroups.EVERYONE_ON_INTERNET
@@ -1564,16 +1575,244 @@ class RealmAPITest(ZulipTestCase):
                     not in setting_permission_configuration.allowed_system_groups
                 )
             ):
-                value = orjson.dumps(user_group.id).decode()
-
                 result = self.client_patch("/json/realm", {setting_name: value})
                 self.assert_json_error(
                     result, f"'{setting_name}' setting cannot be set to '{user_group.name}' group."
                 )
                 continue
 
-            realm = self.update_with_api(setting_name, user_group.id)
+            realm = self.update_with_api(setting_name, value)
             self.assertEqual(getattr(realm, setting_name), user_group.usergroup_ptr)
+
+    def do_test_realm_permission_group_setting_update_api_with_anonymous_groups(
+        self, setting_name: str
+    ) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
+        result = self.client_patch(
+            "/json/realm", {setting_name: orjson.dumps({"new": moderators_group.id}).decode()}
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(getattr(realm, setting_name), moderators_group.usergroup_ptr)
+
+        # Try passing the old value as well.
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {"new": admins_group.id, "old": leadership_group.id}
+                ).decode()
+            },
+        )
+        self.assert_json_error(result, "'old' value does not match the expected value.")
+
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {
+                        "new": admins_group.id,
+                        "old": {
+                            "direct_members": [othello.id],
+                            "direct_subgroups": [moderators_group.id],
+                        },
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_error(result, "'old' value does not match the expected value.")
+
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {"new": admins_group.id, "old": moderators_group.id}
+                ).decode()
+            },
+        )
+        realm = get_realm("zulip")
+        self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
+
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [othello.id],
+                            "direct_subgroups": [leadership_group.id],
+                        }
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertCountEqual(list(getattr(realm, setting_name).direct_members.all()), [othello])
+        self.assertCountEqual(
+            list(getattr(realm, setting_name).direct_subgroups.all()), [leadership_group]
+        )
+
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [hamlet.id],
+                            "direct_subgroups": [moderators_group.id],
+                        },
+                        "old": moderators_group.id,
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_error(result, "'old' value does not match the expected value.")
+
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [hamlet.id],
+                            "direct_subgroups": [moderators_group.id],
+                        },
+                        "old": {
+                            "direct_members": [othello.id],
+                            "direct_subgroups": [moderators_group.id],
+                        },
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_error(result, "'old' value does not match the expected value.")
+
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [hamlet.id],
+                            "direct_subgroups": [moderators_group.id],
+                        },
+                        "old": {
+                            "direct_members": [othello.id],
+                            "direct_subgroups": [leadership_group.id],
+                        },
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertCountEqual(list(getattr(realm, setting_name).direct_members.all()), [hamlet])
+        self.assertCountEqual(
+            list(getattr(realm, setting_name).direct_subgroups.all()), [moderators_group]
+        )
+
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {
+                        "new": leadership_group.id,
+                        "old": {
+                            "direct_members": [hamlet.id],
+                            "direct_subgroups": [moderators_group.id],
+                        },
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(getattr(realm, setting_name), leadership_group.usergroup_ptr)
+
+        # Test that object with only one direct_subgroup is considered
+        # same as passing the named user group ID directly.
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id],
+                        },
+                        "old": {
+                            "direct_members": [],
+                            "direct_subgroups": [leadership_group.id],
+                        },
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
+
+        # Test case when ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS is False.
+        with self.settings(ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS=False):
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    setting_name: orjson.dumps(
+                        {
+                            "new": {
+                                "direct_members": [othello.id],
+                                "direct_subgroups": [moderators_group.id, leadership_group.id],
+                            }
+                        }
+                    ).decode()
+                },
+            )
+            self.assert_json_error(
+                result, f"{setting_name} can only be set to a single named user group."
+            )
+
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    setting_name: orjson.dumps(
+                        {
+                            "new": {
+                                "direct_members": [],
+                                "direct_subgroups": [moderators_group.id],
+                            }
+                        }
+                    ).decode()
+                },
+            )
+            self.assert_json_success(result)
+            realm = get_realm("zulip")
+            self.assertEqual(getattr(realm, setting_name), moderators_group.usergroup_ptr)
+
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    setting_name: orjson.dumps(
+                        {
+                            "new": leadership_group.id,
+                        }
+                    ).decode()
+                },
+            )
+            self.assert_json_success(result)
+            realm = get_realm("zulip")
+            self.assertEqual(getattr(realm, setting_name), leadership_group.usergroup_ptr)
 
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
@@ -1585,6 +1824,13 @@ class RealmAPITest(ZulipTestCase):
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
+
+        check_add_user_group(
+            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
+        )
+        for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+            with self.subTest(property=prop):
+                self.do_test_realm_permission_group_setting_update_api_with_anonymous_groups(prop)
 
     # Not in Realm.property_types because org_type has
     # a unique RealmAuditLog event_type.

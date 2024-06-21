@@ -4,46 +4,49 @@ import render_new_stream_user from "../templates/stream_settings/new_stream_user
 import render_new_stream_users from "../templates/stream_settings/new_stream_users.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
+import type {InputPillContainer} from "./input_pill";
 import * as ListWidget from "./list_widget";
+import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as people from "./people";
 import {current_user} from "./state_data";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
+import type {CombinedPillItem} from "./typeahead_helper";
 import * as user_sort from "./user_sort";
 
-let pill_widget;
-let all_users_list_widget;
+let pill_widget: InputPillContainer<CombinedPillItem>;
+let all_users_list_widget: ListWidgetType<number, people.User>;
 
-export function get_principals() {
+export function get_principals(): number[] {
     return stream_create_subscribers_data.get_principals();
 }
 
-function redraw_subscriber_list() {
+function redraw_subscriber_list(): void {
     all_users_list_widget.replace_list_data(stream_create_subscribers_data.sorted_user_ids());
 }
 
-function add_user_ids(user_ids) {
+function add_user_ids(user_ids: number[]): void {
     stream_create_subscribers_data.add_user_ids(user_ids);
     redraw_subscriber_list();
 }
 
-function add_all_users() {
+function add_all_users(): void {
     const user_ids = stream_create_subscribers_data.get_all_user_ids();
     add_user_ids(user_ids);
 }
 
-function remove_user_ids(user_ids) {
+function remove_user_ids(user_ids: number[]): void {
     stream_create_subscribers_data.remove_user_ids(user_ids);
     redraw_subscriber_list();
 }
 
-function build_pill_widget({$parent_container}) {
+function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
     const $pill_container = $parent_container.find(".pill-container");
     const get_potential_subscribers = stream_create_subscribers_data.get_potential_subscribers;
 
     pill_widget = add_subscribers_pill.create({$pill_container, get_potential_subscribers});
 }
 
-export function create_handlers($container) {
+export function create_handlers($container: JQuery): void {
     $container.on("click", ".add_all_users_to_stream", (e) => {
         e.preventDefault();
         add_all_users();
@@ -53,12 +56,12 @@ export function create_handlers($container) {
     $container.on("click", ".remove_potential_subscriber", (e) => {
         e.preventDefault();
         const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-user-id"), 10);
+        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
         remove_user_ids([user_id]);
     });
 
     const button_selector = ".add_subscribers_container button.add-subscriber-button";
-    function add_users({pill_user_ids}) {
+    function add_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         add_user_ids(pill_user_ids);
         // eslint-disable-next-line unicorn/no-array-callback-reference
         const $pill_widget_button = $container.find(button_selector);
@@ -75,7 +78,7 @@ export function create_handlers($container) {
     });
 }
 
-export function build_widgets() {
+export function build_widgets(): void {
     const $add_people_container = $("#people_to_add");
     $add_people_container.html(render_new_stream_users({}));
 
@@ -119,7 +122,7 @@ export function build_widgets() {
     });
 }
 
-export function add_user_id_to_new_stream(user_id) {
+export function add_user_id_to_new_stream(user_id: number): void {
     // This is only used by puppeteer tests.
     add_user_ids([user_id]);
 }

@@ -20,7 +20,47 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
-**Feature level 263**:
+**Feature level 266**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_create_private_channel_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to create private channels.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `create_private_stream_policy` property, as the permission to create private
+  channels is now controlled by `can_create_private_channel_group` setting.
+* [`POST /register`](/api/register-queue): `realm_create_private_stream_policy`
+  field is deprecated, having been replaced by `can_create_private_channel_group`.
+  Notably, this backwards-compatible `realm_create_private_stream_policy` value
+  now contains the superset of the true value that best approximates the actual
+  permission setting.
+
+**Feature level 265**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added a new [search/narrow filter](/api/construct-narrow),
+  `is:followed`, matching messages in topics that the current user is
+  [following](/help/follow-a-topic).
+
+**Feature level 264**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_create_public_channel_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to create channels.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `create_public_stream_policy` property, as the permission to create public
+  channels is now controlled by `can_create_public_channel_group` setting.
+* [`POST /register`](/api/register-queue): `realm_create_public_stream_policy`
+  field is deprecated, having been replaced by `can_create_public_channel_group`.
+  Notably, this backwards-compatible `realm_create_public_stream_policy` value
+  now contains the superset of the true value that best approximates the actual
+  permission setting.
+
+**Feature level 263**
 
 * [`POST /users/me/presence`](/api/update-presence):
   A new `last_update_id` parameter can be given, instructing
@@ -43,7 +83,7 @@ format used by the Zulip server that they are interacting with.
   querying [`/users/me/presence`](/api/update-presence) to avoid
   re-fetching of already known data.
 
-**Feature level 262**:
+**Feature level 262**
 
 * [`GET /users/{user_id}/status`](/api/get-user-status): Added a new
   endpoint to fetch an individual user's currently set
@@ -63,13 +103,13 @@ format used by the Zulip server that they are interacting with.
   have permission to [subscribe other users to
   channels](/help/configure-who-can-invite-to-channels).
 
-**Feature level 260**:
+**Feature level 260**
 
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):
   Updating `can_mention_group` now uses a race-resistant format where
   the client sends the expected `old` value and desired `new` value.
 
-**Feature level 259**:
+**Feature level 259**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
   For the `onboarding_steps` event type, an array of onboarding steps
@@ -79,7 +119,7 @@ format used by the Zulip server that they are interacting with.
   support, as we expect that only official Zulip clients will interact with
   this data. Currently, no client other than the Zulip web app uses this.
 
-**Feature level 258**:
+**Feature level 258**
 
 * [`GET /user_groups`](/api/get-user-groups), [`POST
   /register`](/api/register-queue): `can_mention_group` field can now
@@ -90,7 +130,7 @@ format used by the Zulip server that they are interacting with.
   `can_mention_group` parameter can now either be an ID of a named
   user group or an object describing a set of users and groups.
 
-**Feature level 257**:
+**Feature level 257**
 
 * [`POST /register`](/api/register-queue),
   [`POST /server_settings`](/api/get-server-settings), `PATCH /realm`:
@@ -464,7 +504,7 @@ No changes; feature level used for Zulip 8.0 release.
 * [`POST /mobile_push/test_notification`](/api/test-notify): Added new endpoint
   to send a test push notification to a mobile device or devices.
 
-**Feature level 216**:
+**Feature level 216**
 
 * `PATCH /realm`, [`POST register`](/api/register-queue),
   [`GET /events`](/api/get-events): Added `enable_guest_user_indicator`
@@ -848,7 +888,7 @@ No changes; feature level used for Zulip 7.0 release.
   determine the user's preference on whether to mark messages as read or not when
   scrolling through their message feed.
 
-**Feature level 174**:
+**Feature level 174**
 
 * [`POST /typing`](/api/set-typing-status), [`POST /messages`](/api/send-message):
   Added `"direct"` as the preferred way to indicate a direct message for the
@@ -857,7 +897,7 @@ No changes; feature level used for Zulip 7.0 release.
   the modern convention with servers that support it, because support for
   `"private"` may eventually be removed.
 
-**Feature level 173**:
+**Feature level 173**
 
 * [`GET /scheduled_messages`](/api/get-scheduled-messages), [`DELETE
   /scheduled_messages/<int:scheduled_message_id>`](/api/delete-scheduled-message):
@@ -875,7 +915,7 @@ No changes; feature level used for Zulip 7.0 release.
   this endpoint now returns an error response
   (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`).
 
-**Feature level 171**:
+**Feature level 171**
 
 * [`POST /fetch_api_key`](/api/fetch-api-key),
   [`POST /dev_fetch_api_key`](/api/dev-fetch-api-key): The return values
@@ -1674,11 +1714,17 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 76**
 
-* [`POST /fetch_api_key`](/api/fetch-api-key), [`POST
-  /dev_fetch_api_key`](/api/dev-fetch-api-key): The HTTP status for
-  authentication errors is now 401. This was previously 403.
-* All API endpoints now use the HTTP 401 error status for API requests
-  involving a deactivated user or realm. This was previously 403.
+* [`POST /fetch_api_key`](/api/fetch-api-key),
+  [`POST /dev_fetch_api_key`](/api/dev-fetch-api-key): The HTTP status
+  for authentication errors is now 401. These previously used the HTTP
+  403 error status.
+* [Error handling](/api/rest-error-handling#common-error-responses): API
+  requests that involve a deactivated user or organization now use the
+  HTTP 401 error status. These previously used the HTTP 403 error status.
+* [Error handling](/api/rest-error-handling): All error responses
+  now include a `code` key with a machine-readable string value. The
+  default value for this key is `"BAD_REQUEST"` for general error
+  responses.
 * Mobile push notifications now include the `mentioned_user_group_id`
   and `mentioned_user_group_name` fields when a user group containing
   the user is mentioned.  Previously, these were indistinguishable
@@ -1944,8 +1990,9 @@ field with an integer field `invite_to_realm_policy`.
 
 * [`POST /users`](/api/create-user): Restricted access to organization
   administrators with the `can_create_users` permission.
-* [Error handling](/api/rest-error-handling): The `code` property will
-  now be present in errors due to rate limits.
+* [Error handling](/api/rest-error-handling#common-error-responses): The
+  `code` key will now be present in errors that are due to rate
+  limits, with a value of `"RATE_LIMIT_HIT"`.
 
 **Feature level 35**
 
@@ -2207,7 +2254,7 @@ No changes; feature level used for Zulip 3.0 release.
 * Added new `presence_enabled` user notification setting; previously
   [presence](/help/status-and-availability) was always enabled.
 
-**Feature level 2**:
+**Feature level 2**
 
 * [`POST /messages/{message_id}/reactions`](/api/add-reaction):
   The `reaction_type` parameter is optional; the server will guess the
@@ -2218,7 +2265,7 @@ No changes; feature level used for Zulip 3.0 release.
   `user_id` field.  The legacy `user` dictionary (which had
   inconsistent format between those two endpoints) is deprecated.
 
-**Feature level 1**:
+**Feature level 1**
 
 * [`PATCH /messages/{message_id}`](/api/update-message): Added the
   `stream_id` parameter to support moving messages between streams.

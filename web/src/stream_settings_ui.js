@@ -947,10 +947,10 @@ export function update_stream_privacy_choices(policy) {
         $container = $("#stream_permission_settings");
     }
 
-    if (policy === "create_private_stream_policy") {
+    if (policy === "can_create_private_channel_group") {
         stream_ui_updates.update_private_stream_privacy_option_state($container);
     }
-    if (policy === "create_public_stream_policy") {
+    if (policy === "can_create_public_channel_group") {
         stream_settings_components.update_public_stream_privacy_option_state($container);
     }
     if (policy === "create_web_public_stream_policy") {

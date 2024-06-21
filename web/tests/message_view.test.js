@@ -25,6 +25,9 @@ mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 mock_esm("../src/spectators", {
     login_to_access() {},
 });
@@ -175,7 +178,7 @@ run_test("urls", () => {
     let url = hash_util.pm_with_url(ray.email);
     assert.equal(url, "#narrow/dm/22-Raymond");
 
-    url = hash_util.huddle_with_url("22,23");
+    url = hash_util.direct_message_group_with_url("22,23");
     assert.equal(url, "#narrow/dm/22,23-group");
 
     url = hash_util.by_sender_url(ray.email);
@@ -332,6 +335,13 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: No topics are marked as resolved."),
+    );
+
+    set_filter([["is", "followed"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You aren't following any topics."),
     );
 
     // organization has disabled sending direct messages
@@ -525,6 +535,19 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This channel does not exist or is private."),
+    );
+
+    set_filter([
+        ["has", "reaction"],
+        ["sender", "me"],
+    ]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: None of your messages have emoji reactions yet.",
+            'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+        ),
     );
 });
 

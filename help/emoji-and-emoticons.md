@@ -132,7 +132,7 @@ names.
 
 !!! tip ""
 
-    <https://emojipedia.org/> may be a helpful resource.
+    [https://emojipedia.org/](https://emojipedia.org/) may be a helpful resource.
 
 {end_tabs}
 

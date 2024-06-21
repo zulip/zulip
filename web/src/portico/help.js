@@ -94,7 +94,7 @@ function render_tabbed_sections() {
     });
 }
 
-new SimpleBar($(".sidebar")[0]);
+new SimpleBar($(".sidebar")[0], {tabIndex: -1});
 
 // Scroll to anchor link when clicked. Note that landing-page.js has a
 // similar function; this file and landing-page.js are never included

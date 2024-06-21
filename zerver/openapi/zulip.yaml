@@ -666,7 +666,7 @@ paths:
                                     **Changes**: Removed `email_address` field from the dictionary
                                     in Zulip 8.0 (feature level 226).
 
-                                    **Changes**: Removed `role` field from the dictionary
+                                    Removed `role` field from the dictionary
                                     in Zulip 6.0 (feature level 133).
                                   items:
                                     $ref: "#/components/schemas/Subscriptions"
@@ -1068,7 +1068,7 @@ paths:
                                 `can_access_all_users_group` policy would receive a fake "Unknown
                                 user" event for such a user.
 
-                                **Changes**: Starting with Zulip 8.0 (feature level 228),
+                                Starting with Zulip 8.0 (feature level 228),
                                 this event is also sent when a guest user gains access to
                                 a user.
                               properties:
@@ -1115,12 +1115,12 @@ paths:
                               description: |
                                 Event sent to guest users when they lose access to a user.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event was deprecated.
+                                **Changes**: As of Zulip 8.0 (feature level 228), this event is no
+                                longer deprecated.
 
-                                **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
-
-                                Previously, this event was sent to all users in a Zulip organization when a
-                                user was deactivated.
+                                In Zulip 8.0 (feature level 222), this event was deprecated and no
+                                longer sent to clients. Prior to this feature level, it was sent to all
+                                users in a Zulip organization when a user was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2158,7 +2158,7 @@ paths:
                                     registering their event queue will not receive this legacy
                                     event type.
 
-                                    **Changes**: Before Zulip 3.0 (feature level 1), the `muted_topics`
+                                    Before Zulip 3.0 (feature level 1), the `muted_topics`
                                     array objects were 2-item tuples and did not include the timestamp
                                     information for when the topic was muted.
                                   items:
@@ -3176,19 +3176,24 @@ paths:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
                                         - description: |
-                                            Either the ID of a named user group that has permission
-                                            to mention the group, or an object describing the set of
-                                            users and groups who have permission mention the group.
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to [mention this user group][mentions]. Only present
+                                            if this user group permission setting changed.
 
-                                            **Changes**: Before Zulip 9.0 (feature level 258), the
-                                            `can_mention_group` field was always an integer.
+                                            **Changes**: Before Zulip 9.0 (feature level 258), this setting was
+                                            always the integer form of a [group-setting value][setting-values].
 
-                                            **Changes**: Before Zulip 8.0 (feature level 198),
-                                            the `can_mention_group` setting
-                                            was named `can_mention_group_id`.
+                                            Before Zulip 8.0 (feature level 198), this setting was named
+                                            `can_mention_group_id`.
 
-                                            New in Zulip 8.0 (feature level 191). Previously, groups
-                                            could be mentioned if and only if they were not system groups.
+                                            New in Zulip 8.0 (feature level 191). Previously, groups could be
+                                            mentioned only if they were not [system groups][system-groups].
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
+                                            [system-groups]: /api/group-setting-values#system-groups
+                                            [mentions]: /help/mention-a-user-or-group
                               example:
                                 {
                                   "type": "user_group",
@@ -4226,22 +4231,34 @@ paths:
                                         `"role:internet"` and `"role:owners"`.
 
                                         **Changes**: New in Zulip 8.0 (feature level 209).
-                                    create_public_stream_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create public channels in this organization.
+                                    can_create_public_channel_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create public
+                                            channels in this organization.
 
-                                        **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                                        create channels was controlled by the `create_stream_policy` setting.
-                                    create_private_stream_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create private channels in this organization.
+                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                                            `"role:owners"` and `"role:nobody"` system groups.
 
-                                        **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                                        create channels was controlled by the `create_stream_policy` setting.
+                                            **Changes**: New in Zulip 9.0 (feature level 264). Previously
+                                            `realm_create_public_stream_policy` field used to control the
+                                            permission to create public channels.
+                                    can_create_private_channel_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create private
+                                            channels in this organization.
+
+                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                                            `"role:owners"` and `"role:nobody"` system groups.
+
+                                            **Changes**: New in Zulip 9.0 (feature level 266). Previously
+                                            `realm_create_private_stream_policy` field used to control the
+                                            permission to create private channels.
                                     create_web_public_stream_policy:
                                       type: integer
                                       description: |
@@ -9100,7 +9117,7 @@ paths:
                           `presences`. This allows the client to have an identifier number
                           up to which it knows it has obtained all the presence data.
 
-                          The client should then pass this value when next queries this
+                          The client should then pass this value when it next queries this
                           endpoint, in order to only receive newer presence data to avoid
                           redundant fetching of already known information.
 
@@ -9458,7 +9475,7 @@ paths:
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
 
-                          **Changes**: Removed `role` field from the dictionary
+                          Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                         items:
                           $ref: "#/components/schemas/Subscriptions"
@@ -10171,6 +10188,7 @@ paths:
                     - 0
                     - 1
                     - 2
+                    - 3
                   example: 1
               required:
                 - stream_id
@@ -11673,7 +11691,7 @@ paths:
                             that are sent to clients. Prior to this feature level, updating either
                             property only generated a subscription update event for
                             `"in_home_view"`. <br>
-                            **Changes**: Prior to Zulip 2.1.0, this feature was represented
+                            Prior to Zulip 2.1.0, this feature was represented
                             by the more confusingly named `"in_home_view"` (with the
                             opposite value: `in_home_view=!is_muted`); for
                             backwards-compatibility, modern Zulip still accepts that property.
@@ -12794,6 +12812,44 @@ paths:
                         description: |
                           A typical failed JSON response for when the invitation link has already
                           been revoked:
+  /invites/{invite_id}/resend:
+    post:
+      operationId: resend-email-invite
+      summary: Resend an email invitation
+      tags: ["invites"]
+      description: |
+        Resend an [email invitation](/help/invite-new-users#send-email-invitations).
+
+        A user can only resend [invitations that they can
+        manage](/help/invite-new-users#manage-pending-invitations).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the email invitation to be resent.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for an invalid email invitation ID:
   /register:
     post:
       operationId: register-queue
@@ -13004,7 +13060,9 @@ paths:
                       incomplete user database. If true, then the `realm_users` array in the `register`
                       response will not include data for inaccessible users and clients of guest users will
                       not receive `realm_user op:add` events for newly created users that are not accessible
-                      to the current user. **Changes**: New in Zulip 8.0 (feature level 232). This
+                      to the current user.
+                      <br />
+                      **Changes**: New in Zulip 8.0 (feature level 232). This
                       capability is for backwards-compatibility.
 
                     [help-linkifiers]: /help/add-a-custom-linkifier
@@ -13349,7 +13407,7 @@ paths:
                           response if the `user_topic` object, which generalizes and replaces
                           this field, is not explicitly requested via `fetch_event_types`.
 
-                          **Changes**: Before Zulip 3.0 (feature level 1), the `muted_topics`
+                          Before Zulip 3.0 (feature level 1), the `muted_topics`
                           array objects were 2-item tuples and did not include the timestamp
                           information for when the topic was muted.
                         items:
@@ -13561,7 +13619,7 @@ paths:
                               description: |
                                 The name of the bot.
                             config:
-                              $ref: "#/components/schemas/Config"
+                              $ref: "#/components/schemas/BotConfiguration"
                         description: |
                           Present if `realm_embedded_bots` is present in `fetch_event_types`.
 
@@ -13610,7 +13668,7 @@ paths:
 
                                 **Changes**: New in Zulip 8.0 (feature level 207).
                             config:
-                              $ref: "#/components/schemas/Config"
+                              $ref: "#/components/schemas/BotConfiguration"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -13657,7 +13715,7 @@ paths:
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
 
-                          **Changes**: Removed `role` field from the dictionary
+                          Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                       unsubscribed:
                         type: array
@@ -13676,7 +13734,7 @@ paths:
                           **Changes**: Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
 
-                          **Changes**: Removed `role` field from the dictionary
+                          Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                       never_subscribed:
                         type: array
@@ -15184,36 +15242,86 @@ paths:
 
                           The [policy](/api/roles-and-permissions#permission-levels)
                           for which users can create bot users in this organization.
+                      realm_can_create_public_channel_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create public
+                              channels in this organization.
+
+                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                              `"role:owners"` and `"role:nobody"` system groups.
+
+                              **Changes**: New in Zulip 9.0 (feature level 264). Previously
+                              `realm_create_public_stream_policy` field used to control the
+                              permission to create public channels.
+                      realm_can_create_private_channel_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create private
+                              channels in this organization.
+
+                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                              `"role:owners"` and `"role:nobody"` system groups.
+
+                              **Changes**: New in Zulip 9.0 (feature level 266). Previously
+                              `realm_create_private_stream_policy` field used to control the
+                              permission to create private channels.
                       realm_create_public_stream_policy:
                         type: integer
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The [policy][permission-level] for which users can create public channels
-                          in this organization.
+                          A deprecated representation of a superset of the users who
+                          have permission to create public channels in the organization,
+                          available for backwards-compatibility. Clients should use
+                          `can_create_public_channel_group` instead.
+
+                          It is an enum with the following possible values, corresponding
+                          to roles/system groups:
 
                           - 1 = Members only
                           - 2 = Admins only
                           - 3 = [Full members][calc-full-member] only
                           - 4 = Admins and moderators only
 
-                          **Changes**: Before Zulip 5.0 (feature level 102), permission to
-                          create channels was controlled by the `realm_create_stream_policy` setting.
+                          **Changes**: Deprecated in Zulip 9.0 (feature level 264) and
+                          replaced by `realm_can_create_public_channel_group`, which
+                          supports finer resolution of configurations, resulting in this
+                          property being inaccurate following that transition.
+
+                          Before Zulip 5.0 (feature level 102), permission to create
+                          channels was controlled by the `realm_create_stream_policy` setting.
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_create_private_stream_policy:
                         type: integer
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The [policy][permission-level] for which users can create private channels
-                          in this organization.
+                          A deprecated representation of a superset of the users who
+                          have permission to create private channels in the organization,
+                          available for backwards-compatibility. Clients should use
+                          `can_create_private_channel_group` instead.
+
+                          It is an enum with the following possible values, corresponding
+                          to roles/system groups:
 
                           - 1 = Members only
                           - 2 = Admins only
                           - 3 = [Full members][calc-full-member] only
                           - 4 = Admins and moderators only
+
+                          **Changes**: Deprecated in Zulip 9.0 (feature level 266) and
+                          replaced by `realm_can_create_private_channel_group`, which
+                          supports finer resolution of configurations, resulting in this
+                          property being inaccurate following that transition.
 
                           **Changes**: Before Zulip 5.0 (feature level 102), permission to
                           create channels was controlled by the `realm_create_stream_policy` setting.
@@ -15267,9 +15375,11 @@ paths:
                           All users will receive a warning/reminder when using
                           mentions in large channels, even when permitted to do so.
 
-                          **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
-                          Zulip 4.0 (feature level 62). Channel administrators option removed in
-                          Zulip 6.0 (feature level 133).
+                          **Changes**: In Zulip 6.0 (feature level 133), channel administrators option removed.
+
+                          In Zulip 4.0 (feature level 62), moderators option added.
+
+                          New in Zulip 4.0 (feature level 33).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -17320,23 +17430,23 @@ paths:
         the handling of any invalid parameters present in a request
         (see feature level 78 change below).
 
-        The `/settings/display` and `/settings/notifications`
-        endpoints are now deprecated aliases for this endpoint for
-        backwards-compatibility, and will be removed once clients have
-        migrated to use this endpoint.
+        As of feature level 80, the `PATCH /settings/display` and
+        `PATCH /settings/notifications` endpoints are deprecated aliases
+        for this endpoint for backwards-compatibility, and will be removed
+        once clients have migrated to use this endpoint.
 
-        **Changes**: Prior to Zulip 5.0 (feature level 78),
-        the `/settings` endpoint indicated which parameters it had
-        processed by including in the response object `"key": value`
-        entries for values successfully changed by the request. That
-        was replaced by the more ergonomic
+        Prior to Zulip 5.0 (feature level 78), this endpoint indicated
+        which parameters it had processed by including in the response
+        object `"key": value` entries for values successfully changed by
+        the request. That was replaced by the more ergonomic
         [`ignored_parameters_unsupported`][ignored-parameters] array.
 
-        The `/settings/notifications` and `/settings/display` endpoints
-        also had this behavior before they became aliases of `/settings`
-        in Zulip 5.0 (see feature level 80 change above).
+        The `PATCH /settings/notifications` and `PATCH /settings/display`
+        endpoints also had this behavior of indicating processed parameters
+        before they became aliases of this endpoint in Zulip 5.0 (see
+        feature level 80 change above).
 
-        Before these changes, request parameters that were not supported
+        Before feature level 78, request parameters that were not supported
         (or were unchanged) were silently ignored.
 
         [ignored-parameters]: /api/rest-error-handling#ignored-parameters
@@ -18933,20 +19043,24 @@ paths:
                 can_mention_group:
                   allOf:
                     - description: |
-                        A [group-setting value](/api/group-setting-values) defining the set
-                        of users who have permission to mention the new group.
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to [mention this user group][mentions].
 
-                        This setting cannot be set to `"role:internet"` and
-                        `"role:owners"` system groups.
+                        This setting cannot be set to `"role:internet"` and `"role:owners"`
+                        [system groups][system-groups].
 
-                        **Changes**: Before Zulip 9.0 (feature level 258), the
-                        `can_mention_group` setting could only be set to an integer.
+                        Before Zulip 9.0 (feature level 258), this parameter could only be the
+                        integer form of a [group-setting value][setting-values].
 
-                        **Changes**: Before Zulip 8.0 (feature level 198),
-                        the `can_mention_group` setting was named `can_mention_group_id`.
+                        Before Zulip 8.0 (feature level 198), this parameter was named
+                        `can_mention_group_id`.
 
-                        New in Zulip 8.0 (feature level 191). Previously, groups
-                        could be mentioned if and only if they were not system groups.
+                        New in Zulip 8.0 (feature level 191). Previously, groups could be
+                        mentioned only if they were not [system groups][system-groups].
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                        [mentions]: /help/mention-a-user-or-group
                     - $ref: "#/components/schemas/GroupSettingValue"
                   example: 11
               required:
@@ -19086,24 +19200,30 @@ paths:
                   example: The marketing team.
                 can_mention_group:
                   description: |
-                    The set of users who have permission to mention
-                    this group, expressed as an [update to a
-                    group-setting value](/api/group-setting-values#updating-group-setting-values).
+                    The set of users who have permission to [mention this group][mentions],
+                    expressed as an [update to a group-setting value][update-group-setting].
 
                     This setting cannot be set to `"role:internet"` and `"role:owners"`
-                    system groups.
+                    [system groups][system-groups].
 
-                    **Changes**: In Zulip 9.0 (feature level 260), this was updated
-                    to only accept an object with `old` and `new` fields.
+                    **Changes**: In Zulip 9.0 (feature level 260), this parameter was
+                    updated to only accept an object with the `old` and `new` fields
+                    described below. Prior to this feature level, this parameter could be
+                    either of the two forms of a [group-setting value][setting-values].
 
-                    **Changes**: Before Zulip 9.0 (feature level 258), the
-                    `can_mention_group` field was always an integer.
+                    Before Zulip 9.0 (feature level 258), this parameter could only be the
+                    integer form of a [group-setting value][setting-values].
 
-                    **Changes**: Before Zulip 8.0 (feature level 198),
-                    the `can_mention_group` setting was named `can_mention_group_id`.
+                    Before Zulip 8.0 (feature level 198), this parameter was named
+                    `can_mention_group_id`.
 
-                    New in Zulip 8.0 (feature level 191). Previously, groups
-                    could be mentioned if and only if they were not system groups.
+                    New in Zulip 8.0 (feature level 191). Previously, groups could be
+                    mentioned only if they were not [system groups][system-groups].
+
+                    [mentions]: /help/mention-a-user-or-group
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                    [setting-values]: /api/group-setting-values
                   type: object
                   additionalProperties: false
                   properties:
@@ -19248,17 +19368,23 @@ paths:
                               allOf:
                                 - $ref: "#/components/schemas/GroupSettingValue"
                                 - description: |
-                                    A [group-setting value](/api/group-setting-values) defining the set
-                                    of users who have permission to mention the new group.
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to [mention this user group][mentions].
 
-                                    **Changes**: Before Zulip 9.0 (feature level 258), the
-                                    `can_mention_group` field was always an integer.
+                                    **Changes**: Before Zulip 9.0 (feature level 258), this setting was
+                                    always the integer form of a [group-setting value][setting-values].
 
-                                    **Changes**: Before Zulip 8.0 (feature level 198),
-                                    the `can_mention_group` setting was named `can_mention_group_id`.
+                                    Before Zulip 8.0 (feature level 198), this setting was named
+                                    `can_mention_group_id`.
 
-                                    New in Zulip 8.0 (feature level 191). Previously, groups
-                                    could be mentioned if and only if they were not system groups.
+                                    New in Zulip 8.0 (feature level 191). Previously, groups could be
+                                    mentioned only if they were not [system groups][system-groups].
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
+                                    [system-groups]: /api/group-setting-values#system-groups
+                                    [mentions]: /help/mention-a-user-or-group
                         description: |
                           A list of `user_group` objects.
                     example:
@@ -20027,21 +20153,21 @@ components:
         services:
           type: array
           description: |
-            The "Services" array contains extra configuration fields only relevant
-            for Outgoing webhook bots and Embedded bots. It is always a single-element
+            An array containing extra configuration fields only relevant for
+            outgoing webhook bots and embedded bots. This is always a single-element
             array.
 
-            We consider this part of the Zulip API to be unstable; it is used only for
-            UI elements for administering bots and is likely to change.
+            We consider this part of the Zulip API to be unstable; it is used only
+            for UI elements for administering bots and is likely to change.
           items:
             description: |
-              Object containing details extra details. Which fields appear depend
-              on the type of bot.
+              Object with extra configuration details for the bot. The fields in the
+              object depend on the type of bot.
             oneOf:
               - type: object
                 additionalProperties: false
                 description: |
-                  When the bot is an outgoing webhook bot.
+                  When the bot is an outgoing webhook.
                 properties:
                   base_url:
                     type: string
@@ -20055,7 +20181,7 @@ components:
                   interface:
                     type: integer
                     description: |
-                      Integer indicating what format requests are posted in:
+                      An integer indicating what format requests are posted in:
 
                       - 1 = Zulip's native outgoing webhook format.
                       - 2 = Emulate the Slack outgoing webhook format.
@@ -20069,7 +20195,7 @@ components:
                     description: |
                       The name of the bot.
                   config_data:
-                    $ref: "#/components/schemas/Config"
+                    $ref: "#/components/schemas/BotConfiguration"
     Bot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -20107,14 +20233,15 @@ components:
               type: boolean
               description: |
                 A boolean describing whether the user account has been deactivated.
-    Config:
+    BotConfiguration:
       type: object
       description: |
-        A "string: string" dictionary which describes the configuration
-        for the embedded bot (usually details like API keys).
+        A dictionary of string key/value pairs, which describe the configuration
+        for the bot. These are usually details like API keys, and are unique to
+        the integration/bot. Can be an empty dictionary.
       additionalProperties:
         description: |
-          String describing the config data.
+          `{config_key}`: Description/value of the configuration data key.
         type: string
     CustomProfileField:
       type: object
@@ -20431,17 +20558,23 @@ components:
           allOf:
             - $ref: "#/components/schemas/GroupSettingValue"
             - description: |
-                A [group-setting value](/api/group-setting-values) defining the set
-                of users who have permission to mention the new group.
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to [mention this user group][mentions].
 
-                **Changes**: Before Zulip 9.0 (feature level 258), the
-                `can_mention_group` field was always an integer.
+                **Changes**: Before Zulip 9.0 (feature level 258), this setting was
+                always the integer form of a [group-setting value][setting-values].
 
-                **Changes**: Before Zulip 8.0 (feature level 198),
-                the `can_mention_group` setting was named `can_mention_group_id`.
+                Before Zulip 8.0 (feature level 198), this setting was named
+                `can_mention_group_id`.
 
-                New in Zulip 8.0 (feature level 191). Previously, groups
-                could be mentioned if and only if they were not system groups.
+                New in Zulip 8.0 (feature level 191). Previously, groups could be
+                mentioned only if they were not [system groups][system-groups].
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
+                [system-groups]: /api/group-setting-values#system-groups
+                [mentions]: /help/mention-a-user-or-group
     GroupSettingValue:
       oneOf:
         - type: object
@@ -20459,6 +20592,8 @@ components:
               type: array
               items:
                 type: integer
+          description: |
+            An object with these fields:
         - type: integer
           description: |
             The ID of the [user group](/help/user-groups) with this permission.
@@ -22002,9 +22137,9 @@ components:
               "result": "error",
             }
           description: |
-            ## Invalid API key
+            ### Invalid API key
 
-            A typical failed JSON response for when the API key is invalid:
+            A typical failed JSON response for when the API key is invalid.
     InvitationFailedError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
@@ -22045,10 +22180,12 @@ components:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           description: |
-            ## Missing request parameter(s)
+            ### Missing request parameter
 
             A typical failed JSON response for when a required request parameter
-            is not supplied:
+            is not supplied.
+
+            The value of `var_name` contains information about the missing parameter.
           properties:
             result: {}
             msg: {}
@@ -22069,10 +22206,13 @@ components:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           description: |
-            ## Incompatible request parameters
+            ### Incompatible request parameters
 
             A typical failed JSON response for when two or more, optional
             parameters are supplied that are incompatible with each other.
+
+            The value of `parameters` in the response is string containing
+            the parameters, separated by commas, that are incompatible.
           properties:
             result: {}
             msg: {}
@@ -22099,10 +22239,10 @@ components:
               "result": "error",
             }
           description: |
-            ## User not authorized for query
+            ### User not authorized for query
 
             A typical failed JSON response for when the user is not authorized for
-            a query:
+            a query.
     UserDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -22113,29 +22253,29 @@ components:
               "result": "error",
             }
           description: |
-            ## User account deactivated
+            ### User account deactivated
 
-            **Changes**: These errors used the HTTP 403 status code
-            before Zulip 5.0 (feature level 76).
+            A typical failed json response for when user's account is deactivated.
 
-            A typical failed json response for when user's account is deactivated:
+            **Changes**: As of Zulip 5.0 (feature level 76), these errors use the
+            HTTP 401 status code. Before this feature level, they used the HTTP 403
+            status code.
     RateLimitedError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
           description: |
-            ## Rate limit exceeded
+            ### Rate limit exceeded
 
-            The `retry-after` parameter in the response indicates how many seconds
-            the client must wait before making additional requests.
-
+            A typical failed JSON response for when a rate limit is exceeded.
             Zulip sets a few [HTTP response headers][rate-limit-headers]
             to help with preventing rate limit errors.
 
-            **Changes**: The `code` field was not present in rate
-            limit errors before Zulip 4.0 (feature level 36).
+            The value of `retry-after` in the response indicates how many
+            seconds the client must wait before making additional requests.
 
-            A typical failed JSON response for when a rate limit is exceeded:
+            **Changes**: Before Zulip 4.0 (feature level 36), the `code` key
+            was not present in rate limit errors.
 
             [rate-limit-headers]: /api/http-headers#rate-limiting-response-headers
           properties:
@@ -22164,12 +22304,13 @@ components:
               "result": "error",
             }
           description: |
-            ## Realm deactivated
+            ### Realm deactivated
 
-            **Changes**: These errors used the HTTP 403 status code
-            before Zulip 5.0 (feature level 76).
+            A typical failed json response for when user's organization is deactivated.
 
-            A typical failed json response for when user's organization is deactivated:
+            **Changes**: As of Zulip 5.0 (feature level 76), these errors use the
+            HTTP 401 status code. Before this feature level, they used the HTTP 403
+            status code.
     InvalidPushDeviceTokenError:
       allOf:
         - $ref: "#/components/schemas/CodedError"

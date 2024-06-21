@@ -10,7 +10,10 @@ import * as util from "./util";
 function get_scheduled_messages_matching_narrow(): ScheduledMessage[] {
     const scheduled_messages_list = [...scheduled_messages.scheduled_messages_data.values()];
     const filter = narrow_state.filter();
-    const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
+    const is_conversation_view =
+        filter === undefined
+            ? false
+            : filter.is_conversation_view() || filter.is_conversation_view_with_near();
     const current_view_type = narrow_state.narrowed_to_pms() ? "private" : "stream";
 
     if (!is_conversation_view) {

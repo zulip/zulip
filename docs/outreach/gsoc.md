@@ -129,7 +129,7 @@ Django, TypeScript/JavaScript, and CSS.
 
   Experts: Zixuan James Li, Evy Kassirer, Anders Kaseorg
 
-[typescript-migration]: https://chat.zulip.org/#narrow/stream/6-frontend/topic/typescript.20migration
+[typescript-migration]: https://chat.zulip.org/#narrow/channel/6-frontend/topic/typescript.20migration
 
 - Migrate server's Python codebase from the legacy
   `@has_request_variables` decorator to the new `@typed_endpoint`
@@ -415,9 +415,9 @@ Experts: Greg Price, Chris Bobbe
   experience with Android or iOS may also be helpful but is not
   necessary.
 
-[flutter-why]: https://chat.zulip.org/#narrow/stream/2-general/topic/Flutter/near/1582367
-[flutter-beta]: https://chat.zulip.org/#narrow/stream/2-general/topic/Flutter/near/1708728
+[flutter-why]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1582367
+[flutter-beta]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1708728
 [flutter-board]: https://github.com/orgs/zulip/projects/5/views/4
 [flutter-milestone-launch]: https://github.com/zulip/zulip-flutter/milestone/3
-[flutter-upstream-summary]: https://chat.zulip.org/#narrow/stream/2-general/topic/Flutter/near/1524757
+[flutter-upstream-summary]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1524757
 [flutter-upstream-autocomplete]: https://github.com/flutter/flutter/pull/129802

@@ -686,35 +686,27 @@ export class BuddyList extends BuddyListConf {
     insert_new_html(opts: {
         new_user_id: number | undefined;
         html: string;
-        new_pos_in_all_users: number;
         is_subscribed_user: boolean;
     }): void {
         const user_id_following_insertion = opts.new_user_id;
         const html = opts.html;
-        const new_pos_in_all_users = opts.new_pos_in_all_users;
         const is_subscribed_user = opts.is_subscribed_user;
 
         // This means we're inserting at the end
         if (user_id_following_insertion === undefined) {
-            if (new_pos_in_all_users === this.render_count) {
-                this.render_count += 1;
-                if (is_subscribed_user) {
-                    this.$users_matching_view_container.append($(html));
-                } else {
-                    this.$other_users_container.append($(html));
-                }
-                this.update_padding();
+            if (is_subscribed_user) {
+                this.$users_matching_view_container.append($(html));
+            } else {
+                this.$other_users_container.append($(html));
             }
-            return;
-        }
-
-        if (new_pos_in_all_users < this.render_count) {
-            this.render_count += 1;
+        } else {
             const $li = this.find_li({key: user_id_following_insertion});
             assert($li !== undefined);
             $li.before($(html));
-            this.update_padding();
         }
+
+        this.render_count += 1;
+        this.update_padding();
     }
 
     insert_or_move(opts: {user_id: number; item: BuddyUserInfo}): void {
@@ -753,7 +745,6 @@ export class BuddyList extends BuddyListConf {
 
         const html = this.item_to_html({item});
         this.insert_new_html({
-            new_pos_in_all_users,
             html,
             new_user_id,
             is_subscribed_user,
