@@ -4,8 +4,8 @@ import {page_params} from "./base_page_params";
 import {$t, $t_html} from "./i18n";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import {realm} from "./state_data";
+import {StreamPostPolicy} from "./stream_types";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
-import {StreamPostPolicy} from "./sub_store";
 import type {
     FollowedTopicNotificationSettings,
     PmNotificationSettings,

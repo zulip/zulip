@@ -1,6 +1,11 @@
 import {z} from "zod";
 
 import {realm_default_settings_schema} from "./realm_user_settings_defaults";
+import {
+    never_subscribed_stream_schema,
+    stream_schema,
+    stream_subscription_schema,
+} from "./stream_types";
 import {user_settings_schema} from "./user_settings";
 
 const NOT_TYPED_YET = z.unknown();
@@ -368,10 +373,10 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                subscriptions: NOT_TYPED_YET,
-                unsubscribed: NOT_TYPED_YET,
-                never_subscribed: NOT_TYPED_YET,
-                realm_default_streams: NOT_TYPED_YET,
+                subscriptions: z.array(stream_subscription_schema),
+                unsubscribed: z.array(stream_subscription_schema),
+                never_subscribed: z.array(never_subscribed_stream_schema),
+                realm_default_streams: z.array(stream_schema),
             })
             .transform((stream_data) => ({stream_data})),
     )
