@@ -16,6 +16,10 @@ const default_max_file_size = 5;
 
 let uppy: Uppy;
 let edited_file: File;
+let original_file: File;
+// This ID is used to remove file from Uppy dashboard.
+// In order to removed the form that is created each time an image is uploaded.
+let fileID: string;
 
 export function get_edited_file(): File {
     return edited_file;
@@ -68,6 +72,7 @@ const dashboard_options: DashboardOptions = {
     inline: true,
     autoOpenFileEditor: true,
     animateOpenClose: false,
+    hideUploadButton: true,
 };
 
 const image_editor_options: ImageEditorOptions = {
@@ -97,11 +102,11 @@ const image_editor_options: ImageEditorOptions = {
         granularRotate: false,
         flip: false,
     },
-    locale : {
+    locale: {
         strings: {
-            aspectRatioSquare: 'Reset',
-        }
-    }
+            aspectRatioSquare: "Reset",
+        },
+    },
 };
 
 async function scale_image(file: File): Promise<File> {
@@ -141,11 +146,11 @@ async function scale_image(file: File): Promise<File> {
             // convert the canvas to a blob and return it
             canvas.toBlob((blob) => {
                 if (blob) {
-                    resolve(new File([blob], file.name));
+                    resolve(new File([blob], file.name, {type: file.type}));
                 } else {
                     reject(new Error("Failed to scale image"));
                 }
-            });
+            }, file.type);
         });
 
         image.src = URL.createObjectURL(file);
@@ -165,13 +170,16 @@ export function build_widget(
     $upload_button: JQuery,
     $save_button: JQuery,
     $scale_to_fit_button: JQuery,
+    $reset_scale_to_fit_button: JQuery,
     cropper_options: CropperOptions,
     $preview_text?: JQuery,
     $preview_image?: JQuery,
     $other_elements_to_hide?: JQuery,
     max_file_upload_size = default_max_file_size,
 ): UploadWidget {
-    let scaled = false;
+    let reset_scale = false;
+    let edited = false;
+    let alternate_button = false;
     function accept(file: File): void {
         if (image_editor_options.cropperOptions && image_editor_options.actions) {
             image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
@@ -194,7 +202,13 @@ export function build_widget(
                 $other_elements_to_hide?.hide();
                 $preview_text.show();
                 $save_button.show();
-                $scale_to_fit_button.show();
+                if (!alternate_button) {
+                    $scale_to_fit_button.show();
+                    $reset_scale_to_fit_button.hide();
+                } else {
+                    $scale_to_fit_button.hide();
+                    $reset_scale_to_fit_button.show();
+                }
                 $clear_button.show();
 
                 uppy = new Uppy({
@@ -211,30 +225,36 @@ export function build_widget(
                     })
                     .use(ImageEditor, image_editor_options)
                     .on("file-editor:complete", () => {
-                        if (scaled) {
-                            void scale_image(file).then((scaled_file) => {
-                                edited_file = scaled_file;
-                                scaled = false;
-                                const image_blob = URL.createObjectURL(edited_file);
-                                $preview_image.attr("src", image_blob);
-                            });
-                        } else {
-                            const file = uppy.getFiles()[0];
-                            if (file) {
+                        const file = uppy.getFiles()[0];
+                        if (file) {
+                            fileID = file.id;
+                            if (edited) {
+                                edited = false;
+                                alternate_button = !alternate_button;
+                                uppy.removeFile(fileID);
+                                uppy.close();
+                                if (reset_scale) {
+                                    accept(original_file);
+                                } else {
+                                    accept(edited_file);
+                                }
+                                reset_scale = !reset_scale;
+                            } else {
                                 edited_file = new File([file.data], file.name);
                                 const image_blob = URL.createObjectURL(edited_file);
                                 $preview_image.attr("src", image_blob);
+                                uppy.close();
+                                $input_error.hide();
+                                $save_button.hide();
+                                $scale_to_fit_button.hide();
+                                $reset_scale_to_fit_button.hide();
+                                $preview_image?.show();
+                                $file_name_field.show();
+                                $other_elements_to_hide?.show();
+                                if (!$file_name_field.closest("#emoji-file-name").length) {
+                                    $clear_button.hide();
+                                }
                             }
-                        }
-                        uppy.close();
-                        $input_error.hide();
-                        $save_button.hide();
-                        $scale_to_fit_button.hide();
-                        $preview_image?.show();
-                        $file_name_field.show();
-                        $other_elements_to_hide?.show();
-                        if (!$file_name_field.closest("#emoji-file-name").length) {
-                            $clear_button.hide();
                         }
                     });
 
@@ -257,6 +277,7 @@ export function build_widget(
         $file_name_field.text("");
         $save_button.hide();
         $scale_to_fit_button.hide();
+        $reset_scale_to_fit_button.hide();
         $input_error.hide();
         $other_elements_to_hide?.show();
         $clear_button.hide();
@@ -274,8 +295,14 @@ export function build_widget(
     });
 
     $scale_to_fit_button.on("click", (e) => {
+        edited = true;
         $(".uppy-DashboardContent-save").trigger("click");
-        scaled = true;
+        e.preventDefault();
+    });
+
+    $reset_scale_to_fit_button.on("click", (e) => {
+        edited = true;
+        $(".uppy-DashboardContent-save").trigger("click");
         e.preventDefault();
     });
 
@@ -313,7 +340,13 @@ export function build_widget(
                     $input_error.show();
                     clear();
                 } else {
-                    accept(file);
+                    reset_scale = false;
+                    alternate_button = false;
+                    original_file = file;
+                    void scale_image(original_file).then((scaled_file) => {
+                        edited_file = scaled_file;
+                    });
+                    accept(original_file);
                 }
             }
         } else {
@@ -360,7 +393,9 @@ export function build_direct_upload_widget(
     // Cropper options passed by the caller
     cropper_options: CropperOptions,
 ): void {
-    let scaled = false;
+    let first = true;
+    let reset_scale = false;
+    let edited = false;
     function submit(): void {
         $(".uppy-DashboardContent-save").trigger("click");
     }
@@ -371,23 +406,46 @@ export function build_direct_upload_widget(
         }
         const $control = get_file_input();
         $control.val("");
+        first = true;
     }
 
     function accept(file: File): void {
         $input_error.hide();
-        dialog_widget.launch({
-            html_heading: heading,
-            html_body: "<div id='ImageEditorDiv'></div>",
-            html_submit_button: `${$t_html({
-                defaultMessage: "Save changes",
-            })} <button class='modal__btn dialog_submit_button' id='scale_to_fit'>Scale to fit</button>`,
-            on_click: submit,
-            on_hidden: clear,
-        });
+        if (first) {
+            first = false;
+            dialog_widget.launch({
+                html_heading: heading,
+                html_body: "<div id='ImageEditorDiv'></div>",
+                html_submit_button: `${$t_html({
+                    defaultMessage: "Save changes",
+                })} <button class='modal__btn direct_widget_save' id='scale_to_fit'>Scale to fit</button> <button class='modal__btn hide direct_widget_save' id='reset_scale_to_fit'>Reset scale</button>`,
+                on_click: submit,
+                on_hidden: clear,
+            });
 
-        if (image_editor_options.cropperOptions && image_editor_options.actions) {
-            image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
-            image_editor_options.actions.cropSquare = cropper_options.cropSquare;
+            const $scaleButton = $("#scale_to_fit");
+            const $resetButton = $("#reset_scale_to_fit");
+
+            $scaleButton.on("click", (e) => {
+                edited = true;
+                $(".uppy-DashboardContent-save").trigger("click");
+                $scaleButton.hide();
+                $resetButton.show();
+                e.preventDefault();
+            });
+
+            $resetButton.on("click", (e) => {
+                edited = true;
+                $(".uppy-DashboardContent-save").trigger("click");
+                $scaleButton.show();
+                $resetButton.hide();
+                e.preventDefault();
+            });
+
+            if (image_editor_options.cropperOptions && image_editor_options.actions) {
+                image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
+                image_editor_options.actions.cropSquare = cropper_options.cropSquare;
+            }
         }
 
         uppy = new Uppy({
@@ -404,20 +462,30 @@ export function build_direct_upload_widget(
             })
             .use(ImageEditor, image_editor_options)
             .on("file-editor:complete", () => {
-                if (scaled) {
-                    void scale_image(file).then((scaled_file) => {
-                        upload_direct_widget(scaled_file, upload_function, $upload_button);
-                        scaled = false;
-                    });
-                } else {
-                    const file = uppy.getFiles()[0];
-                    if (file) {
-                        const edited_file = new File([file.data], file.name);
-                        upload_direct_widget(edited_file, upload_function, $upload_button);
+                const file = uppy.getFiles()[0];
+                if (file) {
+                    fileID = file.id;
+                    if (edited) {
+                        edited = false;
+                        uppy.removeFile(fileID);
+                        uppy.close();
+                        if (reset_scale) {
+                            accept(original_file);
+                        } else {
+                            accept(edited_file);
+                        }
+                        reset_scale = !reset_scale;
+                    } else {
+                        upload_direct_widget(
+                            new File([file.data], file.name),
+                            upload_function,
+                            $upload_button,
+                        );
                     }
+                } else {
+                    clear();
+                    $input_error.hide();
                 }
-                clear();
-                $input_error.hide();
             });
 
         uppy.addFile({
@@ -425,13 +493,6 @@ export function build_direct_upload_widget(
             type: file.type,
             data: file,
         });
-
-        const scaleButton = document.querySelector("#scale_to_fit");
-        if (scaleButton) {
-            scaleButton.addEventListener("click", () => {
-                scaled = true;
-            });
-        }
     }
 
     $upload_button.on("drop", (e) => {
@@ -468,7 +529,12 @@ export function build_direct_upload_widget(
                     $input_error.show();
                     clear();
                 } else {
-                    accept(file);
+                    reset_scale = false;
+                    original_file = file;
+                    void scale_image(original_file).then((scaled_file) => {
+                        edited_file = scaled_file;
+                    });
+                    accept(original_file);
                 }
             }
         } else {

@@ -180,6 +180,7 @@ export function add_custom_emoji_post_render(): void {
     const $upload_button = $("#emoji_upload_button");
     const $save_button = $("#emoji_image_save_button");
     const $scale_to_fit_button = $("#emoji_scale_to_fit_button");
+    const $reset_scale_to_fit_button = $("#emoji_reset_button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
@@ -201,6 +202,7 @@ export function add_custom_emoji_post_render(): void {
         $upload_button,
         $save_button,
         $scale_to_fit_button,
+        $reset_scale_to_fit_button,
         cropper_options,
         $preview_text,
         $preview_image,

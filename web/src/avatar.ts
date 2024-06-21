@@ -24,6 +24,7 @@ export function build_bot_create_widget(): UploadWidget {
     const $upload_button = $("#bot_avatar_upload_button");
     const $save_button = $("#bot_avatar_save_button");
     const $scale_to_fit_button = $("#bot_avatar_scale_to_fit_button");
+    const $reset_scale_to_fit_button = $("#bot_avatar_reset_button");
     const $preview_text = $("#add_bot_preview_text");
     const $preview_image = $("#add_bot_preview_image");
     const $other_elements_to_hide = $("#create_bot_form .hideable, .modal__footer");
@@ -40,6 +41,7 @@ export function build_bot_create_widget(): UploadWidget {
         $upload_button,
         $save_button,
         $scale_to_fit_button,
+        $reset_scale_to_fit_button,
         cropper_options,
         $preview_text,
         $preview_image,
@@ -58,6 +60,7 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
     const $upload_button = $target.find(".edit_bot_avatar_upload_button");
     const $save_button = $("#edit_bot_avatar_save_button");
     const $scale_to_fit_button = $("#edit_bot_avatar_scale_to_fit_button");
+    const $reset_scale_to_fit_button = $("#edit_bot_reset_button");
     const $preview_text = $target.find("#edit_bot_avatar_preview_text");
     const $preview_image = $target.find(".edit_bot_avatar_preview_image");
     const $other_elements_to_hide = $(
@@ -76,6 +79,7 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
         $upload_button,
         $save_button,
         $scale_to_fit_button,
+        $reset_scale_to_fit_button,
         cropper_options,
         $preview_text,
         $preview_image,

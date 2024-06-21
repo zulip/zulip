@@ -180,6 +180,7 @@ async function test_add_emoji(page: Page): Promise<void> {
     assert.ok(emoji_upload_handle);
     await emoji_upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
+    await common.wait_for_micromodal_to_open(page);
     await page.waitForSelector("#emoji_preview_text", {visible: true});
     await page.click("#emoji_image_save_button");
 
@@ -241,8 +242,13 @@ async function test_upload_realm_logo_image_scaled(page: Page): Promise<void> {
 
     await common.wait_for_micromodal_to_open(page);
     await page.click("#scale_to_fit");
+    await page.waitForSelector("#ImageEditorDiv", {visible: false});
+    await page.waitForSelector("#scale_to_fit", {hidden: true});
+    await page.waitForSelector("#reset_scale_to_fit", {hidden: false});
+    await page.waitForSelector("#ImageEditorDiv", {visible: true});
+    await common.wait_for_micromodal_to_open(page);
+    await page.click(".dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
-
     await page.waitForSelector("#realm-day-logo-upload-widget .upload-spinner-background", {
         hidden: true,
     });
@@ -286,12 +292,10 @@ async function test_organization_profile(page: Page): Promise<void> {
     await page.waitForSelector("#realm-day-logo-upload-widget .image-delete-button", {
         hidden: true,
     });
-
     await test_upload_realm_logo_image_scaled(page);
     await page.waitForSelector("#realm-day-logo-upload-widget .image-delete-button", {
         visible: true,
     });
-
     await delete_realm_logo(page);
     await page.waitForSelector("#realm-day-logo-upload-widget .image-delete-button", {
         hidden: true,
@@ -333,7 +337,6 @@ async function admin_test(page: Page): Promise<void> {
     await test_change_new_stream_announcements_stream(page);
     await test_change_signup_announcements_stream(page);
     await test_change_zulip_update_announcements_stream(page);
-
     await test_organization_permissions(page);
     // Currently, Firefox (with puppeteer) does not support file upload:
     //    https://github.com/puppeteer/puppeteer/issues/6688.

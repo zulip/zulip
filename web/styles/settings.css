@@ -817,6 +817,10 @@ input[type="checkbox"] {
     order: -1;
 }
 
+#reset_scale_to_fit {
+    order: -1;
+}
+
 #image_editor {
     display: flex;
     justify-content: space-between;
@@ -835,6 +839,10 @@ input[type="checkbox"] {
 
 .image_clear {
     background-color: hsl(0deg 100% 20%);
+}
+
+.direct_widget_save {
+    background-color: hsl(240deg 96% 68%);
 }
 
 .add-new-linkifier-box,
