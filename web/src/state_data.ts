@@ -7,6 +7,7 @@ import {
     stream_subscription_schema,
 } from "./stream_types";
 import {user_settings_schema} from "./user_settings";
+import {user_status_schema} from "./user_status_types";
 
 const NOT_TYPED_YET = z.unknown();
 
@@ -415,7 +416,11 @@ export const state_data_schema = z
             .object({user_topics: z.array(user_topic_schema)})
             .transform((user_topics) => ({user_topics})),
     )
-    .and(z.object({user_status: NOT_TYPED_YET}).transform((user_status) => ({user_status})))
+    .and(
+        z
+            .object({user_status: z.record(user_status_schema)})
+            .transform((user_status) => ({user_status})),
+    )
     .and(
         z
             .object({user_settings: user_settings_schema})
