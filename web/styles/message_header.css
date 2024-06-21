@@ -59,6 +59,10 @@
                 top: 0.5px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+
+                span.stream-topic-inner {
+                    white-space: pre;
+                }
             }
         }
 

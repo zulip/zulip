@@ -357,6 +357,14 @@ body.has-overlay-scrollbar {
     background-color: hsl(0deg 0% 0% / 70%);
 }
 
+.white-space-preserve-wrap {
+    white-space: pre-wrap;
+}
+
+.white-space-preserve {
+    white-space: pre;
+}
+
 /* Set flex display on login buttons only in the
    spectator view. We want them to display none
    otherwise. */
@@ -1368,6 +1376,10 @@ div.focused-message-list {
 
     a {
         color: inherit;
+
+        strong.typeahead-strong-section {
+            white-space: pre;
+        }
     }
 
     .active {

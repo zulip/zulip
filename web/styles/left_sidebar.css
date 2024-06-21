@@ -910,6 +910,10 @@ li.top_left_scheduled_messages {
     overflow-x: hidden;
     overflow-x: clip;
     text-overflow: ellipsis;
+
+    span.sidebar-topic-name-inner {
+        white-space: pre;
+    }
 }
 
 .searching-for-more-topics img {

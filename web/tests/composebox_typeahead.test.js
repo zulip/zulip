@@ -894,18 +894,18 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // options.highlighter_html()
                 options.query = "Kro";
                 actual_value = options.highlighter_html("kronor");
-                expected_value = "<strong>kronor</strong>";
+                expected_value = '<strong class="typeahead-strong-section">kronor</strong>';
                 assert.equal(actual_value, expected_value);
 
                 // Highlighted content should be escaped.
                 options.query = "<";
                 actual_value = options.highlighter_html("<&>");
-                expected_value = "<strong>&lt;&amp;&gt;</strong>";
+                expected_value = '<strong class="typeahead-strong-section">&lt;&amp;&gt;</strong>';
                 assert.equal(actual_value, expected_value);
 
                 options.query = "even m";
                 actual_value = options.highlighter_html("even more ice");
-                expected_value = "<strong>even more ice</strong>";
+                expected_value = '<strong class="typeahead-strong-section">even more ice</strong>';
                 assert.equal(actual_value, expected_value);
 
                 // options.sorter()
@@ -1129,7 +1129,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value =
                     `    <span class="user_circle_empty user_circle"></span>\n` +
                     `    <img class="typeahead-image" src="http://zulip.zulipdev.com/avatar/${othello.user_id}?s&#x3D;50" />\n` +
-                    `<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n` +
+                    `<strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n` +
                     `<small class="autocomplete_secondary">othello@zulip.com</small>\n`;
                 assert.equal(actual_value, expected_value);
                 // Reset the email such that this does not affect further tests.
@@ -1139,7 +1139,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("hamletcharacters");
                 actual_value = options.highlighter_html(hamletcharacters);
                 expected_value =
-                    '    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
+                    '    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>\n<strong class="typeahead-strong-section">hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
                 assert.equal(actual_value, expected_value);
 
                 // matching

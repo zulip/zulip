@@ -202,6 +202,11 @@
         }
     }
 
+    .stream-topic {
+        /* Display whitespace within topics. */
+        white-space: pre-wrap;
+    }
+
     .user-group-mention {
         &:hover {
             background-color: var(--color-background-text-hover-group-mention);
