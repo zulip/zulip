@@ -217,9 +217,11 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
         # Create UserMessage rows for the backfill.
         ums_to_create = []
         for message_id in backfill_message_ids:
-            um = UserMessage(user_profile=user_profile, message_id=message_id)
+            um = UserMessage(
+                user_profile=user_profile, message_id=message_id, flags=UserMessage.flags.historical
+            )
             if message_id in older_message_ids:
-                um.flags = UserMessage.flags.read
+                um.flags |= UserMessage.flags.read
             ums_to_create.append(um)
 
         UserMessage.objects.bulk_create(ums_to_create)
