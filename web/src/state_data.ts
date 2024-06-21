@@ -174,6 +174,18 @@ export const presence_schema = z.object({
     idle_timestamp: z.number().optional(),
 });
 
+const one_time_notice_schema = z.object({
+    name: z.string(),
+    type: z.literal("one_time_notice"),
+});
+
+/* We may introduce onboarding step of types other than 'one time notice'
+in future. Earlier, we had 'hotspot' and 'one time notice' as the two
+types. We can simply do:
+const onboarding_step_schema = z.union([one_time_notice_schema, other_type_schema]);
+to avoid major refactoring when new type is introduced in the future. */
+export const onboarding_step_schema = one_time_notice_schema;
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -484,7 +496,7 @@ export const state_data_schema = z
     .and(z.object({max_message_id: z.number()}).transform((local_message) => ({local_message})))
     .and(
         z
-            .object({onboarding_steps: NOT_TYPED_YET})
+            .object({onboarding_steps: z.array(onboarding_step_schema)})
             .transform((onboarding_steps) => ({onboarding_steps})),
     )
     .and(current_user_schema.transform((current_user) => ({current_user})))
