@@ -254,11 +254,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.example_user("hamlet"), streams[0].name, "test"
         )
 
-        # Overwrite MAX_NUM_ONBOARDING_UNREAD_MESSAGES to 2
-        MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 2
+        # Overwrite MAX_NUM_RECENT_UNREAD_MESSAGES to 2
+        MAX_NUM_RECENT_UNREAD_MESSAGES = 2
         with patch(
-            "zerver.actions.create_user.MAX_NUM_ONBOARDING_UNREAD_MESSAGES",
-            MAX_NUM_ONBOARDING_UNREAD_MESSAGES,
+            "zerver.actions.create_user.MAX_NUM_RECENT_UNREAD_MESSAGES",
+            MAX_NUM_RECENT_UNREAD_MESSAGES,
         ):
             add_new_user_history(user_profile, streams)
 
@@ -278,7 +278,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             ).flags.read.is_set
         )
 
-        # Verify that the MAX_NUM_ONBOARDING_UNREAD_MESSAGES latest messages
+        # Verify that the MAX_NUM_RECENT_UNREAD_MESSAGES latest messages
         # that weren't the race message are marked as unread.
         latest_messages = (
             UserMessage.objects.filter(
@@ -286,7 +286,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
                 message__recipient__type=Recipient.STREAM,
             )
             .exclude(message_id=race_message_id)
-            .order_by("-message_id")[0:MAX_NUM_ONBOARDING_UNREAD_MESSAGES]
+            .order_by("-message_id")[0:MAX_NUM_RECENT_UNREAD_MESSAGES]
         )
         self.assert_length(latest_messages, 2)
         for msg in latest_messages:
@@ -300,7 +300,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             )
             .exclude(message_id=race_message_id)
             .order_by("-message_id")[
-                MAX_NUM_ONBOARDING_UNREAD_MESSAGES : MAX_NUM_ONBOARDING_UNREAD_MESSAGES + 1
+                MAX_NUM_RECENT_UNREAD_MESSAGES : MAX_NUM_RECENT_UNREAD_MESSAGES + 1
             ]
         )
         self.assertGreater(len(older_messages), 0)
@@ -922,7 +922,7 @@ class LoginTest(ZulipTestCase):
         # Make sure there's at least one recent message to be mark
         # unread.  This prevents a bug where this test would start
         # failing the test database was generated more than
-        # ONBOARDING_RECENT_TIMEDELTA ago.
+        # RECENT_MESSAGES_TIMEDELTA ago.
         self.subscribe(hamlet, "stream_0")
         self.send_stream_message(
             hamlet,
