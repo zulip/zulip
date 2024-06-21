@@ -338,7 +338,7 @@ export const state_data_schema = z
     )
     .and(
         z
-            .object({starred_messages: NOT_TYPED_YET})
+            .object({starred_messages: z.array(z.number())})
             .transform((starred_messages) => ({starred_messages})),
     )
     .and(
