@@ -22,6 +22,10 @@ let private_messages_collapsed = false;
 // This keeps track of if we're zoomed in or not.
 let zoomed = false;
 
+export function is_zoomed_in(): boolean {
+    return zoomed;
+}
+
 function get_private_messages_section_header(): JQuery {
     return $("#direct-messages-section-header");
 }
@@ -226,6 +230,7 @@ export function clear_search(force_rerender = false): void {
     } else if (force_rerender) {
         update_private_messages();
     }
+    $filter.trigger("blur");
 }
 
 const throttled_update_private_message = _.throttle(update_private_messages, 50);
