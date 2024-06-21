@@ -1,7 +1,6 @@
-For customers based outside of the United States, if you choose to pay by
-invoice via an international SWIFT bank transfer be sure to **select "OUR"**
-for who pays any transfer charges.
-
-Otherwise, third party banking fees will likely be deducted from the amount
-transferred resulting in the amount received being insufficient to cover the
-total bill for your plan.
+If you choose to pay via a bank transfer from a bank outside of the United
+States, your payment will likely incur a transfer charge. When asked which side
+will pay the transfer charge, please be sure to **select “OUR”** from the menu
+of options. Otherwise, third party banking fees will be deducted from the amount
+you transfer, and the resulting total will be insufficient to pay the full
+amount of your invoice.
