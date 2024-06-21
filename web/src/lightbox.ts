@@ -509,6 +509,8 @@ export function parse_media_data(media: HTMLElement): Payload {
         type = "image";
         if ($media.attr("data-src-fullsize")) {
             source = $media.attr("data-src-fullsize");
+        } else if ($media.attr("src")?.startsWith("/user_uploads/thumbnail/")) {
+            source = url;
         } else {
             source = preview_src;
         }
