@@ -467,7 +467,7 @@ export function initialize_everything(state_data) {
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.
     emoji.initialize({
-        realm_emoji: state_data.emoji.realm_emoji,
+        ...state_data.emoji,
         emoji_codes: generated_emoji_codes,
     });
 
