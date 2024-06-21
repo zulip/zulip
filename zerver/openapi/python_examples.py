@@ -71,9 +71,16 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
     assert ids_list == user_ids
 
 
-def validate_response_result(response: Dict[str, Any], expected_result: str = "success") -> None:
+def assert_success_response(response: Dict[str, Any]) -> None:
     assert "result" in response
-    assert response["result"] == expected_result
+    assert response["result"] == "success"
+
+
+def assert_error_response(response: Dict[str, Any], code: str = "BAD_REQUEST") -> None:
+    assert "result" in response
+    assert response["result"] == "error"
+    assert "code" in response
+    assert response["code"] == code
 
 
 def get_subscribed_stream_ids(client: Client) -> List[int]:
@@ -104,7 +111,7 @@ def add_subscriptions(client: Client) -> None:
         ],
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
     user_id = 25
@@ -119,7 +126,7 @@ def add_subscriptions(client: Client) -> None:
         principals=[user_id],
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
     assert "newbie@zulip.com" in result["subscribed"]
 
@@ -131,7 +138,7 @@ def test_add_subscriptions_already_subscribed(client: Client) -> None:
         ],
         principals=["newbie@zulip.com"],
     )
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
 
@@ -153,7 +160,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
         ],
         authorization_errors_fatal=False,
     )
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
     result = nonadmin_client.add_subscriptions(
@@ -162,7 +169,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
         ],
         authorization_errors_fatal=True,
     )
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400")
 
 
@@ -172,7 +179,7 @@ def get_presence(client: Client) -> None:
     # Get presence information of all the users in an organization.
     result = client.get_realm_presence()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/presence", "get", "200")
 
 
@@ -191,7 +198,7 @@ def add_default_stream(client: Client) -> None:
     # Add a channel to the set of default channels for new users.
     result = client.add_default_stream(stream_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/default_streams", "post", "200")
 
 
@@ -207,7 +214,7 @@ def remove_default_stream(client: Client) -> None:
         request=request,
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/default_streams", "delete", "200")
 
 
@@ -217,7 +224,7 @@ def get_user_presence(client: Client) -> None:
     # Get presence information for "iago@zulip.com".
     result = client.get_user_presence("iago@zulip.com")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id_or_email}/presence", "get", "200")
 
 
@@ -232,7 +239,7 @@ def get_user_status(client: Client) -> None:
         method="GET",
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id}/status", "get", "200")
 
 
@@ -248,7 +255,7 @@ def update_presence(client: Client) -> None:
     }
     result = client.update_presence(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/presence", "post", "200")
 
 
@@ -263,12 +270,12 @@ def create_user(client: Client) -> None:
     }
     result = client.create_user(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users", "post", "200")
 
     # Test "Email already used error".
     result = client.create_user(request)
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result)
     validate_against_openapi_schema(result, "/users", "post", "400")
 
 
@@ -285,7 +292,7 @@ def update_status(client: Client) -> None:
     }
     result = client.call_endpoint(url="/users/me/status", method="POST", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/status", "post", "200")
 
     # Test "status_text is too long error".
@@ -294,7 +301,7 @@ def update_status(client: Client) -> None:
         "away": "false",
     }
     result = client.call_endpoint(url="/users/me/status", method="POST", request=request)
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result)
     validate_against_openapi_schema(result, "/users/me/status", "post", "400")
 
 
@@ -304,7 +311,7 @@ def get_members(client: Client) -> None:
     # Get all users in the organization.
     result = client.get_members()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users", "get", "200")
     members = [m for m in result["members"] if m["email"] == "newbie@zulip.com"]
     assert len(members) == 1
@@ -316,7 +323,7 @@ def get_members(client: Client) -> None:
     # You may pass the `client_gravatar` query parameter as follows:
     result = client.get_members({"client_gravatar": False})
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users", "get", "200")
     assert result["members"][0]["avatar_url"] is not None
 
@@ -324,7 +331,7 @@ def get_members(client: Client) -> None:
     # You may pass the `include_custom_profile_fields` query parameter as follows:
     result = client.get_members({"include_custom_profile_fields": True})
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users", "get", "200")
     for member in result["members"]:
         if member["is_bot"]:
@@ -343,7 +350,7 @@ def get_user_by_email(client: Client) -> None:
         method="GET",
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{email}", "get", "200")
 
 
@@ -353,7 +360,7 @@ def get_invitations(client: Client) -> None:
     # Get all invitations.
     result = client.call_endpoint(url="/invites", method="GET")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/invites", "get", "200")
 
 
@@ -370,7 +377,7 @@ def send_invitations(client: Client) -> None:
     }
     result = client.call_endpoint(url="/invites", method="POST", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/invites", "post", "200")
 
 
@@ -386,7 +393,7 @@ def create_reusable_invitation_link(client: Client) -> None:
     }
     result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/invites/multiuse", "post", "200")
 
 
@@ -408,7 +415,7 @@ def revoke_email_invitation(client: Client) -> None:
     # Revoke email invitation.
     result = client.call_endpoint(url=f"/invites/{invite_id}", method="DELETE")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/invites/{invite_id}", "delete", "200")
 
 
@@ -427,7 +434,7 @@ def revoke_reusable_invitation_link(client: Client) -> None:
     # Revoke reusable invitation link.
     result = client.call_endpoint(url=f"/invites/multiuse/{invite_id}", method="DELETE")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/invites/multiuse/{invite_id}", "delete", "200")
 
 
@@ -441,7 +448,7 @@ def resend_email_invitation(client: Client) -> None:
     # Resend email invitation.
     result = client.call_endpoint(url=f"/invites/{invite_id}/resend", method="POST")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/invites/{invite_id}/resend", "post", "200")
 
 
@@ -453,14 +460,14 @@ def get_single_user(client: Client) -> None:
     # Fetch details on a user given a user ID.
     result = client.get_user_by_id(user_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id}", "get", "200")
 
     # {code_example|start}
     # If you'd like data on custom profile fields, you can request them as follows:
     result = client.get_user_by_id(user_id, include_custom_profile_fields=True)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id}", "get", "200")
 
 
@@ -472,7 +479,7 @@ def deactivate_user(client: Client) -> None:
     # Deactivate a user given a user ID.
     result = client.deactivate_user_by_id(user_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id}", "delete", "200")
 
 
@@ -484,7 +491,7 @@ def reactivate_user(client: Client) -> None:
     # Reactivate a user given a user ID.
     result = client.reactivate_user_by_id(user_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id}/reactivate", "post", "200")
 
 
@@ -496,7 +503,7 @@ def update_user(client: Client) -> None:
     # Change a user's full name given a user ID.
     result = client.update_user_by_id(user_id, full_name="New Name")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id}", "patch", "200")
 
     user_id = 8
@@ -504,7 +511,7 @@ def update_user(client: Client) -> None:
     # Change value of the custom profile field with ID 9.
     result = client.update_user_by_id(user_id, profile_data=[{"id": 9, "value": "some data"}])
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id}", "patch", "200")
 
 
@@ -520,7 +527,7 @@ def get_subscription_status(client: Client) -> None:
         method="GET",
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(
         result, "/users/{user_id}/subscriptions/{stream_id}", "get", "200"
     )
@@ -535,7 +542,7 @@ def get_realm_linkifiers(client: Client) -> None:
         method="GET",
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/linkifiers", "get", "200")
 
 
@@ -551,7 +558,7 @@ def reorder_realm_linkifiers(client: Client) -> None:
     request = {"ordered_linkifier_ids": json.dumps(reordered_linkifiers)}
     result = client.call_endpoint(url="/realm/linkifiers", method="PATCH", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/linkifiers", "patch", "200")
 
 
@@ -564,7 +571,7 @@ def get_realm_profile_fields(client: Client) -> None:
         method="GET",
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/profile_fields", "get", "200")
 
 
@@ -581,7 +588,7 @@ def reorder_realm_profile_fields(client: Client) -> None:
     request = {"order": json.dumps(reordered_profile_fields)}
     result = client.call_endpoint(url="/realm/profile_fields", method="PATCH", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/profile_fields", "patch", "200")
 
 
@@ -592,7 +599,7 @@ def create_realm_profile_field(client: Client) -> None:
     request = {"name": "Phone", "hint": "Contact no.", "field_type": 1}
     result = client.call_endpoint(url="/realm/profile_fields", method="POST", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/profile_fields", "post", "200")
 
 
@@ -610,7 +617,7 @@ def add_realm_filter(client: Client) -> int:
     }
     result = client.call_endpoint("/realm/filters", method="POST", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/filters", "post", "200")
     return result["id"]
 
@@ -627,7 +634,7 @@ def update_realm_filter(client: Client, filter_id: int) -> None:
         url=f"/realm/filters/{filter_id}", method="PATCH", request=request
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "patch", "200")
 
 
@@ -637,7 +644,7 @@ def remove_realm_filter(client: Client, filter_id: int) -> None:
     # Remove a linkifier.
     result = client.remove_realm_filter(filter_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "delete", "200")
 
 
@@ -652,7 +659,7 @@ def add_realm_playground(client: Client) -> None:
     }
     result = client.call_endpoint(url="/realm/playgrounds", method="POST", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/playgrounds", "post", "200")
 
 
@@ -662,7 +669,7 @@ def remove_realm_playground(client: Client) -> None:
     # Remove the code playground with ID 1.
     result = client.call_endpoint(url="/realm/playgrounds/1", method="DELETE")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/playgrounds/{playground_id}", "delete", "200")
 
 
@@ -673,7 +680,7 @@ def get_profile(client: Client) -> None:
     # which is `client` in this case.
     result = client.get_profile()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me", "get", "200")
 
 
@@ -687,7 +694,7 @@ def deactivate_own_user(client: Client, owner_client: Client) -> None:
         method="DELETE",
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me", "delete", "200")
 
     # Reactivate the account to avoid polluting other tests.
@@ -701,7 +708,7 @@ def get_stream_id(client: Client) -> int:
     # Get the ID of a given channel name.
     result = client.get_stream_id(name)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/get_stream_id", "get", "200")
     return result["stream_id"]
 
@@ -720,7 +727,7 @@ def archive_stream(client: Client) -> None:
     # Archive a channel, given the channel's ID.
     result = client.delete_stream(stream_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/streams/{stream_id}", "delete", "200")
 
 
@@ -735,7 +742,7 @@ def delete_topic(client: Client, stream_id: int, topic: str) -> None:
         url=f"/streams/{stream_id}/delete_topic", method="POST", request=request
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/streams/{stream_id}/delete_topic", "post", "200")
 
 
@@ -745,7 +752,7 @@ def get_streams(client: Client) -> None:
     # Get all channels that the user has access to.
     result = client.get_streams()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/streams", "get", "200")
     streams = [s for s in result["streams"] if s["name"] == "python-test"]
     assert streams[0]["description"] == "Channel for testing Python"
@@ -755,7 +762,7 @@ def get_streams(client: Client) -> None:
     # as keyword arguments, like so:
     result = client.get_streams(include_public=False)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/streams", "get", "200")
     assert len(result["streams"]) == 7
 
@@ -771,7 +778,7 @@ def update_stream(client: Client, stream_id: int) -> None:
     }
     result = client.update_stream(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/streams/{stream_id}", "patch", "200")
 
 
@@ -781,7 +788,7 @@ def get_user_groups(client: Client) -> int:
     # Get all user groups of the organization.
     result = client.get_user_groups()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/user_groups", "get", "200")
     [hamlet_user_group] = (u for u in result["user_groups"] if u["name"] == "hamletcharacters")
     assert hamlet_user_group["description"] == "Characters of Hamlet"
@@ -791,7 +798,7 @@ def get_user_groups(client: Client) -> int:
 
 def test_user_not_authorized_error(nonadmin_client: Client) -> None:
     result = nonadmin_client.get_streams(include_all_active=True)
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result)
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
 
 
@@ -805,7 +812,7 @@ def get_subscribers(client: Client) -> None:
     # channel's ID.
     result = client.get_subscribers(stream="python-test")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/streams/{stream_id}/members", "get", "200")
     assert result["subscribers"] == user_ids
 
@@ -821,7 +828,7 @@ def get_subscriptions(client: Client) -> None:
     # Get all channels that the user is subscribed to.
     result = client.get_subscriptions()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "get", "200")
     streams = [s for s in result["subscriptions"] if s["name"] == "python-test"]
     assert streams[0]["description"] == "Channel for testing Python"
@@ -835,7 +842,7 @@ def remove_subscriptions(client: Client) -> None:
         ["python-test"],
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "delete", "200")
 
     # Confirm user is no longer subscribed to "python-test".
@@ -850,7 +857,7 @@ def remove_subscriptions(client: Client) -> None:
         principals=["newbie@zulip.com"],
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "delete", "200")
 
 
@@ -876,7 +883,7 @@ def toggle_mute_topic(client: Client) -> None:
     }
     result = client.mute_topic(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
 
     # {code_example|start}
@@ -888,7 +895,7 @@ def toggle_mute_topic(client: Client) -> None:
     }
     result = client.mute_topic(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
 
 
@@ -908,7 +915,7 @@ def update_user_topic(client: Client) -> None:
         request=request,
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/user_topics", "post", "200")
 
     # {code_example|start}
@@ -924,7 +931,7 @@ def update_user_topic(client: Client) -> None:
         request=request,
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/user_topics", "post", "200")
 
 
@@ -936,7 +943,7 @@ def add_user_mute(client: Client) -> None:
     # Mute a user, given the user's ID.
     result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="POST")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/muted_users/{muted_user_id}", "post", "200")
 
 
@@ -948,7 +955,7 @@ def remove_user_mute(client: Client) -> None:
     # Unmute a user, given the user's ID.
     result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="DELETE")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(
         result, "/users/me/muted_users/{muted_user_id}", "delete", "200"
     )
@@ -960,7 +967,7 @@ def mark_all_as_read(client: Client) -> None:
     # Mark all of the user's unread messages as read.
     result = client.mark_all_as_read()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/mark_all_as_read", "post", "200")
 
 
@@ -971,7 +978,7 @@ def mark_stream_as_read(client: Client) -> None:
     # Mark the unread messages in a channel as read, given the channel's ID.
     result = client.mark_stream_as_read(stream_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/mark_stream_as_read", "post", "200")
 
 
@@ -983,7 +990,7 @@ def mark_topic_as_read(client: Client) -> None:
     # Mark unread messages in a given topic/channel as read.
     result = client.mark_topic_as_read(stream_id, topic_name)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/mark_stream_as_read", "post", "200")
 
 
@@ -1011,7 +1018,7 @@ def update_subscription_settings(client: Client) -> None:
     ]
     result = client.update_subscription_settings(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions/properties", "POST", "200")
 
 
@@ -1024,7 +1031,7 @@ def render_message(client: Client) -> None:
     }
     result = client.render_message(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/render", "post", "200")
 
 
@@ -1044,7 +1051,7 @@ def get_messages(client: Client) -> None:
     }
     result = client.get_messages(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages", "get", "200")
     assert len(result["messages"]) <= request["num_before"]
 
@@ -1066,7 +1073,7 @@ def check_messages_match_narrow(client: Client) -> None:
     }
     result = client.call_endpoint(url="messages/matches_narrow", method="GET", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/matches_narrow", "get", "200")
 
 
@@ -1076,7 +1083,7 @@ def get_raw_message(client: Client, message_id: int) -> None:
     # Get the raw content of a message given the message's ID.
     result = client.get_raw_message(message_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}", "get", "200")
 
 
@@ -1086,7 +1093,7 @@ def get_attachments(client: Client) -> int:
     # Get your attachments.
     result = client.get_attachments()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/attachments", "get", "200")
     return result["attachments"][0]["id"]
 
@@ -1101,7 +1108,7 @@ def remove_attachment(client: Client, attachment_id: int) -> None:
         method="DELETE",
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/attachments/{attachment_id}", "delete", "200")
 
 
@@ -1118,7 +1125,7 @@ def send_message(client: Client) -> int:
     }
     result = client.send_message(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages", "post", "200")
 
     # Confirm the message was actually sent.
@@ -1136,7 +1143,7 @@ def send_message(client: Client) -> int:
     }
     result = client.send_message(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages", "post", "200")
 
     # Confirm the message was actually sent.
@@ -1156,7 +1163,7 @@ def add_reaction(client: Client, message_id: int) -> None:
     }
     result = client.add_reaction(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}/reactions", "post", "200")
 
 
@@ -1171,7 +1178,7 @@ def remove_reaction(client: Client, message_id: int) -> None:
     }
     result = client.remove_reaction(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}/reactions", "delete", "200")
 
 
@@ -1181,7 +1188,7 @@ def get_read_receipts(client: Client, message_id: int) -> None:
     # Get read receipts for a message, given the message's ID.
     result = client.call_endpoint(f"/messages/{message_id}/read_receipts", method="GET")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}/read_receipts", "get", "200")
 
 
@@ -1193,7 +1200,7 @@ def test_nonexistent_stream_error(client: Client) -> None:
         "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result, code="STREAM_DOES_NOT_EXIST")
     validate_against_openapi_schema(result, "/messages", "post", "400")
 
 
@@ -1204,7 +1211,7 @@ def test_private_message_invalid_recipient(client: Client) -> None:
         "content": "With mirth and laughter let old wrinkles come.",
     }
     result = client.send_message(request)
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result)
     validate_against_openapi_schema(result, "/messages", "post", "400")
 
 
@@ -1219,7 +1226,7 @@ def update_message(client: Client, message_id: int) -> None:
     }
     result = client.update_message(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}", "patch", "200")
 
     # Confirm the message was actually updated.
@@ -1239,7 +1246,7 @@ def test_update_message_edit_permission_error(client: Client, nonadmin_client: C
         "content": "New content",
     }
     result = nonadmin_client.update_message(request)
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}", "patch", "400")
 
 
@@ -1249,7 +1256,7 @@ def delete_message(client: Client, message_id: int) -> None:
     # Delete a message, given the message's ID.
     result = client.delete_message(message_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}", "delete", "200")
 
 
@@ -1262,7 +1269,7 @@ def test_delete_message_edit_permission_error(client: Client, nonadmin_client: C
     }
     result = client.send_message(request)
     result = nonadmin_client.delete_message(result["id"])
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}", "delete", "400")
 
 
@@ -1272,7 +1279,7 @@ def get_message_history(client: Client, message_id: int) -> None:
     # Get the edit history for a message, given the message's ID.
     result = client.get_message_history(message_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/{message_id}/history", "get", "200")
 
 
@@ -1281,7 +1288,7 @@ def get_realm_emoji(client: Client) -> None:
     # {code_example|start}
     result = client.get_realm_emoji()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/emoji", "GET", "200")
 
 
@@ -1304,7 +1311,7 @@ def update_message_flags(client: Client) -> None:
     }
     result = client.update_message_flags(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/flags", "post", "200")
 
     # {code_example|start}
@@ -1316,7 +1323,7 @@ def update_message_flags(client: Client) -> None:
     }
     result = client.update_message_flags(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/flags", "post", "200")
 
 
@@ -1324,7 +1331,7 @@ def register_queue_all_events(client: Client) -> str:
     # Register the queue and get all events.
     # Mainly for verifying schema of /register.
     result = client.register()
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/register", "post", "200")
     return result["queue_id"]
 
@@ -1337,7 +1344,7 @@ def register_queue(client: Client) -> str:
         event_types=["message", "realm_emoji"],
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/register", "post", "200")
     return result["queue_id"]
 
@@ -1349,12 +1356,12 @@ def deregister_queue(client: Client, queue_id: str) -> None:
     # to be removed.
     result = client.deregister(queue_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/events", "delete", "200")
 
     # Test "BAD_EVENT_QUEUE_ID" error.
     result = client.deregister(queue_id)
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result, code="BAD_EVENT_QUEUE_ID")
     validate_against_openapi_schema(result, "/events", "delete", "400")
 
 
@@ -1366,7 +1373,7 @@ def get_queue(client: Client, queue_id: str) -> None:
     # parameters, like so:
     result = client.get_events(queue_id=queue_id, last_event_id=-1)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/events", "get", "200")
 
 
@@ -1376,7 +1383,7 @@ def get_server_settings(client: Client) -> None:
     # Fetch the settings for this server.
     result = client.get_server_settings()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/server_settings", "get", "200")
 
 
@@ -1391,7 +1398,7 @@ def update_settings(client: Client) -> None:
     }
     result = client.call_endpoint("/settings", method="PATCH", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/settings", "patch", "200")
 
 
@@ -1412,7 +1419,7 @@ def upload_file(client: Client) -> None:
         }
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/user_uploads", "post", "200")
 
 
@@ -1421,7 +1428,7 @@ def get_stream_topics(client: Client, stream_id: int) -> None:
     # {code_example|start}
     result = client.get_stream_topics(stream_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/{stream_id}/topics", "get", "200")
 
 
@@ -1431,7 +1438,7 @@ def add_apns_token(client: Client) -> None:
     request = {"token": "apple-tokenbb", "appid": "org.zulip.Zulip"}
     result = client.call_endpoint(url="/users/me/apns_device_token", method="POST", request=request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/apns_device_token", "post", "200")
 
 
@@ -1445,7 +1452,7 @@ def remove_apns_token(client: Client) -> None:
         url="/users/me/apns_device_token", method="DELETE", request=request
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/apns_device_token", "delete", "200")
 
 
@@ -1457,7 +1464,7 @@ def add_fcm_token(client: Client) -> None:
         url="/users/me/android_gcm_reg_id", method="POST", request=request
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "post", "200")
 
 
@@ -1471,7 +1478,7 @@ def remove_fcm_token(client: Client) -> None:
         url="/users/me/android_gcm_reg_id", method="DELETE", request=request
     )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "delete", "200")
 
 
@@ -1489,7 +1496,7 @@ def set_typing_status(client: Client) -> None:
     }
     result = client.set_typing_status(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
@@ -1501,7 +1508,7 @@ def set_typing_status(client: Client) -> None:
     }
     result = client.set_typing_status(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     stream_id = client.get_stream_id("Denmark")["stream_id"]
@@ -1516,7 +1523,7 @@ def set_typing_status(client: Client) -> None:
     }
     result = client.set_typing_status(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
@@ -1529,7 +1536,7 @@ def set_typing_status(client: Client) -> None:
     }
     result = client.set_typing_status(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
 
@@ -1546,7 +1553,7 @@ def upload_custom_emoji(client: Client) -> None:
             files=[fp],
         )
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/emoji/{emoji_name}", "post", "200")
 
 
@@ -1557,7 +1564,7 @@ def delete_custom_emoji(client: Client) -> None:
     # Delete a custom emoji.
     result = client.call_endpoint(f"realm/emoji/{emoji_name}", method="DELETE")
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/emoji/{emoji_name}", "delete", "200")
 
 
@@ -1567,7 +1574,7 @@ def get_alert_words(client: Client) -> None:
     # Get all of the user's configured alert words.
     result = client.get_alert_words()
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/alert_words", "get", "200")
 
 
@@ -1578,7 +1585,7 @@ def add_alert_words(client: Client) -> None:
     # Add words (or phrases) to the user's set of configured alert words.
     result = client.add_alert_words(words)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/alert_words", "post", "200")
 
 
@@ -1590,7 +1597,7 @@ def remove_alert_words(client: Client) -> None:
     # Remove words (or phrases) from the user's set of configured alert words.
     result = client.remove_alert_words(words)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/alert_words", "delete", "200")
 
 
@@ -1606,7 +1613,7 @@ def create_user_group(client: Client) -> None:
     }
     result = client.create_user_group(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/user_groups/create", "post", "200")
 
 
@@ -1620,7 +1627,7 @@ def update_user_group(client: Client, user_group_id: int) -> None:
     }
     result = client.update_user_group(request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/user_groups/{user_group_id}", "patch", "200")
 
 
@@ -1629,7 +1636,7 @@ def remove_user_group(client: Client, user_group_id: int) -> None:
     # {code_example|start}
     result = client.remove_user_group(user_group_id)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/user_groups/{user_group_id}", "delete", "200")
 
 
@@ -1645,19 +1652,19 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
     }
     result = client.update_user_group_members(user_group_id, request)
     # {code_example|end}
-    validate_response_result(result)
+    assert_success_response(result)
     validate_against_openapi_schema(result, "/user_groups/{group_id}/members", "post", "200")
 
 
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.get_subscriptions()
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result, code="UNAUTHORIZED")
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
 
 
 def test_missing_request_argument(client: Client) -> None:
     result = client.render_message({})
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result, code="REQUEST_VARIABLE_MISSING")
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
 
 
@@ -1679,7 +1686,7 @@ def test_realm_deactivated(client: Client) -> None:
 
 def test_invalid_stream_error(client: Client) -> None:
     result = client.get_stream_id("nonexistent")
-    validate_response_result(result, expected_result="error")
+    assert_error_response(result)
     validate_against_openapi_schema(result, "/get_stream_id", "get", "400")
 
 
