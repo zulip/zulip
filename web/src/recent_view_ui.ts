@@ -743,6 +743,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         other_sender_names_html: displayed_other_names.map((name) => _.escape(name)).join("<br />"),
         last_msg_url: hash_util.by_conversation_and_time_url(last_msg),
         is_spectator: page_params.is_spectator,
+        column_indexes: COLUMNS,
     };
     if (is_private) {
         assert(dm_context !== undefined);
@@ -1528,6 +1529,40 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
 
+    if (input_key === "tab" || input_key === "shift_tab") {
+        // Tabbing should be handled by browser but to keep the focus element same
+        // when we update recent view or user uses other hotkeys, we need to track
+        // the current focused element.
+        setTimeout(() => {
+            const post_tab_focus_elem = document.activeElement;
+            if (!(post_tab_focus_elem instanceof HTMLElement)) {
+                return;
+            }
+
+            if (
+                post_tab_focus_elem.id === "recent_view_search" ||
+                post_tab_focus_elem.classList.contains("btn-recent-filters") ||
+                post_tab_focus_elem.classList.contains("dropdown-widget-button")
+            ) {
+                $current_focus_elem = $(post_tab_focus_elem);
+            }
+
+            if ($(post_tab_focus_elem).parents("#recent-view-content-table").length) {
+                $current_focus_elem = "table";
+                const topic_row_index = $(post_tab_focus_elem).closest("tr").index();
+                const col_index = $(post_tab_focus_elem)
+                    .closest(".recent_view_focusable")
+                    .attr("data-col-index");
+                if (!col_index) {
+                    return;
+                }
+                col_focus = Number.parseInt(col_index, 10);
+                row_focus = topic_row_index;
+            }
+        }, 0);
+        return false;
+    }
+
     if ($elt.attr("id") === "recent_view_search") {
         // Since the search box a text area, we want the browser to handle
         // Left/Right and selection within the widget; but if the user
@@ -1551,17 +1586,11 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             case "vim_up":
             case "open_recent_view":
                 return false;
-            case "shift_tab":
-                $current_focus_elem = filter_buttons().last();
-                break;
             case "left_arrow":
                 if (start !== 0 || is_selected) {
                     return false;
                 }
                 $current_focus_elem = filter_buttons().last();
-                break;
-            case "tab":
-                $current_focus_elem = filter_buttons().first();
                 break;
             case "right_arrow":
                 if (end !== text_length || is_selected) {
@@ -1594,7 +1623,6 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             case "click":
                 $current_focus_elem = $elt;
                 return true;
-            case "shift_tab":
             case "vim_left":
             case "left_arrow":
                 if (filter_buttons().first()[0] === $elt[0]) {
@@ -1603,7 +1631,6 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                     $current_focus_elem = $elt.prev();
                 }
                 break;
-            case "tab":
             case "vim_right":
             case "right_arrow":
                 if (filter_buttons().last()[0] === $elt[0]) {
@@ -1638,12 +1665,10 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             case "open_recent_view":
                 set_default_focus();
                 return true;
-            case "shift_tab":
             case "vim_left":
             case "left_arrow":
                 left_arrow_navigation(row_focus, col_focus);
                 break;
-            case "tab":
             case "vim_right":
             case "right_arrow":
                 right_arrow_navigation(row_focus, col_focus);
