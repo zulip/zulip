@@ -60,6 +60,56 @@ export const scheduled_message_schema = z
         ]),
     );
 
+export const profile_datum_schema = z.object({
+    value: z.string(),
+    rendered_value: z.string().optional(),
+});
+
+export const user_schema = z
+    .object({
+        user_id: z.number(),
+        delivery_email: z.string().nullable(),
+        email: z.string(),
+        full_name: z.string(),
+        // used for caching result of remove_diacritics.
+        name_with_diacritics_removed: z.string().optional(),
+        date_joined: z.string(),
+        is_active: z.boolean().optional(),
+        is_owner: z.boolean(),
+        is_admin: z.boolean(),
+        is_guest: z.boolean(),
+        is_moderator: z.boolean().optional(),
+        is_billing_admin: z.boolean().optional(),
+        role: z.number(),
+        timezone: z.string().optional(),
+        avatar_url: z.string().nullish(),
+        avatar_version: z.number(),
+        profile_data: z.record(z.coerce.number(), profile_datum_schema).optional(),
+        // used for fake user objects.
+        is_missing_server_data: z.optional(z.boolean()),
+        // used for inaccessible user objects.
+        is_inaccessible_user: z.optional(z.boolean()),
+    })
+    .and(
+        z.discriminatedUnion("is_bot", [
+            z.object({
+                is_bot: z.literal(false),
+                bot_type: z.null().optional(),
+            }),
+            z.object({
+                is_bot: z.literal(true),
+                bot_type: z.number(),
+                bot_owner_id: z.number().nullable(),
+            }),
+        ]),
+    );
+
+export const cross_realm_bot_schema = user_schema.and(
+    z.object({
+        is_system_bot: z.boolean(),
+    }),
+);
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -266,9 +316,9 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                realm_users: NOT_TYPED_YET,
-                realm_non_active_users: NOT_TYPED_YET,
-                cross_realm_bots: NOT_TYPED_YET,
+                realm_users: z.array(user_schema),
+                realm_non_active_users: z.array(user_schema),
+                cross_realm_bots: z.array(cross_realm_bot_schema),
             })
             .transform((people) => ({people})),
     )
