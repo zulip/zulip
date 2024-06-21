@@ -31,7 +31,6 @@ const user_topic_schema = z.object({
     topic_name: z.string(),
     last_updated: z.number(),
     visibility_policy: z.number(),
-    stream__name: z.string().optional(),
 });
 
 const all_user_topics = new Map<
