@@ -353,7 +353,14 @@ export const state_data_schema = z
     )
     .and(
         z
-            .object({recent_private_conversations: NOT_TYPED_YET})
+            .object({
+                recent_private_conversations: z.array(
+                    z.object({
+                        max_message_id: z.number(),
+                        user_ids: z.array(z.number()),
+                    }),
+                ),
+            })
             .transform((pm_conversations) => ({pm_conversations})),
     )
     .and(
