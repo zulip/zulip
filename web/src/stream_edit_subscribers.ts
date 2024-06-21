@@ -248,16 +248,13 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
 
         const failure_response_schema = z
             .object({
+                result: z.literal("error"),
                 msg: z.string(),
                 code: z.string(),
-                result: z.string(),
             })
             .safeParse(xhr.responseJSON);
 
-        if (
-            failure_response_schema.success &&
-            failure_response_schema.data.code === "BAD_REQUEST"
-        ) {
+        if (failure_response_schema.success) {
             message = failure_response_schema.data.msg;
         }
         show_stream_subscription_request_result({
