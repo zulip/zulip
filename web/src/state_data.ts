@@ -1,5 +1,6 @@
 import {z} from "zod";
 
+import {server_add_bot_schema} from "./bot_types";
 import {realm_default_settings_schema} from "./realm_user_settings_defaults";
 import {
     never_subscribed_stream_schema,
@@ -370,7 +371,7 @@ export const state_data_schema = z
     .object({alert_words: z.array(z.string())})
     .transform((alert_words) => ({alert_words}))
     .and(z.object({realm_emoji: realm_emoji_map_schema}).transform((emoji) => ({emoji})))
-    .and(z.object({realm_bots: NOT_TYPED_YET}).transform((bot) => ({bot})))
+    .and(z.object({realm_bots: z.array(server_add_bot_schema)}).transform((bot) => ({bot})))
     .and(
         z
             .object({
