@@ -825,7 +825,7 @@ function focus_clicked_list_element($elt: JQuery): void {
     update_triggered_by_user = true;
 }
 
-function revive_current_focus(): void {
+export function revive_current_focus(): void {
     if (is_list_focused()) {
         set_list_focus();
     } else {
@@ -1551,6 +1551,12 @@ export function initialize(): void {
         } else {
             unread_ops.mark_stream_as_read(stream_id);
         }
+    });
+
+    $("body").on("click", "#inbox-list .change_visibility_policy", function (this: HTMLElement) {
+        const $elt = $(this);
+        col_focus = COLUMNS.TOPIC_VISIBILITY;
+        focus_clicked_list_element($elt);
     });
 
     $("body").on("click", "#inbox-clear-search", () => {

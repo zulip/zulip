@@ -102,6 +102,10 @@ export function initialize() {
                 .removeClass("visibility-policy-popover-visible");
             instance.destroy();
             popover_menus.popover_instances.change_visibility_policy = undefined;
+
+            // If the reference is in recent view / inbox, we would ideally restore focus
+            // to the reference icon here but we don't do that because there are a lot of
+            // reasons why the popover might be hidden (e.g. user clicking outside the popover).
         },
     });
 }
