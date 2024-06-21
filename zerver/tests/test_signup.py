@@ -19,7 +19,7 @@ from django.utils import translation
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
-from zerver.actions.create_user import add_new_user_history
+from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
@@ -65,6 +65,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     Message,
+    OnboardingUserMessage,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -313,6 +314,55 @@ class AddNewUserHistoryTest(ZulipTestCase):
         for msg in older_messages:
             self.assertTrue(msg.flags.read.is_set)
             self.assertTrue(msg.flags.historical.is_set)
+
+    def test_only_tracked_onboarding_messages_marked_unread(self) -> None:
+        """
+        Realms with tracked onboarding messages have only
+        those messages marked as unread.
+        """
+        realm = do_create_realm("realm_string_id", "realm name")
+        hamlet = do_create_user(
+            "hamlet", "password", realm, "hamlet", realm_creation=True, acting_user=None
+        )
+        stream = Stream.objects.get(realm=realm, name=str(realm.ZULIP_SANDBOX_CHANNEL_NAME))
+
+        # Onboarding messages sent during realm creation are tracked.
+        self.assertTrue(OnboardingUserMessage.objects.filter(realm=realm).exists())
+        onboarding_message_ids = OnboardingUserMessage.objects.filter(realm=realm).values_list(
+            "message_id", flat=True
+        )
+
+        # Other messages sent before a new user joins.
+        for i in range(3):
+            self.send_stream_message(hamlet, stream.name, f"test {i}")
+
+        new_user = do_create_user("new_user", "password", realm, "new_user", acting_user=None)
+
+        # The onboarding messages are in the user's history and marked unread.
+        onboarding_user_messages = UserMessage.objects.filter(
+            user_profile=new_user, message_id__in=onboarding_message_ids
+        )
+        for user_message in onboarding_user_messages:
+            self.assertFalse(user_message.flags.read.is_set)
+            self.assertTrue(user_message.flags.historical.is_set)
+
+        # Other messages are in user's history and marked as read.
+        other_user_messages = UserMessage.objects.filter(
+            user_profile=new_user, message__recipient__type=Recipient.STREAM
+        ).exclude(message_id__in=onboarding_message_ids)
+        self.assertTrue(other_user_messages.exists())
+        for user_message in other_user_messages:
+            self.assertTrue(user_message.flags.read.is_set)
+            self.assertTrue(user_message.flags.historical.is_set)
+
+        # Onboarding messages for hamlet (realm creator) are not
+        # marked as historical.
+        onboarding_user_messages = UserMessage.objects.filter(
+            user_profile=hamlet, message_id__in=onboarding_message_ids
+        )
+        for user_message in onboarding_user_messages:
+            self.assertFalse(user_message.flags.read.is_set)
+            self.assertFalse(user_message.flags.historical.is_set)
 
     def test_auto_subbed_to_personals(self) -> None:
         """
@@ -946,7 +996,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(91), self.assert_memcached_count(14):
+        with self.assert_database_query_count(92), self.assert_memcached_count(14):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
