@@ -12,6 +12,7 @@ import * as components from "./components";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
+import {DataTypes, DropdownWidget} from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
 import * as list_widget from "./list_widget";
@@ -22,6 +23,8 @@ import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
+import * as util from "./util";
+
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -198,11 +201,51 @@ export function update_bot_permissions_ui() {
 }
 
 export function add_a_new_bot() {
+    const default_integration_option = {
+        name: $t_html({defaultMessage: "Select an integration"}),
+        unique_id: "",
+    };
+    function get_options_for_integration_input_dropdown_widget() {
+        const options = [
+            default_integration_option,
+            ...realm.realm_incoming_webhook_bots
+                .sort((a, b) => util.strcmp(a.display_name, b.display_name))
+                .map((bot) => ({
+                    name: bot.display_name,
+                    unique_id: bot.name,
+                })),
+        ];
+        return options;
+    }
+
+    const integration_input_dropdown_widget = new DropdownWidget({
+        widget_name: "integration-name",
+        get_options: get_options_for_integration_input_dropdown_widget,
+        item_click_callback: integration_item_click_callback,
+        $events_container: $("#generate-integration-url-modal"),
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: default_integration_option.unique_id,
+        unique_id_type: DataTypes.STRING,
+    });
+    integration_input_dropdown_widget.setup();
+    function integration_item_click_callback(event, dropdown) {
+        integration_input_dropdown_widget.render();
+        $(".integration-url-name-wrapper").trigger("input");
+
+        dropdown.hide();
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     const html_body = render_add_new_bot_form({
         bot_types: page_params.bot_types,
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
+        integration_dropdown_html: integration_input_dropdown_widget.render(),
     });
+
 
     let create_avatar_widget;
 
