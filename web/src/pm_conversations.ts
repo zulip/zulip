@@ -2,6 +2,7 @@ import {FoldDict} from "./fold_dict";
 import type {Message} from "./message_store";
 import * as muted_users from "./muted_users";
 import * as people from "./people";
+import type {StateData} from "./state_data";
 
 type PMConversation = {
     user_ids_string: string;
@@ -89,12 +90,7 @@ class RecentDirectMessages {
             .map((conversation) => conversation.user_ids_string);
     }
 
-    initialize(params: {
-        recent_private_conversations: {
-            max_message_id: number;
-            user_ids: number[];
-        }[];
-    }): void {
+    initialize(params: StateData["pm_conversations"]): void {
         for (const conversation of params.recent_private_conversations) {
             this.insert(conversation.user_ids, conversation.max_message_id);
         }
