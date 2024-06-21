@@ -1067,8 +1067,6 @@ type UnreadStreamInfo = {
 
 type UnreadDirectMessageInfo = {
     other_user_id: number;
-    // Deprecated and misleading synonym for other_user_id
-    sender_id: number;
     unread_message_ids: number[];
 };
 
