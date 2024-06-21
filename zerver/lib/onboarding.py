@@ -15,7 +15,7 @@ from zerver.actions.message_send import (
 from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
-from zerver.models import Message, Realm, UserProfile
+from zerver.models import Message, OnboardingUserMessage, Realm, UserProfile
 from zerver.models.users import get_system_bot
 
 
@@ -387,6 +387,14 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     message_ids = [
         sent_message_result.message_id for sent_message_result in do_send_messages(messages)
     ]
+
+    onboarding_user_messages = [
+        OnboardingUserMessage(
+            realm=realm, message_id=message_id, flags=OnboardingUserMessage.flags.historical
+        )
+        for message_id in message_ids
+    ]
+    OnboardingUserMessage.objects.bulk_create(onboarding_user_messages)
 
     # We find the one of our just-sent greetings messages, and react to it.
     # This is a bit hacky, but works and is kinda a 1-off thing.
