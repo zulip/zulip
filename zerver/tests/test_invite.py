@@ -393,7 +393,7 @@ class InviteUserTest(InviteUserBase):
             [
                 (
                     "INFO:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "(!: random-realm-name,default-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
                     "inviting 1 more, have 0 recent, but only 1 current users.  "
                     "Ratio 1.0, 2 allowed"
                 )
@@ -410,13 +410,13 @@ class InviteUserTest(InviteUserBase):
             [
                 (
                     "INFO:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "(!: random-realm-name,default-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
                     "inviting 2 more, have 0 recent, but only 1 current users.  "
                     "Ratio 2.0, 2 allowed"
                 ),
                 (
                     "WARNING:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "(!: random-realm-name,default-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
                     "inviting 3 more, have 0 recent, but only 1 current users.  "
                     "Ratio 3.0, 2 allowed"
                 ),
@@ -435,13 +435,13 @@ class InviteUserTest(InviteUserBase):
             [
                 (
                     "INFO:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,no-messages-sent) "
+                    "(!: random-realm-name,default-realm-description,no-realm-icon,realm-created-in-last-hour,no-messages-sent) "
                     "inviting 6 more, have 0 recent, but only 2 current users.  "
                     "Ratio 3.0, 3 allowed"
                 ),
                 (
                     "WARNING:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,no-messages-sent) "
+                    "(!: random-realm-name,default-realm-description,no-realm-icon,realm-created-in-last-hour,no-messages-sent) "
                     "inviting 7 more, have 0 recent, but only 2 current users.  "
                     "Ratio 3.5, 3 allowed"
                 ),

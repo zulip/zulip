@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 267**:
+
+* [`POST /register`](/api/register-queue): Added a new field
+  `realm_default_description` which contains the default
+  description of the organization.
+
 **Feature level 266**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
