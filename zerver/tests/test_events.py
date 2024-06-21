@@ -211,12 +211,14 @@ from zerver.lib.test_helpers import (
     create_dummy_file,
     get_subscription,
     get_test_image_file,
+    read_test_image_file,
     reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
+from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
@@ -225,6 +227,7 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     Attachment,
     CustomProfileField,
+    ImageAttachment,
     Message,
     MultiuseInvite,
     NamedUserGroup,
@@ -258,6 +261,7 @@ from zerver.tornado.event_queue import (
     send_web_reload_client_events,
 )
 from zerver.views.realm_playgrounds import access_playground_by_id
+from zerver.worker.thumbnail import ensure_thumbnails
 
 
 class BaseAction(ZulipTestCase):
@@ -935,7 +939,7 @@ class NormalActionsTest(BaseAction):
         content = "embed_content"
         rendering_result = render_message_markdown(message, content)
         with self.verify_action(state_change_expected=False) as events:
-            do_update_embedded_data(self.user_profile, message, content, rendering_result)
+            do_update_embedded_data(self.user_profile, message, rendering_result)
         check_update_message(
             "events[0]",
             events[0],
@@ -1026,6 +1030,27 @@ class NormalActionsTest(BaseAction):
             has_topic=True,
             has_new_stream_id=True,
             is_embedded_update_only=False,
+        )
+
+    def test_thumbnail_event(self) -> None:
+        iago = self.example_user("iago")
+        url = upload_message_attachment(
+            "img.png", "image/png", read_test_image_file("img.png"), self.example_user("iago")
+        )
+        path_id = url[len("/user_upload/") + 1 :]
+        self.send_stream_message(iago, "Verona", f"[img.png]({url})")
+
+        # Generating a thumbnail for an image sends a message update event
+        with self.verify_action(state_change_expected=False) as events:
+            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=False,
+            has_content=False,
+            has_topic=False,
+            has_new_stream_id=False,
+            is_embedded_update_only=True,
         )
 
     def test_update_message_flags(self) -> None:
