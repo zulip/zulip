@@ -1,5 +1,6 @@
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
+import type {StateData} from "./state_data";
 
 let max_message_id: number;
 
@@ -41,6 +42,6 @@ export const get_next_id_float = (function () {
     };
 })();
 
-export function initialize(params: {max_message_id: number}): void {
+export function initialize(params: StateData["local_message"]): void {
     max_message_id = params.max_message_id;
 }

@@ -409,7 +409,7 @@ export const state_data_schema = z
             })
             .transform((server_events) => ({server_events})),
     )
-    .and(z.object({max_message_id: NOT_TYPED_YET}).transform((local_message) => ({local_message})))
+    .and(z.object({max_message_id: z.number()}).transform((local_message) => ({local_message})))
     .and(
         z
             .object({onboarding_steps: NOT_TYPED_YET})
