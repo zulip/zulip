@@ -24,6 +24,11 @@ class ThumbnailWorker(QueueProcessingWorker):
         start = time.time()
         with transaction.atomic(savepoint=False):
             try:
+                # This lock prevents us from racing with the on-demand
+                # rendering that can be triggered if a request is made
+                # directly to a thumbnail URL we have not made yet.
+                # This may mean that we may generate 0 thumbnail
+                # images once we get the lock.
                 row = ImageAttachment.objects.select_for_update().get(id=event["id"])
             except ImageAttachment.DoesNotExist:  # nocoverage
                 logger.info("ImageAttachment row %d missing", event["id"])
