@@ -110,6 +110,20 @@ export const cross_realm_bot_schema = user_schema.and(
     }),
 );
 
+export const server_emoji_schema = z.object({
+    id: z.string(),
+    author_id: z.number(),
+    deactivated: z.boolean(),
+    name: z.string(),
+    source_url: z.string(),
+    still_url: z.string().nullable(),
+
+    // Added later in `settings_emoji.ts` when setting up the emoji settings.
+    author: user_schema.nullish(),
+});
+
+export const realm_emoji_map_schema = z.record(server_emoji_schema);
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -311,7 +325,7 @@ const realm_schema = z.object({
 export const state_data_schema = z
     .object({alert_words: NOT_TYPED_YET})
     .transform((alert_words) => ({alert_words}))
-    .and(z.object({realm_emoji: NOT_TYPED_YET}).transform((emoji) => ({emoji})))
+    .and(z.object({realm_emoji: realm_emoji_map_schema}).transform((emoji) => ({emoji})))
     .and(z.object({realm_bots: NOT_TYPED_YET}).transform((bot) => ({bot})))
     .and(
         z
