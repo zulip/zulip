@@ -1,8 +1,9 @@
 import * as message_store from "./message_store";
+import type {StateData} from "./state_data";
 
 export const starred_ids = new Set<number>();
 
-export function initialize(starred_messages_params: {starred_messages: number[]}): void {
+export function initialize(starred_messages_params: StateData["starred_messages"]): void {
     starred_ids.clear();
 
     for (const id of starred_messages_params.starred_messages) {
