@@ -31,17 +31,17 @@ export type User = {
     // used for caching result of remove_diacritics.
     name_with_diacritics_removed?: string | undefined;
     date_joined: string;
-    is_active: boolean;
+    is_active?: boolean;
     is_owner: boolean;
     is_admin: boolean;
     is_guest: boolean;
-    is_moderator: boolean;
-    is_billing_admin: boolean;
+    is_moderator?: boolean;
+    is_billing_admin?: boolean;
     role: number;
-    timezone: string;
+    timezone?: string;
     avatar_url?: string | null;
     avatar_version: number;
-    profile_data: Record<number, ProfileDatum>;
+    profile_data?: Record<number, ProfileDatum>;
     // used for fake user objects.
     is_missing_server_data?: boolean;
     // used for inaccessible user objects.
@@ -49,7 +49,7 @@ export type User = {
 } & (
     | {
           is_bot: false;
-          bot_type: null;
+          bot_type?: null;
       }
     | {
           is_bot: true;
@@ -1667,6 +1667,7 @@ export function set_custom_profile_field_data(
         return;
     }
     const person = get_by_user_id(user_id);
+    assert(person.profile_data !== undefined);
     person.profile_data[field.id] = {
         value: field.value,
         rendered_value: field.rendered_value,
