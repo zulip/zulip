@@ -1,10 +1,11 @@
 import re
-from typing import TypeAlias
+from typing import Any, TypeAlias
 
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.data_import.slack import check_token_access, get_slack_api_data
 from zerver.data_import.slack_message_conversion import (
     SLACK_BOLD_REGEX,
     SLACK_ITALIC_REGEX,
@@ -28,6 +29,7 @@ ZULIP_MESSAGE_TEMPLATE = "**{sender}**: {text}"
 VALID_OPTIONS = {"SHOULD_NOT_BE_MAPPED": "0", "SHOULD_BE_MAPPED": "1"}
 
 SlackFileListT: TypeAlias = list[dict[str, str]]
+SlackAPIResponseT: TypeAlias = dict[str, Any]
 
 SLACK_CHANNELMENTION_REGEX = r"(?<=<#)(.*)(?=>)"
 
@@ -43,7 +45,24 @@ def is_zulip_slack_bridge_bot_message(payload: WildValue) -> bool:
     return bot_app_id is not None and app_api_id == bot_app_id
 
 
-def convert_slack_user_and_channel_mentions(text: str) -> str:
+def get_slack_channel_name(channel_id: str, token: str) -> str:
+    slack_channel_data = get_slack_api_data(
+        "https://slack.com/api/conversations.info",
+        get_param="channel",
+        token=token,
+        channel=channel_id,
+    )
+    return slack_channel_data["name"]
+
+
+def get_slack_sender_name(user_id: str, token: str) -> str:
+    slack_user_data = get_slack_api_data(
+        "https://slack.com/api/users.info", get_param="user", token=token, user=user_id
+    )
+    return slack_user_data["name"]
+
+
+def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
     tokens = text.split(" ")
     for iterator in range(len(tokens)):
         slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE)
@@ -51,8 +70,11 @@ def convert_slack_user_and_channel_mentions(text: str) -> str:
             SLACK_CHANNELMENTION_REGEX, tokens[iterator], re.MULTILINE
         )
         if slack_usermention_match:
-            # TODO: Callback to Slack API
-            pass
+            # Convert Slack user mentions to a mention-like syntax since there
+            # is no way to map Slack and Zulip users.
+            slack_id = slack_usermention_match.group(2)
+            user_name = get_slack_sender_name(user_id=slack_id, token=app_token)
+            tokens[iterator] = "@**" + user_name + "**"
         elif slack_channelmention_match:
             # Convert Slack channel mentions to a mention-like syntax so that
             # a mention isn't triggered for a Zulip channel with the same name.
@@ -67,10 +89,10 @@ def convert_slack_user_and_channel_mentions(text: str) -> str:
 # `slack_message_conversion.py`, which cannot be used directly
 # due to differences in the Slack import data and Slack webhook
 # payloads.
-def convert_to_zulip_markdown(text: str) -> str:
+def convert_to_zulip_markdown(text: str, slack_app_token: str) -> str:
     text = convert_slack_formatting(text)
     text = convert_slack_workspace_mentions(text)
-    text = convert_slack_user_and_channel_mentions(text)
+    text = convert_slack_user_and_channel_mentions(text, slack_app_token)
     return text
 
 
@@ -108,7 +130,6 @@ def convert_raw_file_data(file_dict: WildValue) -> SlackFileListT:
 
 
 def get_message_body(text: str, sender: str, files: SlackFileListT) -> str:
-    # TODO: Reformat mentions in messages, currently its <@USER_ID>.
     body = ZULIP_MESSAGE_TEMPLATE.format(sender=sender, text=text)
     for file in files:
         body += FILE_LINK_TEMPLATE.format(**file)
@@ -150,6 +171,7 @@ def api_slack_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    slack_app_token: str = "",
     channels_map_to_topics: str | None = None,
 ) -> HttpResponse:
     if request.content_type != "application/json":
@@ -204,12 +226,14 @@ def api_slack_webhook(
     if event_type != "message":
         raise UnsupportedWebhookEventTypeError(event_type)
 
+    check_token_access(slack_app_token)
+
     raw_files = event_dict.get("files")
     files = convert_raw_file_data(raw_files) if raw_files else []
     raw_text = event_dict.get("text", "").tame(check_string)
-    text = convert_to_zulip_markdown(raw_text)
-    sender = event_dict.get("user").tame(check_none_or(check_string))
-    if sender is None:
+    text = convert_to_zulip_markdown(raw_text, slack_app_token)
+    user_id = event_dict.get("user").tame(check_none_or(check_string))
+    if user_id is None:
         # This is likely a Slack integration bot message. The sender of these
         # messages doesn't have a user profile and would require additional
         # formatting to handle. Refer to the Slack Incoming Webhook integration
@@ -219,8 +243,12 @@ def api_slack_webhook(
             if event_dict["subtype"] == "bot_message"
             else "unknown Slack event"
         )
+    sender = get_slack_sender_name(user_id, slack_app_token)
     content = get_message_body(text, sender, files)
-    channel = event_dict.get("channel").tame(check_string) if channels_map_to_topics else None
+    channel_id = event_dict.get("channel").tame(check_string)
+    channel = (
+        get_slack_channel_name(channel_id, slack_app_token) if channels_map_to_topics else None
+    )
 
     handle_slack_webhook_message(request, user_profile, content, channel, channels_map_to_topics)
     return json_success(request)
