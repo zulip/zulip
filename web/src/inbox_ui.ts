@@ -1564,58 +1564,6 @@ export function initialize(): void {
         compose_closed_ui.set_standard_text_for_reply_button();
     });
 
-    // Mute topic in a unmuted stream
-    $("body").on(
-        "click",
-        "#inbox-list .stream_unmuted.on_hover_topic_mute",
-        function (this: HTMLElement, e) {
-            e.stopPropagation();
-            user_topics.set_visibility_policy_for_element(
-                $(this),
-                user_topics.all_visibility_policies.MUTED,
-            );
-        },
-    );
-
-    // Unmute topic in a unmuted stream
-    $("body").on(
-        "click",
-        "#inbox-list .stream_unmuted.on_hover_topic_unmute",
-        function (this: HTMLElement, e) {
-            e.stopPropagation();
-            user_topics.set_visibility_policy_for_element(
-                $(this),
-                user_topics.all_visibility_policies.INHERIT,
-            );
-        },
-    );
-
-    // Unmute topic in a muted stream
-    $("body").on(
-        "click",
-        "#inbox-list .stream_muted.on_hover_topic_unmute",
-        function (this: HTMLElement, e) {
-            e.stopPropagation();
-            user_topics.set_visibility_policy_for_element(
-                $(this),
-                user_topics.all_visibility_policies.UNMUTED,
-            );
-        },
-    );
-
-    // Mute topic in a muted stream
-    $("body").on(
-        "click",
-        "#inbox-list .stream_muted.on_hover_topic_mute",
-        function (this: HTMLElement, e) {
-            e.stopPropagation();
-            user_topics.set_visibility_policy_for_element(
-                $(this),
-                user_topics.all_visibility_policies.INHERIT,
-            );
-        },
-    );
-
     $(document).on("compose_canceled.zulip", () => {
         if (is_visible()) {
             revive_current_focus();

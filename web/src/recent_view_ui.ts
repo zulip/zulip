@@ -1749,68 +1749,6 @@ export function initialize({
         },
     );
 
-    $("body").on(
-        "keydown",
-        ".on_hover_topic_mute, .on_hover_topic_unmute",
-        ui_util.convert_enter_to_click,
-    );
-
-    // Mute topic in a unmuted stream
-    $("body").on("click", "#recent-view-content-table .stream_unmuted.on_hover_topic_mute", (e) => {
-        e.stopPropagation();
-        assert(e.target instanceof HTMLElement);
-        const $elt = $(e.target);
-        const topic_row_index = $elt.closest("tr").index();
-        focus_clicked_element(topic_row_index, COLUMNS.mute);
-        user_topics.set_visibility_policy_for_element(
-            $elt,
-            user_topics.all_visibility_policies.MUTED,
-        );
-    });
-
-    // Unmute topic in a unmuted stream
-    $("body").on(
-        "click",
-        "#recent-view-content-table .stream_unmuted.on_hover_topic_unmute",
-        (e) => {
-            e.stopPropagation();
-            assert(e.target instanceof HTMLElement);
-            const $elt = $(e.target);
-            const topic_row_index = $elt.closest("tr").index();
-            focus_clicked_element(topic_row_index, COLUMNS.mute);
-            user_topics.set_visibility_policy_for_element(
-                $elt,
-                user_topics.all_visibility_policies.INHERIT,
-            );
-        },
-    );
-
-    // Unmute topic in a muted stream
-    $("body").on("click", "#recent-view-content-table .stream_muted.on_hover_topic_unmute", (e) => {
-        e.stopPropagation();
-        assert(e.target instanceof HTMLElement);
-        const $elt = $(e.target);
-        const topic_row_index = $elt.closest("tr").index();
-        focus_clicked_element(topic_row_index, COLUMNS.mute);
-        user_topics.set_visibility_policy_for_element(
-            $elt,
-            user_topics.all_visibility_policies.UNMUTED,
-        );
-    });
-
-    // Mute topic in a muted stream
-    $("body").on("click", "#recent-view-content-table .stream_muted.on_hover_topic_mute", (e) => {
-        e.stopPropagation();
-        assert(e.target instanceof HTMLElement);
-        const $elt = $(e.target);
-        const topic_row_index = $elt.closest("tr").index();
-        focus_clicked_element(topic_row_index, COLUMNS.mute);
-        user_topics.set_visibility_policy_for_element(
-            $elt,
-            user_topics.all_visibility_policies.INHERIT,
-        );
-    });
-
     $("body").on("click", "#recent_view_search", (e) => {
         e.stopPropagation();
         assert(e.target instanceof HTMLElement);

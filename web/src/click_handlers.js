@@ -41,7 +41,6 @@ import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
-import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 export function initialize() {
@@ -415,42 +414,6 @@ export function initialize() {
         const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
         message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
-    });
-
-    // Mute topic in a unmuted stream
-    $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_mute", (e) => {
-        e.stopPropagation();
-        user_topics.set_visibility_policy_for_element(
-            $(e.target),
-            user_topics.all_visibility_policies.MUTED,
-        );
-    });
-
-    // Unmute topic in a unmuted stream
-    $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_unmute", (e) => {
-        e.stopPropagation();
-        user_topics.set_visibility_policy_for_element(
-            $(e.target),
-            user_topics.all_visibility_policies.INHERIT,
-        );
-    });
-
-    // Unmute topic in a muted stream
-    $("body").on("click", ".message_header .stream_muted.on_hover_topic_unmute", (e) => {
-        e.stopPropagation();
-        user_topics.set_visibility_policy_for_element(
-            $(e.target),
-            user_topics.all_visibility_policies.UNMUTED,
-        );
-    });
-
-    // Mute topic in a muted stream
-    $("body").on("click", ".message_header .stream_muted.on_hover_topic_mute", (e) => {
-        e.stopPropagation();
-        user_topics.set_visibility_policy_for_element(
-            $(e.target),
-            user_topics.all_visibility_policies.INHERIT,
-        );
     });
 
     // RECIPIENT BARS
