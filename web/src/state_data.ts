@@ -124,6 +124,16 @@ export const server_emoji_schema = z.object({
 
 export const realm_emoji_map_schema = z.record(server_emoji_schema);
 
+export const user_group_schema = z.object({
+    description: z.string(),
+    id: z.number(),
+    name: z.string(),
+    members: z.array(z.number()),
+    is_system_group: z.boolean(),
+    direct_subgroup_ids: z.array(z.number()),
+    can_mention_group: z.number(),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -365,7 +375,11 @@ export const state_data_schema = z
             })
             .transform((stream_data) => ({stream_data})),
     )
-    .and(z.object({realm_user_groups: NOT_TYPED_YET}).transform((user_groups) => ({user_groups})))
+    .and(
+        z
+            .object({realm_user_groups: z.array(user_group_schema)})
+            .transform((user_groups) => ({user_groups})),
+    )
     .and(z.object({unread_msgs: NOT_TYPED_YET}).transform((unread) => ({unread})))
     .and(z.object({muted_users: NOT_TYPED_YET}).transform((muted_users) => ({muted_users})))
     .and(z.object({user_topics: NOT_TYPED_YET}).transform((user_topics) => ({user_topics})))
