@@ -48,7 +48,7 @@ export type StreamProperties = StreamSpecificNotificationSettings & {
 
 // This is the raw data we get from the server for a subscription.
 export type ApiStreamSubscription = (Stream & StreamProperties) & {
-    email_address: string;
+    email_address?: string;
     stream_weekly_traffic: number | null;
     subscribers?: number[];
 };
