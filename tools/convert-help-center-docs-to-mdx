@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+import django
+from django.template import engines
+from django.template.backends.jinja2 import Jinja2
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+django.setup()
+
+
+def escape_curly_braces(markdown_string: str) -> str:
+    """
+    MDX will treat curly braces as a JS expression,
+    we need to escape it if we don't want it to be
+    treated as such.
+    """
+    result = markdown_string.replace("{", r"\{")
+    return result.replace("}", r"\}")
+
+
+def fix_relative_path(markdown_string: str) -> str:
+    """
+    Since the docs will live at the `help-beta/` url
+    until we migrate the project completely, we will
+    replace `help/` with `help-beta/`
+    """
+    return markdown_string.replace("help/", "help-beta/")
+
+
+def insert_frontmatter(markdown_string: str) -> str:
+    """
+    We use the heading in the first line for the
+    existing files to extract the document title.
+    We are not adding a description to the frontmatter
+    yet.
+    """
+    heading = markdown_string.partition("\n")[0].lstrip("#").strip()
+    title = f"---\ntitle: {heading}\n---\n"
+    # Remove the first line since starlight will display the
+    # `title` as `H1` anyways.
+    return title + markdown_string.split("\n", 1)[-1]
+
+
+def convert_string_to_mdx(markdown_string: str) -> str:
+    result = escape_curly_braces(markdown_string)
+    result = fix_relative_path(result)
+    return insert_frontmatter(result)
+
+
+def convert_file_to_mdx(
+    markdown_file_path: str,
+) -> str:
+    """
+    Given a path to a Markdown file, return the equivalent MDX file.
+    """
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
+    if markdown_file_path.startswith("/"):
+        with open(markdown_file_path) as fp:
+            markdown_string = fp.read()
+    else:
+        markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+
+    return convert_string_to_mdx(markdown_string)
+
+
+def run() -> None:
+    input_dir = os.path.join(BASE_DIR, "help")
+    output_dir = os.path.join(BASE_DIR, "help-beta/src/content/docs")
+    print("Starting the conversion from MD to MDX...")
+
+    converted_count = 0
+
+    os.makedirs(output_dir, exist_ok=True)
+    for name in os.listdir(input_dir):
+        if os.path.isfile(os.path.join(input_dir, name)):
+            converted_count += 1
+            mdx = convert_file_to_mdx(os.path.join(input_dir, name))
+            with open(
+                os.path.join(
+                    BASE_DIR,
+                    output_dir,
+                    os.path.basename(name).split(".")[0] + ".mdx",
+                ),
+                "w",
+            ) as mdx_file:
+                mdx_file.write(mdx)
+    print(f"Converted {converted_count} files. Conversion completed.")
+
+
+run()
