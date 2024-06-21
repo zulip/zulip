@@ -266,7 +266,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.assertTrue(
             UserMessage.objects.filter(user_profile=user_profile, message_id=message_id).exists()
         )
-        # The race message is in the user's history and marked unread.
+        # The race message is in the user's history, marked unread & NOT historical.
         self.assertTrue(
             UserMessage.objects.filter(
                 user_profile=user_profile, message_id=race_message_id
@@ -277,9 +277,14 @@ class AddNewUserHistoryTest(ZulipTestCase):
                 user_profile=user_profile, message_id=race_message_id
             ).flags.read.is_set
         )
+        self.assertFalse(
+            UserMessage.objects.get(
+                user_profile=user_profile, message_id=race_message_id
+            ).flags.historical.is_set
+        )
 
         # Verify that the MAX_NUM_RECENT_UNREAD_MESSAGES latest messages
-        # that weren't the race message are marked as unread.
+        # that weren't the race message are marked as unread & historical.
         latest_messages = (
             UserMessage.objects.filter(
                 user_profile=user_profile,
@@ -291,8 +296,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.assert_length(latest_messages, 2)
         for msg in latest_messages:
             self.assertFalse(msg.flags.read.is_set)
+            self.assertTrue(msg.flags.historical.is_set)
 
-        # Verify that older messages are correctly marked as read.
+        # Verify that older messages are correctly marked as read & historical.
         older_messages = (
             UserMessage.objects.filter(
                 user_profile=user_profile,
@@ -306,6 +312,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.assertGreater(len(older_messages), 0)
         for msg in older_messages:
             self.assertTrue(msg.flags.read.is_set)
+            self.assertTrue(msg.flags.historical.is_set)
 
     def test_auto_subbed_to_personals(self) -> None:
         """
