@@ -33,6 +33,8 @@
     & hr {
         border-bottom: 1px solid hsl(0deg 0% 87%);
         border-top: 1px solid hsl(0deg 0% 87%);
+        /* Override Bootstrap with doubled interelement space */
+        margin: calc(var(--markdown-interelement-space-px) * 2) 0;
     }
 
     /* Headings */
