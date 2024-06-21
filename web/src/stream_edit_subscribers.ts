@@ -246,7 +246,7 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
     function invite_failure(xhr: JQuery.jqXHR): void {
         let message = "Failed to subscribe user!";
 
-        const failure_response_schema = z
+        const parsed = z
             .object({
                 result: z.literal("error"),
                 msg: z.string(),
@@ -254,8 +254,8 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
             })
             .safeParse(xhr.responseJSON);
 
-        if (failure_response_schema.success) {
-            message = failure_response_schema.data.msg;
+        if (parsed.success) {
+            message = parsed.data.msg;
         }
         show_stream_subscription_request_result({
             message,
