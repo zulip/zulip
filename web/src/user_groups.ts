@@ -18,7 +18,10 @@ export type UserGroup = {
 
 // The members field is a number array which we convert
 // to a Set in the initialize function.
-type UserGroupRaw = Omit<UserGroup, "members"> & {members: number[]};
+type UserGroupRaw = Omit<UserGroup, "members" | "direct_subgroup_ids"> & {
+    members: number[];
+    direct_subgroup_ids: number[];
+};
 
 type UserGroupForDropdownListWidget = {
     name: string;
