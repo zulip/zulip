@@ -115,12 +115,12 @@ export function fetch_and_render_message_history(message: Message): void {
     void channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
-        success(data) {
-            const clean_data = server_message_history_schema.parse(data);
+        success(raw_data) {
+            const data = server_message_history_schema.parse(raw_data);
 
             const content_edit_history: EditHistoryEntry[] = [];
             let prev_stream_item: EditHistoryEntry | null = null;
-            for (const [index, msg] of clean_data.message_history.entries()) {
+            for (const [index, msg] of data.message_history.entries()) {
                 // Format times and dates nicely for display
                 const time = new Date(msg.timestamp * 1000);
                 const edited_at_time = timerender.get_full_datetime(time, "time");
