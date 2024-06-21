@@ -42,7 +42,7 @@ export type RealmDefaultSettings = {
     starred_message_counts: boolean;
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;
-    user_list_style: boolean;
+    user_list_style: number;
     web_escape_navigates_to_home_view: boolean;
     web_font_size_px: number;
     web_home_view: string;
