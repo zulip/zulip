@@ -43,6 +43,7 @@ from zerver.models import (
     Message,
     NamedUserGroup,
     OnboardingStep,
+    OnboardingUserMessage,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -176,12 +177,15 @@ def add_new_user_history(
     realm_creation: bool = False,
 ) -> None:
     """
-    Give the user some messages in their feed, so that they can learn how to
-    use the home view in a realistic way after finishing the tutorial.
+    Give the user some messages in their feed, so that they can learn
+    how to use the home view in a realistic way.
 
-    Mark the very most recent messages as unread.
+    For realms having older onboarding messages, mark the very
+    most recent messages as unread. Otherwise, ONLY mark the
+    messages tracked in 'OnboardingUserMessage' as unread.
     """
 
+    realm = user_profile.realm
     # Find recipient ids for the user's streams, limiting to just
     # those where we can access the streams' full history.
     #
@@ -196,7 +200,7 @@ def add_new_user_history(
     recent_message_ids = set(
         Message.objects.filter(
             # Uses index: zerver_message_realm_recipient_id
-            realm_id=user_profile.realm_id,
+            realm_id=realm.id,
             recipient_id__in=recipient_ids,
             date_sent__gt=cutoff_date,
         )
@@ -204,9 +208,17 @@ def add_new_user_history(
         .values_list("id", flat=True)[0:MAX_NUM_RECENT_MESSAGES]
     )
 
-    if len(recent_message_ids) > 0:
+    tracked_onboarding_message_ids = set()
+    onboarding_user_messages_queryset = OnboardingUserMessage.objects.filter(realm_id=realm.id)
+    for onboarding_user_message in onboarding_user_messages_queryset:
+        tracked_onboarding_message_ids.add(onboarding_user_message.message_id)
+    tracked_onboarding_messages_exist = len(tracked_onboarding_message_ids) > 0
+
+    message_history_ids = recent_message_ids.union(tracked_onboarding_message_ids)
+
+    if len(message_history_ids) > 0:
         # Handle the race condition where a message arrives between
-        # bulk_add_subscriptions above and the Message query just above
+        # bulk_add_subscriptions above and the recent message query just above
         already_used_ids = set(
             UserMessage.objects.filter(
                 message_id__in=recent_message_ids, user_profile=user_profile
@@ -214,11 +226,13 @@ def add_new_user_history(
         )
 
         # Exclude the already-used ids and sort them.
-        backfill_message_ids = sorted(recent_message_ids - already_used_ids)
+        backfill_message_ids = sorted(message_history_ids - already_used_ids)
 
         # Find which message ids we should mark as read.
         # (We don't want too many unread messages.)
-        older_message_ids = set(backfill_message_ids[:-MAX_NUM_RECENT_UNREAD_MESSAGES])
+        older_message_ids = set()
+        if not tracked_onboarding_messages_exist:
+            older_message_ids = set(backfill_message_ids[:-MAX_NUM_RECENT_UNREAD_MESSAGES])
 
         # Create UserMessage rows for the backfill.
         ums_to_create = []
@@ -228,7 +242,12 @@ def add_new_user_history(
             # They are not marked as historical.
             if not realm_creation:
                 um.flags = UserMessage.flags.historical
-            if message_id in older_message_ids:
+            if (
+                tracked_onboarding_messages_exist
+                and message_id not in tracked_onboarding_message_ids
+            ):
+                um.flags |= UserMessage.flags.read
+            if not tracked_onboarding_messages_exist and message_id in older_message_ids:
                 um.flags |= UserMessage.flags.read
             ums_to_create.append(um)
 
