@@ -27,9 +27,9 @@ export function get_server_history(stream_id: number, on_success: () => void): v
     void channel.get({
         url,
         data: {},
-        success(data) {
-            const clean_data = stream_topic_history_response_schema.parse(data);
-            const server_history = clean_data.topics;
+        success(raw_data) {
+            const data = stream_topic_history_response_schema.parse(raw_data);
+            const server_history = data.topics;
             stream_topic_history.add_history(stream_id, server_history);
             stream_topic_history.remove_request_pending_for(stream_id);
             on_success();
