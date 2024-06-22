@@ -223,8 +223,10 @@ const realm_schema = z.object({
         PRONOUNS: z.object({id: z.number(), name: z.string()}),
     }),
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
-    giphy_api_key: NOT_TYPED_YET,
-    giphy_rating_options: NOT_TYPED_YET,
+    giphy_api_key: z.string(),
+    giphy_rating_options: z
+        .record(z.object({id: z.number(), name: z.string()}))
+        .and(z.object({disabled: z.object({id: z.number(), name: z.string()})})),
     max_avatar_file_size_mib: z.number(),
     max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
@@ -291,7 +293,7 @@ const realm_schema = z.object({
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: NOT_TYPED_YET,
     realm_enable_spectator_access: z.boolean(),
-    realm_giphy_rating: NOT_TYPED_YET,
+    realm_giphy_rating: z.number(),
     realm_icon_source: z.string(),
     realm_icon_url: z.string(),
     realm_incoming_webhook_bots: z.array(

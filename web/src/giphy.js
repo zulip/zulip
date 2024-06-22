@@ -26,13 +26,6 @@ export function focus_current_edit_message() {
     $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`).trigger("focus");
 }
 
-export function is_giphy_enabled() {
-    return (
-        realm.giphy_api_key !== "" &&
-        realm.realm_giphy_rating !== realm.giphy_rating_options.disabled.id
-    );
-}
-
 export function update_giphy_rating() {
     if (
         realm.realm_giphy_rating === realm.giphy_rating_options.disabled.id ||

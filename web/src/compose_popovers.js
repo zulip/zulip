@@ -5,7 +5,7 @@ import render_compose_control_buttons_popover from "../templates/popovers/compos
 import render_mobile_message_buttons_popover from "../templates/popovers/mobile_message_buttons_popover.hbs";
 
 import * as compose_actions from "./compose_actions";
-import * as giphy from "./giphy";
+import * as giphy_state from "./giphy_state";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
@@ -80,7 +80,7 @@ export function initialize() {
             instance.setContent(
                 parse_html(
                     render_compose_control_buttons_popover({
-                        giphy_enabled: giphy.is_giphy_enabled(),
+                        giphy_enabled: giphy_state.is_giphy_enabled(),
                         preview_mode_on,
                         inside_popover: true,
                     }),

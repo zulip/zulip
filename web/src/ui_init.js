@@ -46,6 +46,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
+import * as giphy_state from "./giphy_state";
 import * as hashchange from "./hashchange";
 import * as hotkey from "./hotkey";
 import * as i18n from "./i18n";
@@ -178,7 +179,7 @@ function initialize_compose_box() {
             render_compose({
                 embedded: $("#compose").attr("data-embedded") === "",
                 file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
-                giphy_enabled: giphy.is_giphy_enabled(),
+                giphy_enabled: giphy_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,
                 max_message_length: realm.max_message_length,
