@@ -160,10 +160,14 @@ export const get_all_preferences = (): DisplaySettings => ({
 
 /* istanbul ignore next */
 export const get_information_density_preferences = (): DisplaySettings => ({
-    render_group: page_params.development_environment,
+    // Render these controls outside of dev for the sake of
+    // early testing on CZO. Ultimately these controls will
+    // not ship in 9.0, so they should be reverted as such
+    // once a suitable 9.0 UI is in place.
+    render_group: true,
     render_only: {
-        web_font_size_px: page_params.development_environment,
-        web_line_height_percent: page_params.development_environment,
+        web_font_size_px: true,
+        web_line_height_percent: true,
     },
     settings: {
         user_display_settings: ["web_font_size_px", "web_line_height_percent"],
