@@ -11,7 +11,7 @@ hence the name.
 <div class="portico-container" data-platform="{{ platform }}">
     <div class="portico-wrap">
         {% if not isolated_page %}
-        {% include 'zerver/portico-header.html' %}
+<!--        {% include 'zerver/portico-header.html' %}-->
         {% endif %}
         <div class="app portico-page {% block portico_class_name %}{% endblock %}">
             <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
@@ -22,7 +22,7 @@ hence the name.
     </div>
     <div class="alert-box"></div>
     {% if not isolated_page and not skip_footer %}
-    {% include 'zerver/footer.html' %}
+<!--    {% include 'zerver/footer.html' %}-->
     {% endif %}
 </div>
 {% endblock %}

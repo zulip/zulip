@@ -275,15 +275,15 @@
 
     /* Compose box colors */
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
-    --color-compose-send-button-background: hsl(240deg 96% 68%);
-    --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
+    --color-compose-send-button-background: hsl(356deg 70% 50%);
+    --color-compose-send-button-background-interactive: hsl(356deg 70% 50%);
     --color-compose-send-button-focus-border: hsl(232deg 20% 10%);
     --color-compose-send-button-focus-shadow: hsl(230deg 100% 20%);
-    --color-compose-send-control-button: hsl(240deg 30% 50% / 80%);
+    --color-compose-send-control-button: hsl(352deg 97% 45% );
     --color-compose-send-control-button-background: transparent;
-    --color-compose-send-control-button-interactive: hsl(240deg 30% 50%);
+    --color-compose-send-control-button-interactive: hsl(352deg 97% 45% );
     --color-compose-send-control-button-background-interactive: hsl(
-        240deg 100% 30% / 5%
+        hsl(352deg 97% 45% );
     );
     --color-compose-send-control-button-focus-shadow: var(
         --color-compose-send-button-focus-shadow
@@ -296,11 +296,11 @@
     --color-compose-collapsed-reply-button-area-border-interactive: hsl(
         0deg 0% 60%
     );
-    --color-compose-embedded-button-text-color: hsl(231deg 20% 55%);
-    --color-compose-embedded-button-text-color-hover: hsl(231deg 20% 30%);
+    --color-compose-embedded-button-text-color: hsl(0deg 2% 8%);
+    --color-compose-embedded-button-text-color-hover: hsl(0deg 2% 8%);
     --color-compose-embedded-button-background: transparent;
     --color-compose-embedded-button-background-hover: hsl(
-        231deg 100% 90% / 50%
+        hsl(0deg 2% 8%);
     );
     --color-compose-chevron-arrow: hsl(0deg 0% 58%);
     --color-limit-indicator: hsl(38deg 100% 36%);
@@ -416,7 +416,7 @@
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
     --width-inbox-filters-dropdown: 150px;
-    --color-background-inbox-no-unreads-illustration: hsl(147deg 57% 25%);
+    --color-background-inbox-no-unreads-illustration: hsl(34deg 86% 67%);
     --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 0%);
     --color-inbox-search-text: hsl(0deg 0% 0%);
