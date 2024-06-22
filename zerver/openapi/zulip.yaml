@@ -1865,6 +1865,7 @@ paths:
                                         "hint": "",
                                         "field_data": "",
                                         "order": 1,
+                                        "required": true,
                                       },
                                       {
                                         "id": 2,
@@ -1873,6 +1874,7 @@ paths:
                                         "hint": "What are you known for?",
                                         "field_data": "",
                                         "order": 2,
+                                        "required": true,
                                       },
                                       {
                                         "id": 3,
@@ -1881,6 +1883,7 @@ paths:
                                         "hint": "Or drink, if you'd prefer",
                                         "field_data": "",
                                         "order": 3,
+                                        "required": false,
                                       },
                                       {
                                         "id": 4,
@@ -1890,6 +1893,7 @@ paths:
                                         "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
                                         "display_in_profile_summary": true,
+                                        "required": true,
                                       },
                                       {
                                         "id": 5,
@@ -1898,6 +1902,7 @@ paths:
                                         "hint": "",
                                         "field_data": "",
                                         "order": 5,
+                                        "required": false,
                                       },
                                       {
                                         "id": 6,
@@ -1907,6 +1912,7 @@ paths:
                                         "field_data": "",
                                         "order": 6,
                                         "display_in_profile_summary": true,
+                                        "required": false,
                                       },
                                       {
                                         "id": 7,
@@ -1915,6 +1921,7 @@ paths:
                                         "hint": "",
                                         "field_data": "",
                                         "order": 7,
+                                        "required": true,
                                       },
                                       {
                                         "id": 8,
@@ -10798,6 +10805,7 @@ paths:
                               "hint": "",
                               "field_data": "",
                               "order": 1,
+                              "required": true,
                             },
                             {
                               "id": 2,
@@ -10806,6 +10814,7 @@ paths:
                               "hint": "What are you known for?",
                               "field_data": "",
                               "order": 2,
+                              "required": true,
                             },
                             {
                               "id": 3,
@@ -10814,6 +10823,7 @@ paths:
                               "hint": "Or drink, if you'd prefer",
                               "field_data": "",
                               "order": 3,
+                              "required": false,
                             },
                             {
                               "id": 4,
@@ -10823,6 +10833,7 @@ paths:
                               "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                               "order": 4,
                               "display_in_profile_summary": true,
+                              "required": true,
                             },
                             {
                               "id": 5,
@@ -10831,6 +10842,7 @@ paths:
                               "hint": "",
                               "field_data": "",
                               "order": 5,
+                              "required": false,
                             },
                             {
                               "id": 6,
@@ -10840,6 +10852,7 @@ paths:
                               "field_data": "",
                               "order": 6,
                               "display_in_profile_summary": true,
+                              "required": false,
                             },
                             {
                               "id": 7,
@@ -10848,6 +10861,7 @@ paths:
                               "hint": "",
                               "field_data": "",
                               "order": 7,
+                              "required": true,
                             },
                             {
                               "id": 8,
@@ -10864,6 +10878,7 @@ paths:
                               "type": 8,
                               "hint": "What pronouns should people use to refer to you?",
                               "order": 9,
+                              "required": false,
                             },
                           ],
                       }
@@ -20328,6 +20343,7 @@ components:
         - order
         - name
         - hint
+        - required
     OnboardingStep:
       type: object
       additionalProperties: false
@@ -22694,7 +22710,7 @@ components:
         Whether the client wants [custom profile field](/help/custom-profile-fields)
         data to be included in the response.
 
-        **Changes**: New in Zulip 2.1.0. Previous versions do no offer these
+        **Changes**: New in Zulip 2.1.0. Previous versions do not offer these
         data via the API.
       schema:
         type: boolean

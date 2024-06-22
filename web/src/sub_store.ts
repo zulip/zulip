@@ -1,57 +1,23 @@
+import type {z} from "zod";
+
 import * as blueslip from "./blueslip";
+import type {
+    never_subscribed_stream_schema,
+    stream_properties_schema,
+    stream_schema,
+    stream_specific_notification_settings_schema,
+    stream_subscription_schema,
+} from "./stream_types";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<T>;
 
-export const enum StreamPostPolicy {
-    EVERYONE = 1,
-    ADMINS = 2,
-    RESTRICT_NEW_MEMBERS = 3,
-    MODERATORS = 4,
-}
-
-// These types are taken from the `zerver/lib/types.py`.
-export type Stream = {
-    creator_id: number | null;
-    date_created: number;
-    description: string;
-    first_message_id: number | null;
-    history_public_to_subscribers: boolean;
-    invite_only: boolean;
-    is_announcement_only: boolean;
-    is_web_public: boolean;
-    message_retention_days: number | null;
-    name: string;
-    rendered_description: string;
-    stream_id: number;
-    stream_post_policy: StreamPostPolicy;
-    can_remove_subscribers_group: number;
-};
-
-export type StreamSpecificNotificationSettings = {
-    audible_notifications: boolean | null;
-    desktop_notifications: boolean | null;
-    email_notifications: boolean | null;
-    push_notifications: boolean | null;
-    wildcard_mentions_notify: boolean | null;
-};
-
-export type NeverSubscribedStream = Stream & {
-    stream_weekly_traffic: number | null;
-    subscribers?: number[];
-};
-
-export type StreamProperties = StreamSpecificNotificationSettings & {
-    color: string;
-    is_muted: boolean;
-    pin_to_top: boolean;
-};
-
-// This is the raw data we get from the server for a subscription.
-export type ApiStreamSubscription = (Stream & StreamProperties) & {
-    email_address: string;
-    stream_weekly_traffic: number | null;
-    subscribers?: number[];
-};
+export type Stream = z.infer<typeof stream_schema>;
+export type StreamSpecificNotificationSettings = z.infer<
+    typeof stream_specific_notification_settings_schema
+>;
+export type NeverSubscribedStream = z.infer<typeof never_subscribed_stream_schema>;
+export type StreamProperties = z.infer<typeof stream_properties_schema>;
+export type ApiStreamSubscription = z.infer<typeof stream_subscription_schema>;
 
 // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
 export type ExtraStreamAttrs = {

@@ -7,26 +7,20 @@ import type {User} from "./people";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import type {StateData} from "./state_data";
 import {current_user, realm} from "./state_data";
+import type {StreamPostPolicy} from "./stream_types";
 import * as sub_store from "./sub_store";
 import type {
     ApiStreamSubscription,
     NeverSubscribedStream,
     Stream,
-    StreamPostPolicy,
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-
-type StreamInitParams = {
-    subscriptions: ApiStreamSubscription[];
-    unsubscribed: ApiStreamSubscription[];
-    never_subscribed: NeverSubscribedStream[];
-    realm_default_streams: Stream[];
-};
 
 // Type for the parameter of `create_sub_from_server_data` function.
 type ApiGenericStreamSubscription =
@@ -834,7 +828,7 @@ export function get_new_stream_announcements_stream(): string {
     return "";
 }
 
-export function initialize(params: StreamInitParams): void {
+export function initialize(params: StateData["stream_data"]): void {
     /*
         We get `params` data, which is data that we "own"
         and which has already been removed from `state_data`.

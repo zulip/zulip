@@ -1,3 +1,5 @@
+import type {z} from "zod";
+
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
@@ -5,6 +7,11 @@ import type {Message} from "./message_store";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
 import * as settings_config from "./settings_config";
+import type {
+    StateData,
+    unread_direct_message_group_info_schema,
+    unread_direct_message_info_schema,
+} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {TopicHistoryEntry} from "./stream_topic_history";
 import * as sub_store from "./sub_store";
@@ -1059,36 +1066,10 @@ export function get_msg_ids_for_starred(): number[] {
     return [];
 }
 
-type UnreadStreamInfo = {
-    stream_id: number;
-    topic: string;
-    unread_message_ids: number[];
-};
+type UnreadDirectMessageInfo = z.infer<typeof unread_direct_message_info_schema>;
+type UnreadDirectMessageGroupInfo = z.infer<typeof unread_direct_message_group_info_schema>;
 
-type UnreadDirectMessageInfo = {
-    other_user_id: number;
-    // Deprecated and misleading synonym for other_user_id
-    sender_id: number;
-    unread_message_ids: number[];
-};
-
-type UnreadDirectMessageGroupInfo = {
-    user_ids_string: string;
-    unread_message_ids: number[];
-};
-
-type UnreadMessagesParams = {
-    unread_msgs: {
-        pms: UnreadDirectMessageInfo[];
-        streams: UnreadStreamInfo[];
-        huddles: UnreadDirectMessageGroupInfo[];
-        mentions: number[];
-        count: number;
-        old_unreads_missing: boolean;
-    };
-};
-
-export function initialize(params: UnreadMessagesParams): void {
+export function initialize(params: StateData["unread"]): void {
     const unread_msgs = params.unread_msgs;
 
     old_unreads_missing = unread_msgs.old_unreads_missing;

@@ -1,11 +1,12 @@
+import type {z} from "zod";
+
 import * as people from "./people";
+import type {StateData, presence_schema} from "./state_data";
 import {realm} from "./state_data";
 import {user_settings} from "./user_settings";
 
-export type RawPresence = {
+export type RawPresence = z.infer<typeof presence_schema> & {
     server_timestamp: number;
-    active_timestamp?: number | undefined;
-    idle_timestamp?: number | undefined;
 };
 
 export type PresenceStatus = {
@@ -176,9 +177,9 @@ export function update_info_from_event(
 }
 
 export function set_info(
-    presences: Record<number, Omit<RawPresence, "server_timestamp">>,
+    presences: Record<number, z.infer<typeof presence_schema>>,
     server_timestamp: number,
-    last_update_id: number,
+    last_update_id = -1,
 ): void {
     /*
         Example `presences` data:
@@ -294,10 +295,6 @@ export function last_active_date(user_id: number): Date | undefined {
     return new Date(info.last_active * 1000);
 }
 
-export function initialize(params: {
-    presences: Record<number, Omit<RawPresence, "server_timestamp">>;
-    server_timestamp: number;
-    presence_last_update_id: number;
-}): void {
+export function initialize(params: StateData["presence"]): void {
     set_info(params.presences, params.server_timestamp, params.presence_last_update_id);
 }

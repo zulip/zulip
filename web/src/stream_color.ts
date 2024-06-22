@@ -20,6 +20,12 @@ export function update_stream_recipient_color($stream_header: JQuery): void {
         }
         const stream_color = stream_data.get_color(stream_id);
         const recipient_bar_color = get_recipient_bar_color(stream_color);
+
+        const $stream_privacy_icon = $stream_header.find(".stream-privacy");
+        if ($stream_privacy_icon.length) {
+            $stream_privacy_icon.css("color", get_stream_privacy_icon_color(stream_color));
+        }
+
         $stream_header
             .find(".message-header-contents")
             .css("background-color", recipient_bar_color);

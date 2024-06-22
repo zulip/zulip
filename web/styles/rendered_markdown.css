@@ -33,6 +33,15 @@
     & hr {
         border-bottom: 1px solid hsl(0deg 0% 87%);
         border-top: 1px solid hsl(0deg 0% 87%);
+        /* Override Bootstrap with doubled interelement space */
+        margin: calc(var(--markdown-interelement-space-px) * 2) 0;
+
+        &:first-child {
+            /* When a horizontal rule opens a message, or any other
+               area in the message area (e.g., spoilers), there
+               should be no space above the rule. */
+            margin-top: 0;
+        }
     }
 
     /* Headings */
@@ -405,7 +414,9 @@
        `.rendered_markdown` out of the baseline group
        formed with EDITED/MOVED markers and the
        timestamp when the first child of the rendered
-       markdown is a media element or KaTeX. */
+       markdown is a horizontal rule, a media element,
+       or KaTeX. */
+    &:has(> hr:first-child),
     &:has(> .message_inline_image:first-child),
     &:has(> p:first-child > .katex-display) {
         align-self: center;

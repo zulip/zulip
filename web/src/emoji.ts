@@ -1,22 +1,13 @@
 import _ from "lodash";
+import type {z} from "zod";
 
 import * as blueslip from "./blueslip";
-import type {User} from "./people";
+import type {StateData, realm_emoji_map_schema, server_emoji_schema} from "./state_data";
 
 // This is the data structure that we get from the server on initialization.
-export type ServerEmoji = {
-    id: string;
-    author_id: number;
-    deactivated: boolean;
-    name: string;
-    source_url: string;
-    still_url: string | null;
+export type ServerEmoji = z.infer<typeof server_emoji_schema>;
 
-    // Added later in `settings_emoji.ts` when setting up the emoji settings.
-    author?: User | null;
-};
-
-type RealmEmojiMap = Record<string, ServerEmoji>;
+type RealmEmojiMap = z.infer<typeof realm_emoji_map_schema>;
 
 // The data the server provides about unicode emojis.
 type ServerUnicodeEmojiData = {
@@ -25,11 +16,6 @@ type ServerUnicodeEmojiData = {
     emoji_catalog: Record<string, string[]>;
     emoticon_conversions: Record<string, string>;
     names: string[];
-};
-
-type EmojiParams = {
-    realm_emoji: RealmEmojiMap;
-    emoji_codes: ServerUnicodeEmojiData;
 };
 
 export type EmoticonTranslation = {
@@ -379,7 +365,9 @@ function build_default_emoji_aliases({
     return map;
 }
 
-export function initialize(params: EmojiParams): void {
+export function initialize(
+    params: StateData["emoji"] & {emoji_codes: ServerUnicodeEmojiData},
+): void {
     emoji_codes = params.emoji_codes;
 
     emoticon_translations = build_emoticon_translations({

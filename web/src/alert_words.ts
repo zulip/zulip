@@ -2,6 +2,7 @@ import _ from "lodash";
 
 import type {Message} from "./message_store";
 import * as people from "./people";
+import type {StateData} from "./state_data";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
@@ -91,6 +92,6 @@ export function notifies(message: Message): boolean {
     return !people.is_current_user(message.sender_email) && message.alerted;
 }
 
-export const initialize = (params: {alert_words: string[]}): void => {
+export const initialize = (params: StateData["alert_words"]): void => {
     set_words(params.alert_words);
 };

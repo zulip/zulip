@@ -1,7 +1,14 @@
 import {z} from "zod";
 
+import {server_add_bot_schema} from "./bot_types";
 import {realm_default_settings_schema} from "./realm_user_settings_defaults";
+import {
+    never_subscribed_stream_schema,
+    stream_schema,
+    stream_subscription_schema,
+} from "./stream_types";
 import {user_settings_schema} from "./user_settings";
+import {user_status_schema} from "./user_status_types";
 
 const NOT_TYPED_YET = z.unknown();
 
@@ -62,7 +69,7 @@ export const scheduled_message_schema = z
 
 export const profile_datum_schema = z.object({
     value: z.string(),
-    rendered_value: z.string().optional(),
+    rendered_value: z.string().nullish(),
 });
 
 export const user_schema = z
@@ -110,6 +117,75 @@ export const cross_realm_bot_schema = user_schema.and(
     }),
 );
 
+export const server_emoji_schema = z.object({
+    id: z.string(),
+    author_id: z.number(),
+    deactivated: z.boolean(),
+    name: z.string(),
+    source_url: z.string(),
+    still_url: z.string().nullable(),
+
+    // Added later in `settings_emoji.ts` when setting up the emoji settings.
+    author: user_schema.nullish(),
+});
+
+export const realm_emoji_map_schema = z.record(server_emoji_schema);
+
+export const user_group_schema = z.object({
+    description: z.string(),
+    id: z.number(),
+    name: z.string(),
+    members: z.array(z.number()),
+    is_system_group: z.boolean(),
+    direct_subgroup_ids: z.array(z.number()),
+    can_mention_group: z.number(),
+});
+
+export const user_topic_schema = z.object({
+    stream_id: z.number(),
+    topic_name: z.string(),
+    last_updated: z.number(),
+    visibility_policy: z.number(),
+});
+
+export const muted_user_schema = z.object({
+    id: z.number(),
+    timestamp: z.number(),
+});
+
+const unread_stream_info_schema = z.object({
+    stream_id: z.number(),
+    topic: z.string(),
+    unread_message_ids: z.array(z.number()),
+});
+
+export const unread_direct_message_info_schema = z.object({
+    other_user_id: z.number(),
+    unread_message_ids: z.array(z.number()),
+});
+
+export const unread_direct_message_group_info_schema = z.object({
+    user_ids_string: z.string(),
+    unread_message_ids: z.array(z.number()),
+});
+
+export const presence_schema = z.object({
+    active_timestamp: z.number().optional(),
+    idle_timestamp: z.number().optional(),
+});
+
+const one_time_notice_schema = z.object({
+    name: z.string(),
+    type: z.literal("one_time_notice"),
+});
+
+/* We may introduce onboarding step of types other than 'one time notice'
+in future. Earlier, we had 'hotspot' and 'one time notice' as the two
+types. We can simply do:
+const onboarding_step_schema = z.union([one_time_notice_schema, other_type_schema]);
+to avoid major refactoring when new type is introduced in the future. */
+export const onboarding_step_schema = one_time_notice_schema;
+
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -147,8 +223,10 @@ const realm_schema = z.object({
         PRONOUNS: z.object({id: z.number(), name: z.string()}),
     }),
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
-    giphy_api_key: NOT_TYPED_YET,
-    giphy_rating_options: NOT_TYPED_YET,
+    giphy_api_key: z.string(),
+    giphy_rating_options: z
+        .record(z.object({id: z.number(), name: z.string()}))
+        .and(z.object({disabled: z.object({id: z.number(), name: z.string()})})),
     max_avatar_file_size_mib: z.number(),
     max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
@@ -215,7 +293,7 @@ const realm_schema = z.object({
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: NOT_TYPED_YET,
     realm_enable_spectator_access: z.boolean(),
-    realm_giphy_rating: NOT_TYPED_YET,
+    realm_giphy_rating: z.number(),
     realm_icon_source: z.string(),
     realm_icon_url: z.string(),
     realm_incoming_webhook_bots: z.array(
@@ -309,10 +387,10 @@ const realm_schema = z.object({
 });
 
 export const state_data_schema = z
-    .object({alert_words: NOT_TYPED_YET})
+    .object({alert_words: z.array(z.string())})
     .transform((alert_words) => ({alert_words}))
-    .and(z.object({realm_emoji: NOT_TYPED_YET}).transform((emoji) => ({emoji})))
-    .and(z.object({realm_bots: NOT_TYPED_YET}).transform((bot) => ({bot})))
+    .and(z.object({realm_emoji: realm_emoji_map_schema}).transform((emoji) => ({emoji})))
+    .and(z.object({realm_bots: z.array(server_add_bot_schema)}).transform((bot) => ({bot})))
     .and(
         z
             .object({
@@ -324,15 +402,22 @@ export const state_data_schema = z
     )
     .and(
         z
-            .object({recent_private_conversations: NOT_TYPED_YET})
+            .object({
+                recent_private_conversations: z.array(
+                    z.object({
+                        max_message_id: z.number(),
+                        user_ids: z.array(z.number()),
+                    }),
+                ),
+            })
             .transform((pm_conversations) => ({pm_conversations})),
     )
     .and(
         z
             .object({
-                presences: NOT_TYPED_YET,
-                server_timestamp: NOT_TYPED_YET,
-                presence_last_update_id: NOT_TYPED_YET,
+                presences: z.record(z.coerce.number(), presence_schema),
+                server_timestamp: z.number(),
+                presence_last_update_id: z.number().optional(),
             })
             .transform((presence) => ({presence})),
     )
@@ -344,18 +429,47 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                subscriptions: NOT_TYPED_YET,
-                unsubscribed: NOT_TYPED_YET,
-                never_subscribed: NOT_TYPED_YET,
-                realm_default_streams: NOT_TYPED_YET,
+                subscriptions: z.array(stream_subscription_schema),
+                unsubscribed: z.array(stream_subscription_schema),
+                never_subscribed: z.array(never_subscribed_stream_schema),
+                realm_default_streams: z.array(stream_schema),
             })
             .transform((stream_data) => ({stream_data})),
     )
-    .and(z.object({realm_user_groups: NOT_TYPED_YET}).transform((user_groups) => ({user_groups})))
-    .and(z.object({unread_msgs: NOT_TYPED_YET}).transform((unread) => ({unread})))
-    .and(z.object({muted_users: NOT_TYPED_YET}).transform((muted_users) => ({muted_users})))
-    .and(z.object({user_topics: NOT_TYPED_YET}).transform((user_topics) => ({user_topics})))
-    .and(z.object({user_status: NOT_TYPED_YET}).transform((user_status) => ({user_status})))
+    .and(
+        z
+            .object({realm_user_groups: z.array(user_group_schema)})
+            .transform((user_groups) => ({user_groups})),
+    )
+    .and(
+        z
+            .object({
+                unread_msgs: z.object({
+                    pms: z.array(unread_direct_message_info_schema),
+                    streams: z.array(unread_stream_info_schema),
+                    huddles: z.array(unread_direct_message_group_info_schema),
+                    mentions: z.array(z.number()),
+                    count: z.number(),
+                    old_unreads_missing: z.boolean(),
+                }),
+            })
+            .transform((unread) => ({unread})),
+    )
+    .and(
+        z
+            .object({muted_users: z.array(muted_user_schema)})
+            .transform((muted_users) => ({muted_users})),
+    )
+    .and(
+        z
+            .object({user_topics: z.array(user_topic_schema)})
+            .transform((user_topics) => ({user_topics})),
+    )
+    .and(
+        z
+            .object({user_status: z.record(user_status_schema)})
+            .transform((user_status) => ({user_status})),
+    )
     .and(
         z
             .object({user_settings: user_settings_schema})
@@ -381,10 +495,10 @@ export const state_data_schema = z
             })
             .transform((server_events) => ({server_events})),
     )
-    .and(z.object({max_message_id: NOT_TYPED_YET}).transform((local_message) => ({local_message})))
+    .and(z.object({max_message_id: z.number()}).transform((local_message) => ({local_message})))
     .and(
         z
-            .object({onboarding_steps: NOT_TYPED_YET})
+            .object({onboarding_steps: z.array(onboarding_step_schema)})
             .transform((onboarding_steps) => ({onboarding_steps})),
     )
     .and(current_user_schema.transform((current_user) => ({current_user})))

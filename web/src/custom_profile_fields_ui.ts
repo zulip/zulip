@@ -78,7 +78,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
 export function initialize_custom_user_type_fields(
     element_id: string,
     user_id: number,
-    is_editable: boolean,
+    is_target_element_editable: boolean,
     pill_update_handler?: (
         field: {
             type: number;
@@ -104,16 +104,19 @@ export function initialize_custom_user_type_fields(
     for (const field of realm.custom_profile_fields) {
         const field_value_raw = people.get_custom_profile_data(user_id, field.id)?.value;
 
-        // If field is not editable and field value is null, we don't expect
+        // If we are not editing the field and field value is null, we don't expect
         // pill container for that field and proceed further
-        if (field.type === field_types.USER.id && (field_value_raw !== undefined || is_editable)) {
+        if (
+            field.type === field_types.USER.id &&
+            (field_value_raw !== undefined || is_target_element_editable)
+        ) {
             const $pill_container = $(element_id)
                 .find(
                     `.custom_user_field[data-field-id="${CSS.escape(`${field.id}`)}"] .pill-container`,
                 )
                 .expectOne();
             const pill_config = {
-                exclude_inaccessible_users: is_editable,
+                exclude_inaccessible_users: is_target_element_editable,
             };
             const pills = user_pill.create_pills($pill_container, pill_config);
 
@@ -125,7 +128,10 @@ export function initialize_custom_user_type_fields(
                 }
             }
 
-            if (is_editable) {
+            // We check and disable fields that this user doesn't have permission to edit.
+            const is_disabled = $pill_container.hasClass("disabled");
+
+            if (is_target_element_editable && !is_disabled) {
                 const $input = $pill_container.children(".input");
                 if (pill_update_handler) {
                     const update_func = (): void => {

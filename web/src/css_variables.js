@@ -19,11 +19,11 @@ const mc = 849; // Middle column as wide as it appears after the `sm` breakpoint
 
 // Breakpoints for showing and hiding compose buttons which do not always fit in
 // a single row below the compose box
-const cb1 = 1296;
-const cb2 = 1054;
-const cb3 = 794;
-const cb4 = 732;
-const cb5 = 486;
+const cb1 = 1314;
+const cb2 = 1072;
+const cb3 = 860;
+const cb4 = 750;
+const cb5 = 504;
 
 module.exports = {
     media_breakpoints: {
