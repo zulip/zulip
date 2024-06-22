@@ -93,7 +93,7 @@ test("muted_users", () => {
 
     // We should now get back only those messages which are either-
     // 1:1 direct messages in which the other user hasn't been muted.
-    // Huddles where there's at least one non-muted participant.
+    // Direct message groups where there's at least one non-muted participant.
     assert.deepEqual(pmc.recent.get(), [
         {user_ids_string: "3", max_message_id: 99},
         {user_ids_string: "1,2,3", max_message_id: 97},

@@ -445,22 +445,6 @@ div.overlay {
     margin: 15px 0 -5px 23px;
 }
 
-@media (width < $md_min) {
-    /* Override Bootstrap's responsive grid to display input at full width */
-    .input-append .stream-list-filter {
-        /* Input width = 100% - 10px margin x2 - 6px padding x2 - 1px border x2. */
-        width: calc(100% - 34px);
-        margin-left: 10px;
-    }
-
-    .input-append .topic-list-filter {
-        /* Input width = 100% - 11px margin x2 - 6px padding x2 - 1px border x2. */
-        width: calc(100% - 36px);
-        margin-left: 11px;
-        margin-bottom: 5px;
-    }
-}
-
 .topic-list-filter {
     text-overflow: ellipsis;
     overflow: hidden;
@@ -794,12 +778,12 @@ div.overlay {
     }
 
     & td {
-        border-top: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid var(--color-border-table-striped);
     }
 }
 
 .table-bordered {
-    border: 1px solid hsl(0deg 0% 87%);
+    border: 1px solid var(--color-border-table-bordered);
     border-collapse: separate;
     border-left: 0;
     border-radius: 4px;
@@ -809,8 +793,8 @@ div.overlay {
 
     & th,
     td {
-        border-left: 1px solid hsl(0deg 0% 87%);
-        border-top: 1px solid hsl(0deg 0% 87%);
+        border-left: 1px solid var(--color-border-table-bordered);
+        border-top: 1px solid var(--color-border-table-bordered);
         padding: 4px 5px;
         text-align: left;
     }

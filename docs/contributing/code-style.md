@@ -45,7 +45,7 @@ to do the same thing. If you think the other code has actively bad
 style, fix it (in a separate commit).
 
 When in doubt, ask in
-[#development help](https://chat.zulip.org/#narrow/stream/49-development-help).
+[#development help](https://chat.zulip.org/#narrow/channel/49-development-help).
 
 ### Use the linters
 

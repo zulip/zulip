@@ -661,6 +661,113 @@ export function show(raw_terms, opts) {
     }
 }
 
+function navigate_to_anchor_message({
+    anchor,
+    fetch_status_shows_anchor_fetched,
+    message_list_data_to_target_message_id,
+}) {
+    // The function navigates user to the anchor in the current
+    // message list. We don't use `message_view.show` here due
+    // to following reasons:
+    // * `message_view.show` has a lot of logic related to rendering
+    //    a new message list which is not required here since we want
+    //    to just select the anchor in the current message list without
+    //    losing any context.
+    // * `message_view.show` tries to reset the narrow state like marking
+    //    messages as read / narrow banners etc. which we don't want here.
+    // *  User is already at the correct hash, so we don't need to
+    //    check / update as it as done in `message_view.show`.
+    // *  We don't need to care about `then_select_id` or `near` operators
+    //    here, which will otherwise be a source of confusion if we did
+    //    this in `message_view.show`.
+    //
+    // These functions are scoped inside `navigate_to_anchor_message` to
+    // to avoid them being used for any other purpose.
+    function duplicate_current_msg_list_with_new_data(data) {
+        const msg_list = new message_list.MessageList({data});
+        msg_list.reading_prevented = message_lists.current.reading_prevented;
+        return msg_list;
+    }
+
+    function select_msg_id(msg_id, select_opts) {
+        message_lists.current.select_id(msg_id, {
+            then_scroll: true,
+            from_scroll: false,
+            ...select_opts,
+        });
+    }
+
+    function select_anchor_using_data(data) {
+        const msg_list = duplicate_current_msg_list_with_new_data(data);
+        message_lists.update_current_message_list(msg_list);
+        // `force_rerender` is required to render the new data.
+        select_msg_id(message_list_data_to_target_message_id(data), {force_rerender: true});
+    }
+
+    if (fetch_status_shows_anchor_fetched(message_lists.current.data.fetch_status)) {
+        select_msg_id(message_list_data_to_target_message_id(message_lists.current.data));
+    } else if (fetch_status_shows_anchor_fetched(all_messages_data.fetch_status)) {
+        // We can load messages into `msg_list_data` but we don't know
+        // the fetch status until we contact server. If we are contacting the
+        // server, it is better to just fetch the required messages instead
+        // of just fetching status.
+        //
+        // So, a cheaper check is to see if we have found the anchor in
+        // `all_messages_data`, and if we have, we can say `msg_list_data`
+        // will also have the anchor (for oldest / newest anchors at least).
+        const msg_list_data = new MessageListData({
+            filter: message_lists.current.data.filter,
+            excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
+        });
+        load_local_messages(msg_list_data);
+        select_anchor_using_data(msg_list_data);
+    } else {
+        const msg_list_data = new MessageListData({
+            filter: message_lists.current.data.filter,
+            excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
+        });
+
+        message_fetch.load_messages_around_anchor(
+            anchor,
+            () => {
+                select_anchor_using_data(msg_list_data);
+            },
+            msg_list_data,
+        );
+    }
+}
+
+export function fast_track_current_msg_list_to_anchor(anchor) {
+    assert(message_lists.current !== undefined);
+    if (message_lists.current.visibly_empty()) {
+        return;
+    }
+
+    if (anchor === "oldest") {
+        navigate_to_anchor_message({
+            anchor,
+            fetch_status_shows_anchor_fetched(fetch_status) {
+                return fetch_status.has_found_oldest();
+            },
+            message_list_data_to_target_message_id(msg_list_data) {
+                return msg_list_data.first().id;
+            },
+        });
+    } else if (anchor === "newest") {
+        navigate_to_anchor_message({
+            anchor,
+            fetch_status_shows_anchor_fetched(fetch_status) {
+                return fetch_status.has_found_newest();
+            },
+            message_list_data_to_target_message_id(msg_list_data) {
+                return msg_list_data.last().id;
+            },
+        });
+    } else {
+        blueslip.error(`Invalid anchor value: ${anchor}`);
+    }
+}
+
 function min_defined(a, b) {
     if (a === undefined) {
         return b;

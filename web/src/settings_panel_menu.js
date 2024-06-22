@@ -2,11 +2,13 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import {$t_html} from "./i18n";
+import * as components from "./components";
+import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
 import * as scroll_util from "./scroll_util";
 import * as settings_sections from "./settings_sections";
+import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users";
 
 export let normal_settings;
 export let org_settings;
@@ -49,12 +51,36 @@ export class SettingsPanelMenu {
         this.$main_elem = opts.$main_elem;
         this.hash_prefix = opts.hash_prefix;
         this.$curr_li = this.$main_elem.children("li").eq(0);
+        this.current_tab = this.$curr_li.data("section");
+        this.current_user_settings_tab = "active";
+        this.org_user_settings_toggler = components.toggle({
+            html_class: "org-user-settings-switcher",
+            child_wants_focus: true,
+            values: [
+                {label: $t({defaultMessage: "Users"}), key: "active"},
+                {
+                    label: $t({defaultMessage: "Deactivated users"}),
+                    key: "deactivated",
+                },
+                {label: $t({defaultMessage: "Invitations"}), key: "invitations"},
+            ],
+            callback: (_name, key) => {
+                browser_history.update(`#organization/users/${key}`);
+                this.set_user_settings_tab(key);
+                $(".user-settings-section").hide();
+                if (key === "active") {
+                    redraw_active_users_list();
+                } else if (key === "deactivated") {
+                    redraw_deactivated_users_list();
+                }
+                $(`[data-user-settings-section="${CSS.escape(key)}"]`).show();
+            },
+        });
 
         this.$main_elem.on("click", "li[data-section]", (e) => {
             const section = $(e.currentTarget).attr("data-section");
 
-            this.activate_section_or_default(section);
-
+            this.activate_section_or_default(section, this.current_user_settings_tab);
             // You generally want to add logic to activate_section,
             // not to this click handler.
 
@@ -64,20 +90,30 @@ export class SettingsPanelMenu {
 
     show() {
         this.$main_elem.show();
-        const section = this.current_tab();
+        const section = this.current_tab;
+        const user_settings_tab = this.current_user_settings_tab;
+
         if (two_column_mode()) {
             // In one column mode want to show the settings list, not the first settings section.
-            this.activate_section_or_default(section);
+            this.activate_section_or_default(section, user_settings_tab);
         }
         this.$curr_li.trigger("focus");
     }
 
-    hide() {
-        this.$main_elem.hide();
+    show_org_user_settings_toggler() {
+        if ($("#admin-user-list").find(".tab-switcher").length === 0) {
+            const toggler_html = this.org_user_settings_toggler.get();
+            $("#admin-user-list .tab-container").html(toggler_html);
+
+            // We need to re-register these handlers since they are
+            // destroyed once the settings modal closes.
+            this.org_user_settings_toggler.register_event_handlers();
+            this.set_key_handlers(this.org_user_settings_toggler, $("#admin-user-list"));
+        }
     }
 
-    current_tab() {
-        return this.$curr_li.data("section");
+    hide() {
+        this.$main_elem.hide();
     }
 
     li_for_section(section) {
@@ -85,10 +121,10 @@ export class SettingsPanelMenu {
         return $li;
     }
 
-    set_key_handlers(toggler) {
+    set_key_handlers(toggler, $elem = this.$main_elem) {
         const {vim_left, vim_right, vim_up, vim_down} = keydown_util;
         keydown_util.handle({
-            $elem: this.$main_elem,
+            $elem,
             handlers: {
                 ArrowLeft: toggler.maybe_go_left,
                 ArrowRight: toggler.maybe_go_right,
@@ -123,14 +159,22 @@ export class SettingsPanelMenu {
         return true;
     }
 
-    activate_section_or_default(section) {
+    set_current_tab(tab) {
+        this.current_tab = tab;
+    }
+
+    set_user_settings_tab(tab) {
+        this.current_user_settings_tab = tab;
+    }
+
+    activate_section_or_default(section, user_settings_tab) {
         popovers.hide_all();
         if (!section) {
             // No section is given so we display the default.
 
             if (two_column_mode()) {
                 // In two column mode we resume to the last active section.
-                section = this.current_tab();
+                section = this.current_tab;
             } else {
                 // In single column mode we close the active section
                 // so that you always start at the settings list.
@@ -143,18 +187,25 @@ export class SettingsPanelMenu {
         if ($li_for_section.length === 0) {
             // This happens when there is no such section or the user does not have
             // permission to view that section.
-            section = this.current_tab();
+            section = this.current_tab;
         } else {
             this.$curr_li = $li_for_section;
         }
 
         this.$main_elem.children("li").removeClass("active");
         this.$curr_li.addClass("active");
+        this.set_current_tab(section);
 
-        const settings_section_hash = "#" + this.hash_prefix + section;
+        if (section !== "users") {
+            const settings_section_hash = "#" + this.hash_prefix + section;
 
-        // It could be that the hash has already been set.
-        browser_history.update_hash_internally_if_required(settings_section_hash);
+            // It could be that the hash has already been set.
+            browser_history.update_hash_internally_if_required(settings_section_hash);
+        }
+        if (section === "users" && this.org_user_settings_toggler !== undefined) {
+            this.show_org_user_settings_toggler();
+            this.org_user_settings_toggler.goto(user_settings_tab);
+        }
 
         $(".settings-section").removeClass("show");
 

@@ -129,7 +129,7 @@ There is no generalized tool to fix these duplicate rows, but in most cases
 the database can be repaired with some manual work.  We are using
 this chat.zulip.org for support around such repairs:
 
-  https://chat.zulip.org/#narrow/stream/31-production-help/topic/database.20corruption
+  https://chat.zulip.org/#narrow/channel/31-production-help/topic/database.20corruption
 
 This tool has regenerated all database indexes that do not have duplicate rows.
 Once you have manually repaired duplicate rows, you can rerun this command

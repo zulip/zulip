@@ -501,7 +501,7 @@ pushing the code to your fork and submitting a pull request to zulip/zulip:
   clear commit message.
 
 If you would like feedback on your integration as you go, feel free to post a
-message on the [public Zulip instance](https://chat.zulip.org/#narrow/stream/integrations).
+message on the [public Zulip instance](https://chat.zulip.org/#narrow/channel/integrations).
 You can also create a [draft pull request](
 https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests) while you
 are still working on your integration. See the

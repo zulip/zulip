@@ -103,8 +103,8 @@ to ask your questions effectively.
 
 A check-in is a regular update that you post in the Zulip development community.
 You can find many examples in the
-[#checkins](https://chat.zulip.org/#narrow/stream/65-checkins) and
-[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) channels.
+[#checkins](https://chat.zulip.org/#narrow/channel/65-checkins) and
+[#GSoC](https://chat.zulip.org/#narrow/channel/14-GSoC) channels.
 
 - **Frequency**: _Regular check-ins are a required for all program
   participants._ If you are working 20+ hours per week, post a check-in at least
@@ -113,8 +113,8 @@ You can find many examples in the
 
 - **Where to post**: Unless your mentor or program administrator requests
   otherwise, post your check-ins in the channel for your program
-  (e.g., [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
-  [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)), using your
+  (e.g., [#GSoC](https://chat.zulip.org/#narrow/channel/14-GSoC) or
+  [#Outreachy](https://chat.zulip.org/#narrow/channel/391-Outreachy)), using your
   name as the topic.
 
 - **What to include** in each check-in:

@@ -1,7 +1,7 @@
 # Hindi translation style guide (हिन्दी अनुवाद शैली मार्गदर्शक)
 
 - Use _आप_ as the second-person pronoun. Don't use तुम or तू.
-  (See [chat thread](https://chat.zulip.org/#narrow/stream/58-translation/topic/Hindi.20Translation/near/1762384).)
+  (See [chat thread](https://chat.zulip.org/#narrow/channel/58-translation/topic/Hindi.20Translation/near/1762384).)
 
 - Imperative, active, and continuous verbs, e.g. _manage streams_ -
   _चैनल प्रबंधित करें_, not _चैनल प्रबंधन_.

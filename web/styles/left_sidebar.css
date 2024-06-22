@@ -219,7 +219,7 @@ li.show-more-topics {
        in the DM section. */
     margin-right: 12px;
 
-    #private_messages_section_header {
+    #direct-messages-section-header {
         grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
         grid-template-rows: var(--line-height-sidebar-row-prominent);
         /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
@@ -229,7 +229,7 @@ li.show-more-topics {
         cursor: pointer;
         white-space: nowrap;
 
-        #toggle_private_messages_section_icon {
+        #toggle-direct-messages-section-icon {
             grid-area: starting-anchor-element;
         }
 
@@ -244,7 +244,7 @@ li.show-more-topics {
             align-items: center;
         }
 
-        #show_all_private_messages {
+        #show-all-direct-messages {
             width: var(--left-sidebar-header-icon-width);
             display: flex;
             align-items: center;
@@ -300,7 +300,7 @@ li.show-more-topics {
     }
 }
 
-#toggle_private_messages_section_icon,
+#toggle-direct-messages-section-icon,
 #toggle-top-left-navigation-area-icon {
     opacity: 0.7;
 
@@ -325,23 +325,15 @@ li.show-more-topics {
     }
 }
 
-.active_private_messages_section {
-    #private_messages_section,
-    #direct-messages-list,
-    #hide-more-direct-messages {
-        background-color: hsl(202deg 56% 91%);
-    }
+.active-direct-messages-section {
+    background-color: var(--color-background-active-narrow-filter);
 
-    #private_messages_section {
+    #direct-messages-section {
         border-radius: 4px 4px 0 0;
     }
 
     #direct-messages-list {
         border-radius: 0 0 4px 4px;
-    }
-
-    #more_private_messages_sidebar_title {
-        font-weight: 600;
     }
 }
 
@@ -642,6 +634,7 @@ li.active-sub-filter {
 }
 
 /* Don't show unread counts on views... */
+.top_left_my_reactions,
 .top_left_inbox,
 .top_left_recent_view,
 .top_left_all_messages {
@@ -751,7 +744,7 @@ li.top_left_scheduled_messages {
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
 }
 
-#private_messages_section_header,
+#direct-messages-section-header,
 #streams_header,
 #topics_header {
     display: grid;
@@ -811,6 +804,11 @@ li.top_left_scheduled_messages {
         }
     }
 
+    /* Remove the cursor: pointer property of Views label for the spectators. */
+    &.remove-pointer-for-spectator {
+        cursor: default;
+    }
+
     #toggle-top-left-navigation-area-icon {
         grid-area: starting-anchor-element;
     }
@@ -846,23 +844,8 @@ li.top_left_scheduled_messages {
 }
 
 .condensed-views-popover-menu {
-    .left-sidebar-popover-icon-label-count {
-        display: flex;
-        align-items: baseline;
-    }
-
-    .filter-icon {
-        align-self: center;
-        height: 15px;
-    }
-
-    .left-sidebar-navigation-label {
-        flex: 1 0 0;
-        margin-left: 3px;
-    }
-
     .unread_count {
-        margin-left: 6px;
+        margin: 1px 0 0 6px;
         border-color: var(--color-border-unread-counter-popover-menu);
     }
 }
@@ -971,13 +954,6 @@ li.top_left_scheduled_messages {
     overflow-x: clip;
     text-overflow: ellipsis;
     padding: 0 $before_unread_count_padding 0 0;
-}
-
-.conversation-partners-list {
-    /* TODO: See about consolidating or re-expressing
-       .stream-name spacing so as to not require
-       padding there, either. */
-    padding: 0;
 }
 
 /*
@@ -1394,10 +1370,6 @@ li.topic-list-item {
 
     &.direct-messages-container ul.dm-list {
         margin-bottom: $bottom_scrolling_buffer;
-    }
-
-    #more_private_messages_sidebar_title {
-        display: inline;
     }
 
     #hide-more-direct-messages {

@@ -1310,19 +1310,19 @@ div.focused-message-list {
     visibility: hidden;
 }
 
-#streamlist-toggle-button {
+#header-container .left-sidebar-toggle-button {
     text-decoration: none;
     color: var(--color-navbar-icon);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: var(--header-height);
+    height: var(--header-height);
 
     &:hover {
         background-color: var(--color-header-button-hover);
 
-        #streamlist-toggle-unreadcount {
+        .left-sidebar-toggle-unreadcount {
             border-color: var(--color-header-button-hover-no-alpha);
         }
     }
@@ -1342,13 +1342,13 @@ div.focused-message-list {
 
     &:active,
     &:focus-visible {
-        #streamlist-toggle-unreadcount {
+        .left-sidebar-toggle-unreadcount {
             border-color: var(--color-header-button-focus-no-alpha);
         }
     }
 }
 
-#streamlist-toggle-unreadcount {
+.left-sidebar-toggle-unreadcount {
     position: absolute;
     display: none;
     height: 6px;
@@ -1416,18 +1416,28 @@ div.focused-message-list {
 nav {
     .column-left {
         text-align: left;
-        margin-left: 15px;
+        display: flex;
+        justify-content: left;
+        gap: 4px;
+
+        .brand {
+            display: flex;
+            align-items: center;
+        }
 
         .nav-logo {
             display: inline-block;
-            vertical-align: top;
-            margin-top: 8px;
-            height: 25px;
+            height: 20px;
             max-width: 200px;
 
             @media (height < $short_navbar_cutoff_height) {
                 height: 15px;
             }
+        }
+
+        .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
+            top: 10px;
+            left: 21px;
         }
     }
 
@@ -1563,17 +1573,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     margin: 0;
 }
 
-select.invite-expires-in,
-select.custom-expiration-time,
-select.invite-as {
-    width: 220px;
-    height: 30px;
-    padding: 0 6px;
-    color: hsl(0deg 0% 33%);
-    border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
-    cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+.invite-user-select {
     vertical-align: middle;
 }
 
@@ -1938,43 +1938,32 @@ select.invite-as {
     }
 }
 
+#realm-navbar-icon-logo {
+    display: none;
+    width: 20px;
+    height: 20px;
+}
+
 .hide-right-sidebar {
     @extend %hide-right-sidebar;
+
+    &.fluid_layout_width {
+        #compose-content,
+        .app-main .column-middle {
+            margin-right: 7px;
+        }
+    }
 }
 
 .hide-right-sidebar-by-visibility .app-main .column-right {
     visibility: hidden;
 }
 
-@media (width < $xl_min) {
-    .default-sidebar-behaviour {
-        @extend %hide-right-sidebar;
+%hide-left-sidebar {
+    .app-main .column-left {
+        display: none;
 
-        .app-main .column-middle {
-            margin-right: 7px;
-        }
-
-        #navbar-middle {
-            /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
-            margin-right: calc(var(--header-height) * 4 + 10px);
-        }
-
-        #typing_notifications,
-        #scheduled_message_indicator,
-        #compose-content {
-            margin-right: 7px;
-        }
-    }
-}
-
-@media (width < $md_min) {
-    .default-sidebar-behaviour {
-        .app-main .column-left,
-        .header-main .column-left {
-            display: none;
-        }
-
-        .app-main .column-left.expanded {
+        &.expanded {
             display: block;
             position: absolute;
             float: none;
@@ -1989,6 +1978,79 @@ select.invite-as {
                 padding-left: 10px;
                 width: var(--left-sidebar-width);
             }
+        }
+    }
+}
+
+.hide-left-sidebar {
+    @extend %hide-left-sidebar;
+
+    &.fluid_layout_width {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+    }
+}
+
+body:not(.hide-left-sidebar) {
+    /* User can clearly see the unread count in the left sidebar. So,
+       we don't need an indicator here as it will only serve as a disctraction. */
+    #header-container .column-left .left-sidebar-toggle-unreadcount {
+        display: none !important;
+    }
+}
+
+@media (width < $xl_min) {
+    .default-sidebar-behaviour {
+        @extend %hide-right-sidebar;
+
+        .app-main .column-middle {
+            margin-right: 7px;
+        }
+
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+            margin-right: calc(var(--header-height) * 4 + 3px);
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-right: 7px;
+        }
+    }
+
+    .hide-left-sidebar {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+
+        #realm-navbar-icon-logo {
+            display: inline-block;
+        }
+
+        #realm-navbar-wide-logo {
+            display: none;
+        }
+
+        #top_navbar .column-left {
+            width: auto;
+        }
+
+        #navbar-middle {
+            margin-left: var(--left-sidebar-width-with-realm-icon-logo);
+        }
+    }
+}
+
+@media (width < $md_min) {
+    .default-sidebar-behaviour {
+        @extend %hide-left-sidebar;
+
+        .header-main .column-left {
+            display: none;
         }
 
         .app-main .column-middle {
@@ -2072,13 +2134,22 @@ select.invite-as {
         height: var(--header-height) !important;
     }
 
-    #streamlist-toggle-button {
+    .left-sidebar-toggle-button {
         height: var(--header-height);
     }
 
-    #streamlist-toggle-unreadcount {
+    nav
+        .column-left
+        .left-sidebar-toggle-button
+        .left-sidebar-toggle-unreadcount {
+        top: 5px;
+        left: 16px;
+    }
+
+    .left-sidebar-toggle-unreadcount {
         /* Adjust in response to shorter navbar. */
         top: 5px;
+        right: 4px;
     }
 
     #top_navbar .column-right #personal-menu .header-button-avatar {
@@ -2178,10 +2249,6 @@ select.invite-as {
 }
 
 .simplebar-content-wrapper {
-    /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
-        but we don't want it to have an outline when focused anywhere in the app. */
-    outline: none;
-
     /* This prevents the popover from closing once the top/bottom is reached */
     overscroll-behavior: contain;
 }
@@ -2270,7 +2337,6 @@ select.invite-as {
     }
 }
 
-#unstar_all_messages,
 .emoji-popover-tab-item {
     .zulip-icon-star {
         position: relative;
@@ -2294,9 +2360,6 @@ select.invite-as {
     width: calc(var(--right-sidebar-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
-    /* Move the column to the right with absolute
-       positioning, rather than margin. */
-    right: 7px;
 
     & a:focus {
         filter: none;

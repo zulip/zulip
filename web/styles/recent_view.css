@@ -47,7 +47,7 @@
         .filter-icon {
             /* Maintain righthand space between icon
                 and stream name. */
-            margin-right: 3px;
+            margin: 0 3px 0 -1px;
         }
 
         & > * {
@@ -95,7 +95,8 @@
     }
 
     .fa-envelope {
-        font-size: 0.7rem;
+        /* Legacy 11.2px size at 14px/1em. */
+        font-size: 0.8em;
         margin-right: 2px;
         position: relative;
         top: -1px;
@@ -470,11 +471,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Increasing vertical padding any further will increase
-            the height of the row. */
-            padding: 8px;
-            position: relative;
-            right: -8px; /* To cancel padding-right */
             /* To accommodate fa-group icon */
             width: 14px;
             height: 14px;
@@ -493,12 +489,18 @@
                 position: unset;
             }
         }
+
+        .user_status_icon_wrapper {
+            /* Keep status emoji with usernames,
+               and better vertically align the emoji. */
+            display: inline-flex;
+        }
     }
 
     .stream-privacy .zulip-icon {
-        position: relative;
-        left: -1px;
-        top: 1.5px;
+        /* Let flexbox handle vertical alignment by
+           pushing back against inline-block display. */
+        display: block;
     }
 }
 

@@ -1380,13 +1380,13 @@ class TestLoggingCountStats(AnalyticsTestCase):
         token = "aaaa"
 
         RemotePushDeviceToken.objects.create(
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             token=hex_to_b64(token),
             user_uuid=(hamlet.uuid),
             server=self.server,
         )
         RemotePushDeviceToken.objects.create(
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             token=hex_to_b64(token + "aa"),
             user_uuid=(hamlet.uuid),
             server=self.server,

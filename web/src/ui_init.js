@@ -166,6 +166,7 @@ function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
         user_avatar: current_user.avatar_url_medium,
+        realm_icon_url: realm.realm_icon_url,
     });
 
     $("#header-container").html(rendered_navbar);
@@ -559,9 +560,9 @@ export function initialize_everything(state_data) {
         "realm_bot_creation_policy",
         "realm_bot_domain",
         "realm_can_access_all_users_group",
+        "realm_can_create_private_channel_group",
+        "realm_can_create_public_channel_group",
         "realm_create_multiuse_invite_group",
-        "realm_create_private_stream_policy",
-        "realm_create_public_stream_policy",
         "realm_create_web_public_stream_policy",
         "realm_date_created",
         "realm_default_code_block_language",
@@ -658,6 +659,7 @@ export function initialize_everything(state_data) {
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */
     initialize_user_settings(user_settings_params);
+    sidebar_ui.restore_sidebar_toggle_status();
     information_density.initialize();
     if (page_params.is_spectator) {
         const ls = localstorage();

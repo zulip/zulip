@@ -431,6 +431,20 @@ def revoke_reusable_invitation_link(client: Client) -> None:
     validate_against_openapi_schema(result, "/invites/multiuse/{invite_id}", "delete", "200")
 
 
+@openapi_test_function("/invites/{invite_id}/resend:post")
+def resend_email_invitation(client: Client) -> None:
+    invites = client.call_endpoint(url="/invites", method="GET")["invites"]
+    email_invites = [s for s in invites if not s["is_multiuse"]]
+    assert len(email_invites) > 0
+    invite_id = email_invites[0]["id"]
+    # {code_example|start}
+    # Resend email invitation.
+    result = client.call_endpoint(url=f"/invites/{invite_id}/resend", method="POST")
+    # {code_example|end}
+    validate_response_result(result)
+    validate_against_openapi_schema(result, "/invites/{invite_id}/resend", "post", "200")
+
+
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
     user_id = 8
@@ -1801,6 +1815,7 @@ def test_invitations(client: Client) -> None:
     create_reusable_invitation_link(client)
     revoke_reusable_invitation_link(client)
     get_invitations(client)
+    resend_email_invitation(client)
 
 
 def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:

@@ -7,6 +7,9 @@ const {run_test} = require("./lib/test");
 
 const unread = mock_esm("../src/unread");
 
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 mock_esm("../src/user_status", {
     get_status_emoji: () => ({
         emoji_code: "20",

@@ -51,8 +51,12 @@ important optimization when fetching messages in certain cases (e.g.
 when [adding the `read` flag to a user's personal
 messages](/api/update-message-flags-for-narrow)).
 
-**Changes**: In Zulip 9.0 (feature level 250), support was added for
-two filters related to channel messages: `channel` and `channels`. The
+**Changes**: In Zulip 9.0 (feature level 265), support was added for a
+new `is:followed` filter, matching messages in topics that the current
+user is [following](/help/follow-a-topic).
+
+In Zulip 9.0 (feature level 250), support was added for
+two filters related to stream messages: `channel` and `channels`. The
 `channel` operator is an alias for the `stream` operator. The `channels`
 operator is an alias for the `streams` operator. Both `channel` and
 `channels` return the same exact results as `stream` and `streams`

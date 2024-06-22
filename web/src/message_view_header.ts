@@ -70,11 +70,19 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     // TODO: This ideally doesn't need a special case, we can just use
     // `filter.get_description` for it.
     if (filter === undefined || filter.is_in_home()) {
+        let description;
+        if (page_params.is_spectator) {
+            description = $t({
+                defaultMessage: "All your messages.",
+            });
+        } else {
+            description = $t({
+                defaultMessage: "All your messages except those in muted channels and topics.",
+            });
+        }
         return {
             title: $t({defaultMessage: "Combined feed"}),
-            description: $t({
-                defaultMessage: "All your messages except those in muted channels and topics.",
-            }),
+            description,
             zulip_icon: "all-messages",
             link: "/help/combined-feed",
         };

@@ -5,6 +5,9 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list";
 import {media_breakpoints_num} from "./css_variables";
+import {localstorage} from "./localstorage";
+import * as message_lists from "./message_lists";
+import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -13,6 +16,22 @@ import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
 import {user_settings} from "./user_settings";
+
+function save_sidebar_toggle_status(): void {
+    const ls = localstorage();
+    ls.set("left-sidebar", $("body").hasClass("hide-left-sidebar"));
+    ls.set("right-sidebar", $("body").hasClass("hide-right-sidebar"));
+}
+
+export function restore_sidebar_toggle_status(): void {
+    const ls = localstorage();
+    if (ls.get("left-sidebar")) {
+        $("body").addClass("hide-left-sidebar");
+    }
+    if (ls.get("right-sidebar")) {
+        $("body").addClass("hide-right-sidebar");
+    }
+}
 
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
@@ -100,6 +119,7 @@ export function initialize(): void {
             if (!$("body").hasClass("hide-right-sidebar")) {
                 fix_invite_user_button_flicker();
             }
+            save_sidebar_toggle_status();
             return;
         }
 
@@ -110,9 +130,23 @@ export function initialize(): void {
         show_userlist_sidebar();
     });
 
-    $("#streamlist-toggle-button").on("click", (e) => {
+    $(".left-sidebar-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (window.innerWidth >= media_breakpoints_num.md) {
+            $("body").toggleClass("hide-left-sidebar");
+            if (
+                message_lists.current !== undefined &&
+                window.innerWidth <= media_breakpoints_num.xl
+            ) {
+                // We expand the middle column width between md and xl breakpoints when the
+                // left sidebar is hidden. This can cause the pointer to move out of view.
+                message_viewport.scroll_to_selected();
+            }
+            save_sidebar_toggle_status();
+            return;
+        }
 
         if (left_sidebar_expanded_as_overlay) {
             hide_streamlist_sidebar();
@@ -136,7 +170,7 @@ export function initialize(): void {
             const $elt = $(e.target);
             // Since sidebar toggle buttons have their own click handlers, don't handle them here.
             if (
-                $elt.closest("#streamlist-toggle-button").length ||
+                $elt.closest(".left-sidebar-toggle-button").length ||
                 $elt.closest("#userlist-toggle-button").length
             ) {
                 return;
@@ -185,15 +219,14 @@ export function initialize_left_sidebar(): void {
         is_recent_view_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         hide_unread_counts: settings_data.should_mask_unread_count(false),
+        is_spectator: page_params.is_spectator,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
 }
 
 export function initialize_right_sidebar(): void {
-    const rendered_sidebar = render_right_sidebar({
-        realm_rendered_description: page_params.realm_rendered_description,
-    });
+    const rendered_sidebar = render_right_sidebar();
 
     $("#right-sidebar-container").html(rendered_sidebar);
 

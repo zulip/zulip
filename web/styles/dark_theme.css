@@ -176,14 +176,6 @@
         background-color: var(--color-background-navbar);
     }
 
-    & body,
-    .app-main,
-    .column-middle,
-    #streams_header,
-    .direct-messages-container {
-        background-color: var(--color-background);
-    }
-
     #scroll-to-bottom-button-container {
         background: transparent;
 
@@ -372,20 +364,11 @@
         color: inherit;
     }
 
-    .active_private_messages_section {
-        #private_messages_section,
-        #direct-messages-list,
-        #hide-more-direct-messages {
-            background-color: hsl(199deg 33% 46% / 20%);
-        }
-    }
-
     /* these are converting grey things to "new grey" */
     :disabled,
     input:not([type="radio"]):read-only,
     textarea:read-only,
-    #org-join-settings .dropdown-widget-button:disabled,
-    #org-guest-settings .dropdown-widget-button:disabled {
+    #organization-permissions .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
     }
@@ -439,8 +422,7 @@
     .pill-container,
     .user-status-content-wrapper,
     #custom-expiration-time-input,
-    #org-join-settings .dropdown-widget-button,
-    #org-guest-settings .dropdown-widget-button,
+    #organization-permissions .dropdown-widget-button,
     #compose_recipient_box {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
@@ -470,10 +452,6 @@
 
     .settings-profile-user-field {
         border-color: hsl(3deg 73% 74%);
-    }
-
-    .deactivated-pill {
-        background-color: hsl(0deg 86% 14%) !important;
     }
 
     #compose-direct-recipient .pill-container {
@@ -509,7 +487,6 @@
     }
 
     .new-style .tab-switcher .ind-tab.selected,
-    div.message_content thead,
     .table-striped thead th {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
@@ -555,7 +532,7 @@
     }
 
     .preview_message_area {
-        background-color: inherit;
+        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     .top-navbar-border {
@@ -612,8 +589,6 @@
     }
 
     .narrow_to_compose_recipients,
-    .expand_composebox_button,
-    .collapse_composebox_button,
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
@@ -709,8 +684,7 @@
         background-color: hsl(228deg 11% 17%);
     }
 
-    & thead,
-    .drafts-container .drafts-header,
+    & .drafts-container .drafts-header,
     .nav > li > a:focus,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
@@ -759,9 +733,7 @@
     #subscription_overlay .settings-radio-input-parent,
     #settings_page .sidebar-wrapper,
     #settings_page .sidebar-wrapper *,
-    table,
-    table th,
-    table td {
+    #recent_view_table table td {
         border-color: hsl(0deg 0% 0% / 20%);
     }
 

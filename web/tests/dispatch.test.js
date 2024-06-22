@@ -55,6 +55,7 @@ const scheduled_messages_ui = mock_esm("../src/scheduled_messages_ui");
 const scroll_bar = mock_esm("../src/scroll_bar");
 const settings_account = mock_esm("../src/settings_account");
 const settings_bots = mock_esm("../src/settings_bots");
+const settings_data = mock_esm("../src/settings_data");
 const settings_emoji = mock_esm("../src/settings_emoji");
 const settings_exports = mock_esm("../src/settings_exports");
 const settings_invites = mock_esm("../src/settings_invites");
@@ -488,23 +489,7 @@ run_test("realm settings", ({override}) => {
     }
 
     let update_called = false;
-    let event = event_fixtures.realm__update__create_private_stream_policy;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
-        assert_same(property, "create_private_stream_policy");
-        update_called = true;
-    };
-    test_realm_integer(event, "realm_create_private_stream_policy");
-
-    update_called = false;
-    event = event_fixtures.realm__update__create_public_stream_policy;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
-        assert_same(property, "create_public_stream_policy");
-        update_called = true;
-    };
-    test_realm_integer(event, "realm_create_public_stream_policy");
-
-    update_called = false;
-    event = event_fixtures.realm__update__create_web_public_stream_policy;
+    let event = event_fixtures.realm__update__create_web_public_stream_policy;
     stream_settings_ui.update_stream_privacy_choices = (property) => {
         assert_same(property, "create_web_public_stream_policy");
         update_called = true;
@@ -575,12 +560,19 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_enable_spectator_access, true);
     assert_same(update_called, true);
 
+    let update_stream_privacy_choices_called = false;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "can_create_public_channel_group");
+        update_stream_privacy_choices_called = true;
+    };
+
     event = event_fixtures.realm__update_dict__default;
     realm.realm_create_multiuse_invite_group = 1;
     realm.realm_allow_message_editing = false;
     realm.realm_message_content_edit_limit_seconds = 0;
     realm.realm_edit_topic_policy = 3;
     realm.realm_authentication_methods = {Google: {enabled: false, available: true}};
+    realm.realm_can_create_public_channel_group = 1;
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
@@ -590,6 +582,8 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_authentication_methods, {
         Google: {enabled: true, available: true},
     });
+    assert_same(realm.realm_can_create_public_channel_group, 3);
+    assert_same(update_stream_privacy_choices_called, true);
 
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);
@@ -787,6 +781,7 @@ run_test("realm_user", ({override}) => {
     args = update_bot_stub.get_args("update_user_id", "update_bot_data");
     assert_same(args.update_user_id, event.person.user_id);
 
+    override(settings_data, "user_can_access_all_other_users", () => false);
     event = event_fixtures.realm_user__remove;
     dispatch(event);
     const removed_person = people.get_by_user_id(event.person.user_id);
@@ -952,6 +947,7 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__dense_mode;
     user_settings.dense_mode = false;
+    override(information_density, "set_base_typography_css_variables", noop);
     toggled = [];
     dispatch(event);
     assert_same(user_settings.dense_mode, true);

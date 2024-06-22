@@ -1,4 +1,4 @@
-# See https://zulip.readthedocs.io/en/latest/subsystems/hotspots.html
+# See https://zulip.readthedocs.io/en/latest/subsystems/onboarding-steps.html
 # for documentation on this subsystem.
 from dataclasses import dataclass
 from typing import Any, Dict, List

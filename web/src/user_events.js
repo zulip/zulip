@@ -176,6 +176,7 @@ export const update_person = function update(person) {
     if (Object.hasOwn(person, "is_active")) {
         if (person.is_active) {
             people.add_active_user(person_obj);
+            settings_users.update_view_on_reactivate(person.user_id);
         } else {
             people.deactivate(person_obj);
             stream_events.remove_deactivated_user_from_all_streams(person.user_id);

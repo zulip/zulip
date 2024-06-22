@@ -16,6 +16,7 @@ import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as setting_invites from "./settings_invites";
 import {current_user} from "./state_data";
 import * as timerender from "./timerender";
 import * as user_deactivation_ui from "./user_deactivation_ui";
@@ -24,6 +25,9 @@ import * as user_sort from "./user_sort";
 
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
+
+let should_redraw_active_users_list = false;
+let should_redraw_deactivated_users_list = false;
 
 const section = {
     active: {
@@ -95,9 +99,17 @@ export function update_view_on_deactivate(user_id) {
     $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
     $row.removeClass("reactivated_user");
     $row.addClass("deactivated_user");
+
+    should_redraw_active_users_list = true;
+    should_redraw_deactivated_users_list = true;
 }
 
-function update_view_on_reactivate($row) {
+export function update_view_on_reactivate(user_id) {
+    const $row = get_user_info_row(user_id);
+    if ($row.length === 0) {
+        return;
+    }
+
     const $button = $row.find("button.reactivate");
     $row.find("i.deactivated-user-icon").hide();
     $button.addClass("btn-danger deactivate");
@@ -105,6 +117,9 @@ function update_view_on_reactivate($row) {
     $button.empty().append($("<i>").addClass(["fa", "fa-user-times"]).attr("aria-hidden", "true"));
     $row.removeClass("deactivated_user");
     $row.addClass("reactivated_user");
+
+    should_redraw_active_users_list = true;
+    should_redraw_deactivated_users_list = true;
 }
 
 function failed_listing_users() {
@@ -329,7 +344,7 @@ section.active.create_table = (active_users) => {
             },
             onupdate: reset_scrollbar($users_table),
         },
-        $parent_container: $("#admin-user-list").expectOne(),
+        $parent_container: $("#admin-active-users-list").expectOne(),
         init_sort: "full_name_alphabetic",
         sort_fields: {
             email: user_sort.sort_email,
@@ -338,7 +353,7 @@ section.active.create_table = (active_users) => {
             id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
-        $simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
@@ -420,6 +435,33 @@ export function redraw_bots_list() {
     bot_list_widget.hard_redraw();
 }
 
+function redraw_users_list(user_section, user_list) {
+    if (!user_section.list_widget) {
+        return;
+    }
+
+    user_section.list_widget.replace_list_data(user_list);
+    user_section.list_widget.hard_redraw();
+}
+
+export function redraw_deactivated_users_list() {
+    if (!should_redraw_deactivated_users_list) {
+        return;
+    }
+    const deactivated_user_ids = people.get_non_active_human_ids();
+    redraw_users_list(section.deactivated, deactivated_user_ids);
+    should_redraw_deactivated_users_list = false;
+}
+
+export function redraw_active_users_list() {
+    if (!should_redraw_active_users_list) {
+        return;
+    }
+    const active_user_ids = people.get_realm_active_human_user_ids();
+    redraw_users_list(section.active, active_user_ids);
+    should_redraw_active_users_list = false;
+}
+
 function start_data_load() {
     loading.make_indicator($("#admin_page_users_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
@@ -488,14 +530,8 @@ function handle_reactivation($tbody) {
         const user_id = Number.parseInt($row.attr("data-user-id"), 10);
 
         function handle_confirm() {
-            const $row = get_user_info_row(user_id);
             const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
-            const opts = {
-                success_continuation() {
-                    update_view_on_reactivate($row);
-                },
-            };
-            dialog_widget.submit_api_request(channel.post, url, {}, opts);
+            dialog_widget.submit_api_request(channel.post, url, {});
         }
 
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
@@ -561,6 +597,7 @@ export function set_up_humans() {
     start_data_load();
     section.active.handle_events();
     section.deactivated.handle_events();
+    setting_invites.set_up();
 }
 
 export function set_up_bots() {

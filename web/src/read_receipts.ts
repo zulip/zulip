@@ -89,7 +89,9 @@ export function show_user_list(message_id: number): void {
                             $("#read_receipts_modal .read_receipts_list").html(
                                 render_read_receipts(context),
                             );
-                            new SimpleBar($("#read_receipts_modal .modal__content")[0]!);
+                            new SimpleBar($("#read_receipts_modal .modal__content")[0]!, {
+                                tabIndex: -1,
+                            });
                         }
                     },
                     error(xhr) {

@@ -126,6 +126,8 @@ class HomeTest(ZulipTestCase):
         "realm_bot_domain",
         "realm_bots",
         "realm_can_access_all_users_group",
+        "realm_can_create_private_channel_group",
+        "realm_can_create_public_channel_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
@@ -258,7 +260,7 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(55):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -563,7 +565,7 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(55):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
@@ -594,7 +596,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(47):
+        with self.assert_database_query_count(50):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.

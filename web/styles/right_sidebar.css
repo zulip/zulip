@@ -360,33 +360,3 @@ $user_status_emoji_width: 24px;
         margin-left: -1px;
     }
 }
-
-@media (width < $sm_min) {
-    #userlist-toggle {
-        height: 30px;
-        line-height: 30px;
-    }
-
-    #userlist-toggle-button {
-        height: 30px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-}
-
-.right-sidebar-shortcuts .realm-description {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-right: 20px;
-    width: 230px;
-
-    .color_animated_button {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    & hr {
-        width: 90%;
-    }
-}

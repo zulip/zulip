@@ -143,9 +143,10 @@ or report and ask for help in chat.zulip.org""",
             print("", file=sys.stderr)
             print(
                 """
-See https://docs.github.com/en/rest/reference/actions#artifacts for information
-on how to view the generated screenshots, which are uploaded as Artifacts.
-Screenshots are extremely helpful for understanding puppeteer test failures.
+Screenshots generated on failure are extremely helpful for understanding
+puppeteer test failures, which are uploaded as artifacts. Use the
+artifact download URL available in the "Store Puppeteer artifacts" step
+below to download and view the generated screenshots.
             """,
                 file=sys.stderr,
             )

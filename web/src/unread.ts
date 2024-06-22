@@ -81,8 +81,8 @@ class UnreadDirectMessageCounter {
         }
     }
 
-    set_huddles(huddles: UnreadHuddleInfo[]): void {
-        for (const obj of huddles) {
+    set_direct_message_groups(direct_message_groups: UnreadDirectMessageGroupInfo[]): void {
+        for (const obj of direct_message_groups) {
             const user_ids_string = people.pm_lookup_key(obj.user_ids_string);
             this.set_message_ids(user_ids_string, obj.unread_message_ids);
         }
@@ -1072,7 +1072,7 @@ type UnreadDirectMessageInfo = {
     unread_message_ids: number[];
 };
 
-type UnreadHuddleInfo = {
+type UnreadDirectMessageGroupInfo = {
     user_ids_string: string;
     unread_message_ids: number[];
 };
@@ -1081,7 +1081,7 @@ type UnreadMessagesParams = {
     unread_msgs: {
         pms: UnreadDirectMessageInfo[];
         streams: UnreadStreamInfo[];
-        huddles: UnreadHuddleInfo[];
+        huddles: UnreadDirectMessageGroupInfo[];
         mentions: number[];
         count: number;
         old_unreads_missing: boolean;
@@ -1092,7 +1092,7 @@ export function initialize(params: UnreadMessagesParams): void {
     const unread_msgs = params.unread_msgs;
 
     old_unreads_missing = unread_msgs.old_unreads_missing;
-    unread_direct_message_counter.set_huddles(unread_msgs.huddles);
+    unread_direct_message_counter.set_direct_message_groups(unread_msgs.huddles);
     unread_direct_message_counter.set_pms(unread_msgs.pms);
     unread_topic_counter.set_streams(unread_msgs.streams);
     for (const message_id of unread_msgs.mentions) {

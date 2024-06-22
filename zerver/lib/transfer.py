@@ -1,7 +1,6 @@
 import logging
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from mimetypes import guess_type
 
 import bmemcached
 from django.conf import settings
@@ -9,6 +8,7 @@ from django.core.cache import cache
 from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.mime_types import guess_type
 from zerver.lib.upload.s3 import S3UploadBackend, upload_image_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 

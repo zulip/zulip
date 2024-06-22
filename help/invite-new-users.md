@@ -84,7 +84,7 @@ for invitations for the organization owners role.
 
 {start_tabs}
 
-{settings_tab|invites-list-admin}
+{settings_tab|invitations}
 
 1. From there, you can view pending invitations, **Revoke** email
    invitations and invitation links, or **Resend** email invitations.

@@ -181,6 +181,7 @@ test("basics", () => {
     assert.ok(filter.can_bucket_by("channel"));
     assert.ok(filter.can_bucket_by("channel", "topic"));
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view_with_near());
 
     // If our only channel operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a channel operator, because we don't
@@ -287,7 +288,7 @@ test("basics", () => {
 
     terms = [{operator: "dm", operand: "joe@example.com"}];
     filter = new Filter(terms);
-    assert.ok(filter.is_non_huddle_pm());
+    assert.ok(filter.is_non_group_direct_message());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
@@ -295,16 +296,33 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
+
+    terms = [
+        {operator: "dm", operand: "joe@example.com"},
+        {operator: "near", operand: 17},
+    ];
+    filter = new Filter(terms);
+    assert.ok(filter.is_non_group_direct_message());
+    assert.ok(filter.contains_only_private_messages());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view_with_near());
 
     terms = [{operator: "dm", operand: "joe@example.com,jack@example.com"}];
     filter = new Filter(terms);
-    assert.ok(!filter.is_non_huddle_pm());
+    assert.ok(!filter.is_non_group_direct_message());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
 
     // "pm-with" was renamed to "dm"
     terms = [{operator: "pm-with", operand: "joe@example.com"}];
@@ -314,7 +332,7 @@ test("basics", () => {
 
     terms = [{operator: "dm-including", operand: "joe@example.com"}];
     filter = new Filter(terms);
-    assert.ok(!filter.is_non_huddle_pm());
+    assert.ok(!filter.is_non_group_direct_message());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("search"));
     assert.ok(!filter.can_mark_messages_read());
@@ -343,6 +361,7 @@ test("basics", () => {
     // filter.supports_collapsing_recipients loop.
     terms = [
         {operator: "is", operand: "resolved", negated: true},
+        {operator: "is", operand: "followed", negated: true},
         {operator: "is", operand: "dm", negated: true},
         {operator: "channel", operand: "channel_name", negated: true},
         {operator: "channels", operand: "web-public", negated: true},
@@ -376,6 +395,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
 
     // "stream" was renamed to "channel"
     terms = [
@@ -393,6 +413,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
@@ -418,6 +439,10 @@ function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
     assert.ok(!filter.can_mark_messages_read());
 
     has_link_term = [{operator: "has", operand: "attachment"}];
+    filter = new Filter([...additional_terms_to_test, ...has_link_term]);
+    assert.ok(!filter.can_mark_messages_read());
+
+    has_link_term = [{operator: "has", operand: "reaction"}];
     filter = new Filter([...additional_terms_to_test, ...has_link_term]);
     assert.ok(!filter.can_mark_messages_read());
 }
@@ -464,6 +489,10 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     }
 
     is_operator = [{operator: "is", operand: "resolved", negated: true}];
+    filter = new Filter([...additional_terms_to_test, ...is_operator]);
+    assert.ok(!filter.can_mark_messages_read());
+
+    is_operator = [{operator: "is", operand: "followed", negated: true}];
     filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 }
@@ -752,6 +781,10 @@ test("canonicalization", () => {
     term = Filter.canonicalize_term({operator: "has", operand: "links"});
     assert.equal(term.operator, "has");
     assert.equal(term.operand, "link");
+
+    term = Filter.canonicalize_term({operator: "has", operand: "reactions"});
+    assert.equal(term.operator, "has");
+    assert.equal(term.operand, "reaction");
 });
 
 test("predicate_basics", ({override}) => {
@@ -830,6 +863,14 @@ test("predicate_basics", ({override}) => {
     assert.ok(predicate({type: stream_message, topic: resolved_topic_name}));
     assert.ok(!predicate({topic: resolved_topic_name}));
     assert.ok(!predicate({type: stream_message, topic: "foo"}));
+
+    predicate = get_predicate([["is", "followed"]]);
+
+    override(user_topics, "is_topic_followed", () => false);
+    assert.ok(!predicate({type: "stream", topic: "foo", stream_id: 5}));
+
+    override(user_topics, "is_topic_followed", () => true);
+    assert.ok(predicate({type: "stream", topic: "foo", stream_id: 5}));
 
     const unknown_stream_id = 999;
     override(user_topics, "is_topic_muted", () => false);
@@ -975,6 +1016,30 @@ test("predicate_basics", ({override}) => {
         content: "<p>Testing</p>",
     };
 
+    const clean_reactions_message = {
+        clean_reactions: new Map(
+            Object.entries({
+                "unicode_emoji,1f3b1": {
+                    class: "message_reaction reacted",
+                    count: 2,
+                    emoji_alt_code: false,
+                    emoji_code: "1f3b1",
+                    emoji_name: "8ball",
+                    is_realm_emoji: false,
+                    label: "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
+                    local_id: "unicode_emoji,1f3b1",
+                    reaction_type: "unicode_emoji",
+                    user_ids: [alice.user_id],
+                    vote_text: "translated: You, Bob van Roberts",
+                },
+            }),
+        ),
+    };
+
+    const non_reaction_msg = {
+        clean_reactions: new Map(),
+    };
+
     predicate = get_predicate([["has", "non_valid_operand"]]);
     assert.ok(!predicate(img_msg));
     assert.ok(!predicate(non_img_attachment_msg));
@@ -1017,6 +1082,10 @@ test("predicate_basics", ({override}) => {
     assert.ok(!has_image(link_msg));
     set_find_results_for_msg_content(no_has_filter_matching_msg, ".message_inline_image", false);
     assert.ok(!has_image(no_has_filter_matching_msg));
+
+    const has_reaction = get_predicate([["has", "reaction"]]);
+    assert.ok(has_reaction(clean_reactions_message));
+    assert.ok(!has_reaction(non_reaction_msg));
 });
 
 test("negated_predicates", () => {
@@ -1348,6 +1417,10 @@ test("describe", ({mock_template}) => {
 
     narrow = [{operator: "is", operand: "resolved"}];
     string = "topics marked as resolved";
+    assert.equal(Filter.search_description_as_html(narrow), string);
+
+    narrow = [{operator: "is", operand: "followed"}];
+    string = "followed topics";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
@@ -1683,10 +1756,15 @@ test("navbar_helpers", () => {
     const is_dm = [{operator: "is", operand: "dm"}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
+    const is_followed = [{operator: "is", operand: "followed"}];
     const channels_public = [{operator: "channels", operand: "public"}];
     const channel_topic_terms = [
         {operator: "channel", operand: "foo"},
         {operator: "topic", operand: "bar"},
+    ];
+    const has_reaction_sender_me = [
+        {operator: "has", operand: "reaction"},
+        {operator: "sender", operand: "me"},
     ];
     // foo channel exists
     const channel_term = [{operator: "channel", operand: "foo"}];
@@ -1783,6 +1861,15 @@ test("navbar_helpers", () => {
             redirect_url_with_search: "/#narrow/topics/is/resolved",
         },
         {
+            terms: is_followed,
+            is_common_narrow: true,
+            zulip_icon: "follow",
+            title: "translated: Followed topics",
+            redirect_url_with_search: "/#narrow/topics/is/followed",
+            description: "translated: Messages in topics you follow.",
+            link: "/help/follow-a-topic",
+        },
+        {
             terms: channel_topic_terms,
             is_common_narrow: true,
             zulip_icon: "hashtag",
@@ -1871,6 +1958,15 @@ test("navbar_helpers", () => {
                 "sally@doesnotexist.com",
             ]),
             redirect_url_with_search: "/#narrow/dm/undefined",
+        },
+        {
+            terms: has_reaction_sender_me,
+            is_common_narrow: true,
+            zulip_icon: "smile",
+            title: "translated: Reactions",
+            redirect_url_with_search: "/#narrow/has/reaction/sender/me",
+            description: "translated: Emoji reactions to your messages.",
+            link: "/help/emoji-reactions",
         },
         {
             terms: is_alerted,

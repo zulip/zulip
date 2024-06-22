@@ -17,7 +17,7 @@ Google, GitHub, GitLab, Apple, LDAP and [SAML](/help/saml-authentication).
 You can send password reset emails to all users in your organization, which
 will allow them to set an initial password.
 
-If you imported your organization into Zulip Cloud, simply e-mail
+If you imported your organization into Zulip Cloud, simply email
 [support@zulip.com](mailto:support@zulip.com) to request this.
 
 !!! warn ""

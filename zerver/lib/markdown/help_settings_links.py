@@ -58,11 +58,15 @@ link_mapping = {
         "Authentication methods",
         "/#organization/auth-methods",
     ],
-    "user-list-admin": ["Organization settings", "Users", "/#organization/user-list-admin"],
-    "deactivated-users-admin": [
+    "users": [
+        "Organization settings",
+        "Users",
+        "/#organization/users/active",
+    ],
+    "deactivated": [
         "Organization settings",
         "Deactivated users",
-        "/#organization/deactivated-users-admin",
+        "/#organization/users/deactivated",
     ],
     "bot-list-admin": [
         "Organization settings",
@@ -89,10 +93,10 @@ link_mapping = {
         "Custom profile fields",
         "/#organization/profile-field-settings",
     ],
-    "invites-list-admin": [
+    "invitations": [
         "Organization settings",
         "Invitations",
-        "/#organization/invites-list-admin",
+        "/#organization/users/invitations",
     ],
     "data-exports-admin": [
         "Organization settings",

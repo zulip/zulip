@@ -9,7 +9,7 @@ const {current_user, page_params, realm} = require("./lib/zpage_params");
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
-const huddle_data = zrequire("huddle_data");
+const direct_message_group_data = zrequire("direct_message_group_data");
 
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -64,7 +64,7 @@ function init() {
     people.initialize_current_user(me.user_id);
 
     stream_topic_history.reset();
-    huddle_data.clear_for_testing();
+    direct_message_group_data.clear_for_testing();
     stream_data.clear_subscriptions();
 }
 
@@ -95,7 +95,22 @@ test("basic_get_suggestions_for_spectator", () => {
 
     const query = "";
     const suggestions = get_suggestions(query);
-    assert.deepEqual(suggestions.strings, ["has:link", "has:image", "has:attachment"]);
+    assert.deepEqual(suggestions.strings, [
+        "has:link",
+        "has:image",
+        "has:attachment",
+        "has:reaction",
+    ]);
+    page_params.is_spectator = false;
+});
+
+test("get_is_suggestions_for_spectator", () => {
+    page_params.is_spectator = true;
+
+    const query = "is:";
+    const suggestions = get_suggestions(query);
+    // The list of suggestions should be empty for a spectator
+    assert.deepEqual(suggestions.strings, []);
     page_params.is_spectator = false;
 });
 
@@ -117,6 +132,7 @@ test("subset_suggestions", ({mock_template}) => {
 
 test("dm_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
+    mock_template("user_pill.hbs", true, (_data, html) => html);
 
     let query = "is:dm";
     let suggestions = get_suggestions(query);
@@ -254,6 +270,7 @@ test("dm_suggestions", ({override, mock_template}) => {
 
 test("group_suggestions", ({mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
+    mock_template("user_pill.hbs", true, (_data, html) => html);
 
     // Entering a comma in a "dm:" query should immediately
     // generate suggestions for the next person.
@@ -344,6 +361,8 @@ test("group_suggestions", ({mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    // Doesn't show ted@ because it's invalid in combination
+    // with a channel.
     query = "channel:Denmark has:link dm:bob@zulip.com,Smit";
     suggestions = get_suggestions(query);
     expected = [
@@ -351,6 +370,12 @@ test("group_suggestions", ({mock_template}) => {
         "channel:Denmark has:link",
         "channel:Denmark",
     ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Invalid emails don't give suggestions
+    query = "has:link dm:invalid@zulip.com,Smit";
+    suggestions = get_suggestions(query);
+    expected = ["has:link dm:invalid@zulip.com,Smit", "has:link"];
     assert.deepEqual(suggestions.strings, expected);
 
     function message(user_ids, timestamp) {
@@ -363,7 +388,7 @@ test("group_suggestions", ({mock_template}) => {
         };
     }
 
-    huddle_data.process_loaded_messages([
+    direct_message_group_data.process_loaded_messages([
         message([bob.user_id, ted.user_id], 99),
         message([bob.user_id, ted.user_id, jeff.user_id], 98),
     ]);
@@ -423,6 +448,7 @@ test("empty_query_suggestions", () => {
         "is:dm",
         "is:starred",
         "is:mentioned",
+        "is:followed",
         "is:alerted",
         "is:unread",
         "is:resolved",
@@ -432,6 +458,7 @@ test("empty_query_suggestions", () => {
         "has:link",
         "has:image",
         "has:attachment",
+        "has:reaction",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -445,6 +472,7 @@ test("empty_query_suggestions", () => {
     assert.equal(describe("is:alerted"), "Alerted messages");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
+    assert.equal(describe("is:followed"), "Followed topics");
     assert.equal(describe("sender:myself@zulip.com"), "Sent by me");
     assert.equal(describe("has:link"), "Messages that contain links");
     assert.equal(describe("has:image"), "Messages that contain images");
@@ -462,7 +490,7 @@ test("has_suggestions", ({override, mock_template}) => {
     override(narrow_state, "stream_name", noop);
 
     let suggestions = get_suggestions(query);
-    let expected = ["h", "has:link", "has:image", "has:attachment"];
+    let expected = ["h", "has:link", "has:image", "has:attachment", "has:reaction"];
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
@@ -475,7 +503,7 @@ test("has_suggestions", ({override, mock_template}) => {
 
     query = "-h";
     suggestions = get_suggestions(query);
-    expected = ["-h", "-has:link", "-has:image", "-has:attachment"];
+    expected = ["-h", "-has:link", "-has:image", "-has:attachment", "-has:reaction"];
     assert.deepEqual(suggestions.strings, expected);
     assert.equal(describe("-has:link"), "Exclude messages that contain links");
     assert.equal(describe("-has:image"), "Exclude messages that contain images");
@@ -485,7 +513,7 @@ test("has_suggestions", ({override, mock_template}) => {
 
     query = "has:";
     suggestions = get_suggestions(query);
-    expected = ["has:link", "has:image", "has:attachment"];
+    expected = ["has:link", "has:image", "has:attachment", "has:reaction"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "has:im";
@@ -515,6 +543,7 @@ test("has_suggestions", ({override, mock_template}) => {
 
 test("check_is_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
+    mock_template("user_pill.hbs", true, (_data, html) => html);
 
     stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
@@ -527,6 +556,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "is:dm",
         "is:starred",
         "is:mentioned",
+        "is:followed",
         "is:alerted",
         "is:unread",
         "is:resolved",
@@ -547,6 +577,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("is:alerted"), "Alerted messages");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
+    assert.equal(describe("is:followed"), "Followed topics");
 
     query = "-i";
     suggestions = get_suggestions(query);
@@ -555,6 +586,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "-is:dm",
         "-is:starred",
         "-is:mentioned",
+        "-is:followed",
         "-is:alerted",
         "-is:unread",
         "-is:resolved",
@@ -567,12 +599,21 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("-is:alerted"), "Exclude alerted messages");
     assert.equal(describe("-is:unread"), "Exclude unread messages");
     assert.equal(describe("-is:resolved"), "Exclude topics marked as resolved");
+    assert.equal(describe("-is:followed"), "Exclude followed topics");
 
     // operand suggestions follow.
 
     query = "is:";
     suggestions = get_suggestions(query);
-    expected = ["is:dm", "is:starred", "is:mentioned", "is:alerted", "is:unread", "is:resolved"];
+    expected = [
+        "is:dm",
+        "is:starred",
+        "is:mentioned",
+        "is:followed",
+        "is:alerted",
+        "is:unread",
+        "is:resolved",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:st";
@@ -678,6 +719,7 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
 
 test("topic_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
+    mock_template("user_pill.hbs", true, (_data, html) => html);
     let suggestions;
     let expected;
 
@@ -842,6 +884,7 @@ test("channel_completion", ({override, mock_template}) => {
 
 test("people_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
+    mock_template("user_pill.hbs", true, (_data, html) => html);
 
     let query = "te";
 
@@ -919,68 +962,76 @@ test("people_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function is_person(q) {
-        return suggestions.lookup_table.get(q).is_person;
+        return suggestions.lookup_table.get(q).description_html.includes(`class="user-pill`);
     }
     assert.equal(is_person("dm:ted@zulip.com"), true);
     assert.equal(is_person("sender:ted@zulip.com"), true);
     assert.equal(is_person("dm-including:ted@zulip.com"), true);
 
     function has_image(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.has_image;
+        return suggestions.lookup_table.get(q).description_html.includes(`class="pill-image"`);
     }
     assert.equal(has_image("dm:bob@zulip.com"), true);
     assert.equal(has_image("sender:bob@zulip.com"), true);
     assert.equal(has_image("dm-including:bob@zulip.com"), true);
 
-    function describe(q) {
-        return suggestions.lookup_table.get(q).description_html;
+    function test_describe(q, description_html_start) {
+        assert.ok(
+            suggestions.lookup_table.get(q).description_html.startsWith(description_html_start),
+        );
     }
-    assert.equal(describe("dm:ted@zulip.com"), "Direct messages with");
-    assert.equal(describe("sender:ted@zulip.com"), "Sent by");
-    assert.equal(describe("dm-including:ted@zulip.com"), "Direct messages including");
+    test_describe("dm:ted@zulip.com", "Direct messages with");
+    test_describe("sender:ted@zulip.com", "Sent by");
+    test_describe("dm-including:ted@zulip.com", "Direct messages including");
 
     let expectedString = "<strong>Te</strong>d Smith";
 
-    function get_full_name(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.display_value.string;
+    function test_full_name(q, full_name_html) {
+        return suggestions.lookup_table.get(q).description_html.includes(full_name_html);
     }
-    assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
-    assert.equal(get_full_name("dm:ted@zulip.com"), expectedString);
-    assert.equal(get_full_name("dm-including:ted@zulip.com"), expectedString);
+    test_full_name("sender:ted@zulip.com", expectedString);
+    test_full_name("dm:ted@zulip.com", expectedString);
+    test_full_name("dm-including:ted@zulip.com", expectedString);
 
     expectedString = example_avatar_url + "?s=50";
 
-    function get_avatar_url(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.img_src;
+    function test_avatar_url(q, avatar_url) {
+        return suggestions.lookup_table.get(q).description_html.includes(avatar_url);
     }
-    assert.equal(get_avatar_url("dm:bob@zulip.com"), expectedString);
-    assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
-    assert.equal(get_avatar_url("dm-including:bob@zulip.com"), expectedString);
+    test_avatar_url("dm:bob@zulip.com", expectedString);
+    test_avatar_url("sender:bob@zulip.com", expectedString);
+    test_avatar_url("dm-including:bob@zulip.com", expectedString);
 
-    function get_should_add_guest_user_indicator(q) {
-        return suggestions.lookup_table.get(q).user_pill_context.should_add_guest_user_indicator;
+    const guest_html = "<i>(guest)</i>";
+    function test_guest_user_indicator(q, should_have_guest_indicator) {
+        const description_html = suggestions.lookup_table.get(q).description_html;
+        if (should_have_guest_indicator) {
+            assert.ok(description_html.includes(guest_html));
+        } else {
+            assert.ok(!description_html.includes(guest_html));
+        }
     }
 
     realm.realm_enable_guest_user_indicator = true;
     suggestions = get_suggestions(query);
 
-    assert.equal(get_should_add_guest_user_indicator("dm:bob@zulip.com"), false);
-    assert.equal(get_should_add_guest_user_indicator("sender:bob@zulip.com"), false);
-    assert.equal(get_should_add_guest_user_indicator("dm-including:bob@zulip.com"), false);
+    test_guest_user_indicator("dm:bob@zulip.com", false);
+    test_guest_user_indicator("sender:bob@zulip.com", false);
+    test_guest_user_indicator("dm-including:bob@zulip.com", false);
 
     bob.is_guest = true;
     suggestions = get_suggestions(query);
 
-    assert.equal(get_should_add_guest_user_indicator("dm:bob@zulip.com"), true);
-    assert.equal(get_should_add_guest_user_indicator("sender:bob@zulip.com"), true);
-    assert.equal(get_should_add_guest_user_indicator("dm-including:bob@zulip.com"), true);
+    test_guest_user_indicator("dm:bob@zulip.com", true);
+    test_guest_user_indicator("sender:bob@zulip.com", true);
+    test_guest_user_indicator("dm-including:bob@zulip.com", true);
 
     realm.realm_enable_guest_user_indicator = false;
     suggestions = get_suggestions(query);
 
-    assert.equal(get_should_add_guest_user_indicator("dm:bob@zulip.com"), false);
-    assert.equal(get_should_add_guest_user_indicator("sender:bob@zulip.com"), false);
-    assert.equal(get_should_add_guest_user_indicator("dm-including:bob@zulip.com"), false);
+    test_guest_user_indicator("dm:bob@zulip.com", false);
+    test_guest_user_indicator("sender:bob@zulip.com", false);
+    test_guest_user_indicator("dm-including:bob@zulip.com", false);
 
     suggestions = get_suggestions("Ted "); // note space
 

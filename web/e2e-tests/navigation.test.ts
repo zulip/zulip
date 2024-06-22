@@ -56,7 +56,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 async function navigate_to_private_messages(page: Page): Promise<void> {
     console.log("Navigate to direct messages");
 
-    const all_private_messages_icon = "#show_all_private_messages";
+    const all_private_messages_icon = "#show-all-direct-messages";
     await page.waitForSelector(all_private_messages_icon, {visible: true});
     await page.click(all_private_messages_icon);
 

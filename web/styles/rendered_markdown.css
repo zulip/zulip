@@ -117,7 +117,7 @@
     }
 
     & thead {
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-rendered-markdown-thead);
     }
 
     & tr {
@@ -126,28 +126,31 @@
     }
 
     & tr th {
-        border: 1px solid hsl(0deg 0% 80%);
+        border: 1px solid var(--color-border-rendered-markdown-table);
         padding: 4px;
         text-align: left;
     }
 
     & tr td {
-        border: 1px solid hsl(0deg 0% 80%);
+        border: 1px solid var(--color-border-rendered-markdown-table);
         padding: 4px;
     }
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
     .emoji {
-        height: calc(20em / 14);
-        width: calc(20em / 14);
-        /* "Eyeballed" styles to compensate for inline-block emoji
-          positioning in messages.
-          By coordinating the emoji height and width above with the
-          `line-height` on messages in the future, these properties
-          should no longer be necessary: */
-        position: relative;
-        margin-top: -7px;
-        top: 3px;
+        /* The box for emoji is allowed to be larger than the size of the
+           line-height. */
+        height: var(--length-line-oversize-block);
+        width: var(--length-line-oversize-block);
+        /* A negative top and bottom margin adjustment allows emoji
+           to size larger than the size of the line, without disturbing
+           the surrounding lines of text. */
+        margin: var(--length-line-oversize-block-margin-adjust) auto;
+        /* We set the alignment programmatically, as an em value.
+           Because the negative margins above are equal, top and bottom,
+           this vertical offset value works without adjustment for
+           oversize emoji blocks. */
+        vertical-align: var(--line-fitted-vertical-align-offset-em);
     }
 
     /* Mentions and alert words */

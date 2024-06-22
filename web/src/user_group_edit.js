@@ -35,7 +35,6 @@ export let select_tab = "general";
 
 let group_list_widget;
 let group_list_toggler;
-let active_group_id;
 
 function get_user_group_id(target) {
     const $row = $(target).closest(
@@ -345,32 +344,9 @@ function hide_membership_toggle_spinner(group_row) {
     loading.destroy_indicator($spinner);
 }
 
-export const show_user_group_settings_pane = {
-    nothing_selected() {
-        $("#groups_overlay .settings, #user-group-creation").hide();
-        reset_active_group_id();
-        $("#groups_overlay .nothing-selected").show();
-        $("#groups_overlay .user-group-info-title").text(
-            $t({defaultMessage: "User group settings"}),
-        );
-    },
-    settings(group) {
-        $("#groups_overlay .nothing-selected, #user-group-creation").hide();
-        $("#groups_overlay .settings").show();
-        set_active_group_id(group.id);
-        $("#groups_overlay .user-group-info-title").text(group.name);
-    },
-    create_user_group() {
-        $("#groups_overlay .nothing-selected, #groups_overlay .settings").hide();
-        reset_active_group_id();
-        $("#user-group-creation").show();
-        $("#groups_overlay .user-group-info-title").text($t({defaultMessage: "Create user group"}));
-    },
-};
-
 function empty_right_panel() {
     $(".group-row.active").removeClass("active");
-    show_user_group_settings_pane.nothing_selected();
+    user_group_components.show_user_group_settings_pane.nothing_selected();
 }
 
 function open_right_panel_empty() {
@@ -402,7 +378,7 @@ export function handle_deleted_group(group_id) {
 
 export function show_group_settings(group) {
     $(".group-row.active").removeClass("active");
-    show_user_group_settings_pane.settings(group);
+    user_group_components.show_user_group_settings_pane.settings(group);
     row_for_group_id(group.id).addClass("active");
     setup_group_settings(group);
 }
@@ -410,14 +386,6 @@ export function show_group_settings(group) {
 export function open_group_edit_panel_for_row(group_row) {
     const group = get_user_group_for_target(group_row);
     show_group_settings(group);
-}
-
-export function set_active_group_id(group_id) {
-    active_group_id = group_id;
-}
-
-export function reset_active_group_id() {
-    active_group_id = undefined;
 }
 
 // Ideally this should be included in page params.
@@ -442,7 +410,7 @@ export function set_up_click_handlers() {
 function create_user_group_clicked() {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
-    show_user_group_settings_pane.create_user_group();
+    user_group_components.show_user_group_settings_pane.create_user_group();
     $(".group-row.active").removeClass("active");
 
     user_group_create.show_new_user_group_modal();
@@ -472,8 +440,8 @@ export function is_group_already_present(group) {
 export function get_active_data() {
     const $active_tabs = $(".user-groups-container").find("div.ind-tab.selected");
     return {
-        $row: row_for_group_id(active_group_id),
-        id: active_group_id,
+        $row: row_for_group_id(user_group_components.active_group_id),
+        id: user_group_components.active_group_id,
         $tabs: $active_tabs,
     };
 }
@@ -580,7 +548,7 @@ export function change_state(section, left_side_tab, right_side_tab) {
         // group is being edited. We are always editing a group here
         // so its safe to call
         if (left_side_tab !== group_list_toggler.value()) {
-            set_active_group_id(group.id);
+            user_group_components.set_active_group_id(group.id);
             group_list_toggler.goto(left_side_tab);
         }
         switch_to_group_row(group);
@@ -658,13 +626,13 @@ export function add_or_remove_from_group(group, group_row) {
 }
 
 export function maybe_reset_right_panel(groups_list_data) {
-    if (active_group_id === undefined) {
+    if (user_group_components.active_group_id === undefined) {
         return;
     }
 
     const group_ids = new Set(groups_list_data.map((group) => group.id));
-    if (!group_ids.has(active_group_id)) {
-        show_user_group_settings_pane.nothing_selected();
+    if (!group_ids.has(user_group_components.active_group_id)) {
+        user_group_components.show_user_group_settings_pane.nothing_selected();
     }
 }
 
@@ -724,7 +692,7 @@ export function setup_page(callback) {
 
         // Initially as the overlay is build with empty right panel,
         // active_group_id is undefined.
-        reset_active_group_id();
+        user_group_components.reset_active_group_id();
 
         const $container = $("#groups_overlay_container .user-groups-list");
 
@@ -756,10 +724,14 @@ export function setup_page(callback) {
                     );
                 },
                 onupdate() {
-                    if (active_group_id !== undefined) {
-                        const active_group = user_groups.get_user_group_from_id(active_group_id);
+                    if (user_group_components.active_group_id !== undefined) {
+                        const active_group = user_groups.get_user_group_from_id(
+                            user_group_components.active_group_id,
+                        );
                         if (is_group_already_present(active_group)) {
-                            row_for_group_id(active_group_id).addClass("active");
+                            row_for_group_id(user_group_components.active_group_id).addClass(
+                                "active",
+                            );
                         }
                     }
                 },

@@ -64,8 +64,8 @@ def add_apns_device_token(
 def add_android_reg_id(
     request: HttpRequest, user_profile: UserProfile, *, token: str
 ) -> HttpResponse:
-    validate_token(token, PushDeviceToken.GCM)
-    add_push_device_token(user_profile, token, PushDeviceToken.GCM)
+    validate_token(token, PushDeviceToken.FCM)
+    add_push_device_token(user_profile, token, PushDeviceToken.FCM)
     return json_success(request)
 
 
@@ -84,8 +84,8 @@ def remove_apns_device_token(
 def remove_android_reg_id(
     request: HttpRequest, user_profile: UserProfile, *, token: str
 ) -> HttpResponse:
-    validate_token(token, PushDeviceToken.GCM)
-    remove_push_device_token(user_profile, token, PushDeviceToken.GCM)
+    validate_token(token, PushDeviceToken.FCM)
+    remove_push_device_token(user_profile, token, PushDeviceToken.FCM)
     return json_success(request)
 
 

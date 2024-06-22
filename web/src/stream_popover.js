@@ -105,7 +105,6 @@ function build_stream_popover(opts) {
         // `onShow` is called after `hideOnClick`.
         // See https://github.com/atomiks/tippyjs/issues/230 for more details.
         delay: [100, 0],
-        theme: "popover-menu",
         ...left_sidebar_tippy_options,
         onCreate(instance) {
             stream_popover_instance = instance;

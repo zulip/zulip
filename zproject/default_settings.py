@@ -424,6 +424,7 @@ APNS_TEAM_ID = get_secret("apns_team_id", development_only=True)
 APNS_SANDBOX = True
 # APNS_TOPIC is obsolete. Clients now pass the APNs topic to use.
 # ZULIP_IOS_APP_ID is obsolete. Clients now pass the iOS app ID to use for APNs.
+ANDROID_FCM_CREDENTIALS_PATH: Optional[str] = None
 
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
@@ -641,3 +642,8 @@ CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Any]] = None
 # False in production, as we can only handle named user groups in the
 # web app settings UI.
 ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = False
+
+# Grace period during which we don't send a resolve/unresolve
+# notification to a stream and also delete the previous counter
+# notification.
+RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60

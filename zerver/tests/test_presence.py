@@ -4,6 +4,7 @@ from unittest import mock
 
 import time_machine
 from django.conf import settings
+from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -86,6 +87,55 @@ class UserPresenceModelTests(ZulipTestCase):
         presence_dct, last_update_id = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
         self.assertEqual(last_update_id, -1)
+
+    def test_user_presence_row_creation_simulated_race(self) -> None:
+        """
+        There is a theoretical race condition, where while a UserPresence
+        row is being created for a user, a concurrent process creates it first,
+        right before we execute our INSERT. This conflict is handled with
+        ON CONFLICT DO NOTHING in the SQL query and an early return
+        if that happens.
+        """
+
+        user_profile = self.example_user("hamlet")
+
+        UserPresence.objects.filter(user_profile=user_profile).delete()
+
+        self.login_user(user_profile)
+
+        def insert_row_and_return_cursor() -> Any:
+            # This is the function we will inject into connection.cursor
+            # to simulate the race condition.
+            # When the underlying code requests a cursor, we will create
+            # the UserPresence row for the user, before returning a real
+            # cursor to the caller. This ensures the caller will hit the
+            # INSERT conflict when it tries to execute its query.
+            UserPresence.objects.create(user_profile=user_profile, realm=user_profile.realm)
+
+            cursor = connection.cursor()
+            return cursor
+
+        with mock.patch("zerver.actions.presence.connection") as mock_connection, self.assertLogs(
+            "zerver.actions.presence", level="INFO"
+        ) as mock_logs:
+            # This is a tricky mock. We need to set things up so that connection.cursor()
+            # in do_update_user_presence runs our custom code when the caller tries to
+            # enter the context manager.
+            # We also need to take care to only affect the connection that exists in
+            # zerver.actions.presence rather than affecting the entire django.db.connection,
+            # as that would break code higher up in the stack.
+            mock_connection.cursor.return_value.__enter__.side_effect = insert_row_and_return_cursor
+
+            result = self.client_post("/json/users/me/presence", {"status": "active"})
+
+        # The request finished gracefully and the situation was logged:
+        self.assert_json_success(result)
+        self.assertEqual(
+            mock_logs.output,
+            [
+                f"INFO:zerver.actions.presence:UserPresence row already created for {user_profile.id}, returning."
+            ],
+        )
 
     def test_last_update_id_logic(self) -> None:
         slim_presence = True

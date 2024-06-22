@@ -3,14 +3,22 @@ from typing import Any, Dict, List
 from unittest import mock
 
 import orjson
+import time_machine
+from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
-from zerver.actions.message_edit import check_update_message, do_update_message
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import (
+    check_update_message,
+    do_update_message,
+    maybe_send_resolve_topic_notifications,
+)
 from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
-from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, messages_for_topic
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
@@ -1622,4 +1630,133 @@ class MessageMoveTopicTest(ZulipTestCase):
             not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
             .extra(where=[UserMessage.where_unread()])
             .exists()
+        )
+
+    @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
+    def test_mark_topic_as_resolved_within_grace_period(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+        original_topic = "topic 1"
+        id1 = self.send_stream_message(
+            hamlet, "new", content="message 1", topic_name=original_topic
+        )
+        id2 = self.send_stream_message(
+            admin_user, "new", content="message 2", topic_name=original_topic
+        )
+
+        resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        start_time = timezone_now()
+        with time_machine.travel(start_time, tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(id1),
+                {
+                    "topic": resolved_topic,
+                    "propagate_mode": "change_all",
+                },
+            )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                resolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, resolved_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+        unresolved_topic = original_topic
+
+        # Now unresolve the topic within the grace period.
+        with time_machine.travel(start_time + timedelta(seconds=30), tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(id1),
+                {
+                    "topic": unresolved_topic,
+                    "propagate_mode": "change_all",
+                },
+            )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                unresolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, unresolved_topic)
+        # The message about the topic having been resolved is gone.
+        self.assert_length(messages, 2)
+        self.assertEqual(
+            messages[1].content,
+            "message 2",
+        )
+        self.assertEqual(messages[0].content, "message 1")
+
+        # Now resolve the topic again after the grace period
+        with time_machine.travel(start_time + timedelta(seconds=61), tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(id1),
+                {
+                    "topic": resolved_topic,
+                    "propagate_mode": "change_all",
+                },
+            )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                resolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, resolved_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+    def test_send_resolve_topic_notification_with_no_topic_messages(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+        original_topic = "topic 1"
+        message_id = self.send_stream_message(
+            hamlet, "new", content="message 1", topic_name=original_topic
+        )
+
+        message = Message.objects.get(id=message_id)
+        do_delete_messages(admin_user.realm, [message])
+
+        assert stream.recipient_id is not None
+        changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
+        resolve_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        maybe_send_resolve_topic_notifications(
+            user_profile=admin_user,
+            stream=stream,
+            old_topic_name=original_topic,
+            new_topic_name=resolve_topic,
+            changed_messages=changed_messages,
+        )
+
+        topic_messages = get_topic_messages(admin_user, stream, resolve_topic)
+        self.assert_length(topic_messages, 1)
+        self.assertEqual(
+            topic_messages[0].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )

@@ -5,7 +5,12 @@ pnpm-lock.yaml
 /locale
 /templates/**/*.md
 /tools/setup/emoji/emoji_map.json
-/web/third
+/web/third/*
+!/web/third/marked
+/web/third/marked/*
+!/web/third/marked/lib
+/web/third/marked/lib/*
+!/web/third/marked/lib/marked.d.ts
 /zerver/tests/fixtures
 /zerver/webhooks/*/doc.md
 /zerver/webhooks/github/githubsponsors.md

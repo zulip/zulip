@@ -110,6 +110,9 @@ mock_esm("../src/message_store", {
 mock_esm("../src/message_view_header", {
     render_title_area: noop,
 });
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 mock_esm("../src/user_topics", {
     is_topic_muted(stream_id, topic) {
         if (stream_id === stream1 && topic === topic7) {

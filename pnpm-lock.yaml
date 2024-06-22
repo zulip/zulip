@@ -218,8 +218,8 @@ importers:
         specifier: ^0.0.1
         version: 0.0.1
       simplebar:
-        specifier: ^6.2.0
-        version: 6.2.6
+        specifier: ^6.2.7
+        version: 6.2.7
       sortablejs:
         specifier: ^1.9.0
         version: 1.15.2
@@ -6487,11 +6487,11 @@ packages:
   simple-swizzle@0.2.2:
     resolution: {integrity: sha512-JA//kQgZtbuY83m+xT+tXJkmJncGMTFT+C+g2h2R9uxkYIrE2yy9sgmcLhCnw57/WSD+Eh3J97FPEDFnbXnDUg==}
 
-  simplebar-core@1.2.5:
-    resolution: {integrity: sha512-33AVCYXS8yavWId0GbE4TG1cYELsYybpCKWHJYuWEY/j6nccgz6zQdJ7nCqOpIGo7HgPPbkSSSIlJhi43fHP6A==}
+  simplebar-core@1.2.6:
+    resolution: {integrity: sha512-H5NYU+O+uvqOH5VXw3+lgoc1vTI6jL8LOZJsw4xgRpV7uIPjRpmLPdz0TrouxwKHBhpVLzVIlyKhaRLelIThMw==}
 
-  simplebar@6.2.6:
-    resolution: {integrity: sha512-dN+MoK2JJY8u+3CokYm0GTAi1bo+aefyyY2fk3pZlwOZdLSNY9P0Ze6kb6e86VuXgFgbcX4z8SuM41RK1/zM+g==}
+  simplebar@6.2.7:
+    resolution: {integrity: sha512-IdD6HwZLz4f83lG0yN5r/3Mts4qR+pKAc9IjVdtJ96Ow6IqSA+jG2PlniQ710XUygal/mOA774IgAvcoirUP4g==}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -14493,17 +14493,16 @@ snapshots:
     dependencies:
       is-arrayish: 0.3.2
 
-  simplebar-core@1.2.5:
+  simplebar-core@1.2.6:
     dependencies:
       '@types/lodash-es': 4.17.12
-      can-use-dom: 0.1.0
       lodash: 4.17.21
       lodash-es: 4.17.21
 
-  simplebar@6.2.6:
+  simplebar@6.2.7:
     dependencies:
       can-use-dom: 0.1.0
-      simplebar-core: 1.2.5
+      simplebar-core: 1.2.6
 
   slash@3.0.0: {}
 

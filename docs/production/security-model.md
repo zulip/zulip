@@ -3,7 +3,7 @@
 This section attempts to document the Zulip security model. It likely
 does not cover every issue; if there are details you're curious about,
 please feel free to ask questions in [#production
-help](https://chat.zulip.org/#narrow/stream/31-production-help) on the
+help](https://chat.zulip.org/#narrow/channel/31-production-help) on the
 [Zulip community server](https://zulip.com/development-community/) (or if you
 think you've found a security bug, please report it to
 security@zulip.com so we can do a responsible security

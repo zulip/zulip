@@ -153,7 +153,8 @@
     }
 
     .search-input {
-        font-size: 14px;
+        /* Avoid massive inheritance chain on font-size. */
+        font-size: var(--base-font-size-px);
         /* override bootstrap padding for input[type="text"] */
         padding: 0;
         border: none;
@@ -233,7 +234,7 @@
             width: 100%;
             border-radius: 0;
             box-shadow: none;
-            /* To be visible over `#streamlist-toggle-unreadcount` */
+            /* To be visible over `.left-sidebar-toggle-unreadcount` */
             z-index: 20;
         }
     }
@@ -245,10 +246,24 @@
 
         .search_list_item .pill-container {
             margin-left: 5px;
+            /* This contains only one pill, which handles its own border */
+            border: none;
+            cursor: pointer;
+            padding: 0;
         }
 
         .pill {
             align-items: baseline;
+            margin: 0;
+
+            &:focus {
+                /* Keep the border the same color, there's no user interaction for users in the typeahead menu */
+                border-color: var(--color-background-input-pill);
+            }
+
+            .exit {
+                display: none;
+            }
         }
 
         .pill-image {

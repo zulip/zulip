@@ -229,7 +229,7 @@ export function render_lightbox_media_list(preview_source: string): void {
                 $node = $("<div>")
                     .addClass(className)
                     .attr("data-src", src)
-                    .css({backgroundImage: "url(" + src + ")"});
+                    .css({backgroundImage: `url(${CSS.escape(src)})`});
             }
 
             $media_list.append($node);

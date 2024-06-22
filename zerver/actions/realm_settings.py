@@ -20,6 +20,11 @@ from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
+from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
+    get_group_setting_value_for_api,
+    get_group_setting_value_for_audit_log_data,
+)
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
@@ -151,22 +156,43 @@ def do_set_push_notifications_enabled_end_timestamp(
 
 @transaction.atomic(savepoint=False)
 def do_change_realm_permission_group_setting(
-    realm: Realm, setting_name: str, user_group: UserGroup, *, acting_user: Optional[UserProfile]
+    realm: Realm,
+    setting_name: str,
+    user_group: UserGroup,
+    old_setting_api_value: Optional[Union[int, AnonymousSettingGroupDict]] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
     user_group to update and and the user who initiated the update.
     """
     assert setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
-    old_user_group_id = getattr(realm, setting_name).id
+    old_value = getattr(realm, setting_name)
 
     setattr(realm, setting_name, user_group)
     realm.save(update_fields=[setting_name])
+
+    if old_setting_api_value is None:
+        # Most production callers will have computed this as part of
+        # verifying whether there's an actual change to make, but it
+        # feels quite clumsy to have to pass it from unit tests, so we
+        # compute it here if not provided by the caller.
+        old_setting_api_value = get_group_setting_value_for_api(old_value)
+    new_setting_api_value = get_group_setting_value_for_api(user_group)
+
+    if not hasattr(old_value, "named_user_group") and hasattr(user_group, "named_user_group"):
+        # We delete the UserGroup which the setting was set to
+        # previously if it does not have any linked NamedUserGroup
+        # object, as it is not used anywhere else. A new UserGroup
+        # object would be created if the setting is later set to
+        # a combination of users and groups.
+        old_value.delete()
 
     event = dict(
         type="realm",
         op="update_dict",
         property="default",
-        data={setting_name: user_group.id},
+        data={setting_name: new_setting_api_value},
     )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
@@ -178,8 +204,12 @@ def do_change_realm_permission_group_setting(
         event_time=event_time,
         acting_user=acting_user,
         extra_data={
-            RealmAuditLog.OLD_VALUE: old_user_group_id,
-            RealmAuditLog.NEW_VALUE: user_group.id,
+            RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
+                old_setting_api_value
+            ),
+            RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
+                new_setting_api_value
+            ),
             "property": setting_name,
         },
     )

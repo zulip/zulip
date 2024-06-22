@@ -1,23 +1,23 @@
-{{! Contents of the "starred messages sidebar" popup }}
-<ul class="nav nav-list">
-    {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
-    {{#if show_unstar_all_button}}
-    <li>
-        <a tabindex="0" id="unstar_all_messages">
-            <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>
-            {{t "Unstar all messages" }}
-        </a>
-    </li>
-    {{/if}}
-    <li>
-        <a tabindex="0" id="toggle_display_starred_msg_count">
-            {{#if starred_message_counts}}
-                <i class="fa fa-eye-slash" aria-hidden="true"></i>
-                {{t "Hide starred message count" }}
-            {{else}}
-                <i class="fa fa-eye" aria-hidden="true"></i>
-                {{t "Show starred message count" }}
-            {{/if}}
-        </a>
-    </li>
-</ul>
+<div class="popover-menu" data-simplebar>
+    <ul role="menu" class="popover-menu-list">
+        {{#if show_unstar_all_button}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="unstar_all_messages" class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-star" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Unstar all messages" }}</span>
+            </a>
+        </li>
+        {{/if}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="toggle_display_starred_msg_count" class="popover-menu-link" tabindex="0">
+                {{#if starred_message_counts}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Hide starred message count" }}</span>
+                {{else}}
+                <i class="popover-menu-icon fa fa-eye" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Show starred message count" }}</span>
+                {{/if}}
+            </a>
+        </li>
+    </ul>
+</div>
