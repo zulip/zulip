@@ -14,9 +14,9 @@ type StreamPillWidget = InputPillContainer<StreamPill>;
 
 export type StreamPillData = StreamSubscription & {type: "stream"};
 
-function display_pill(sub: StreamSubscription): string {
+function format_stream_name_and_subscriber_count(sub: StreamSubscription): string {
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
-    return "#" + sub.name + ": " + sub_count + " users";
+    return "#" + sub.name +": " + sub_count + " users";
 }
 
 export function create_item_from_stream_name(
@@ -40,7 +40,7 @@ export function create_item_from_stream_name(
 
     return {
         type: "stream",
-        display_value: display_pill(sub),
+        display_value: format_stream_name_and_subscriber_count(sub),
         stream_id: sub.stream_id,
         stream_name: sub.name,
     };
@@ -67,7 +67,7 @@ export function append_stream(
 ): void {
     pill_widget.appendValidatedData({
         type: "stream",
-        display_value: display_pill(stream),
+        display_value: format_stream_name_and_subscriber_count(stream),
         stream_id: stream.stream_id,
         stream_name: stream.name,
     });
