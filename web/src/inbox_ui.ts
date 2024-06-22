@@ -54,6 +54,7 @@ type DirectMessageContext = {
     is_hidden: boolean;
     is_collapsed: boolean;
     latest_msg_id: number;
+    column_indexes: typeof COLUMNS;
 };
 
 const direct_message_context_properties: (keyof DirectMessageContext)[] = [
@@ -69,6 +70,7 @@ const direct_message_context_properties: (keyof DirectMessageContext)[] = [
     "is_hidden",
     "is_collapsed",
     "latest_msg_id",
+    "column_indexes",
 ];
 
 type StreamContext = {
@@ -86,6 +88,7 @@ type StreamContext = {
     is_collapsed: boolean;
     mention_in_unread: boolean;
     unread_count?: number;
+    column_indexes: typeof COLUMNS;
 };
 
 const stream_context_properties: (keyof StreamContext)[] = [
@@ -103,6 +106,7 @@ const stream_context_properties: (keyof StreamContext)[] = [
     "is_collapsed",
     "mention_in_unread",
     "unread_count",
+    "column_indexes",
 ];
 
 type TopicContext = {
@@ -118,6 +122,7 @@ type TopicContext = {
     latest_msg_id: number;
     all_visibility_policies: typeof user_topics.all_visibility_policies;
     visibility_policy: number | false;
+    column_indexes: typeof COLUMNS;
 };
 
 const topic_context_properties: (keyof TopicContext)[] = [
@@ -133,6 +138,7 @@ const topic_context_properties: (keyof TopicContext)[] = [
     "latest_msg_id",
     "all_visibility_policies",
     "visibility_policy",
+    "column_indexes",
 ];
 
 let dms_dict = new Map<string, DirectMessageContext>();
@@ -166,8 +172,8 @@ export let current_focus_id: string | undefined;
 const STREAM_HEADER_PREFIX = "inbox-stream-header-";
 const CONVERSATION_ID_PREFIX = "inbox-row-conversation-";
 
-const LEFT_NAVIGATION_KEYS = ["left_arrow", "shift_tab", "vim_left"];
-const RIGHT_NAVIGATION_KEYS = ["right_arrow", "tab", "vim_right"];
+const LEFT_NAVIGATION_KEYS = ["left_arrow", "vim_left"];
+const RIGHT_NAVIGATION_KEYS = ["right_arrow", "vim_right"];
 
 function get_row_from_conversation_key(key: string): JQuery {
     return $(`#${CSS.escape(CONVERSATION_ID_PREFIX + key)}`);
@@ -304,6 +310,7 @@ function format_dm(
         is_hidden: filter_should_hide_dm_row({dm_key: user_ids_string}),
         is_collapsed: collapsed_containers.has("inbox-dm-header"),
         latest_msg_id,
+        column_indexes: COLUMNS,
     };
 
     return context;
@@ -379,6 +386,7 @@ function format_stream(stream_id: number): StreamContext {
         is_hidden: true,
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
         mention_in_unread: unread.stream_has_any_unread_mentions(stream_id),
+        column_indexes: COLUMNS,
     };
 }
 
@@ -441,6 +449,7 @@ function format_topic(
         // to the template rendering.
         all_visibility_policies: user_topics.all_visibility_policies,
         visibility_policy: user_topics.get_topic_visibility_policy(stream_id, topic),
+        column_indexes: COLUMNS,
     };
 
     return context;
@@ -1079,6 +1088,40 @@ function page_down_navigation(): void {
 }
 
 export function change_focused_element(input_key: string): boolean {
+    if (input_key === "tab" || input_key === "shift_tab") {
+        // Tabbing should be handled by browser but to keep the focus element same
+        // when we rerender or user uses other hotkeys, we need to track
+        // the current focused element.
+        setTimeout(() => {
+            const post_tab_focus_elem = document.activeElement;
+            if (!(post_tab_focus_elem instanceof HTMLElement)) {
+                return;
+            }
+
+            if (
+                post_tab_focus_elem.id === INBOX_SEARCH_ID ||
+                post_tab_focus_elem.id === INBOX_FILTERS_DROPDOWN_ID
+            ) {
+                current_focus_id = post_tab_focus_elem.id;
+            }
+
+            const row_to_focus = post_tab_focus_elem.closest(".inbox-row, .inbox-header");
+            if (row_to_focus instanceof HTMLElement) {
+                const col_index = $(post_tab_focus_elem)
+                    .closest("[tabindex=0]")
+                    .attr("data-col-index");
+                if (!col_index) {
+                    return;
+                }
+
+                current_focus_id = row_to_focus.id;
+                row_focus = get_row_index($(row_to_focus));
+                col_focus = Number.parseInt(col_index, 10);
+            }
+        }, 0);
+        return false;
+    }
+
     if (is_search_focused()) {
         const textInput = $<HTMLInputElement>(`input#${CSS.escape(INBOX_SEARCH_ID)}`).get(0);
         assert(textInput !== undefined);
@@ -1092,7 +1135,6 @@ export function change_focused_element(input_key: string): boolean {
 
         switch (input_key) {
             case "down_arrow":
-            case "tab":
                 set_list_focus();
                 return true;
             case "right_arrow":
@@ -1126,13 +1168,8 @@ export function change_focused_element(input_key: string): boolean {
                 return true;
             case "vim_right":
             case "right_arrow":
-            case "tab":
                 focus_inbox_search();
                 return true;
-            case "shift_tab":
-                // Let user focus outside inbox view.
-                current_focus_id = "";
-                return false;
             case "escape":
                 if (get_all_rows().length === 0) {
                     return false;
@@ -1160,13 +1197,11 @@ export function change_focused_element(input_key: string): boolean {
                 return true;
             case RIGHT_NAVIGATION_KEYS[0]:
             case RIGHT_NAVIGATION_KEYS[1]:
-            case RIGHT_NAVIGATION_KEYS[2]:
                 col_focus += 1;
                 set_list_focus(input_key);
                 return true;
             case LEFT_NAVIGATION_KEYS[0]:
             case LEFT_NAVIGATION_KEYS[1]:
-            case LEFT_NAVIGATION_KEYS[2]:
                 col_focus -= 1;
                 set_list_focus(input_key);
                 return true;

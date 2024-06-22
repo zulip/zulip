@@ -1,13 +1,13 @@
 {{#if is_stream}}
     {{> inbox_stream_header_row}}
 {{else}}
-    <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}collapsed_container{{/if}}" tabindex="0">
+    <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}collapsed_container{{/if}}" tabindex="0" data-col-index="{{ column_indexes.RECIPIENT }}">
         <div class="inbox-focus-border">
             <div class="inbox-left-part-wrapper">
                 <div class="inbox-left-part">
-                    <div class="hide fake-collapse-button" tabindex="0"></div>
+                    <div class="hide fake-collapse-button" tabindex="0" data-col-index="{{ column_indexes.COLLAPSE_BUTTON }}"></div>
                     {{#if is_direct}}
-                        <a class="recipients_info {{#unless user_circle_class}}inbox-group-or-bot-dm{{/unless}}" href="{{dm_url}}">
+                        <a class="recipients_info {{#unless user_circle_class}}inbox-group-or-bot-dm{{/unless}}" href="{{dm_url}}" tabindex="-1">
                             <span class="user_block">
                                 {{#if is_bot}}
                                 <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
@@ -19,7 +19,7 @@
                                 <span class="recipients_name">{{{rendered_dm_with}}}</span>
                             </span>
                         </a>
-                        <div class="unread-count-focus-outline" tabindex="0">
+                        <div class="unread-count-focus-outline" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}">
                             <span class="unread_count tippy-zulip-tooltip on_hover_dm_read"
                               data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}"
                               aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
@@ -33,7 +33,7 @@
                         <span class="unread_mention_info tippy-zulip-tooltip
                           {{#unless mention_in_unread}}hidden{{/unless}}"
                           data-tippy-content="{{t 'You have mentions'}}">@</span>
-                        <div class="unread-count-focus-outline" tabindex="0">
+                        <div class="unread-count-focus-outline" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}">
                             <span class="unread_count tippy-zulip-tooltip on_hover_topic_read"
                               data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"
                               data-tippy-content="{{t 'Mark as read' }}" aria-label="{{t 'Mark as read' }}">
@@ -48,7 +48,7 @@
                 <div class="inbox-right-part">
                     {{#if is_topic}}
                         <span class="visibility-policy-indicator change_visibility_policy hidden-for-spectators{{#if (eq visibility_policy all_visibility_policies.INHERIT)}} inbox-row-visibility-policy-inherit{{/if}}"
-                          data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" tabindex="0">
+                          data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" tabindex="0" data-col-index="{{ column_indexes.TOPIC_VISIBILITY }}">
                             {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
                                 <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic'}}"
                                   role="button" aria-haspopup="true" aria-label="{{t 'You follow this topic' }}"></i>
@@ -66,7 +66,7 @@
                     {{/if}}
                     <div class="inbox-action-button inbox-topic-menu"
                       {{#if is_topic}}data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"
-                      data-topic-url="{{topic_url}}"{{/if}} tabindex="0">
+                      data-topic-url="{{topic_url}}"{{/if}} tabindex="0" data-col-index="{{ column_indexes.ACTION_MENU }}">
                         <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
                     </div>
                 </div>
