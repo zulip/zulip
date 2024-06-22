@@ -27,6 +27,12 @@ export function update_stream_colors(): void {
         }
         const color = stream_data.get_color(stream_id);
         const background_color = stream_color.get_recipient_bar_color(color);
+
+        const $stream_privacy_icon = $stream_header.find(".stream-privacy");
+        if ($stream_privacy_icon.length) {
+            $stream_privacy_icon.css("color", stream_color.get_stream_privacy_icon_color(color));
+        }
+
         $stream_header.css("background", background_color);
     });
 }
