@@ -6,6 +6,7 @@ from django.http import HttpRequest
 from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import get_language
+from django.utils.translation import override as override_language
 
 from version import (
     LATEST_MAJOR_VERSION,
@@ -168,17 +169,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     # Sync this with default_params_schema in base_page_params.ts.
     default_page_params: Dict[str, Any] = {
         **DEFAULT_PAGE_PARAMS,
-        "server_sentry_dsn": settings.SENTRY_FRONTEND_DSN,
         "request_language": get_language(),
     }
-    if settings.SENTRY_FRONTEND_DSN is not None:
-        if realm is not None:
-            default_page_params["realm_sentry_key"] = realm.string_id
-        default_page_params["server_sentry_environment"] = get_config(
-            "machine", "deploy_type", "development"
-        )
-        default_page_params["server_sentry_sample_rate"] = settings.SENTRY_FRONTEND_SAMPLE_RATE
-        default_page_params["server_sentry_trace_rate"] = settings.SENTRY_FRONTEND_TRACE_RATE
 
     context = {
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
@@ -216,6 +208,23 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "default_page_params": default_page_params,
         "corporate_enabled": corporate_enabled,
     }
+
+    if settings.SENTRY_FRONTEND_DSN is not None:
+        sentry_params = {
+            "dsn": settings.SENTRY_FRONTEND_DSN,
+            "environment": get_config("machine", "deploy_type", "development"),
+            "realm_key": "www" if realm is None else realm.string_id or "(root)",
+            "sample_rate": settings.SENTRY_FRONTEND_SAMPLE_RATE,
+            "server_version": ZULIP_VERSION,
+            "trace_rate": settings.SENTRY_FRONTEND_TRACE_RATE,
+        }
+        if request.user.is_authenticated:
+            with override_language(None):
+                sentry_params["user"] = {
+                    "id": request.user.id,
+                    "role": request.user.get_role_name(),
+                }
+        context["sentry_params"] = sentry_params
 
     context["PAGE_METADATA_URL"] = f"{realm_url}{request.path}"
     if realm is not None and realm.icon_source == realm.ICON_UPLOADED:
