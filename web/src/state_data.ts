@@ -69,7 +69,7 @@ export const scheduled_message_schema = z
 
 export const profile_datum_schema = z.object({
     value: z.string(),
-    rendered_value: z.string().optional(),
+    rendered_value: z.string().nullish(),
 });
 
 export const user_schema = z
