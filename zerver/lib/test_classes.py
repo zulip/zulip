@@ -699,6 +699,15 @@ Output:
         page_params = orjson.loads(page_params_json)
         return page_params
 
+    def _get_sentry_params(self, response: "TestHttpResponse") -> Optional[Dict[str, Any]]:
+        doc = lxml.html.document_fromstring(response.content)
+        try:
+            script = cast(lxml.html.HtmlMixin, doc).get_element_by_id("sentry-params")
+        except KeyError:
+            return None
+        assert script is not None and script.text is not None
+        return orjson.loads(script.text)
+
     def check_rendered_logged_in_app(self, result: "TestHttpResponse") -> None:
         """Verifies that a visit of / was a 200 that rendered page_params
         and not for a (logged-out) spectator."""
