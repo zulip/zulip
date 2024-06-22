@@ -27,7 +27,7 @@ import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
 import * as feedback_widget from "./feedback_widget";
-import * as giphy from "./giphy";
+import * as giphy_state from "./giphy_state";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -471,7 +471,7 @@ function edit_message($row, raw_content) {
             is_editable,
             content: raw_content,
             file_upload_enabled,
-            giphy_enabled: giphy.is_giphy_enabled(),
+            giphy_enabled: giphy_state.is_giphy_enabled(),
             minutes_to_edit: Math.floor(realm.realm_message_content_edit_limit_seconds / 60),
             max_message_length: realm.max_message_length,
         }),
