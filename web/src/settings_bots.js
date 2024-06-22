@@ -12,7 +12,6 @@ import * as components from "./components";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
-import {DataTypes, DropdownWidget} from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
 import * as list_widget from "./list_widget";
@@ -24,7 +23,6 @@ import * as ui_report from "./ui_report";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
 import * as util from "./util";
-
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -218,34 +216,12 @@ export function add_a_new_bot() {
         return options;
     }
 
-    const integration_input_dropdown_widget = new DropdownWidget({
-        widget_name: "integration-name",
-        get_options: get_options_for_integration_input_dropdown_widget,
-        item_click_callback: integration_item_click_callback,
-        $events_container: $("#generate-integration-url-modal"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
-        default_id: default_integration_option.unique_id,
-        unique_id_type: DataTypes.STRING,
-    });
-    integration_input_dropdown_widget.setup();
-    function integration_item_click_callback(event, dropdown) {
-        integration_input_dropdown_widget.render();
-        $(".integration-url-name-wrapper").trigger("input");
-
-        dropdown.hide();
-        event.preventDefault();
-        event.stopPropagation();
-    }
-
     const html_body = render_add_new_bot_form({
         bot_types: page_params.bot_types,
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
-        integration_dropdown_html: integration_input_dropdown_widget.render(),
+        integration_types: get_options_for_integration_input_dropdown_widget(),
     });
-
 
     let create_avatar_widget;
 
@@ -256,12 +232,14 @@ export function add_a_new_bot() {
         const payload_url = $("#create_payload_url").val();
         const interface_type = $("#create_interface_type").val();
         const service_name = $("#select_service_name").val();
+        const integration_type = $("#create_interface_type").val();
         const formData = new FormData();
 
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("bot_type", bot_type);
         formData.append("full_name", full_name);
         formData.append("short_name", short_name);
+        formData.append("integration_type", integration_type);
 
         // If the selected bot_type is Outgoing webhook
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
