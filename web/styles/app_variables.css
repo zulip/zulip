@@ -206,6 +206,7 @@
     --height-input-pill: 1.4286em;
     --length-input-pill-image: var(--height-input-pill);
     --vertical-spacing-input-pill: 2px;
+    --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
     --horizontal-spacing-input-pill: 6px;
 
     /* Overlay heights for streams modal */
