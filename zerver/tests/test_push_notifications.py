@@ -1686,9 +1686,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # Verify the RemoteRealmAuditLog entries created.
         remote_audit_logs = (
             RemoteRealmAuditLog.objects.filter(
-                event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED
+                event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                remote_realm=zephyr_remote_realm,
             )
-            .exclude(realm_id=get_realm("zulipinternal").id)
             .order_by("id")
             .values("event_type", "remote_id", "realm_id", "extra_data")
         )
