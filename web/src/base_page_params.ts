@@ -1,4 +1,3 @@
-import $ from "jquery";
 import {z} from "zod";
 
 import {narrow_term_schema, state_data_schema} from "./state_data";
@@ -102,7 +101,19 @@ const page_params_schema = z.discriminatedUnion("page_type", [
     upgrade_params_schema,
 ]);
 
-export const page_params = page_params_schema.parse($("#page-params").remove().data("params"));
+function take_params(): string {
+    const page_params_div = document.querySelector<HTMLElement>("#page-params");
+    if (page_params_div === null) {
+        throw new Error("Missing #page-params");
+    }
+    if (page_params_div.dataset.params === undefined) {
+        throw new Error("Missing #page_params[data-params]");
+    }
+    page_params_div.remove();
+    return page_params_div.dataset.params;
+}
+
+export const page_params = page_params_schema.parse(JSON.parse(take_params()));
 
 const t2 = performance.now();
 export const page_params_parse_time = t2 - t1;
