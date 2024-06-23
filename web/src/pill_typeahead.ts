@@ -6,7 +6,7 @@ import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as people from "./people";
 import type {User} from "./people";
 import * as stream_pill from "./stream_pill";
-import type {StreamPillData} from "./stream_pill";
+import type {StreamPillData, StreamPillWidget} from "./stream_pill";
 import * as typeahead_helper from "./typeahead_helper";
 import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
@@ -65,6 +65,60 @@ export function set_up_user(
             if (people.is_known_user_id(item.user.user_id)) {
                 user_pill.append_user(item.user, pills);
             }
+            $input.trigger("focus");
+            opts.update_func?.();
+        },
+        stopAdvance: true,
+    });
+}
+
+export function set_up_stream(
+    $input: JQuery,
+    pills: StreamPillWidget,
+    opts: {
+        help_on_empty_strings?: boolean;
+        invite_streams?: boolean;
+        update_func?: () => void;
+    },
+): void {
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    opts.help_on_empty_strings ||= false;
+    new Typeahead(bootstrap_typeahead_input, {
+        items: 5,
+        dropup: true,
+        helpOnEmptyStrings: true,
+        source(_query: string): StreamPillData[] {
+            return stream_pill.typeahead_source(pills, opts.invite_streams);
+        },
+        highlighter_html(item: StreamPillData, _query: string): string {
+            return typeahead_helper.render_stream(item);
+        },
+        matcher(item: StreamPillData, query: string): boolean {
+            query = query.toLowerCase();
+            query = query.replaceAll("\u00A0", " ");
+            query = query.trim();
+            if (query.startsWith("#")) {
+                query = query.slice(1);
+            }
+            return item.name.toLowerCase().includes(query);
+        },
+        sorter(matches: StreamPillData[], query: string): StreamPillData[] {
+            const stream_matches: StreamPillData[] = [];
+            for (const match of matches) {
+                assert(match.type === "stream");
+                stream_matches.push(match);
+            }
+            query = query.trim();
+            if (query.startsWith("#")) {
+                query = query.slice(1);
+            }
+            return typeahead_helper.sort_streams(stream_matches, query);
+        },
+        updater(item: StreamPillData, _query: string): undefined {
+            stream_pill.append_stream(item, pills, false);
             $input.trigger("focus");
             opts.update_func?.();
         },

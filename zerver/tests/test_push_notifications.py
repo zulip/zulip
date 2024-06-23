@@ -1686,9 +1686,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # Verify the RemoteRealmAuditLog entries created.
         remote_audit_logs = (
             RemoteRealmAuditLog.objects.filter(
-                event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED
+                event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                remote_realm=zephyr_remote_realm,
             )
-            .exclude(realm_id=get_realm("zulipinternal").id)
             .order_by("id")
             .values("event_type", "remote_id", "realm_id", "extra_data")
         )
@@ -1832,12 +1832,15 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realmauditlog_rows=realmauditlog_data,
             realms=[],
             version=None,
+            merge_base=None,
             api_feature_level=None,
         )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            request.model_dump(round_trip=True, exclude={"realms", "version", "api_feature_level"}),
+            request.model_dump(
+                round_trip=True, exclude={"realms", "version", "merge_base", "api_feature_level"}
+            ),
             subdomain="",
         )
         self.assert_json_error(result, "Data is out of order.")
@@ -1871,12 +1874,15 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realmauditlog_rows=[],
             realms=realms_data,
             version=None,
+            merge_base=None,
             api_feature_level=None,
         )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            request.model_dump(round_trip=True, exclude={"version", "api_feature_level"}),
+            request.model_dump(
+                round_trip=True, exclude={"version", "merge_base", "api_feature_level"}
+            ),
             subdomain="",
         )
         self.assert_json_error(
@@ -1928,12 +1934,15 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realmauditlog_rows=realmauditlog_data,
             realms=[],
             version=None,
+            merge_base=None,
             api_feature_level=None,
         )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            request.model_dump(round_trip=True, exclude={"version", "api_feature_level"}),
+            request.model_dump(
+                round_trip=True, exclude={"version", "merge_base", "api_feature_level"}
+            ),
             subdomain="",
         )
         self.assert_json_error(result, "Invalid event type.")
@@ -1954,12 +1963,15 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realmauditlog_rows=realmauditlog_data,
             realms=[],
             version=None,
+            merge_base=None,
             api_feature_level=None,
         )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            request.model_dump(round_trip=True, exclude={"version", "api_feature_level"}),
+            request.model_dump(
+                round_trip=True, exclude={"version", "merge_base", "api_feature_level"}
+            ),
             subdomain="",
         )
         self.assert_json_success(result)

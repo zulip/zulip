@@ -20,19 +20,21 @@ import * as dialog_widget from "./dialog_widget";
 import * as email_pill from "./email_pill";
 import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
+import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import * as stream_pill from "./stream_pill";
 import * as timerender from "./timerender";
 import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
-import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let pills: email_pill.EmailPillWidget;
+let stream_pill_widget: stream_pill.StreamPillWidget;
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -65,7 +67,7 @@ function get_common_invitation_data(): {
         expires_in = Number.parseFloat(raw_expires_in);
     }
 
-    const stream_ids: number[] = [];
+    let stream_ids: number[] = [];
     let include_realm_default_subscriptions = false;
     if (
         $("#invite_select_default_streams").prop("checked") ||
@@ -73,10 +75,7 @@ function get_common_invitation_data(): {
     ) {
         include_realm_default_subscriptions = true;
     } else {
-        $<HTMLInputElement>("#invite-stream-checkboxes input:checked").each(function () {
-            const stream_id = Number.parseInt($(this).val()!, 10);
-            stream_ids.push(stream_id);
-        });
+        stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
     }
 
     assert(csrf_token !== undefined);
@@ -248,12 +247,6 @@ function generate_multiuse_invite(): void {
     });
 }
 
-export function get_invite_streams(): stream_data.InviteStreamData[] {
-    const streams = stream_data.get_invite_stream_data();
-    streams.sort((a, b) => util.strcmp(a.name, b.name));
-    return streams;
-}
-
 function valid_to(time_valid: number): string {
     if (!time_valid) {
         return $t({defaultMessage: "Never expires"});
@@ -310,11 +303,9 @@ function set_streams_to_join_list_visibility(): void {
         realm_has_default_streams &&
         $<HTMLInputElement>("input#invite_select_default_streams")[0]!.checked;
     if (hide_streams_list) {
-        $("#streams_to_add .invite-stream-controls").hide();
-        $("#invite-stream-checkboxes").hide();
+        $(".add_streams_container").hide();
     } else {
-        $("#streams_to_add .invite-stream-controls").show();
-        $("#invite-stream-checkboxes").show();
+        $(".add_streams_container").show();
     }
 }
 
@@ -342,8 +333,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: time_unit_choices,
-        streams: get_invite_streams(),
-        new_stream_announcements_stream: stream_data.get_new_stream_announcements_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
         can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
@@ -367,6 +356,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         if (settings_data.user_can_subscribe_other_users()) {
             set_streams_to_join_list_visibility();
+            const $stream_pill_container = $("#invite_streams_container .pill-container");
+            stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
         }
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {

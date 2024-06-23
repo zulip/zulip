@@ -51,5 +51,6 @@ declare global {
         };
     }
 
+    const DEVELOPMENT: boolean;
     const ZULIP_VERSION: string;
 }

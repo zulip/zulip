@@ -67,33 +67,20 @@
         <div id="streams_to_add">
             {{#if show_select_default_streams_option}}
             <div class="select_default_streams new-style">
-                <label class="checkbox display-block">
+                <label class="checkbox display-block modal-field-label">
                     <input type="checkbox" id="invite_select_default_streams" checked="checked" />
                     <span></span>
                     {{t 'Default channels for this organization'}}
                 </label>
             </div>
             {{/if}}
-            <div class="invite-stream-controls">
-                <button class="btn" type="button" id="invite_check_all_button">{{t "Check all" }}</button> |
-                <button class="btn" type="button" id="invite_uncheck_all_button">{{t "Uncheck all" }}</button>
-            </div>
-            <div id="invite-stream-checkboxes" class="new-style">
-                {{#each streams}}
-
-                    <label class="checkbox display-block">
-                        <input type="checkbox" name="stream" value="{{stream_id}}"
-                          {{#if default_stream}}checked="checked"{{/if}} />
-                        <span></span>
-                        {{#if (or invite_only is_web_public)}} {{>stream_privacy}} {{name}}
-                        {{else}}
-                        #{{name}}
-                        {{/if}}
-                        {{#if (eq name ../new_stream_announcements_stream)}}
-                        <i>({{t 'Receives new channel announcements' }})</i>
-                        {{/if}}
-                    </label>
-                {{/each}}
+            <div id="invite_streams_container" class="add_streams_container">
+                <div class="pill-container stream_picker">
+                    <div class="input" contenteditable="true"
+                      data-placeholder="{{t 'Streams' }}">
+                        {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                    </div>
+                </div>
             </div>
         </div>
     </div>

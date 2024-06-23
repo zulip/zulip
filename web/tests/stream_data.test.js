@@ -927,6 +927,9 @@ test("get_invite_stream_data", () => {
     };
 
     people.init();
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+    current_user.is_admin = true;
 
     stream_data.add_sub(orie);
     stream_data.set_realm_default_streams([orie]);
@@ -936,7 +939,7 @@ test("get_invite_stream_data", () => {
             name: "Orie",
             stream_id: 320,
             invite_only: false,
-            default_stream: true,
+            subscribed: true,
             is_web_public: false,
         },
     ];
@@ -955,7 +958,38 @@ test("get_invite_stream_data", () => {
         name: "Inviter",
         stream_id: 25,
         invite_only: true,
-        default_stream: false,
+        subscribed: true,
+        is_web_public: false,
+    });
+    assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
+
+    // add unsubscribed private stream
+    const tokyo = {
+        name: "Tokyo",
+        stream_id: 12,
+        invite_only: true,
+        subscribed: false,
+        is_web_public: false,
+    };
+
+    stream_data.add_sub(tokyo);
+    assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
+
+    const random = {
+        name: "Random",
+        stream_id: 34,
+        invite_only: false,
+        subscribed: false,
+        is_web_public: false,
+    };
+
+    stream_data.add_sub(random);
+
+    expected_list.push({
+        name: "Random",
+        stream_id: 34,
+        invite_only: false,
+        subscribed: false,
         is_web_public: false,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);

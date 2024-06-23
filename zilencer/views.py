@@ -1147,6 +1147,7 @@ def remote_server_post_analytics(
     realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None,
     realms: Optional[Json[List[RealmDataForAnalytics]]] = None,
     version: Optional[Json[str]] = None,
+    merge_base: Optional[Json[str]] = None,
     api_feature_level: Optional[Json[int]] = None,
 ) -> HttpResponse:
     # Lock the server, preventing this from racing with other
@@ -1156,10 +1157,15 @@ def remote_server_post_analytics(
     remote_server_version_updated = False
     if version is not None:
         version = version[0 : RemoteZulipServer.VERSION_MAX_LENGTH]
-    if version != server.last_version or api_feature_level != server.last_api_feature_level:
+    if (
+        version != server.last_version
+        or merge_base != server.last_merge_base
+        or api_feature_level != server.last_api_feature_level
+    ):
         server.last_version = version
+        server.last_merge_base = merge_base
         server.last_api_feature_level = api_feature_level
-        server.save(update_fields=["last_version", "last_api_feature_level"])
+        server.save(update_fields=["last_version", "last_merge_base", "last_api_feature_level"])
         remote_server_version_updated = True
 
     validate_incoming_table_data(

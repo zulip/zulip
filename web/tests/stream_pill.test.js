@@ -4,8 +4,10 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const {current_user} = require("./lib/zpage_params");
 
 const peer_data = zrequire("peer_data");
+const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_pill = zrequire("stream_pill");
 
@@ -18,6 +20,12 @@ const sweden = {
     stream_id: 102,
     name: "Sweden",
     subscribed: false,
+};
+const germany = {
+    stream_id: 103,
+    name: "Germany",
+    subscribed: false,
+    invite_only: true,
 };
 
 peer_data.set_subscribers(denmark.stream_id, [1, 2, 3, 77]);
@@ -33,17 +41,39 @@ const sweden_pill = {
     stream_name: sweden.name,
     stream_id: sweden.stream_id,
     type: "stream",
-    display_value: "#Sweden: 5 users",
+    display_value: "translated: #Sweden: 5 users",
 };
 
-const subs = [denmark, sweden];
+const subs = [denmark, sweden, germany];
 for (const sub of subs) {
     stream_data.add_sub(sub);
 }
 
+const me = {
+    email: "me@example.com",
+    user_id: 5,
+    full_name: "Me Myself",
+};
+
+people.add_active_user(me);
+people.initialize_current_user(me.user_id);
+
 run_test("create_item", () => {
-    function test_create_item(stream_name, current_items, expected_item) {
-        const item = stream_pill.create_item_from_stream_name(stream_name, current_items);
+    current_user.user_id = me.user_id;
+    current_user.is_admin = true;
+    function test_create_item(
+        stream_name,
+        current_items,
+        expected_item,
+        stream_prefix_required = true,
+        get_allowed_streams = stream_data.get_unsorted_subs,
+    ) {
+        const item = stream_pill.create_item_from_stream_name(
+            stream_name,
+            current_items,
+            stream_prefix_required,
+            get_allowed_streams,
+        );
         assert.deepEqual(item, expected_item);
     }
 
@@ -51,6 +81,7 @@ run_test("create_item", () => {
     test_create_item("#sweden", [sweden_pill], undefined);
     test_create_item("  #sweden", [], sweden_pill);
     test_create_item("#test", [], undefined);
+    test_create_item("#germany", [], undefined, true, stream_data.get_invite_stream_data);
 });
 
 run_test("get_stream_id", () => {

@@ -1,4 +1,3 @@
-import $ from "jquery";
 import {z} from "zod";
 
 import {narrow_term_schema, state_data_schema} from "./state_data";
@@ -10,12 +9,7 @@ const default_params_schema = z.object({
     page_type: z.literal("default"),
     development_environment: z.boolean(),
     google_analytics_id: z.optional(z.string()),
-    realm_sentry_key: z.optional(z.string()),
     request_language: z.string(),
-    server_sentry_dsn: z.nullable(z.string()),
-    server_sentry_environment: z.optional(z.string()),
-    server_sentry_sample_rate: z.optional(z.number()),
-    server_sentry_trace_rate: z.optional(z.number()),
 });
 
 // These parameters are sent in #page-params for both users and spectators.
@@ -107,7 +101,19 @@ const page_params_schema = z.discriminatedUnion("page_type", [
     upgrade_params_schema,
 ]);
 
-export const page_params = page_params_schema.parse($("#page-params").remove().data("params"));
+function take_params(): string {
+    const page_params_div = document.querySelector<HTMLElement>("#page-params");
+    if (page_params_div === null) {
+        throw new Error("Missing #page-params");
+    }
+    if (page_params_div.dataset.params === undefined) {
+        throw new Error("Missing #page_params[data-params]");
+    }
+    page_params_div.remove();
+    return page_params_div.dataset.params;
+}
+
+export const page_params = page_params_schema.parse(JSON.parse(take_params()));
 
 const t2 = performance.now();
 export const page_params_parse_time = t2 - t1;
