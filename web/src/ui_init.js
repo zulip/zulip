@@ -670,7 +670,7 @@ export function initialize_everything(state_data) {
     $("#app-loading").addClass("loaded");
 }
 
-$(async () => {
+$(() => {
     if (page_params.is_spectator) {
         const data = {
             apply_markdown: true,
@@ -699,7 +699,9 @@ $(async () => {
             },
         });
     } else {
-        assert(page_params.state_data !== undefined);
-        initialize_everything(page_params.state_data);
+        const state_data = page_params.state_data;
+        assert(state_data !== null);
+        page_params.state_data = null;
+        initialize_everything(state_data);
     }
 });
