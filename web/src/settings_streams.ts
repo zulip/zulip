@@ -100,13 +100,18 @@ export function maybe_disable_widgets(): void {
         .prop("disabled", true);
 }
 
+let defaultStreamWidget: ListWidget.ListWidget<
+    sub_store.StreamSubscription,
+    Record<"name", string>
+>;
+
 export function build_default_stream_table(): void {
     const $table = $("#admin_default_streams_table").expectOne();
 
     const stream_ids = stream_data.get_default_stream_ids();
     const subs = stream_ids.map((stream_id) => sub_store.get(stream_id)!);
 
-    ListWidget.create($table, subs, {
+    defaultStreamWidget = ListWidget.create($table, subs, {
         name: "default_streams_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
@@ -122,6 +127,10 @@ export function build_default_stream_table(): void {
             },
             onupdate() {
                 scroll_util.reset_scrollbar($table);
+                ListWidget.updateActionsColumn(
+                    defaultStreamWidget.get_total_rows_to_render(),
+                    "#admin_default_streams_table_action_column",
+                );
             },
         },
         $parent_container: $("#admin-default-channels-list").expectOne(),
@@ -131,7 +140,10 @@ export function build_default_stream_table(): void {
         },
         $simplebar_container: $("#admin-default-channels-list .progressive-table-wrapper"),
     });
-
+    ListWidget.updateActionsColumn(
+        defaultStreamWidget.get_total_rows_to_render(),
+        "#admin_default_streams_table_action_column",
+    );
     loading.destroy_indicator($("#admin_page_default_streams_loading_indicator"));
 }
 

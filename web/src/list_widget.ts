@@ -83,6 +83,7 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     ) => void;
     sort: (sorting_function: string, prop?: string) => void;
     replace_list_data: (list: Key[], should_redraw?: boolean) => void;
+    get_total_rows_to_render: () => number;
 };
 
 const DEFAULTS = {
@@ -561,6 +562,9 @@ export function create<Key, Item = Key>(
                 widget.hard_redraw();
             }
         },
+        get_total_rows_to_render() {
+            return meta.filtered_list.length;
+        },
     };
 
     widget.set_up_event_handlers();
@@ -627,3 +631,16 @@ export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>)
 }
 
 export const default_get_item = <T>(item: T): T => item;
+
+export function updateActionsColumn(list_widget: number, id: string): void {
+    // id of action column is required so that the affected action column should belong to that particular
+    // table where the changes are required and not to each table where the action column is used.
+    const rows: number = list_widget;
+    const $actionsColumn = $(id);
+    // Add or remove the "on-empty-table" class based on the number of rows
+    if (rows === 0) {
+        $actionsColumn.addClass("on-empty-table");
+    } else {
+        $actionsColumn.removeClass("on-empty-table");
+    }
+}

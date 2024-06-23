@@ -155,13 +155,26 @@ function handle_linkifier_api_error(
     }
 }
 
+let linkifiersWidget: ListWidget.ListWidget<
+    {
+        id: number;
+        pattern: string;
+        url_template: string;
+    },
+    {
+        id: number;
+        pattern: string;
+        url_template: string;
+    }
+>;
+
 export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
     if (!meta.loaded) {
         return;
     }
 
     const $linkifiers_table = $("#admin_linkifiers_table").expectOne();
-    ListWidget.create($linkifiers_table, linkifiers_data, {
+    linkifiersWidget = ListWidget.create($linkifiers_table, linkifiers_data, {
         name: "linkifiers_list",
         get_item: ListWidget.default_get_item,
         modifier_html(linkifier, filter_value) {
@@ -187,12 +200,20 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
             },
             onupdate() {
                 scroll_util.reset_scrollbar($linkifiers_table);
+                ListWidget.updateActionsColumn(
+                    linkifiersWidget.get_total_rows_to_render(),
+                    "#admin_linkifiers_table_action_column",
+                );
             },
         },
         $parent_container: $("#linkifier-settings").expectOne(),
         $simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
     });
 
+    ListWidget.updateActionsColumn(
+        linkifiersWidget.get_total_rows_to_render(),
+        "#admin_linkifiers_table_action_column",
+    );
     if (current_user.is_admin) {
         new SortableJS($linkifiers_table[0]!, {
             onUpdate: update_linkifiers_order,
