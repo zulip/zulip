@@ -12,7 +12,7 @@ from pydantic import UUID4, BaseModel, ConfigDict, Field, Json, field_validator
 
 from analytics.lib.counts import LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
 from analytics.models import InstallationCount, RealmCount
-from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.realm_settings import (
     do_set_push_notifications_enabled_end_timestamp,
     do_set_realm_property,
@@ -107,6 +107,7 @@ class AnalyticsRequest(BaseModel):
     realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None
     realms: Json[List[RealmDataForAnalytics]]
     version: Optional[Json[str]]
+    merge_base: Optional[Json[str]]
     api_feature_level: Optional[Json[int]]
 
 
@@ -423,6 +424,7 @@ def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> 
         realmauditlog_rows=realmauditlog_data,
         realms=get_realms_info_for_push_bouncer(),
         version=ZULIP_VERSION,
+        merge_base=ZULIP_MERGE_BASE,
         api_feature_level=API_FEATURE_LEVEL,
     )
 
