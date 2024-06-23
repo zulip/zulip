@@ -115,6 +115,7 @@ import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import {current_user, realm, set_current_user, set_realm, state_data_schema} from "./state_data";
+import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -139,6 +140,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as upload from "./upload";
 import * as user_card_popover from "./user_card_popover";
+import * as user_group_create from "./user_group_create";
 import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_popover from "./user_group_popover";
@@ -524,6 +526,8 @@ export function initialize_everything(state_data) {
         on_send_message_success: compose.send_message_success,
         send_message: transmit.send_message,
     });
+    stream_create.initialize();
+    user_group_create.initialize();
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
