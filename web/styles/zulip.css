@@ -1590,10 +1590,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     display: inline-flex;
     align-items: center;
     width: 100%;
-
-    .pill-container {
-        padding: 4px 6px;
-    }
 }
 
 #custom-expiration-time-input {
