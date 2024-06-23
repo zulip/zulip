@@ -247,6 +247,7 @@ module.exports = {
                 node: false,
             },
             globals: {
+                DEVELOPMENT: false,
                 ZULIP_VERSION: false,
             },
             rules: {

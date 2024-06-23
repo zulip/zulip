@@ -199,6 +199,7 @@ const config = (
         },
         plugins: [
             new DefinePlugin({
+                DEVELOPMENT: JSON.stringify(!production),
                 ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
             }),
             new DebugRequirePlugin(),
