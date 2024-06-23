@@ -6693,6 +6693,51 @@ paths:
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
   /messages/{message_id}/history:
+    patch:
+      operationId: delete-edit-history-message
+      summary: Delete a message from edited history
+      tags: ["messages"]
+      description: |
+        Receive the id of the message and an optional index of the edited message
+
+        Mark message as deleted depending on if its the message or the edited in case its on edit history
+        [Zulip Help Center documentation on editing messages][edit-settings].
+
+        [edit-settings]: /help/view-a-messages-edit-history
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - editted_message_id
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+        - name: editted_message_id
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The index of the edit message to be deleted
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      editted_message_id:
+                        type: integer
+                        description: |
+                          The index of the edit message to be deleted
+                    example:
+                      {"msg": "", "result": "success", "editted_message_id": 1}
+
     get:
       operationId: get-message-history
       summary: Get a message's edit history
@@ -6809,6 +6854,18 @@ paths:
                               type: integer
                               description: |
                                 The UNIX timestamp for this edit.
+                            is_deleted:
+                              type: boolean
+                              description: |
+                                The boolean that defines if message is deleted in edit history.
+                            deleted_history_timestamp:
+                              type: integer
+                              description: |
+                                The time when the message edit was deleted.
+                            user_deleted:
+                              type: integer
+                              description: |
+                                The id of who deleted the edit message.
                         description: |
                           A chronologically sorted, oldest to newest, array
                           of `snapshot` objects, each one with the values of
@@ -6823,6 +6880,9 @@ paths:
                               "rendered_content": "<p>Hello!</p>",
                               "timestamp": 1530129122,
                               "user_id": 5,
+                              "is_deleted": true,
+                              "user_deleted": 5,
+                              "deleted_history_timestamp": 1530129125,
                             },
                             {
                               "topic": "party at my house",
@@ -19878,6 +19938,14 @@ components:
                 description: |
                   The unique message ID. Messages should always be
                   displayed sorted by ID.
+              date_deleted_history:
+                type: integer
+                description: |
+                  Time when the main message was deleted form the edit history
+              deleter_history_id:
+                type: integer
+                description: |
+                  Id of the person that deleted main message from edit history
     BasicChannel:
       allOf:
         - $ref: "#/components/schemas/BasicChannelBase"
@@ -21292,6 +21360,10 @@ components:
                   Clients can display edit history events where this
                   is `null` as modified by either the sender (for content
                   edits) or an unknown user (for topic edits).
+              is_deleted:
+                type: boolean
+                description: |
+                  The flag that tells th eedit history this message shouldn't be shown.
             required:
               - user_id
               - timestamp

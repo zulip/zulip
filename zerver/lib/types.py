@@ -92,6 +92,8 @@ class EditHistoryEvent(TypedDict, total=False):
     # editing support in Zulip.
     user_id: Optional[int]
     timestamp: int
+    deleted_history_timestamp: Optional[int]
+    user_deleted: Optional[int]
     prev_stream: int
     stream: int
     prev_topic: str
@@ -99,6 +101,7 @@ class EditHistoryEvent(TypedDict, total=False):
     prev_content: str
     prev_rendered_content: Optional[str]
     prev_rendered_content_version: Optional[int]
+    is_deleted: Optional[bool]
 
 
 class FormattedEditHistoryEvent(TypedDict, total=False):
@@ -112,12 +115,15 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
     prev_stream: int
     stream: int
     prev_topic: str
+    deleted_history_timestamp: Optional[int]
+    user_deleted: Optional[int]
     topic: str
     prev_content: str
     content: str
     prev_rendered_content: Optional[str]
     rendered_content: Optional[str]
     content_html_diff: str
+    is_deleted: Optional[bool]
 
 
 class UserTopicDict(TypedDict, total=False):

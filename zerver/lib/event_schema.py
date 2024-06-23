@@ -118,7 +118,11 @@ attachment_message_type = DictType(
     required_keys=[
         ("id", int),
         ("date_sent", int),
-    ]
+    ],
+    optional_keys=[
+        ("date_deleted_history", int),
+        ("deleter_history_id", int),
+    ],
 )
 
 attachment_type = DictType(

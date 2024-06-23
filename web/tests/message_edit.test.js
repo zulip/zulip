@@ -15,6 +15,9 @@ const is_content_editable = message_edit.is_content_editable;
 
 const settings_data = mock_esm("../src/settings_data");
 
+const message_edit_history = zrequire("message_edit_history");
+const userCanDeleteMessage = message_edit_history.userCanDeleteMessage;
+
 run_test("is_content_editable", () => {
     // You can't edit a null message
     assert.equal(is_content_editable(null), false);
@@ -363,4 +366,53 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
         ),
         false,
     );
+});
+
+run_test("can_delete_edit_history", () => {
+    // Mock necessary data and settings
+    const test_user = {
+        user_id: 1,
+        full_name: "Test User",
+        email: "test@zulip.com",
+    };
+    people.add_active_user(test_user);
+    people.initialize_current_user(test_user.user_id);
+
+    // Admins can delete any edit history
+    current_user.is_admin = true;
+    assert.equal(userCanDeleteMessage(current_user.user_id), true);
+
+    // Owners can delete any edit history
+    current_user.is_admin = false;
+    current_user.is_owner = true;
+    assert.equal(userCanDeleteMessage(current_user.user_id), true);
+
+    // Moderators cannot delete edit history of messages they did not send
+    current_user.is_owner = false;
+    current_user.is_moderator = true;
+    assert.equal(userCanDeleteMessage(null), false);
+
+    // Normal users cannot delete edit history of messages they did not send
+    current_user.is_moderator = false;
+    assert.equal(userCanDeleteMessage(null), false);
+
+    // Normal users can delete edit history of messages they sent
+    // message.sent_by_me = true;
+    assert.equal(userCanDeleteMessage(current_user.user_id), true);
+
+    // Another user cannot delete edit history of messages they did not send
+    current_user.is_admin = false;
+    current_user.is_owner = false;
+    current_user.is_moderator = false;
+    const other_user = {
+        user_id: 2,
+        full_name: "Other User",
+        email: "other@zulip.com",
+    };
+    people.add_active_user(other_user);
+    people.initialize_current_user(other_user.user_id);
+    assert.equal(userCanDeleteMessage(null), false);
+
+    // Clean up mocks
+    people.initialize_current_user(test_user.user_id);
 });

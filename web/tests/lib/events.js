@@ -123,6 +123,8 @@ exports.fixtures = {
                 {
                     id: 1000,
                     date_sent: fake_now,
+                    date_deleted_history: 123123,
+                    deleter_history_id: 1000,
                 },
             ],
         },

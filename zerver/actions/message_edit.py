@@ -460,6 +460,7 @@ def do_update_message(
     edit_history_event: EditHistoryEvent = {
         "user_id": user_profile.id,
         "timestamp": event["edit_timestamp"],
+        "is_deleted": False,
     }
 
     realm = user_profile.realm

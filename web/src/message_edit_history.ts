@@ -18,7 +18,7 @@ import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as spectators from "./spectators";
-import {realm} from "./state_data";
+import {current_user, realm} from "./state_data";
 import {get_recipient_bar_color} from "./stream_color";
 import {get_color} from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -29,6 +29,9 @@ type EditHistoryEntry = {
     edited_at_time: string;
     edited_by_notice: string;
     timestamp: number; // require to set data-message-id for overlay message row
+    deleted_timestamp?: number | undefined;
+    deleted_at_time?: string | undefined; // new for deleted
+    deleted_by_notice?: string | undefined;
     is_stream: boolean;
     recipient_bar_color: string | undefined;
     body_to_render: string | undefined;
@@ -39,7 +42,11 @@ type EditHistoryEntry = {
     prev_stream: string | undefined;
     prev_stream_id: number | undefined;
     new_stream: string | undefined;
+    to_hide: boolean | undefined;
 };
+
+let globalContentEditHistory: EditHistoryEntry[] = [];
+let currently_editing_message: Message;
 
 const server_message_history_schema = z.object({
     message_history: z.array(
@@ -47,8 +54,11 @@ const server_message_history_schema = z.object({
             content: z.string(),
             rendered_content: z.string(),
             timestamp: z.number(),
+            deleted_history_timestamp: z.number().optional(),
+            is_deleted: z.boolean().optional(),
             topic: z.string(),
             user_id: z.number().or(z.null()),
+            user_deleted: z.number().optional(),
             prev_topic: z.string().optional(),
             stream: z.number().optional(),
             prev_stream: z.number().optional(),
@@ -108,19 +118,61 @@ function hide_loading_indicator(): void {
     );
 }
 
+export function delete_edit_history_message(
+    globalContentEditHistory: EditHistoryEntry[],
+    message_id: number,
+    edit_ind: number | null = null,
+): void {
+    let request;
+    if (edit_ind === null) {
+        request = {message_id};
+    } else {
+        request = {message_id, editted_message_id: edit_ind};
+    }
+
+    void channel.patch({
+        url: "/json/messages/" + message_id + "/history",
+        data: request,
+        success() {
+            if (edit_ind === null) {
+                if (globalContentEditHistory[0] !== undefined) {
+                    globalContentEditHistory[0].to_hide = true;
+                }
+            } else {
+                if (globalContentEditHistory[edit_ind] !== undefined) {
+                    globalContentEditHistory[edit_ind]!.to_hide = true;
+                }
+            }
+            if (overlays.any_active()) {
+                overlays.close_overlay("message_edit_history");
+            }
+            fetch_and_render_message_history(currently_editing_message);
+        },
+        error(xhr) {
+            ui_report.error(
+                $t_html({defaultMessage: "Error deleting message from history."}),
+                xhr,
+                $("#message-history-overlay #message-history-error"),
+            );
+            $("#message-history-error").show();
+        },
+    });
+}
+
 export function fetch_and_render_message_history(message: Message): void {
     $("#message-edit-history-overlay-container").html(render_message_history_overlay());
     open_overlay();
     show_loading_indicator();
+    let can_delete = false;
+    currently_editing_message = message;
     void channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
-        success(raw_data) {
-            const data = server_message_history_schema.parse(raw_data);
-
+        success(data) {
+            const clean_data = server_message_history_schema.parse(data);
             const content_edit_history: EditHistoryEntry[] = [];
             let prev_stream_item: EditHistoryEntry | null = null;
-            for (const [index, msg] of data.message_history.entries()) {
+            for (const [index, msg] of clean_data.message_history.entries()) {
                 // Format times and dates nicely for display
                 const time = new Date(msg.timestamp * 1000);
                 const edited_at_time = timerender.get_full_datetime(time, "time");
@@ -128,11 +180,14 @@ export function fetch_and_render_message_history(message: Message): void {
                 if (!msg.user_id) {
                     continue;
                 }
-
+                can_delete = userCanDeleteMessage(msg.user_id);
                 const person = people.get_user_by_id_assert_valid(msg.user_id);
                 const full_name = person.full_name;
 
+                let person_deleted;
+                let full_name_deleted;
                 let edited_by_notice;
+                let deleted_by_notice;
                 let body_to_render;
                 let topic_edited;
                 let prev_topic;
@@ -140,6 +195,8 @@ export function fetch_and_render_message_history(message: Message): void {
                 let stream_changed;
                 let prev_stream;
                 let prev_stream_id;
+                let time_deleted;
+                let deleted_at_time;
 
                 if (index === 0) {
                     edited_by_notice = $t({defaultMessage: "Posted by {full_name}"}, {full_name});
@@ -179,12 +236,32 @@ export function fetch_and_render_message_history(message: Message): void {
                     edited_by_notice = $t({defaultMessage: "Edited by {full_name}"}, {full_name});
                     body_to_render = msg.content_html_diff;
                 }
+
+                if (msg.is_deleted) {
+                    if (msg.user_deleted) {
+                        person_deleted = people.get_user_by_id_assert_valid(msg.user_deleted);
+                        full_name_deleted = person_deleted.full_name;
+                    }
+                    if (msg.deleted_history_timestamp) {
+                        time_deleted = new Date(msg.deleted_history_timestamp * 1000);
+                        deleted_at_time = timerender.get_full_datetime(time_deleted, "time");
+                    }
+                    deleted_by_notice = $t(
+                        {defaultMessage: "Deleted by {full_name_deleted}"},
+                        {full_name_deleted},
+                    );
+                }
+
                 const item: EditHistoryEntry = {
                     edited_at_time,
                     edited_by_notice,
                     timestamp: msg.timestamp,
+                    deleted_at_time,
+                    deleted_by_notice,
+                    deleted_timestamp: msg.deleted_history_timestamp,
                     is_stream: message.is_stream,
                     recipient_bar_color: undefined,
+                    to_hide: msg.is_deleted,
                     body_to_render,
                     topic_edited,
                     prev_topic,
@@ -201,6 +278,10 @@ export function fetch_and_render_message_history(message: Message): void {
 
                 content_edit_history.push(item);
             }
+
+            // content_edit_history = filter_hidden_messages(content_edit_history);
+            globalContentEditHistory = content_edit_history;
+
             if (prev_stream_item !== null) {
                 assert(message.type === "stream");
                 prev_stream_item.new_stream = get_display_stream_name(message.stream_id);
@@ -228,7 +309,9 @@ export function fetch_and_render_message_history(message: Message): void {
             }
             const rendered_list_html = render_message_edit_history({
                 edited_messages: content_edit_history,
+                can_delete,
             });
+
             $("#message-history-overlay").attr("data-message-id", message.id);
             hide_loading_indicator();
             $("#message-history-overlay .overlay-messages-list").append($(rendered_list_html));
@@ -256,6 +339,19 @@ export function fetch_and_render_message_history(message: Message): void {
             $("#message-history-error").show();
         },
     });
+}
+
+// Function to determine if the user can delete messages based on page_params
+export function userCanDeleteMessage(user_id: number): boolean {
+    if (current_user.is_admin || current_user.is_owner) {
+        return true;
+    }
+
+    if (current_user.user_id === user_id) {
+        return true;
+    }
+
+    return false;
 }
 
 export function open_overlay(): void {
@@ -311,11 +407,55 @@ export function initialize(): void {
         }
     });
 
-    $("body").on(
-        "focus",
-        "#message-history-overlay .overlay-message-info-box",
-        function (this: HTMLElement) {
-            messages_overlay_ui.activate_element(this, keyboard_handling_context);
-        },
-    );
+    function initializeConfirmationButtons(): void {
+        $(document).on("click", ".delete-edit-history", function () {
+            const $deleteButton = $(this);
+            const $confirmationButtons = $deleteButton.siblings(".confirmation-buttons");
+
+            // Hide the delete button
+            $deleteButton.hide();
+
+            // Show the confirmation buttons
+            $confirmationButtons.show();
+        });
+
+        $(document).on("click", ".cancel-delete-btn", function () {
+            const $confirmationButtons = $(this).closest(".confirmation-buttons");
+            const $deleteButton = $confirmationButtons.siblings(".delete-edit-history");
+
+            // Hide the confirmation buttons
+            $confirmationButtons.hide();
+
+            // Show the delete button
+            $deleteButton.show();
+        });
+
+        $(document).on("click", ".confirm-delete-btn", function () {
+            const $confirmationButtons = $(this).closest(".confirmation-buttons");
+            const $messageRow = $confirmationButtons.closest(".overlay-message-row");
+            const messageId = $("#message-history-overlay").attr("data-message-id");
+            const messageIndexData: unknown = $messageRow.data("index");
+
+            if (!(messageId === undefined)) {
+                const messageIdNumber = Number.parseInt(messageId, 10);
+                if (messageIndexData === 0) {
+                    delete_edit_history_message(globalContentEditHistory, messageIdNumber);
+                } else if (
+                    !(messageIndexData === undefined || messageIndexData === null) &&
+                    typeof messageIndexData === "number"
+                ) {
+                    const messageIndex: number = messageIndexData;
+                    delete_edit_history_message(
+                        globalContentEditHistory,
+                        messageIdNumber,
+                        messageIndex,
+                    );
+                }
+            }
+        });
+    }
+
+    $(() => {
+        initializeConfirmationButtons();
+    });
 }

@@ -101,7 +101,6 @@ const keydown_shift_mappings = {
 };
 
 const keydown_unshift_mappings = {
-    // these can be triggered by key only (without Shift)
     9: {name: "tab", message_view_only: false}, // Tab
     27: {name: "escape", message_view_only: false}, // Esc
     32: {name: "spacebar", message_view_only: true}, // space bar
