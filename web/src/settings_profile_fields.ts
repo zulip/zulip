@@ -13,6 +13,7 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
+import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";
 import * as settings_components from "./settings_components";
@@ -665,51 +666,55 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
     // We should only call this internally or from tests.
     const $profile_fields_table = $("#admin_profile_fields_table").expectOne();
 
-    $profile_fields_table.find("tr.profile-field-row").remove(); // Clear all rows.
-    $profile_fields_table.find("tr.profile-field-form").remove(); // Clear all rows.
     order = [];
 
     let display_in_profile_summary_fields_count = 0;
-    for (const profile_field of profile_fields_data) {
-        order.push(profile_field.id);
-        let choices: FieldChoice[] = [];
-        if (profile_field.field_data && profile_field.type === field_types.SELECT.id) {
-            const field_data = settings_components.select_field_data_schema.parse(
-                JSON.parse(profile_field.field_data),
-            );
-            choices = parse_field_choices_from_field_data(field_data);
-        }
-        const display_in_profile_summary = profile_field.display_in_profile_summary === true;
-        const required = profile_field.required;
-        $profile_fields_table.append(
-            $(
-                render_admin_profile_field_list({
-                    profile_field: {
-                        id: profile_field.id,
-                        name: profile_field.name,
-                        hint: profile_field.hint,
-                        type: field_type_id_to_string(profile_field.type),
-                        choices,
-                        is_select_field: profile_field.type === field_types.SELECT.id,
-                        is_external_account_field:
-                            profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
-                        display_in_profile_summary,
-                        valid_to_display_in_summary: is_valid_to_display_in_summary(
-                            profile_field.type,
-                        ),
-                        required,
-                    },
-                    can_modify: current_user.is_admin,
-                    realm_default_external_accounts: realm.realm_default_external_accounts,
-                }),
-            ),
-        );
 
-        // Keeping counts of all display_in_profile_summary profile fields, to keep track.
-        if (display_in_profile_summary) {
-            display_in_profile_summary_fields_count += 1;
-        }
-    }
+    ListWidget.create($profile_fields_table, profile_fields_data, {
+        name: "settings_profile_fields_list",
+        get_item(profile_field) {
+            order.push(profile_field.id);
+            return profile_field;
+        },
+        modifier_html(profile_field) {
+            let choices: FieldChoice[] = [];
+            if (profile_field.field_data && profile_field.type === field_types.SELECT.id) {
+                const field_data = settings_components.select_field_data_schema.parse(
+                    JSON.parse(profile_field.field_data),
+                );
+                choices = parse_field_choices_from_field_data(field_data);
+            }
+
+            const display_in_profile_summary = profile_field.display_in_profile_summary === true;
+            const required = profile_field.required;
+
+            // Keeping counts of all display_in_profile_summary profile fields, to keep track of
+            // whether the limit has been reached.
+            if (display_in_profile_summary) {
+                display_in_profile_summary_fields_count += 1;
+            }
+
+            return render_admin_profile_field_list({
+                profile_field: {
+                    id: profile_field.id,
+                    name: profile_field.name,
+                    hint: profile_field.hint,
+                    type: field_type_id_to_string(profile_field.type),
+                    choices,
+                    is_select_field: profile_field.type === field_types.SELECT.id,
+                    is_external_account_field:
+                        profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
+                    display_in_profile_summary,
+                    valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
+                    required,
+                },
+                can_modify: current_user.is_admin,
+                realm_default_external_accounts: realm.realm_default_external_accounts,
+            });
+        },
+        $parent_container: $("#profile-field-settings").expectOne(),
+        $simplebar_container: $("#profile-field-settings .progressive-table-wrapper"),
+    });
 
     // Update whether we're at the limit for display_in_profile_summary.
     display_in_profile_summary_fields_limit_reached = display_in_profile_summary_fields_count >= 2;
