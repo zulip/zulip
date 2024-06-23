@@ -88,7 +88,7 @@ export function open_send_later_menu() {
             });
             $send_later_modal.one(
                 "click",
-                ".send_later_today, .send_later_tomorrow, .send_later_monday",
+                ".send_later_today, .send_later_tomorrow, .send_later_monday, .send_later_custom_list",
                 (e) => {
                     const send_at_time = set_compose_box_schedule(e.currentTarget);
                     do_schedule_message(send_at_time);
