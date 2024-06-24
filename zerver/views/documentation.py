@@ -26,9 +26,9 @@ from zerver.lib.integrations import (
     WebhookIntegration,
     get_all_event_types_for_integration,
 )
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.templates import render_markdown_path
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import Realm
 from zerver.openapi.openapi import get_endpoint_from_operationid, get_openapi_summary
 
@@ -363,8 +363,8 @@ class IntegrationView(ApiURLView):
         return context
 
 
-@has_request_variables
-def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> HttpResponse:
+@typed_endpoint
+def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) -> HttpResponse:
     # FIXME: This check is jQuery-specific.
     if request.headers.get("x-requested-with") != "XMLHttpRequest":
         return HttpResponseNotFound()
