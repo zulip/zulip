@@ -334,6 +334,13 @@ export function process_escape_key(e) {
             return true;
         }
 
+        // When the input is focused, we blur and clear the input. A second "Esc"
+        // will zoom out, handled below.
+        if (stream_list.is_zoomed_in() && $("#filter-topic-input").is(":focus")) {
+            topic_list.clear_topic_search(e);
+            return true;
+        }
+
         if (compose_state.composing()) {
             // Check if the giphy popover was open using compose box.
             // Hide GIPHY popover if it's open.
@@ -350,13 +357,6 @@ export function process_escape_key(e) {
 
             // If the user hit the Esc key, cancel the current compose
             compose_actions.cancel();
-            return true;
-        }
-
-        // When the input is focused, we blur and clear the input. A second "Esc"
-        // will zoom out, handled below.
-        if (stream_list.is_zoomed_in() && $("#filter-topic-input").is(":focus")) {
-            topic_list.clear_topic_search(e);
             return true;
         }
 
