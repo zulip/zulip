@@ -33,12 +33,9 @@ export type UserOrMentionPillData = UserOrMention & {
     is_silent?: boolean;
 };
 
-export type CombinedPillContainer = InputPillContainer<StreamPill | UserGroupPill | UserPill>;
-
-export type CombinedPillItem =
-    | InputPillItem<UserPill>
-    | InputPillItem<UserGroupPill>
-    | InputPillItem<StreamPill>;
+export type CombinedPill = StreamPill | UserGroupPill | UserPill;
+export type CombinedPillContainer = InputPillContainer<CombinedPill>;
+export type CombinedPillItem = InputPillItem<CombinedPill>;
 
 export function build_highlight_regex(query: string): RegExp {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
