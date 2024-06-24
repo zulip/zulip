@@ -31,6 +31,7 @@ export type InputPillConfig = {
 type InputPillCreateOptions<T> = {
     $container: JQuery;
     pill_config?: InputPillConfig | undefined;
+    split_text_on_comma?: boolean;
     create_item_from_text: (
         text: string,
         existing_items: InputPillItem<T>[],
@@ -55,6 +56,7 @@ type InputPillStore<T> = {
     onPillCreate?: () => void;
     onPillRemove?: (pill: InputPill<T>) => void;
     createPillonPaste?: () => void;
+    split_text_on_comma: boolean;
 };
 
 type InputPillRenderingDetails = {
@@ -96,6 +98,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         $input: opts.$container.find(".input").expectOne(),
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
+        split_text_on_comma: opts.split_text_on_comma ?? true,
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -201,7 +204,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             if (value.length === 0) {
                 return true;
             }
-            if (value.match(",")) {
+            if (store.split_text_on_comma && value.match(",")) {
                 funcs.insertManyPills(value);
                 return false;
             }
