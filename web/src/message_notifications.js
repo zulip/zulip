@@ -86,11 +86,12 @@ function remove_sender_from_list_of_recipients(message) {
 }
 
 function get_notification_title(message, msg_count) {
-    let title = message.sender_full_name;
+    let title_prefix = message.sender_full_name;
+    let title_suffix = "";
     let other_recipients;
 
     if (msg_count > 1) {
-        title = msg_count + " messages from " + title;
+        title_prefix = msg_count + " messages from " + message.sender_full_name;
     }
 
     switch (message.type) {
@@ -101,24 +102,24 @@ function get_notification_title(message, msg_count) {
                 // We use a higher character limit so that the 3rd sender can at least be partially visible so that
                 // the user can distinguish the group DM.
                 // If the message has too many recipients to list them all...
-                if (title.length + other_recipients.length > 50) {
+                if (title_prefix.length + other_recipients.length > 50) {
                     // Then count how many people are in the conversation and summarize
                     other_recipients = message.display_recipient.length - 2 + " more";
                 }
 
-                title += " (to you and " + other_recipients + ")";
+                title_suffix = " (to you and " + other_recipients + ")";
             } else {
-                title += " (to you)";
+                title_suffix = " (to you)";
             }
             break;
         case "stream": {
             const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-            title += " (#" + stream_name + " > " + message.topic + ")";
+            title_suffix = " (#" + stream_name + " > " + message.topic + ")";
             break;
         }
     }
 
-    return title;
+    return title_prefix + title_suffix;
 }
 
 export function process_notification(notification) {
