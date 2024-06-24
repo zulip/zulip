@@ -115,4 +115,10 @@ if (DEVELOPMENT) {
             void display_stacktrace(originalEvent.error);
         }
     });
+    $(window).on("unhandledrejection", (event: JQuery.TriggeredEvent) => {
+        const {originalEvent} = event;
+        if (originalEvent instanceof PromiseRejectionEvent) {
+            void display_stacktrace(originalEvent.reason);
+        }
+    });
 }
