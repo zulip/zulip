@@ -236,9 +236,6 @@ input:focus:invalid:focus {
   background-color: transparent;
   cursor: default;
 }
-.dropdown {
-  position: relative;
-}
 .close {
   float: right;
   font-size: 20px;
