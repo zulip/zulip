@@ -2411,6 +2411,9 @@ paths:
                                     The list of IDs of messages to which any channel or topic changes
                                     encoded in this event should be applied.
 
+                                    This list always includes `message_id`, even when there are no
+                                    channel or topic changes to apply.
+
                                     These messages are guaranteed to have all been previously sent
                                     to channel `stream_id` with topic `orig_subject`, and have been
                                     moved to `new_stream_id` with topic `subject` (if those fields
