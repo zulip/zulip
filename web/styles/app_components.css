@@ -13,6 +13,10 @@
     display: none;
 }
 
+.show {
+    display: block;
+}
+
 kbd {
     display: inline-block;
     border: 1px solid hsl(0deg 0% 80%);

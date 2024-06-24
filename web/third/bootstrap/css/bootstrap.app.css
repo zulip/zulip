@@ -262,12 +262,6 @@ button.close {
   border: 0;
   -webkit-appearance: none;
 }
-.hide {
-  display: none;
-}
-.show {
-  display: block;
-}
 @-ms-viewport {
   width: device-width;
 }
