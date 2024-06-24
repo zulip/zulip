@@ -265,10 +265,6 @@ button.close {
 @-ms-viewport {
   width: device-width;
 }
-.hidden {
-  display: none;
-  visibility: hidden;
-}
 @media (min-width: 768px) and (max-width: 979px) {
   input {
     margin-left: 0;
