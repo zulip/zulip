@@ -187,8 +187,8 @@ or browse the [Help center](/help/) to learn more!
 """).format(bot_commands=bot_commands(no_help_command=True))
     else:
         return _("""
-I’m sorry, I did not understand your message. Please try
-one of the following commands: {bot_commands}
+You can chat with me as much as you like! To
+get help, try one of the following messages: {bot_commands}
 """).format(bot_commands=bot_commands())
 
 

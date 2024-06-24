@@ -167,7 +167,7 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "I’m sorry, I did not understand your message. Please try one of the following commands: "
+                "You can chat with me as much as you like! To get help, try one of the following messages: "
                 "`apps`, `profile`, `theme`, `channels`, "
                 "`topics`, `message formatting`, `keyboard shortcuts`, `help`."
             )
