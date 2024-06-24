@@ -469,12 +469,12 @@
     right: 0;
     color: var(--color-compose-send-control-button);
     background: transparent;
-    font-size: 15px;
+    font-size: 12.5px;
     font-weight: normal;
     line-height: 20px;
     opacity: 0.7;
     border: 0;
-    padding: 5px 7px;
+    padding: 3px 7px;
     border-radius: 8px;
     vertical-align: unset;
     text-shadow: none;
@@ -483,6 +483,12 @@
         opacity: 1;
         background: var(--color-compose-embedded-button-background-hover);
         color: var(--color-compose-send-control-button-interactive);
+    }
+
+    &:active {
+        background-color: var(
+            --color-compose-embedded-button-background-interactive
+        );
     }
 
     &:focus:not(:focus-visible) {
