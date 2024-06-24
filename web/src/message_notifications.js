@@ -94,9 +94,6 @@ function get_notification_title(message, msg_count) {
     }
 
     switch (message.type) {
-        case "test-notification":
-            other_recipients = remove_sender_from_list_of_recipients(message);
-            break;
         case "private":
             other_recipients = remove_sender_from_list_of_recipients(message);
             if (message.display_recipient.length > 2) {
