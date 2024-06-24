@@ -37,11 +37,12 @@ const BODY_FONT_CONTENT_BOX = BODY_FONT_ASCENT + BODY_FONT_DESCENT;
 // than the line-height.
 const MAXIMUM_BLOCK_HEIGHT_IN_EMS = BODY_FONT_CONTENT_BOX / BODY_FONT_EM_SIZE;
 
-// Eventually this legacy value and references to it should be removed;
+// Eventually these legacy values and references to them should be removed;
 // but in the awkward stage where legacy values are in play for
 // certain things (e.g., calculating line-height-based offsets for
-// emoji alignment), it's necessary to have access to this value.
+// emoji alignment), it's necessary to have access to these values.
 const LEGACY_LINE_HEIGHT_UNITLESS = 1.214;
+const LEGACY_FONT_SIZE_PX = 14;
 
 function set_vertical_alignment_values(line_height_unitless: number): void {
     // We work in ems to keep this agnostic to the font size.
@@ -97,11 +98,19 @@ export function set_base_typography_css_variables(): void {
 }
 
 export function calculate_timestamp_widths(): void {
+    const base_font_size_px = user_settings.dense_mode
+        ? LEGACY_FONT_SIZE_PX
+        : user_settings.web_font_size_px;
     const $temp_time_div = $("<div>");
     $temp_time_div.attr("id", "calculated-timestamp-widths");
     // Size the div to the width of the largest timestamp,
-    // but the div out of the document flow with absolute positioning.
+    // but the div out of the document flow with absolute
+    // positioning.
+    // We set the base font-size ordinarily on body so that
+    // the correct em-size timestamps can be calculated along
+    // with all the other information density values.
     $temp_time_div.css({
+        "font-size": base_font_size_px,
         width: "max-content",
         visibility: "hidden",
         position: "absolute",
