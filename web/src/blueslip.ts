@@ -111,7 +111,7 @@ export function error(msg: string, more_info?: object | undefined, original_erro
 if (DEVELOPMENT) {
     $(window).on("error", (event: JQuery.TriggeredEvent) => {
         const {originalEvent} = event;
-        if (originalEvent instanceof ErrorEvent && originalEvent.error instanceof Error) {
+        if (originalEvent instanceof ErrorEvent) {
             void display_stacktrace(originalEvent.error);
         }
     });
