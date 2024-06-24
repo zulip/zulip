@@ -58,6 +58,7 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
+    get_recursive_membership_groups,
     get_server_supported_permission_settings,
     user_groups_in_realm_serialized,
 )
@@ -548,8 +549,17 @@ def fetch_initial_state_data(
             client_gravatar=False,
         )
 
-        state["can_create_private_streams"] = settings_user.can_create_private_streams(realm)
-        state["can_create_public_streams"] = settings_user.can_create_public_streams(realm)
+        settings_user_recursive_group_ids = set(
+            get_recursive_membership_groups(settings_user).values_list("id", flat=True)
+        )
+
+        state["can_create_private_streams"] = (
+            realm.can_create_private_channel_group_id in settings_user_recursive_group_ids
+        )
+        state["can_create_public_streams"] = (
+            realm.can_create_public_channel_group_id in settings_user_recursive_group_ids
+        )
+
         state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
         # 102); we can remove this once we no longer need to support
