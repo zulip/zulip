@@ -63,8 +63,14 @@ parser.add_argument(
 parser.add_argument(
     "--help-center", action="store_true", help="Build and host help center with search"
 )
+parser.add_argument(
+    "--help-center-dev-server",
+    action="store_true",
+    help="Run dev server for help center. Hot reload will work for this mode, but search will not work in the generated website.",
+)
 add_provision_check_override_param(parser)
 options = parser.parse_args()
+help_center_dev_server_enabled = options.help_center_dev_server and not options.help_center
 
 assert_provisioning_status_ok(options.skip_provision_check)
 
@@ -116,6 +122,7 @@ proxy_port = base_port
 django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
+help_center_port = base_port + 4
 
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -269,6 +276,13 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
     return response
 
 
+def run_help_center_dev_server() -> "subprocess.Popen[bytes]":
+    return subprocess.Popen(
+        ["/usr/local/bin/corepack", "pnpm", "dev", f"--port={help_center_port}", "--host"],
+        cwd="help-beta",
+    )
+
+
 @web.middleware
 async def help_center_middleware(
     request: web.Request, handler: Callable[[web.Request], Awaitable[web.StreamResponse]]
@@ -293,7 +307,9 @@ if options.help_center:
 app = web.Application(middlewares=middlewares)
 
 
-def setup_routes(enable_help_center: bool = False) -> None:
+def setup_routes(
+    enable_help_center: bool = False, enable_help_center_dev_server: bool = False
+) -> None:
     if enable_help_center:
         # Order of adding the rules matters. aiohttp will stop at the first
         # match, and we want `/help-beta` to be matched before Django URIs.
@@ -304,6 +320,14 @@ def setup_routes(enable_help_center: bool = False) -> None:
 The instructions for the build step can be found in the `./devtools`
 page. `/help-beta` urls will give you an error until you complete the
 build step and rerun `run-dev`.""")
+    elif enable_help_center_dev_server:
+        app.add_routes(
+            [
+                web.route(
+                    hdrs.METH_ANY, r"/{path:(help-beta).*}", partial(forward, help_center_port)
+                ),
+            ]
+        )
     app.add_routes(
         [
             web.route(
@@ -339,6 +363,9 @@ def print_listeners() -> None:
 
     if not options.test:
         ports.append((webpack_port, "webpack"))
+
+    if help_center_dev_server_enabled:
+        ports.append((help_center_port, "Help center - Astro dev server"))
 
     for port, label in ports:
         print(f"   {port}: {label}")
@@ -378,7 +405,10 @@ async def serve() -> None:
     else:
         children.append(start_webpack_watcher())
 
-    setup_routes(options.help_center)
+    if help_center_dev_server_enabled:
+        children.append(run_help_center_dev_server())
+
+    setup_routes(options.help_center, options.help_center_dev_server)
 
     children.extend(subprocess.Popen(cmd) for cmd in server_processes())
 
