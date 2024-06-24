@@ -94,15 +94,11 @@ Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
 
 {demo_organization_text}
 
-I can also help you get set up! Just click anywhere on this message or press `r` to reply.
-
-Here are a few messages I understand: {bot_commands}
 """).format(
             inform_about_tracked_onboarding_messages_text=inform_about_tracked_onboarding_messages_text,
             getting_started_text=getting_started_string,
             organization_setup_text=organization_setup_string,
             demo_organization_text=demo_organization_warning_string,
-            bot_commands=bot_commands(),
         )
 
     message_id = internal_send_private_message(
