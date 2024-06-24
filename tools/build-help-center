@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+./tools/convert-help-center-docs-to-mdx
+(cd ./help-beta/ && /usr/local/bin/corepack pnpm build)
