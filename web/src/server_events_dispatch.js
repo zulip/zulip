@@ -777,12 +777,14 @@ export function dispatch_normal_event(event) {
                 $("body").toggleClass("less-dense-mode");
                 $("body").toggleClass("more-dense-mode");
                 information_density.set_base_typography_css_variables();
+                information_density.calculate_timestamp_widths();
             }
             if (
                 event.property === "web_font_size_px" ||
                 event.property === "web_line_height_percent"
             ) {
                 information_density.set_base_typography_css_variables();
+                information_density.calculate_timestamp_widths();
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();
