@@ -1429,9 +1429,7 @@ function left_arrow_navigation(row: number, col: number): void {
 }
 
 function right_arrow_navigation(row: number, col: number): void {
-    const type = get_row_type(row);
-
-    if (type === "stream" && col === 1 && !has_unread(row)) {
+    if (col === 1 && !has_unread(row)) {
         col_focus += 1;
     }
 
