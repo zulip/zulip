@@ -14,7 +14,7 @@ from typing_extensions import override
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
-from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_emoji, resize_logo
+from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_logo
 from zerver.lib.upload.base import (
     INLINE_MIME_TYPES,
     ZulipUploadBackend,
@@ -442,47 +442,16 @@ class S3UploadBackend(ZulipUploadBackend):
             return self.get_public_upload_url(emoji_path)
 
     @override
-    def upload_emoji_image(
-        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
-    ) -> bool:
-        content_type = guess_type(emoji_file_name)[0]
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=user_profile.realm_id,
-            emoji_file_name=emoji_file_name,
-        )
-
-        image_data = emoji_file.read()
+    def upload_single_emoji_image(
+        self, path: str, content_type: Optional[str], user_profile: UserProfile, image_data: bytes
+    ) -> None:
         upload_image_to_s3(
             self.avatar_bucket,
-            f"{emoji_path}.original",
+            path,
             content_type,
             user_profile,
             image_data,
         )
-
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            emoji_path,
-            content_type,
-            user_profile,
-            resized_image_data,
-        )
-        if is_animated:
-            still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
-                realm_id=user_profile.realm_id,
-                emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
-            )
-            assert still_image_data is not None
-            upload_image_to_s3(
-                self.avatar_bucket,
-                still_path,
-                "image/png",
-                user_profile,
-                still_image_data,
-            )
-
-        return is_animated
 
     @override
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:

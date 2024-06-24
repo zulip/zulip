@@ -9,6 +9,7 @@ from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
+from zerver.lib.upload import upload_emoji_image
 from zerver.lib.upload.s3 import S3UploadBackend, upload_image_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
@@ -102,7 +103,7 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
     emoji_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path) + ".original"
     try:
         with open(emoji_path, "rb") as f:
-            s3backend.upload_emoji_image(f, realm_emoji.file_name, realm_emoji.author)
+            upload_emoji_image(f, realm_emoji.file_name, realm_emoji.author, backend=s3backend)
             logging.info("Uploaded emoji file in path %s", emoji_path)
     except FileNotFoundError:  # nocoverage
         pass

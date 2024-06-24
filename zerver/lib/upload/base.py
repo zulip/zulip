@@ -125,9 +125,13 @@ class ZulipUploadBackend:
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         raise NotImplementedError
 
-    def upload_emoji_image(
-        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
-    ) -> bool:
+    def upload_single_emoji_image(
+        self,
+        path: str,
+        content_type: Optional[str],
+        user_profile: UserProfile,
+        image_data: bytes,
+    ) -> None:
         raise NotImplementedError
 
     # Export tarballs

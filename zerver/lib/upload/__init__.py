@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 from datetime import datetime
 from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple, Union
 from urllib.parse import unquote, urljoin
@@ -11,6 +12,7 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import guess_type
 from zerver.lib.outgoing_http import OutgoingSession
+from zerver.lib.thumbnail import resize_emoji
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 
@@ -172,9 +174,33 @@ def upload_logo_image(user_file: IO[bytes], user_profile: UserProfile, night: bo
 
 
 def upload_emoji_image(
-    emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
+    emoji_file: IO[bytes],
+    emoji_file_name: str,
+    user_profile: UserProfile,
+    backend: Optional[ZulipUploadBackend] = None,
 ) -> bool:
-    return upload_backend.upload_emoji_image(emoji_file, emoji_file_name, user_profile)
+    if backend is None:
+        backend = upload_backend
+    content_type = guess_type(emoji_file_name)[0]
+    emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+        realm_id=user_profile.realm_id,
+        emoji_file_name=emoji_file_name,
+    )
+
+    image_data = emoji_file.read()
+    backend.upload_single_emoji_image(
+        f"{emoji_path}.original", content_type, user_profile, image_data
+    )
+    resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
+    backend.upload_single_emoji_image(emoji_path, content_type, user_profile, resized_image_data)
+    if is_animated:
+        assert still_image_data is not None
+        still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
+        )
+        backend.upload_single_emoji_image(still_path, content_type, user_profile, still_image_data)
+    return is_animated
 
 
 def get_emoji_file_content(

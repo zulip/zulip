@@ -10,7 +10,7 @@ from django.conf import settings
 from typing_extensions import override
 
 from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_emoji, resize_logo
+from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_logo
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.upload.base import ZulipUploadBackend, create_attachment, sanitize_name
 from zerver.lib.utils import assert_is_not_none
@@ -238,26 +238,10 @@ class LocalUploadBackend(ZulipUploadBackend):
             )
 
     @override
-    def upload_emoji_image(
-        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
-    ) -> bool:
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=user_profile.realm_id,
-            emoji_file_name=emoji_file_name,
-        )
-
-        image_data = emoji_file.read()
-        write_local_file("avatars", f"{emoji_path}.original", image_data)
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
-        write_local_file("avatars", emoji_path, resized_image_data)
-        if is_animated:
-            assert still_image_data is not None
-            still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
-                realm_id=user_profile.realm_id,
-                emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
-            )
-            write_local_file("avatars", still_path, still_image_data)
-        return is_animated
+    def upload_single_emoji_image(
+        self, path: str, content_type: Optional[str], user_profile: UserProfile, image_data: bytes
+    ) -> None:
+        write_local_file("avatars", path, image_data)
 
     @override
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:

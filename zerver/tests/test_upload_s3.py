@@ -483,9 +483,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         emoji_name = "emoji.png"
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_emoji_image(
-                image_file, emoji_name, user_profile
-            )
+            zerver.lib.upload.upload_emoji_image(image_file, emoji_name, user_profile)
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
