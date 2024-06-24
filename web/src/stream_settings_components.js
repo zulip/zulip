@@ -9,7 +9,6 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -115,42 +114,9 @@ export function dropdown_setup() {
     });
 }
 
-/* For the given stream_row, remove the tick and replace by a spinner. */
-function display_subscribe_toggle_spinner(stream_row) {
-    /* Prevent sending multiple requests by removing the button class. */
-    $(stream_row).find(".check").removeClass("sub_unsub_button");
-
-    /* Hide the tick. */
-    const $tick = $(stream_row).find("svg");
-    $tick.addClass("hide");
-
-    /* Add a spinner to show the request is in process. */
-    const $spinner = $(stream_row).find(".sub_unsub_status").expectOne();
-    $spinner.show();
-    loading.make_indicator($spinner);
-}
-
-/* For the given stream_row, add the tick and delete the spinner. */
-function hide_subscribe_toggle_spinner(stream_row) {
-    /* Re-enable the button to handle requests. */
-    $(stream_row).find(".check").addClass("sub_unsub_button");
-
-    /* Show the tick. */
-    const $tick = $(stream_row).find("svg");
-    $tick.removeClass("hide");
-
-    /* Destroy the spinner. */
-    const $spinner = $(stream_row).find(".sub_unsub_status").expectOne();
-    loading.destroy_indicator($spinner);
-}
-
-export function ajaxSubscribe(stream, color, $stream_row) {
+export function ajaxSubscribe(stream, color) {
     // Subscribe yourself to a single stream.
     let true_stream_name;
-
-    if ($stream_row !== undefined) {
-        display_subscribe_toggle_spinner($stream_row);
-    }
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream, color}])},
@@ -172,15 +138,8 @@ export function ajaxSubscribe(stream, color, $stream_row) {
                 );
             }
             // The rest of the work is done via the subscribe event we will get
-
-            if ($stream_row !== undefined) {
-                hide_subscribe_toggle_spinner($stream_row);
-            }
         },
         error(xhr) {
-            if ($stream_row !== undefined) {
-                hide_subscribe_toggle_spinner($stream_row);
-            }
             ui_report.error(
                 $t_html({defaultMessage: "Error adding subscription"}),
                 xhr,
@@ -190,26 +149,16 @@ export function ajaxSubscribe(stream, color, $stream_row) {
     });
 }
 
-function ajaxUnsubscribe(sub, $stream_row) {
+function ajaxUnsubscribe(sub) {
     // TODO: use stream_id when backend supports it
-    if ($stream_row !== undefined) {
-        display_subscribe_toggle_spinner($stream_row);
-    }
     return channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([sub.name])},
         success() {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
-
-            if ($stream_row !== undefined) {
-                hide_subscribe_toggle_spinner($stream_row);
-            }
         },
         error(xhr) {
-            if ($stream_row !== undefined) {
-                hide_subscribe_toggle_spinner($stream_row);
-            }
             ui_report.error(
                 $t_html({defaultMessage: "Error removing subscription"}),
                 xhr,
