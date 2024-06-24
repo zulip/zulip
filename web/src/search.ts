@@ -94,9 +94,6 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
     });
 
     search_pill_widget = search_pill.create_pills($pill_container);
-    search_pill_widget.onPillCreate(() => {
-        $search_query_box.trigger("focus");
-    });
     search_pill_widget.onPillRemove(() => {
         search_input_has_changed = true;
     });
@@ -169,6 +166,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
                     search_pill_widget,
                     set_search_bar_text,
                 );
+                $search_query_box.trigger("focus");
             }
             return get_search_bar_text();
         },
@@ -320,6 +318,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
 
 export function initiate_search(): void {
     open_search_bar_and_close_narrow_description();
+    $("#search_query").trigger("focus");
 
     // Open the typeahead after opening the search bar, so that we don't
     // get a weird visual jump where the typeahead results are narrow
