@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 267**
+
+* `PATCH /realm`, [`POST register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `enable_guest_user_dm_warning`
+  setting to display a warning when composing a direct message with guest user recipients.
+
 **Feature level 266**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

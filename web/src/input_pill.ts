@@ -352,7 +352,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             ) {
                 e.preventDefault();
                 funcs.removeLastPill();
-
+                store.$input.trigger("change");
                 return;
             }
 
