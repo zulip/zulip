@@ -104,7 +104,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        var(--message-box-icon-height) repeat(3, auto) /
+        var(--message-box-sender-line-height) repeat(3, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
             3 * var(--message-box-icon-width)
         )
@@ -336,8 +336,13 @@
         }
 
         .message_content {
-            /* Top padding is reduced when there is a sender line. */
-            padding-top: 3px;
+            /* Pull message content up closer to sender to
+               let the text baseline sit adjacent the bottom
+               of the avatar. */
+            margin-top: calc(
+                var(--message-box-markdown-aligned-vertical-space) * 0.5 * -1
+            );
+            padding-top: 0;
             grid-area: message;
         }
 
