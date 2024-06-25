@@ -9,10 +9,11 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.translation import gettext as _
 
+from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import guess_type
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.lib.thumbnail import resize_emoji
+from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_emoji
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 
@@ -140,23 +141,83 @@ def get_avatar_url(hash_key: str, medium: bool = False) -> str:
     return upload_backend.get_avatar_url(hash_key, medium)
 
 
+def write_avatar_images(
+    file_path: str,
+    user_profile: UserProfile,
+    image_data: bytes,
+    *,
+    content_type: Optional[str],
+    backend: Optional[ZulipUploadBackend] = None,
+) -> None:
+    if backend is None:
+        backend = upload_backend
+    backend.upload_single_avatar_image(
+        file_path + ".original",
+        user_profile=user_profile,
+        image_data=image_data,
+        content_type=content_type,
+    )
+
+    backend.upload_single_avatar_image(
+        backend.get_avatar_path(file_path, medium=False),
+        user_profile=user_profile,
+        image_data=resize_avatar(image_data),
+        content_type="image/png",
+    )
+
+    backend.upload_single_avatar_image(
+        backend.get_avatar_path(file_path, medium=True),
+        user_profile=user_profile,
+        image_data=resize_avatar(image_data, MEDIUM_AVATAR_SIZE),
+        content_type="image/png",
+    )
+
+
 def upload_avatar_image(
     user_file: IO[bytes],
     acting_user_profile: UserProfile,
     target_user_profile: UserProfile,
     content_type: Optional[str] = None,
+    backend: Optional[ZulipUploadBackend] = None,
 ) -> None:
-    upload_backend.upload_avatar_image(
-        user_file, acting_user_profile, target_user_profile, content_type=content_type
+    if content_type is None:
+        content_type = guess_type(user_file.name)[0]
+    file_path = user_avatar_path(target_user_profile)
+
+    image_data = user_file.read()
+    write_avatar_images(
+        file_path, target_user_profile, image_data, content_type=content_type, backend=backend
     )
 
 
 def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    upload_backend.copy_avatar(source_profile, target_profile)
+    source_file_path = user_avatar_path(source_profile)
+    target_file_path = user_avatar_path(target_profile)
+
+    image_data, content_type = upload_backend.get_avatar_contents(source_file_path)
+    write_avatar_images(target_file_path, target_profile, image_data, content_type=content_type)
+
+
+def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None:
+    file_path = user_avatar_path(user_profile)
+
+    image_data, _ = upload_backend.get_avatar_contents(file_path)
+
+    if medium:
+        resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+    else:
+        resized_avatar = resize_avatar(image_data)
+    upload_backend.upload_single_avatar_image(
+        upload_backend.get_avatar_path(file_path, medium),
+        user_profile=user_profile,
+        image_data=resized_avatar,
+        content_type="image/png",
+    )
 
 
 def delete_avatar_image(user_profile: UserProfile) -> None:
-    upload_backend.delete_avatar_image(user_profile)
+    path_id = user_avatar_path(user_profile)
+    upload_backend.delete_avatar_image(path_id)
 
 
 # Realm icon and logo uploads

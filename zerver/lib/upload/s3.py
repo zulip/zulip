@@ -9,12 +9,11 @@ import boto3
 import botocore
 from botocore.client import Config
 from django.conf import settings
-from mypy_boto3_s3.service_resource import Bucket, Object
+from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import override
 
-from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
-from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_logo
+from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.upload.base import (
     INLINE_MIME_TYPES,
     ZulipUploadBackend,
@@ -255,107 +254,48 @@ class S3UploadBackend(ZulipUploadBackend):
                         item["LastModified"],
                     )
 
-    def write_avatar_images(
+    @override
+    def get_avatar_path(self, hash_key: str, medium: bool = False) -> str:
+        # BUG: The else case should be f"{hash_key}.png".
+        # See #12852 for details on this bug and how to migrate it.
+        if medium:
+            return f"{hash_key}-medium.png"
+        else:
+            return hash_key
+
+    @override
+    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
+        return self.get_public_upload_url(self.get_avatar_path(hash_key, medium))
+
+    @override
+    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+        key = self.avatar_bucket.Object(file_path + ".original")
+        image_data = key.get()["Body"].read()
+        content_type = key.content_type
+        return image_data, content_type
+
+    @override
+    def upload_single_avatar_image(
         self,
-        s3_file_name: str,
-        target_user_profile: UserProfile,
+        file_path: str,
+        *,
+        user_profile: UserProfile,
         image_data: bytes,
         content_type: Optional[str],
     ) -> None:
         upload_image_to_s3(
             self.avatar_bucket,
-            s3_file_name + ".original",
+            file_path,
             content_type,
-            target_user_profile,
+            user_profile,
             image_data,
         )
 
-        # custom 500px wide version
-        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            s3_file_name + "-medium.png",
-            "image/png",
-            target_user_profile,
-            resized_medium,
-        )
-
-        resized_data = resize_avatar(image_data)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            s3_file_name,
-            "image/png",
-            target_user_profile,
-            resized_data,
-        )
-        # See avatar_url in avatar.py for URL.  (That code also handles the case
-        # that users use gravatar.)
-
-    def get_avatar_key(self, file_name: str) -> Object:
-        key = self.avatar_bucket.Object(file_name)
-        return key
-
     @override
-    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        medium_suffix = "-medium.png" if medium else ""
-        return self.get_public_upload_url(f"{hash_key}{medium_suffix}")
-
-    @override
-    def upload_avatar_image(
-        self,
-        user_file: IO[bytes],
-        acting_user_profile: UserProfile,
-        target_user_profile: UserProfile,
-        content_type: Optional[str] = None,
-    ) -> None:
-        if content_type is None:
-            content_type = guess_type(user_file.name)[0]
-        s3_file_name = user_avatar_path(target_user_profile)
-
-        image_data = user_file.read()
-        self.write_avatar_images(s3_file_name, target_user_profile, image_data, content_type)
-
-    @override
-    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
-        s3_source_file_name = user_avatar_path(source_profile)
-        s3_target_file_name = user_avatar_path(target_profile)
-
-        key = self.get_avatar_key(s3_source_file_name + ".original")
-        image_data = key.get()["Body"].read()
-        content_type = key.content_type
-
-        self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)
-
-    @override
-    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
-        # BUG: The else case should be user_avatar_path(user_profile) + ".png".
-        # See #12852 for details on this bug and how to migrate it.
-        file_extension = "-medium.png" if is_medium else ""
-        file_path = user_avatar_path(user_profile)
-        s3_file_name = file_path
-
-        key = self.avatar_bucket.Object(file_path + ".original")
-        image_data = key.get()["Body"].read()
-
-        if is_medium:
-            resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        else:
-            resized_avatar = resize_avatar(image_data)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            s3_file_name + file_extension,
-            "image/png",
-            user_profile,
-            resized_avatar,
-        )
-
-    @override
-    def delete_avatar_image(self, user: UserProfile) -> None:
-        path_id = user_avatar_path(user)
-
+    def delete_avatar_image(self, path_id: str) -> None:
         self.delete_file_from_s3(path_id + ".original", self.avatar_bucket)
-        self.delete_file_from_s3(path_id + "-medium.png", self.avatar_bucket)
-        self.delete_file_from_s3(path_id, self.avatar_bucket)
+        self.delete_file_from_s3(self.get_avatar_path(path_id, True), self.avatar_bucket)
+        self.delete_file_from_s3(self.get_avatar_path(path_id, False), self.avatar_bucket)
 
     @override
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:

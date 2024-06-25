@@ -85,22 +85,26 @@ class ZulipUploadBackend:
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         raise NotImplementedError
 
-    def upload_avatar_image(
+    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+        raise NotImplementedError
+
+    def get_avatar_path(self, hash_key: str, medium: bool = False) -> str:
+        if medium:
+            return f"{hash_key}-medium.png"
+        else:
+            return f"{hash_key}.png"
+
+    def upload_single_avatar_image(
         self,
-        user_file: IO[bytes],
-        acting_user_profile: UserProfile,
-        target_user_profile: UserProfile,
-        content_type: Optional[str] = None,
+        file_path: str,
+        *,
+        user_profile: UserProfile,
+        image_data: bytes,
+        content_type: Optional[str],
     ) -> None:
         raise NotImplementedError
 
-    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
-        raise NotImplementedError
-
-    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
-        raise NotImplementedError
-
-    def delete_avatar_image(self, user: UserProfile) -> None:
+    def delete_avatar_image(self, path_id: str) -> None:
         raise NotImplementedError
 
     # Realm icon and logo uploads

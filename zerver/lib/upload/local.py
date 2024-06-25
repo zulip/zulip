@@ -9,8 +9,8 @@ from typing import IO, Any, BinaryIO, Callable, Iterator, Literal, Optional, Tup
 from django.conf import settings
 from typing_extensions import override
 
-from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE, resize_avatar, resize_logo
+from zerver.lib.mime_types import guess_type
+from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.upload.base import ZulipUploadBackend, create_attachment, sanitize_name
 from zerver.lib.utils import assert_is_not_none
@@ -116,70 +116,35 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        medium_suffix = "-medium" if medium else ""
-        return f"/user_avatars/{hash_key}{medium_suffix}.png"
-
-    def write_avatar_images(self, file_path: str, image_data: bytes) -> None:
-        write_local_file("avatars", file_path + ".original", image_data)
-
-        resized_data = resize_avatar(image_data)
-        write_local_file("avatars", file_path + ".png", resized_data)
-
-        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        write_local_file("avatars", file_path + "-medium.png", resized_medium)
+        return "/user_avatars/" + self.get_avatar_path(hash_key, medium)
 
     @override
-    def upload_avatar_image(
+    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+        image_data = read_local_file("avatars", file_path + ".original")
+        content_type = guess_type(file_path)[0]
+        return image_data, content_type or "application/octet-stream"
+
+    @override
+    def upload_single_avatar_image(
         self,
-        user_file: IO[bytes],
-        acting_user_profile: UserProfile,
-        target_user_profile: UserProfile,
-        content_type: Optional[str] = None,
+        file_path: str,
+        *,
+        user_profile: UserProfile,
+        image_data: bytes,
+        content_type: Optional[str],
     ) -> None:
-        file_path = user_avatar_path(target_user_profile)
-
-        image_data = user_file.read()
-        self.write_avatar_images(file_path, image_data)
-
-    @override
-    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
-        source_file_path = user_avatar_path(source_profile)
-        target_file_path = user_avatar_path(target_profile)
-
-        image_data = read_local_file("avatars", source_file_path + ".original")
-        self.write_avatar_images(target_file_path, image_data)
-
-    @override
-    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
-        file_extension = "-medium.png" if is_medium else ".png"
-        file_path = user_avatar_path(user_profile)
-
         output_path = os.path.join(
             assert_is_not_none(settings.LOCAL_AVATARS_DIR),
-            file_path + file_extension,
+            file_path,
         )
-        if os.path.isfile(output_path):
-            return
-
-        image_path = os.path.join(
-            assert_is_not_none(settings.LOCAL_AVATARS_DIR),
-            file_path + ".original",
-        )
-        with open(image_path, "rb") as f:
-            image_data = f.read()
-        if is_medium:
-            resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        else:
-            resized_avatar = resize_avatar(image_data)
-        write_local_file("avatars", file_path + file_extension, resized_avatar)
+        if not os.path.isfile(output_path):
+            write_local_file("avatars", file_path, image_data)
 
     @override
-    def delete_avatar_image(self, user: UserProfile) -> None:
-        path_id = user_avatar_path(user)
-
+    def delete_avatar_image(self, path_id: str) -> None:
         delete_local_file("avatars", path_id + ".original")
-        delete_local_file("avatars", path_id + ".png")
-        delete_local_file("avatars", path_id + "-medium.png")
+        delete_local_file("avatars", self.get_avatar_path(path_id, True))
+        delete_local_file("avatars", self.get_avatar_path(path_id, False))
 
     @override
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:

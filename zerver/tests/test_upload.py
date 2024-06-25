@@ -1269,16 +1269,14 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 with mock.patch(
                     "zerver.lib.upload.local.write_local_file"
                 ) as mock_write_local_file:
-                    zerver.lib.upload.upload_backend.ensure_avatar_image(
-                        user_profile, is_medium=True
-                    )
+                    zerver.lib.upload.ensure_avatar_image(user_profile, medium=True)
                     self.assertFalse(mock_write_local_file.called)
 
                 # Confirm that ensure_medium_avatar_url works to recreate
                 # medium size avatars from the original if needed
                 os.remove(medium_avatar_disk_path)
                 self.assertFalse(os.path.exists(medium_avatar_disk_path))
-                zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+                zerver.lib.upload.ensure_avatar_image(user_profile, medium=True)
                 self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
                 # Verify whether the avatar_version gets incremented with every new upload

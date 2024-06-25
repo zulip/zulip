@@ -277,9 +277,7 @@ class S3Test(ZulipTestCase):
         medium_path_id = path_id + "-medium.png"
 
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_avatar_image(
-                image_file, user_profile, user_profile
-            )
+            zerver.lib.upload.upload_avatar_image(image_file, user_profile, user_profile)
         test_image_data = read_test_image_file("img.png")
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
 
@@ -294,7 +292,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(medium_image_data, test_medium_image_data)
 
         bucket.Object(medium_image_key.key).delete()
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        zerver.lib.upload.ensure_avatar_image(user_profile, medium=True)
         medium_image_key = bucket.Object(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
 
@@ -356,19 +354,17 @@ class S3Test(ZulipTestCase):
         medium_file_path = base_file_path + "-medium.png"
 
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_avatar_image(
-                image_file, user_profile, user_profile
-            )
+            zerver.lib.upload.upload_avatar_image(image_file, user_profile, user_profile)
 
         key = bucket.Object(original_file_path)
         image_data = key.get()["Body"].read()
 
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
+        zerver.lib.upload.ensure_avatar_image(user_profile)
         resized_avatar = resize_avatar(image_data)
         key = bucket.Object(file_path)
         self.assertEqual(resized_avatar, key.get()["Body"].read())
 
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        zerver.lib.upload.ensure_avatar_image(user_profile, medium=True)
         resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         key = bucket.Object(medium_file_path)
         self.assertEqual(resized_avatar, key.get()["Body"].read())

@@ -9,7 +9,7 @@ from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
-from zerver.lib.upload import upload_emoji_image
+from zerver.lib.upload import upload_avatar_image, upload_emoji_image
 from zerver.lib.upload.s3 import S3UploadBackend, upload_image_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
@@ -27,10 +27,10 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
     avatar_path = user_avatar_path(user)
     assert settings.LOCAL_UPLOADS_DIR is not None
     assert settings.LOCAL_AVATARS_DIR is not None
-    file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + ".original"
+    file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path)
     try:
-        with open(file_path, "rb") as f:
-            s3backend.upload_avatar_image(f, user, user)
+        with open(file_path + ".original", "rb") as f:
+            upload_avatar_image(f, user, user, backend=s3backend)
             logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
     except FileNotFoundError:
         pass

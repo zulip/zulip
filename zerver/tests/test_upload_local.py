@@ -164,13 +164,13 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             image_data = f.read()
 
         resized_avatar = resize_avatar(image_data)
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
+        zerver.lib.upload.ensure_avatar_image(user_profile)
         output_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + ".png")
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
 
         resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        zerver.lib.upload.ensure_avatar_image(user_profile, medium=True)
         output_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + "-medium.png")
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
