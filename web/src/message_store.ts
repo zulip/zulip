@@ -301,3 +301,9 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
         stored_messages.delete(old_id);
     }
 }
+
+export function remove(message_ids: number[]): void {
+    for (const message_id of message_ids) {
+        stored_messages.delete(message_id);
+    }
+}
