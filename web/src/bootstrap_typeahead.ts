@@ -146,6 +146,17 @@
  *
  *   `shouldHighlightFirstResult` relatedly lets us decide whether
  *   the first result should be highlighted when the typeahead opens.
+ *
+ * 17. Add `updateElementContent` option.
+ *
+ *   This is useful for complicated typeaheads that have custom logic
+ *   for setting their element's contents after an item is selected.
+ *
+ * 18. Add `hideAfterSelect` option, default true.
+ *
+ *   This is useful for custom situations where we want to trigger the
+ *   typeahead to do a lookup after selecting an option, when the user
+ *   is making multiple related selections in a row.
  * ============================================================ */
 
 import $ from "jquery";
@@ -249,6 +260,13 @@ export class Typeahead<ItemType extends string | object> {
     instance: tippy.Instance | undefined;
     requireHighlight: boolean;
     shouldHighlightFirstResult: () => boolean;
+    // Used for contenteditble divs. If this is set to false, we
+    // don't set the html content of the div from this module, and
+    // it's handled from the caller (or updater function) instead.
+    updateElementContent: boolean;
+    // Used for custom situations where we want to hide the typeahead
+    // after selecting an option, instead of the default call to lookup().
+    hideAfterSelect: () => boolean;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -288,6 +306,8 @@ export class Typeahead<ItemType extends string | object> {
         this.values = new WeakMap();
         this.requireHighlight = options.requireHighlight ?? true;
         this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
+        this.updateElementContent = options.updateElementContent ?? true;
+        this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
 
         // The naturalSearch option causes arrow keys to immediately
         // update the search box with the underlying values from the
@@ -303,12 +323,17 @@ export class Typeahead<ItemType extends string | object> {
         }
         assert(val !== undefined);
         if (this.input_element.type === "contenteditable") {
-            this.input_element.$element
-                .text(this.updater(val, this.query, this.input_element, e) ?? "")
-                .trigger("change");
-            // Empty text after the change event handler
-            // converts the input text to html elements.
-            this.input_element.$element.text("");
+            if (this.updateElementContent) {
+                this.input_element.$element
+                    .text(this.updater(val, this.query, this.input_element, e) ?? "")
+                    .trigger("change");
+                // Empty text after the change event handler
+                // converts the input text to html elements.
+                this.input_element.$element.text("");
+            } else {
+                this.updater(val, this.query, this.input_element, e);
+                this.input_element.$element.trigger("change");
+            }
         } else {
             const after_text = this.updater(val, this.query, this.input_element, e) ?? "";
             const element_val = this.input_element.$element.val();
@@ -321,7 +346,10 @@ export class Typeahead<ItemType extends string | object> {
             this.input_element.$element.trigger("change");
         }
 
-        return this.hide();
+        if (this.hideAfterSelect()) {
+            return this.hide();
+        }
+        return this.lookup(true);
     }
 
     set_value(): void {
@@ -816,4 +844,6 @@ type TypeaheadOptions<ItemType> = {
     ) => string | undefined;
     requireHighlight?: boolean;
     shouldHighlightFirstResult?: () => boolean;
+    updateElementContent?: boolean;
+    hideAfterSelect?: () => boolean;
 };
