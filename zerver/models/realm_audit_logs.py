@@ -226,6 +226,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
     event_last_message_id = models.IntegerField(null=True)
 
     class Meta:
+        ordering = ["id"]
         indexes = [
             models.Index(
                 name="zerver_realmauditlog_realm__event_type__event_time",
