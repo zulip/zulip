@@ -20596,6 +20596,9 @@ components:
                 [mentions]: /help/mention-a-user-or-group
     GroupSettingValue:
       oneOf:
+        - type: integer
+          description: |
+            The ID of the [user group](/help/user-groups) with this permission.
         - type: object
           additionalProperties: false
           properties:
@@ -20613,9 +20616,6 @@ components:
                 type: integer
           description: |
             An object with these fields:
-        - type: integer
-          description: |
-            The ID of the [user group](/help/user-groups) with this permission.
     Invite:
       type: object
       description: |
