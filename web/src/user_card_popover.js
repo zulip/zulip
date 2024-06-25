@@ -6,7 +6,6 @@ import * as tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
-import render_user_card_popover_avatar from "../templates/popovers/user_card/user_card_popover_avatar.hbs";
 import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
 import render_user_card_popover_manage_menu from "../templates/popovers/user_card/user_card_popover_manage_menu.hbs";
 
@@ -290,10 +289,13 @@ function get_user_card_popover_data(
         status_content_available: Boolean(status_text || status_emoji_info),
         status_text,
         status_emoji_info,
+        show_placeholder_for_status_text: !status_text && status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id, !is_active),
         date_joined,
         spectator_view,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+        user_avatar: people.small_avatar_url_for_person(user),
+        user_is_guest: user.is_guest,
     };
 
     if (user.is_bot) {
@@ -341,25 +343,15 @@ function show_user_card_popover(
     popover_menus.toggle_popover_menu(
         $popover_element[0],
         {
+            theme: "popover-menu",
             placement: popover_placement,
-            arrow: false,
             onCreate(instance) {
                 instance.setContent(ui_util.parse_html(popover_html));
                 user_card_popovers[template_class].instance = instance;
 
                 const $popover = $(instance.popper);
-                const $popover_title = $popover.find(".user-card-popover-title");
 
                 $popover.addClass(get_popover_classname(template_class));
-                $popover_title.append(
-                    $(
-                        render_user_card_popover_avatar({
-                            // See the load_medium_avatar comment for important background.
-                            user_avatar: people.small_avatar_url_for_person(user),
-                            user_is_guest: user.is_guest,
-                        }),
-                    ),
-                );
             },
             onHidden() {
                 user_card_popovers[template_class].hide();
@@ -368,14 +360,6 @@ function show_user_card_popover(
                 if (on_mount) {
                     on_mount(instance);
                 }
-                // Note: We pass the normal-size avatar in initial rendering, and
-                // then query the server to replace it with the medium-size
-                // avatar.  The purpose of this double-fetch approach is to take
-                // advantage of the fact that the browser should already have the
-                // low-resolution image cached and thus display a low-resolution
-                // avatar rather than a blank area during the network delay for
-                // fetching the medium-size one.
-                load_medium_avatar(user, $(".popover-avatar"));
                 init_email_clipboard();
                 init_email_tooltip(user);
 
@@ -404,18 +388,19 @@ function show_user_card_popover(
 
 function copy_email_handler(e) {
     const $email_el = $(e.trigger.parentElement);
+    const $email_label = $email_el.find(".user_popover_email");
     const $copy_icon = $email_el.find("i");
 
     // only change the parent element's text back to email
     // and not overwrite the tooltip.
-    const email_textnode = $email_el[0].childNodes[2];
-
     $email_el.addClass("email_copied");
-    email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
+    $copy_icon.addClass("hide_copy_icon");
+    $email_label.text($t({defaultMessage: "Email copied"}));
 
     setTimeout(() => {
         $email_el.removeClass("email_copied");
-        email_textnode.nodeValue = $copy_icon.attr("data-clipboard-text");
+        $copy_icon.removeClass("hide_copy_icon");
+        $email_label.text($copy_icon.attr("data-clipboard-text"));
     }, 1500);
     e.clearSelection();
 }
@@ -428,7 +413,7 @@ function init_email_clipboard() {
     */
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
-            const $email_el = $(this);
+            const $email_el = $(this).parent();
             const $copy_email_icon = $email_el.find("i");
 
             /*
@@ -459,18 +444,9 @@ function init_email_tooltip(user) {
                 placement: "bottom",
                 content: people.get_visible_email(user),
                 interactive: true,
+                appendTo: () => document.body,
             });
         }
-    });
-}
-
-function load_medium_avatar(user, $elt) {
-    const user_avatar_url = people.medium_avatar_url_for_person(user);
-    const sender_avatar_medium = new Image();
-
-    sender_avatar_medium.src = user_avatar_url;
-    $(sender_avatar_medium).on("load", function () {
-        $elt.css("background-image", `url(${CSS.escape($(this).attr("src"))})`);
     });
 }
 
@@ -734,7 +710,7 @@ function register_click_handlers() {
             emoji_name: "",
             emoji_code: "",
             success() {
-                $(".user-card-popover-actions #status_message").empty();
+                hide_all_user_card_popovers();
             },
         });
     });
@@ -904,12 +880,10 @@ function register_click_handlers() {
         const user = people.get_by_user_id(user_id);
         toggle_user_card_popover_manage_menu(e.target, user);
     });
+
     new ClipboardJS(".copy-custom-field-url", {
         text(trigger) {
-            return $(trigger)
-                .closest(".custom-user-url-field")
-                .find(".custom-profile-fields-link")
-                .attr("href");
+            return $(trigger).parent().find(".custom-profile-field-link").attr("href");
         },
     }).on("success", (e) => {
         show_copied_confirmation(e.trigger);
