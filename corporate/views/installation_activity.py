@@ -27,7 +27,7 @@ from corporate.lib.activity import (
 from corporate.lib.stripe import cents_to_dollar_string
 from corporate.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
-from zerver.lib.request import has_request_variables
+from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
 from zerver.models import Realm
 from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import get_org_type_display_name
@@ -291,7 +291,7 @@ def realm_summary_table() -> str:
 
 
 @require_server_admin
-@has_request_variables
+@typed_endpoint_without_parameters
 def get_installation_activity(request: HttpRequest) -> HttpResponse:
     content: str = realm_summary_table()
     title = "Installation activity"
