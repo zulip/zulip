@@ -971,18 +971,18 @@ export function populate_data_for_realm_settings_request(
                     continue;
                 }
 
-                if (property_name === "can_create_public_channel_group") {
+                const realm_group_settings_using_new_api_format = new Set([
+                    "can_create_private_channel_group",
+                    "can_create_public_channel_group",
+                ]);
+                if (realm_group_settings_using_new_api_format.has(property_name)) {
+                    const old_value = get_realm_settings_property_value(
+                        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                        ("realm_" + property_name) as RealmSettingProperties,
+                    );
                     data[property_name] = JSON.stringify({
                         new: input_value,
-                        old: realm.realm_can_create_public_channel_group,
-                    });
-                    continue;
-                }
-
-                if (property_name === "can_create_private_channel_group") {
-                    data[property_name] = JSON.stringify({
-                        new: input_value,
-                        old: realm.realm_can_create_private_channel_group,
+                        old: old_value,
                     });
                     continue;
                 }
