@@ -17,6 +17,8 @@ from django.urls import reverse
 from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import AfterValidator, Json, NonNegativeInt
+from typing_extensions import Annotated, Literal
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
@@ -56,16 +58,14 @@ from zerver.forms import check_subdomain_available
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.subdomains import get_subdomain_from_hostname
-from zerver.lib.validator import (
-    check_bool,
-    check_date,
-    check_string,
-    check_string_in,
-    to_non_negative_int,
+from zerver.lib.typed_endpoint import (
+    ApiParamConfig,
+    typed_endpoint,
+    typed_endpoint_without_parameters,
 )
+from zerver.lib.validator import check_date
 from zerver.models import (
     MultiuseInvite,
     PreregistrationRealm,
@@ -110,7 +110,7 @@ class DemoRequestForm(forms.Form):
 
 
 @zulip_login_required
-@has_request_variables
+@typed_endpoint_without_parameters
 def support_request(request: HttpRequest) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
@@ -153,7 +153,7 @@ def support_request(request: HttpRequest) -> HttpResponse:
     return response
 
 
-@has_request_variables
+@typed_endpoint_without_parameters
 def demo_request(request: HttpRequest) -> HttpResponse:
     context = {
         "MAX_INPUT_LENGTH": DemoRequestForm.MAX_INPUT_LENGTH,
@@ -312,48 +312,42 @@ def get_realm_plan_type_options_for_discount() -> List[SupportSelectOption]:
     return plan_types
 
 
-VALID_MODIFY_PLAN_METHODS = [
+VALID_MODIFY_PLAN_METHODS = Literal[
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
     "downgrade_now_void_open_invoices",
     "upgrade_plan_tier",
 ]
 
-VALID_STATUS_VALUES = [
-    "active",
-    "deactivated",
-]
+VALID_STATUS_VALUES = Literal["active", "deactivated"]
 
-VALID_BILLING_MODALITY_VALUES = [
+VALID_BILLING_MODALITY_VALUES = Literal[
     "send_invoice",
     "charge_automatically",
 ]
 
 
 @require_server_admin
-@has_request_variables
+@typed_endpoint
 def support(
     request: HttpRequest,
-    realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    plan_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    monthly_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    annual_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    new_subdomain: Optional[str] = REQ(default=None),
-    status: Optional[str] = REQ(default=None, str_validator=check_string_in(VALID_STATUS_VALUES)),
-    billing_modality: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)
-    ),
-    sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
-    approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
-    modify_plan: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
-    ),
-    scrub_realm: bool = REQ(default=False, json_validator=check_bool),
-    delete_user_by_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    query: Optional[str] = REQ("q", default=None),
-    org_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    *,
+    realm_id: Optional[Json[NonNegativeInt]] = None,
+    plan_type: Optional[Json[NonNegativeInt]] = None,
+    monthly_discounted_price: Optional[Json[NonNegativeInt]] = None,
+    annual_discounted_price: Optional[Json[NonNegativeInt]] = None,
+    minimum_licenses: Optional[Json[NonNegativeInt]] = None,
+    required_plan_tier: Optional[Json[NonNegativeInt]] = None,
+    new_subdomain: Optional[str] = None,
+    status: Optional[VALID_STATUS_VALUES] = None,
+    billing_modality: Optional[VALID_BILLING_MODALITY_VALUES] = None,
+    sponsorship_pending: Optional[Json[bool]] = None,
+    approve_sponsorship: Json[bool] = False,
+    modify_plan: Optional[VALID_MODIFY_PLAN_METHODS] = None,
+    scrub_realm: Json[bool] = False,
+    delete_user_by_id: Optional[Json[NonNegativeInt]] = None,
+    query: Annotated[Optional[str], ApiParamConfig("q")] = None,
+    org_type: Optional[Json[NonNegativeInt]] = None,
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -625,31 +619,28 @@ def get_remote_servers_for_support(
 
 
 @require_server_admin
-@has_request_variables
+@typed_endpoint
 def remote_servers_support(
     request: HttpRequest,
-    query: Optional[str] = REQ("q", default=None),
-    remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    remote_realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    monthly_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    annual_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    fixed_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    sent_invoice_id: Optional[str] = REQ(default=None, str_validator=check_string),
-    sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
-    approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
-    billing_modality: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)
-    ),
-    plan_end_date: Optional[str] = REQ(default=None, str_validator=check_date),
-    modify_plan: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
-    ),
-    delete_fixed_price_next_plan: bool = REQ(default=False, json_validator=check_bool),
-    remote_server_status: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_STATUS_VALUES)
-    ),
+    *,
+    query: Annotated[Optional[str], ApiParamConfig("q")] = None,
+    remote_server_id: Optional[Json[NonNegativeInt]] = None,
+    remote_realm_id: Optional[Json[NonNegativeInt]] = None,
+    monthly_discounted_price: Optional[Json[NonNegativeInt]] = None,
+    annual_discounted_price: Optional[Json[NonNegativeInt]] = None,
+    minimum_licenses: Optional[Json[NonNegativeInt]] = None,
+    required_plan_tier: Optional[Json[NonNegativeInt]] = None,
+    fixed_price: Optional[Json[NonNegativeInt]] = None,
+    sent_invoice_id: Optional[str] = None,
+    sponsorship_pending: Optional[Json[bool]] = None,
+    approve_sponsorship: Json[bool] = False,
+    billing_modality: Optional[VALID_BILLING_MODALITY_VALUES] = None,
+    plan_end_date: Optional[
+        Annotated[str, AfterValidator(lambda x: check_date("plan_end_date", x))]
+    ] = None,
+    modify_plan: Optional[VALID_MODIFY_PLAN_METHODS] = None,
+    delete_fixed_price_next_plan: Json[bool] = False,
+    remote_server_status: Optional[VALID_STATUS_VALUES] = None,
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
