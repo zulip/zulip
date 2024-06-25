@@ -32,6 +32,7 @@ type InputPillCreateOptions<T> = {
     $container: JQuery;
     pill_config?: InputPillConfig | undefined;
     split_text_on_comma?: boolean;
+    convert_to_pill_on_enter?: boolean;
     create_item_from_text: (
         text: string,
         existing_items: InputPillItem<T>[],
@@ -57,6 +58,7 @@ type InputPillStore<T> = {
     onPillRemove?: (pill: InputPill<T>) => void;
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
+    convert_to_pill_on_enter: boolean;
 };
 
 type InputPillRenderingDetails = {
@@ -99,6 +101,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
         split_text_on_comma: opts.split_text_on_comma ?? true,
+        convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -319,7 +322,10 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
     {
         store.$parent.on("keydown", ".input", function (this: HTMLElement, e) {
-            if (keydown_util.is_enter_event(e)) {
+            // `convert_to_pill_on_enter = false` allows some pill containers,
+            // which don't convert all of their text input to pills, to have
+            // their own custom handlers of enter events.
+            if (keydown_util.is_enter_event(e) && store.convert_to_pill_on_enter) {
                 // regardless of the value of the input, the ENTER keyword
                 // should be ignored in favor of keeping content to one line
                 // always.
