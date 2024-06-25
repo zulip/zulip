@@ -28,6 +28,22 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
     ),
 };
 
+const MENTIONS_VIEW_EMPTY_BANNER = {
+    title: $t({defaultMessage: "This view will show messages where you are mentioned."}),
+    html: $t_html(
+        {
+            defaultMessage:
+                "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a stream. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
+        },
+        {
+            "z-link": (content_html) =>
+                `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
+                    "",
+                )}</a>`,
+        },
+    ),
+};
+
 function retrieve_search_query_data(): SearchData {
     // when search bar contains multiple filters, only retrieve search queries
     const current_filter = narrow_state.filter();
@@ -209,20 +225,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                         ),
                     };
                 case "mentioned":
-                    return {
-                        title: $t({defaultMessage: "You haven't been mentioned yet!"}),
-                        html: $t_html(
-                            {
-                                defaultMessage: "Learn more about mentions <z-link>here</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
-                    };
+                    return MENTIONS_VIEW_EMPTY_BANNER;
                 case "dm":
                     // You have no direct messages.
                     if (

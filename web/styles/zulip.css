@@ -1619,6 +1619,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .empty_feed_notice {
+    max-width: 600px;
+    margin: 0 auto;
     padding: 3em 1em;
     text-align: center;
 }
