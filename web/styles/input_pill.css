@@ -200,6 +200,9 @@
 .panel_user_list > .pill-container,
 .stream_creator_details > .display_only_pill {
     background-color: hsl(0deg 0% 0% / 7%);
+    padding: 0;
+    gap: 0;
+    cursor: pointer;
 
     > .pill-deactivated {
         padding-right: 4px;
@@ -213,26 +216,6 @@
         background-color: transparent;
         border: none;
         text-decoration: none;
-
-        &:focus {
-            color: inherit;
-        }
-
-        > .pill-label {
-            margin: 0;
-
-            > .pill-value {
-                padding: 5px;
-                max-width: 165px;
-            }
-        }
-    }
-}
-
-.stream_creator_details > .display_only_pill.inline_with_text_pill {
-    padding: 0;
-
-    > .pill {
         margin: 0;
         align-items: baseline;
 
@@ -242,10 +225,20 @@
             align-self: center;
         }
 
+        &:focus {
+            color: inherit;
+        }
+
         > .pill-label {
+            margin: 0;
+
             > .pill-value {
                 padding: 0 5px;
                 max-width: none;
+            }
+
+            > .pill-deactivated {
+                padding-right: 4px;
             }
 
             > .my_user_status {
