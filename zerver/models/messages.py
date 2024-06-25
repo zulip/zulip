@@ -186,6 +186,7 @@ class Message(AbstractMessage):
                 # receiver.  The prefix of this index (realm_id,
                 # sender_id) can be used for scrubbing users and/or
                 # deleting users' messages.
+                # Also used in send_welcome_bot_response
                 "realm_id",
                 "sender_id",
                 "recipient_id",
