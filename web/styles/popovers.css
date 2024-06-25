@@ -1313,6 +1313,7 @@ ul {
     }
 
     .status_emoji {
+        flex-shrink: 0;
         width: 16px;
         height: 16px;
     }
