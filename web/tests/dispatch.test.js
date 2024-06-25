@@ -766,6 +766,16 @@ run_test("realm_user", ({override}) => {
     let args = stub.get_args("person");
     assert_same(args.person, event.person);
 
+    event = event_fixtures.realm_user__update_ban_reason;
+    const ban_reason_stub = make_stub();
+    override(user_events, "update_person", ban_reason_stub.f);
+    dispatch(event);
+    assert.equal(ban_reason_stub.num_calls, 1);
+    args = stub.get_args("person");
+    assert_same(args.person, event.person);
+    const person = people.get_by_user_id(event.person.user_id);
+    assert.equal(person.ban_reason, "Ban Reason");
+
     // Test bot related functions are being called.
     const add_bot_stub = make_stub();
     event = event_fixtures.realm_user__add_bot;

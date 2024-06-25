@@ -251,7 +251,28 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
     with transaction.atomic(savepoint=False):
         user_profile.is_active = value
         user_profile.save(update_fields=["is_active"])
+        user_profile.ban_reason = ""
+        user_profile.save(update_fields=["ban_reason"])
         Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
+
+
+def change_user_ban_reason(user_profile: UserProfile, value: str) -> None:
+    """
+    Helper function for changing the .ban_reason field.
+    """
+    with transaction.atomic(savepoint=False):
+        user_profile.ban_reason = value
+        user_profile.save(update_fields=["ban_reason"])
+
+    event_change_user_ban_reason = dict(
+        type="realm_user",
+        op="update",
+        person=dict(user_id=user_profile.id, is_active=False),
+        ban_reason=user_profile.ban_reason,
+    )
+    realm = user_profile.realm
+    users = {user.id for user in realm.get_human_admin_users()}
+    send_event_on_commit(realm, event_change_user_ban_reason, users)
 
 
 def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
@@ -260,10 +281,18 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         op="update",
         person=dict(user_id=user_profile.id, is_active=False),
     )
+
     realm = user_profile.realm
 
     if not user_access_restricted_in_realm(user_profile):
-        send_event_on_commit(realm, event_deactivate_user, active_user_ids(realm.id))
+        admins = {user.id for user in realm.get_human_admin_users()}
+        other_members = {element for element in active_user_ids(realm.id) if element not in admins}
+        send_event_on_commit(realm, event_deactivate_user, other_members)
+        # If the deactivation included a ban reason, the frontend needs to know it to update the list
+        # accordingly. Therefore, the event must also contain it
+        if user_profile.ban_reason is not None and user_profile.ban_reason != "":
+            event_deactivate_user.update({"ban_reason": [user_profile.ban_reason]})
+        send_event_on_commit(realm, event_deactivate_user, admins)
         return
 
     non_guest_user_ids = active_non_guest_user_ids(realm.id)
@@ -318,7 +347,11 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
 
 
 def do_deactivate_user(
-    user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile,
+    _cascade: bool = True,
+    *,
+    acting_user: Optional[UserProfile],
+    ban_reason: Optional[str] = None,
 ) -> None:
     if not user_profile.is_active:
         return
@@ -343,6 +376,9 @@ def do_deactivate_user(
             user_profile.save(update_fields=["is_mirror_dummy"])
 
         change_user_is_active(user_profile, False)
+
+        if ban_reason is not None:
+            change_user_ban_reason(user_profile, ban_reason)
 
         clear_scheduled_emails(user_profile.id)
         revoke_invites_generated_by_user(user_profile)

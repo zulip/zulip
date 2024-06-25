@@ -469,6 +469,7 @@ class APIUserDict(TypedDict):
     profile_data: NotRequired[Optional[Dict[str, Any]]]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
+    ban_reason: NotRequired[str]
 
 
 def format_user_row(
@@ -478,6 +479,7 @@ def format_user_row(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     custom_profile_field_data: Optional[Dict[str, Any]] = None,
+    get_ban_reason: Optional[bool] = False,
 ) -> APIUserDict:
     """Formats a user row returned by a database fetch using
     .values(*realm_user_dict_fields) into a dictionary representation
@@ -489,6 +491,9 @@ def format_user_row(
     is_owner = row["role"] == UserProfile.ROLE_REALM_OWNER
     is_guest = row["role"] == UserProfile.ROLE_GUEST
     is_bot = row["is_bot"]
+    ban_reason = row["ban_reason"]
+    if ban_reason is None:
+        ban_reason = ""
 
     delivery_email = None
     if acting_user is not None and can_access_delivery_email(
@@ -511,7 +516,12 @@ def format_user_row(
         is_active=row["is_active"],
         date_joined=row["date_joined"].isoformat(),
         delivery_email=delivery_email,
+        ban_reason=ban_reason,
     )
+
+    if not get_ban_reason:
+        # If a user is not allowed to know the ban reason, delete this entry
+        del result["ban_reason"]
 
     if acting_user is None:
         # Remove data about other users which are not useful to spectators
@@ -856,6 +866,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         bot_type=user_profile.bot_type,
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
+        ban_reason=user_profile.ban_reason,
     )
 
 
@@ -1014,6 +1025,11 @@ def get_users_for_api(
         profiles_by_user_id = get_custom_profile_field_values(custom_profile_field_values)
 
     result = {}
+
+    get_ban_reason = False
+    if acting_user is not None:
+        get_ban_reason = is_administrator_role(acting_user.role)
+
     for row in accessible_user_dicts:
         if profiles_by_user_id is not None:
             custom_profile_field_data = profiles_by_user_id.get(row["id"], {})
@@ -1021,6 +1037,7 @@ def get_users_for_api(
             client_gravatar
             and row["email_address_visibility"] == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         )
+
         result[row["id"]] = format_user_row(
             realm.id,
             acting_user=acting_user,
@@ -1028,6 +1045,7 @@ def get_users_for_api(
             client_gravatar=client_gravatar_for_user,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             custom_profile_field_data=custom_profile_field_data,
+            get_ban_reason=get_ban_reason,
         )
 
     if not user_list_incomplete:

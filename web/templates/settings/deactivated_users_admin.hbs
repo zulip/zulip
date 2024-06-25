@@ -19,6 +19,7 @@
                 <th {{#if allow_sorting_deactivated_users_list_by_email}}data-sort="email"{{/if}}>{{t "Email" }}</th>
                 <th class="user_role" data-sort="role">{{t "Role" }}</th>
                 {{#if is_admin}}
+                <th class="ban_reason">{{t "Ban reason"}}</th>
                 <th class="actions">{{t "Actions" }}</th>
                 {{/if}}
             </thead>

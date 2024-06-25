@@ -11,6 +11,7 @@ import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";
+import {usual_ban_reasons} from "./people";
 import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
@@ -263,7 +264,6 @@ function get_last_active(user) {
 
 function human_info(person) {
     const info = {};
-
     info.is_bot = false;
     info.user_role_text = people.get_user_type(person.user_id);
     info.is_active = people.is_person_active(person.user_id);
@@ -271,6 +271,7 @@ function human_info(person) {
     info.full_name = person.full_name;
     info.bot_owner_id = person.bot_owner_id;
 
+    info.ban_reason = person.ban_reason;
     info.can_modify = current_user.is_admin;
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !current_user.is_owner);
@@ -494,6 +495,17 @@ function handle_deactivation($tbody) {
                 };
             }
 
+            if ($(".ban_reason").is(":checked")) {
+                if ($("#id-deactivation-message").val() === "8") {
+                    data.deactivation_reason_comment = $(".ban_reason_field_textarea").val();
+                } else {
+                    for (const value of Object.values(usual_ban_reasons)) {
+                        if (String(value.code) === $("#id-deactivation-message").val()) {
+                            data.deactivation_reason_comment = value.description;
+                        }
+                    }
+                }
+            }
             dialog_widget.submit_api_request(channel.del, url, data);
         }
 
@@ -535,6 +547,28 @@ function handle_reactivation($tbody) {
         }
 
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
+    });
+}
+
+function handle_edit_ban_reason($tbody) {
+    $tbody.on("click", ".ban_reason", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $button_elem = $(e.target);
+        const $row = $button_elem.closest(".user_row");
+        const user_id = Number.parseInt($row.attr("data-user-id"), 10);
+
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id) + "/change_ban_reason";
+            const data = {
+                ban_reason: $(".ban_reason_field_textarea").val(),
+            };
+            const opts = {};
+            dialog_widget.submit_api_request(channel.post, url, data, opts);
+        }
+
+        user_deactivation_ui.edit_ban_reason(user_id, handle_confirm, true);
     });
 }
 
@@ -583,6 +617,7 @@ section.deactivated.handle_events = () => {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_edit_ban_reason($tbody);
 };
 
 section.bots.handle_events = () => {

@@ -473,6 +473,11 @@ export function dispatch_normal_event(event) {
                 }
                 case "update":
                     user_events.update_person(event.person);
+                    if (Object.hasOwn(event, "ban_reason")) {
+                        people.setBanReason(event.person.user_id, event.ban_reason);
+                    } else {
+                        people.setBanReason(event.person.user_id, "");
+                    }
                     settings_account.maybe_update_deactivate_account_button();
                     if (people.is_valid_bot_user(event.person.user_id)) {
                         settings_users.update_bot_data(event.person.user_id);

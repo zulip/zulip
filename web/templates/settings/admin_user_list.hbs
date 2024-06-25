@@ -21,6 +21,13 @@
     <td>
         <span class="user_role">{{user_role_text}}</span>
     </td>
+    {{#unless is_active}}
+        <td>
+            <button class="button rounded small ban_reason btn-warning">
+                <i class="fa fa-file-text-o" aria-hidden="true"></i>
+            </button>
+        </td>
+    {{/unless}}
     {{#if is_bot}}
     <td class="user_role">
         <span class="owner">

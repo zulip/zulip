@@ -33,6 +33,7 @@ import * as loading from "./loading";
 import * as modals from "./modals";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import {usual_ban_reasons} from "./people";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -889,8 +890,24 @@ export function show_edit_user_info_modal(user_id, $container) {
         e.stopPropagation();
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
         function handle_confirm() {
+            let data = {};
+            if ($(".ban_reason").is(":checked")) {
+                if ($("#id-deactivation-message").val() === "8") {
+                    data = {
+                        deactivation_reason_comment: $(".ban_reason_field_textarea").val(),
+                    };
+                } else {
+                    for (const value of Object.values(usual_ban_reasons)) {
+                        if (String(value.code) === $("#id-deactivation-message").val()) {
+                            data = {
+                                deactivation_reason_comment: value.description,
+                            };
+                        }
+                    }
+                }
+            }
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url, {});
+            dialog_widget.submit_api_request(channel.del, url, data);
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });

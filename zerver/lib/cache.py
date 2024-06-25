@@ -470,6 +470,7 @@ realm_user_dict_fields: List[str] = [
     "bot_type",
     "long_term_idle",
     "email_address_visibility",
+    "ban_reason",
 ]
 
 

@@ -402,6 +402,10 @@ paths:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
                                         - realm_user
+                                ban_reason:
+                                  type: string
+                                  description: |
+                                    Reason why the user was banned.
                                 op:
                                   type: string
                                   enum:
@@ -626,6 +630,10 @@ paths:
                                           type: boolean
                                           description: |
                                             A boolean describing whether the user account has been deactivated.
+                                        ban_reason:
+                                          type: string
+                                          description: |
+                                            Reason why user was banned
                               additionalProperties: false
                               example:
                                 {
@@ -8247,6 +8255,7 @@ paths:
                               "is_guest": false,
                               "date_joined": "2019-10-20T07:50:53.728864+00:00",
                               "full_name": "aaron",
+                              "ban_reason": "Did not comply to the rules.",
                             },
                             {
                               "date_joined": "2019-10-20T07:50:53.729659+00:00",
@@ -8287,6 +8296,7 @@ paths:
                               "is_active": true,
                               "email": "hamlet@zulip.com",
                               "delivery_email": null,
+                              "ban_reason": "",
                             },
                             {
                               "bot_owner_id": 11,
@@ -8305,6 +8315,7 @@ paths:
                               "bot_type": 1,
                               "timezone": "",
                               "is_bot": true,
+                              "ban_reason": "Inactive",
                             },
                           ],
                       }
@@ -8705,6 +8716,10 @@ paths:
                           this feature level, this field is always present.
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
+                      ban_reason:
+                        type: string
+                        description: |
+                          Reason why the user was deactivated. Set by an admin.
                     example:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
@@ -8751,6 +8766,7 @@ paths:
                                 "value": "https://zulip.readthedocs.io/en/latest/",
                               },
                           },
+                        "ban_reason": "Did not comply to the privay policy",
                       }
     delete:
       operationId: deactivate-own-user
@@ -11862,6 +11878,32 @@ paths:
                             "delivery_email": null,
                           },
                       }
+  /users/{user_id}/change_ban_reason:
+    post:
+      operationId: change-user-ban-reason
+      summary: Change a user ban reason
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        Changes a user's ban reason given their user ID.
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                ban_reason:
+                  description: |
+                    If not `null`, represents an admin set reason for why this user was banned
+                  type: string
+                  example: |
+                    Did not comply to the privacy policy.
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /users/{user_id}:
     get:
       operationId: get-user
@@ -12063,6 +12105,12 @@ paths:
                   type: string
                   example: |
                     Farewell!
+                deactivation_reason_comment:
+                  description: |
+                    If not `null`, represents an admin set reason for why this user was banned
+                  type: string
+                  example: |
+                    Did not comply to the privacy policy.
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -17046,6 +17094,7 @@ paths:
                                 is_guest: {}
                                 is_billing_admin: {}
                                 is_bot: {}
+                                ban_reason: {}
                                 # Referenced schema properties are rendered before any
                                 # non-referenced properties in the API documentation, so
                                 # `is_system_bot` appears last instead of in this order.
@@ -21752,6 +21801,7 @@ components:
               nullable: true
             avatar_version: {}
             profile_data: {}
+            ban_reason: {}
     UserBase:
       type: object
       description: |
@@ -21891,6 +21941,11 @@ components:
             most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
         profile_data:
           $ref: "#/components/schemas/profile_data"
+        ban_reason:
+          type: string
+          nullable: true
+          description: |
+            A string which contains the reason why the user was deactivated. Set by an admin.
     profile_data:
       type: object
       description: |

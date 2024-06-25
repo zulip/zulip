@@ -583,6 +583,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     zoom_token = models.JSONField(default=None, null=True)
 
+    MAX_BAN_REASON_LENGTH = 2000
+    ban_reason = models.CharField(
+        default="", max_length=MAX_BAN_REASON_LENGTH, null=True, blank=True
+    )
+
     objects = UserManager()
 
     ROLE_ID_TO_NAME_MAP = {

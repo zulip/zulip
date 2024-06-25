@@ -292,4 +292,8 @@ run_test("updates", ({override}) => {
     bot_data_updated = false;
     user_events.update_person({user_id: test_bot.user_id, is_active: true});
     assert.ok(bot_data_updated);
+
+    user_events.update_person({user_id: isaac.user_id, is_active: false});
+    people.setBanReason(isaac.user_id, "Ban reason");
+    assert.equal(isaac.ban_reason, "Ban reason");
 });

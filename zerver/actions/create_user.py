@@ -16,7 +16,11 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
 from zerver.actions.user_groups import do_send_user_group_members_update_event
-from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
+from zerver.actions.users import (
+    change_user_ban_reason,
+    change_user_is_active,
+    get_service_dicts_for_bot,
+)
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
@@ -717,3 +721,16 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         stream_dict=stream_dict,
         subscriber_peer_info=subscriber_peer_info,
     )
+
+
+@transaction.atomic(savepoint=False)
+def do_change_user_ban_reason(user_profile: UserProfile, ban_reason: str) -> None:
+    if user_profile.is_mirror_dummy:
+        raise JsonableError(
+            _(
+                "Cannot change the ban reason for a placeholder account; ask the user to sign up, instead."
+            )
+        )
+    if len(ban_reason) > 2000:
+        raise JsonableError(_("Ban reason must be less than 2000 characters."))
+    change_user_ban_reason(user_profile, ban_reason)

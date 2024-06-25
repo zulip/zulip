@@ -1458,6 +1458,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         delivery_email: null,
         profile_data: {},
         bot_type: null,
+        ban_reason: null,
         // This may lead to cases where this field is set to
         // true for an accessible user also and such user would
         // not be shown in the right sidebar for some time till
@@ -1719,6 +1720,13 @@ export function sort_but_pin_current_user_on_top(users: User[]): void {
     }
 }
 
+export function setBanReason(person_id: number, ban_reason: string): void {
+    // This function is simply used to set the ban reason in the frontend.
+    // By doing this, we avoid having to refresh the page and loading the users once again
+    const person = get_by_user_id(person_id);
+    person.ban_reason = ban_reason;
+}
+
 export function initialize(my_user_id: number, params: StateData["people"]): void {
     for (const person of params.realm_users) {
         add_active_user(person);
@@ -1735,3 +1743,39 @@ export function initialize(my_user_id: number, params: StateData["people"]): voi
 
     initialize_current_user(my_user_id);
 }
+
+export const usual_ban_reasons = {
+    // These strings are used as the most common reasons for a user to be banned
+    spammer: {
+        code: 1,
+        description: $t({defaultMessage: "Spammer"}),
+    },
+    inactivity: {
+        code: 2,
+        description: $t({defaultMessage: "Inactive"}),
+    },
+    requested: {
+        code: 3,
+        description: $t({defaultMessage: "User request"}),
+    },
+    disruptive: {
+        code: 4,
+        description: $t({defaultMessage: "Disruptive behavior"}),
+    },
+    confidentiality_breach: {
+        code: 5,
+        description: $t({defaultMessage: "Confidentiality breach"}),
+    },
+    unauthorized: {
+        code: 6,
+        description: $t({defaultMessage: "Unauthorized access"}),
+    },
+    policy_violation: {
+        code: 7,
+        description: $t({defaultMessage: "Policy violation"}),
+    },
+    other: {
+        code: 8,
+        description: $t({defaultMessage: "Other (please specify)"}),
+    },
+} as const;

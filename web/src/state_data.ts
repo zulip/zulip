@@ -75,6 +75,7 @@ export const profile_datum_schema = z.object({
 export const user_schema = z
     .object({
         user_id: z.number(),
+        ban_reason: z.string().nullable().optional(),
         delivery_email: z.string().nullable(),
         email: z.string(),
         full_name: z.string(),

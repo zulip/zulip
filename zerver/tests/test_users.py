@@ -12,7 +12,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation
-from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.create_user import do_change_user_ban_reason, do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
@@ -1594,6 +1594,75 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_success(result)
         user = self.example_user("hamlet")
         self.assertTrue(user.is_active)
+
+    def test_ban_reason_added(self) -> None:
+        # Login and creation of example user
+        iago = self.example_user("iago")
+        self.login("iago")
+        user = self.example_user("hamlet")
+
+        # Verify that an active user has no ban reason
+        result = orjson.loads(self.client_get("/json/users/me").content)
+        self.assertEqual(result["ban_reason"], iago.ban_reason)
+
+        # Test with None ban reason, which will be returned as an empty string
+        iago.ban_reason = None
+        iago.save(update_fields=["ban_reason"])
+        result = orjson.loads(self.client_get("/json/users/me").content)
+        self.assertEqual(result["ban_reason"], "")
+
+        # Verify initial ban reason.
+        do_deactivate_user(user, acting_user=None)
+        self.assertEqual(user.ban_reason, "")
+
+        # Reactivate user
+        do_reactivate_user(user, acting_user=None)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+        self.assertEqual(user.ban_reason, "")
+
+        # Verify reason was added properly.
+        do_deactivate_user(user, acting_user=None, ban_reason="First ban reason")
+        valid_params = dict(
+            ban_reason="Ban Reason",
+        )
+        result = self.client_post(f"/json/users/{user.id}/change_ban_reason", valid_params)
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertEqual(user.ban_reason, "Ban Reason")
+
+        valid_params = dict(
+            deactivation_reason_comment="Ban Reason",
+        )
+        # Verify sending the delete request with the ban reason works
+        do_reactivate_user(user, acting_user=None)
+        user.refresh_from_db()
+        self.assertEqual(user.ban_reason, "")
+        result = self.client_delete(f"/json/users/{user.id}", valid_params)
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertEqual(user.ban_reason, "Ban Reason")
+
+        # Verify if ban_reason maximum characters constrainments are properly working
+        lengthy_string = "a" * 2002
+        do_deactivate_user(user, acting_user=None)
+        with self.assertRaises(JsonableError):
+            do_change_user_ban_reason(user, lengthy_string)
+
+    def test_ban_reason_with_dummy(self) -> None:
+        # Create admin and user
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+
+        # Force deactivate
+        change_user_is_active(hamlet, False)
+
+        hamlet.is_mirror_dummy = True
+        hamlet.save(update_fields=["is_mirror_dummy"])
+
+        # Cannot change ban reason for a user which is marked as "mirror dummy"
+        with self.assertRaises(JsonableError):
+            do_change_user_ban_reason(hamlet, "Ban Reason")
 
     def test_email_sent(self) -> None:
         self.login("iago")

@@ -16,7 +16,12 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
-from zerver.actions.create_user import do_create_user, do_reactivate_user, notify_created_bot
+from zerver.actions.create_user import (
+    do_change_user_ban_reason,
+    do_create_user,
+    do_reactivate_user,
+    notify_created_bot,
+)
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_update_user_custom_profile_data_if_changed,
@@ -121,6 +126,9 @@ def deactivate_user_backend(
     deactivation_notification_comment: Optional[
         Annotated[str, StringConstraints(max_length=2000)]
     ] = None,
+    deactivation_reason_comment: Optional[
+        Annotated[str, StringConstraints(max_length=2000)]
+    ] = None,
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -129,11 +137,14 @@ def deactivate_user_backend(
         raise JsonableError(_("Cannot deactivate the only organization owner"))
     if deactivation_notification_comment is not None:
         deactivation_notification_comment = deactivation_notification_comment.strip()
+    if deactivation_reason_comment is not None:
+        deactivation_reason_comment = deactivation_reason_comment.strip()
     return _deactivate_user_profile_backend(
         request,
         user_profile,
         target,
         deactivation_notification_comment=deactivation_notification_comment,
+        deactivation_reason_comment=deactivation_reason_comment,
     )
 
 
@@ -162,8 +173,9 @@ def _deactivate_user_profile_backend(
     target: UserProfile,
     *,
     deactivation_notification_comment: Optional[str],
+    deactivation_reason_comment: Optional[str] = None,
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    do_deactivate_user(target, acting_user=user_profile, ban_reason=deactivation_reason_comment)
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.
@@ -198,6 +210,25 @@ def reactivate_user_backend(
 class ProfileDataElement(BaseModel):
     id: int
     value: Optional[Union[str, List[int]]]
+
+
+@typed_endpoint
+def change_ban_reason(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_id: PathOnly[int],
+    ban_reason: Optional[Annotated[str, StringConstraints(max_length=2000)]] = None,
+) -> HttpResponse:
+    # This function will simply change a user's the ban reason
+    if ban_reason is not None:
+        ban_reason = ban_reason.strip()
+        target = access_user_by_id(
+            user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
+        )
+        do_change_user_ban_reason(target, ban_reason)
+
+    return json_success(request)
 
 
 @typed_endpoint

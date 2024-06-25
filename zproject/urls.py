@@ -211,6 +211,7 @@ from zerver.views.users import (
     add_bot_backend,
     avatar,
     avatar_medium,
+    change_ban_reason,
     create_user_backend,
     deactivate_bot_backend,
     deactivate_user_backend,
@@ -304,6 +305,7 @@ v1_api_and_json_patterns = [
     rest_path("users", GET=get_members_backend, POST=create_user_backend),
     rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),
     rest_path("users/<int:user_id>/reactivate", POST=reactivate_user_backend),
+    rest_path("users/<int:user_id>/change_ban_reason", POST=change_ban_reason),
     rest_path(
         "users/<int:user_id>",
         GET=get_members_backend,
