@@ -234,6 +234,7 @@ export class Typeahead<ItemType extends string | object> {
     non_tippy_parent_element: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
     instance: tippy.Instance | undefined;
+    hideOnEmptyAfterBackspace: boolean;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -271,6 +272,7 @@ export class Typeahead<ItemType extends string | object> {
         this.naturalSearch = options.naturalSearch ?? false;
         this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
+        this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
 
         // The naturalSearch option causes arrow keys to immediately
         // update the search box with the underlying values from the
@@ -665,6 +667,10 @@ export class Typeahead<ItemType extends string | object> {
                     // the search bar).
                     this.openInputFieldOnKeyUp();
                 }
+                if (pseudo_keycode === 8) {
+                    this.lookup(this.hideOnEmptyAfterBackspace);
+                    return;
+                }
                 this.lookup(false);
         }
 
@@ -750,6 +756,7 @@ type TypeaheadOptions<ItemType> = {
     dropup?: boolean;
     header_html?: () => string | false;
     helpOnEmptyStrings?: boolean;
+    hideOnEmptyAfterBackspace?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;
     naturalSearch?: boolean;
     on_escape?: () => void;

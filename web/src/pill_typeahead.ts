@@ -90,6 +90,7 @@ export function set_up_stream(
         items: 5,
         dropup: true,
         helpOnEmptyStrings: opts.help_on_empty_strings,
+        hideOnEmptyAfterBackspace: true,
         source(_query: string): StreamPillData[] {
             return stream_pill.typeahead_source(pills, opts.invite_streams);
         },
