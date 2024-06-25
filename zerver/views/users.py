@@ -459,6 +459,7 @@ def add_bot_backend(
     bot_type: Json[int] = UserProfile.DEFAULT_BOT,
     payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
     service_name: Optional[str] = None,
+    integration_type: Optional[str] = None,
     config_data: Optional[Json[Mapping[str, str]]] = None,
     interface_type: Json[int] = Service.GENERIC,
     default_sending_stream_name: Annotated[
@@ -568,7 +569,7 @@ def add_bot_backend(
             interface=interface_type,
             token=generate_api_key(),
         )
-
+    set_bot_config(bot_profile, "integration_type", integration_type)
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
         set_bot_config(bot_profile, "integration_id", service_name)
 
