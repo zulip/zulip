@@ -162,10 +162,18 @@
     );
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
+    --message-box-height-senderless-single-line-message: calc(
+        var(--base-line-height-unitless) * var(--base-font-size-px) +
+            calc(var(--markdown-interelement-space-px) * 2)
+    );
     /* The line-height on the sender line should coordinate with the
-       height of the hover icons. The sender line never wraps, so this
-       just keeps the two in line with the grid definition. */
-    --message-box-sender-line-height: var(--message-box-icon-height);
+       height of a single-line, senderless message, but never be smaller
+       than the height of the hover icons. The sender line never wraps,
+       so this just keeps everything in line with the grid definition. */
+    --message-box-sender-line-height: max(
+        var(--message-box-icon-height),
+        var(--message-box-height-senderless-single-line-message)
+    );
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
