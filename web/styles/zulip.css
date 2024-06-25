@@ -1212,7 +1212,7 @@ div.focused-message-list {
         display: none;
         width: 100%;
         height: 24px;
-        margin-bottom: 4px;
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
         color: var(--color-text-show-more-less-button);
         background-color: var(--color-show-more-less-button-background);
         border-radius: 4px;

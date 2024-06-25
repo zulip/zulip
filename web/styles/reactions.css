@@ -3,7 +3,7 @@
     user-select: none;
 
     &:has(.message_reaction) {
-        padding-bottom: 5px;
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
     }
 
     .message_reaction {
