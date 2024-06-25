@@ -164,14 +164,27 @@ class TutorialTests(ZulipTestCase):
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["Hello", "HAHAHA", "OKOK", "LalulaLapas"]
         self.login_user(user)
+        # First undefined message sent.
+        self.send_personal_message(user, bot, "Hello")
+        expected_response = (
+            "You can chat with me as much as you like! To get help, try one of the following messages: "
+            "`apps`, `profile`, `theme`, `channels`, "
+            "`topics`, `message formatting`, `keyboard shortcuts`, `help`."
+        )
+        self.assertEqual(most_recent_message(user).content, expected_response)
+
+        # For future undefined messages, welcome bot won't send a reply.
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "You can chat with me as much as you like! To get help, try one of the following messages: "
-                "`apps`, `profile`, `theme`, `channels`, "
-                "`topics`, `message formatting`, `keyboard shortcuts`, `help`."
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertEqual(most_recent_message(user).content, content)
+
+        # Check if Welcome bot still replies for bot commands
+        self.send_personal_message(user, bot, "apps")
+        expected_response = (
+            "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
+            "Zulip also works great in a browser."
+        )
+        self.assertEqual(most_recent_message(user).content, expected_response)
 
     def test_no_response_to_group_pm(self) -> None:
         user1 = self.example_user("hamlet")

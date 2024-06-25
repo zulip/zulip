@@ -197,7 +197,25 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     to welcome-bot, trigger the welcome-bot reply."""
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
+    human_user_recipient_id = send_request.message.sender.recipient_id
+    assert human_user_recipient_id is not None
     content = select_welcome_bot_response(human_response_lower)
+    realm_id = send_request.realm.id
+    commands = bot_commands()
+    if (
+        commands in content
+        and Message.objects.filter(
+            realm_id=realm_id,
+            sender_id=welcome_bot.id,
+            recipient_id=human_user_recipient_id,
+            content__icontains=commands,
+        ).exists()
+        # Uses index 'zerver_message_realm_sender_recipient'
+    ):
+        # If the bot has already sent bot commands to this user and
+        # if the bot does not understand the current message sent by this user then
+        # do not send any message
+        return
 
     internal_send_private_message(
         welcome_bot,
