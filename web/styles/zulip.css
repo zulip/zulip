@@ -1663,30 +1663,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     user-select: none;
 }
 
-.user_popover_email {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: all 0.4s ease;
-
-    & i {
-        cursor: pointer;
-
-        &.hide_copy_icon {
-            display: none;
-        }
-    }
-}
-
-.email_copied,
-.user_popover_email i:hover {
-    color: hsl(170deg 48% 54%);
-}
-
-.email_copied i {
-    display: none !important;
-}
-
 .flatpickr-calendar {
     /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
