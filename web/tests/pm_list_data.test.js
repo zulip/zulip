@@ -5,7 +5,19 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
-const unread = mock_esm("../src/unread");
+const unread = mock_esm("../src/unread", {
+    get_counts() {
+        const mention_dict = new Map([
+            ["101,102", false],
+            ["103", true],
+            ["106", false],
+            ["314", false],
+        ]);
+        return {
+            mention_dict,
+        };
+    },
+});
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -117,6 +129,7 @@ test("get_conversations", ({override}) => {
             status_emoji_info: {
                 emoji_code: "20",
             },
+            has_unread_mention: true,
         },
         {
             recipients: "Alice, Bob",
@@ -129,6 +142,7 @@ test("get_conversations", ({override}) => {
             is_group: true,
             is_bot: false,
             status_emoji_info: undefined,
+            has_unread_mention: false,
         },
     ];
 
@@ -158,6 +172,7 @@ test("get_conversations", ({override}) => {
         user_circle_class: "user_circle_empty",
         is_group: false,
         is_bot: false,
+        has_unread_mention: false,
     });
     set_pm_with_filter("iago@zulip.com");
     pm_data = pm_list_data.get_conversations();
@@ -184,6 +199,7 @@ test("get_conversations bot", ({override}) => {
             user_circle_class: "user_circle_empty",
             is_group: false,
             is_bot: true,
+            has_unread_mention: false,
         },
         {
             recipients: "Alice, Bob",
@@ -196,6 +212,7 @@ test("get_conversations bot", ({override}) => {
             status_emoji_info: undefined,
             is_group: true,
             is_bot: false,
+            has_unread_mention: false,
         },
     ];
 
