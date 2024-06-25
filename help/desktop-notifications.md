@@ -73,7 +73,7 @@ and [mentions](/help/mention-a-user-or-group), or to include messages in
 
 {settings_tab|notifications}
 
-1. Under **Desktop message notifications**, click **Test desktop notification**.
+1. Under **Desktop message notifications**, click **Send a test notification**.
    If notifications are working, you will receive a **Test notification**.
 
 {end_tabs}
