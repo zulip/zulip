@@ -218,7 +218,6 @@
         .pill {
             margin: 0;
             min-width: unset;
-            height: 26px;
         }
 
         &:not(.focused) {
@@ -232,29 +231,25 @@
         }
 
         .user-pill-container {
-            padding: 2px;
-            height: 22px;
             min-width: fit-content;
+            gap: 5px;
 
             > .pill-label {
                 min-width: fit-content;
                 white-space: nowrap;
                 width: fit-content;
+                /* Replaced by the 5px gap. */
+                margin-right: 0;
             }
 
             .pill {
-                height: 22px;
-                margin: 2px;
+                height: var(--height-input-pill);
                 border: none;
+                border-radius: 3px;
 
                 &:not(.deactivated-pill) {
                     background-color: var(--color-background-user-pill);
                 }
-            }
-
-            .pill-image {
-                width: 22px;
-                height: 22px;
             }
         }
     }
@@ -341,7 +336,7 @@
 
         .pill-image {
             /* Add line-height equal to height to mimic baseline alignment. */
-            line-height: 20px;
+            line-height: var(--length-input-pill-image);
             align-self: center;
         }
     }
