@@ -187,9 +187,11 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
     {!import-self-hosted-server-tips.md!}
 
     ```
+    cd /tmp
+    tar -xf mattermost_data.tar.gz
     cd /home/zulip/deployments/current
     ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/mattermost_data.tar.gz --output /tmp/converted_mattermost_data
+    ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
     ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
     ./scripts/start-server
     ```
@@ -197,9 +199,11 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
     Alternatively, to import into a custom subdomain, run:
 
     ```
+    cd /tmp
+    tar -xf mattermost_data.tar.gz
     cd /home/zulip/deployments/current
     ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/mattermost_data.tar.gz --output /tmp/converted_mattermost_data
+    ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
     ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
     ./scripts/start-server
     ```
