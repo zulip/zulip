@@ -181,18 +181,17 @@ def write_avatar_images(
 
 def upload_avatar_image(
     user_file: IO[bytes],
-    acting_user_profile: UserProfile,
-    target_user_profile: UserProfile,
+    user_profile: UserProfile,
     content_type: Optional[str] = None,
     backend: Optional[ZulipUploadBackend] = None,
 ) -> None:
     if content_type is None:
         content_type = guess_type(user_file.name)[0]
-    file_path = user_avatar_path(target_user_profile)
+    file_path = user_avatar_path(user_profile)
 
     image_data = user_file.read()
     write_avatar_images(
-        file_path, target_user_profile, image_data, content_type=content_type, backend=backend
+        file_path, user_profile, image_data, content_type=content_type, backend=backend
     )
 
 

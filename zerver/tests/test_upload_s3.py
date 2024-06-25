@@ -276,7 +276,7 @@ class S3Test(ZulipTestCase):
         medium_path_id = path_id + "-medium.png"
 
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_avatar_image(image_file, user_profile, user_profile)
+            zerver.lib.upload.upload_avatar_image(image_file, user_profile)
         test_image_data = read_test_image_file("img.png")
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
 
@@ -353,7 +353,7 @@ class S3Test(ZulipTestCase):
         medium_file_path = base_file_path + "-medium.png"
 
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_avatar_image(image_file, user_profile, user_profile)
+            zerver.lib.upload.upload_avatar_image(image_file, user_profile)
 
         key = bucket.Object(original_file_path)
         image_data = key.get()["Body"].read()

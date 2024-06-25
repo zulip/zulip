@@ -406,7 +406,7 @@ def patch_bot_backend(
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
-        upload_avatar_image(user_file, user_profile, bot)
+        upload_avatar_image(user_file, bot)
         avatar_source = UserProfile.AVATAR_FROM_USER
         do_change_avatar_fields(bot, avatar_source, acting_user=user_profile)
     else:
@@ -554,7 +554,7 @@ def add_bot_backend(
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
-        upload_avatar_image(user_file, user_profile, bot_profile)
+        upload_avatar_image(user_file, bot_profile)
 
     if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
         assert isinstance(service_name, str)

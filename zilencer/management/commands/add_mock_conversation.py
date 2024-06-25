@@ -37,7 +37,7 @@ From image editing program:
 
     def set_avatar(self, user: UserProfile, filename: str) -> None:
         with open(filename, "rb") as f:
-            upload_avatar_image(f, user, user)
+            upload_avatar_image(f, user)
         do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER, acting_user=None)
 
     def add_message_formatting_conversation(self) -> None:

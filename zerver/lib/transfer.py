@@ -30,7 +30,7 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
     file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path)
     try:
         with open(file_path + ".original", "rb") as f:
-            upload_avatar_image(f, user, user, backend=s3backend)
+            upload_avatar_image(f, user, backend=s3backend)
             logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
     except FileNotFoundError:
         pass
