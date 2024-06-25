@@ -58,7 +58,7 @@ def add_user_group(
     name: str,
     members: Json[Sequence[int]],
     description: str,
-    can_mention_group: Optional[Json[Union[AnonymousSettingGroupDict, int]]] = None,
+    can_mention_group: Optional[Json[Union[int, AnonymousSettingGroupDict]]] = None,
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
