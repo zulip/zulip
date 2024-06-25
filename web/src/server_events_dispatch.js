@@ -845,7 +845,6 @@ export function dispatch_normal_event(event) {
                 user_settings.enter_sends = event.value;
                 $(`.enter_sends_${!user_settings.enter_sends}`).hide();
                 $(`.enter_sends_${user_settings.enter_sends}`).show();
-                break;
             }
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
