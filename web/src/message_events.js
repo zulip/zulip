@@ -584,4 +584,5 @@ export function remove_messages(message_ids) {
     recent_view_ui.update_topics_of_deleted_message_ids(message_ids);
     starred_messages.remove(message_ids);
     starred_messages_ui.rerender_ui();
+    message_store.remove(message_ids);
 }
