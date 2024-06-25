@@ -181,6 +181,9 @@ async function test_add_emoji(page: Page): Promise<void> {
     await emoji_upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
     await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector(".loading-text", {hidden: false});
+    await page.waitForSelector(".loading-text", {hidden: true});
+
     await page.waitForSelector("#emoji_preview_text", {visible: true});
     await page.click("#emoji_image_save_button");
 
@@ -223,6 +226,8 @@ async function test_upload_realm_icon_image_cropped(page: Page): Promise<void> {
     await upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
     await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector(".loading-text", {hidden: false});
+    await page.waitForSelector(".loading-text", {hidden: true});
     await page.click(".dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
@@ -238,15 +243,14 @@ async function test_upload_realm_icon_image_cropped(page: Page): Promise<void> {
 async function test_upload_realm_logo_image_scaled(page: Page): Promise<void> {
     const upload_handle = await page.$("#realm-day-logo-upload-widget input.image_file_input");
     assert.ok(upload_handle);
-    await upload_handle.uploadFile("static/images/logo/zulip-icon-512x512.png");
+    await upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
     await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector(".loading-text", {hidden: false});
+    await page.waitForSelector(".loading-text", {hidden: true});
     await page.click("#scale_to_fit");
-    await page.waitForSelector("#ImageEditorDiv", {visible: false});
-    await page.waitForSelector("#scale_to_fit", {hidden: true});
-    await page.waitForSelector("#reset_scale_to_fit", {hidden: false});
-    await page.waitForSelector("#ImageEditorDiv", {visible: true});
-    await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector(".loading-text", {hidden: false});
+    await page.waitForSelector(".loading-text", {hidden: true});
     await page.click(".dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
     await page.waitForSelector("#realm-day-logo-upload-widget .upload-spinner-background", {

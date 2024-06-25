@@ -185,7 +185,7 @@ export function add_custom_emoji_post_render(): void {
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
     const $other_elements_to_hide = $(
-        "#add-custom-emoji-modal .dialog_submit_button, #add-custom-emoji-modal .dialog_exit_button, .emoji_name_input, .modal__footer",
+        "#add-custom-emoji-modal .dialog_submit_button, #add-custom-emoji-modal .dialog_exit_button, .emoji_name_input, .modal__footer, #preview_label",
     );
     const cropper_options: CropperOptions = {
         aspectRatio: 1,

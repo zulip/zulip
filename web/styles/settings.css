@@ -358,6 +358,40 @@ td .button {
     }
 }
 
+.loading-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+    color: hsl(0deg 0% 90%);
+    letter-spacing: 0.1em;
+}
+
+.loading-text::after {
+    content: "Loading";
+    display: inline-block;
+    animation: loadingDots 1.5s steps(4, end) infinite;
+}
+
+@keyframes loadingDots {
+    25% {
+        content: "Loading.";
+    }
+
+    50% {
+        content: "Loading..";
+    }
+
+    75% {
+        content: "Loading...";
+    }
+
+    100% {
+        content: "Loading";
+    }
+}
+
 /* list_select is similar to settings_select, but without the height styling. */
 .settings_select,
 .list_select {
@@ -815,10 +849,12 @@ input[type="checkbox"] {
 
 #scale_to_fit {
     order: -1;
+    color: hsl(0deg 0% 100%);
 }
 
 #reset_scale_to_fit {
     order: -1;
+    color: hsl(0deg 0% 100%);
 }
 
 #image_editor {

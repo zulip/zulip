@@ -67,6 +67,68 @@ function is_image_format(file: File): boolean {
     return supported_types.includes(type);
 }
 
+function hide_elements(selectors: string[]): (HTMLElement | SVGElement)[] {
+    const hidden_elements: (HTMLElement | SVGElement)[] = [];
+    const interval_id = setInterval(() => {
+        let all_elements_found = true;
+        for (const selector of selectors) {
+            const elements = document.querySelectorAll(selector);
+            if (elements.length > 0) {
+                for (const element of elements) {
+                    if (element instanceof HTMLElement || element instanceof SVGElement) {
+                        element.style.visibility = "hidden";
+                        hidden_elements.push(element);
+                    }
+                }
+            } else {
+                all_elements_found = false;
+            }
+        }
+        if (all_elements_found) {
+            // Stop checking once all elements are found and hidden
+            clearInterval(interval_id);
+        }
+    }, 2); // Check every 2 milliseconds
+    return hidden_elements;
+}
+
+function display_dashboard_after_timeout(is_build_widget: boolean): void {
+    const dashboard_element = document.querySelector(".uppy-Dashboard-inner");
+    if (dashboard_element && dashboard_element instanceof HTMLElement) {
+        dashboard_element.style.visibility = "hidden";
+    }
+    const loading_text_element = document.querySelector(".loading-text");
+    if (loading_text_element && loading_text_element instanceof HTMLElement) {
+        loading_text_element.style.display = "block";
+        if (!settings_data.using_dark_theme()) {
+            loading_text_element.style.color = "black";
+        }
+    }
+
+    const selectors = [
+        ".uppy-u-reset.uppy-c-btn",
+        ".uppy-u-reset.uppy-Dashboard-Item-action.uppy-Dashboard-Item-action--remove",
+        'svg.uppy-c-icon[aria-hidden="true"]',
+        ".modal__footer",
+        ...(is_build_widget ? ["#image_editor"] : []),
+    ];
+    const hidden_elements = hide_elements(selectors);
+
+    // Duration (in milliseconds) to hide the dashboard and other specified elements
+    const timeout = 1500;
+    setTimeout(() => {
+        if (dashboard_element && dashboard_element instanceof HTMLElement) {
+            dashboard_element.style.visibility = "visible";
+        }
+        if (loading_text_element && loading_text_element instanceof HTMLElement) {
+            loading_text_element.style.display = "none";
+        }
+        for (const element of hidden_elements) {
+            element.style.visibility = "visible";
+        }
+    }, timeout);
+}
+
 const dashboard_options: DashboardOptions = {
     id: "Dashboard",
     inline: true,
@@ -264,6 +326,8 @@ export function build_widget(
                     type: file.type,
                     data: file,
                 });
+
+                display_dashboard_after_timeout(true);
             }
         }
     }
@@ -493,6 +557,8 @@ export function build_direct_upload_widget(
             type: file.type,
             data: file,
         });
+
+        display_dashboard_after_timeout(false);
     }
 
     $upload_button.on("drop", (e) => {
