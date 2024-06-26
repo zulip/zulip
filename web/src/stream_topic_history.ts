@@ -15,9 +15,8 @@ const request_pending_stream_ids = new Set<number>();
 export function all_topics_in_cache(sub: StreamSubscription): boolean {
     // Checks whether this browser's cache of contiguous messages
     // (used to locally render narrows) in all_messages_data has all
-    // messages from a given stream, and thus all historical topics
-    // for it.  Because all_messages_data is a range, we just need to
-    // compare it to the range of history on the stream.
+    // messages from a given stream. Because all_messages_data is a range,
+    // we just need to compare it to the range of history on the stream.
 
     // If the cache isn't initialized, it's a clear false.
     if (all_messages_data === undefined || all_messages_data.empty()) {
@@ -78,18 +77,11 @@ export function stream_has_topics(stream_id: number): boolean {
     return history.has_topics();
 }
 
-export type TopicHistoryEntry =
-    | {
-          historical: true;
-          message_id: number;
-          pretty_name: string;
-      }
-    | {
-          historical: false;
-          count: number;
-          message_id: number;
-          pretty_name: string;
-      };
+export type TopicHistoryEntry = {
+    count: number;
+    message_id: number;
+    pretty_name: string;
+};
 
 type ServerTopicHistoryEntry = {
     name: string;
@@ -119,8 +111,6 @@ export class PerStreamHistory {
           topic would likely suffice, though we need to think about
           private stream corner cases).
         * pretty_name: The topic_name, with original case.
-        * historical: Whether the user actually received any messages in
-          the topic (has UserMessage rows) or is just viewing the stream.
         * count: Number of known messages in the topic.  Used to detect
           when the last messages in a topic were moved to other topics or
           deleted.
@@ -154,15 +144,12 @@ export class PerStreamHistory {
             this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
-                historical: false,
                 count: 1,
             });
             return;
         }
 
-        if (!existing.historical) {
-            existing.count += 1;
-        }
+        existing.count += 1;
 
         if (message_id > existing.message_id) {
             existing.message_id = message_id;
@@ -177,13 +164,6 @@ export class PerStreamHistory {
             return;
         }
 
-        if (existing.historical) {
-            // We can't trust that a topic rename applied to
-            // the entire history of historical topic, so we
-            // will always leave it in the sidebar.
-            return;
-        }
-
         if (existing.count <= num_messages) {
             this.topics.delete(topic_name);
             return;
@@ -193,9 +173,7 @@ export class PerStreamHistory {
     }
 
     add_history(server_history: ServerTopicHistoryEntry[]): void {
-        // This method populates historical topics from the
-        // server.  We have less data about these than the
-        // client can maintain for newer topics.
+        // This method populates list of topics from the server.
 
         for (const obj of server_history) {
             const topic_name = obj.name;
@@ -203,7 +181,7 @@ export class PerStreamHistory {
 
             const existing = this.topics.get(topic_name);
 
-            if (existing && !existing.historical) {
+            if (existing) {
                 // Trust out local data more, since it
                 // maintains counts.
                 continue;
@@ -216,7 +194,7 @@ export class PerStreamHistory {
             this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
-                historical: true,
+                count: 0,
             });
             this.update_stream_max_message_id(message_id);
         }
