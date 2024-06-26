@@ -970,15 +970,6 @@ td.pointer {
         word-wrap: unset;
     }
 
-    > .view_read_receipts {
-        font-size: 14px;
-        height: 16px;
-
-        &:hover {
-            color: hsl(200deg 100% 40%);
-        }
-    }
-
     .edit_content {
         /* Icons for editing content are determined on message hover;
            we set an empty `.edit_content` to have 0 height in order to
