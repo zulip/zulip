@@ -42,7 +42,6 @@
     /* For the box-shadow to be visible on the left */
     .add-task,
     .add-desc {
-        font-size: 14px;
         font-weight: 400;
     }
 
