@@ -99,6 +99,39 @@ export function create({
     return pill_widget;
 }
 
+export function create_without_add_button({
+    $pill_container,
+    get_potential_subscribers,
+    onPillCreateAction,
+    onPillRemoveAction,
+}: {
+    $pill_container: JQuery;
+    get_potential_subscribers: () => User[];
+    onPillCreateAction: (pill_user_ids: number[]) => void;
+    onPillRemoveAction: (pill_user_ids: number[]) => void;
+}): CombinedPillContainer {
+    const pill_widget = input_pill.create<CombinedPill>({
+        $container: $pill_container,
+        create_item_from_text,
+        get_text_from_item,
+    });
+    function get_users(): User[] {
+        const potential_subscribers = get_potential_subscribers();
+        return user_pill.filter_taken_users(potential_subscribers, pill_widget);
+    }
+
+    pill_widget.onPillCreate(() => {
+        onPillCreateAction(get_pill_user_ids(pill_widget));
+    });
+    pill_widget.onPillRemove(() => {
+        onPillRemoveAction(get_pill_user_ids(pill_widget));
+    });
+
+    set_up_pill_typeahead({pill_widget, $pill_container, get_users});
+
+    return pill_widget;
+}
+
 function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
     const user_ids = user_pill.get_user_ids(pill_widget);
     const stream_user_ids = stream_pill.get_user_ids(pill_widget);
