@@ -193,6 +193,7 @@ run_test("get_deletability", ({override}) => {
 
     const bot_user = {
         user_id: 2,
+        is_bot: true,
         full_name: "Test bot user",
         email: "test-bot@zulip.com",
         bot_owner_id: 1,
@@ -261,6 +262,7 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
     // to the stream_id and topic parameters.
     const message_no_edits = {
         stream_id: 1,
+        type: "stream",
         topic: "topic match",
     };
     assert.equal(
@@ -286,6 +288,7 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
     // even if the message's current stream_id and topic are a match.
     const message_content_edit = {
         stream_id: 1,
+        type: "stream",
         topic: "topic match",
         edit_history: [{prev_content: "content edit"}],
     };
@@ -296,6 +299,7 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
 
     const message_stream_edit = {
         stream_id: 6,
+        type: "stream",
         topic: "topic match",
         edit_history: [{stream: 6, prev_stream: 1}],
     };
@@ -310,6 +314,7 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
 
     const message_topic_edit = {
         stream_id: 1,
+        type: "stream",
         topic: "final topic",
         edit_history: [{topic: "final topic", prev_topic: "topic match"}],
     };
@@ -324,6 +329,7 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
 
     const message_many_edits = {
         stream_id: 6,
+        type: "stream",
         topic: "final topic",
         edit_history: [
             {stream: 6, prev_stream: 5},
@@ -349,6 +355,7 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
     // individually, but not together in a historical state, it should return false.
     const message_no_historical_match = {
         stream_id: 6,
+        type: "stream",
         topic: "final topic",
         edit_history: [
             {stream: 6, prev_stream: 1}, // stream matches, topic does not

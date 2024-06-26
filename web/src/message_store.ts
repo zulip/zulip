@@ -144,6 +144,8 @@ export type Message = (
 
     small_avatar_url?: string; // Used in `message_avatar.hbs`
     status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
+
+    local_edit_timestamp?: number; // Used for edited messages
 } & (
         | {
               type: "private";

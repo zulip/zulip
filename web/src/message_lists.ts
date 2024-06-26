@@ -68,6 +68,11 @@ export type MessageList = {
     visibly_empty: () => boolean;
     selected_message: () => Message;
     should_preserve_current_rendered_state: () => boolean;
+    show_edit_message: ($row: JQuery, $form: JQuery) => void;
+    show_edit_topic_on_recipient_row: ($recipient_row: JQuery, $form: JQuery) => void;
+    hide_edit_topic_on_recipient_row: ($recipient_row: JQuery) => void;
+    hide_edit_message: ($row: JQuery) => void;
+    get_last_message_sent_by_me: () => Message | undefined;
 };
 
 export let current: MessageList | undefined;

@@ -1256,8 +1256,8 @@ def check_update_message(
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
     # past the limit, and in case there are network issues, etc. The 15 comes
-    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
-    # you change this value also change those two parameters in message_edit.js.
+    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.ts; if
+    # you change this value also change those two parameters in message_edit.ts.
     edit_limit_buffer = 20
     if content is not None:
         validate_user_can_edit_message(user_profile, message, edit_limit_buffer)
