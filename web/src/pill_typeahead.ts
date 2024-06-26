@@ -87,7 +87,7 @@ export function set_up_stream(
     };
     opts.help_on_empty_strings ||= false;
     new Typeahead(bootstrap_typeahead_input, {
-        items: 5,
+        items: 12,
         dropup: true,
         helpOnEmptyStrings: true,
         source(_query: string): StreamPillData[] {
