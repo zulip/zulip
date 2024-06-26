@@ -26,6 +26,17 @@ from typing import TYPE_CHECKING
 # zproject.settings → django_stubs_ext → django_stubs_ext.patch →
 # django.contrib.admin.options → django.contrib.contenttypes.models →
 # confirmation.models → django.conf → zproject.settings.
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'your-smtp-host'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@example.com'
+EMAIL_HOST_PASSWORD = 'your-email-password'
+DEFAULT_FROM_EMAIL = 'your-email@example.com'
+
+
+
 if not TYPE_CHECKING:
     import django_stubs_ext
 
