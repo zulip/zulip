@@ -1285,11 +1285,6 @@ textarea.new_message_textarea {
         color: var(--color-compose-chevron-arrow);
         font-weight: lighter;
     }
-
-    /* This is the "Select a channel" default message */
-    .text-warning {
-        color: inherit;
-    }
 }
 
 .typeahead.dropdown-menu {
