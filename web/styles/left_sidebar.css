@@ -1068,10 +1068,6 @@ li.topic-list-item {
     .user_circle {
         width: 8px;
         height: 8px;
-        /* TODO: Remove these after right-sidebar
-           row rewrites. */
-        float: none;
-        position: static;
     }
 
     .zulip-icon.zulip-icon-bot {
