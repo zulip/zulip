@@ -777,9 +777,7 @@ input[type="checkbox"] {
     }
 
     #emoji-file-name {
-        font-size: 14px;
         white-space: nowrap;
-        height: 1rem;
         font-style: italic;
         color: hsl(0deg 0% 67%);
     }
