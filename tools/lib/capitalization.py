@@ -167,6 +167,11 @@ IGNORED_PHRASES = [
     r"deactivated",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
+    # These are custom time unit options for modal dropdowns
+    r"minutes",
+    r"hours",
+    r"days",
+    r"weeks",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

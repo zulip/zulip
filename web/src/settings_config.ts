@@ -547,6 +547,25 @@ export const expires_in_values = {
     },
 };
 
+export const custom_time_unit_values = {
+    minutes: {
+        name: "minutes",
+        description: $t({defaultMessage: "minutes"}),
+    },
+    hours: {
+        name: "hours",
+        description: $t({defaultMessage: "hours"}),
+    },
+    days: {
+        name: "days",
+        description: $t({defaultMessage: "days"}),
+    },
+    weeks: {
+        name: "weeks",
+        description: $t({defaultMessage: "weeks"}),
+    },
+};
+
 const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 
