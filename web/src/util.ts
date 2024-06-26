@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import type {MatchedMessage, Message, RawMessage} from "./message_store";
@@ -449,4 +450,11 @@ export function format_array_as_list(
 // Returns the remaining time in milliseconds from the start_time and duration.
 export function get_remaining_time(start_time: number, duration: number): number {
     return Math.max(0, start_time + duration - Date.now());
+}
+
+// Helper for shorthand for Typescript to get an item from a list with
+// exactly one item.
+export function the<T>(items: T[] | JQuery<T>): T {
+    assert.equal(items.length, 1, "the: expected exactly one item");
+    return items[0]!;
 }

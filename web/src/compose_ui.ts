@@ -472,7 +472,7 @@ export function handle_keydown(
 }
 
 export function handle_keyup(
-    _event: JQuery.KeyboardEventBase,
+    _event: JQuery.KeyboardEventBase | null,
     $textarea: JQuery<HTMLTextAreaElement>,
 ): void {
     if (_event?.key === "Shift") {
