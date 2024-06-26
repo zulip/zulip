@@ -88,13 +88,6 @@ p {
   font-weight: 200;
   line-height: 30px;
 }
-.text-warning {
-  color: #c09853;
-}
-a.text-warning:hover,
-a.text-warning:focus {
-  color: #a47e3c;
-}
 .text-error {
   color: #b94a48;
 }
