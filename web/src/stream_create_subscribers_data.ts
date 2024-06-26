@@ -52,3 +52,13 @@ export function remove_user_ids(user_ids: number[]): void {
         user_id_set.delete(user_id);
     }
 }
+
+export function sync_user_ids(user_ids: number[]): void {
+    // Current user does not have their pill in their input
+    // box, so we need to make sure that we don't delete
+    // it unnecessarily while syncing.
+    if (user_id_set.has(current_user.user_id)) {
+        user_ids.push(current_user.user_id);
+    }
+    user_id_set = new Set(user_ids);
+}

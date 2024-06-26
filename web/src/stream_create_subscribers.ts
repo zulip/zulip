@@ -9,10 +9,8 @@ import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as people from "./people";
 import {current_user} from "./state_data";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
-import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_sort from "./user_sort";
 
-let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<number, people.User>;
 
 export function get_principals(): number[] {
@@ -38,11 +36,25 @@ function remove_user_ids(user_ids: number[]): void {
     redraw_subscriber_list();
 }
 
+function sync_user_ids(user_ids: number[]): void {
+    stream_create_subscribers_data.sync_user_ids(user_ids);
+    redraw_subscriber_list();
+}
+
 function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
     const $pill_container = $parent_container.find(".pill-container");
     const get_potential_subscribers = stream_create_subscribers_data.get_potential_subscribers;
-
-    pill_widget = add_subscribers_pill.create({$pill_container, get_potential_subscribers});
+    add_subscribers_pill.create_without_add_button({
+        $pill_container,
+        get_potential_subscribers,
+        onPillCreateAction: add_user_ids,
+        // It is better to sync the current set of user ids in the input
+        // instead of removing user_ids from the user_ids_set, otherwise
+        // we'll have to have more complex logic of when to remove
+        // a user and when not to depending upon their group, channel
+        // and individual pills.
+        onPillRemoveAction: sync_user_ids,
+    });
 }
 
 export function create_handlers($container: JQuery): void {
@@ -57,23 +69,6 @@ export function create_handlers($container: JQuery): void {
         const $elem = $(e.target);
         const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
         remove_user_ids([user_id]);
-    });
-
-    const button_selector = ".add_subscribers_container button.add-subscriber-button";
-    function add_users({pill_user_ids}: {pill_user_ids: number[]}): void {
-        add_user_ids(pill_user_ids);
-        // eslint-disable-next-line unicorn/no-array-callback-reference
-        const $pill_widget_button = $container.find(button_selector);
-        $pill_widget_button.prop("disabled", true);
-        pill_widget.clear();
-    }
-
-    add_subscribers_pill.set_up_handlers({
-        get_pill_widget: () => pill_widget,
-        $parent_container: $container,
-        pill_selector: ".add_subscribers_container .input",
-        button_selector,
-        action: add_users,
     });
 }
 

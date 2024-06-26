@@ -78,3 +78,22 @@ test("must_be_subscribed", () => {
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(me.user_id));
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(test_user101.user_id));
 });
+
+test("sync_user_ids", () => {
+    // sync_user_ids should not remove current user if already present.
+    stream_create_subscribers_data.initialize_with_current_user();
+    stream_create_subscribers_data.sync_user_ids([test_user101.user_id, test_user102.user_id]);
+    assert.deepEqual(stream_create_subscribers_data.sorted_user_ids(), [
+        me.user_id,
+        test_user101.user_id,
+        test_user102.user_id,
+    ]);
+
+    // sync_user_ids should not add current user if already not present.
+    stream_create_subscribers_data.remove_user_ids([me.user_id]);
+    stream_create_subscribers_data.sync_user_ids([test_user101.user_id, test_user102.user_id]);
+    assert.deepEqual(stream_create_subscribers_data.sorted_user_ids(), [
+        test_user101.user_id,
+        test_user102.user_id,
+    ]);
+});
