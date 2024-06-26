@@ -1308,11 +1308,6 @@ textarea.new_message_textarea {
     }
 }
 
-.compose_mobile_stream_button i,
-.compose_mobile_direct_message_button i {
-    margin-right: 4px;
-}
-
 /* Class for send-area buttons, such as
    Drafts and the send-adjacent vdots */
 .send-control-button {
