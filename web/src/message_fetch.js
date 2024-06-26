@@ -465,7 +465,7 @@ export function maybe_load_older_messages(opts) {
 
         let found_first_unread = opts.first_unread_message_id === undefined;
         // This is a soft check because `first_unread_message_id` can be deleted.
-        if (!found_first_unread && msg_list_data.first() <= opts.first_unread_message_id) {
+        if (!found_first_unread && msg_list_data.first().id <= opts.first_unread_message_id) {
             found_first_unread = true;
         }
 
