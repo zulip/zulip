@@ -1001,41 +1001,80 @@ textarea.new_message_textarea {
 }
 
 .enter_sends_choices {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-text-popover-menu);
+
     .enter_sends_choice {
         display: flex;
         gap: 8px;
-        padding-top: 4px;
+        padding: 4px 10px;
+        align-items: flex-start;
 
-        & input[type="radio"] {
-            position: relative;
-            top: 5px;
+        &:hover {
+            background: var(--color-background-hover-popover-menu);
+            outline: none;
+        }
+
+        &:active {
+            background: var(--color-background-active-popover-menu);
+        }
+
+        & .enter_sends_choice_radio {
             width: auto;
             cursor: pointer;
             margin: 4px 0 0;
+            accent-color: hsl(217deg 100% 60%);
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
             }
-        }
 
-        &:first-child {
-            padding: 0 0 4px;
-            border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+            &:checked
+                + .enter_sends_choice_text_container
+                .popover-menu-hotkey-hint {
+                color: hsl(217deg 100% 60%);
+                border: 1px solid hsl(217deg 100% 60% / 50%);
+            }
         }
+    }
+
+    .enter_sends_choice_text_container {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        gap: 3px;
+        white-space: nowrap;
     }
 
     .enter_sends_choice_text {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        gap: 3px;
     }
 
-    .enter_sends_minor,
-    .enter_sends_minor kbd {
-        opacity: 0.9;
-        font-size: 11px;
-        color: hsl(0deg 0% 50%);
+    .popover-menu-hotkey-hints {
+        margin: 0;
+        padding: 0;
+
+        .popover-menu-hotkey-hint {
+            padding: 2px 5px;
+        }
+    }
+
+    .enter_sends_major {
+        font-size: 15px;
+    }
+
+    .enter_sends_minor {
+        font-size: 12px;
+
+        .popover-menu-hotkey-hint {
+            font-size: 12px;
+            padding: 1px 4px;
+        }
     }
 }
 
@@ -1045,6 +1084,13 @@ textarea.new_message_textarea {
        in the compose box. */
     @media (width < $sm_min) {
         display: block;
+    }
+
+    .unread_count {
+        margin: 1px 0 0 6px;
+        border: 0.5px solid var(--color-border-unread-counter);
+        background-color: unset;
+        color: inherit;
     }
 }
 
