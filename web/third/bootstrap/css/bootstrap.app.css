@@ -69,13 +69,6 @@ a:focus {
 p {
   margin: 0 0 10px;
 }
-.text-error {
-  color: #b94a48;
-}
-a.text-error:hover,
-a.text-error:focus {
-  color: #953b39;
-}
 h1,
 h2,
 h3,
