@@ -828,8 +828,8 @@ strong {
             Most of the style rules related to color, gradient etc. which are generally common throughout
             the app are defined in user_circles.css and are not overridden here. */
             .user_circle {
-                width: 8px;
-                height: 8px;
+                width: var(--length-user-status-circle);
+                height: var(--length-user-status-circle);
                 margin: 0 5px 0 -6px;
                 position: relative;
                 float: left;
@@ -1590,10 +1590,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     display: inline-flex;
     align-items: center;
     width: 100%;
-
-    .pill-container {
-        padding: 4px 6px;
-    }
 }
 
 #custom-expiration-time-input {
@@ -1623,6 +1619,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .empty_feed_notice {
+    max-width: 600px;
+    margin: 0 auto;
     padding: 3em 1em;
     text-align: center;
 }
@@ -1655,11 +1653,12 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .status-emoji {
-    height: 16px;
-    width: 16px;
+    /* 16px at 14px/1em */
+    height: 1.1429em;
+    width: 1.1429em;
     /* We are setting minimum width here because when the user's name is very long,
     emoji's width decreases and causes it to break. */
-    min-width: 16px;
+    min-width: 1.1429em;
     /* In most contexts, status emoji appear immediately after a name
       field with no margin. Position the status emoji with 3px of left
       margin to space it from the name, and set no right margin so

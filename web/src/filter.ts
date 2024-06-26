@@ -726,6 +726,28 @@ export class Filter {
         return true;
     }
 
+    equals(filter: Filter, excluded_operators?: string[]): boolean {
+        return _.isEqual(
+            filter.sorted_terms(excluded_operators),
+            this.sorted_terms(excluded_operators),
+        );
+    }
+
+    sorted_terms(excluded_operators?: string[]): NarrowTerm[] {
+        let filter_terms = this._terms;
+        if (excluded_operators) {
+            filter_terms = this._terms.filter(
+                (term) => !excluded_operators.includes(term.operator),
+            );
+        }
+
+        return filter_terms.sort((a, b) => {
+            const a_joined = `${a.negated ? "0" : "1"}-${a.operator}-${a.operand}`;
+            const b_joined = `${b.negated ? "0" : "1"}-${b.operator}-${b.operand}`;
+            return util.strcmp(a_joined, b_joined);
+        });
+    }
+
     predicate(): (message: Message) => boolean {
         if (this._predicate === undefined) {
             this._predicate = this._build_predicate();

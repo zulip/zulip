@@ -170,8 +170,6 @@
     .user-group-mention,
     .user-mention,
     .topic-mention {
-        font-size: 14px;
-        line-height: 17px;
         padding: 0 3px;
         border-radius: 3px;
         white-space: nowrap;

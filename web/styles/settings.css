@@ -702,7 +702,7 @@ input[type="checkbox"] {
     }
 
     .person_picker {
-        min-width: 311px;
+        min-width: 319px;
     }
 
     & textarea {
@@ -1643,7 +1643,6 @@ $option_title_width: 180px;
 .custom_user_field,
 .bot_owner_user_field {
     .pill-container {
-        padding: 2px 6px;
         min-height: 24px;
         max-width: 206px;
         background-color: hsl(0deg 0% 100%);

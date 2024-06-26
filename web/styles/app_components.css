@@ -13,6 +13,15 @@
     display: none;
 }
 
+.show {
+    display: block;
+}
+
+.hidden {
+    display: none;
+    visibility: hidden;
+}
+
 kbd {
     display: inline-block;
     border: 1px solid hsl(0deg 0% 80%);
@@ -1261,4 +1270,12 @@ div.overlay {
             );
         }
     }
+}
+
+.text-success {
+    color: hsl(120.91deg 32.04% 40.39%);
+}
+
+.text-error {
+    color: hsl(1.06deg 44.66% 50.39%);
 }

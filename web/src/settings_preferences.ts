@@ -27,7 +27,10 @@ type SettingsPanel = {
     notification_sound_elem: string | null;
 };
 
-type UserSettingsProperty = keyof UserSettings;
+type UserSettingsProperty = Exclude<
+    keyof UserSettings,
+    "available_notification_sounds" | "emojiset_choices"
+>;
 
 const meta = {
     loaded: false,

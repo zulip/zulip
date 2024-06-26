@@ -3,7 +3,7 @@ import * as keydown_util from "./keydown_util";
 import type {User} from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as stream_pill from "./stream_pill";
-import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import * as user_pill from "./user_pill";
 
@@ -65,8 +65,8 @@ export function create({
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
-}): input_pill.InputPillContainer<CombinedPillItem> {
-    const pill_widget = input_pill.create<CombinedPillItem>({
+}): CombinedPillContainer {
+    const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
         create_item_from_text,
         get_text_from_item,

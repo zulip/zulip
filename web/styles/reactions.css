@@ -49,8 +49,9 @@
 
         .emoji {
             margin: 1px 3px;
-            height: 17px;
-            width: 17px;
+            /* 17px at 14px/1em */
+            height: 1.2143em;
+            width: 1.2143em;
             /* Preserve the emoji's dimensions, no
                matter what the flexbox does. */
             flex-shrink: 0;

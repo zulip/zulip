@@ -753,7 +753,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "twenty_four_hour_time") {
                 // Recalculate timestamp column width
-                message_lists.calculate_timestamp_widths();
+                information_density.calculate_timestamp_widths();
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
@@ -779,12 +779,14 @@ export function dispatch_normal_event(event) {
                 $("body").toggleClass("less-dense-mode");
                 $("body").toggleClass("more-dense-mode");
                 information_density.set_base_typography_css_variables();
+                information_density.calculate_timestamp_widths();
             }
             if (
                 event.property === "web_font_size_px" ||
                 event.property === "web_line_height_percent"
             ) {
                 information_density.set_base_typography_css_variables();
+                information_density.calculate_timestamp_widths();
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();

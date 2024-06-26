@@ -482,9 +482,10 @@
             }
 
             .user_circle {
-                /* Shrink the user activity circle for the Recent Conversations context. */
-                min-width: 7px;
-                height: 7px;
+                min-width: var(
+                    --length-user-status-circle-recent-conversations
+                );
+                height: var(--length-user-status-circle-recent-conversations);
                 float: left;
                 position: unset;
             }

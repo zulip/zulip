@@ -303,7 +303,7 @@ export function set_up(settings_panel) {
     // organization-level defaults.
     $container.find(".send_test_notification").on("click", () => {
         message_notifications.send_test_notification(
-            $t({defaultMessage: "This is what a Zulip notification looks like."}),
+            $t({defaultMessage: "This is a test notification from Zulip."}),
         );
     });
 

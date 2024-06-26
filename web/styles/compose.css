@@ -314,6 +314,9 @@
 
     button {
         width: 24px;
+        /* Override any UA stylesheet padding, such as that
+           added by mobile Safari. */
+        padding: 0;
         border: none;
         aspect-ratio: 1 / 1;
         background-color: var(--color-composebox-button-background);
@@ -1281,11 +1284,6 @@ textarea.new_message_textarea {
         padding-left: 5px;
         color: var(--color-compose-chevron-arrow);
         font-weight: lighter;
-    }
-
-    /* This is the "Select a channel" default message */
-    .text-warning {
-        color: inherit;
     }
 }
 

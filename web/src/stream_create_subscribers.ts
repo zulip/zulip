@@ -4,16 +4,15 @@ import render_new_stream_user from "../templates/stream_settings/new_stream_user
 import render_new_stream_users from "../templates/stream_settings/new_stream_users.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
-import type {InputPillContainer} from "./input_pill";
 import * as ListWidget from "./list_widget";
 import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as people from "./people";
 import {current_user} from "./state_data";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
-import type {CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_sort from "./user_sort";
 
-let pill_widget: InputPillContainer<CombinedPillItem>;
+let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<number, people.User>;
 
 export function get_principals(): number[] {

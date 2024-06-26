@@ -13,7 +13,6 @@ import * as blueslip from "./blueslip";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_parser from "./hash_parser";
 import {$t, $t_html} from "./i18n";
-import type {InputPillContainer} from "./input_pill";
 import * as ListWidget from "./list_widget";
 import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as peer_data from "./peer_data";
@@ -27,7 +26,7 @@ import type {SettingsSubscription} from "./stream_settings_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
-import type {CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_sort from "./user_sort";
 
 const remove_user_id_api_response_schema = z.object({
@@ -40,7 +39,7 @@ const add_user_ids_api_response_schema = z.object({
     already_subscribed: z.record(z.string(), z.array(z.string())),
 });
 
-export let pill_widget: InputPillContainer<CombinedPillItem>;
+export let pill_widget: CombinedPillContainer;
 let current_stream_id: number;
 let subscribers_list_widget: ListWidgetType<User, User>;
 

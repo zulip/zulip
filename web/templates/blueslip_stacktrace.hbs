@@ -3,7 +3,7 @@
         <div class="warning-symbol">
             <i class="fa fa-exclamation-triangle"></i>
         </div>
-        <div class="message"><strong>Error:</strong> {{ message }}</div>
+        <div class="message">{{#unless @first}}caused by {{/unless}}<strong>{{name}}:</strong> {{ message }}</div>
         {{#if @first}}
             <div class="exit"></div>
         {{/if}}

@@ -284,7 +284,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no starred messages.",
-            'translated HTML: Learn more about starring messages <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">here</a>.',
+            'translated HTML: Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>. <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">Learn more</a>',
         ),
     );
 
@@ -293,8 +293,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You haven't been mentioned yet!",
-            'translated HTML: Learn more about mentions <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">here</a>.',
+            "translated: This view will show messages where you are mentioned.",
+            'translated HTML: To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a stream. Type @ in the compose box, and choose who you\'d like to mention from the list of suggestions. <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">Learn more</a>',
         ),
     );
 

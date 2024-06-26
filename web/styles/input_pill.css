@@ -1,9 +1,10 @@
 .pill-container {
     display: inline-flex;
+    gap: var(--vertical-spacing-input-pill) var(--horizontal-spacing-input-pill);
     flex-wrap: wrap;
     min-width: 0;
 
-    padding: 2px;
+    padding: var(--outer-spacing-input-pill-container);
     border: 1px solid hsl(0deg 0% 0% / 15%);
     border-radius: 4px;
     align-items: center;
@@ -157,8 +158,6 @@
 }
 
 #compose-direct-recipient .pill-container {
-    gap: var(--vertical-spacing-input-pill) var(--horizontal-spacing-input-pill);
-    padding: var(--vertical-spacing-input-pill);
     border: 1px solid hsl(0deg 0% 0% / 20%);
     background-color: hsl(0deg 0% 100%);
 
@@ -189,6 +188,11 @@
         opacity: 0.5;
         content: attr(data-placeholder);
     }
+}
+
+.display_only_pill {
+    /* Ensure middle alignment in table contexts. */
+    vertical-align: middle;
 }
 
 /* These pill are similar to .not-editable, but are meant to show

@@ -35,7 +35,7 @@ args="$(getopt -o '' --long help,branch:,roles:,debug-key: -n "$0" -- "$@")" || 
 }
 eval "set -- $args"
 
-BRANCH="main"
+BRANCH="production"
 ROLES="base"
 DEBUG_KEY=""
 while true; do

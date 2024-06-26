@@ -206,7 +206,15 @@
     --height-input-pill: 1.4286em;
     --length-input-pill-image: var(--height-input-pill);
     --vertical-spacing-input-pill: 2px;
+    --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
     --horizontal-spacing-input-pill: 6px;
+
+    /* User circles. */
+    /* 8px at 14px/1em */
+    --length-user-status-circle: 0.5714em;
+    /* Shrink the user activity circle for the Recent Conversations context. */
+    /* 7px at 14px/1em */
+    --length-user-status-circle-recent-conversations: 0.5em;
 
     /* Overlay heights for streams modal */
     --overlay-container-height: 95vh;

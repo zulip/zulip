@@ -28,6 +28,39 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
     ),
 };
 
+const MENTIONS_VIEW_EMPTY_BANNER = {
+    title: $t({defaultMessage: "This view will show messages where you are mentioned."}),
+    html: $t_html(
+        {
+            defaultMessage:
+                "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a stream. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
+        },
+        {
+            "z-link": (content_html) =>
+                `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
+                    "",
+                )}</a>`,
+        },
+    ),
+};
+
+const STARRED_MESSAGES_VIEW_EMPTY_BANNER = {
+    title: $t({defaultMessage: "You have no starred messages."}),
+    html: $t_html(
+        {
+            defaultMessage:
+                "Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <star-icon></star-icon>. <z-link>Learn more</z-link>",
+        },
+        {
+            "star-icon": () => `<i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>`,
+            "z-link": (content_html) =>
+                `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
+                    "",
+                )}</a>`,
+        },
+    ),
+};
+
 function retrieve_search_query_data(): SearchData {
     // when search bar contains multiple filters, only retrieve search queries
     const current_filter = narrow_state.filter();
@@ -192,37 +225,9 @@ function pick_empty_narrow_banner(): NarrowBannerData {
         case "is":
             switch (first_operand) {
                 case "starred":
-                    // You currently have no starred messages.
-                    return {
-                        title: $t({defaultMessage: "You have no starred messages."}),
-                        html: $t_html(
-                            {
-                                defaultMessage:
-                                    "Learn more about starring messages <z-link>here</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
-                    };
+                    return STARRED_MESSAGES_VIEW_EMPTY_BANNER;
                 case "mentioned":
-                    return {
-                        title: $t({defaultMessage: "You haven't been mentioned yet!"}),
-                        html: $t_html(
-                            {
-                                defaultMessage: "Learn more about mentions <z-link>here</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
-                    };
+                    return MENTIONS_VIEW_EMPTY_BANNER;
                 case "dm":
                     // You have no direct messages.
                     if (

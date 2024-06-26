@@ -413,6 +413,7 @@ function generate_topic_data(topic_info_array) {
             visibility_policy,
             all_visibility_policies,
             is_spectator: page_params.is_spectator,
+            column_indexes: rt.COLUMNS,
         });
     }
     return data;
