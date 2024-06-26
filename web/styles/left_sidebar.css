@@ -1066,8 +1066,8 @@ li.topic-list-item {
     }
 
     .user_circle {
-        width: 8px;
-        height: 8px;
+        width: var(--length-user-status-circle);
+        height: var(--length-user-status-circle);
     }
 
     .zulip-icon.zulip-icon-bot {

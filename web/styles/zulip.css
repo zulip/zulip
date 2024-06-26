@@ -828,8 +828,8 @@ strong {
             Most of the style rules related to color, gradient etc. which are generally common throughout
             the app are defined in user_circles.css and are not overridden here. */
             .user_circle {
-                width: 8px;
-                height: 8px;
+                width: var(--length-user-status-circle);
+                height: var(--length-user-status-circle);
                 margin: 0 5px 0 -6px;
                 position: relative;
                 float: left;
