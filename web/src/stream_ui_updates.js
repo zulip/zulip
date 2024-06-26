@@ -256,6 +256,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
         .prop("disabled", !sub.can_change_stream_permissions);
 
     if (!sub.can_change_stream_permissions) {
+        $general_settings_container.find(".default-stream").addClass("control-label-disabled");
         return;
     }
 
