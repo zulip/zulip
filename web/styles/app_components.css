@@ -1271,3 +1271,7 @@ div.overlay {
         }
     }
 }
+
+.text-success {
+    color: hsl(120.91deg 32.04% 40.39%);
+}
