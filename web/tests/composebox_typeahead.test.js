@@ -1816,7 +1816,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(":test", "ing", []);
     assert_typeahead_equals("```test", "ing", []);
     assert_typeahead_equals("~~~test", "ing", []);
-    const terminal_symbols = ",.;?!()[]> \"'\n\t";
+    const terminal_symbols = ",.;?!()[]> \u00A0\"'\n\t";
     for (const symbol of terminal_symbols.split()) {
         assert_typeahead_equals(
             "@othello",
