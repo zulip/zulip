@@ -600,6 +600,7 @@ def notify_users_on_updated_user_profile(
     recipient_user: UserProfile,
     *,
     name_field: Optional[List[str]] = None,
+    role_field: Optional[List[str]] = None,
 ) -> None:
     if recipient_user.is_bot or acting_user == recipient_user:
         return
@@ -619,6 +620,11 @@ def notify_users_on_updated_user_profile(
             ).format(
                 old_full_name=name_field[0],
                 new_full_name=name_field[1],
+            )
+        if role_field is not None:
+            message += _("\n- **Old `role`:** {old_role}\n- **New `role`:** {new_role}").format(
+                old_role=role_field[0],
+                new_role=role_field[1],
             )
 
     internal_send_private_message(sender=sender, recipient_user=recipient_user, content=message)

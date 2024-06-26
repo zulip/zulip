@@ -11,6 +11,7 @@ from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
+from zerver.actions.user_settings import notify_users_on_updated_user_profile
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
@@ -447,6 +448,7 @@ def do_change_user_role(
     user_profile.refresh_from_db()
 
     old_value = user_profile.role
+    old_role_name = user_profile.get_role_name()
     if old_value == value:
         return
     old_system_group = get_system_user_group_for_user(user_profile)
@@ -515,6 +517,13 @@ def do_change_user_role(
         )
 
     send_stream_events_for_role_update(user_profile, previously_accessible_streams)
+    new_role_name = user_profile.get_role_name()
+    if old_role_name != new_role_name:
+        notify_users_on_updated_user_profile(
+            acting_user=acting_user,
+            recipient_user=user_profile,
+            role_field=[old_role_name, new_role_name],
+        )
 
 
 def do_change_is_billing_admin(user_profile: UserProfile, value: bool) -> None:

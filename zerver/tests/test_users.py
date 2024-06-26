@@ -222,7 +222,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(othello_dict["is_owner"])
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
-        with self.capture_send_event_calls(expected_num_events=6) as events:
+        with self.capture_send_event_calls(expected_num_events=7) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -231,8 +231,12 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["user_id"], othello.id)
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
+        # Users should receive a message explaining the changes
+        expected_notification = "@_**Iago|11** has made the following changes to your profile.\n- **Old `role`:** Member\n- **New `role`:** Organization owner"
+        self.assertEqual(self.get_last_message().content, expected_notification)
+
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.capture_send_event_calls(expected_num_events=5) as events:
+        with self.capture_send_event_calls(expected_num_events=6) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -241,10 +245,14 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["user_id"], othello.id)
         self.assertEqual(person["role"], UserProfile.ROLE_MEMBER)
 
+        # Users should receive a message explaining the changes
+        expected_notification = "@_**Iago|11** has made the following changes to your profile.\n- **Old `role`:** Organization owner\n- **New `role`:** Member"
+        self.assertEqual(self.get_last_message().content, expected_notification)
+
         # Cannot take away from last owner
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=5) as events:
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -252,6 +260,11 @@ class PermissionTest(ZulipTestCase):
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], iago.id)
         self.assertEqual(person["role"], UserProfile.ROLE_MEMBER)
+
+        # Users should receive a message explaining the changes
+        expected_notification = "@_**Desdemona|9** has made the following changes to your profile.\n- **Old `role`:** Organization owner\n- **New `role`:** Member"
+        self.assertEqual(self.get_last_message().content, expected_notification)
+
         with self.capture_send_event_calls(expected_num_events=0):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
         self.assert_json_error(
@@ -280,10 +293,10 @@ class PermissionTest(ZulipTestCase):
         othello_dict = find_dict(members, "email", othello.email)
         self.assertFalse(othello_dict["is_admin"])
 
-        # Giveth
+        # Give the user administrator role
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
-        with self.capture_send_event_calls(expected_num_events=6) as events:
+        with self.capture_send_event_calls(expected_num_events=7) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -292,9 +305,13 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["user_id"], othello.id)
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_ADMINISTRATOR)
 
-        # Taketh away
+        # Users should receive a message explaining the changes
+        expected_notification = "@_**Desdemona|9** has made the following changes to your profile.\n- **Old `role`:** Member\n- **New `role`:** Organization administrator"
+        self.assertEqual(self.get_last_message().content, expected_notification)
+
+        # Take away user's administrator role
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        with self.capture_send_event_calls(expected_num_events=5) as events:
+        with self.capture_send_event_calls(expected_num_events=6) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -302,6 +319,10 @@ class PermissionTest(ZulipTestCase):
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], othello.id)
         self.assertEqual(person["role"], UserProfile.ROLE_MEMBER)
+
+        # Users should receive a message explaining the changes
+        expected_notification = "@_**Desdemona|9** has made the following changes to your profile.\n- **Old `role`:** Organization administrator\n- **New `role`:** Member"
+        self.assertEqual(self.get_last_message().content, expected_notification)
 
         # Make sure only admins can patch other user's info.
         self.login("othello")
@@ -650,6 +671,9 @@ class PermissionTest(ZulipTestCase):
             # or member, then the user gains access to unsubscribed private streams and thus
             # receives one event for stream creation and one peer_add event for it.
             num_events += 2
+
+        # One event for notifying the user of the role changes.
+        num_events += 1
 
         with self.capture_send_event_calls(expected_num_events=num_events) as events:
             result = self.client_patch(f"/json/users/{user_profile.id}", req)
