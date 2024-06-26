@@ -255,7 +255,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
 
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
-        assert.equal(config.items, 5);
+        assert.equal(config.items, 12);
         assert.ok(config.dropup);
         assert.ok(config.stopAdvance);
 
