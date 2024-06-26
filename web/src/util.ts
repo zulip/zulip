@@ -451,6 +451,22 @@ export function get_custom_time_in_minutes(time_unit: string, time_input: number
     }
 }
 
+export function check_time_input(input_value: string, keep_number_as_float = false): number {
+    // This check is important to make sure that inputs like "24a" are
+    // considered invalid and this function returns NaN for such inputs.
+    // Number.parseInt and Number.parseFloat will convert strings like
+    // "24a" to 24.
+    if (Number.isNaN(Number(input_value))) {
+        return Number.NaN;
+    }
+
+    if (keep_number_as_float) {
+        return Number.parseFloat(Number.parseFloat(input_value).toFixed(1));
+    }
+
+    return Number.parseInt(input_value, 10);
+}
+
 // Helper for shorthand for Typescript to get an item from a list with
 // exactly one item.
 export function the<T>(items: T[] | JQuery<T>): T {
