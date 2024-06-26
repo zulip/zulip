@@ -117,8 +117,8 @@ $user_status_emoji_width: 24px;
     }
 
     .user_circle {
-        width: 8px;
-        height: 8px;
+        width: var(--length-user-status-circle);
+        height: var(--length-user-status-circle);
         grid-area: starting-anchor-element;
         place-self: center center;
     }
