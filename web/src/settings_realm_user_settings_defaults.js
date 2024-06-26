@@ -18,6 +18,11 @@ export function maybe_disable_widgets() {
             .prop("disabled", true);
 
         $(".organization-box [data-name='organization-level-user-defaults']")
+            .find("input[type='checkbox']:disabled")
+            .closest(".input-group")
+            .addClass("control-label-disabled");
+
+        $(".organization-box [data-name='organization-level-user-defaults']")
             .find(".play_notification_sound")
             .addClass("control-label-disabled");
     }

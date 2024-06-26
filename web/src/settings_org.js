@@ -62,6 +62,11 @@ export function maybe_disable_widgets() {
 
     $(".organization-box [data-name='organization-profile']").find(".image_upload_button").hide();
 
+    $(".organization-box [data-name='organization-profile']")
+        .find("input[type='checkbox']:disabled")
+        .closest(".input-group")
+        .addClass("control-label-disabled");
+
     $(".organization-box [data-name='organization-settings']")
         .find("input, textarea, button, select")
         .prop("disabled", true);
@@ -71,16 +76,18 @@ export function maybe_disable_widgets() {
         .hide();
 
     $(".organization-box [data-name='organization-settings']")
-        .find(".control-label-disabled")
-        .addClass("enabled");
+        .find("input[type='checkbox']:disabled")
+        .closest(".input-group")
+        .addClass("control-label-disabled");
 
     $(".organization-box [data-name='organization-permissions']")
         .find("input, textarea, button, select")
         .prop("disabled", true);
 
     $(".organization-box [data-name='organization-permissions']")
-        .find(".control-label-disabled")
-        .addClass("enabled");
+        .find("input[type='checkbox']:disabled")
+        .closest(".input-group")
+        .addClass("control-label-disabled");
 }
 
 export function get_organization_settings_options() {
