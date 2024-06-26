@@ -124,6 +124,8 @@ import * as stream_list from "./stream_list";
 import * as stream_list_sort from "./stream_list_sort";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_topic_history from "./stream_topic_history";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
@@ -486,6 +488,15 @@ export function initialize_everything(state_data) {
     settings.initialize();
     initialize_navbar();
     initialize_message_feed_errors();
+
+    // Needs to be set before we fetch any messages.
+    stream_topic_history.set_update_topic_last_message_id((stream_id, topic_name) => {
+        stream_topic_history_util.update_topic_last_message_id(
+            stream_id,
+            topic_name,
+            stream_list.update_streams_sidebar,
+        );
+    });
 
     realm_logo.initialize();
     message_lists.initialize();

@@ -12,6 +12,15 @@ const stream_dict = new Map<number, PerStreamHistory>();
 const fetched_stream_ids = new Set<number>();
 const request_pending_stream_ids = new Set<number>();
 
+// This is stream_topic_history_util.get_server_history.
+// We have to indirectly set it to avoid a circular dependency.
+let update_topic_last_message_id: (stream_id: number, topic_name: string) => void;
+export function set_update_topic_last_message_id(
+    f: (stream_id: number, topic_name: string) => void,
+): void {
+    update_topic_last_message_id = f;
+}
+
 export function all_topics_in_cache(sub: StreamSubscription): boolean {
     // Checks whether this browser's cache of contiguous messages
     // (used to locally render narrows) in all_messages_data has all
@@ -95,21 +104,9 @@ export class PerStreamHistory {
         we just sort on the fly every time we are called.
 
         Attributes for a topic are:
-        * message_id: The latest message_id in the topic.  Only usable
-          for imprecise applications like sorting.  The message_id
-          cannot be fully accurate given message editing and deleting
-          (as we don't have a way to handle the latest message in a
-          stream having its stream edited or deleted).
-
-          TODO: We can probably fix this limitation by doing a
-          single-message `GET /messages` query with anchor="latest",
-          num_before=0, num_after=0, to update this field when its
-          value becomes ambiguous.  Or probably better to avoid a
-          thundering herd (of a fast query), having the server send
-          the data needed to do this update in stream/topic-edit and
-          delete events (just the new max_message_id for the relevant
-          topic would likely suffice, though we need to think about
-          private stream corner cases).
+        * message_id: The latest message_id in the topic. This is to
+            the best of our knowledge, and may not be accurate if
+            we have not seen all the messages in the topic.
         * pretty_name: The topic_name, with original case.
         * count: Number of known messages in the topic.  Used to detect
           when the last messages in a topic were moved to other topics or
@@ -136,6 +133,9 @@ export class PerStreamHistory {
     }
 
     add_or_update(topic_name: string, message_id: number): void {
+        // The `message_id` provided here can easily be far from the latest
+        // message in the topic, but it is more important for us to cache the topic
+        // for autocomplete purposes than to have an accurate max message ID.
         this.update_stream_max_message_id(message_id);
 
         const existing = this.topics.get(topic_name);
@@ -160,13 +160,18 @@ export class PerStreamHistory {
     maybe_remove(topic_name: string, num_messages: number): void {
         const existing = this.topics.get(topic_name);
 
-        if (!existing) {
+        if (!existing || existing.count === 0) {
             return;
         }
 
         if (existing.count <= num_messages) {
             this.topics.delete(topic_name);
-            return;
+            if (!is_complete_for_stream_id(this.stream_id)) {
+                // Request server for latest message in topic if we
+                // cannot be sure that we have all messages in the topic.
+                update_topic_last_message_id(this.stream_id, topic_name);
+                return;
+            }
         }
 
         existing.count -= num_messages;
@@ -243,9 +248,13 @@ export function remove_messages(opts: {
         return;
     }
 
-    // This is the normal case of an incoming message.
+    // Adjust our local data structures to account for the
+    // removal of messages from a topic. We can also remove
+    // the topic if it has no messages left or if we cannot
+    // locally determine the current state of the topic.
+    // So, it is important that we return below if we don't have
+    // the topic cached.
     history.maybe_remove(topic_name, num_messages);
-
     const existing_topic = history.topics.get(topic_name);
     if (!existing_topic) {
         return;
