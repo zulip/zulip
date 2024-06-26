@@ -769,7 +769,7 @@ export function get_candidates(
     // already-completed object.
 
     // We will likely want to extend this list to be more i18n-friendly.
-    const terminal_symbols = ",.;?!()[]> \"'\n\t";
+    const terminal_symbols = ",.;?!()[]> \u00A0\"'\n\t";
     if (rest !== "" && !terminal_symbols.includes(rest[0]!)) {
         return [];
     }
