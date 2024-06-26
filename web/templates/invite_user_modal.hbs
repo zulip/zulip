@@ -46,7 +46,7 @@
             <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-expiration-time inline-block" value="" maxlength="3"/>
             <select class="custom-expiration-time invite-user-select modal_select bootstrap-focus-style" id="custom-expiration-time-unit">
                 {{#each time_choices}}
-                    <option name="custom_time_choice" class="custom_time_choice" value="{{this}}">{{this}}</option>
+                    <option name="custom_time_choice" class="custom_time_choice" value="{{this.name}}">{{this.description}}</option>
                 {{/each}}
             </select>
             <p id="custom_expires_on"></p>
