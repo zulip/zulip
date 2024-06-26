@@ -25,6 +25,7 @@ export function initialize() {
         // actions
         target: ".mobile_button_container",
         placement: "top",
+        theme: "popover-menu",
         onShow(instance) {
             popover_menus.popover_instances.compose_mobile_button = instance;
             popover_menus.on_show_prep(instance);
