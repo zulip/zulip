@@ -11495,6 +11495,53 @@ paths:
                     `default_twenty_four_hour_time` parameter to the `PATCH /realm` endpoint.
                   type: boolean
                   example: true
+                custom_default_days:
+                  description: |
+                    Drop down where user can select a number of days in the future to create a custom send time.
+                  type: integer
+                  enum:
+                    - 0
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                    - 6
+                    - 7
+                    - 14
+                    - 21
+                    - 28
+                  example: 1
+                custom_default_hours:
+                  description: |
+                    Drop down where user can select a number of hours of the day.
+                  type: integer
+                  enum:
+                    - 0
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                    - 6
+                    - 7
+                    - 8
+                    - 9
+                    - 10
+                    - 11
+                    - 12
+                    - 13
+                    - 14
+                    - 15
+                    - 16
+                    - 17
+                    - 18
+                    - 19
+                    - 20
+                    - 21
+                    - 22
+                    - 23
+                  example: 1
                 send_private_typing_notifications:
                   description: |
                     Whether [typing notifications](/help/typing-notifications) be sent when composing
@@ -11631,6 +11678,10 @@ paths:
               enter_sends:
                 contentType: application/json
               twenty_four_hour_time:
+                contentType: application/json
+              custom_default_days:
+                contentType: application/json
+              custom_default_hours:
                 contentType: application/json
               send_private_typing_notifications:
                 contentType: application/json
@@ -14032,6 +14083,14 @@ paths:
                             type: boolean
                             description: |
                               Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+                          custom_default_days:
+                            type: integer
+                            description: |
+                              Users can choose a custom day for custom default scheduling times. This will be shown upon opening the scheduling popover.
+                          custom_default_hours:
+                            type: integer
+                            description: |
+                              Users can choose a custom time for custom default scheduling times. This will be shown upon opening the scheduling popover.
                           dense_mode:
                             type: boolean
                             description: |
@@ -15138,6 +15197,12 @@ paths:
                           client capability and access the `user_settings` object instead.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
+                      custom_default_days:
+                        description: Users can choose a custom day for custom default scheduling times. This will be shown upon opening the scheduling popover.
+                        type: integer
+                      custom_default_hours:
+                        description: Users can choose a custom time for custom default scheduling times. This will be shown upon opening the scheduling popover.
+                        type: integer
                       receives_typing_notifications:
                         type: boolean
                         description: |
@@ -16420,6 +16485,12 @@ paths:
                               `realm_default_twenty_four_hour_time` in
                               the top-level response object (only when `realm` was
                               present in `fetch_event_types`).
+                          custom_default_days:
+                            description: Users can choose a custom day for custom default scheduling times. This will be shown upon opening the scheduling popover.
+                            type: integer
+                          custom_default_hours:
+                            description: Users can choose a custom time for custom default scheduling times. This will be shown upon opening the scheduling popover.
+                            type: integer
                           dense_mode:
                             type: boolean
                             description: |
@@ -17513,6 +17584,14 @@ paths:
                     the `PATCH /settings/display` endpoint.
                   type: boolean
                   example: true
+                custom_default_days:
+                  description: Users can choose a custom day for custom default scheduling times. This will be shown upon opening the scheduling popover.
+                  type: integer
+                  example: 3
+                custom_default_hours:
+                  description: Users can choose a custom time for custom default scheduling times. This will be shown upon opening the scheduling popover.
+                  type: integer
+                  example: 13
                 dense_mode:
                   description: |
                     This setting has no effect at present. It is reserved for use in controlling
@@ -18110,6 +18189,10 @@ paths:
                   example: 1
             encoding:
               twenty_four_hour_time:
+                contentType: application/json
+              custom_default_days:
+                contentType: application/json
+              custom_default_hours:
                 contentType: application/json
               dense_mode:
                 contentType: application/json
