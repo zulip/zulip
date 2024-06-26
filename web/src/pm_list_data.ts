@@ -28,7 +28,11 @@ export function get_active_user_ids_string(): string | undefined {
         return undefined;
     }
 
-    return people.emails_strings_to_user_ids_string(emails);
+    const users_ids_array = people.emails_strings_to_user_ids_array(emails);
+    if (!users_ids_array || users_ids_array.length === 0) {
+        return undefined;
+    }
+    return people.sorted_other_user_ids(users_ids_array).join(",");
 }
 
 type DisplayObject = {
