@@ -1,13 +1,16 @@
 from datetime import timedelta
-from typing import Iterable, Optional, Union
+from typing import Iterable, List, Optional, Union
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED
+from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
@@ -18,6 +21,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.create_user import get_display_email_address
 from zerver.lib.i18n import get_language_name
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
@@ -41,7 +45,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.clients import get_client
-from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
+from zerver.models.users import bot_owner_user_ids, get_system_bot, get_user_profile_by_id
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
@@ -217,6 +221,7 @@ def do_change_full_name(
     user_profile: UserProfile, full_name: str, acting_user: Optional[UserProfile]
 ) -> None:
     old_name = user_profile.full_name
+    new_name = full_name
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
     event_time = timezone_now()
@@ -226,7 +231,7 @@ def do_change_full_name(
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
         event_time=event_time,
-        extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
+        extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: new_name},
     )
     payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
     send_event(
@@ -240,6 +245,7 @@ def do_change_full_name(
             dict(type="realm_bot", op="update", bot=payload),
             bot_owner_user_ids(user_profile),
         )
+    notify_users_on_updated_user_profile(acting_user, user_profile, name_field=[old_name, new_name])
 
 
 def check_change_full_name(
@@ -587,3 +593,32 @@ def do_change_user_setting(
                 force_send_update=True,
             )
         )
+
+
+def notify_users_on_updated_user_profile(
+    acting_user: Optional[UserProfile],
+    recipient_user: UserProfile,
+    *,
+    name_field: Optional[List[str]] = None,
+) -> None:
+    if recipient_user.is_bot or acting_user == recipient_user:
+        return
+    realm = recipient_user.realm
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    message = ""
+
+    with override_language(recipient_user.default_language):
+        message = _("The following updates have been made to your account.")
+        if acting_user is not None:
+            message = _("{user_full_name} has made the following changes to your profile.").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
+            )
+        if name_field is not None:
+            message += _(
+                "\n- **Old `name`:** {old_full_name}\n- **New `name`:** {new_full_name}"
+            ).format(
+                old_full_name=name_field[0],
+                new_full_name=name_field[1],
+            )
+
+    internal_send_private_message(sender=sender, recipient_user=recipient_user, content=message)
