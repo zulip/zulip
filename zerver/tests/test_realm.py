@@ -1872,6 +1872,8 @@ class RealmAPITest(ZulipTestCase):
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES,
             notification_sound=["zulip", "ding"],
+            custom_default_days=[3, 2],
+            custom_default_hours=[8, 7],
             email_notifications_batching_period_seconds=[120, 300],
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
             realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
