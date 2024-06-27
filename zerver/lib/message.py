@@ -533,7 +533,7 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
         UserMessage.objects.filter(
             user_profile=user_profile,
         )
-        .extra(
+        .extra(  # noqa: S610
             where=[UserMessage.where_starred()],
         )
         .order_by(
@@ -573,7 +573,7 @@ def get_raw_unread_data(
         user_msgs = user_msgs.filter(message_id__in=message_ids)
     else:
         # At page load we need all unread messages.
-        user_msgs = user_msgs.extra(
+        user_msgs = user_msgs.extra(  # noqa: S610
             where=[UserMessage.where_unread()],
         )
 

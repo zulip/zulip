@@ -1055,7 +1055,7 @@ class DeferredWorker(QueueProcessingWorker):
                 ).order_by("id")[offset : offset + batch_size]
 
                 with transaction.atomic(savepoint=False):
-                    UserMessage.select_for_update_query().filter(message__in=messages).extra(
+                    UserMessage.select_for_update_query().filter(message__in=messages).extra(  # noqa: S610
                         where=[UserMessage.where_unread()]
                     ).update(flags=F("flags").bitor(UserMessage.flags.read))
                 offset += len(messages)
