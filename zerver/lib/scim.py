@@ -229,19 +229,19 @@ class ZulipSCIMUser(SCIMUser):
             value = {path: value}
 
         assert isinstance(value, dict)
-        for path, val in (value or {}).items():
-            if path.first_path == ("userName", None, None):
+        for attr_path, val in (value or {}).items():
+            if attr_path.first_path == ("userName", None, None):
                 assert isinstance(val, str)
                 self.change_delivery_email(val)
-            elif path.first_path == ("name", "formatted", None):
+            elif attr_path.first_path == ("name", "formatted", None):
                 # TODO: Add support name_formatted_included=False config like we do
                 # for updates via PUT.
                 assert isinstance(val, str)
                 self.change_full_name(val)
-            elif path.first_path == ("active", None, None):
+            elif attr_path.first_path == ("active", None, None):
                 assert isinstance(val, bool)
                 self.change_is_active(val)
-            elif path.first_path == ("role", None, None):
+            elif attr_path.first_path == ("role", None, None):
                 assert isinstance(val, str)
                 self.change_role(val)
             else:
