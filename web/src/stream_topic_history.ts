@@ -187,8 +187,10 @@ export class PerStreamHistory {
             const existing = this.topics.get(topic_name);
 
             if (existing) {
-                // Trust out local data more, since it
-                // maintains counts.
+                // If we have a topic in our cache, we update
+                // the message_id to accurately reflect the latest
+                // message in the topic.
+                existing.message_id = message_id;
                 continue;
             }
 
