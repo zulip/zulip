@@ -358,7 +358,7 @@ class UnreadCountTests(ZulipTestCase):
         self.assertEqual(response["found_newest"], False)
         self.assertCountEqual(
             UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
-            .extra(where=[UserMessage.where_read()])
+            .extra(where=[UserMessage.where_read()])  # noqa: S610
             .values_list("message_id", flat=True),
             message_ids[3:8],
         )
@@ -391,7 +391,7 @@ class UnreadCountTests(ZulipTestCase):
         self.assertEqual(response["found_newest"], True)
         self.assertCountEqual(
             UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
-            .extra(where=[UserMessage.where_starred()])
+            .extra(where=[UserMessage.where_starred()])  # noqa: S610
             .values_list("message_id", flat=True),
             message_ids[5::2],
         )
@@ -787,7 +787,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             UserMessage.objects.filter(
                 user_profile=user_profile,
             )
-            .extra(
+            .extra(  # noqa: S610
                 where=[UserMessage.where_active_push_notification()],
             )
             .order_by("message_id")
@@ -890,7 +890,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
 
         unread_count = (
             UserMessage.objects.filter(user_profile=hamlet)
-            .extra(where=[UserMessage.where_unread()])
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
             .count()
         )
         self.assertNotEqual(unread_count, 0)
@@ -900,7 +900,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
 
         new_unread_count = (
             UserMessage.objects.filter(user_profile=hamlet)
-            .extra(where=[UserMessage.where_unread()])
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
             .count()
         )
         self.assertEqual(new_unread_count, 0)

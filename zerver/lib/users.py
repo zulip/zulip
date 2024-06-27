@@ -224,7 +224,7 @@ def bulk_get_cross_realm_bots() -> Dict[str, UserProfile]:
     where_clause = (
         "upper(zerver_userprofile.email::text) IN (SELECT upper(email) FROM unnest(%s) AS email)"
     )
-    users = UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM).extra(
+    users = UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM).extra(  # noqa: S610
         where=[where_clause], params=(emails,)
     )
 

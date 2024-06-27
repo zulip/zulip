@@ -1549,14 +1549,14 @@ class MessageMoveTopicTest(ZulipTestCase):
             UserMessage.objects.filter(
                 user_profile__in=[admin_user, hamlet, aaron], message__id=messages[2].id
             )
-            .extra(where=[UserMessage.where_unread()])
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
             .count()
             == 3
         )
 
         assert (
             not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[2].id)
-            .extra(where=[UserMessage.where_unread()])
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
             .exists()
         )
 
@@ -1621,14 +1621,14 @@ class MessageMoveTopicTest(ZulipTestCase):
             UserMessage.objects.filter(
                 user_profile__in=[admin_user, hamlet, aaron], message__id=messages[4].id
             )
-            .extra(where=[UserMessage.where_unread()])
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
             .count()
             == 3
         )
 
         assert (
             not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
-            .extra(where=[UserMessage.where_unread()])
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
             .exists()
         )
 
