@@ -720,7 +720,7 @@ input[type="checkbox"] {
 }
 
 .control-label-disabled {
-    color: hsl(0deg 0% 64%);
+    color: hsl(0deg 0% 50%);
 }
 
 .admin-realm-message-retention-days {
