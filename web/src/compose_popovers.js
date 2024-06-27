@@ -6,7 +6,6 @@ import render_mobile_message_buttons_popover from "../templates/popovers/mobile_
 
 import * as compose_actions from "./compose_actions";
 import * as giphy_state from "./giphy_state";
-import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
@@ -29,13 +28,7 @@ export function initialize() {
         onShow(instance) {
             popover_menus.popover_instances.compose_mobile_button = instance;
             popover_menus.on_show_prep(instance);
-            instance.setContent(
-                parse_html(
-                    render_mobile_message_buttons_popover({
-                        is_in_private_narrow: narrow_state.narrowed_to_pms(),
-                    }),
-                ),
-            );
+            instance.setContent(parse_html(render_mobile_message_buttons_popover()));
         },
         onMount(instance) {
             const $popper = $(instance.popper);
