@@ -126,9 +126,34 @@ export class PerStreamHistory {
         return this.topics.size !== 0;
     }
 
-    update_stream_max_message_id(message_id: number): void {
+    update_stream_with_message_id(message_id: number): void {
         if (message_id > this.max_message_id) {
             this.max_message_id = message_id;
+        }
+
+        // Update the first_message_id for the stream.
+        // It is fine if `first_message_id` changes to be higher
+        // due to removal of messages since it will not cause to
+        // display wrong list of topics. So, we don't update it here.
+        // On the other hand, if it changes to be lower
+        // we may miss some topics in autocomplete in the range
+        // of outdated-`first_message_id` to new-`message_id`.
+        // Note that this can only happen if a user moves old
+        // messages to the stream from another stream.
+        const sub = sub_store.get(this.stream_id);
+        if (!sub) {
+            return;
+        }
+
+        if (sub.first_message_id === null || sub.first_message_id === undefined) {
+            fetched_stream_ids.delete(this.stream_id);
+            sub.first_message_id = message_id;
+            return;
+        }
+
+        if (sub.first_message_id > message_id) {
+            fetched_stream_ids.delete(this.stream_id);
+            sub.first_message_id = message_id;
         }
     }
 
@@ -136,7 +161,7 @@ export class PerStreamHistory {
         // The `message_id` provided here can easily be far from the latest
         // message in the topic, but it is more important for us to cache the topic
         // for autocomplete purposes than to have an accurate max message ID.
-        this.update_stream_max_message_id(message_id);
+        this.update_stream_with_message_id(message_id);
 
         const existing = this.topics.get(topic_name);
 
@@ -203,7 +228,7 @@ export class PerStreamHistory {
                 pretty_name: topic_name,
                 count: 0,
             });
-            this.update_stream_max_message_id(message_id);
+            this.update_stream_with_message_id(message_id);
         }
     }
 
