@@ -202,9 +202,13 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     )
 
     new_onboarding_message_ids = set()
+    message_id_to_onboarding_user_message = {}
     onboarding_user_messages_queryset = OnboardingUserMessage.objects.filter(realm_id=realm.id)
     for onboarding_user_message in onboarding_user_messages_queryset:
         new_onboarding_message_ids.add(onboarding_user_message.message_id)
+        message_id_to_onboarding_user_message[onboarding_user_message.message_id] = (
+            onboarding_user_message
+        )
     new_onboarding_messages_exist = len(new_onboarding_message_ids) > 0
 
     message_history_ids = recent_message_ids.union(new_onboarding_message_ids)
@@ -233,9 +237,12 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
             um = UserMessage(
                 user_profile=user_profile, message_id=message_id, flags=UserMessage.flags.historical
             )
-            if new_onboarding_messages_exist and message_id not in new_onboarding_message_ids:
-                um.flags |= UserMessage.flags.read
-            if not new_onboarding_messages_exist and message_id in older_message_ids:
+            if new_onboarding_messages_exist:
+                if message_id not in new_onboarding_message_ids:
+                    um.flags |= UserMessage.flags.read
+                elif message_id_to_onboarding_user_message[message_id].flags.starred.is_set:
+                    um.flags |= UserMessage.flags.starred
+            elif message_id in older_message_ids:
                 um.flags |= UserMessage.flags.read
             ums_to_create.append(um)
 
