@@ -31,8 +31,13 @@ function add_all_users(): void {
     add_user_ids(user_ids);
 }
 
-function remove_user_ids(user_ids: number[]): void {
-    stream_create_subscribers_data.remove_user_ids(user_ids);
+function soft_remove_user_id(user_id: number): void {
+    stream_create_subscribers_data.soft_remove_user_id(user_id);
+    redraw_subscriber_list();
+}
+
+function undo_soft_remove_user_id(user_id: number): void {
+    stream_create_subscribers_data.undo_soft_remove_user_id(user_id);
     redraw_subscriber_list();
 }
 
@@ -68,7 +73,14 @@ export function create_handlers($container: JQuery): void {
         e.preventDefault();
         const $elem = $(e.target);
         const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
-        remove_user_ids([user_id]);
+        soft_remove_user_id(user_id);
+    });
+
+    $container.on("click", ".undo_soft_removed_potential_subscriber", (e) => {
+        e.preventDefault();
+        const $elem = $(e.target);
+        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
+        undo_soft_remove_user_id(user_id);
     });
 }
 
@@ -95,6 +107,9 @@ export function build_widgets(): void {
                 is_current_user: user.user_id === current_user_id,
                 disabled: stream_create_subscribers_data.must_be_subscribed(user.user_id),
                 img_src: people.small_avatar_url_for_person(user),
+                soft_removed: stream_create_subscribers_data.user_id_in_soft_remove_list(
+                    user.user_id,
+                ),
             };
             return render_new_stream_user(item);
         },
