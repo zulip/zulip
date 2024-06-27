@@ -14,6 +14,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
+import {previous_direct_messages_exist} from "./message_util";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -26,6 +27,7 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
 import type {UserOrMention} from "./typeahead_helper";
+import {get_user_group_from_id} from "./user_groups";
 import * as util from "./util";
 
 let user_acknowledged_stream_wildcard = false;
@@ -108,6 +110,46 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
     }
 
     return true;
+}
+
+export function check_dm_permissions_and_get_error_string(user_ids_string: string): string {
+    if (!people.user_can_direct_message(user_ids_string)) {
+        const {name} = get_user_group_from_id(realm.realm_direct_message_permission_group);
+        if (name === "role:nobody") {
+            return $t({
+                defaultMessage: "You are not allowed to send direct messages in this organization.",
+            });
+        }
+        const display_name = settings_config.system_user_groups_list.find(
+            (group) => group.name === name,
+        )?.display_name;
+        if (display_name) {
+            return $t(
+                {
+                    defaultMessage:
+                        "{allowed_user_group} must be in every direct message conversation.",
+                },
+                {allowed_user_group: display_name.replace(" and ", " or ")},
+            );
+        }
+        return $t(
+            {
+                defaultMessage:
+                    "At least one of the members of {allowed_user_group} must be in every direct message conversation.",
+            },
+            {allowed_user_group: name},
+        );
+    }
+    if (
+        !previous_direct_messages_exist(user_ids_string) &&
+        !people.user_can_initiate_direct_message_thread(user_ids_string)
+    ) {
+        return $t({
+            defaultMessage:
+                "You are not allowed to start direct message conversations in this organization.",
+        });
+    }
+    return "";
 }
 
 function get_stream_id_for_textarea($textarea: JQuery<HTMLTextAreaElement>): number | undefined {
@@ -619,13 +661,12 @@ function validate_stream_message(scheduling_message: boolean): boolean {
 // for now)
 function validate_private_message(): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
+    const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
-
-    const user_ids_string = user_ids.join(",");
-
-    if (!people.user_can_direct_message(user_ids_string)) {
+    const direct_message_error_string = check_dm_permissions_and_get_error_string(user_ids_string);
+    if (direct_message_error_string) {
         compose_banner.show_error_message(
-            $t({defaultMessage: "Direct messages are disabled in this organization."}),
+            direct_message_error_string,
             compose_banner.CLASSNAMES.private_messages_disabled,
             $banner_container,
             $("#private_message_recipient"),
