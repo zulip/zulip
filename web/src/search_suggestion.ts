@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_user_pill from "../templates/user_pill.hbs";
 
+import {MAX_ITEMS} from "./bootstrap_typeahead";
 import * as common from "./common";
 import * as direct_message_group_data from "./direct_message_group_data";
 import {Filter, create_user_pill_context} from "./filter";
@@ -41,7 +42,7 @@ export type Suggestion = {
       }
 );
 
-export const max_num_of_search_results = 12;
+export const max_num_of_search_results = MAX_ITEMS;
 
 function channel_matches_query(channel_name: string, q: string): boolean {
     return common.phrase_match(q, channel_name);

@@ -1404,6 +1404,12 @@ textarea.new_message_textarea {
     .typeahead-menu {
         list-style: none;
         margin: 4px 0;
+        max-height: min(248px, 95vh);
+        overflow-y: auto;
+
+        .simplebar-content {
+            min-width: max-content;
+        }
     }
 
     .typeahead-header {

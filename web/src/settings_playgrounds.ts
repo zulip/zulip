@@ -169,7 +169,6 @@ function build_page(): void {
             language_labels = realm_playground.get_pygments_typeahead_list_for_settings(query);
             return [...language_labels.keys()];
         },
-        items: 5,
         helpOnEmptyStrings: true,
         highlighter_html: (item: string): string =>
             render_typeahead_item({primary: language_labels.get(item)}),
