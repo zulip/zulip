@@ -588,9 +588,11 @@ div.overlay {
 .unread_count {
     float: right;
     padding: 0 4px;
-    height: 16px;
-    line-height: 16px;
-    font-size: 12px;
+    /* 12px at 14px/em */
+    font-size: 0.8571em;
+    /* 16px at 12px/em, owing to font-size above. */
+    height: 1.3333em;
+    line-height: 1.3333em;
     font-weight: normal;
     border-radius: 4px;
     background-color: var(--color-background-unread-counter);
