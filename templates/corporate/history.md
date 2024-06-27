@@ -129,6 +129,16 @@ badge](https://www.capterra.com/p/197945/Zulip/).
 
 ## Press highlights
 
+- June 2024: An in-depth [review of
+  Zulip](https://www.hostingadvice.com/blog/emerging-open-source-team-chat-app-set-to-rival-slack/)
+  is published on [HostingAdvice.com](https://www.hostingadvice.com/).
+
+> "An excellent solution for teams collaborating across different time zones."
+>
+> — [Zulip
+> review](https://www.hostingadvice.com/blog/emerging-open-source-team-chat-app-set-to-rival-slack/)
+> on *HostingAdvice.com*
+
 - March 2023: A long-form [video
   interview](https://www.youtube.com/watch?v=cbj59mVwErg) with Zulip’s founder
   and project leader about Zulip’s history, our goals for the product and how we
