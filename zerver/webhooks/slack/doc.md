@@ -20,6 +20,7 @@ See also the [Slack-compatible webhook](/integrations/doc/slack_incoming).
    section and make sure "Bot Token Scopes" includes:
    `channels:read`, `channels:history`, `users:read`, `eomji:read`,
    `team:read`, `users:read`, `users:read.email`.
+   > *Note: If you worry about the scopes that we're asking, refer to [Slack APIs used](#slack-apis-used) section to see the list of Slack APIs that we use.*
 
 1. Next, scroll to the "OAuth Tokens for Your Workspace" section in the
    same menu and click **Install to Workspace**.
@@ -56,5 +57,14 @@ channels for all your public Slack channels *(see step 1)*, and that the
 name of each channel is the same as the name of the Slack channel it maps
 to. Note that in this case, the channel to channel mapping will be
 prioritized over the channel specified in the URL.
+
+### Slack APIs used
+
+- https://api.slack.com/events/message.channels, this event is used with Event
+   API to get Slack messages.
+- https://api.slack.com/methods/users.info, this end point is used to get
+   the username of each sender. The basic payload only include user_id
+- https://api.slack.com/methods/conversations.info, this API is used to get
+   the channel name of each message. The basic payload only include channel_id
 
 [slack_app_link]: https://api.slack.com/apps
