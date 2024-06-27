@@ -19,11 +19,11 @@
 {{!-- Separate container to ensure overflowing text remains in this container. --}}
 <div class="typeahead-text-container">
     <strong class="typeahead-strong-section">
-        {{~#if stream}}
-            {{> inline_decorated_stream_name stream=stream }}
-        {{else}}
+        {{~#if stream~}}
+            {{~> inline_decorated_stream_name stream=stream ~}}
+            {{~else~}}
             {{~ primary ~}}
-        {{/if}}
+        {{~/if~}}
     </strong>
     {{~#if has_pronouns}}
         <span class="pronouns">({{pronouns}})</span>
