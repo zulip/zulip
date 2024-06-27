@@ -66,11 +66,9 @@ module = [
     "DNS.*",
     "fakeldap.*",
     "firebase_admin.*",
-    "gcm.*",
     "gitlint.*",
     "jsonref.*",
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
-    "moto.*", # https://github.com/spulec/moto/issues/4944
     "onelogin.*",
     "pyinotify.*",
     "pyoembed.*",
