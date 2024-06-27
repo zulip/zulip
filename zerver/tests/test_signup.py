@@ -364,6 +364,56 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.assertFalse(user_message.flags.read.is_set)
             self.assertFalse(user_message.flags.historical.is_set)
 
+    def test_tracked_onboarding_topics_first_messages_marked_starred(self) -> None:
+        """
+        Realms with tracked onboarding messages have only
+        first message in each onboarding topic marked as starred.
+        """
+        realm = do_create_realm("realm_string_id", "realm name")
+        hamlet = do_create_user(
+            "hamlet", "password", realm, "hamlet", realm_creation=True, acting_user=None
+        )
+
+        # Onboarding messages sent during realm creation are tracked.
+        self.assertTrue(OnboardingUserMessage.objects.filter(realm=realm).exists())
+
+        seen_topics = set()
+        onboarding_topics_first_message_ids = set()
+        onboarding_messages = Message.objects.filter(
+            realm=realm, recipient__type=Recipient.STREAM
+        ).order_by("id")
+        for message in onboarding_messages:
+            topic_name = message.topic_name()
+            if topic_name not in seen_topics:
+                onboarding_topics_first_message_ids.add(message.id)
+                seen_topics.add(topic_name)
+
+        # The first onboarding message in each topic are in the
+        # user's history and marked starred.
+        onboarding_user_messages = UserMessage.objects.filter(
+            user_profile=hamlet, message_id__in=onboarding_topics_first_message_ids
+        )
+        for user_message in onboarding_user_messages:
+            self.assertTrue(user_message.flags.starred.is_set)
+            self.assertFalse(user_message.flags.read.is_set)
+            self.assertFalse(user_message.flags.historical.is_set)
+
+        # Other messages are in user's history but not marked starred.
+        other_user_messages = UserMessage.objects.filter(
+            user_profile=hamlet, message__recipient__type=Recipient.STREAM
+        ).exclude(message_id__in=onboarding_topics_first_message_ids)
+        self.assertTrue(other_user_messages.exists())
+        for user_message in other_user_messages:
+            self.assertFalse(user_message.flags.starred.is_set)
+            self.assertFalse(user_message.flags.read.is_set)
+            self.assertFalse(user_message.flags.historical.is_set)
+
+        # Initial DM sent by welcome bot is also starred.
+        initial_direct_user_message = UserMessage.objects.get(
+            user_profile=hamlet, message__recipient__type=Recipient.PERSONAL
+        )
+        self.assertTrue(initial_direct_user_message.flags.starred.is_set)
+
     def test_auto_subbed_to_personals(self) -> None:
         """
         Newly created users are auto-subbed to the ability to receive
@@ -996,7 +1046,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(92), self.assert_memcached_count(14):
+        with self.assert_database_query_count(93), self.assert_memcached_count(14):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 

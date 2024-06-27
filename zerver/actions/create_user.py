@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -209,9 +210,13 @@ def add_new_user_history(
     )
 
     tracked_onboarding_message_ids = set()
+    message_id_to_onboarding_user_message = {}
     onboarding_user_messages_queryset = OnboardingUserMessage.objects.filter(realm_id=realm.id)
     for onboarding_user_message in onboarding_user_messages_queryset:
         tracked_onboarding_message_ids.add(onboarding_user_message.message_id)
+        message_id_to_onboarding_user_message[onboarding_user_message.message_id] = (
+            onboarding_user_message
+        )
     tracked_onboarding_messages_exist = len(tracked_onboarding_message_ids) > 0
 
     message_history_ids = recent_message_ids.union(tracked_onboarding_message_ids)
@@ -242,12 +247,12 @@ def add_new_user_history(
             # They are not marked as historical.
             if not realm_creation:
                 um.flags = UserMessage.flags.historical
-            if (
-                tracked_onboarding_messages_exist
-                and message_id not in tracked_onboarding_message_ids
-            ):
-                um.flags |= UserMessage.flags.read
-            if not tracked_onboarding_messages_exist and message_id in older_message_ids:
+            if tracked_onboarding_messages_exist:
+                if message_id not in tracked_onboarding_message_ids:
+                    um.flags |= UserMessage.flags.read
+                elif message_id_to_onboarding_user_message[message_id].flags.starred.is_set:
+                    um.flags |= UserMessage.flags.starred
+            elif message_id in older_message_ids:
                 um.flags |= UserMessage.flags.read
             ums_to_create.append(um)
 
@@ -335,7 +340,10 @@ def process_new_human_user(
     # to keep all the onboarding code in zerver/lib/onboarding.py.
     from zerver.lib.onboarding import send_initial_direct_message
 
-    send_initial_direct_message(user_profile)
+    message_id = send_initial_direct_message(user_profile)
+    UserMessage.objects.filter(user_profile=user_profile, message_id=message_id).update(
+        flags=F("flags").bitor(UserMessage.flags.starred)
+    )
 
     # The 'visibility_policy_banner' is only displayed to existing users.
     # Mark it as read for a new user.
