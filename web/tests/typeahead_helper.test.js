@@ -211,6 +211,15 @@ test("sort_streams", ({override, override_rewire}) => {
     assert.deepEqual(test_streams[4].name, "dead"); // Completely inactive stream
     assert.deepEqual(test_streams[5].name, "Derp"); // Muted stream last
 
+    // Sort streams by name
+    test_streams = th.sort_streams_by_name(test_streams, "d");
+    assert.deepEqual(test_streams[0].name, "dead");
+    assert.deepEqual(test_streams[1].name, "dead (almost)");
+    assert.deepEqual(test_streams[2].name, "Denmark");
+    assert.deepEqual(test_streams[3].name, "Derp");
+    assert.deepEqual(test_streams[4].name, "Dev");
+    assert.deepEqual(test_streams[5].name, "Docs");
+
     override_rewire(compose_state, "stream_name", () => "Different");
     // Test sort streams with description
     test_streams = [
