@@ -536,8 +536,7 @@ export function get_last_restorable_draft_based_on_compose_state():
     );
     return drafts_for_compose_state
         .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
-        .filter((draft) => !draft.is_sending_saving && draft.drafts_version >= 1)
-        .pop();
+        .findLast((draft) => !draft.is_sending_saving && draft.drafts_version >= 1);
 }
 
 export function remove_old_drafts(): void {
