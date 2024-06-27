@@ -1039,20 +1039,12 @@ def do_update_message(
 
     resolved_topic_message_id = None
     resolved_topic_message_deleted = False
-    if topic_name is not None and content is None:
-        # When stream is changed and topic is marked as resolved or unresolved
-        # in the same API request, resolved or unresolved notification should
-        # be sent to "new_stream".
-        # In general, it is sent to "stream_being_edited".
-        stream_to_send_resolve_topic_notification = stream_being_edited
-        if new_stream is not None:
-            stream_to_send_resolve_topic_notification = new_stream
-
-        assert stream_to_send_resolve_topic_notification is not None
+    if topic_name is not None and content is None and new_stream is None:
+        assert stream_being_edited is not None
         resolved_topic_message_id, resolved_topic_message_deleted = (
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
-                stream=stream_to_send_resolve_topic_notification,
+                stream=stream_being_edited,
                 old_topic_name=orig_topic_name,
                 new_topic_name=topic_name,
                 changed_messages=changed_messages,
