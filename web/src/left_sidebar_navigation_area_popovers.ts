@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
 import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar/left_sidebar_condensed_views_popover.hbs";
@@ -19,14 +21,14 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
-function common_click_handlers() {
+function common_click_handlers(): void {
     $("body").on("click", ".set-home-view", (e) => {
         e.preventDefault();
         e.preventDefault();
 
         const web_home_view = $(e.currentTarget).attr("data-view-code");
         const data = {web_home_view};
-        channel.patch({
+        void channel.patch({
             url: "/json/settings",
             data,
         });
@@ -35,19 +37,27 @@ function common_click_handlers() {
     });
 }
 // This callback is called from the popovers on all home views
-function register_mark_all_read_handler(event) {
+function register_mark_all_read_handler(
+    event: JQuery.ClickEvent<
+        tippy.PopperElement,
+        {
+            instance: tippy.Instance;
+        }
+    >,
+): void {
     const {instance} = event.data;
     unread_ops.confirm_mark_all_as_read();
     popover_menus.hide_current_popover_if_visible(instance);
 }
 
-export function initialize() {
+export function initialize(): void {
     // Starred messages popover
     popover_menus.register_popover_menu(".starred-messages-sidebar-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.starred_messages = instance;
+            assert(instance.reference instanceof HTMLElement);
             ui_util.show_left_sidebar_menu_icon(instance.reference);
 
             $popper.one("click", "#unstar_all_messages", () => {
@@ -55,11 +65,11 @@ export function initialize() {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
             $popper.one("click", "#toggle_display_starred_msg_count", () => {
-                const data = {};
                 const starred_msg_counts = user_settings.starred_message_counts;
-                data.starred_message_counts = JSON.stringify(!starred_msg_counts);
-
-                channel.patch({
+                const data = {
+                    starred_messages_counts: JSON.stringify(!starred_msg_counts),
+                };
+                void channel.patch({
                     url: "/json/settings",
                     data,
                 });
@@ -81,7 +91,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.starred_messages = undefined;
+            popover_menus.popover_instances.starred_messages = null;
             ui_util.hide_left_sidebar_menu_icon();
         },
     });
@@ -93,6 +103,7 @@ export function initialize() {
             const $popper = $(instance.popper);
             $popper.addClass("drafts-popover");
             popover_menus.popover_instances.drafts = instance;
+            assert(instance.reference instanceof HTMLElement);
             ui_util.show_left_sidebar_menu_icon(instance.reference);
 
             $popper.one("click", "#delete_all_drafts_sidebar", () => {
@@ -107,7 +118,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.drafts = undefined;
+            popover_menus.popover_instances.drafts = null;
             ui_util.hide_left_sidebar_menu_icon();
         },
     });
@@ -118,6 +129,7 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.left_sidebar_inbox_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
             ui_util.show_left_sidebar_menu_icon(instance.reference);
 
             $popper.one(
@@ -141,7 +153,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.left_sidebar_inbox_popover = undefined;
+            popover_menus.popover_instances.left_sidebar_inbox_popover = null;
             ui_util.hide_left_sidebar_menu_icon();
         },
     });
@@ -160,6 +172,7 @@ export function initialize() {
         },
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.all_messages.code;
@@ -174,7 +187,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.left_sidebar_all_messages_popover = undefined;
+            popover_menus.popover_instances.left_sidebar_all_messages_popover = null;
             ui_util.hide_left_sidebar_menu_icon();
         },
     });
@@ -193,6 +206,7 @@ export function initialize() {
         },
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.recent_topics.code;
@@ -207,7 +221,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.left_sidebar_recent_view_popover = undefined;
+            popover_menus.popover_instances.left_sidebar_recent_view_popover = null;
             ui_util.hide_left_sidebar_menu_icon();
         },
     });
@@ -241,7 +255,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.top_left_sidebar = undefined;
+            popover_menus.popover_instances.top_left_sidebar = null;
         },
     });
 

@@ -48,7 +48,7 @@ from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import resize_logo
-from zerver.lib.upload.base import sanitize_name
+from zerver.lib.upload import sanitize_name
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,

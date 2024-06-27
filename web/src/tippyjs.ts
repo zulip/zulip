@@ -268,9 +268,12 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ["#compose_close", ".expand-composebox-button", ".collapse-composebox-button"].join(
-            ",",
-        ),
+        target: [
+            "#compose_close",
+            ".expand-composebox-button",
+            ".collapse-composebox-button",
+            ".maximize-composebox-button",
+        ].join(","),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {

@@ -291,6 +291,7 @@
         color: var(--color-text-popover-menu);
         line-height: 1.1;
         margin-top: 4px;
+        white-space: pre-wrap;
     }
 }
 
@@ -412,14 +413,23 @@ ul {
 
 .user_profile_presence,
 .popover_user_presence {
-    width: 8px;
-    height: 8px;
+    width: var(--length-user-status-circle);
+    height: var(--length-user-status-circle);
     margin: 0 5px;
     display: inline-block;
     float: initial;
     position: relative;
     top: 0;
     flex-shrink: 0;
+}
+
+.user_profile_presence {
+    /* Remove font-size to allow this to scale
+       with the menu header text. Declaring font-size
+       here maintains the legacy design of keeping
+       the user-circle smaller, despite the larger
+       surrounding text and icons. */
+    font-size: var(--base-font-size-px);
 }
 
 .bot-owner-name {
@@ -1106,8 +1116,8 @@ ul {
 
     .status-circle {
         position: absolute;
-        width: 8px;
-        height: 8px;
+        width: var(--length-user-status-circle);
+        height: var(--length-user-status-circle);
         top: unset;
         left: unset;
         right: -1px;

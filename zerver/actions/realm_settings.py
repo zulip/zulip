@@ -2,8 +2,10 @@ import logging
 from email.headerregistry import Address
 from typing import Any, Dict, Literal, Optional, Tuple, Union
 
+import zoneinfo
 from django.conf import settings
 from django.db import transaction
+from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
@@ -15,9 +17,10 @@ from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.retention import move_messages_to_archive
-from zerver.lib.send_email import FromAddress, send_email_to_admins
+from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
@@ -501,6 +504,7 @@ def do_deactivate_realm(
     *,
     acting_user: Optional[UserProfile],
     deactivation_reason: RealmDeactivationReasonType,
+    email_owners: bool,
 ) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
@@ -556,6 +560,12 @@ def do_deactivate_realm(
     # cached_db session plugin we're using, and our session engine
     # declared in zerver/lib/safe_session_cached_db.py enforces this.
     delete_realm_user_sessions(realm)
+
+    # Flag to send deactivated realm email to organization owners; is false
+    # for realm exports and realm subdomain changes so that those actions
+    # do not email active organization owners.
+    if email_owners:
+        do_send_realm_deactivation_email(realm, acting_user)
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -800,3 +810,64 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
         language=language,
         context=context,
     )
+
+
+def do_send_realm_deactivation_email(realm: Realm, acting_user: Optional[UserProfile]) -> None:
+    shared_context: Dict[str, Any] = {
+        "realm_name": realm.name,
+    }
+    deactivation_time = timezone_now()
+    owners = set(realm.get_human_owner_users())
+    anonymous_deactivation = False
+
+    # The realm was deactivated via the deactivate_realm management command.
+    if acting_user is None:
+        anonymous_deactivation = True
+
+    # This realm was deactivated from the support panel; we do not share the
+    # deactivating user's information in this case.
+    if acting_user is not None and acting_user not in owners:
+        anonymous_deactivation = True
+
+    for owner in owners:
+        owner_tz = owner.timezone
+        if owner_tz == "":
+            owner_tz = timezone_get_current_timezone_name()
+        local_date = deactivation_time.astimezone(
+            zoneinfo.ZoneInfo(canonicalize_timezone(owner_tz))
+        ).date()
+
+        if anonymous_deactivation:
+            context = dict(
+                acting_user=False,
+                initiated_deactivation=False,
+                event_date=local_date,
+                **shared_context,
+            )
+        else:
+            assert acting_user is not None
+            if owner == acting_user:
+                context = dict(
+                    acting_user=True,
+                    initiated_deactivation=True,
+                    event_date=local_date,
+                    **shared_context,
+                )
+            else:
+                context = dict(
+                    acting_user=True,
+                    initiated_deactivation=False,
+                    deactivating_owner=acting_user.full_name,
+                    event_date=local_date,
+                    **shared_context,
+                )
+
+        send_email(
+            "zerver/emails/realm_deactivated",
+            to_emails=[owner.delivery_email],
+            from_name=FromAddress.security_email_from_name(language=owner.default_language),
+            from_address=FromAddress.SUPPORT,
+            language=owner.default_language,
+            context=context,
+            realm=realm,
+        )

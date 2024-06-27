@@ -1426,6 +1426,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 lear_realm,
                 acting_user=self.example_user("iago"),
                 deactivation_reason="owner_request",
+                email_owners=True,
             )
             self.assert_in_success_response(["lear deactivated"], result)
 

@@ -421,7 +421,7 @@ export function receives_notifications(
         return false;
     }
     if (sub[notification_name] !== null) {
-        return sub[notification_name]!;
+        return sub[notification_name];
     }
     return user_settings[settings_config.generalize_stream_notification_setting[notification_name]];
 }

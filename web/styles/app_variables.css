@@ -209,6 +209,13 @@
     --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
     --horizontal-spacing-input-pill: 6px;
 
+    /* User circles. */
+    /* 8px at 14px/1em */
+    --length-user-status-circle: 0.5714em;
+    /* Shrink the user activity circle for the Recent Conversations context. */
+    /* 7px at 14px/1em */
+    --length-user-status-circle-recent-conversations: 0.5em;
+
     /* Overlay heights for streams modal */
     --overlay-container-height: 95vh;
     --overlay-container-max-height: 1000px;
@@ -224,12 +231,12 @@
     --informational-overlay-max-width: 550px;
 
     /*
-    Maximum height of the compose box when it is not in expanded state. This
+    Maximum height of the compose box when it is not in maximised state. This
     is equal to the height of `#bottom_whitespace`. We expect resize.ts to
     replace it with its pixel calculation since even if `vh` has great support,
     it can change depending on browser / OS on mobile devices.
     */
-    --max-unexpanded-compose-height: 40vh;
+    --max-unmaximized-compose-height: 40vh;
 
     /*
     Line height of the message buttons in compose box. Here it's necessary
@@ -620,6 +627,12 @@
     --color-background-emoji-picker-emoji-reacted-focus: hsl(195deg 55% 88%);
     /* Same color as background color of header / footer */
     --color-border-emoji-picker-tippy-arrow: hsl(0deg 0% 93%);
+
+    /* Dropdown / Typeahead constants */
+    --color-dropdown-item: hsl(0deg 0% 20%);
+    --color-active-dropdown-item: hsl(0deg 0% 0%);
+    --background-color-active-dropdown-item: hsl(220deg 12% 4.9% / 5%);
+    --background-color-active-typeahead-item: hsl(221.14deg 89.74% 92.35%);
 }
 
 %dark-theme {
@@ -968,6 +981,14 @@
     --color-border-add-subscription-button-focus: hsl(0deg 0% 67%);
     /* Same color as background color of header / footer */
     --color-border-emoji-picker-tippy-arrow: hsl(211.58deg 33.33% 11.18%);
+
+    /* Dropdown / Typeahead constants */
+    --color-dropdown-item: hsl(0deg 0% 75%);
+    --color-active-dropdown-item: hsl(0deg 0% 90%);
+    --background-color-active-dropdown-item: hsl(220deg 12% 100% / 7%);
+    --background-color-active-typeahead-item: hsl(
+        226.35deg 82.53% 55.1% / 38.82%
+    );
 }
 
 @media screen {

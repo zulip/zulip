@@ -149,5 +149,11 @@ def get_emoji_url(emoji_file_name: str, realm_id: int, still: bool = False) -> s
 
 
 def get_emoji_file_name(emoji_file_name: str, emoji_id: int) -> str:
-    _, image_ext = os.path.splitext(emoji_file_name)
+    image_ext = os.path.splitext(emoji_file_name)[1]
+    if not re.match(r"\.\w+$", image_ext):
+        # Because the extension from the uploaded filename is
+        # user-provided, preserved in the output filename, and libvips
+        # uses `[...]` after the extension for options, we validate
+        # the simple file extension.
+        raise JsonableError(_("Bad file name!"))  # nocoverage
     return "".join((str(emoji_id), image_ext))

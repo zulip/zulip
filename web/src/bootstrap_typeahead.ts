@@ -335,53 +335,55 @@ export class Typeahead<ItemType extends string | object> {
         }
         this.mouse_moved_since_typeahead = false;
 
-        if (this.non_tippy_parent_element) {
-            this.$container.show();
-            // We don't need tippy to position typeaheads which already know where they should be.
-            return this;
+        if (!this.non_tippy_parent_element) {
+            this.instance = tippy.default(this.input_element.$element[0]!, {
+                // Lets typeahead take the width needed to fit the content
+                // and wraps it if it overflows the visible container.
+                maxWidth: "none",
+                delay: [0, 0],
+                theme: "dropdown-widget",
+                placement: this.dropup ? "top-start" : "bottom-start",
+                popperOptions: {
+                    strategy: "fixed",
+                    modifiers: [
+                        {
+                            // This will only work if there is enough space on the fallback
+                            // placement, otherwise `preventOverflow` will be used to position
+                            // it in the visible space.
+                            name: "flip",
+                            options: {
+                                fallbackPlacements: ["top-start", "bottom-start"],
+                            },
+                        },
+                        {
+                            name: "preventOverflow",
+                            options: {
+                                // This seems required to prevent overflow, maybe because our
+                                // placements are not the usual top, bottom, left, right.
+                                // https://popper.js.org/docs/v2/modifiers/prevent-overflow/#altaxis
+                                altAxis: true,
+                            },
+                        },
+                    ],
+                },
+                interactive: true,
+                appendTo: () => document.body,
+                showOnCreate: true,
+                content: this.$container[0]!,
+                // We expect the typeahead creator to handle when to hide / show the typeahead.
+                trigger: "manual",
+                arrow: false,
+                offset: [0, 2],
+                // We have event handlers to hide the typeahead, so we
+                // don't want tippy to hide it for us.
+                hideOnClick: false,
+            });
         }
-        this.instance = tippy.default(this.input_element.$element[0]!, {
-            // Lets typeahead take the width needed to fit the content
-            // and wraps it if it overflows the visible container.
-            maxWidth: "none",
-            delay: [0, 0],
-            theme: "popover-menu",
-            placement: this.dropup ? "top-start" : "bottom-start",
-            popperOptions: {
-                strategy: "fixed",
-                modifiers: [
-                    {
-                        // This will only work if there is enough space on the fallback placement, otherwise
-                        // `preventOverflow` will be used to position it in the visible space.
-                        name: "flip",
-                        options: {
-                            fallbackPlacements: ["top-start", "bottom-start"],
-                        },
-                    },
-                    {
-                        name: "preventOverflow",
-                        options: {
-                            // This seems required to prevent overflow, maybe because our placements are
-                            // not the usual top, bottom, left, right.
-                            // https://popper.js.org/docs/v2/modifiers/prevent-overflow/#altaxis
-                            altAxis: true,
-                        },
-                    },
-                ],
-            },
-            interactive: true,
-            appendTo: () => document.body,
-            showOnCreate: true,
-            content: this.$container[0]!,
-            // We expect the typeahead creator to handle when to hide / show the typeahead.
-            trigger: "manual",
-            arrow: false,
-            offset: [0, 0],
-            // We have event handlers to hide the typeahead, so we
-            // don't want tippy to hide it for us.
-            hideOnClick: false,
-        });
 
+        // The container has `display: none` as a default style. We make sure to display
+        // it. For tippy elements, this must happen after we insert the typeahead into
+        // the DOM.
+        this.$container.show();
         return this;
     }
 

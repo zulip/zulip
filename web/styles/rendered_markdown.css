@@ -170,8 +170,6 @@
     .user-group-mention,
     .user-mention,
     .topic-mention {
-        font-size: 14px;
-        line-height: 17px;
         padding: 0 3px;
         border-radius: 3px;
         white-space: nowrap;
@@ -202,6 +200,11 @@
             color: var(--color-text-self-group-mention);
             font-weight: 600;
         }
+    }
+
+    .stream-topic {
+        /* Display whitespace within topics. */
+        white-space: pre-wrap;
     }
 
     .user-group-mention {

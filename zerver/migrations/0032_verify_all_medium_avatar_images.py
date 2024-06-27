@@ -6,7 +6,7 @@ from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from zerver.lib.upload import upload_backend
+from zerver.lib.upload import ensure_avatar_image
 from zerver.models import UserProfile
 
 
@@ -22,12 +22,11 @@ def patched_user_avatar_path(user_profile: UserProfile) -> str:
     return hashlib.sha1(user_key.encode()).hexdigest()
 
 
-@patch("zerver.lib.upload.s3.user_avatar_path", patched_user_avatar_path)
-@patch("zerver.lib.upload.local.user_avatar_path", patched_user_avatar_path)
+@patch("zerver.lib.upload.user_avatar_path", patched_user_avatar_path)
 def verify_medium_avatar_image(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model("zerver", "UserProfile")
     for user_profile in user_profile_model.objects.filter(avatar_source="U"):
-        upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        ensure_avatar_image(user_profile, medium=True)
 
 
 class Migration(migrations.Migration):

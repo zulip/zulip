@@ -1271,3 +1271,11 @@ div.overlay {
         }
     }
 }
+
+.text-success {
+    color: hsl(120.91deg 32.04% 40.39%);
+}
+
+.text-error {
+    color: hsl(1.06deg 44.66% 50.39%);
+}

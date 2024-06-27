@@ -140,6 +140,11 @@ function choose_topics(
     }
 }
 
+function contains_topic(topic_names: string[], narrowed_topic: string): boolean {
+    const lower_cased_topics = topic_names.map((name) => name.toLowerCase());
+    return lower_cased_topics.includes(narrowed_topic.toLowerCase());
+}
+
 type TopicListInfo = {
     items: TopicInfo[];
     num_possible_topics: number;
@@ -174,7 +179,7 @@ export function get_list_info(
     if (
         stream_id === narrow_state.stream_id() &&
         narrowed_topic &&
-        !topic_names.includes(narrowed_topic)
+        !contains_topic(topic_names, narrowed_topic)
     ) {
         topic_names.unshift(narrowed_topic);
     }

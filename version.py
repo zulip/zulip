@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 266
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (282, 0)  # bumped 2024-06-18 for removing cairosvg
+PROVISION_VERSION = (284, 2)  # bumped 2024-06-26 for upgrading transifex-cli

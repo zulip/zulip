@@ -720,11 +720,7 @@ input[type="checkbox"] {
 }
 
 .control-label-disabled {
-    color: hsl(0deg 0% 82%);
-
-    &.enabled {
-        color: hsl(0deg 0% 20%);
-    }
+    color: hsl(0deg 0% 64%);
 }
 
 .admin-realm-message-retention-days {
@@ -777,9 +773,7 @@ input[type="checkbox"] {
     }
 
     #emoji-file-name {
-        font-size: 14px;
         white-space: nowrap;
-        height: 1rem;
         font-style: italic;
         color: hsl(0deg 0% 67%);
     }

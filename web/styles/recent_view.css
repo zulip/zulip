@@ -31,7 +31,7 @@
     padding-top: var(--navbar-fixed-height);
     /* Add bottom padding equal to `#bottom-whitespace`. This helps us keep #compose visible
        at its max-height without overlapping with any visible topics. */
-    padding-bottom: var(--max-unexpanded-compose-height);
+    padding-bottom: var(--max-unmaximized-compose-height);
 
     & td {
         vertical-align: middle;
@@ -482,9 +482,10 @@
             }
 
             .user_circle {
-                /* Shrink the user activity circle for the Recent Conversations context. */
-                min-width: 7px;
-                height: 7px;
+                min-width: var(
+                    --length-user-status-circle-recent-conversations
+                );
+                height: var(--length-user-status-circle-recent-conversations);
                 float: left;
                 position: unset;
             }

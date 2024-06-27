@@ -26,7 +26,6 @@ regex
 ipython
 
 # Needed for image processing and thumbnailing
-Pillow
 pyvips
 
 # Needed for building complex DB queries
