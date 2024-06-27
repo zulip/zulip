@@ -506,7 +506,7 @@ function filter_mention_name(current_token: string): string | undefined {
     } else if (current_token.startsWith("*")) {
         current_token = current_token.slice(1);
     }
-    if (current_token.lastIndexOf("*") !== -1) {
+    if (current_token.includes("*")) {
         return undefined;
     }
 

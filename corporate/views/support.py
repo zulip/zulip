@@ -444,7 +444,10 @@ def support(
                 # TODO: Add support for deactivation reason in the support UI that'll be passed
                 # here.
                 do_deactivate_realm(
-                    realm, acting_user=acting_user, deactivation_reason="owner_request"
+                    realm,
+                    acting_user=acting_user,
+                    deactivation_reason="owner_request",
+                    email_owners=True,
                 )
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif scrub_realm:

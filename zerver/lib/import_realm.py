@@ -34,8 +34,7 @@ from zerver.lib.server_initialization import create_internal_realm, server_initi
 from zerver.lib.streams import render_stream_description
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import upload_backend
-from zerver.lib.upload.base import sanitize_name
+from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend
 from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
@@ -790,38 +789,29 @@ def fix_subscriptions_is_user_active_column(
 
 
 def process_avatars(record: Dict[str, Any]) -> None:
-    # We need to re-import upload_backend here, because in the
-    # import-export unit tests, the Zulip settings are overridden for
-    # specific tests to control the choice of upload backend, and this
-    # reimport ensures that we use the right choice for the current
-    # test. Outside the test suite, settings never change after the
-    # server is started, so this import will have no effect in production.
-    from zerver.lib.upload import upload_backend
-
-    if record["s3_path"].endswith(".original"):
-        user_profile = get_user_profile_by_id(record["user_profile_id"])
-        if settings.LOCAL_AVATARS_DIR is not None:
-            avatar_path = user_avatar_path_from_ids(user_profile.id, record["realm_id"])
-            medium_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + "-medium.png"
-            if os.path.exists(medium_file_path):
-                # We remove the image here primarily to deal with
-                # issues when running the import script multiple
-                # times in development (where one might reuse the
-                # same realm ID from a previous iteration).
-                os.remove(medium_file_path)
-        try:
-            upload_backend.ensure_avatar_image(user_profile=user_profile, is_medium=True)
-            if record.get("importer_should_thumbnail"):
-                upload_backend.ensure_avatar_image(user_profile=user_profile)
-        except BadImageError:
-            logging.warning(
-                "Could not thumbnail avatar image for user %s; ignoring",
-                user_profile.id,
-            )
-            # Delete the record of the avatar to avoid 404s.
-            do_change_avatar_fields(
-                user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
-            )
+    if not record["s3_path"].endswith(".original"):
+        return None
+    user_profile = get_user_profile_by_id(record["user_profile_id"])
+    if settings.LOCAL_AVATARS_DIR is not None:
+        avatar_path = user_avatar_path_from_ids(user_profile.id, record["realm_id"])
+        medium_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + "-medium.png"
+        if os.path.exists(medium_file_path):
+            # We remove the image here primarily to deal with
+            # issues when running the import script multiple
+            # times in development (where one might reuse the
+            # same realm ID from a previous iteration).
+            os.remove(medium_file_path)
+    try:
+        ensure_avatar_image(user_profile=user_profile, medium=True)
+        if record.get("importer_should_thumbnail"):
+            ensure_avatar_image(user_profile=user_profile)
+    except BadImageError:
+        logging.warning(
+            "Could not thumbnail avatar image for user %s; ignoring",
+            user_profile.id,
+        )
+        # Delete the record of the avatar to avoid 404s.
+        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
 
 
 def import_uploads(
@@ -874,12 +864,7 @@ def import_uploads(
             if record["s3_path"].endswith(".original"):
                 relative_path += ".original"
             else:
-                # TODO: This really should be unconditional.  However,
-                # until we fix the S3 upload backend to use the .png
-                # path suffix for its normal avatar URLs, we need to
-                # only do this for the LOCAL_UPLOADS_DIR backend.
-                if not s3_uploads:
-                    relative_path += ".png"
+                relative_path = upload_backend.get_avatar_path(relative_path, medium=False)
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(

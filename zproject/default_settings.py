@@ -161,6 +161,7 @@ S3_UPLOADS_STORAGE_CLASS: Literal[
     "STANDARD",
     "STANDARD_IA",
 ] = "STANDARD"
+S3_AVATAR_PUBLIC_URL_PREFIX: Optional[str] = None
 LOCAL_UPLOADS_DIR: Optional[str] = None
 LOCAL_AVATARS_DIR: Optional[str] = None
 LOCAL_FILES_DIR: Optional[str] = None

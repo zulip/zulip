@@ -1,11 +1,8 @@
 import os
-import re
-import unicodedata
 from datetime import datetime
 from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple
 
-from zerver.models import Attachment, Realm, UserProfile
-from zerver.models.users import is_cross_realm_bot_email
+from zerver.models import Realm, UserProfile
 
 INLINE_MIME_TYPES = [
     "application/pdf",
@@ -29,26 +26,6 @@ INLINE_MIME_TYPES = [
 ]
 
 
-def sanitize_name(value: str) -> str:
-    """
-    Sanitizes a value to be safe to store in a Linux filesystem, in
-    S3, and in a URL.  So Unicode is allowed, but not special
-    characters other than ".", "-", and "_".
-
-    This implementation is based on django.utils.text.slugify; it is
-    modified by:
-    * adding '.' to the list of allowed characters.
-    * preserving the case of the value.
-    * not stripping trailing dashes and underscores.
-    """
-    value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s.-]", "", value).strip()
-    value = re.sub(r"[-\s]+", "-", value)
-    if value in {"", ".", ".."}:
-        return "uploaded-file"
-    return value
-
-
 class ZulipUploadBackend:
     # Message attachment uploads
     def get_public_upload_root_url(self) -> str:
@@ -59,13 +36,13 @@ class ZulipUploadBackend:
 
     def upload_message_attachment(
         self,
-        uploaded_file_name: str,
+        path_id: str,
         uploaded_file_size: int,
-        content_type: Optional[str],
+        content_type: str,
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
-    ) -> str:
+        target_realm: Realm,
+    ) -> None:
         raise NotImplementedError
 
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
@@ -85,22 +62,26 @@ class ZulipUploadBackend:
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         raise NotImplementedError
 
-    def upload_avatar_image(
+    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+        raise NotImplementedError
+
+    def get_avatar_path(self, hash_key: str, medium: bool = False) -> str:
+        if medium:
+            return f"{hash_key}-medium.png"
+        else:
+            return f"{hash_key}.png"
+
+    def upload_single_avatar_image(
         self,
-        user_file: IO[bytes],
-        acting_user_profile: UserProfile,
-        target_user_profile: UserProfile,
-        content_type: Optional[str] = None,
+        file_path: str,
+        *,
+        user_profile: UserProfile,
+        image_data: bytes,
+        content_type: Optional[str],
     ) -> None:
         raise NotImplementedError
 
-    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
-        raise NotImplementedError
-
-    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
-        raise NotImplementedError
-
-    def delete_avatar_image(self, user: UserProfile) -> None:
+    def delete_avatar_image(self, path_id: str) -> None:
         raise NotImplementedError
 
     # Realm icon and logo uploads
@@ -125,9 +106,13 @@ class ZulipUploadBackend:
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         raise NotImplementedError
 
-    def upload_emoji_image(
-        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
-    ) -> bool:
+    def upload_single_emoji_image(
+        self,
+        path: str,
+        content_type: Optional[str],
+        user_profile: UserProfile,
+        image_data: bytes,
+    ) -> None:
         raise NotImplementedError
 
     # Export tarballs
@@ -144,21 +129,3 @@ class ZulipUploadBackend:
 
     def delete_export_tarball(self, export_path: str) -> Optional[str]:
         raise NotImplementedError
-
-
-def create_attachment(
-    file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
-) -> None:
-    assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
-        user_profile.delivery_email
-    )
-    attachment = Attachment.objects.create(
-        file_name=file_name,
-        path_id=path_id,
-        owner=user_profile,
-        realm=realm,
-        size=file_size,
-    )
-    from zerver.actions.uploads import notify_attachment_update
-
-    notify_attachment_update(user_profile, "add", attachment.to_dict())

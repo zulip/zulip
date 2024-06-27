@@ -681,7 +681,7 @@ function compute_summary_chart_data(
     if (data.size !== 0) {
         labels[labels.length - 1] = "Other";
         for (const sum of data.values()) {
-            values[labels.length - 1] += sum;
+            values[labels.length - 1]! += sum;
         }
     }
     let total = 0;

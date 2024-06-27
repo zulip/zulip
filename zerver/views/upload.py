@@ -285,9 +285,10 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
         # We do not expect clients to hit this URL when using the S3
         # backend; however, there is no reason to not serve the
         # redirect to S3 where the content lives.
-        return redirect(
-            get_public_upload_root_url() + path + "?" + request.GET.urlencode(), permanent=True
-        )
+        url = get_public_upload_root_url() + path
+        if request.GET.urlencode():
+            url += "?" + request.GET.urlencode()
+        return redirect(url, permanent=True)
 
     local_path = os.path.join(settings.LOCAL_AVATARS_DIR, path)
     assert_is_local_storage_path("avatars", local_path)

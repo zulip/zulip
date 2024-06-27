@@ -16,7 +16,6 @@ types-Markdown
 types-oauthlib
 types-polib
 types-pika
-types-Pillow
 types-psycopg2
 types-Pygments
 types-pyOpenSSL

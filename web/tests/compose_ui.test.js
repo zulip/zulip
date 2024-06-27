@@ -489,13 +489,13 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
 
     compose_ui.make_compose_box_full_size();
     assert.ok($("#compose").hasClass("compose-fullscreen"));
-    assert.ok(compose_ui.is_full_size());
+    assert.ok(compose_ui.is_expanded());
     assert.ok(autosize_destroyed);
     assert.ok(compose_box_top_set);
 
     compose_ui.make_compose_box_original_size();
     assert.ok(!$("#compose").hasClass("compose-fullscreen"));
-    assert.ok(!compose_ui.is_full_size());
+    assert.ok(!compose_ui.is_expanded());
     assert.ok(!compose_box_top_set);
 });
 

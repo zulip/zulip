@@ -13,9 +13,6 @@ VENV_CACHE_PATH = "/srv/zulip-venv-cache"
 VENV_DEPENDENCIES = [
     "build-essential",
     "libffi-dev",
-    "libfreetype6-dev",  # Needed for image types with Pillow
-    "zlib1g-dev",  # Needed to handle compressed PNGs with Pillow
-    "libjpeg-dev",  # Needed to handle JPEGs with Pillow
     "libldap2-dev",
     "python3-dev",  # Needed to install typed-ast dependency of mypy
     "python3-pip",
@@ -36,9 +33,6 @@ VENV_DEPENDENCIES = [
 
 COMMON_YUM_VENV_DEPENDENCIES = [
     "libffi-devel",
-    "freetype-devel",
-    "zlib-devel",
-    "libjpeg-turbo-devel",
     "openldap-devel",
     "libyaml-devel",
     # Needed by python-xmlsec:

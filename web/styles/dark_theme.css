@@ -152,20 +152,6 @@
             0 2px 4px hsl(0deg 0% 0% / 20%);
     }
 
-    .dropdown-list-container .dropdown-list .list-item {
-        &:focus {
-            background-color: hsl(220deg 12% 95.1% / 5%);
-        }
-
-        & > a {
-            color: hsl(0deg 0% 75%);
-
-            &:hover {
-                background-color: hsl(220deg 12% 95.1% / 5%);
-            }
-        }
-    }
-
     #navbar-middle .column-middle-inner,
     .header,
     #message_view_header {
@@ -548,7 +534,6 @@
     }
 
     & div.overlay .flex.overlay-content > div,
-    .dropdown-menu.typeahead,
     #settings_page,
     .informational-overlays .overlay-content {
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
@@ -904,8 +889,7 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
-    #feedback_container,
-    .typeahead.dropdown-menu {
+    #feedback_container {
         background-color: hsl(212deg 25% 15%);
         border-color: hsl(0deg 0% 0% / 50%);
         color: inherit;

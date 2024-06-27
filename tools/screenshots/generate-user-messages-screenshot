@@ -75,7 +75,7 @@ def create_user(full_name: str, avatar_filename: str) -> None:
 
 def set_avatar(user: UserProfile, filename: str) -> None:
     with open(filename, "rb") as f:
-        upload_avatar_image(f, user, user)
+        upload_avatar_image(f, user)
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER, acting_user=DEFAULT_USER)
 
 

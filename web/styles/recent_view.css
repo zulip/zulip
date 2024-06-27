@@ -31,7 +31,7 @@
     padding-top: var(--navbar-fixed-height);
     /* Add bottom padding equal to `#bottom-whitespace`. This helps us keep #compose visible
        at its max-height without overlapping with any visible topics. */
-    padding-bottom: var(--max-unexpanded-compose-height);
+    padding-bottom: var(--max-unmaximized-compose-height);
 
     & td {
         vertical-align: middle;
