@@ -164,6 +164,7 @@ import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import * as tippy from "tippy.js";
 
+import * as scroll_util from "./scroll_util";
 import {get_string_diff} from "./util";
 
 function get_pseudo_keycode(
@@ -196,13 +197,15 @@ export function defaultSorter(items: string[], query: string): string[] {
     return [...beginswith, ...caseSensitive, ...caseInsensitive];
 }
 
+export const MAX_ITEMS = 50;
+
 /* TYPEAHEAD PUBLIC CLASS DEFINITION
  * ================================= */
 
 const HEADER_ELEMENT_HTML =
     '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>';
 const CONTAINER_HTML = '<div class="typeahead dropdown-menu"></div>';
-const MENU_HTML = '<ul class="typeahead-menu"></ul>';
+const MENU_HTML = '<ul class="typeahead-menu" data-simplebar></ul>';
 const ITEM_HTML = "<li><a></a></li>";
 const MIN_LENGTH = 1;
 
@@ -274,7 +277,7 @@ export class Typeahead<ItemType extends string | object> {
         } else {
             assert(!this.input_element.$element.is("[contenteditable]"));
         }
-        this.items = options.items ?? 8;
+        this.items = options.items ?? MAX_ITEMS;
         this.matcher = options.matcher ?? ((item, query) => this.defaultMatcher(item, query));
         this.sorter = options.sorter;
         this.highlighter_html = options.highlighter_html;
@@ -511,7 +514,10 @@ export class Typeahead<ItemType extends string | object> {
         if (this.requireHighlight || this.shouldHighlightFirstResult()) {
             $items[0]!.addClass("active");
         }
-        this.$menu.empty().append($items);
+        // Getting scroll element ensures simplebar has processed the element
+        // before we render it.
+        scroll_util.get_scroll_element(this.$menu);
+        scroll_util.get_content_element(this.$menu).empty().append($items);
         return this;
     }
 
@@ -531,6 +537,7 @@ export class Typeahead<ItemType extends string | object> {
         }
 
         $next.addClass("active");
+        scroll_util.scroll_element_into_container($next, this.$menu);
     }
 
     prev(): void {
@@ -549,6 +556,7 @@ export class Typeahead<ItemType extends string | object> {
         }
 
         $prev.addClass("active");
+        scroll_util.scroll_element_into_container($prev, this.$menu);
     }
 
     listen(): void {
@@ -804,7 +812,7 @@ export class Typeahead<ItemType extends string | object> {
 
 type TypeaheadOptions<ItemType> = {
     highlighter_html: (item: ItemType, query: string) => string | undefined;
-    items: number;
+    items?: number;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     // optional options
     advanceKeyCodes?: number[];

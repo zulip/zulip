@@ -41,7 +41,6 @@ export function set_up_user(
         type: "contenteditable",
     };
     new Typeahead(bootstrap_typeahead_input, {
-        items: 5,
         dropup: true,
         source(_query: string): UserPillData[] {
             return user_pill.typeahead_source(pills, exclude_bots);
@@ -87,7 +86,6 @@ export function set_up_stream(
     };
     opts.help_on_empty_strings ||= false;
     new Typeahead(bootstrap_typeahead_input, {
-        items: 12,
         dropup: true,
         helpOnEmptyStrings: true,
         source(_query: string): StreamPillData[] {
@@ -153,7 +151,6 @@ export function set_up_combined(
         type: "contenteditable",
     };
     new Typeahead(bootstrap_typeahead_input, {
-        items: 5,
         dropup: true,
         source(query: string): TypeaheadItem[] {
             let source: TypeaheadItem[] = [];

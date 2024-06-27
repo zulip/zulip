@@ -14,7 +14,7 @@
     z-index: 1051;
 }
 
-.typeahead.dropdown-menu .typeahead-menu {
+.typeahead.dropdown-menu .typeahead-menu .simplebar-content {
     & > li {
         word-break: break-word;
 

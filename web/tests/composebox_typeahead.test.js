@@ -59,11 +59,6 @@ const settings_config = zrequire("settings_config");
 
 const ct = composebox_typeahead;
 
-// Use a slightly larger value than what's user-facing
-// to facilitate testing different combinations of
-// broadcast-mentions/persons/groups.
-ct.__Rewire__("max_num_items", 15);
-
 function user_item(user) {
     return {type: "user", user};
 }
