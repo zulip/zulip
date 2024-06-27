@@ -126,6 +126,7 @@ def set_up_streams_for_new_human_user(
     prereg_user: Optional[PreregistrationUser] = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     add_initial_stream_subscriptions: bool = True,
+    realm_creation: bool = False,
 ) -> None:
     realm = user_profile.realm
 
@@ -165,10 +166,15 @@ def set_up_streams_for_new_human_user(
         acting_user=acting_user,
     )
 
-    add_new_user_history(user_profile, streams)
+    add_new_user_history(user_profile, streams, realm_creation=realm_creation)
 
 
-def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
+def add_new_user_history(
+    user_profile: UserProfile,
+    streams: Iterable[Stream],
+    *,
+    realm_creation: bool = False,
+) -> None:
     """
     Give the user some messages in their feed, so that they can learn how to
     use the home view in a realistic way after finishing the tutorial.
@@ -217,9 +223,11 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
         # Create UserMessage rows for the backfill.
         ums_to_create = []
         for message_id in backfill_message_ids:
-            um = UserMessage(
-                user_profile=user_profile, message_id=message_id, flags=UserMessage.flags.historical
-            )
+            um = UserMessage(user_profile=user_profile, message_id=message_id)
+            # Only onboarding messages are available for realm creator.
+            # They are not marked as historical.
+            if not realm_creation:
+                um.flags = UserMessage.flags.historical
             if message_id in older_message_ids:
                 um.flags |= UserMessage.flags.read
             ums_to_create.append(um)
@@ -247,6 +255,7 @@ def process_new_human_user(
         prereg_user=prereg_user,
         default_stream_groups=default_stream_groups,
         add_initial_stream_subscriptions=add_initial_stream_subscriptions,
+        realm_creation=realm_creation,
     )
 
     realm = user_profile.realm
@@ -568,6 +577,12 @@ def do_create_user(
         prereg_realm.created_user = user_profile
         prereg_realm.save(update_fields=["created_user"])
 
+    if realm_creation:
+        from zerver.lib.onboarding import send_initial_realm_messages
+
+        with override_language(realm.default_language):
+            send_initial_realm_messages(realm)
+
     if bot_type is None:
         process_new_human_user(
             user_profile,
@@ -576,12 +591,6 @@ def do_create_user(
             realm_creation=realm_creation,
             add_initial_stream_subscriptions=add_initial_stream_subscriptions,
         )
-
-    if realm_creation:
-        from zerver.lib.onboarding import send_initial_realm_messages
-
-        with override_language(realm.default_language):
-            send_initial_realm_messages(realm)
 
     return user_profile
 
