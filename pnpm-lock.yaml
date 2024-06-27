@@ -38,10 +38,10 @@ importers:
         specifier: ^2.0.0
         version: 2.10.4(typescript@5.5.2)
       '@giphy/js-components':
-        specifier: ^5.0.5
+        specifier: ^5.13.0
         version: 5.13.0(@babel/core@7.24.7)
       '@giphy/js-fetch-api':
-        specifier: ^5.0.0
+        specifier: ^5.6.0
         version: 5.6.0
       '@koa/bodyparser':
         specifier: ^5.0.0
