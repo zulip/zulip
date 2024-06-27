@@ -562,6 +562,12 @@ def do_create_user(
         prereg_realm.created_user = user_profile
         prereg_realm.save(update_fields=["created_user"])
 
+    if realm_creation:
+        from zerver.lib.onboarding import send_initial_realm_messages
+
+        with override_language(realm.default_language):
+            send_initial_realm_messages(realm)
+
     if bot_type is None:
         process_new_human_user(
             user_profile,
@@ -570,12 +576,6 @@ def do_create_user(
             realm_creation=realm_creation,
             add_initial_stream_subscriptions=add_initial_stream_subscriptions,
         )
-
-    if realm_creation:
-        from zerver.lib.onboarding import send_initial_realm_messages
-
-        with override_language(realm.default_language):
-            send_initial_realm_messages(realm)
 
     return user_profile
 
