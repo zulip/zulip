@@ -8977,37 +8977,45 @@ paths:
   /users/me/presence:
     post:
       operationId: update-presence
-      summary: Update your presence status and fetch presence data for the realm
+      summary: Update your presence
       tags: ["users"]
       description: |
-        Update your
-        [presence/availability](https://zulip.com/help/status-and-availability#availability)
-        status and fetch presence of other users in realm in a bulk.
+        Update the current user's [presence][availability] and fetch presence data
+        of other users in the organization.
 
-        This is the endpoint meant to be used by clients for both reporting
-        their presence status to the server and obtaining the presence info
-        of all other users to build the buddy list by polling it regularly,
-        in parallel with receiving presence update events via the event system.
+        This endpoint is meant to be used by clients for both:
 
-        Accurate presence is one of the most expensive parts of any team chat application
-        (in terms of bandwidth and other resources). It's thus important that clients
-        implementing Zulip's presence system use the modern `last_update_id` protocol to
-        minimize fetching duplicate presence data.
+        - Reporting the current user's presence status (`"active"` or `"idle"`)
+          to the server.
 
-        If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
-        setting is set to `true`, presence information of only accessible
-        users is included in the response.
+        - Obtaining the presence data of all other users in the organization via
+          regular polling (in parallel with receiving
+          [`presence` events](/api/get-events#presence)).
 
-        See [Zulip's developer documentation][subsystems-presence]
-        for details on the data model for presence in Zulip.
+        Accurate user presence is one of the most expensive parts of any
+        chat application (in terms of bandwidth and other resources). Therefore,
+        it is important that clients implementing Zulip's user presence system
+        use the modern [`last_update_id`](#parameter-last_update_id) protocol to
+        minimize fetching duplicate user presence data.
 
-        The Zulip server is responsible for implementing [invisible
-        mode](https://zulip.com/help/status-and-availability#invisible-mode), which
-        disables sharing presence data. Nonetheless, clients should check
-        the `presence_enabled` field in user objects in order to display the current user
-        as online or offline based on whether they are sharing presence information.
+        See [Zulip's developer documentation][subsystems-presence] for details
+        on the data model for user presence in Zulip.
+
+        The Zulip server is responsible for implementing [invisible mode][invisible],
+        which disables sharing a user's presence data. Nonetheless, clients
+        should check the `presence_enabled` field in user objects in order to
+        display the current user as online or offline based on whether they are
+        sharing their presence information.
+
+        **Changes**: As of Zulip 8.0 (feature level 228), if the
+        `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level setting is
+        `true`, then user presence data in the response is [limited to users
+        the current user can see/access][limit-visibility].
 
         [subsystems-presence]: https://zulip.readthedocs.io/en/latest/subsystems/presence.html
+        [limit-visibility]: /help/guest-users#configure-whether-guests-can-see-all-other-users
+        [invisible]: /help/status-and-availability#invisible-mode
+        [availability]: /help/status-and-availability#availability
       requestBody:
         required: true
         content:
@@ -9018,67 +9026,78 @@ paths:
                 last_update_id:
                   type: integer
                   description: |
-                    Specifies what presence data the client already has, allowing the
-                    server to only return presence data more recent than that.
+                    The identifier that specifies what presence data the client already
+                    has received, which allows the server to only return more recent
+                    user presence data.
 
-                    This parameter should be set to `-1` during initialization of the
-                    client in order to fetch all data, unless the client is obtaining
-                    initial presence metadata from the [`POST /register` endpoint](/api/register-queue).
+                    This should be set to `-1` during initialization of the client in
+                    order to fetch all user presence data, unless the client is obtaining
+                    initial user presence metadata from the
+                    [`POST /register`](/api/register-queue) endpoint.
 
-                    Afterwards, its value should be obtained by reading
-                    `presence_last_update_id` from the server's response to the previous
-                    request in order to implement incremental fetches of presence data.
+                    In subsequent queries to this endpoint, this value should be set to the
+                    most recent value of `presence_last_update_id` returned by the server
+                    in this endpoint's response, which implements incremental fetching
+                    of user presence data.
+
+                    When this parameter is passed, the user presence data in the response
+                    will always be in the modern format.
 
                     **Changes**: New in Zulip 9.0 (feature level 263). Previously, the
-                    server sent data for all users who had been active in the last two
-                    weeks unconditionally.
+                    server sent user presence data for all users who had been active in the
+                    last two weeks unconditionally.
                   example: 5
                 new_user_input:
+                  type: boolean
                   description: |
-                    Whether the user has interacted with the client since the previous
-                    presence request from this client, such as moving the mouse or using
-                    the keyboard.
+                    Whether the user has interacted with the client (e.g. moved the mouse,
+                    used the keyboard, etc.) since the previous presence request from this
+                    client.
 
-                    These data are used by the server to support certain [usage
+                    The server uses data from this parameter to implement certain [usage
                     statistics](/help/analytics).
 
-                    User interface clients that might run in the background without the
-                    user ever interacting with them should be careful to only pass `true`
-                    if the user has actually interacted with the client, to avoid
+                    User interface clients that might run in the background, without the
+                    user ever interacting with them, should be careful to only pass `true`
+                    if the user has actually interacted with the client in order to avoid
                     corrupting usage statistics graphs.
-                  type: boolean
                   example: false
                   default: false
                 ping_only:
                   type: boolean
                   description: |
                     Whether the client is sending a ping-only request, meaning it only
-                    wants to update the user's presence status.
+                    wants to update the user's presence `status` on the server.
 
-                    Otherwise, also requests the server to return presence data of all
-                    users in the realm, further affected by the `last_update_id`
-                    parameter.
+                    Otherwise, also requests the server return user presence data for all
+                    users in the organization, which is further specified by the
+                    [`last_update_id`](#parameter-last_update_id) parameter.
                   example: false
                   default: false
                 slim_presence:
+                  type: boolean
                   description: |
-                    Legacy parameter for configuring the format in which the server will
-                    return presence data for the realm. Modern clients should pass
-                    `last_update_id`, which implies the client expects the modern format,
-                    and should not pass this property unless interacting with an older
-                    server.
+                    Legacy parameter for configuring the format (modern or legacy) in
+                    which the server will return user presence data for the organization.
+
+                    Modern clients should use
+                    [`last_update_id`](#parameter-last_update_id), which guarantees that
+                    user presence data will be returned in the modern format, and
+                    should not pass this parameter as `true` unless interacting with an
+                    older server.
 
                     Legacy clients that do not yet support `last_update_id` may use the
-                    value of `true` to request the modern format. The legacy format, sent
-                    when `slim_presence` is `false`, will be removed entirely in a future
-                    release.
+                    value of `true` to request the modern format for user presence data.
 
-                    **Changes**: **Deprecated** in Zulip 9.0 (feature level 263);
-                    using the modern `last_update_id` API is the recommended way to
-                    request the modern format.
+                    **Note**: The legacy format for user presence data will be removed
+                    entirely in a future release.
 
-                    New in Zulip 3.0 (Unstable with no feature level yet).
-                  type: boolean
+                    **Changes**: **Deprecated** in Zulip 9.0 (feature level 263). Using
+                    the modern `last_update_id` parameter is the recommended way to
+                    request the modern format for user presence data.
+
+                    New in Zulip 3.0 (no feature level as it was an unstable API at that
+                    point).
                   example: false
                   default: false
                   deprecated: true
@@ -9088,18 +9107,18 @@ paths:
                     - idle
                     - active
                   description: |
-                    The status of the user on this client. Will be either `"idle"`
-                    or `"active"`.
+                    The status of the user on this client.
 
-                    Clients should report the user as active on this device if the client
+                    Clients should report the user as `"active"` on this device if the client
                     knows that the user is presently using the device (and thus would
-                    potentially see a desktop notification immediately), even if the user
+                    potentially see a notification immediately), even if the user
                     has not directly interacted with the Zulip client.
 
-                    Otherwise, it should report the user as idle.
+                    Otherwise, it should report the user as `"idle"`.
 
-                    See the related `new_user_input` parameter for how a client should
-                    report whether the user is actively using the Zulip client.
+                    See the related [`new_user_input`](#parameter-new_user_input) parameter
+                    for how a client should report whether the user is actively using the
+                    Zulip client.
                   example: active
               required:
                 - status
@@ -9122,23 +9141,65 @@ paths:
                       presence_last_update_id:
                         type: integer
                         description: |
-                          Provides the `last_update_id` value of the latest presence data
-                          fetched by the server and included in the response in
-                          `presences`. This allows the client to have an identifier number
-                          up to which it knows it has obtained all the presence data.
+                          The identifier for the latest user presence data returned in
+                          the `presences` data of the response.
 
-                          The client should then pass this value when it next queries this
-                          endpoint, in order to only receive newer presence data to avoid
-                          redundant fetching of already known information.
+                          If a value was passed for `last_update_id`, then this is
+                          guaranteed to be equal to or greater than that value. If it
+                          is the same value, then that indicates to the client that
+                          there were no updates to previously received user presence
+                          data.
+
+                          The client should then pass this value as the `last_update_id`
+                          parameter when it next queries this endpoint, in order to only
+                          receive new user presence data and avoid redundantly fetching
+                          already known information.
+
+                          This will be `-1` if no value was passed for
+                          [`last_update_id`](#parameter-last_update_id) and no user
+                          presence data was returned by the server. This can happen, for
+                          example, if an organization has disabled presence.
 
                           **Changes**: New in Zulip 9.0 (feature level 263).
                       server_timestamp:
                         type: number
                         description: |
+                          Only present if `ping_only` is `false`.
+
                           The time when the server fetched the `presences` data included
                           in the response.
-
+                      presences:
+                        type: object
+                        description: |
                           Only present if `ping_only` is `false`.
+
+                          A dictionary where each entry describes the presence details
+                          of a user in the Zulip organization. Entries can be in either
+                          the modern presence format or the legacy presence format.
+
+                          These entries will be the modern presence format when the
+                          `last_updated_id` parameter is passed, or when the deprecated
+                          `slim_presence` parameter is `true`.
+
+                          If the deprecated `slim_presence` parameter is `false` and the
+                          `last_updated_id` parameter is omitted, the entries will be in
+                          the legacy presence API format.
+
+                          **Note**: The legacy presence format should only be used when
+                          interacting with old servers. It will be removed as soon as
+                          doing so is practical.
+                        additionalProperties:
+                          description: |
+                            Will be one of these two formats (modern or legacy) for user
+                            presence data:
+                          oneOf:
+                            - $ref: "#/components/schemas/ModernPresenceFormat"
+                            - type: object
+                              description: |
+                                `{user_email}`: Presence data (legacy format) for the user with
+                                the specified Zulip API email.
+                              additionalProperties:
+                                $ref: "#/components/schemas/LegacyPresenceFormat"
                       zephyr_mirror_active:
                         type: boolean
                         deprecated: true
@@ -9146,35 +9207,6 @@ paths:
                           Legacy property for a part of the Zephyr mirroring system.
 
                           **Deprecated**. Clients should ignore this field.
-                      presences:
-                        type: object
-                        description: |
-                          A dictionary where each entry describes the presence details
-                          of a user in the Zulip organization.
-
-                          Only present if `ping_only` is `false`.
-                        additionalProperties:
-                          description: |
-                            A map from `{user_id}` (modern) or `{user_email}` (legacy)
-                            properties to objects containing the presence data for that
-                            user.
-
-                            Depending on the value of `slim_presence`, the object's key is
-                            either the user's ID or the user's Zulip API email. If
-                            `slim_presence` is `true`, the presence information is fetched
-                            in the modern API format which includes `active_timestamp` and
-                            `idle_timestamp` of the user.
-
-                            **Note**: The old legacy format should only be used when
-                            interacting with old servers. It will be removed as soon as
-                            doing so is practical.
-                          oneOf:
-                            - type: object
-                              additionalProperties:
-                                $ref: "#/components/schemas/LegacyPresenceFormat"
-                            - type: object
-                              additionalProperties:
-                                $ref: "#/components/schemas/ModernPresenceFormat"
                     example:
                       {
                         "msg": "",
