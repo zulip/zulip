@@ -335,7 +335,11 @@
                 align-items: center;
                 justify-content: center;
                 border-radius: 3px;
-                padding: 5px;
+                padding: 0 5px;
+                /* Stretch to the row to keep unread
+                   count from affecting overall row
+                   size as test scales up. */
+                align-self: stretch;
 
                 &:focus {
                     outline: 2px solid var(--color-outline-focus);
