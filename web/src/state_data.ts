@@ -347,7 +347,6 @@ const realm_schema = z.object({
         }),
     ),
     realm_presence_disabled: z.boolean(),
-    realm_private_message_policy: z.number(),
     realm_push_notifications_enabled: z.boolean(),
     realm_push_notifications_enabled_end_timestamp: NOT_TYPED_YET,
     realm_require_unique_names: z.boolean(),

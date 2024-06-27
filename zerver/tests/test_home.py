@@ -189,7 +189,6 @@ class HomeTest(ZulipTestCase):
         "realm_plan_type",
         "realm_playgrounds",
         "realm_presence_disabled",
-        "realm_private_message_policy",
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
         "realm_require_unique_names",
