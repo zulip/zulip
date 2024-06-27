@@ -324,6 +324,12 @@
             }
 
             .unread-count-focus-outline {
+                /* Because the inbox view font-size will
+                   never be smaller than the em-equivalent
+                   of 15px, we restate the base font-size
+                   here so that unreads match others in
+                   the UI at legacy size (14px). */
+                font-size: var(--base-font-size-px);
                 grid-area: unread_count;
                 display: flex;
                 align-items: center;
