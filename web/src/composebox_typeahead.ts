@@ -105,7 +105,7 @@ export type TypeaheadSuggestion =
 
 // This is what we use for direct message/compose typeaheads.
 // We export it to allow tests to mock it.
-export const max_num_items = 8;
+export const max_num_items = 50;
 
 export let emoji_collection: Emoji[] = [];
 
@@ -1239,7 +1239,7 @@ export function initialize_topic_edit_typeahead(
             const stream_id = stream_data.get_stream_id(stream_name);
             return topics_seen_for(stream_id);
         },
-        items: 5,
+        items: 50,
     });
 }
 
@@ -1317,7 +1317,7 @@ export function initialize({
         source(): string[] {
             return topics_seen_for(compose_state.stream_id());
         },
-        items: 3,
+        items: 50,
         highlighter_html(item: string): string {
             return typeahead_helper.render_typeahead_item({primary: item});
         },

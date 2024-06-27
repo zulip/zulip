@@ -41,7 +41,7 @@ export type Suggestion = {
       }
 );
 
-export const max_num_of_search_results = 12;
+export const max_num_of_search_results = 50;
 
 function channel_matches_query(channel_name: string, q: string): boolean {
     return common.phrase_match(q, channel_name);
