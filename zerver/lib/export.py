@@ -141,6 +141,7 @@ ALL_ZULIP_TABLES = {
     "zerver_multiuseinvite_streams",
     "zerver_namedusergroup",
     "zerver_onboardingstep",
+    "zerver_onboardingusermessage",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
