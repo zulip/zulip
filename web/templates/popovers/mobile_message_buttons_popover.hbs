@@ -3,21 +3,15 @@
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="compose_mobile_stream_button popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
-                {{#if is_in_private_narrow }}
-                <span class="popover-menu-label">{{t "New channel message" }}</span>
-                {{else}}
-                <span class="popover-menu-label">{{t "New topic" }}</span>
-                {{/if}}
+                <span class="popover-menu-label">{{t "Start new conversation" }}</span>
+                {{popover_hotkey_hints "C"}}
             </a>
         </li>
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="compose_mobile_direct_message_button popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-mail" aria-hidden="true"></i>
-                {{#if is_in_private_narrow }}
                 <span class="popover-menu-label">{{t "New direct message" }}</span>
-                {{else}}
-                <span class="popover-menu-label">{{t "New direct message" }}</span>
-                {{/if}}
+                {{popover_hotkey_hints "X"}}
             </a>
         </li>
     </ul>
