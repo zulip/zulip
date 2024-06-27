@@ -897,20 +897,26 @@ ul {
 
 #giphy_grid_in_popover {
     /* 300px of GIPHY grid + 5px is the extra gutter space
+     * + 1px for outline.
      * between gif columns. */
-    width: 305px;
+    width: 306px;
     border: 0;
     padding: 0;
+
+    .giphy-content {
+        position: relative;
+        left: 1px;
+    }
 
     .giphy-gif {
         cursor: pointer;
     }
 
-    .giphy-gif-img:focus {
+    .giphy-gif:focus {
         /* Red outline for clear visibility
          * of which image is in focus.
          */
-        outline-color: hsl(0deg 100% 50%);
+        outline: 1px solid hsl(0deg 100% 50%);
     }
 
     .search-box {
