@@ -142,7 +142,7 @@ def run() -> None:
     )
     linter_config.external_linter(
         "ruff",
-        ["ruff", "--quiet"],
+        ["ruff", "check", "--quiet"],
         ["py", "pyi"],
         fix_arg="--fix",
         description="Python linter",
