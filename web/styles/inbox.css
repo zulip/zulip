@@ -255,8 +255,9 @@
 
             .user_circle {
                 /* size of the user activity circle */
-                min-width: 6px;
-                height: 6px;
+                /* 6px at 15px/1em */
+                min-width: 0.4em;
+                height: 0.4em;
                 margin-right: 5px;
                 top: 0;
             }
