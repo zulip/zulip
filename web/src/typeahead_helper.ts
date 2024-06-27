@@ -628,6 +628,10 @@ export function compare_by_activity(
     return util.strcmp(stream_a.name, stream_b.name);
 }
 
+function compare_by_name(stream_a: StreamSubscription, stream_b: StreamSubscription): number {
+    return util.strcmp(stream_a.name, stream_b.name);
+}
+
 export function sort_streams(matches: StreamPillData[], query: string): StreamPillData[] {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
@@ -638,6 +642,11 @@ export function sort_streams(matches: StreamPillData[], query: string): StreamPi
     );
 
     return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
+}
+
+export function sort_streams_by_name(matches: StreamPillData[], query: string): StreamPillData[] {
+    const results = typeahead.triage(query, matches, (x) => x.name, compare_by_name);
+    return [...results.matches, ...results.rest];
 }
 
 export function query_matches_person(

@@ -226,7 +226,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
 
 run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
     override_rewire(typeahead_helper, "render_stream", () => $fake_rendered_stream);
-    override_rewire(typeahead_helper, "sort_streams", ({streams}) => {
+    override_rewire(typeahead_helper, "sort_streams_by_name", ({streams}) => {
         sort_streams_called = true;
         return streams;
     });

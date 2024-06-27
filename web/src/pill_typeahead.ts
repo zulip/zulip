@@ -115,7 +115,7 @@ export function set_up_stream(
             if (query.startsWith("#")) {
                 query = query.slice(1);
             }
-            return typeahead_helper.sort_streams(stream_matches, query);
+            return typeahead_helper.sort_streams_by_name(stream_matches, query);
         },
         updater(item: StreamPillData, _query: string): undefined {
             stream_pill.append_stream(item, pills, false);
