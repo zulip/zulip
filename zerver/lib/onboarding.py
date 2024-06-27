@@ -40,7 +40,7 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_direct_message(user: UserProfile) -> None:
+def send_initial_direct_message(user: UserProfile) -> int:
     # We adjust the initial Welcome Bot direct message for education organizations.
     education_organization = user.realm.org_type in (
         Realm.ORG_TYPES["education_nonprofit"]["id"],
@@ -97,7 +97,7 @@ Here are a few messages I understand: {bot_commands}
             bot_commands=bot_commands(),
         )
 
-    internal_send_private_message(
+    message_id = internal_send_private_message(
         get_system_bot(settings.WELCOME_BOT, user.realm_id),
         user,
         remove_single_newlines(content),
@@ -105,6 +105,8 @@ Here are a few messages I understand: {bot_commands}
         # as this is intended to be seen contextually in the application.
         disable_external_notifications=True,
     )
+    assert message_id is not None
+    return message_id
 
 
 def bot_commands(no_help_command: bool = False) -> str:
@@ -388,12 +390,23 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
         sent_message_result.message_id for sent_message_result in do_send_messages(messages)
     ]
 
-    onboarding_user_messages = [
-        OnboardingUserMessage(
-            realm=realm, message_id=message_id, flags=OnboardingUserMessage.flags.historical
+    seen_topics = set()
+    onboarding_topics_first_message_ids = set()
+    for index, message in enumerate(welcome_messages):
+        topic_name = message["topic_name"]
+        if topic_name not in seen_topics:
+            onboarding_topics_first_message_ids.add(message_ids[index])
+            seen_topics.add(topic_name)
+
+    onboarding_user_messages = []
+    for message_id in message_ids:
+        flags = OnboardingUserMessage.flags.historical
+        if message_id in onboarding_topics_first_message_ids:
+            flags |= OnboardingUserMessage.flags.starred
+        onboarding_user_messages.append(
+            OnboardingUserMessage(realm=realm, message_id=message_id, flags=flags)
         )
-        for message_id in message_ids
-    ]
+
     OnboardingUserMessage.objects.bulk_create(onboarding_user_messages)
 
     # We find the one of our just-sent greetings messages, and react to it.
