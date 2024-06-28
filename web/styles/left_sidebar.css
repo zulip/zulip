@@ -1185,7 +1185,7 @@ li.topic-list-item {
         width: var(--left-sidebar-header-icon-width);
     }
 
-    .input-append {
+    .stream_search_section {
         grid-area: filter-box;
         display: flex;
         justify-content: stretch;
@@ -1194,7 +1194,7 @@ li.topic-list-item {
         line-height: 20px;
         white-space: nowrap;
 
-        & input {
+        .stream-list-filter {
             /* Use the border-box model so flex
                can do its thing despite whatever
                padding and border we specify. */
