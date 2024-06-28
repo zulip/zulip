@@ -155,6 +155,7 @@ function toggle_giphy_popover(target) {
     popover_menus.toggle_popover_menu(
         target,
         {
+            theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
                 instance.setContent(ui_util.parse_html(render_giphy_picker()));
