@@ -411,7 +411,7 @@
         color: inherit;
     }
 
-    .dropdown-list-search .dropdown-list-search-input:focus {
+    .popover-filter-input-wrapper .popover-filter-input:focus {
         background-color: hsl(225deg 6% 7%);
         border: 1px solid hsl(0deg 0% 100% / 50%);
         box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
