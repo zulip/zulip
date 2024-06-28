@@ -127,6 +127,7 @@ export const allowed_web_public_narrows = [
     "search",
     "near",
     "id",
+    "with",
 ];
 
 export function is_spectator_compatible(hash: string): boolean {

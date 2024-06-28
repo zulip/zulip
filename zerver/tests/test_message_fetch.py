@@ -47,7 +47,7 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
-from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
+from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME, messages_for_topic
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.upload import create_attachment
 from zerver.lib.url_encoding import near_message_url
@@ -2675,6 +2675,187 @@ class GetOldMessagesTest(ZulipTestCase):
             """
             )
 
+    def test_get_visible_messages_using_narrow_with(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+        self.login("iago")
+
+        self.make_stream("dev team", invite_only=True, history_public_to_subscribers=False)
+        self.subscribe(iago, "dev team")
+
+        # Test `with` operator effective when targeting a topic with
+        # message which can be accessed by the user.
+        msg_id = self.send_stream_message(iago, "dev team", topic_name="test")
+
+        narrow = [
+            dict(operator="channel", operand="dev team"),
+            dict(operator="topic", operand="other_topic"),
+            dict(operator="with", operand=msg_id),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertEqual(results["messages"][0]["id"], msg_id)
+        # Notably we returned the message with its actual topic.
+        self.assertEqual(results["messages"][0]["subject"], "test")
+
+        # Test `with` operator without channel/topic operators.
+        narrow = [
+            dict(operator="with", operand=msg_id),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertEqual(results["messages"][0]["id"], msg_id)
+
+        # Test `with` operator ineffective when targeting a topic with
+        # message that can not be accessed by the user.
+        # Since !history_public_to_subscribers, hamlet cannot view.
+        self.subscribe(hamlet, "dev team")
+        self.login("hamlet")
+
+        narrow = [
+            dict(operator="channel", operand="dev team"),
+            dict(operator="topic", operand="test"),
+            dict(operator="with", operand=msg_id),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assert_length(results["messages"], 0)
+
+        # Same result with topic specified incorrectly
+        narrow = [
+            dict(operator="channel", operand="dev team"),
+            dict(operator="topic", operand="wrong_guess"),
+            dict(operator="with", operand=msg_id),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assert_length(results["messages"], 0)
+
+        # If just with is specified, we get messages a la combined feed,
+        # but not the target message.
+        narrow = [
+            dict(operator="with", operand=msg_id),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertNotIn(msg_id, [message["id"] for message in results["messages"]])
+
+        # Test `with` operator is effective when targeting personal
+        # messages with message id, and returns messages of that narrow.
+        #
+        # This will be relevant if we allow moving DMs in the future.
+        #
+        # First, attempt to view a message ID we can't access.
+        msg_ids = [self.send_personal_message(iago, othello) for _ in range(2)]
+        with_narrow = [
+            # Important: We pass the wrong conversation.
+            dict(operator="dm", operand=[hamlet.id]),
+            dict(operator="with", operand=msg_ids[0]),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(with_narrow).decode()))
+        self.assertNotIn(msg_id, [message["id"] for message in results["messages"]])
+
+        # Now switch to a user how does have access.
+        self.login("iago")
+        with_narrow = [
+            # Important: We pass the wrong conversation.
+            dict(operator="dm", operand=[hamlet.id]),
+            dict(operator="with", operand=msg_ids[0]),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(with_narrow).decode()))
+        for msg in results["messages"]:
+            self.assertIn(msg["id"], msg_ids)
+
+        # Test `with` operator is effective when targeting direct
+        # messages group with message id.
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("othello")
+
+        msg_ids = [self.send_group_direct_message(iago, [cordelia, hamlet]) for _ in range(2)]
+
+        with_narrow = [
+            # Again, query the wrong conversation.
+            dict(operator="dm", operand=[hamlet.id]),
+            dict(operator="with", operand=msg_ids[0]),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(with_narrow).decode()))
+
+        for msg in results["messages"]:
+            self.assertIn(msg["id"], msg_ids)
+
+        # Test `with` operator effective with spectator access when
+        # spectator has access to message.
+        self.logout()
+        self.setup_web_public_test(5)
+        channel = get_stream("web-public-channel", realm)
+        assert channel.recipient_id is not None
+        message_ids = messages_for_topic(realm.id, channel.recipient_id, "test").values_list(
+            "id", flat=True
+        )
+
+        web_public_narrow = [
+            dict(operator="channels", operand="web-public", negated=False),
+            dict(operator="channel", operand="web-public-channel"),
+            # Important: Pass a topic that doesn't contain the target message
+            dict(operator="topic", operand="wrong topic"),
+            dict(operator="with", operand=message_ids[0]),
+        ]
+        post_params = {
+            "anchor": 0,
+            "num_before": 0,
+            "num_after": 5,
+            "narrow": orjson.dumps(web_public_narrow).decode(),
+        }
+
+        result = self.client_get("/json/messages", dict(post_params))
+        self.verify_web_public_query_result_success(result, 5)
+
+        # Test `with` operator ineffective when spectator does not have
+        # access to message, by trying to access the same set of messages
+        # but when the spectator access is not allowed.
+        do_set_realm_property(hamlet.realm, "enable_spectator_access", False, acting_user=hamlet)
+
+        result = self.client_get("/json/messages", dict(post_params))
+        self.check_unauthenticated_response(result)
+
+        # Test request with multiple `with` operators raises
+        # InvalidOperatorCombinationError
+        self.login("iago")
+        iago = self.example_user("iago")
+        msg_id_1 = self.send_stream_message(iago, "Verona")
+        msg_id_2 = self.send_stream_message(iago, "Scotland")
+
+        narrow = [
+            dict(operator="channel", operand="Verona"),
+            dict(operator="with", operand=msg_id_1),
+            dict(operator="topic", operand="test"),
+            dict(operator="with", operand=msg_id_2),
+        ]
+        post_params = {
+            "anchor": msg_id_1,
+            "num_before": 0,
+            "num_after": 5,
+            "narrow": orjson.dumps(narrow).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(
+            result, "Invalid narrow operator combination: Duplicate 'with' operators."
+        )
+
+        # Test request with an invalid message id for `with` operator fails.
+        msg_id = self.send_stream_message(iago, "Verona", topic_name="Invalid id")
+        narrow = [
+            dict(operator="channel", operand="Verona"),
+            dict(operator="topic", operand="Invalid id"),
+            dict(operator="with", operand="3.2"),
+        ]
+        post_params = {
+            "anchor": msg_id,
+            "num_before": 0,
+            "num_after": 5,
+            "narrow": orjson.dumps(narrow).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, "Invalid narrow operator: Invalid 'with' operator")
+
     @override_settings(USING_PGROONGA=False)
     def test_messages_in_narrow(self) -> None:
         user = self.example_user("cordelia")
@@ -3615,7 +3796,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ),
         ]
 
-        for operand in ["id", "sender", "channel", "dm-including", "group-pm-with"]:
+        for operand in ["id", "sender", "channel", "dm-including", "group-pm-with", "with"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # str or int list is required for "dm" and "pm-with" operator

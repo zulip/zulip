@@ -397,6 +397,25 @@ test("basics", () => {
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
 
+    terms = [
+        {operator: "channel", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "with", operand: 17},
+    ];
+    filter = new Filter(terms);
+
+    assert.ok(!filter.is_keyword_search());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.allow_use_first_unread_when_narrowing());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.can_bucket_by("channel", "topic", "with"));
+    assert.ok(!filter.is_conversation_view_with_near());
+
     // "stream" was renamed to "channel"
     terms = [
         {operator: "stream", operand: "foo"},
@@ -723,6 +742,13 @@ test("redundancies", () => {
     ];
     filter = new Filter(terms);
     assert.ok(filter.can_bucket_by("is-dm", "not-dm"));
+
+    terms = [
+        {operator: "dm", operand: "joe@example.com,"},
+        {operator: "with", operand: "12"},
+    ];
+    filter = new Filter(terms);
+    assert.ok(filter.can_bucket_by("dm"));
 });
 
 test("canonicalization", () => {
@@ -785,6 +811,23 @@ test("canonicalization", () => {
     term = Filter.canonicalize_term({operator: "has", operand: "reactions"});
     assert.equal(term.operator, "has");
     assert.equal(term.operand, "reaction");
+});
+
+test("ensure_channel_topic_terms", () => {
+    const channel_term = {operator: "channel", operand: ""};
+    const topic_term = {operator: "topic", operand: ""};
+
+    const term_1 = Filter.ensure_channel_topic_terms([{operator: "with", operand: 12}]);
+    const term_2 = Filter.ensure_channel_topic_terms([topic_term, {operator: "with", operand: 12}]);
+    const term_3 = Filter.ensure_channel_topic_terms([
+        channel_term,
+        {operator: "with", operand: 12},
+    ]);
+    const terms = [term_1, term_2, term_3];
+
+    for (const term of terms) {
+        assert.deepEqual(term, [channel_term, topic_term, {operator: "with", operand: 12}]);
+    }
 });
 
 test("predicate_basics", ({override}) => {
@@ -1598,6 +1641,8 @@ test("term_type", () => {
         ["dm", "near", "is-unread", "has-link"],
     );
 
+    assert_term_sort(["topic", "channel", "with"], ["channel", "topic", "with"]);
+
     assert_term_sort(["bogus", "channel", "topic"], ["channel", "topic", "bogus"]);
     assert_term_sort(["channel", "topic", "channel"], ["channel", "channel", "topic"]);
 
@@ -1713,6 +1758,69 @@ test("update_email", () => {
     assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
 });
 
+test("try_adjusting_for_moved_with_target", ({override}) => {
+    const messages = {
+        12: {type: "stream", display_recipient: "Scotland", topic: "Test 1", id: 12},
+        17: {type: "stream", display_recipient: "Verona", topic: "Test 2", id: 17},
+        2: {type: "direct", id: 2},
+    };
+
+    override(message_store, "get", (msg_id) => messages[msg_id]);
+
+    // When the narrow terms are correct, it returns the same terms
+    let terms = [
+        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "with", operand: "12", negated: false},
+    ];
+
+    let filter = new Filter(terms);
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, true);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
+    assert.deepEqual(filter.terms(), terms);
+
+    // When the narrow terms are incorrect, the narrow is corrected
+    // to the narrow of the `with` operand.
+    const incorrect_terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "12", negated: false},
+    ];
+
+    filter = new Filter(incorrect_terms);
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, true);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
+    assert.deepEqual(filter.terms(), terms);
+
+    // when message specified in `with` operator does not exist in
+    // message_store, we rather go to the server, without any updates.
+    terms = [
+        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "with", operand: "11", negated: false},
+    ];
+
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, true);
+    assert.deepEqual(filter.terms(), terms);
+
+    // Since only "stream" recipient type can be moved, if the message
+    // is of any type other than "stream", same narrow terms are
+    // returned without the `with` operator.
+    terms = [
+        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "with", operand: "2", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
+    assert.deepEqual(filter.terms(), terms);
+});
+
 function make_private_sub(name, stream_id) {
     const sub = {
         name,
@@ -1732,6 +1840,12 @@ function make_web_public_sub(name, stream_id) {
 }
 
 test("navbar_helpers", () => {
+    const sub = {
+        name: "Foo",
+        stream_id: 12,
+    };
+    stream_data.add_sub(sub);
+
     const stream_id = 43;
     make_sub("Foo", stream_id);
 
@@ -1840,6 +1954,11 @@ test("navbar_helpers", () => {
     const dm_near = [
         {operator: "dm", operand: "joe@example.com"},
         {operator: "near", operand: "12"},
+    ];
+    const channel_with = [
+        {operator: "channel", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "with", operand: "12"},
     ];
 
     const test_cases = [
@@ -2037,6 +2156,13 @@ test("navbar_helpers", () => {
             is_common_narrow: false,
             icon: "envelope",
             title: properly_separated_names([joe.full_name]),
+            redirect_url_with_search: "#",
+        },
+        {
+            terms: channel_with,
+            is_common_narrow: true,
+            zulip_icon: "hashtag",
+            title: "Foo",
             redirect_url_with_search: "#",
         },
     ];

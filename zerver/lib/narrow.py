@@ -16,6 +16,7 @@ from typing import (
 )
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
@@ -44,8 +45,12 @@ from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 from typing_extensions import TypeAlias, override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
-from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import get_first_visible_message_id
+from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
+from zerver.lib.message import (
+    access_message,
+    access_web_public_message,
+    get_first_visible_message_id,
+)
 from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -81,6 +86,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_active_streams
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
@@ -124,6 +130,7 @@ class NarrowParameter(BaseModel):
             "sender",
             "group-pm-with",
             "dm-including",
+            "with",
         ]
         operators_supporting_ids = ["pm-with", "dm"]
         operators_non_empty_operand = {"search"}
@@ -161,6 +168,7 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
         "search",
         "near",
         "id",
+        "with",
     ]
     for element in narrow:
         operator = element.operator
@@ -198,6 +206,19 @@ class BadNarrowOperatorError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Invalid narrow operator: {desc}")
+
+
+class InvalidOperatorCombinationError(JsonableError):
+    code = ErrorCode.BAD_NARROW
+    data_fields = ["desc"]
+
+    def __init__(self, desc: str) -> None:
+        self.desc: str = desc
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid narrow operator combination: {desc}")
 
 
 ConditionTransform: TypeAlias = Callable[[ClauseElement], ClauseElement]
@@ -861,6 +882,82 @@ def get_channel_from_narrow_access_unchecked(
             if term.operator in channel_operators:
                 return get_stream_by_narrow_operand_access_unchecked(term.operand, realm)
     return None
+
+
+# This function implements the core logic of the `with` operator,
+# which is designed to support permanent links to a topic that
+# robustly function if the topic is moved.
+#
+# The with operator accepts a message ID as an operand. If the
+# message ID does not exist or is otherwise not accessible to the
+# current user, then it has no effect.
+#
+# Otherwise, the narrow terms are mutated to remove any
+# channel/topic/dm operators, replacing them with the appropriate
+# operators for the conversation view containing the targeted message.
+def update_narrow_terms_containing_with_operator(
+    realm: Realm,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    narrow: Optional[List[NarrowParameter]],
+) -> Optional[List[NarrowParameter]]:
+    if narrow is None:
+        return narrow
+
+    with_operator_terms = list(filter(lambda term: term.operator == "with", narrow))
+
+    if len(with_operator_terms) > 1:
+        raise InvalidOperatorCombinationError(_("Duplicate 'with' operators."))
+    elif len(with_operator_terms) == 0:
+        return narrow
+
+    with_term = with_operator_terms[0]
+    narrow.remove(with_term)
+    try:
+        message_id = int(with_term.operand)
+    except ValueError:
+        # TODO: This probably should be handled earlier.
+        raise BadNarrowOperatorError(_("Invalid 'with' operator"))
+
+    if maybe_user_profile.is_authenticated:
+        try:
+            message = access_message(maybe_user_profile, message_id)
+        except JsonableError:
+            return narrow
+    else:
+        try:
+            message = access_web_public_message(realm, message_id)
+        except MissingAuthenticationError:
+            return narrow
+
+    # TODO: It would be better if the legacy names here are canonicalized
+    # while building a NarrowParameter.
+    filtered_terms = [
+        term
+        for term in narrow
+        if term.operator not in ["stream", "channel", "topic", "dm", "pm-with"]
+    ]
+
+    if message.recipient.type == Recipient.STREAM:
+        channel_id = message.recipient.type_id
+        topic = message.topic_name()
+        channel_conversation_terms = [
+            NarrowParameter(operator="channel", operand=channel_id),
+            NarrowParameter(operator="topic", operand=topic),
+        ]
+        return channel_conversation_terms + filtered_terms
+
+    elif message.recipient.type == Recipient.PERSONAL:
+        dm_conversation_terms = [
+            NarrowParameter(operator="dm", operand=[message.recipient.type_id])
+        ]
+        return dm_conversation_terms + filtered_terms
+
+    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        huddle_user_ids = list(get_direct_message_group_user_ids(message.recipient))
+        dm_conversation_terms = [NarrowParameter(operator="dm", operand=huddle_user_ids)]
+        return dm_conversation_terms + filtered_terms
+
+    raise AssertionError("Invalid recipient type")
 
 
 def exclude_muting_conditions(

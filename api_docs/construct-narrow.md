@@ -51,7 +51,10 @@ important optimization when fetching messages in certain cases (e.g.,
 when [adding the `read` flag to a user's personal
 messages](/api/update-message-flags-for-narrow)).
 
-**Changes**: In Zulip 9.0 (feature level 265), support was added for a
+**Changes**: In Zulip 9.0 (feature level 271), narrows gained support
+for a new `with` operator for linking to topics.
+
+In Zulip 9.0 (feature level 265), support was added for a
 new `is:followed` filter, matching messages in topics that the current
 user is [following](/help/follow-a-topic).
 
@@ -88,15 +91,24 @@ filters did.
 
 ### Message IDs
 
-The `near` and `id` operators, documented in the help center, use message
-IDs for their operands.
+The `with` operator is designed to be used in links that should follow
+a topic across being moved. Its operand is a message ID.
 
+The `near` and `id` operators, documented in the help center,
+also use message IDs for their operands.
+
+* `with:12345`: Search for the conversation (stream/topic pair) which
+  contains the message with ID `12345`. If such a message exists, and
+  can be accessed by the user, then the search will be treated as having
+  the `channel`/`topic`/`dm` operators corresponding to the
+  conversation containing that message, replacing any such operators
+  in the original request.
 * `near:12345`: Search messages around the message with ID `12345`.
 * `id:12345`: Search for only message with ID `12345`.
 
-The message ID operand for the `id` operator may be encoded as either a
-number or a string. The message ID operand for the `near` operator must
-be encoded as a string.
+The message ID operand for the `with` and `id` operators may be encoded
+as either a number or a string. The message ID operand for the `near`
+operator must be encoded as a string.
 
 **Changes**: Prior to Zulip 8.0 (feature level 194), the message ID
 operand for the `id` operator needed to be encoded as a string.

@@ -1,6 +1,9 @@
+import assert from "minimalistic-assert";
+
 import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
 import * as message_lists from "./message_lists";
+import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import type {NarrowTerm} from "./state_data";
@@ -264,6 +267,42 @@ export function _possible_unread_message_ids(
     let sub;
     let topic_name;
     let current_filter_pm_string;
+
+    // For the `with` operator, we can only correctly compute the
+    // correct channel/topic for lookup unreads in if we either
+    // have the message in our local cache, or we know the filter
+    // has already been updated for potentially moved messages.
+    //
+    // The code path that needs this function is never called in
+    // the `with` code path, but for safety, we assert that
+    // assumption is not violated.
+    //
+    // If we need to change that assumption, we can try looking up the
+    // target message in message_store, but would need to return
+    // undefined if the target message is not available.
+    assert(!current_filter.requires_adjustment_for_moved_with_target);
+
+    if (current_filter.can_bucket_by("channel", "topic", "with")) {
+        sub = stream_sub(current_filter);
+        topic_name = topic(current_filter);
+
+        const with_operand = current_filter.operands("with")[0]!;
+        const target_id = Number.parseInt(with_operand, 10);
+        const target_message = message_store.get(target_id)!;
+
+        if (target_message?.type === "private") {
+            // BUG: In theory, the fact that we've asserted
+            // !current_filter.requires_adjustment_for_moved_with_target
+            // should mean this is not possible; but
+            // filter.adjusted_terms_if_moved incorrectly does not
+            // ensure this. Once that bug is fixed, we can delete this case.
+            return [];
+        }
+        if (sub === undefined || topic_name === undefined) {
+            return [];
+        }
+        return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
+    }
 
     if (current_filter.can_bucket_by("channel", "topic")) {
         sub = stream_sub(current_filter);

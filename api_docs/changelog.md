@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 271**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for a new [search/narrow filter](/api/construct-narrow),
+  `with`, which returns messages in the same channel and topic as that
+  of the operand of filter, with the first unread message as anchor.
+
 **Feature level 270**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

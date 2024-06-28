@@ -21,6 +21,7 @@ from zerver.lib.narrow import (
     is_spectator_compatible,
     is_web_public_narrow,
     parse_anchor_value,
+    update_narrow_terms_containing_with_operator,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -114,7 +115,9 @@ def get_messages_backend(
     client_gravatar: Json[bool] = True,
     apply_markdown: Json[bool] = True,
 ) -> HttpResponse:
+    realm = get_valid_realm_from_request(request)
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
+    narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         raise JsonableError(
             _("Too many messages requested (maximum {max_messages}).").format(
@@ -124,7 +127,6 @@ def get_messages_backend(
     if num_before > 0 and num_after > 0 and not include_anchor:
         raise JsonableError(_("The anchor can only be excluded at an end of the range"))
 
-    realm = get_valid_realm_from_request(request)
     if not maybe_user_profile.is_authenticated:
         # If user is not authenticated, clients must include
         # `streams:web-public` in their narrow query to indicate this
