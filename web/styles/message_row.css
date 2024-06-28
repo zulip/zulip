@@ -280,6 +280,10 @@
                    to center me-messages within the baseline group. */
                 line-height: var(--message-box-avatar-height);
                 align-self: baseline;
+                /* Because the avatar may be the tallest element in a
+                   single-line me message, this margin preserves the
+                   overall height of the message box. */
+                margin-bottom: var(--message-box-vertical-margin);
             }
 
             .message_sender {
@@ -325,10 +329,7 @@
             grid-area: avatar;
             /* The picture should not participate in the baseline group. */
             align-self: start;
-            /* Because the avatar may be the tallest element in a
-              single-line me message, this margin preserves the
-              overall height of the message box. */
-            margin: var(--message-box-vertical-margin) 0;
+            margin-top: var(--message-box-vertical-margin);
         }
 
         .status-message {
