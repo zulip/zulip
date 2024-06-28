@@ -676,7 +676,11 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ["#recent_view .recipient_bar_icon", "#inbox-view .recipient_bar_icon"].join(","),
+        target: [
+            "#recent_view .recipient_bar_icon",
+            "#inbox-view .recipient_bar_icon",
+            "#left-sidebar-container .change_visibility_policy > i",
+        ].join(","),
         ...topic_visibility_tooltip_prop,
     });
 
