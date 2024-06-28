@@ -39,7 +39,8 @@
 
 li.show-more-topics {
     & a {
-        font-size: 12px;
+        /* 12px at 14px/1em */
+        font-size: 0.8571em;
     }
 }
 
@@ -279,7 +280,8 @@ li.show-more-topics {
             align-items: baseline;
 
             & a {
-                font-size: 12px;
+                /* 12px at 14px/1em */
+                font-size: 0.8571em;
             }
 
             .unread_count {
@@ -1370,7 +1372,8 @@ li.topic-list-item {
         display: block;
         text-decoration: none;
         color: inherit;
-        font-size: 12px;
+        /* 12px at 14px/1em */
+        font-size: 0.8571em;
 
         & span {
             display: block;
