@@ -350,7 +350,8 @@
     :disabled,
     input:not([type="radio"]):read-only,
     textarea:read-only,
-    #organization-permissions .dropdown-widget-button:disabled {
+    #organization-permissions .dropdown-widget-button:disabled,
+    #stream-advanced-configurations .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
     }
@@ -405,6 +406,7 @@
     .user-status-content-wrapper,
     #custom-expiration-time-input,
     #organization-permissions .dropdown-widget-button,
+    #stream-advanced-configurations .dropdown-widget-button,
     #compose_recipient_box {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
