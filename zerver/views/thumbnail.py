@@ -7,8 +7,8 @@ from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.attachments import validate_attachment_request
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.thumbnail import generate_thumbnail_url
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import Realm, UserProfile
 
 
@@ -27,12 +27,13 @@ def validate_thumbnail_request(
     return True
 
 
-@has_request_variables
+@typed_endpoint
 def backend_serve_thumbnail(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
-    url: str = REQ(),
-    size_requested: str = REQ("size"),
+    *,
+    url: str,
+    size: str,
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         realm = get_valid_realm_from_request(request)
