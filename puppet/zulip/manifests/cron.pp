@@ -4,6 +4,8 @@ define zulip::cron(
   String $minute,
   String $hour = '*',
   String $dow = '*',
+  String $day = '*',
+  String $month = '*',
   String $user = 'zulip',
   Optional[String] $command = undef,
   Optional[String] $manage = undef,
@@ -25,7 +27,7 @@ define zulip::cron(
   if $dsn != '' {
     include zulip::sentry_cli
     $environment = zulipconf('machine', 'deploy_type', 'development')
-    $sentry = "sentry-cli monitors run -e ${environment} --schedule '${minute} ${hour} * * ${dow}' ${title} -- "
+    $sentry = "sentry-cli monitors run -e ${environment} --schedule '${minute} ${hour} ${day} ${month} ${dow}' ${title} -- "
     $cron_require = [File['/usr/local/bin/sentry-cli']]
   } else {
     $sentry = ''

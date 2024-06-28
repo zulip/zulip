@@ -16,7 +16,7 @@ import orjson
 from dateutil.parser import parse as dateparser
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
-
+from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.actions.bots import (
     do_change_bot_owner,
@@ -207,6 +207,7 @@ from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    make_client,
     create_dummy_file,
     get_subscription,
     get_test_image_file,
@@ -3161,6 +3162,34 @@ class NormalActionsTest(BaseAction):
             num_message_ids=1,
             is_legacy=False,
         )
+
+    def test_stream_becomes_active(self) -> None:
+        # Mark a stream as inactive
+        stream = self.make_stream("inactive_stream")
+        stream.is_recently_active = False
+        stream.save()
+        self.assertEqual(stream.is_recently_active, False)
+
+        # Send a message to the stream
+        sender = self.example_user("hamlet")
+        self.subscribe(sender, stream.name)    
+        sending_client = make_client(name="test suite")
+        message = Message(
+            sender=sender,
+            recipient=stream.recipient,
+            realm=stream.realm,
+            content="message_content",
+            date_sent=timezone_now(),
+            sending_client=sending_client,
+        )
+        message.set_topic_name("topic_name")
+        message_dict = build_message_send_dict(message=message)
+        with self.verify_action(state_change_expected=True, num_events=1) as events:
+            do_send_messages([message_dict])
+
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "is_recently_active")
+        self.assertEqual(events[0]["value"], True)
 
     def test_do_delete_message_personal(self) -> None:
         msg_id = self.send_personal_message(

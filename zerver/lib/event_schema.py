@@ -55,6 +55,7 @@ default_stream_fields = [
     ("date_created", int),
     ("description", str),
     ("first_message_id", OptionalType(int)),
+    ("is_recently_active", bool),
     ("history_public_to_subscribers", bool),
     ("invite_only", bool),
     ("is_announcement_only", bool),
@@ -1412,6 +1413,9 @@ def check_stream_update(
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)
+    elif prop == "is_recently_active":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 
