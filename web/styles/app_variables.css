@@ -54,11 +54,30 @@
     with them) go beneath the header.
     */
     --left-sidebar-collapse-widget-gutter: 10px;
+    /* The width of the empty space in the sidebar to separate
+       content from the edge of the window */
+    --left-sidebar-far-left-gutter-size: 10px;
+    /* This represents the space in the sidebar reserved for symbols like
+       the #; labels like the stream name go to the right of this. */
+    --left-sidebar-privacy-icon-column-size: 19px;
+    /* The full topic indentation includes 4px of indent in addition to
+       the above (and another 5px of padding not measured here) */
+    --left-sidebar-topic-indent: calc(
+        var(--left-sidebar-far-left-gutter-size) +
+            var(--left-sidebar-privacy-icon-column-size) + 4px
+    );
+    --left-sidebar-topic-resolve-width: 13px;
+    /* space direct message / stream / topic names from unread counters
+    and @ mention indicators by 3px on the right */
+    --left-sidebar-before-unread-count-padding: 3px;
     --left-sidebar-width: 270px;
     /* 40px (toggle icon) + 5px (gap) + 20px logo + 10px right margin */
     --left-sidebar-width-with-realm-icon-logo: 75px;
     --right-sidebar-width: 250px;
     --left-sidebar-header-icon-width: 15px;
+    /* Space between section in the left sidebar. */
+    --left-sidebar-sections-vertical-gutter: 8px;
+    --left-sidebar-bottom-scrolling-buffer: 25px;
 
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)

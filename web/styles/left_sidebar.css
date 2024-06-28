@@ -1,20 +1,3 @@
-/* The width of the empty space in the sidebar to separate
-   content from the edge of the window */
-$far_left_gutter_size: 10px;
-/* This represents the space in the sidebar reserved for symbols like
-   the #; labels like the stream name go to the right of this. */
-$left_col_size: 19px;
-/* The full topic indentation includes 4px of indent in addition to
-   the above (and another 5px of padding not measured here) */
-$topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
-$topic_resolve_width: 13px;
-/* Space between section in the left sidebar. */
-$sections_vertical_gutter: 8px;
-$bottom_scrolling_buffer: 25px;
-/* space direct message / stream / topic names from unread counters
-and @ mention indicators by 3px on the right */
-$before_unread_count_padding: 3px;
-
 .hashtag {
     &:empty {
         &::after {
@@ -86,7 +69,11 @@ li.show-more-topics {
     font-weight: normal;
 
     .input-append.topic_search_section {
-        padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
+        padding: 2px 0 2px
+            calc(
+                var(--left-sidebar-topic-indent) -
+                    var(--left-sidebar-topic-resolve-width)
+            );
         margin-bottom: 3px;
         margin-left: 3px;
 
@@ -113,7 +100,9 @@ li.show-more-topics {
                 &.filter-topics {
                     padding-bottom: 0;
                     position: sticky;
-                    top: calc($sections_vertical_gutter + 43px);
+                    top: calc(
+                        var(--left-sidebar-sections-vertical-gutter) + 43px
+                    );
                     z-index: 2;
                 }
             }
@@ -369,7 +358,7 @@ li.show-more-topics {
 #subscribe-to-more-streams {
     text-decoration: none;
     margin: 5px auto 5.5px 10px;
-    margin-bottom: $bottom_scrolling_buffer;
+    margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
 
     & i {
         min-width: 19px;
@@ -595,7 +584,7 @@ li.active-sub-filter {
 }
 
 #left-sidebar-navigation-list {
-    margin-bottom: $sections_vertical_gutter;
+    margin-bottom: var(--left-sidebar-sections-vertical-gutter);
     /* We display this as a grid only to control
        the order of home views, using a single
        named grid area. */
@@ -688,7 +677,7 @@ li.top_left_scheduled_messages {
 
     .left-sidebar-navigation-label {
         grid-area: row-content;
-        padding-right: $before_unread_count_padding;
+        padding-right: var(--left-sidebar-before-unread-count-padding);
     }
 
     .unread_count {
@@ -886,7 +875,10 @@ li.top_left_scheduled_messages {
 .topic-box,
 .searching-for-more-topics {
     grid-template-columns:
-        25px $topic_resolve_width minmax(0, 1fr) minmax(0, max-content)
+        25px var(--left-sidebar-topic-resolve-width) minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
         30px 0;
 }
 
@@ -897,7 +889,7 @@ li.top_left_scheduled_messages {
 .sidebar-topic-name {
     cursor: pointer;
     grid-area: row-content;
-    padding: 0 $before_unread_count_padding 0 0;
+    padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
     /* TODO: Consolidate these styles with conversation partners and stream name
         once grid rewrite is complete on all sidebar rows.
 
@@ -958,7 +950,7 @@ li.top_left_scheduled_messages {
     overflow-x: hidden;
     overflow-x: clip;
     text-overflow: ellipsis;
-    padding: 0 $before_unread_count_padding 0 0;
+    padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
 }
 
 /*
@@ -1116,7 +1108,7 @@ li.topic-list-item {
     z-index: 2;
     grid-template-columns: 0 0 minmax(0, 1fr) max-content 0 42px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
-    padding-top: $sections_vertical_gutter;
+    padding-top: var(--left-sidebar-sections-vertical-gutter);
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
 
@@ -1125,7 +1117,7 @@ li.topic-list-item {
         color: inherit;
         text-decoration: none;
         text-transform: uppercase;
-        margin-left: calc($far_left_gutter_size + 2px);
+        margin-left: calc(var(--left-sidebar-far-left-gutter-size) + 2px);
 
         & i {
             margin: 0 6px 0 13px;
@@ -1144,7 +1136,8 @@ li.topic-list-item {
     /* Keep the stream-search area rows collapsed. */
     grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
-    padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
+    padding: var(--left-sidebar-sections-vertical-gutter) 0 3px
+        calc(var(--left-sidebar-far-left-gutter-size) + 2px);
     position: sticky;
     /* Keep sticky within SimpleBar context. */
     top: 0;
@@ -1298,7 +1291,7 @@ li.topic-list-item {
     font-weight: normal;
     /* 16px line-height at 0.8em (11.2px at 14px legacy em) */
     line-height: 1.4286em;
-    padding-left: $far_left_gutter_size;
+    padding-left: var(--left-sidebar-far-left-gutter-size);
     cursor: pointer;
     text-align: center;
     margin-right: 12px;
@@ -1357,7 +1350,7 @@ li.topic-list-item {
 .zoom-in {
     .narrow-filter > .bottom_left_row {
         position: sticky;
-        top: calc($sections_vertical_gutter + 20px);
+        top: calc(var(--left-sidebar-sections-vertical-gutter) + 20px);
         z-index: 2;
         padding-bottom: 1px;
         background-color: var(--color-background);
@@ -1370,7 +1363,7 @@ li.topic-list-item {
     }
 
     &.direct-messages-container ul.dm-list {
-        margin-bottom: $bottom_scrolling_buffer;
+        margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
     }
 
     #hide-more-direct-messages {
