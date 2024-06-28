@@ -392,15 +392,16 @@ def update_stream_backend(
                 raise JsonableError(_("Invalid channel ID"))
 
             user_group_id = request_settings_dict[setting_group_id_name]
-            user_group = access_user_group_for_setting(
-                user_group_id,
-                user_profile,
-                setting_name=setting_name,
-                permission_configuration=permission_configuration,
-            )
-            do_change_stream_group_based_setting(
-                stream, setting_name, user_group, acting_user=user_profile
-            )
+            with transaction.atomic(durable=True):
+                user_group = access_user_group_for_setting(
+                    user_group_id,
+                    user_profile,
+                    setting_name=setting_name,
+                    permission_configuration=permission_configuration,
+                )
+                do_change_stream_group_based_setting(
+                    stream, setting_name, user_group, acting_user=user_profile
+                )
 
     return json_success(request)
 
