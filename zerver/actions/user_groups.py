@@ -181,7 +181,7 @@ def do_send_create_user_group_event(
             can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
         ),
     )
-    send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
+    send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
 def check_add_user_group(

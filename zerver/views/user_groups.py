@@ -51,6 +51,7 @@ from zerver.views.streams import compose_views
 
 @require_user_group_edit_permission
 @typed_endpoint
+@transaction.atomic(durable=True)
 def add_user_group(
     request: HttpRequest,
     user_profile: UserProfile,

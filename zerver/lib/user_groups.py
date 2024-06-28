@@ -96,10 +96,10 @@ def has_user_group_access(
 
 
 def access_user_group_by_id(
-    user_group_id: int, user_profile: UserProfile, *, for_read: bool
+    user_group_id: int, user_profile: UserProfile, *, for_read: bool, for_setting: bool = False
 ) -> NamedUserGroup:
     try:
-        if for_read:
+        if for_read and not for_setting:
             user_group = NamedUserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
         else:
             user_group = NamedUserGroup.objects.select_for_update().get(
@@ -262,7 +262,9 @@ def update_or_create_user_group_for_setting(
     member_users = user_ids_to_users(direct_members, realm)
     user_group.direct_members.set(member_users)
 
-    potential_subgroups = NamedUserGroup.objects.filter(realm=realm, id__in=direct_subgroups)
+    potential_subgroups = NamedUserGroup.objects.select_for_update().filter(
+        realm=realm, id__in=direct_subgroups
+    )
     group_ids_found = [group.id for group in potential_subgroups]
     group_ids_not_found = [
         group_id for group_id in direct_subgroups if group_id not in group_ids_found
@@ -286,7 +288,9 @@ def access_user_group_for_setting(
     current_setting_value: Optional[UserGroup] = None,
 ) -> UserGroup:
     if isinstance(setting_user_group, int):
-        named_user_group = access_user_group_by_id(setting_user_group, user_profile, for_read=True)
+        named_user_group = access_user_group_by_id(
+            setting_user_group, user_profile, for_read=True, for_setting=True
+        )
         check_setting_configuration_for_system_groups(
             named_user_group, setting_name, permission_configuration
         )
