@@ -1298,7 +1298,7 @@ class UserProfileTest(ZulipTestCase):
         do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
         do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
         do_change_user_setting(
-            cordelia, "color_scheme", UserProfile.COLOR_SCHEME_NIGHT, acting_user=None
+            cordelia, "color_scheme", UserProfile.COLOR_SCHEME_DARK, acting_user=None
         )
         do_change_user_setting(
             cordelia, "enable_offline_email_notifications", False, acting_user=None
@@ -1342,8 +1342,8 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.timezone, "America/Phoenix")
         self.assertEqual(hamlet.timezone, "")
 
-        self.assertEqual(iago.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
-        self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
+        self.assertEqual(iago.color_scheme, UserProfile.COLOR_SCHEME_DARK)
+        self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_DARK)
         self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_AUTOMATIC)
 
         self.assertEqual(iago.enable_offline_email_notifications, False)

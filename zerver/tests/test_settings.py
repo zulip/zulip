@@ -474,11 +474,11 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login("hamlet")
 
         result = self.client_patch(
-            "/json/settings/display", dict(color_scheme=UserProfile.COLOR_SCHEME_NIGHT)
+            "/json/settings/display", dict(color_scheme=UserProfile.COLOR_SCHEME_DARK)
         )
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
-        self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
+        self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_DARK)
 
     def test_changing_setting_using_notification_setting_endpoint(self) -> None:
         """
