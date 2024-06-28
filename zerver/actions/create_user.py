@@ -42,6 +42,7 @@ from zerver.models import (
     DefaultStreamGroup,
     Message,
     NamedUserGroup,
+    OnboardingStep,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -229,6 +230,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 # * Fills in some recent historical messages
 # * Notifies other users in realm and Zulip about the signup
 # * Deactivates PreregistrationUser objects
+# * Mark 'visibility_policy_banner' as read
 def process_new_human_user(
     user_profile: UserProfile,
     prereg_user: Optional[PreregistrationUser] = None,
@@ -304,6 +306,10 @@ def process_new_human_user(
     from zerver.lib.onboarding import send_initial_direct_message
 
     send_initial_direct_message(user_profile)
+
+    # The 'visibility_policy_banner' is only displayed to existing users.
+    # Mark it as read for a new user.
+    OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
 
 
 def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -> None:

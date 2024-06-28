@@ -19,7 +19,10 @@ class TestGetNextOnboardingSteps(ZulipTestCase):
         )
 
     def test_some_done_some_not(self) -> None:
-        do_mark_onboarding_step_as_read(self.user, "visibility_policy_banner")
+        # "visibility_policy_banner" is already marked as read for a new user.
+        onboarding_step = OnboardingStep.objects.get(user=self.user)
+        self.assertEqual(onboarding_step.onboarding_step, "visibility_policy_banner")
+
         do_mark_onboarding_step_as_read(self.user, "intro_inbox_view_modal")
         onboarding_steps = get_next_onboarding_steps(self.user)
         self.assert_length(onboarding_steps, 3)
