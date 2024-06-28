@@ -916,11 +916,7 @@ export function initialize() {
             const group = user_groups.get_user_group_from_id(group_id);
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
-            for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-                settings_org.discard_group_property_element_changes(elem, group);
-            }
-            const $save_btn_controls = $(e.target).closest(".save-button-controls");
-            settings_components.change_save_button_state($save_btn_controls, "discarded");
+            settings_org.discard_group_settings_subsection_changes($subsection, group);
         },
     );
 }

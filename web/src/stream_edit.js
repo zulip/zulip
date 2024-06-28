@@ -756,12 +756,8 @@ export function initialize() {
             const sub = sub_store.get(stream_id);
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
-            for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-                settings_org.discard_stream_property_element_changes(elem, sub);
-            }
+            settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
-            const $save_btn_controls = $(e.target).closest(".save-button-controls");
-            settings_components.change_save_button_state($save_btn_controls, "discarded");
         },
     );
 }

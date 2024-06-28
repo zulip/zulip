@@ -444,15 +444,20 @@ function test_discard_changes_button(discard_changes) {
     );
 
     const $discard_button_parent = $(".settings-subsection-parent");
-    $discard_button_parent.find = () => [
+    $discard_button_parent.set_find_results(".prop-element", [
         $allow_edit_history,
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
         $edit_topic_policy,
-    ];
+    ]);
 
-    const {$discard_button, props} = createSaveButtons("msg-editing");
-    $discard_button.closest = (selector) => $(selector);
+    const {$discard_button, $save_button_controls, props} = createSaveButtons("msg-editing");
+    $discard_button.closest = (selector) => {
+        assert.equal(selector, ".settings-subsection-parent");
+        return $discard_button_parent;
+    };
+
+    $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
 
     discard_changes(ev);
 
