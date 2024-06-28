@@ -7232,7 +7232,7 @@ paths:
   /messages/render:
     post:
       operationId: render-message
-      summary: Render message
+      summary: Render a message
       tags: ["messages"]
       description: |
         Render a message to HTML.
@@ -7413,7 +7413,7 @@ paths:
   /messages/{message_id}/read_receipts:
     get:
       operationId: get-read-receipts
-      summary: Get the list of IDs of users who have read a message.
+      summary: Get a message's read receipts
       tags: ["messages"]
       description: |
         Returns a list containing the IDs for all users who have
@@ -7580,7 +7580,7 @@ paths:
   /messages/{message_id}:
     get:
       operationId: get-message
-      summary: Fetch a single message.
+      summary: Fetch a single message
       tags: ["messages"]
       description: |
         Given a message ID, return the message object.
@@ -8475,7 +8475,7 @@ paths:
   /users/{user_id_or_email}/presence:
     get:
       operationId: get-user-presence
-      summary: Get user presence
+      summary: Get a user's presence
       tags: ["users"]
       description: |
         Get the presence status for a specific user.
@@ -8977,7 +8977,7 @@ paths:
   /users/me/presence:
     post:
       operationId: update-presence
-      summary: Update your presence status and fetch presence data for the realm
+      summary: Update your presence
       tags: ["users"]
       description: |
         Update your
@@ -12155,7 +12155,7 @@ paths:
                       }
     patch:
       operationId: reorder-linkifiers
-      summary: Reorder all linkifiers
+      summary: Reorder linkifiers
       tags: ["server_and_organizations"]
       description: |
         Change the order that the regular expression patterns in the organization's
@@ -18218,7 +18218,7 @@ paths:
   /streams/{stream_id}/members:
     get:
       operationId: get-subscribers
-      summary: Get the subscribers of a channel
+      summary: Get channel subscribers
       tags: ["channels"]
       description: |
         Get all users subscribed to a channel.
@@ -18712,7 +18712,7 @@ paths:
   /streams/{stream_id}/email_address:
     get:
       operationId: get-stream-email-address
-      summary: Get the email address of a channel
+      summary: Get channel's email address
       tags: ["channels"]
       description: |
         Get email address of a channel.
@@ -19488,7 +19488,7 @@ paths:
           $ref: "#/components/responses/SimpleSuccess"
     get:
       operationId: get-user-group-subgroups
-      summary: Get subgroups of the user group
+      summary: Get subgroups of a user group
       tags: ["users"]
       description: |
         Get the subgroups of a [user group](/help/user-groups).
