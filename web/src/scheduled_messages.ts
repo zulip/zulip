@@ -235,7 +235,6 @@ export function initialize(scheduled_messages_params: StateData["scheduled_messa
     add_scheduled_messages(scheduled_messages_params.scheduled_messages);
 }
 
-
 export function formatCustomTime(): string {
     const custom_day = user_settings.custom_default_days;
     let custom_hour = user_settings.custom_default_hours;

@@ -68,7 +68,7 @@ function get_expected_send_opts(day, expecteds) {
         send_later_custom_list: {
             custom_default: {
                 stamp: Number.NaN,
-                text: "undefined days in the future at undefined:00 AM",
+                text: "undefined days in the future at NaN:00 AM",
             },
         },
         send_later_custom: {
