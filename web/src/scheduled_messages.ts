@@ -235,23 +235,27 @@ export function initialize(scheduled_messages_params: StateData["scheduled_messa
     add_scheduled_messages(scheduled_messages_params.scheduled_messages);
 }
 
+
 export function formatCustomTime(): string {
     const custom_day = user_settings.custom_default_days;
     let custom_hour = user_settings.custom_default_hours;
+    const twenty_four_hour_time = user_settings.twenty_four_hour_time;
     const period = custom_hour >= 12 ? "PM" : "AM";
     // Write 0:00 as 12:00 AM
-    if (custom_hour === 0) {
+    if (custom_hour === 0 && !twenty_four_hour_time) {
         custom_hour = 12;
+    } else if (custom_hour !== 12 && !twenty_four_hour_time) {
+        custom_hour = custom_hour % 12;
     }
     switch (custom_day) {
         case 0: {
-            return `Today at ${custom_hour}:00 ${period}`;
+            return `Today at ${custom_hour}:00 ${!twenty_four_hour_time ? period : ""}`;
         }
         case 1: {
-            return `Tomorrow at ${custom_hour}:00 ${period}`;
+            return `Tomorrow at ${custom_hour}:00 ${!twenty_four_hour_time ? period : ""}`;
         }
         default: {
-            return `${custom_day} days in the future at ${custom_hour}:00 ${period}`;
+            return `${custom_day} days in the future at ${custom_hour}:00 ${!twenty_four_hour_time ? period : ""}`;
         }
     }
 }
