@@ -636,7 +636,7 @@ export function initialize_everything(state_data) {
         },
     });
     // This needs to happen after activity_ui.initialize, so that user_filter
-    // is defined.
+    // is defined. Also, must happen after people.initialize()
     tutorial.initialize();
 
     // All overlays, and also activity_ui, must be initialized before hashchange.js

@@ -1,6 +1,7 @@
 import * as channel from "./channel";
 import * as message_view from "./message_view";
 import {page_params} from "./page_params";
+import * as people from "./people";
 
 function set_tutorial_status(status, callback) {
     return channel.post({
@@ -16,8 +17,8 @@ export function initialize() {
         message_view.show(
             [
                 {
-                    operator: "is",
-                    operand: "private",
+                    operator: "dm",
+                    operand: people.WELCOME_BOT.user_id,
                 },
             ],
             {trigger: "sidebar"},
