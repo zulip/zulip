@@ -1074,6 +1074,12 @@ div.settings-radio-input-parent {
     }
 }
 
+#stream-advanced-configurations {
+    .dropdown-widget-button {
+        color: hsl(0deg 0% 33%);
+    }
+}
+
 #change_user_group_description,
 #change_stream_description {
     width: 100%;
