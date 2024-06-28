@@ -147,7 +147,7 @@ export const custom_days = {
         text: $t({defaultMessage: "Today"}),
         value: 0,
     },
-    tommorow: {
+    tomorow: {
         text: $t({defaultMessage: "Tomorrow"}),
         value: 1,
     },
