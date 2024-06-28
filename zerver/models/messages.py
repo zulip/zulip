@@ -770,3 +770,17 @@ class Attachment(AbstractAttachment):
 
 post_save.connect(flush_used_upload_space_cache, sender=Attachment)
 post_delete.connect(flush_used_upload_space_cache, sender=Attachment)
+
+
+class OnboardingUserMessage(models.Model):
+    """
+    Stores the message_id of new onboarding messages with the
+    flags data that should be copied while creating UserMessage
+    rows for a new user in 'add_new_user_history'.
+    """
+
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    message = models.ForeignKey(Message, on_delete=CASCADE)
+
+    ALL_FLAGS = ["read", "historical", "starred"]
+    flags: BitHandler = BitField(flags=ALL_FLAGS, default=0)
