@@ -189,7 +189,7 @@
                 z-index: 3;
             }
 
-            .emoji-popover-filter {
+            #emoji-popover-filter {
                 margin: auto;
                 padding-left: 22px;
                 width: calc(100% - 22px - 8px);
