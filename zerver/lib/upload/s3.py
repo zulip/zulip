@@ -81,18 +81,18 @@ def upload_image_to_s3(
         "realm_id": str(user_profile.realm_id),
     }
 
-    content_disposition = ""
+    extras = {}
     if content_type is None:
         content_type = ""
     if content_type not in INLINE_MIME_TYPES:
-        content_disposition = "attachment"
+        extras["ContentDisposition"] = "attachment"
 
     key.put(
         Body=contents,
         Metadata=metadata,
         ContentType=content_type,
-        ContentDisposition=content_disposition,
         StorageClass=storage_class,
+        **extras,  # type: ignore[arg-type] # The dynamic kwargs here confuse mypy.
     )
 
 
