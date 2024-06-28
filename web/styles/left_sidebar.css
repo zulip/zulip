@@ -70,16 +70,12 @@ li.show-more-topics {
     font-weight: normal;
 
     .input-append.topic_search_section {
-        padding: 2px 0 2px
-            calc(
-                var(--left-sidebar-topic-indent) -
-                    var(--left-sidebar-topic-resolve-width)
-            );
+        padding: 2px 0 2px var(--left-sidebar-topic-indent);
         margin-bottom: 3px;
         margin-left: 3px;
 
         & input {
-            width: calc(100% - 50px);
+            width: calc(100% - 30px);
         }
 
         .clear_search_button {
@@ -877,10 +873,9 @@ li.top_left_scheduled_messages {
 .topic-box,
 .searching-for-more-topics {
     grid-template-columns:
-        25px var(--left-sidebar-topic-resolve-width) minmax(0, 1fr) minmax(
-            0,
-            max-content
-        )
+        var(--left-sidebar-topic-indent) var(
+            --left-sidebar-topic-resolve-width
+        ) minmax(0, 1fr) minmax(0, max-content)
         30px 0;
 }
 
@@ -918,7 +913,8 @@ li.top_left_scheduled_messages {
 
 .sidebar-topic-check {
     grid-area: starting-anchor-element;
-    font-size: 15px;
+    /* 15px at 14px/1em */
+    font-size: 1.0714em;
 }
 
 .stream-markers-and-controls,
