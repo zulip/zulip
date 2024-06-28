@@ -163,6 +163,26 @@ test("get_conversations", ({override}) => {
     set_pm_with_filter("iago@zulip.com");
     pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
+
+    pm_data = pm_list_data.get_conversations("Ia");
+    assert.deepEqual(
+        pm_data,
+        expected_data.filter((item) => item.recipients === "Iago"),
+    );
+
+    // comma separated search terms should work
+    pm_data = pm_list_data.get_conversations("Ia, Bo");
+    assert.deepEqual(
+        pm_data,
+        expected_data.filter((item) => ["Iago", "Alice, Bob"].includes(item.recipients)),
+    );
+
+    // filter should work with email
+    pm_data = pm_list_data.get_conversations("me@zulip");
+    assert.deepEqual(
+        pm_data,
+        expected_data.filter((item) => item.recipients === "Me Myself"),
+    );
 });
 
 test("get_conversations bot", ({override}) => {

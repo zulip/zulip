@@ -1092,6 +1092,13 @@ li.topic-list-item {
     }
 }
 
+/* Since direct-messages-sticky-header also has the
+`input-append` class accompanying it. The display property
+of that class will overwrite display: none if we don't have
+a more specific CSS rule. It will also overwrite `display: none`
+even if `.zoom-out` properties are declared after the `.input-append`
+properties since the latter is more specific.  */
+#direct-messages-sticky-header.zoom-out,
 .zoom-out {
     #topics_header {
         display: none;
@@ -1179,6 +1186,41 @@ li.topic-list-item {
         width: var(--left-sidebar-header-icon-width);
     }
 
+    &.hide_unread_counts {
+        .unread_count,
+        .unread_count.hide,
+        .masked_unread_count {
+            display: none;
+        }
+
+        /* When an empty unread count is hidden,
+           hide the masked unread count, too. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+
+        .masked_unread_count {
+            display: block;
+            /* Hold space enough so single-digit
+               unreads don't shift on hover. */
+            margin: 0 3px;
+        }
+
+        &:hover {
+            .unread_count {
+                display: block;
+            }
+
+            .hide,
+            .masked_unread_count {
+                display: none;
+            }
+        }
+    }
+}
+
+#streams_header,
+#direct-messages-sticky-header {
     .input-append {
         grid-area: filter-box;
         display: flex;
@@ -1233,38 +1275,6 @@ li.topic-list-item {
             /* Flexbox will pull the element open
                to make a generous clickable area. */
             padding: 0;
-        }
-    }
-
-    &.hide_unread_counts {
-        .unread_count,
-        .unread_count.hide,
-        .masked_unread_count {
-            display: none;
-        }
-
-        /* When an empty unread count is hidden,
-           hide the masked unread count, too. */
-        .unread_count.hide + .masked_unread_count {
-            display: none;
-        }
-
-        .masked_unread_count {
-            display: block;
-            /* Hold space enough so single-digit
-               unreads don't shift on hover. */
-            margin: 0 3px;
-        }
-
-        &:hover {
-            .unread_count {
-                display: block;
-            }
-
-            .hide,
-            .masked_unread_count {
-                display: none;
-            }
         }
     }
 }
@@ -1331,7 +1341,14 @@ li.topic-list-item {
     overflow: hidden;
 }
 
-.topic-list-filter {
+.direct-messages-search-section {
+    padding-left: 10px;
+    padding-bottom: 5px;
+    padding-top: 3px;
+}
+
+.topic-list-filter,
+.direct-messages-search-section {
     /* Input width = 100% - 30px right-margin - 6px right-padding */
     /* To keep the right edge of input along with its borders inline with other
        topic items we consider to subtract the space given for right margin of
