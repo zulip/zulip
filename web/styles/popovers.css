@@ -919,31 +919,6 @@ ul {
         outline: 1px solid hsl(0deg 100% 50%);
     }
 
-    .search-box {
-        display: flex;
-        position: sticky;
-        padding: 2px;
-
-        & input {
-            flex-grow: 1;
-            margin: 5px;
-            border-radius: 3px;
-        }
-
-        .clear_search_button {
-            position: absolute;
-            top: 5px;
-            right: 3px;
-            font-size: 16px;
-
-            &:focus {
-                .fa-remove {
-                    outline: 2px solid var(--color-outline-focus);
-                }
-            }
-        }
-    }
-
     .giphy-scrolling-container {
         overflow: auto;
         height: 200px;
