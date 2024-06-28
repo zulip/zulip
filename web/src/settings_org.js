@@ -639,6 +639,38 @@ export function discard_realm_default_property_element_changes(elem) {
     update_dependent_subsettings(property_name);
 }
 
+function discard_realm_settings_subsection_changes($subsection) {
+    for (const elem of settings_components.get_subsection_property_elements($subsection)) {
+        discard_realm_property_element_changes(elem);
+    }
+    const $save_btn_controls = $subsection.find(".save-button-controls");
+    settings_components.change_save_button_state($save_btn_controls, "discarded");
+}
+
+export function discard_stream_settings_subsection_changes($subsection, sub) {
+    for (const elem of settings_components.get_subsection_property_elements($subsection)) {
+        discard_stream_property_element_changes(elem, sub);
+    }
+    const $save_btn_controls = $subsection.find(".save-button-controls");
+    settings_components.change_save_button_state($save_btn_controls, "discarded");
+}
+
+export function discard_group_settings_subsection_changes($subsection, group) {
+    for (const elem of settings_components.get_subsection_property_elements($subsection)) {
+        discard_group_property_element_changes(elem, group);
+    }
+    const $save_btn_controls = $subsection.find(".save-button-controls");
+    settings_components.change_save_button_state($save_btn_controls, "discarded");
+}
+
+function discard_realm_default_settings_subsection_changes($subsection) {
+    for (const elem of settings_components.get_subsection_property_elements($subsection)) {
+        discard_realm_default_property_element_changes(elem);
+    }
+    const $save_btn_controls = $subsection.find(".save-button-controls");
+    settings_components.change_save_button_state($save_btn_controls, "discarded");
+}
+
 export function deactivate_organization(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -872,15 +904,11 @@ export function register_save_discard_widget_handlers(
         e.preventDefault();
         e.stopPropagation();
         const $subsection = $(e.target).closest(".settings-subsection-parent");
-        for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-            if (for_realm_default_settings) {
-                discard_realm_default_property_element_changes(elem);
-            } else {
-                discard_realm_property_element_changes(elem);
-            }
+        if (for_realm_default_settings) {
+            discard_realm_default_settings_subsection_changes($subsection);
+        } else {
+            discard_realm_settings_subsection_changes($subsection);
         }
-        const $save_btn_controls = $(e.target).closest(".save-button-controls");
-        settings_components.change_save_button_state($save_btn_controls, "discarded");
     });
 
     $container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
