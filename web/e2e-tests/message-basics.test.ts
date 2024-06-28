@@ -347,16 +347,16 @@ async function test_search_venice(page: Page): Promise<void> {
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
 
     await page.click("#streams_header .left-sidebar-title");
-    await page.waitForSelector(".input-append.notdisplayed");
+    await page.waitForSelector(".stream_search_section.notdisplayed");
 }
 
 async function test_stream_search_filters_stream_list(page: Page): Promise<void> {
     console.log("Filter streams using left side bar");
 
-    await page.waitForSelector(".input-append.notdisplayed"); // Stream filter box invisible initially
+    await page.waitForSelector(".stream_search_section.notdisplayed"); // Stream filter box invisible initially
     await page.click("#streams_header .left-sidebar-title");
 
-    await page.waitForSelector("#streams_list .input-append.notdisplayed", {hidden: true});
+    await page.waitForSelector("#streams_list .stream_search_section.notdisplayed", {hidden: true});
 
     // assert streams exist by waiting till they're visible
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
