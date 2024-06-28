@@ -35,7 +35,7 @@
                 <span class="popover-menu-label">{{t "Copy link to channel" }}</span>
             </a>
         </li>
-        <li role="separator" class="popover-menu-separator"></li>
+        <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         <li role="none" class="link-item popover-menu-inner-list-item hidden-for-spectators">
             <a role="menuitem" class="open_stream_settings popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-gear" aria-hidden="true"></i>
@@ -70,7 +70,7 @@
                 <span class="popover-menu-label">{{t "Unsubscribe"}}</span>
             </a>
         </li>
-        <li role="separator" class="popover-menu-separator"></li>
+        <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         <li role="none" class="link-item popover-menu-inner-list-item hidden-for-spectators no-auto-hide-left-sidebar-overlay">
             <span class="colorpicker-container">
                 <input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" />
