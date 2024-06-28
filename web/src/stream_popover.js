@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -99,11 +100,15 @@ function build_stream_popover(opts) {
         return;
     }
 
+    const stream_hash = hash_util.by_stream_url(stream_id);
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;
     const content = render_left_sidebar_stream_actions_popover({
-        stream: sub_store.get(stream_id),
+        stream: {
+            ...sub_store.get(stream_id),
+            url: browser_history.get_full_url(stream_hash),
+        },
         show_go_to_channel_feed,
     });
 
@@ -215,6 +220,10 @@ function build_stream_popover(opts) {
                 $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
                 $(e.currentTarget).hide();
                 e.stopPropagation();
+            });
+
+            new ClipboardJS($popper.find(".copy_stream_link")[0]).on("success", () => {
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden() {
