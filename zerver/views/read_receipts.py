@@ -78,7 +78,7 @@ def read_receipts(
         .exclude(user_profile_id=message.sender_id)
         .exclude(user_profile__muter__muted_user_id=user_profile.id)
         .exclude(user_profile__muted__user_profile_id=user_profile.id)
-        .extra(
+        .extra(  # noqa: S610
             where=[UserMessage.where_read()],
         )
         .values_list("user_profile_id", flat=True)

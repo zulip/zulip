@@ -35,7 +35,6 @@ import * as compose_tooltips from "./compose_tooltips";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
-import * as dark_theme from "./dark_theme";
 import * as desktop_integration from "./desktop_integration";
 import * as desktop_notifications from "./desktop_notifications";
 import * as drafts from "./drafts";
@@ -58,7 +57,6 @@ import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigatio
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
 import * as local_message from "./local_message";
-import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_actions_popover from "./message_actions_popover";
@@ -124,7 +122,10 @@ import * as stream_list from "./stream_list";
 import * as stream_list_sort from "./stream_list_sort";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_topic_history from "./stream_topic_history";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
+import * as theme from "./theme";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -421,13 +422,7 @@ export function initialize_everything(state_data) {
     sidebar_ui.restore_sidebar_toggle_status();
     information_density.initialize();
     if (page_params.is_spectator) {
-        const ls = localstorage();
-        const preferred_theme = ls.get("spectator-theme-preference");
-        if (preferred_theme === "dark") {
-            dark_theme.enable();
-        } else if (preferred_theme === "light") {
-            dark_theme.disable();
-        }
+        theme.initialize_theme_for_spectator();
     }
 
     i18n.initialize({language_list: page_params.language_list});
@@ -486,6 +481,15 @@ export function initialize_everything(state_data) {
     settings.initialize();
     initialize_navbar();
     initialize_message_feed_errors();
+
+    // Needs to be set before we fetch any messages.
+    stream_topic_history.set_update_topic_last_message_id((stream_id, topic_name) => {
+        stream_topic_history_util.update_topic_last_message_id(
+            stream_id,
+            topic_name,
+            stream_list.update_streams_sidebar,
+        );
+    });
 
     realm_logo.initialize();
     message_lists.initialize();

@@ -225,7 +225,7 @@ export function should_mask_unread_count(sub_muted: boolean): boolean {
 }
 
 export function using_dark_theme(): boolean {
-    if (user_settings.color_scheme === settings_config.color_scheme_values.night.code) {
+    if (user_settings.color_scheme === settings_config.color_scheme_values.dark.code) {
         return true;
     }
 

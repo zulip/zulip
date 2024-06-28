@@ -1083,7 +1083,7 @@ def get_apns_badge_count_future(
     # we expect to use this once we resolve client-side bugs.
     return (
         UserMessage.objects.filter(user_profile=user_profile)
-        .extra(where=[UserMessage.where_active_push_notification()])
+        .extra(where=[UserMessage.where_active_push_notification()])  # noqa: S610
         .exclude(
             # If we've just marked some messages as read, they're still
             # marked as having active notifications; we'll clear that flag

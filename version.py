@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 266
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (284, 3)  # bumped 2024-06-27 for upgrading giphy
+PROVISION_VERSION = (285, 0)  # bumped 2024-06-27 for upgrading Python requirements

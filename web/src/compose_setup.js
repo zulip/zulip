@@ -18,6 +18,7 @@ import * as flatpickr from "./flatpickr";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_view from "./message_view";
+import * as narrow_state from "./narrow_state";
 import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as poll_modal from "./poll_modal";
@@ -182,9 +183,23 @@ export function initialize() {
                     // user-triggered edit to that field.
                     $input.trigger("input");
 
-                    // TODO: Probably this should also renarrow to the
-                    // new topic, if we were currently viewing the old
-                    // topic, just as if a message edit had occurred.
+                    // Renarrow to the unresolved topic if currently viewing the resolved topic.
+                    const current_filter = narrow_state.filter();
+                    const channel_name = sub_store.maybe_get_stream_name(stream_id);
+                    if (
+                        current_filter &&
+                        (current_filter.is_conversation_view() ||
+                            current_filter.is_conversation_view_with_near()) &&
+                        current_filter.has_topic(channel_name, topic_name)
+                    ) {
+                        message_view.show(
+                            [
+                                {operator: "channel", operand: channel_name},
+                                {operator: "topic", operand: new_topic},
+                            ],
+                            {},
+                        );
+                    }
                 } else {
                     message_edit.toggle_resolve_topic(message_id, topic_name, true);
                 }

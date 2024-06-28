@@ -226,7 +226,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
 
 run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
     override_rewire(typeahead_helper, "render_stream", () => $fake_rendered_stream);
-    override_rewire(typeahead_helper, "sort_streams", ({streams}) => {
+    override_rewire(typeahead_helper, "sort_streams_by_name", ({streams}) => {
         sort_streams_called = true;
         return streams;
     });
@@ -255,7 +255,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
 
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
-        assert.equal(config.items, 5);
+        assert.equal(config.items, 12);
         assert.ok(config.dropup);
         assert.ok(config.stopAdvance);
 
