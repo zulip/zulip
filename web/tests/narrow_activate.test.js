@@ -206,6 +206,7 @@ run_test("basics", ({override}) => {
             cont: opts.cont,
             msg_list: opts.msg_list,
             anchor: 1000,
+            validate_filter_topic_post_fetch: false,
         });
 
         opts.cont();
