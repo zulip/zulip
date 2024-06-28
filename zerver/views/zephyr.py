@@ -15,8 +15,8 @@ from zerver.decorator import authenticated_json_view
 from zerver.lib.ccache import make_ccache
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.users import get_api_key
 from zerver.models import UserProfile
 
@@ -28,9 +28,9 @@ kerberos_alter_egos = {
 
 
 @authenticated_json_view
-@has_request_variables
+@typed_endpoint
 def webathena_kerberos_login(
-    request: HttpRequest, user_profile: UserProfile, cred: Optional[str] = REQ(default=None)
+    request: HttpRequest, user_profile: UserProfile, *, cred: Optional[str] = None
 ) -> HttpResponse:
     if cred is None:
         raise JsonableError(_("Could not find Kerberos credential"))
