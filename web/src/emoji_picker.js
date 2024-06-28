@@ -615,6 +615,7 @@ function register_popover_events($popover) {
 
 function get_default_emoji_popover_options() {
     return {
+        theme: "popover-menu",
         placement: "top",
         popperOptions: {
             modifiers: [
