@@ -69,17 +69,15 @@ li.show-more-topics {
     padding: 0;
     font-weight: normal;
 
-    .input-append.topic_search_section {
-        padding: 2px 0 2px var(--left-sidebar-topic-indent);
-        margin-bottom: 3px;
-        margin-left: 3px;
-
-        & input {
-            width: calc(100% - 30px);
-        }
+    .topic_search_section {
+        margin: 3px 0;
 
         .clear_search_button {
-            margin-left: -1px;
+            grid-area: row-content;
+            justify-self: self-end;
+            /* Override app-component positioning. */
+            position: static;
+            padding-right: 4px;
         }
     }
 
@@ -714,7 +712,8 @@ li.top_left_scheduled_messages {
 .dm-box,
 .subscription_block,
 .topic-box,
-.searching-for-more-topics {
+.searching-for-more-topics,
+.topic_search_section {
     display: grid;
     align-items: center;
     /* This general pattern of elements applies to every single row in the left
@@ -873,9 +872,14 @@ li.top_left_scheduled_messages {
 .topic-box,
 .searching-for-more-topics {
     grid-template-columns:
-        var(--left-sidebar-topic-indent) var(
-            --left-sidebar-topic-resolve-width
-        ) minmax(0, 1fr) minmax(0, max-content)
+        var(--left-sidebar-topic-indent) var(--left-sidebar-topic-resolve-width)
+        minmax(0, 1fr) minmax(0, max-content)
+        30px 0;
+}
+
+.topic_search_section {
+    grid-template-columns:
+        var(--left-sidebar-topic-indent) 0 minmax(0, 1fr) minmax(0, max-content)
         30px 0;
 }
 
@@ -904,6 +908,10 @@ li.top_left_scheduled_messages {
     span.sidebar-topic-name-inner {
         white-space: pre;
     }
+}
+
+.topic-list-filter {
+    grid-area: row-content;
 }
 
 .searching-for-more-topics img {
@@ -1327,14 +1335,6 @@ li.topic-list-item {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-}
-
-.topic-list-filter {
-    /* Input width = 100% - 30px right-margin - 6px right-padding */
-    /* To keep the right edge of input along with its borders inline with other
-       topic items we consider to subtract the space given for right margin of
-       other items, and right padding of input element.  */
-    width: calc(100% - 36px);
 }
 
 .zero_count {

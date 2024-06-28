@@ -385,6 +385,11 @@ div.overlay {
     margin: 0;
 }
 
+/* TODO: Once all layouts using this button
+   are modernized, the Font Awesome icon
+   should be replaced with a Zulip icon,
+   and its formatting should have no extra
+   space around its viewbox in SVG. */
 .clear_search_button {
     &:hover {
         color: hsl(0deg 0% 0%);
