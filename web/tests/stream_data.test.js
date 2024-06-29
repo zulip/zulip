@@ -1091,6 +1091,9 @@ test("can_post_messages_in_stream", () => {
 
     page_params.is_spectator = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
+
+    social.is_archived = true;
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 
 test("can_unsubscribe_others", () => {
