@@ -272,6 +272,11 @@
                    spoiler messages to wrap. */
                 flex: 1 1 auto;
             }
+
+            time {
+                /* This will fix the overflow for time tag */
+                white-space: normal;
+            }
         }
 
         .spoiler-content {
