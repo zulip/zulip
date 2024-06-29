@@ -335,8 +335,8 @@ export function update_messages(events) {
                 }
                 moved_message.last_edit_timestamp = event.edit_timestamp;
 
-                // Remove the Recent Conversations entry for the old topics;
-                // must be called before we call set_message_topic.
+                // Remove the stream_topic_entry for the old topics;
+                // must be called before we call set message topic.
                 //
                 // TODO: Use a single bulk request to do this removal.
                 // Note that we need to be careful to only remove IDs
