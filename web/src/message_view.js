@@ -262,7 +262,7 @@ function try_rendering_locally_for_same_narrow(filter, opts) {
         }
 
         message_lists.current.data.filter = filter;
-        update_hash_to_match_filter(filter);
+        update_hash_to_match_filter(filter, "retarget message location");
         return true;
     }
 
