@@ -737,6 +737,10 @@ input[type="checkbox"] {
 .settings-profile-user-field {
     margin-top: 5px;
     max-width: fit-content;
+
+    > .settings_url_input {
+        margin-bottom: 0;
+    }
 }
 
 .control-label-disabled {
