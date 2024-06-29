@@ -360,7 +360,7 @@ function handle_keydown(
                     e.preventDefault();
                     if (
                         compose_validate.validate_message_length() &&
-                        !$("#compose-send-button").prop("disabled")
+                        !$(".message-send-controls").hasClass("disabled-message-send-controls")
                     ) {
                         on_enter_send();
                     }
