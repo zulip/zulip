@@ -233,18 +233,24 @@ function try_rendering_locally_for_same_narrow(filter, opts) {
         return false;
     }
 
-    // If the difference between the current filter and the new filter
-    // is just a `near` operator, or just the value of a `near` operator,
-    // we can render the new filter without a rerender of the message list
-    // if the target message in the `near` operator is already rendered.
-    const excluded_operators = ["near"];
-    if (!filter.equals(current_filter, excluded_operators)) {
-        return false;
-    }
-
     if (filter.has_operator("near")) {
         const target_id = Number.parseInt(filter.operands("near")[0], 10);
-        if (!message_lists.current?.get(target_id)) {
+        const target_message = message_lists.current?.get(target_id);
+        if (!target_message) {
+            return false;
+        }
+
+        const adjusted_terms = Filter.adjusted_terms_if_moved(filter.terms(), target_message);
+        if (adjusted_terms !== null) {
+            filter = new Filter(adjusted_terms);
+        }
+
+        // If the difference between the current filter and the new filter
+        // is just a `near` operator, or just the value of a `near` operator,
+        // we can render the new filter without a rerender of the message list
+        // if the target message in the `near` operator is already rendered.
+        const excluded_operators = ["near"];
+        if (!filter.equals(current_filter, excluded_operators)) {
             return false;
         }
 
