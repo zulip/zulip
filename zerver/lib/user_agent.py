@@ -9,7 +9,7 @@ pattern = re.compile(
     (/ (?P<version> [^/ ]* ))?
     ([ /] .*)?
     $""",
-    re.X,
+    re.VERBOSE,
 )
 
 
