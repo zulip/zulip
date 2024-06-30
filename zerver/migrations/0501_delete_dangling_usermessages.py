@@ -152,7 +152,7 @@ def log_extra_usermessage_rows(apps: StateApps, schema_editor: BaseDatabaseSchem
             )
         else:
             log_file = sys.stderr
-            print("", file=log_file)
+            print(file=log_file)
         stack.enter_context(redirect_stdout(log_file))
 
         for message in messages:
@@ -189,7 +189,7 @@ def log_extra_usermessage_rows(apps: StateApps, schema_editor: BaseDatabaseSchem
             for um in ums:
                 read = "(read)" if um.flags & 1 else "(unread)"
                 print(f"        {um.user_profile.delivery_email} {read}")
-            print("")
+            print()
 
 
 class Migration(migrations.Migration):

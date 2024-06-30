@@ -44,7 +44,7 @@ def revoke_invitations(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
 
         return confirmation_ids
 
-    print("")
+    print()
     for realm_id in Realm.objects.values_list("id", flat=True):
         deactivated_user_ids = UserProfile.objects.filter(
             is_active=False, realm_id=realm_id
