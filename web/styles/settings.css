@@ -858,6 +858,12 @@ input[type="checkbox"] {
     }
 }
 
+#org-notifications {
+    .dropdown-widget-button {
+        color: hsl(0deg 0% 33%);
+    }
+}
+
 .progressive-table-wrapper {
     position: relative;
     max-height: calc(95vh - 220px);
