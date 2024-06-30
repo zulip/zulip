@@ -1420,7 +1420,7 @@ class NormalActionsTest(BaseAction):
             "id": field_id,
             "value": "New value",
         }
-        with self.verify_action() as events:
+        with self.verify_action(num_events=2) as events:
             do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(
@@ -1435,7 +1435,7 @@ class NormalActionsTest(BaseAction):
             "id": field_id,
             "value": [self.example_user("ZOE").id],
         }
-        with self.verify_action() as events:
+        with self.verify_action(num_events=2) as events:
             do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
@@ -1458,7 +1458,7 @@ class NormalActionsTest(BaseAction):
             do_update_user_custom_profile_data_if_changed(cordelia, [field])
 
         hamlet = self.example_user("hamlet")
-        with self.verify_action() as events:
+        with self.verify_action(num_events=2) as events:
             do_update_user_custom_profile_data_if_changed(hamlet, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})

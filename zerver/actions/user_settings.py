@@ -1,6 +1,7 @@
 from datetime import timedelta
 from typing import Iterable, List, Optional, Union
 
+import orjson
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
@@ -25,8 +26,10 @@ from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
+from zerver.lib.types import ProfileDataElement
 from zerver.lib.upload import delete_avatar_image
 from zerver.lib.users import (
+    access_user_by_id,
     can_access_delivery_email,
     check_bot_name_available,
     check_full_name,
@@ -36,6 +39,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
+    CustomProfileField,
     Draft,
     EmailChangeStatus,
     RealmAuditLog,
@@ -595,12 +599,63 @@ def do_change_user_setting(
         )
 
 
+def filter_changes_in_profile_data(
+    recipient_user: UserProfile,
+    profile_data: List[ProfileDataElement],
+) -> Optional[List[Union[str, List[int], None]]]:
+    old_profile_data, new_profile_data = profile_data
+    field_name = old_profile_data["name"]
+    field_type = old_profile_data["type"]
+    old_value, new_value = old_profile_data["value"], new_profile_data["value"]
+    if old_value == new_value:
+        return None
+    if field_type == CustomProfileField.SELECT:
+        if old_value is not None:
+            old_field_data = orjson.loads(old_profile_data["field_data"])
+            old_value = old_field_data[old_value]["text"]
+        if new_value is not None:
+            new_field_data = orjson.loads(new_profile_data["field_data"])
+            new_value = new_field_data[new_value]["text"]
+    if field_type == CustomProfileField.USER:
+        if old_value is not None:
+            temp_mentor_string = ""
+            assert isinstance(old_value, list)
+            for mentor_user_id in old_value:
+                assert isinstance(mentor_user_id, int)
+                mentor_user_profile = access_user_by_id(
+                    recipient_user,
+                    mentor_user_id,
+                    allow_deactivated=True,
+                    allow_bots=True,
+                    for_admin=False,
+                )
+                temp_mentor_string += silent_mention_syntax_for_user(mentor_user_profile) + " "
+            old_value = temp_mentor_string
+
+        if new_value is not None:
+            temp_mentor_string = ""
+            assert isinstance(new_value, list)
+            for mentor_user_id in new_value:
+                assert isinstance(mentor_user_id, int)
+                mentor_user_profile = access_user_by_id(
+                    recipient_user,
+                    mentor_user_id,
+                    allow_deactivated=True,
+                    allow_bots=True,
+                    for_admin=False,
+                )
+                temp_mentor_string += silent_mention_syntax_for_user(mentor_user_profile) + " "
+            new_value = temp_mentor_string
+    return [field_name, old_value, new_value]
+
+
 def notify_users_on_updated_user_profile(
     acting_user: Optional[UserProfile],
     recipient_user: UserProfile,
     *,
     name_field: Optional[List[str]] = None,
     role_field: Optional[List[str]] = None,
+    profile_data_field: Optional[List[List[ProfileDataElement]]] = None,
 ) -> None:
     if recipient_user.is_bot or acting_user == recipient_user:
         return
@@ -626,5 +681,18 @@ def notify_users_on_updated_user_profile(
                 old_role=role_field[0],
                 new_role=role_field[1],
             )
+        if profile_data_field is not None:
+            for profile_data in profile_data_field:
+                values = filter_changes_in_profile_data(recipient_user, profile_data)
+                if not values:
+                    continue
+                field_name, old_value, new_value = values
+                message += _(
+                    "\n- **Old `{field_name}`:** {old_value}\n- **New `{field_name}`:** {new_value}"
+                ).format(
+                    field_name=field_name,
+                    old_value=old_value,
+                    new_value=new_value,
+                )
 
     internal_send_private_message(sender=sender, recipient_user=recipient_user, content=message)
