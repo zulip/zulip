@@ -2285,9 +2285,10 @@ body:not(.hide-left-sidebar) {
 }
 
 .dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
-    display: block;
+    display: flex;
     color: var(--color-dropdown-item);
     padding: 3px 10px 3px 8px;
+    gap: 4px;
     font-weight: 400;
     line-height: 20px;
     white-space: normal;
@@ -2297,6 +2298,10 @@ body:not(.hide-left-sidebar) {
         width: 13px;
         height: 13px;
         padding-right: 2px;
+    }
+
+    .zulip-icon {
+        margin-top: 2px;
     }
 
     &:focus,
