@@ -60,12 +60,12 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
 
     sample_message = messages[0]
     message_type = "stream"
-    users_to_notify = []
+    users_to_notify = set()
     if not sample_message.is_stream_message():
         assert len(messages) == 1
         message_type = "private"
         ums = UserMessage.objects.filter(message_id__in=message_ids)
-        users_to_notify = [um.user_profile_id for um in ums]
+        users_to_notify = set(ums.values_list("user_profile_id", flat=True))
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
 
     if message_type == "stream":
@@ -77,7 +77,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         )
         # We exclude long-term idle users, since they by definition have no active clients.
         subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        users_to_notify = list(subscriptions.values_list("user_profile_id", flat=True))
+        users_to_notify = set(subscriptions.values_list("user_profile_id", flat=True))
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
