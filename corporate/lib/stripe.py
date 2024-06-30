@@ -847,7 +847,12 @@ class BillingSession(ABC):
             business_profile={
                 "headline": "Invoice and receipt billing information",
             },
-            features={"customer_update": {"enabled": True, "allowed_updates": ["address", "name"]}},
+            features={
+                "customer_update": {
+                    "enabled": True,
+                    "allowed_updates": ["address", "name", "email"],
+                }
+            },
         )
 
         return stripe.billing_portal.Session.create(
