@@ -149,8 +149,8 @@ p.n-margin {
     display: none;
 }
 
-.column-middle-align.fluid_layout_width {
-    margin-left: 168px; 
+.column-align-middle.fluid_layout_width { 
+    margin-left: calc(var(--left-sidebar-width) - (10 * var(--left-sidebar-collapse-widget-gutter)));
 }
 
 .alert-zulip-logo,
