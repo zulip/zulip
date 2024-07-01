@@ -562,6 +562,7 @@ export function dispatch_normal_event(event) {
                             message_lists.current.update_trailing_bookend();
                         }
                         stream_settings_ui.remove_stream(stream.stream_id);
+                        message_view_header.maybe_rerender_title_area_for_stream(stream);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
                             if (stream.stream_id === compose_state.selected_recipient_id) {
@@ -584,6 +585,7 @@ export function dispatch_normal_event(event) {
                             );
                         }
                     }
+                    message_live_update.rerender_messages_view();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:

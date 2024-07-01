@@ -14,6 +14,8 @@ const test_user = events.test_user;
 
 const compose_recipient = mock_esm("../src/compose_recipient");
 const message_lists = mock_esm("../src/message_lists");
+const message_live_update = mock_esm("../src/message_live_update");
+const message_view_header = mock_esm("../src/message_view_header");
 const narrow_state = mock_esm("../src/narrow_state");
 const overlays = mock_esm("../src/overlays");
 const settings_org = mock_esm("../src/settings_org");
@@ -220,6 +222,8 @@ test("stream delete (normal)", ({override}) => {
         removed_sidebar_rows += 1;
     });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(message_live_update, "rerender_messages_view", noop);
+    override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
 
     dispatch(event);
 
@@ -236,8 +240,11 @@ test("stream delete (special streams)", ({override}) => {
     const event = event_fixtures.stream__delete;
 
     for (const stream of event.streams) {
+        stream.is_archived = false;
         stream_data.add_sub(stream);
     }
+
+    stream_data.subscribe_myself(event.streams[0]);
 
     // sanity check data
     assert.equal(event.streams.length, 2);
@@ -251,6 +258,8 @@ test("stream delete (special streams)", ({override}) => {
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(message_live_update, "rerender_messages_view", noop);
+    override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
 
     dispatch(event);
 
@@ -265,6 +274,7 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     const event = event_fixtures.stream__delete;
 
     for (const stream of event.streams) {
+        stream.is_archived = false;
         stream_data.add_sub(stream);
     }
 
@@ -291,6 +301,8 @@ test("stream delete (stream is selected in compose)", ({override}) => {
         removed_sidebar_rows += 1;
     });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(message_live_update, "rerender_messages_view", noop);
+    override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
 
     dispatch(event);
 
