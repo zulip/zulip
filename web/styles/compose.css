@@ -969,7 +969,7 @@ textarea.new_message_textarea {
 
 #compose-send-button {
     width: 74px;
-    height: 28px;
+    height: var(--compose-formatting-buttons-row-height);
     /* Allow to grow but not shrink */
     flex: 1 0 auto;
     /* Override inherited styles
@@ -1367,9 +1367,7 @@ textarea.new_message_textarea {
     width: 40px;
     /* Allow to grow but not shrink */
     flex: 1 0 auto;
-    /* TODO: Set this as a variable shared with
-       the send button. */
-    height: 28px;
+    height: var(--compose-formatting-buttons-row-height);
     /* Make the vdots appear to extend from
        beneath the send button when an
        interactive background is present.
@@ -1411,7 +1409,8 @@ textarea.new_message_textarea {
 
     .zulip-icon {
         padding: 5px 0 5px 4px;
-        font-size: 17px;
+        /* 17px at 14px/1em */
+        font-size: 1.2143em;
         flex-grow: 1;
 
         @media (width < $sm_min) {
