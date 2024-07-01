@@ -1313,6 +1313,7 @@ ul {
     }
 
     .status_emoji {
+        align-self: flex-start;
         flex-shrink: 0;
         width: 16px;
         height: 16px;
@@ -1381,7 +1382,7 @@ ul {
 
 .personal-menu-status-wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 5px;
 }
 
