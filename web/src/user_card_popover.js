@@ -290,9 +290,11 @@ function show_user_card_popover(
     let args;
     if (user.is_inaccessible_user) {
         const sent_by_url = hash_util.by_sender_url(user.email);
+        const user_avatar = people.small_avatar_url_for_person(user);
         args = {
             user_id: user.user_id,
             sent_by_url,
+            user_avatar,
         };
         popover_html = render_user_card_popover_for_unknown_user(args);
     } else {
