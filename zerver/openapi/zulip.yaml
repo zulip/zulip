@@ -4283,6 +4283,21 @@ paths:
                                             **Changes**: New in Zulip 9.0 (feature level 266). Previously
                                             `realm_create_private_stream_policy` field used to control the
                                             permission to create private channels.
+                                    can_create_web_public_channel_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create web-public
+                                            channels in this organization.
+
+                                            This setting can only be set to `"role:moderators"`,
+                                            `"role:administrators"`, `"role:owners"` and
+                                            `"role:nobody"` system groups.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 280). Previously
+                                            `realm_create_web_public_stream_policy` field used to control
+                                            the permission to create web-public channels.
                                     create_web_public_stream_policy:
                                       type: integer
                                       description: |
@@ -15440,6 +15455,26 @@ paths:
                               **Changes**: New in Zulip 9.0 (feature level 266). Previously
                               `realm_create_private_stream_policy` field used to control the
                               permission to create private channels.
+                      realm_can_create_web_public_channel_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create web-public
+                              channels in this organization.
+
+                              This setting can only be set to `"role:moderators"`,
+                              `"role:administrators"`, `"role:owners"` and
+                              `"role:nobody"` system groups.
+
+                              Has no effect and should not be displayed in settings UI
+                              unless the Zulip server has the `WEB_PUBLIC_STREAMS_ENABLED`
+                              server-level setting enabled and the organization has enabled
+                              the `enable_spectator_access` realm setting.
+
+                              **Changes**: New in Zulip 10.0 (feature level 280). Previously
+                              `realm_create_web_public_stream_policy` field used to control
+                              the permission to create web-public channels.
                       realm_create_public_stream_policy:
                         type: integer
                         deprecated: true

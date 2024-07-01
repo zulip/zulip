@@ -1664,6 +1664,60 @@ class RealmAPITest(ZulipTestCase):
             realm = self.update_with_api(setting_name, value)
             self.assertEqual(getattr(realm, setting_name), user_group.usergroup_ptr)
 
+        if setting_permission_configuration.require_system_group:
+            leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
+
+            value = orjson.dumps(leadership_group.id).decode()
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                value = orjson.dumps(
+                    {
+                        "new": leadership_group.id,
+                    }
+                ).decode()
+
+            result = self.client_patch("/json/realm", {setting_name: value})
+            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                admins_group = NamedUserGroup.objects.get(
+                    name=SystemGroups.ADMINISTRATORS, realm=realm
+                )
+                moderators_group = NamedUserGroup.objects.get(
+                    name=SystemGroups.MODERATORS, realm=realm
+                )
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id, leadership_group.id],
+                        }
+                    }
+                ).decode()
+                result = self.client_patch("/json/realm", {setting_name: value})
+                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id, moderators_group.id],
+                        }
+                    }
+                ).decode()
+                result = self.client_patch("/json/realm", {setting_name: value})
+                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id],
+                        }
+                    }
+                ).decode()
+                realm = self.update_with_api(setting_name, value)
+                self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
+
     def do_test_realm_permission_group_setting_update_api_with_anonymous_groups(
         self, setting_name: str
     ) -> None:
@@ -1897,14 +1951,18 @@ class RealmAPITest(ZulipTestCase):
                 with self.subTest(property=prop):
                     self.do_test_realm_update_api(prop)
 
+        check_add_user_group(
+            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
+        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
 
-        check_add_user_group(
-            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
-        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+            if prop == "can_create_web_public_channel_group":
+                # This setting supports the new API format but
+                # allows only system groups.
+                continue
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api_with_anonymous_groups(prop)
 
