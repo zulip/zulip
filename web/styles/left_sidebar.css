@@ -39,7 +39,8 @@
 
 li.show-more-topics {
     & a {
-        font-size: 12px;
+        /* 12px at 14px/1em */
+        font-size: 0.8571em;
     }
 }
 
@@ -68,21 +69,15 @@ li.show-more-topics {
     padding: 0;
     font-weight: normal;
 
-    .input-append.topic_search_section {
-        padding: 2px 0 2px
-            calc(
-                var(--left-sidebar-topic-indent) -
-                    var(--left-sidebar-topic-resolve-width)
-            );
-        margin-bottom: 3px;
-        margin-left: 3px;
-
-        & input {
-            width: calc(100% - 50px);
-        }
+    .topic_search_section {
+        margin: 3px 0;
 
         .clear_search_button {
-            margin-left: -1px;
+            grid-area: row-content;
+            justify-self: self-end;
+            /* Override app-component positioning. */
+            position: static;
+            padding-right: 4px;
         }
     }
 
@@ -279,7 +274,8 @@ li.show-more-topics {
             align-items: baseline;
 
             & a {
-                font-size: 12px;
+                /* 12px at 14px/1em */
+                font-size: 0.8571em;
             }
 
             .unread_count {
@@ -716,7 +712,8 @@ li.top_left_scheduled_messages {
 .dm-box,
 .subscription_block,
 .topic-box,
-.searching-for-more-topics {
+.searching-for-more-topics,
+.topic_search_section {
     display: grid;
     align-items: center;
     /* This general pattern of elements applies to every single row in the left
@@ -875,10 +872,14 @@ li.top_left_scheduled_messages {
 .topic-box,
 .searching-for-more-topics {
     grid-template-columns:
-        25px var(--left-sidebar-topic-resolve-width) minmax(0, 1fr) minmax(
-            0,
-            max-content
-        )
+        var(--left-sidebar-topic-indent) var(--left-sidebar-topic-resolve-width)
+        minmax(0, 1fr) minmax(0, max-content)
+        30px 0;
+}
+
+.topic_search_section {
+    grid-template-columns:
+        var(--left-sidebar-topic-indent) 0 minmax(0, 1fr) minmax(0, max-content)
         30px 0;
 }
 
@@ -909,6 +910,10 @@ li.top_left_scheduled_messages {
     }
 }
 
+.topic-list-filter {
+    grid-area: row-content;
+}
+
 .searching-for-more-topics img {
     height: 16px;
     grid-area: row-content;
@@ -916,7 +921,8 @@ li.top_left_scheduled_messages {
 
 .sidebar-topic-check {
     grid-area: starting-anchor-element;
-    font-size: 15px;
+    /* 15px at 14px/1em */
+    font-size: 1.0714em;
 }
 
 .stream-markers-and-controls,
@@ -1179,7 +1185,7 @@ li.topic-list-item {
         width: var(--left-sidebar-header-icon-width);
     }
 
-    .input-append {
+    .stream_search_section {
         grid-area: filter-box;
         display: flex;
         justify-content: stretch;
@@ -1188,7 +1194,7 @@ li.topic-list-item {
         line-height: 20px;
         white-space: nowrap;
 
-        & input {
+        .stream-list-filter {
             /* Use the border-box model so flex
                can do its thing despite whatever
                padding and border we specify. */
@@ -1331,14 +1337,6 @@ li.topic-list-item {
     overflow: hidden;
 }
 
-.topic-list-filter {
-    /* Input width = 100% - 30px right-margin - 6px right-padding */
-    /* To keep the right edge of input along with its borders inline with other
-       topic items we consider to subtract the space given for right margin of
-       other items, and right padding of input element.  */
-    width: calc(100% - 36px);
-}
-
 .zero_count {
     visibility: hidden;
 }
@@ -1370,7 +1368,8 @@ li.topic-list-item {
         display: block;
         text-decoration: none;
         color: inherit;
-        font-size: 12px;
+        /* 12px at 14px/1em */
+        font-size: 0.8571em;
 
         & span {
             display: block;

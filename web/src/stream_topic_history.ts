@@ -185,18 +185,14 @@ export class PerStreamHistory {
     maybe_remove(topic_name: string, num_messages: number): void {
         const existing = this.topics.get(topic_name);
 
-        if (!existing || existing.count === 0) {
+        if (!existing) {
             return;
         }
 
         if (existing.count <= num_messages) {
             this.topics.delete(topic_name);
-            if (!is_complete_for_stream_id(this.stream_id)) {
-                // Request server for latest message in topic if we
-                // cannot be sure that we have all messages in the topic.
-                update_topic_last_message_id(this.stream_id, topic_name);
-                return;
-            }
+            // Verify if this topic still has messages from the server.
+            update_topic_last_message_id(this.stream_id, topic_name);
         }
 
         existing.count -= num_messages;

@@ -60,13 +60,21 @@
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
     --left-sidebar-privacy-icon-column-size: 19px;
-    /* The full topic indentation includes 4px of indent in addition to
-       the above (and another 5px of padding not measured here) */
+    /* 13px at 14px/1em */
+    --left-sidebar-topic-resolve-width: 0.9286em;
+    /* At legacy sizes, the full indentation to the
+       left of the topic name was 25px of gutter,
+       plus 13px for the topic-resolution checkmark.
+       That works out to 38px (25px + 13px), which
+       we here express as pixels, as that is always
+       the amount of space to the left of the topic
+       name. However, CSS subtracts the em-unit width
+       of the topic-resolution checkmark to prevent
+       the the topic name from being shifted to the
+       right. */
     --left-sidebar-topic-indent: calc(
-        var(--left-sidebar-far-left-gutter-size) +
-            var(--left-sidebar-privacy-icon-column-size) + 4px
+        38px - var(--left-sidebar-topic-resolve-width)
     );
-    --left-sidebar-topic-resolve-width: 13px;
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
@@ -409,6 +417,7 @@
     --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
+    --color-compose-focus-ring: var(--color-outline-focus);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -684,7 +693,6 @@
     --color-background-modal: hsl(212deg 28% 18%);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 0% / 20%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
-    --color-outline-focus: hsl(0deg 0% 67%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
     --color-background-search: hsl(0deg 0% 20%);
     --color-background-search-option-hover: hsl(0deg 0% 30%);
@@ -782,6 +790,7 @@
     --color-message-content-container-border: hsl(0deg 0% 0% / 80%);
     --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
+    --color-compose-focus-ring: hsl(0deg 0% 67%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);

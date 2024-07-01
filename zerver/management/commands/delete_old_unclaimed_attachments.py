@@ -61,15 +61,15 @@ class Command(ZulipBaseCommand):
 
         if options["for_real"]:
             do_delete_old_unclaimed_attachments(delta_weeks)
-            print("")
+            print()
             print("Unclaimed files deleted.")
 
         if options["clean_up_storage"]:
-            print("")
+            print()
             self.clean_attachment_upload_backend(dry_run=not options["for_real"])
 
         if not options["for_real"]:
-            print("")
+            print()
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
     def clean_attachment_upload_backend(self, dry_run: bool = True) -> None:

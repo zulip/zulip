@@ -72,7 +72,7 @@ EXEMPT_FILES = make_set(
         "web/src/compose_closed_ui.ts",
         "web/src/compose_fade.ts",
         "web/src/compose_notifications.ts",
-        "web/src/compose_popovers.js",
+        "web/src/compose_popovers.ts",
         "web/src/compose_recipient.ts",
         "web/src/compose_reply.ts",
         "web/src/compose_send_menu_popover.js",

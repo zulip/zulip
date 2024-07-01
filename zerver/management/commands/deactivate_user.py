@@ -35,7 +35,7 @@ class Command(ZulipBaseCommand):
         print(f"{user_profile.delivery_email} has the following active sessions:")
         for session in user_sessions(user_profile):
             print(session.expire_date, session.get_decoded())
-        print("")
+        print()
         print(
             f"{user_profile.delivery_email} has {get_active_bots_owned_by_user(user_profile).count()} active bots that will also be deactivated."
         )

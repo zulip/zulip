@@ -1,22 +1,18 @@
-<ul class="nav nav-list">
-    <li>
-        <a class="compose_mobile_stream_button">
-            <i class="fa fa-bullhorn" aria-hidden="true"></i>
-            {{#if is_in_private_narrow }}
-            {{t "New channel message" }}
-            {{else}}
-            {{t "New topic" }}
-            {{/if}}
-        </a>
-    </li>
-    <li>
-        <a class="compose_mobile_direct_message_button">
-            <i class="fa fa-envelope" aria-hidden="true"></i>
-            {{#if is_in_private_narrow }}
-            {{t "New direct message" }}
-            {{else}}
-            {{t "New direct message" }}
-            {{/if}}
-        </a>
-    </li>
-</ul>
+<div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list">
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="compose_mobile_stream_button popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Start new conversation" }}</span>
+                {{popover_hotkey_hints "C"}}
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="compose_mobile_direct_message_button popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-mail" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "New direct message" }}</span>
+                {{popover_hotkey_hints "X"}}
+            </a>
+        </li>
+    </ul>
+</div>

@@ -306,9 +306,9 @@
         }
     }
 
-    & textarea.new_message_textarea {
-        &.invalid,
-        &.invalid:focus {
+    #message-content-container {
+        &:has(textarea.new_message_textarea.invalid),
+        &:has(textarea.new_message_textarea.invalid:focus) {
             border-color: hsl(3deg 73% 74%);
             box-shadow: 0 0 2px hsl(3deg 73% 74%);
         }
@@ -411,7 +411,7 @@
         color: inherit;
     }
 
-    .dropdown-list-search .dropdown-list-search-input:focus {
+    .popover-filter-input-wrapper .popover-filter-input:focus {
         background-color: hsl(225deg 6% 7%);
         border: 1px solid hsl(0deg 0% 100% / 50%);
         box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);

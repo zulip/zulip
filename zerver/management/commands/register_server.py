@@ -100,7 +100,7 @@ class Command(ZulipBaseCommand):
             tos_prompt = input(
                 "Do you want to agree to the Zulip Terms of Service and proceed? [Y/n] "
             )
-            print("")
+            print()
             if not (
                 tos_prompt.lower() == "y" or tos_prompt.lower() == "" or tos_prompt.lower() == "yes"
             ):

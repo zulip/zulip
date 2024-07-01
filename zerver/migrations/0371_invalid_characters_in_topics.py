@@ -32,7 +32,7 @@ def fix_topics(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None
         # Nothing to do if there are no messages.
         return
 
-    print("")
+    print()
     while lower_bound < max_id:
         print(f"Processed {lower_bound} / {max_id}")
         with connection.cursor() as cursor:

@@ -490,7 +490,7 @@
     }
 
     &:focus-visible {
-        outline-color: var(--color-outline-focus);
+        outline-color: var(--color-compose-focus-ring);
     }
 }
 
@@ -1096,7 +1096,7 @@ textarea.new_message_textarea {
         }
 
         &:focus-visible {
-            outline-color: var(--color-outline-focus);
+            outline-color: var(--color-compose-focus-ring);
         }
     }
 
@@ -1308,11 +1308,6 @@ textarea.new_message_textarea {
     }
 }
 
-.compose_mobile_stream_button i,
-.compose_mobile_direct_message_button i {
-    margin-right: 4px;
-}
-
 /* Class for send-area buttons, such as
    Drafts and the send-adjacent vdots */
 .send-control-button {
@@ -1335,7 +1330,7 @@ textarea.new_message_textarea {
     }
 
     &:focus-visible {
-        outline-color: var(--color-outline-focus);
+        outline-color: var(--color-compose-focus-ring);
     }
 
     &:hover {
@@ -1381,7 +1376,7 @@ textarea.new_message_textarea {
            will handle the dimension change, so there won't
            be any movement of the vdots in this state. */
         outline: 0;
-        border: 2px solid var(--color-outline-focus);
+        border: 2px solid var(--color-compose-focus-ring);
     }
 
     @media ((width >= $sm_min) and (width < $mc_min)) {

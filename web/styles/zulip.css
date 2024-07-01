@@ -2222,24 +2222,24 @@ body:not(.hide-left-sidebar) {
     overscroll-behavior: contain;
 }
 
-.dropdown-list-container {
-    .dropdown-list-search {
-        display: flex;
+.popover-filter-input-wrapper {
+    display: flex;
 
-        .dropdown-list-search-input {
-            background: var(--color-background-widget-input);
-            color: var(--color-text-dropdown-input);
-            width: 100%;
-            margin: 4px 4px 2px;
+    .popover-filter-input {
+        background: var(--color-background-widget-input);
+        color: var(--color-text-dropdown-input);
+        width: 100%;
+        margin: 4px 4px 2px;
 
-            &:focus {
-                background: hsl(0deg 0% 100%);
-                border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
-                box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
-            }
+        &:focus {
+            background: hsl(0deg 0% 100%);
+            border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
+            box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
         }
     }
+}
 
+.dropdown-list-container {
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;

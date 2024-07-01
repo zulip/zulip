@@ -239,7 +239,7 @@ export function is_emoji_present_in_text(text, emoji_dict) {
 }
 
 function filter_emojis() {
-    const $elt = $(".emoji-popover-filter").expectOne();
+    const $elt = $("#emoji-popover-filter").expectOne();
     const query = $elt.val().trim().toLowerCase();
     const message_id = Number($(".emoji-search-results-container").attr("data-message-id"));
     const search_results_visible = $(".emoji-search-results-container").is(":visible");
@@ -423,7 +423,7 @@ function get_next_emoji_coordinates(move_by) {
 
 function change_focus_to_filter() {
     const $popover = $(emoji_popover_instance.popper);
-    $popover.find(".emoji-popover-filter").trigger("focus");
+    $popover.find("#emoji-popover-filter").trigger("focus");
     // If search is active reset current selected emoji to first emoji.
     if (search_is_active) {
         current_section = 0;
@@ -457,12 +457,12 @@ export function navigate(event_name, e) {
     const $emoji_map = $popover.find(".emoji-popover-emoji-map").expectOne();
 
     const $selected_emoji = get_rendered_emoji(current_section, current_index);
-    const is_filter_focused = $(".emoji-popover-filter").is(":focus");
+    const is_filter_focused = $("#emoji-popover-filter").is(":focus");
     // special cases
     if (is_filter_focused) {
         // Move down into emoji map.
-        const filter_text = $(".emoji-popover-filter").val();
-        const is_cursor_at_end = $(".emoji-popover-filter").caret() === filter_text.length;
+        const filter_text = $("#emoji-popover-filter").val();
+        const is_cursor_at_end = $("#emoji-popover-filter").caret() === filter_text.length;
         if (event_name === "down_arrow" || (is_cursor_at_end && event_name === "right_arrow")) {
             $selected_emoji.trigger("focus");
             if (current_section === 0 && current_index < 6) {
@@ -489,7 +489,7 @@ export function navigate(event_name, e) {
             // goes to beginning) with something reasonable and
             // consistent (cursor goes to the end of the filter
             // string).
-            $(".emoji-popover-filter").trigger("focus").caret(Number.POSITIVE_INFINITY);
+            $("#emoji-popover-filter").trigger("focus").caret(Number.POSITIVE_INFINITY);
             scroll_util.get_scroll_element($emoji_map).scrollTop(0);
             scroll_util.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;
@@ -526,7 +526,7 @@ export function navigate(event_name, e) {
 }
 
 function process_keypress(e) {
-    const is_filter_focused = $(".emoji-popover-filter").is(":focus");
+    const is_filter_focused = $("#emoji-popover-filter").is(":focus");
     const pressed_key = e.which;
     if (
         !is_filter_focused &&
@@ -538,7 +538,7 @@ function process_keypress(e) {
         e.preventDefault();
         e.stopPropagation();
 
-        const $emoji_filter = $(".emoji-popover-filter");
+        const $emoji_filter = $("#emoji-popover-filter");
         const old_query = $emoji_filter.val();
         let new_query = "";
 
@@ -599,8 +599,8 @@ function register_popover_events($popover) {
         emoji_select_tab(scroll_util.get_scroll_element($emoji_map));
     });
 
-    $(".emoji-popover-filter").on("input", filter_emojis);
-    $(".emoji-popover-filter").on("keydown", process_enter_while_filtering);
+    $("#emoji-popover-filter").on("input", filter_emojis);
+    $("#emoji-popover-filter").on("keydown", process_enter_while_filtering);
     $(".emoji-popover").on("keypress", process_keypress);
     $(".emoji-popover").on("keydown", (e) => {
         // Because of cross-browser issues we need to handle Backspace
@@ -615,6 +615,7 @@ function register_popover_events($popover) {
 
 function get_default_emoji_popover_options() {
     return {
+        theme: "popover-menu",
         placement: "top",
         popperOptions: {
             modifiers: [
@@ -804,7 +805,7 @@ function register_click_handlers() {
         }
     });
 
-    $("body").on("click", ".emoji-popover-filter", () => {
+    $("body").on("click", "#emoji-popover-filter", () => {
         reset_emoji_showcase();
     });
 
