@@ -299,6 +299,18 @@ class SlackWebhookTests(WebhookTestCase):
             content_type="application/json",
         )
 
+    def test_block_slack_retries(self) -> None:
+        payload = self.get_body("message_with_normal_text")
+        with patch("zerver.webhooks.slack.view.check_send_webhook_message") as m:
+            result = self.client_post(
+                self.url,
+                payload,
+                headers={"X-Slack-Retry-Num": 1},
+                content_type="application/json",
+            )
+        self.assertFalse(m.called)
+        self.assert_json_success(result)
+
 
 class SlackLegacyWebhookTests(WebhookTestCase):
     CHANNEL_NAME = "slack"
