@@ -291,11 +291,6 @@ export function process_escape_key(e) {
     }
 
     if (popovers.any_active()) {
-        if (user_card_popover.manage_menu.is_open()) {
-            user_card_popover.manage_menu.hide();
-            $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
-            return true;
-        }
         popovers.hide_all();
         return true;
     }
@@ -406,11 +401,6 @@ function handle_popover_events(event_name) {
             popover_menu_visible_instance,
             event_name,
         );
-        return true;
-    }
-
-    if (user_card_popover.manage_menu.is_open()) {
-        user_card_popover.manage_menu.handle_keyboard(event_name);
         return true;
     }
 
