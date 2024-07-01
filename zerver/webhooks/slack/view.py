@@ -165,6 +165,10 @@ def handle_slack_webhook_message(
         raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
 
 
+def is_retry_call_from_slack(request: HttpRequest) -> bool:
+    return "X-Slack-Retry-Num" in request.headers
+
+
 @webhook_view("Slack", notify_bot_owner_on_invalid_json=False)
 @typed_endpoint
 def api_slack_webhook(
@@ -214,6 +218,15 @@ def api_slack_webhook(
             "Successfully verified webhook URL with Slack!",
         )
         return json_success(request=request, data={"challenge": challenge})
+
+    # A Slack fail condition occurs when we don't respond with HTTP 200
+    # within 3 seconds after Slack calls our endpoint. If this happens,
+    # Slack will retry sending the same payload. This is often triggered
+    # because of we have to do two callbacks for each call. To avoid
+    # sending the same message multiple times, we block subsequent retry
+    # calls from Slack.
+    if is_retry_call_from_slack(request):
+        return json_success(request)
 
     # Prevent any Zulip messages sent through the Slack Bridge from looping
     # back here.
