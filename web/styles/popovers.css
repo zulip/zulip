@@ -1088,6 +1088,10 @@ ul {
     }
 }
 
+.unknown_user_card_popover .popover-menu-user-header {
+    padding: 10px 10px 0;
+}
+
 .user-email-field {
     transition: all 0.4s ease;
 
