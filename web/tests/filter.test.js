@@ -1657,6 +1657,53 @@ test("first_valid_id_from", ({override}) => {
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
 });
 
+test("is_valid_search_term", () => {
+    const denmark = {
+        stream_id: 100,
+        name: "Denmark",
+    };
+    stream_data.add_sub(denmark);
+
+    const test_data = [
+        ["has: image", true],
+        ["has: nonsense", false],
+        ["is: unread", true],
+        ["is: nonsense", false],
+        ["in: home", true],
+        ["in: nowhere", false],
+        ["id: 4", true],
+        ["near: home", false],
+        ["channel: Denmark", true],
+        ["channel: GhostTown", false],
+        ["topic: GhostTown", true],
+        ["dm-including: alice@example.com", true],
+        ["sender: ghost@zulip.com", false],
+        ["dm: alice@example.com,ghost@example.com", false],
+        ["dm: alice@example.com,joe@example.com", true],
+    ];
+    for (const [search_term_string, expected_is_valid] of test_data) {
+        assert.equal(
+            Filter.is_valid_search_term(Filter.parse(search_term_string)[0]),
+            expected_is_valid,
+        );
+    }
+
+    blueslip.expect("error", "Unexpected search term operator: foo");
+    assert.equal(
+        Filter.is_valid_search_term({
+            operator: "foo",
+            operand: "bar",
+        }),
+        false,
+    );
+
+    // test `allow_valid_operator_with_empty_operand`
+    assert.equal(Filter.is_valid_search_term(Filter.parse("dm: ")[0]), false);
+    assert.equal(Filter.is_valid_search_term(Filter.parse("dm: ")[0], true), true);
+    // Note that this is parsed as a search operator term and therefore is valid.
+    assert.equal(Filter.is_valid_search_term(Filter.parse("foo: ")[0], true), true);
+});
+
 test("update_email", () => {
     const terms = [
         {operator: "dm", operand: "steve@foo.com"},
