@@ -558,7 +558,7 @@ def do_deactivate_realm(
     # Note: This is intentionally outside the transaction because it
     # is unsafe to modify sessions inside transactions with the
     # cached_db session plugin we're using, and our session engine
-    # declared in zerver/lib/safe_session_cached_db.py enforces this.
+    # declared in zerver/models/sessions.py enforces this.
     delete_realm_user_sessions(realm)
 
     # Flag to send deactivated realm email to organization owners; is false
