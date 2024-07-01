@@ -7,7 +7,6 @@ import * as tippy from "tippy.js";
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
 import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
-import render_user_card_popover_manage_menu from "../templates/popovers/user_card/user_card_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -96,14 +95,12 @@ class PopoverMenu {
     }
 }
 
-export const manage_menu = new PopoverMenu();
 export const user_sidebar = new PopoverMenu();
 export const message_user_card = new PopoverMenu();
 export const user_card = new PopoverMenu();
 
 function popover_items_handle_keyboard_with_overrides(key, $items) {
-    /* Variant of popover_items_handle_keyboard with somewhat hacky
-     * logic for opening the manage menu. */
+    /* Variant of popover_items_handle_keyboard */
     if (!$items) {
         return;
     }
@@ -112,43 +109,6 @@ function popover_items_handle_keyboard_with_overrides(key, $items) {
 
     if (key === "enter" && index >= 0 && index < $items.length) {
         $items[index].click();
-        if (manage_menu.is_open()) {
-            // If we just opened the little manage menu via the
-            // keyboard, we need to focus the first item for a
-            // continuation of the keyboard experience.
-
-            // TODO: This might be cleaner to just call
-            // toggle_user_card_popover_manage_menu rather than
-            // triggering a click.
-
-            const previously_defined_on_mount = manage_menu.instance.props.onMount;
-            manage_menu.instance.setProps({
-                onMount() {
-                    // We're monkey patching the onMount method here to ensure we start
-                    // focusing on the item after the popover is mounted to the DOM;
-                    // otherwise, it won't work correctly.
-                    if (previously_defined_on_mount) {
-                        previously_defined_on_mount();
-                    }
-                    const $items = get_user_card_popover_manage_menu_items();
-                    popover_menus.focus_first_popover_item($items);
-                },
-            });
-        }
-        return;
-    }
-
-    if (
-        index === -1 &&
-        $(".user-card-popover-manage-menu-btn").is(":visible") &&
-        !manage_menu.is_open()
-    ) {
-        // If we have a "Manage Menu" button in the user card popover,
-        // the first item to receive focus shouldn't be that button.
-        // However, if the Manage Menu is open, focus should shift to
-        // the first item in that popover.
-        const adjusted_index = 1;
-        $items.eq(adjusted_index).trigger("focus");
         return;
     }
 
@@ -172,7 +132,6 @@ user_sidebar.hide = function () {
 };
 
 const user_card_popovers = {
-    manage_menu,
     user_sidebar,
     message_user_card,
     user_card,
@@ -197,7 +156,6 @@ export function hide_all_user_card_popovers() {
 export function clear_for_testing() {
     message_user_card.instance = undefined;
     user_card.instance = undefined;
-    manage_menu.instance = undefined;
 }
 
 function elem_to_user_id($elem) {
@@ -243,8 +201,12 @@ function get_user_card_popover_data(
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
     const spectator_view = page_params.is_spectator;
-
-    const show_manage_menu = !spectator_view && !is_me;
+    const show_manage_section = !spectator_view && !is_me;
+    const is_muted = muted_users.is_user_muted(user.user_id);
+    const muting_allowed = !is_me;
+    const can_mute = muting_allowed && !is_muted;
+    const can_unmute = muting_allowed && is_muted;
+    const can_manage_user = current_user.is_admin && !is_me && !is_system_bot;
 
     let date_joined;
 
@@ -279,7 +241,6 @@ function get_user_card_popover_data(
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
         sent_by_url: hash_util.by_sender_url(user.email),
-        show_manage_menu,
         user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
@@ -296,6 +257,10 @@ function get_user_card_popover_data(
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         user_avatar: people.small_avatar_url_for_person(user),
         user_is_guest: user.is_guest,
+        show_manage_section,
+        can_mute,
+        can_unmute,
+        can_manage_user,
     };
 
     if (user.is_bot) {
@@ -450,52 +415,6 @@ function init_email_tooltip(user) {
     });
 }
 
-// Functions related to manage menu popover.
-
-function toggle_user_card_popover_manage_menu(element, user) {
-    const is_me = people.is_my_user_id(user.user_id);
-    const is_muted = muted_users.is_user_muted(user.user_id);
-    const is_system_bot = user.is_system_bot;
-    const muting_allowed = !is_me;
-
-    const args = {
-        can_mute: muting_allowed && !is_muted,
-        can_manage_user: current_user.is_admin && !is_me && !is_system_bot,
-        can_unmute: muting_allowed && is_muted,
-        is_active: people.is_active_user_for_popover(user.user_id),
-        is_bot: user.is_bot,
-        user_id: user.user_id,
-    };
-
-    popover_menus.toggle_popover_menu(element, {
-        placement: "bottom",
-        onCreate(instance) {
-            manage_menu.instance = instance;
-            const $popover = $(instance.popper);
-            $popover.addClass("manage-menu-popover-root");
-            instance.setContent(ui_util.parse_html(render_user_card_popover_manage_menu(args)));
-        },
-        onHidden() {
-            manage_menu.hide();
-        },
-    });
-}
-
-export function get_user_card_popover_manage_menu_items() {
-    if (!manage_menu.is_open()) {
-        blueslip.error("Trying to get menu items when manage menu popover is closed.");
-        return undefined;
-    }
-
-    const $popover = $(manage_menu.instance.popper);
-    if (!$popover) {
-        blueslip.error("Cannot find popover data for manage menu.");
-        return undefined;
-    }
-
-    return $(".user-card-popover-manage-menu li:not(.divider):visible a", $popover);
-}
-
 // Functions related to message user card popover.
 
 // element is the target element to pop off of
@@ -562,12 +481,7 @@ function focus_user_card_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_user_card_popover_for_message_items();
-
-    if ($(".user-card-popover-manage-menu-btn").is(":visible")) {
-        popover_menus.focus_first_popover_item($items, 1);
-    } else {
-        popover_menus.focus_first_popover_item($items);
-    }
+    popover_menus.focus_first_popover_item($items);
 }
 
 function get_user_card_popover_for_message_items() {
@@ -871,14 +785,6 @@ function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
         user_profile.show_user_profile(user, "manage-profile-tab");
-    });
-
-    $("body").on("click", ".user-card-popover-manage-menu-btn", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
-        const user = people.get_by_user_id(user_id);
-        toggle_user_card_popover_manage_menu(e.target, user);
     });
 
     new ClipboardJS(".copy-custom-field-url", {
