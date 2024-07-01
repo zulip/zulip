@@ -1344,12 +1344,16 @@ ul.popover-group-menu-member-list {
 
 .personal-menu-clear-status {
     display: flex;
-    padding: 3px;
     align-items: center;
     margin-left: auto;
     color: hsl(0deg 0% 40%) !important;
     border-radius: 4px;
     opacity: 0.5;
+
+    &:focus {
+        /* Override bootstrap defaults */
+        outline-offset: 0;
+    }
 
     &:hover,
     &:focus {
