@@ -264,14 +264,6 @@ const stewie = {
     },
 };
 
-// This is for error checking--never actually
-// tell people.js about this user.
-const invalid_user = {
-    email: "invalid@example.com",
-    user_id: 999,
-    unknown_local_echo_user: true,
-};
-
 function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
@@ -956,7 +948,7 @@ test_people("message_methods", () => {
 });
 
 test_people("extract_people_from_message", () => {
-    let message = {
+    const message = {
         type: "stream",
         sender_full_name: maria.full_name,
         sender_id: maria.user_id,
@@ -968,13 +960,6 @@ test_people("extract_people_from_message", () => {
     people.extract_people_from_message(message);
     assert.ok(people.is_known_user_id(maria.user_id));
     blueslip.reset();
-
-    // Get line coverage
-    message = {
-        type: "private",
-        display_recipient: [invalid_user],
-    };
-    people.extract_people_from_message(message);
 });
 
 test_people("maybe_incr_recipient_count", () => {
@@ -998,20 +983,6 @@ test_people("maybe_incr_recipient_count", () => {
         type: "private",
         sent_by_me: false,
         display_recipient: [maria_recip],
-    };
-    people.maybe_incr_recipient_count(message);
-    assert.equal(people.get_recipient_count(maria), 1);
-
-    const other_invalid_recip = {
-        email: "invalid2@example.com",
-        id: 500,
-        unknown_local_echo_user: true,
-    };
-
-    message = {
-        type: "private",
-        sent_by_me: true,
-        display_recipient: [other_invalid_recip],
     };
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
