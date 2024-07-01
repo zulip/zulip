@@ -20,7 +20,6 @@ export type DisplayRecipientUser = {
     full_name: string;
     id: number;
     is_mirror_dummy: boolean;
-    unknown_local_echo_user?: boolean;
 };
 
 export type DisplayRecipient = string | DisplayRecipientUser[];
