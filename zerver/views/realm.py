@@ -144,6 +144,7 @@ def update_realm(
     bot_creation_policy: Json[BotCreationPolicyEnum] | None = None,
     can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
     create_web_public_stream_policy: Json[CreateWebPublicStreamPolicyEnum] | None = None,

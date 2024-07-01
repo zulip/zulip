@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 280**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_create_web_public_channel_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to create web-public channels.
+
 Feature levels 278-279 are reserved for future use in 9.x maintenance
 releases.
 
