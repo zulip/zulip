@@ -2203,14 +2203,14 @@ body:not(.hide-left-sidebar) {
         cursor: pointer;
 
         &:hover #scroll-to-bottom-button {
-            background: hsl(240deg 96% 68%);
+            background: hsl(356deg 70% 50%);
         }
 
         #scroll-to-bottom-button {
             text-align: center;
             width: 40px;
             height: 40px;
-            background: hsl(240deg 96% 68% / 50%);
+            background: hsl(347deg 100% 80%);
             border-radius: 50%;
 
             & i {

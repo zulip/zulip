@@ -1171,7 +1171,7 @@ div.overlay {
         & .zulip-icon {
             /* Clear inherited position. */
             position: static;
-            color: var(--color-icon-purple);
+            color: HSL(352deg, 97%, 45%)
         }
     }
 

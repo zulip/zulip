@@ -389,6 +389,7 @@ ul {
                 position: relative;
                 top: -1px;
                 margin-right: 5px;
+                color: HSL(352deg, 97%, 45%)
             }
         }
     }
@@ -1198,6 +1199,7 @@ ul {
             height: 16px;
             font-size: 16px;
             text-align: center;
+            color: HSL(352deg, 97%, 45%)
         }
     }
 
@@ -1249,6 +1251,7 @@ ul {
     .tab-picker {
         &.popover-menu-tab-group {
             margin: 2px 10px;
+            color: HSL(352deg, 97%, 45%)
         }
 
         .tab-option-content:focus-visible {
