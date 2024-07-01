@@ -167,6 +167,10 @@ def api_slack_webhook(
         "challenge": payload.get("challenge").tame(check_none_or(check_string)),
     }
 
+    # Block retries from Slack.
+    if "X-Slack-Retry-Num" in request.headers:
+        return json_success(request)
+
     # Handle Slacks "challenge" handshake when first registering endpoint
     # to Event API.
     if outer_data["type"] == "url_verification" and outer_data["challenge"]:
