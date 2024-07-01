@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_search_description from "../templates/search_description.hbs";
 
+import * as blueslip from "./blueslip";
 import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
@@ -479,6 +480,74 @@ export class Filter {
 
         maybe_add_search_terms();
         return terms;
+    }
+
+    static is_valid_search_term(
+        term: NarrowTerm,
+        allow_valid_operator_with_empty_operand = false,
+    ): boolean {
+        // `allow_valid_operator_with_empty_operand` is used for validating
+        // partial terms for search suggestions, e.g. "dm:" shows
+        // "Direct messages with" so it's valid. Note that we don't show messages
+        // in search suggestions for empty "is:" or "has:".
+        if (allow_valid_operator_with_empty_operand && term.operand === "") {
+            return [
+                "in",
+                "id",
+                "near",
+                "channel",
+                "stream",
+                "topic",
+                "sender",
+                "from",
+                "dm",
+                "pm",
+                "pm-with",
+                "dm-including",
+                "pm-including",
+                "search",
+            ].includes(term.operator);
+        }
+        switch (term.operator) {
+            case "has":
+                return ["image", "link", "attachment", "reaction"].includes(term.operand);
+            case "is":
+                return [
+                    "dm",
+                    "private",
+                    "starred",
+                    "mentioned",
+                    "alerted",
+                    "unread",
+                    "resolved",
+                    "followed",
+                ].includes(term.operand);
+            case "in":
+                return ["home", "all"].includes(term.operand);
+            case "id":
+            case "near":
+                return Number.isInteger(Number(term.operand));
+            case "channel":
+            case "stream":
+                return stream_data.get_sub(term.operand) !== undefined;
+            case "topic":
+                return true;
+            case "sender":
+            case "from":
+            case "dm":
+            case "pm":
+            case "pm-with":
+            case "dm-including":
+            case "pm-including":
+                return term.operand
+                    .split(",")
+                    .every((email) => people.get_by_email(email) !== undefined);
+            case "search":
+                return true;
+            default:
+                blueslip.error("Unexpected search term operator: " + term.operator);
+                return false;
+        }
     }
 
     /* Convert a list of search terms to a string.
