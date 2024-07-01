@@ -566,15 +566,24 @@ input[type="checkbox"] {
     }
 }
 
-.remove-attachment {
-    margin-right: 5px !important;
-    font-size: 1.1em !important;
-    padding-left: 0 !important;
+.edit-attachment-buttons {
+    display: inline-block;
+    vertical-align: middle;
+    height: 32px;
 }
 
-#download_attachment {
-    padding-left: 0;
-    border-left: 0;
+.edit-attachment-buttons .remove-attachment {
+    margin-left: 5px;
+}
+
+.edit-attachment-buttons #download_attachment {
+    display: block;
+    padding: 6px 9px;
+    text-decoration: none;
+
+    &:hover {
+        color: hsl(156deg 41% 40%);
+    }
 }
 
 .remove-alert-word {
