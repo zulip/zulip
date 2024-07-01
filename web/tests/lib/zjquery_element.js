@@ -62,6 +62,10 @@ function FakeElement(selector, opts) {
                 selector,
             };
         },
+        each(cb) {
+            cb.call($self);
+            return $self;
+        },
         empty(arg) {
             if (arg === undefined) {
                 find_results.clear();
