@@ -138,20 +138,6 @@
     line-height: 1;
 }
 
-.user-card-popover-manage-menu-btn {
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
-}
-
-.user_popover_manage_menu {
-    .zulip-icon {
-        /* Overriding CSS margin */
-        margin-right: 0;
-    }
-}
-
 /* Used extra classes to override styles from .nav */
 .tippy-box .tippy-content .user-card-popover-content {
     padding: 5px 0;
@@ -229,14 +215,6 @@
         &:focus {
             outline: none;
         }
-    }
-}
-
-.user-card-popover-actions .user-card-popover-manage-menu-btn {
-    opacity: 0.8;
-
-    &:hover {
-        opacity: 1;
     }
 }
 
