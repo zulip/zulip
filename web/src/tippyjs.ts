@@ -135,6 +135,19 @@ export function initialize(): void {
         },
     });
 
+    tippy.delegate("body", {
+        target: ".fa-exclamation-triangle",
+        placement: "right",
+        appendTo: () => document.body,
+        onShow(instance) {
+            instance.setContent("You are not currently subscribed to this channel.");
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        maxWidth: 320,
+    });
+
     // Variant of .tippy-left-sidebar-tooltip configuration. Since
     // this element doesn't have an always visible label, and
     // thus hovering it is a way to find out what it does, give
