@@ -440,6 +440,8 @@ export function handle_keydown(
         type = "italic";
     } else if (key === "l" && event.shiftKey) {
         type = "link";
+    } else if (key === "c" && event.shiftKey) {
+        type = "code";
     }
 
     // detect Cmd and Ctrl key
@@ -1052,6 +1054,7 @@ export function format_text(
             break;
         }
         case "code": {
+            // Ctrl + Shift + C: Toggle code syntax on selection.
             const inline_code_syntax = "`";
             let block_code_syntax_start = "```\n";
             let block_code_syntax_end = "\n```";
