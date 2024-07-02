@@ -239,7 +239,18 @@ DEFAULT_RATE_LIMITING_RULES = {
     # used by the public access option). Since these are
     # unauthenticated requests, each IP address is a separate bucket.
     "api_by_ip": [
+        # used for ipv4 only.
+        # 100 requests per minute.
         (60, 100),
+    ],
+    "api_by_ipv6_prefix_64": [
+        # To do
+    ],
+    "api_by_ipv6_prefix_48": [
+        # To do, should be larger than the above
+    ],
+    "api_by_ipv6_prefix_32": [
+        # To do, should be larger than the above
     ],
     # Limits total requests to the Mobile Push Notifications Service
     # by each individual Zulip server that is using the service. This
