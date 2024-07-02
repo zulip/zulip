@@ -149,6 +149,12 @@ export function get_realm_default_setting_property_value(
     if (property_name === "twenty_four_hour_time") {
         return JSON.stringify(realm_user_settings_defaults.twenty_four_hour_time);
     }
+    if (property_name === "custom_default_days") {
+        return JSON.stringify(realm_user_settings_defaults.custom_default_days);
+    }
+    if (property_name === "custom_default_hours") {
+        return JSON.stringify(realm_user_settings_defaults.custom_default_hours);
+    }
     if (
         property_name === "email_notifications_batching_period_seconds" ||
         property_name === "email_notification_batching_period_edit_minutes"

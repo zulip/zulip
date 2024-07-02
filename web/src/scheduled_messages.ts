@@ -4,6 +4,7 @@ import * as channel from "./channel";
 import {$t} from "./i18n";
 import type {StateData, scheduled_message_schema} from "./state_data";
 import * as timerender from "./timerender";
+import {user_settings} from "./user_settings";
 
 export type ScheduledMessage = z.infer<typeof scheduled_message_schema>;
 
@@ -12,7 +13,8 @@ type TimeKey =
     | "today_four_pm"
     | "tomorrow_nine_am"
     | "tomorrow_four_pm"
-    | "monday_nine_am";
+    | "monday_nine_am"
+    | "custom_default";
 
 type SendOption = {[key in TimeKey]?: {text: string; stamp: number}};
 
@@ -31,6 +33,11 @@ function compute_send_times(now = new Date()): Record<TimeKey, number> {
     // Find the next Monday by subtracting the current day (0-6) from 8
     const monday = new Date(new Date(now).setDate(now.getDate() + 8 - now.getDay()));
 
+    const custom_day = user_settings.custom_default_days;
+    const custom_hours = user_settings.custom_default_hours;
+
+    const custom = new Date(new Date(now).setDate(now.getDate() + custom_day));
+
     // Since setHours returns a timestamp, it's safe to mutate the
     // original date objects here.
     //
@@ -44,6 +51,8 @@ function compute_send_times(now = new Date()): Record<TimeKey, number> {
     send_times.tomorrow_four_pm = tomorrow.setHours(16, 0, 0, 0);
     // next Monday at 9am
     send_times.monday_nine_am = monday.setHours(9, 0, 0, 0);
+
+    send_times.custom_default = custom.setHours(custom_hours, 0, 0, 0);
     return send_times;
 }
 
@@ -82,6 +91,7 @@ export function get_filtered_send_opts(date: Date): {
     possible_send_later_today: SendOption | false;
     send_later_tomorrow: SendOption;
     possible_send_later_monday: SendOption | false;
+    send_later_custom_list: SendOption;
     send_later_custom: {text: string};
 } {
     const send_times = compute_send_times(date);
@@ -157,6 +167,14 @@ export function get_filtered_send_opts(date: Date): {
         },
     };
 
+    const string = formatCustomTime();
+    const send_later_custom_list = {
+        custom_default: {
+            text: string,
+            stamp: send_times.custom_default,
+        },
+    };
+
     const send_later_custom = {
         text: $t({defaultMessage: "Custom"}),
     };
@@ -186,6 +204,7 @@ export function get_filtered_send_opts(date: Date): {
         possible_send_later_today,
         send_later_tomorrow,
         possible_send_later_monday,
+        send_later_custom_list,
         send_later_custom,
     };
 }
@@ -214,4 +233,28 @@ export function reset_selected_schedule_timestamp(): void {
 
 export function initialize(scheduled_messages_params: StateData["scheduled_messages"]): void {
     add_scheduled_messages(scheduled_messages_params.scheduled_messages);
+}
+
+export function formatCustomTime(): string {
+    const custom_day = user_settings.custom_default_days;
+    let custom_hour = user_settings.custom_default_hours;
+    const twenty_four_hour_time = user_settings.twenty_four_hour_time;
+    const period = custom_hour >= 12 ? "PM" : "AM";
+    // Write 0:00 as 12:00 AM
+    if (custom_hour === 0 && !twenty_four_hour_time) {
+        custom_hour = 12;
+    } else if (custom_hour !== 12 && !twenty_four_hour_time) {
+        custom_hour = custom_hour % 12;
+    }
+    switch (custom_day) {
+        case 0: {
+            return `Today at ${custom_hour}:00 ${!twenty_four_hour_time ? period : ""}`;
+        }
+        case 1: {
+            return `Tomorrow at ${custom_hour}:00 ${!twenty_four_hour_time ? period : ""}`;
+        }
+        default: {
+            return `${custom_day} days in the future at ${custom_hour}:00 ${!twenty_four_hour_time ? period : ""}`;
+        }
+    }
 }

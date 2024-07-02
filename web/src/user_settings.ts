@@ -70,6 +70,8 @@ export const user_settings_schema = stream_notification_settings_schema
         timezone: z.string(),
         translate_emoticons: z.boolean(),
         twenty_four_hour_time: z.boolean(),
+        custom_default_days: z.number(),
+        custom_default_hours: z.number(),
         user_list_style: z.number(),
         web_escape_navigates_to_home_view: z.boolean(),
         web_font_size_px: z.number(),

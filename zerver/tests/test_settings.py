@@ -362,6 +362,8 @@ class ChangeSettingsTest(ZulipTestCase):
             realm_name_in_email_notifications_policy=2,
             automatically_follow_topics_policy=1,
             automatically_unmute_topics_in_muted_streams_policy=1,
+            custom_default_days=7,
+            custom_default_hours=17,
         )
 
         self.login("hamlet")

@@ -65,6 +65,12 @@ function get_expected_send_opts(day, expecteds) {
                 stamp: per_day_stamps[day].tomorrow_four_pm,
             },
         },
+        send_later_custom_list: {
+            custom_default: {
+                stamp: Number.NaN,
+                text: "undefined days in the future at NaN:00 AM",
+            },
+        },
         send_later_custom: {
             text: "translated: Custom",
         },
