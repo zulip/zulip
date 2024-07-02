@@ -24,12 +24,15 @@ import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";
+import * as stream_topic_history from "./stream_topic_history";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread";
+import * as user_topics from "./user_topics";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -837,15 +840,66 @@ export function set_event_handlers({
 }: {
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
-    $("#stream_filters").on("click", "li .subscription_block", (e) => {
+    $("#stream_filters").on(
+        "click",
+        "li .subscription_block .goto-interleaved-stream-view",
+        (e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) {
+                return;
+            }
+            const stream_id = stream_id_for_elt($(e.target).parents("li"));
+            on_stream_click(stream_id, "sidebar");
+
+            clear_and_hide_search();
+
+            e.preventDefault();
+            e.stopPropagation();
+        },
+    );
+
+    $("#stream_filters").on("click", "li .subscription_block .stream-name", (e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
+
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        on_stream_click(stream_id, "sidebar");
+        let topics = stream_topic_history.get_recent_topic_names(stream_id);
+
+        const navigate_to_stream = (): void => {
+            let destination_url;
+
+            const top_unmuted_topic = topics.find(
+                (topic) => !user_topics.is_topic_muted(stream_id, topic),
+            );
+            const muted_topics = topics.find((topic) =>
+                user_topics.is_topic_muted(stream_id, topic),
+            );
+
+            if (top_unmuted_topic) {
+                destination_url = hash_util.by_stream_topic_url(stream_id, top_unmuted_topic);
+                browser_history.go_to_location(destination_url);
+            } else if (muted_topics) {
+                destination_url = hash_util.by_stream_topic_url(stream_id, muted_topics);
+                browser_history.go_to_location(destination_url);
+            } else {
+                on_stream_click(stream_id, "sidebar");
+            }
+        };
+
+        if (topics.length === 0) {
+            stream_topic_history_util.get_server_history(stream_id, () => {
+                topics = stream_topic_history.get_recent_topic_names(stream_id);
+                if (topics.length === 0) {
+                    on_stream_click(stream_id, "sidebar");
+                } else {
+                    navigate_to_stream();
+                }
+            });
+        } else {
+            navigate_to_stream();
+        }
 
         clear_and_hide_search();
-
         e.preventDefault();
         e.stopPropagation();
     });

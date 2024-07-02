@@ -155,6 +155,23 @@ export function initialize(): void {
         },
     });
 
+    tippy.delegate("body", {
+        target: "#stream-feed",
+        placement: "right",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+    });
+
     // Variant of .tippy-left-sidebar-tooltip configuration. Here
     // we need to dynamically check which view is the home view.
     tippy.delegate("body", {
