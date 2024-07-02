@@ -95,6 +95,7 @@ mock_esm("../src/hash_util", {
     by_stream_url: test_url,
     by_stream_topic_url: test_url,
     by_conversation_and_time_url: test_url,
+    by_conversation_and_time_url_by_message_id: test_url,
 });
 mock_esm("../src/message_list_data", {
     MessageListData: class {},
@@ -236,12 +237,10 @@ people.initialize_current_user(1);
 muted_users.add_muted_user(2, 17947949);
 muted_users.add_muted_user(4, 17947949);
 
-let id = 0;
-
 const sample_messages = [];
 sample_messages[0] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 1,
     topic: topic1,
     sender_id: sender1,
     type: "stream",
@@ -249,7 +248,7 @@ sample_messages[0] = {
 
 sample_messages[1] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 2,
     topic: topic2,
     sender_id: sender1,
     type: "stream",
@@ -257,7 +256,7 @@ sample_messages[1] = {
 
 sample_messages[2] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 3,
     topic: topic2,
     sender_id: sender2,
     type: "stream",
@@ -265,7 +264,7 @@ sample_messages[2] = {
 
 sample_messages[3] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 4,
     topic: topic3,
     sender_id: sender2,
     type: "stream",
@@ -273,7 +272,7 @@ sample_messages[3] = {
 
 sample_messages[4] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 5,
     topic: topic4,
     sender_id: sender2,
     type: "stream",
@@ -281,7 +280,7 @@ sample_messages[4] = {
 
 sample_messages[5] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 6,
     topic: topic5,
     sender_id: sender1,
     type: "stream",
@@ -289,7 +288,7 @@ sample_messages[5] = {
 
 sample_messages[6] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 7,
     topic: topic5,
     sender_id: sender2,
     type: "stream",
@@ -297,7 +296,7 @@ sample_messages[6] = {
 
 sample_messages[7] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 8,
     topic: topic6,
     sender_id: sender1,
     type: "stream",
@@ -305,7 +304,7 @@ sample_messages[7] = {
 
 sample_messages[8] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 9,
     topic: topic6,
     sender_id: sender2,
     type: "stream",
@@ -313,7 +312,7 @@ sample_messages[8] = {
 
 sample_messages[9] = {
     stream_id: stream1,
-    id: (id += 1),
+    id: 10,
     topic: topic7,
     sender_id: sender1,
     type: "stream",
@@ -322,7 +321,7 @@ sample_messages[9] = {
 // a message of stream4
 sample_messages[10] = {
     stream_id: stream4,
-    id: (id += 1),
+    id: 11,
     topic: topic10,
     sender_id: sender1,
     type: "stream",
@@ -331,7 +330,7 @@ sample_messages[10] = {
 // normal topic in muted stream
 sample_messages[11] = {
     stream_id: stream6,
-    id: (id += 1),
+    id: 12,
     topic: topic8,
     sender_id: sender1,
     type: "stream",
@@ -340,7 +339,7 @@ sample_messages[11] = {
 // unmuted topic in muted stream
 sample_messages[12] = {
     stream_id: stream6,
-    id: (id += 1),
+    id: 13,
     topic: topic11,
     sender_id: sender1,
     type: "stream",
@@ -349,14 +348,14 @@ sample_messages[12] = {
 // followed topic in muted stream
 sample_messages[13] = {
     stream_id: stream6,
-    id: (id += 1),
+    id: 14,
     topic: topic12,
     sender_id: sender1,
     type: "stream",
 };
 
 private_messages[0] = {
-    id: (id += 1),
+    id: 15,
     sender_id: sender1,
     to_user_ids: "2,3",
     type: "private",
@@ -364,7 +363,7 @@ private_messages[0] = {
     pm_with_url: test_url(),
 };
 private_messages[1] = {
-    id: (id += 1),
+    id: 16,
     sender_id: sender1,
     to_user_ids: "2,4",
     type: "private",
@@ -372,7 +371,7 @@ private_messages[1] = {
     pm_with_url: test_url(),
 };
 private_messages[2] = {
-    id: (id += 1),
+    id: 17,
     sender_id: sender1,
     to_user_ids: "3",
     type: "private",
@@ -561,7 +560,13 @@ test("test_no_filter", ({mock_template}) => {
     recent_view_util.set_visible(true);
     rt.process_messages([messages[0]]);
     assert.equal(
-        rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
+        rt.filters_should_hide_row({
+            last_msg_id: 1,
+            participated: true,
+            type: "stream",
+            stream_id: sample_messages[0].stream_id,
+            topic: sample_messages[0].topic,
+        }),
         false,
     );
 
@@ -648,7 +653,13 @@ test("test_no_filter", ({mock_template}) => {
     rt.set_default_focus();
     $(".home-page-input").trigger("focus");
     assert.equal(
-        rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
+        rt.filters_should_hide_row({
+            last_msg_id: 1,
+            participated: true,
+            type: "stream",
+            stream_id: 1,
+            topic: "topic-1",
+        }),
         false,
     );
 });
@@ -690,14 +701,46 @@ test("test_filter_pm", ({mock_template}) => {
     rt.set_filter("include_private");
 
     expected_data_to_replace_in_list_widget = [
-        {last_msg_id: 15, participated: true, type: "private"},
+        {
+            last_msg_id: 15,
+            participated: true,
+            type: "private",
+            to_user_ids: "2,3",
+        },
     ];
 
     rt.process_messages([private_messages[0]]);
 
-    assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 15}), false);
-    assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 16}), true);
-    assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 17}), false);
+    assert.deepEqual(
+        rt.filters_should_hide_row({
+            last_msg_id: 15,
+            participated: true,
+            type: "private",
+            to_user_ids: private_messages[0].to_user_ids,
+            sender_id: 1,
+        }),
+        false,
+    );
+    assert.deepEqual(
+        rt.filters_should_hide_row({
+            last_msg_id: 16,
+            participated: true,
+            type: "private",
+            to_user_ids: private_messages[1].to_user_ids,
+            sender_id: 1,
+        }),
+        true,
+    );
+    assert.deepEqual(
+        rt.filters_should_hide_row({
+            last_msg_id: 17,
+            participated: true,
+            type: "private",
+            to_user_ids: private_messages[2].to_user_ids,
+            sender_id: 1,
+        }),
+        false,
+    );
 });
 
 test("test_filter_participated", ({mock_template}) => {
@@ -755,14 +798,26 @@ test("test_filter_participated", ({mock_template}) => {
 
     $(".home-page-input").trigger("focus");
     assert.equal(
-        rt.filters_should_hide_row({last_msg_id: 4, participated: true, type: "stream"}),
+        rt.filters_should_hide_row({
+            last_msg_id: 4,
+            participated: true,
+            type: "stream",
+            stream_id: sample_messages[3].stream_id,
+            topic: sample_messages[3].topic,
+        }),
         false,
     );
 
     // Set muted filter
     rt.set_filter("muted");
     assert.equal(
-        rt.filters_should_hide_row({last_msg_id: 7, participated: true, type: "stream"}),
+        rt.filters_should_hide_row({
+            last_msg_id: 7,
+            participated: true,
+            type: "stream",
+            stream_id: sample_messages[6].stream_id,
+            topic: sample_messages[6].topic,
+        }),
         false,
     );
 
@@ -783,41 +838,57 @@ test("test_filter_participated", ({mock_template}) => {
             last_msg_id: 11,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[10].stream_id,
+            topic: sample_messages[10].topic,
         },
         {
             last_msg_id: 10,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[9].stream_id,
+            topic: sample_messages[9].topic,
         },
         {
             last_msg_id: 9,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[8].stream_id,
+            topic: sample_messages[8].topic,
         },
         {
             last_msg_id: 7,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[6].stream_id,
+            topic: sample_messages[6].topic,
         },
         {
             last_msg_id: 5,
             participated: false,
             type: "stream",
+            stream_id: sample_messages[4].stream_id,
+            topic: sample_messages[4].topic,
         },
         {
             last_msg_id: 4,
             participated: false,
             type: "stream",
+            stream_id: sample_messages[3].stream_id,
+            topic: sample_messages[3].topic,
         },
         {
             last_msg_id: 3,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[2].stream_id,
+            topic: sample_messages[2].topic,
         },
         {
             last_msg_id: 1,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[0].stream_id,
+            topic: sample_messages[0].topic,
         },
     ];
 
@@ -859,41 +930,57 @@ test("basic assertions", ({mock_template, override_rewire}) => {
             last_msg_id: 11,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[10].stream_id,
+            topic: sample_messages[10].topic,
         },
         {
             last_msg_id: 10,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[9].stream_id,
+            topic: sample_messages[9].topic,
         },
         {
             last_msg_id: 9,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[8].stream_id,
+            topic: sample_messages[8].topic,
         },
         {
             last_msg_id: 7,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[6].stream_id,
+            topic: sample_messages[6].topic,
         },
         {
             last_msg_id: 5,
             participated: false,
             type: "stream",
+            stream_id: sample_messages[4].stream_id,
+            topic: sample_messages[4].topic,
         },
         {
             last_msg_id: 4,
             participated: false,
             type: "stream",
+            stream_id: sample_messages[5].stream_id,
+            topic: sample_messages[5].topic,
         },
         {
             last_msg_id: 3,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[2].stream_id,
+            topic: sample_messages[2].topic,
         },
         {
             last_msg_id: 1,
             participated: true,
             type: "stream",
+            stream_id: sample_messages[0].stream_id,
+            topic: sample_messages[0].topic,
         },
     ];
 
@@ -930,7 +1017,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     // topic3 now participated
     rt_data.process_message({
         stream_id: stream1,
-        id: (id += 1),
+        id: 18,
         topic: topic3,
         sender_id: sender1,
         type: "stream",
@@ -941,13 +1028,13 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         [...all_topics.keys()].toString(),
         "1:topic-3,6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
     );
-    verify_topic_data(all_topics, stream1, topic3, id, true);
+    verify_topic_data(all_topics, stream1, topic3, 18, true);
 
     // Send new message to topic7 (muted)
     // The topic will be hidden when displayed
     rt_data.process_message({
         stream_id: stream1,
-        id: (id += 1),
+        id: 19,
         topic: topic7,
         sender_id: sender1,
         type: "stream",
