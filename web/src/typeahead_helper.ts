@@ -419,7 +419,7 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     current_stream_id,
     current_topic,
     groups = [],
-    max_num_items = 20,
+    max_num_items = 50,
 }: {
     users: UserType[];
     query: string;
