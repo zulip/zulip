@@ -1423,8 +1423,9 @@ test("describe", ({mock_template}) => {
     string = "followed topics";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
+    // This is validated through the pill creation process
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
-    string = "invalid something_we_do_not_support operand for is operator";
+    string = "is:something_we_do_not_support";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     // this should be unreachable, but just in case
@@ -1464,7 +1465,8 @@ test("describe", ({mock_template}) => {
         {operator: "has", operand: "abc", negated: true},
         {operator: "channel", operand: "devel"},
     ];
-    string = "invalid abc operand for has operator, channel devel";
+    // This is validated through the pill creation process
+    string = "has:abc, channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
@@ -1655,6 +1657,37 @@ test("first_valid_id_from", ({override}) => {
     assert.equal(filter.first_valid_id_from([999]), undefined);
 
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
+});
+
+test("is_valid_search_pill", () => {
+    const denmark = {
+        stream_id: 100,
+        name: "Denmark",
+    };
+    stream_data.add_sub(denmark);
+
+    const test_data = [
+        ["has: image", true],
+        ["has: nonsense", false],
+        ["is: unread", true],
+        ["is: nonsense", false],
+        ["in: home", true],
+        ["in: nowhere", false],
+        ["id: 4", true],
+        ["near: home", false],
+        ["channel: Denmark", true],
+        ["channel: GhostTown", false],
+        ["dm-including: alice@example.com", true],
+        ["sender: ghost@zulip.com", false],
+        ["dm: alice@example.com,ghost@example.com", false],
+        ["dm: alice@example.com,joe@example.com", true],
+    ];
+    for (const [search_term_string, expected_is_valid] of test_data) {
+        assert.equal(
+            Filter.is_valid_search_pill(Filter.parse(search_term_string)[0]),
+            expected_is_valid,
+        );
+    }
 });
 
 test("update_email", () => {

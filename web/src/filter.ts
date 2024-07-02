@@ -481,6 +481,40 @@ export class Filter {
         return terms;
     }
 
+    static is_valid_search_pill(term: NarrowTerm): boolean {
+        switch (term.operator) {
+            case "has":
+                return ["image", "link", "attachment", "reaction"].includes(term.operand);
+            case "is":
+                return [
+                    "dm",
+                    "private",
+                    "starred",
+                    "mentioned",
+                    "alerted",
+                    "unread",
+                    "resolved",
+                    "followed",
+                ].includes(term.operand);
+            case "in":
+                return ["home", "all"].includes(term.operand);
+            case "id":
+            case "near":
+                return Number.isInteger(Number(term.operand));
+            case "channel":
+            case "stream":
+                return stream_data.get_sub(term.operand) !== undefined;
+            case "sender":
+            case "dm":
+            case "dm-including":
+                return term.operand
+                    .split(",")
+                    .every((email) => people.get_by_email(email) !== undefined);
+            default:
+                return true;
+        }
+    }
+
     /* Convert a list of search terms to a string.
    Each operator is a key-value pair like
 
@@ -649,8 +683,6 @@ export class Filter {
                 };
             }
             if (canonicalized_operator === "has") {
-                // search_suggestion.get_suggestions takes care that this message will
-                // only be shown if the `has` operator is not at the last.
                 const valid_has_operands = [
                     "image",
                     "images",
