@@ -5,8 +5,10 @@ import {user_settings} from "./user_settings";
 export function set_layout_width(): void {
     if (user_settings.fluid_layout_width) {
         $("body").addClass("fluid_layout_width");
+        $(".column-middle-align").addClass("fluid_layout_width");
     } else {
         $("body").removeClass("fluid_layout_width");
+        $(".column-middle-align").removeClass("fluid_layout_width");
     }
 }
 
