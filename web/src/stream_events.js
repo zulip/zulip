@@ -3,8 +3,10 @@ import assert from "minimalistic-assert";
 
 import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as color_data from "./color_data";
 import * as compose_recipient from "./compose_recipient";
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
@@ -14,6 +16,7 @@ import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_notifications from "./settings_notifications";
 import * as stream_color_events from "./stream_color_events";
+import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
@@ -145,6 +148,18 @@ export function mark_subscribed(sub, subscribers, color) {
 
     // update navbar if necessary
     message_view_header.maybe_rerender_title_area_for_stream(sub);
+
+    // Note: It is important to perform the 'redirect to channel view'
+    // operation here i.e. after subscribing to the channel, because
+    // doing so in 'add_sub_to_table' results in fetching messages in narrow
+    // before subscription hence a buggy "You subscribed to..." bookend.
+    if (stream_create.get_name() === sub.name) {
+        // The `stream_create.get_name()` check tells us whether the
+        // stream was just created in this browser window.
+        stream_create.reset_created_stream();
+        // Go to the newly created stream interleaved view.
+        browser_history.go_to_location(hash_util.by_stream_url(sub.stream_id));
+    }
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         assert(message_lists.current !== undefined);
