@@ -8,12 +8,15 @@ const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
+const browser_history = mock_esm("../src/browser_history");
 const color_data = mock_esm("../src/color_data");
 const compose_recipient = mock_esm("../src/compose_recipient");
+const dialog_widget = mock_esm("../src/dialog_widget");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
 const stream_settings_api = mock_esm("../src/stream_settings_api");
+const onboarding_steps = mock_esm("../src/onboarding_steps");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
     update_settings_for_subscribed: noop,
     update_empty_left_panel_message: noop,
@@ -43,6 +46,7 @@ const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
+const stream_create = zrequire("stream_create");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
 
@@ -485,4 +489,37 @@ test("process_subscriber_update", ({override, override_rewire}) => {
     override_rewire(narrow_state, "stream_id", () => 1);
     stream_events.process_subscriber_update(userIds, streamIds);
     assert.ok(build_user_sidebar_called);
+});
+
+test("marked_subscribed (new channel creation)", ({override}) => {
+    stream_create.set_name(frontend.name);
+    const sub = {...frontend};
+    stream_data.add_sub(sub);
+
+    const go_to_location_stub = make_stub();
+    override(browser_history, "go_to_location", go_to_location_stub.f);
+    override(unread_ui, "update_unread_counts", noop);
+    override(stream_list, "add_sidebar_row", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(user_profile, "update_user_profile_streams_list_for_users", noop);
+    override(
+        onboarding_steps,
+        "ONE_TIME_NOTICES_TO_DISPLAY",
+        new Set(["first_stream_created_banner"]),
+    );
+    override(onboarding_steps, "post_onboarding_step_as_read", noop);
+
+    // We're stubbing 'dialog_widget.launch()' instead of
+    // 'stream_events.show_first_stream_created_modal()'
+    // as it helps in test coverage.
+    const dialog_widget_stub = make_stub();
+    override(dialog_widget, "launch", dialog_widget_stub.f);
+
+    stream_events.mark_subscribed(sub, [], "yellow");
+
+    // Verify that the creator is redirected to channel view
+    // and the first_stream_created modal is displayed.
+    assert.equal(go_to_location_stub.num_calls, 1);
+    assert.equal(dialog_widget_stub.num_calls, 1);
+    assert.equal(stream_create.get_name(), undefined);
 });
