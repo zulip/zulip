@@ -237,6 +237,22 @@ export function update_compose_draft_count(): void {
     }
 }
 
+export function update_compose_draft_count_in_popover(): void {
+    const $drafts_option = $(".view_contextual_drafts");
+    const $count_ele = $drafts_option.find(".unread_count");
+    if (!compose_state.has_full_recipient()) {
+        $count_ele.hide();
+        return;
+    }
+    const compose_draft_count = Object.keys(filter_drafts_by_compose_box_and_recipient()).length;
+    if (compose_draft_count > 0) {
+        $count_ele.text(compose_draft_count > 99 ? "99+" : compose_draft_count);
+        $count_ele.show();
+    } else {
+        $count_ele.hide();
+    }
+}
+
 export function sync_count(): void {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
