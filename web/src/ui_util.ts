@@ -139,13 +139,11 @@ export function update_unread_mention_info_in_dom(
 ): void {
     const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
     if (!stream_has_any_unread_mention_messages) {
-        $unread_mention_info_span.hide();
-        $unread_mention_info_span.text("");
+        $unread_mention_info_span.addClass("hide");
         return;
     }
 
-    $unread_mention_info_span.show();
-    $unread_mention_info_span.text("@");
+    $unread_mention_info_span.removeClass("hide");
 }
 
 /**
