@@ -374,6 +374,9 @@
         /* The background-color of select elements inside modal is different than the others in
         settings pages, because the background of the modal is brighter than the setting page. */
         background-color: hsl(0deg 0% 90%);
+
+        /* This is reset for other browsers to use Chrome's opacity. */
+        opacity: 0.7;
     }
 }
 
