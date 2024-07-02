@@ -861,11 +861,6 @@ input[type="checkbox"] {
     .dropdown-widget-button {
         width: 325px;
         color: hsl(0deg 0% 33%);
-
-        &:disabled {
-            cursor: not-allowed;
-            background-color: hsl(0deg 0% 93%);
-        }
     }
 }
 
