@@ -22,7 +22,7 @@ const preview_regexes = [
     // Inline image and video previews, check for contiguous chars ending in image and video suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm)\)?(\s+|$)/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm|\.mp3|\.aac|\.ogg)\)?(\s+|$)/m,
 
     // Twitter and youtube links are given previews
 

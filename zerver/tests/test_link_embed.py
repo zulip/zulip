@@ -661,29 +661,39 @@ class PreviewTestCase(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/audio.mp3"
-        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
-            patched.assert_called_once()
-            queue = patched.call_args[0][0]
-            self.assertEqual(queue, "embed_links")
-            event = patched.call_args[0][1]
+            msg = Message.objects.select_related("sender").get(id=msg_id)
+            event = {
+                "message_id": msg_id,
+                "urls": [url],
+                "message_realm_id": msg.sender.realm_id,
+                "message_content": url,
+            }
 
-        content_type = "application/octet-stream"
-        self.create_mock_response(url, content_type=content_type)
+        mocked_data = UrlOEmbedData(
+            html=f'<a href="{url}"></a>',
+            type="audio",
+        )
+        self.create_mock_response(url)
 
         with self.settings(TEST_SUITE=False):
             with self.assertLogs(level="INFO") as info_logs:
-                FetchLinksEmbedData().consume(event)
-                cached_data = cache_get(preview_url_cache_key(url))[0]
+                with mock.patch(
+                    "zerver.lib.url_preview.preview.get_oembed_data",
+                    lambda *args, **kwargs: mocked_data,
+                ):
+                    FetchLinksEmbedData().consume(event)
+                    cached_data = cache_get(preview_url_cache_key(url))[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/audio.mp3: "
                 in info_logs.output[0]
             )
 
-        self.assertIsNone(cached_data)
-        msg = Message.objects.select_related("sender").get(id=msg_id)
+        self.assertEqual(cached_data, mocked_data)
+        expected_content = f"""<div class="message_inline_audio"><a href="{url}"><audio controls data-audio-original-url="{url}" preload="metadata" src="{get_camo_url(url)}" title="{url}"></audio></a></div>"""
         self.assertEqual(
-            '<p><a href="http://test.org/audio.mp3">http://test.org/audio.mp3</a></p>',
+            expected_content,
             msg.rendered_content,
         )
 

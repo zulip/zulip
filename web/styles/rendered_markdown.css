@@ -952,3 +952,8 @@
 .highlight {
     background-color: hsl(51deg 100% 79%);
 }
+
+audio::-webkit-media-controls-enclosure {
+    border-radius: 0;
+    cursor: default;
+}

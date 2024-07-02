@@ -564,6 +564,36 @@ class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
             video.set("data-video-original-url", url)
 
 
+class InlineAudioProcessor(markdown.treeprocessors.Treeprocessor):
+    """
+    Rewrite inline audio tags to serve external content via Camo.
+
+    This rewrites all audio files, except ones that are served from the current
+    realm or global STATIC_URL. This is to ensure that each realm only loads
+    audio files that are hosted on that realm or by the global installation,
+    avoiding information leakage to external domains or between realms. We need
+    to disable proxying of audio files hosted on the same realm, because otherwise
+    we will break audio files in /user_uploads/, which require authorization to
+    view.
+    """
+
+    def __init__(self, zmd: "ZulipMarkdown") -> None:
+        super().__init__(zmd)
+        self.zmd = zmd
+
+    @override
+    def run(self, root: Element) -> None:
+        # Get all URLs from the blob
+        found_audios = walk_tree(root, lambda e: e if e.tag == "audio" else None)
+        for audio in found_audios:
+            url = audio.get("src")
+            assert url is not None
+            if is_static_or_current_realm_url(url, self.zmd.zulip_realm):
+                continue
+            audio.set("src", get_camo_url(url))
+            audio.set("data-audio-original-url", url)
+
+
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     """Return a `<code>` element containing the matching text."""
 
@@ -1238,6 +1268,53 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if info["remove"] is not None:
             info["parent"].remove(info["remove"])
 
+    def is_audio(self, url: str) -> bool:
+        url_type = mimetypes.guess_type(url)[0]
+        # Support only audio formats (containers) that are supported cross-browser and cross-device. As per
+        # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
+        supported_mimetypes = ["audio/mpeg", "audio/aac", "audio/ogg"]
+        return url_type in supported_mimetypes
+
+    def add_audio(
+        self,
+        root: Element,
+        url: str,
+        title: Optional[str],
+        class_attr: str = "message_inline_audio",
+        insertion_index: Optional[int] = None,
+    ) -> None:
+        if insertion_index is not None:
+            div = Element("div")
+            root.insert(insertion_index, div)
+        else:
+            div = SubElement(root, "div")
+
+        div.set("class", class_attr)
+        # Add `a` tag so that the syntax of audio matches with
+        # other media types and clients don't get confused.
+        a = SubElement(div, "a")
+        a.set("href", url)
+        audio = SubElement(a, "audio")
+        if title:
+            a.set("title", title)
+            audio.set("title", title)
+        else:
+            audio.set("title", url)
+        audio.set("src", url)
+        audio.set("preload", "metadata")
+        audio.set("controls", "controls")
+
+    def handle_audio_inlining(
+        self, root: Element, found_url: ResultWithFamily[Tuple[str, Optional[str]]]
+    ) -> None:
+        info = self.get_inlining_information(root, found_url)
+        url = found_url.result[0]
+
+        self.add_audio(info["parent"], url, info["title"], insertion_index=info["index"])
+
+        if info["remove"] is not None:
+            info["parent"].remove(info["remove"])
+
     @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
@@ -1293,6 +1370,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
             if self.is_video(url):
                 self.handle_video_inlining(root, found_url)
+                continue
+
+            if self.is_audio(url):
+                self.handle_audio_inlining(root, found_url)
                 continue
 
             dropbox_image = self.dropbox_image(url)
@@ -2353,6 +2434,7 @@ class ZulipMarkdown(markdown.Markdown):
         if settings.CAMO_URI:
             treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
             treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
+            treeprocessors.register(InlineAudioProcessor(self), "rewrite_audios_proxy", 10)
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry[markdown.postprocessors.Postprocessor]:
