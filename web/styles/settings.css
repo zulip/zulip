@@ -865,7 +865,6 @@ input[type="checkbox"] {
         &:disabled {
             cursor: not-allowed;
             background-color: hsl(0deg 0% 93%);
-            opacity: 0.7;
         }
     }
 }
