@@ -180,7 +180,8 @@ h3,
     }
 }
 
-#change_email_button {
+#change_email_button,
+#change_password {
     min-width: 0;
 }
 

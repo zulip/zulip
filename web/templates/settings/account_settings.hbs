@@ -43,9 +43,9 @@
                 <form class="password-change-form grid">
                     {{#if user_can_change_password}}
                     <div>
-                        <label class="inline-block title">{{t "Password" }}</label>
-                        <div class="input-group inline-block">
-                            <button id="change_password" type="button" class="btn-link small button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i></button>
+                        <label class="settings-field-label">{{t "Password" }}</label>
+                        <div class="input-group">
+                            <button id="change_password" type="button" class="button rounded" data-dismiss="modal">{{t "Change your password" }}</button>
                         </div>
                     </div>
                     {{/if}}
