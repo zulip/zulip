@@ -298,6 +298,10 @@ export function process_escape_key(e) {
         popovers.hide_all();
         return true;
     }
+    if ($(".navbar-item:visible").is(":focus")) {
+        $(".navbar-item:visible").filter(":focus").trigger("blur");
+        return true;
+    }
 
     if (modals.any_active()) {
         modals.close_active();
@@ -817,7 +821,7 @@ export function process_hotkey(e, hotkey) {
 
     // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
     if (
-        navbar_menus.is_navbar_menus_displayed() &&
+        (navbar_menus.is_navbar_menus_displayed() || $(".navbar-item:visible").is(":focus")) &&
         navbar_menus.handle_keyboard_events(event_name)
     ) {
         return true;
