@@ -1,9 +1,11 @@
 import $ from "jquery";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
+import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
@@ -14,6 +16,7 @@ import {current_user, realm} from "./state_data";
 import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_components from "./stream_settings_components";
+import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 
@@ -37,6 +40,12 @@ export function set_first_stream_created_modal_shown() {
 
 export function should_show_first_stream_created_modal() {
     return onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("first_stream_created_banner");
+}
+
+export function maybe_update_error_message() {
+    if ($("#stream_name_error").is(":visible") && $("#archived_stream_rename").is(":visible")) {
+        $("#create_stream_name").trigger("input");
+    }
 }
 
 class StreamSubscriptionError {
@@ -64,15 +73,16 @@ class StreamSubscriptionError {
 const stream_subscription_error = new StreamSubscriptionError();
 
 class StreamNameError {
-    report_already_exists() {
-        $("#stream_name_error").text(
-            $t({defaultMessage: "A channel with this name already exists."}),
-        );
+    report_already_exists(error) {
+        const error_message =
+            error || $t({defaultMessage: "A channel with this name already exists."});
+        $("#stream_name_error").text(error_message);
         $("#stream_name_error").show();
     }
 
     clear_errors() {
         $("#stream_name_error").hide();
+        $("#archived_stream_rename").hide();
     }
 
     report_empty_stream() {
@@ -84,6 +94,12 @@ class StreamNameError {
         $("#create_stream_name").trigger("focus").trigger("select");
     }
 
+    rename_archived_stream(stream_id) {
+        $("#archived_stream_rename").text($t({defaultMessage: "Rename archived stream"}));
+        $("#archived_stream_rename").attr("data-stream-id", stream_id);
+        $("#archived_stream_rename").show();
+    }
+
     pre_validate(stream_name) {
         // Don't worry about empty strings...we just want to call this
         // to warn users early before they start doing too much work
@@ -92,8 +108,18 @@ class StreamNameError {
         // out it already exists, and I was just too lazy to look at
         // the public streams that I'm not subscribed to yet.  Once I
         // realize the stream already exists, I may want to cancel.)
-        if (stream_name && stream_data.get_sub(stream_name)) {
-            this.report_already_exists();
+        const stream = stream_data.get_sub(stream_name);
+        if (stream_name && stream) {
+            if (stream.is_archived) {
+                this.report_already_exists(
+                    $t({defaultMessage: "An archived stream with this name already exists."}),
+                );
+                if (stream_settings_data.get_sub_for_settings(stream).can_change_name_description) {
+                    this.rename_archived_stream(stream.stream_id);
+                }
+            } else {
+                this.report_already_exists();
+            }
             return;
         }
 
@@ -519,4 +545,52 @@ export function set_up_handlers() {
     });
 
     stream_settings_components.new_stream_can_remove_subscribers_group_widget.setup();
+}
+
+export function initialize() {
+    $("#channels_overlay_container").on("click", "#archived_stream_rename", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const stream_id = Number.parseInt($("#archived_stream_rename").attr("data-stream-id"), 10);
+        const stream = stream_data.get_sub_by_id(stream_id);
+        const stream_name = stream.name + " (archived stream)";
+        const template_data = {
+            stream_name: stream.name,
+            stream_description: stream.description,
+            max_stream_name_length: realm.max_stream_name_length,
+            max_stream_description_length: realm.max_stream_description_length,
+        };
+        const change_stream_info_modal = render_change_stream_info_modal(template_data);
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Edit #{stream_name}"}, {stream_name}),
+            html_body: change_stream_info_modal,
+            id: "change_stream_info_modal",
+            loading_spinner: true,
+            on_click: save_stream_info,
+            post_render() {
+                $("#change_stream_info_modal .dialog_submit_button")
+                    .addClass("save-button")
+                    .attr("data-stream-id", stream_id);
+            },
+            update_submit_disabled_state_on_change: true,
+        });
+    });
+
+    function save_stream_info() {
+        const stream_id = Number.parseInt($("#archived_stream_rename").attr("data-stream-id"), 10);
+        const sub = stream_data.get_sub_by_id(stream_id);
+        const url = `/json/streams/${sub.stream_id}`;
+        const data = {};
+        const new_name = $("#change_stream_name").val().trim();
+        const new_description = $("#change_stream_description").val().trim();
+
+        if (new_name !== sub.name) {
+            data.new_name = new_name;
+        }
+        if (new_description !== sub.description) {
+            data.description = new_description;
+        }
+
+        dialog_widget.submit_api_request(channel.patch, url, data);
+    }
 }

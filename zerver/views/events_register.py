@@ -65,6 +65,7 @@ def events_register_backend(
                 ("user_settings_object", check_bool),
                 ("linkifier_url_template", check_bool),
                 ("user_list_incomplete", check_bool),
+                ("archived_streams", check_bool),
             ],
             value_validator=check_bool,
         ),

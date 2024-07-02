@@ -26,7 +26,7 @@ from zerver.lib.types import (
     SubscriptionStreamDict,
 )
 from zerver.models import Realm, Stream, Subscription, UserProfile
-from zerver.models.streams import get_active_streams
+from zerver.models.streams import get_all_streams
 
 
 def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
@@ -41,6 +41,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
     subscribed = []
     for stream in get_web_public_streams_queryset(realm):
         # Add Stream fields.
+        is_archived = stream.deactivated
         can_remove_subscribers_group_id = stream.can_remove_subscribers_group_id
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
@@ -72,6 +73,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         wildcard_mentions_notify = True
 
         sub = SubscriptionStreamDict(
+            is_archived=is_archived,
             audible_notifications=audible_notifications,
             can_remove_subscribers_group=can_remove_subscribers_group_id,
             color=color,
@@ -114,6 +116,7 @@ def build_unsubscribed_sub_from_stream_dict(
         can_remove_subscribers_group_id=stream_dict["can_remove_subscribers_group"],
         creator_id=stream_dict["creator_id"],
         date_created=timestamp_to_datetime(stream_dict["date_created"]),
+        deactivated=stream_dict["is_archived"],
         description=stream_dict["description"],
         first_message_id=stream_dict["first_message_id"],
         history_public_to_subscribers=stream_dict["history_public_to_subscribers"],
@@ -143,6 +146,7 @@ def build_stream_dict_for_sub(
     recent_traffic: Optional[Dict[int, int]],
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
+    is_archived = raw_stream_dict["deactivated"]
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
@@ -186,6 +190,7 @@ def build_stream_dict_for_sub(
 
     # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
+        is_archived=is_archived,
         audible_notifications=audible_notifications,
         can_remove_subscribers_group=can_remove_subscribers_group_id,
         color=color,
@@ -217,6 +222,7 @@ def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
     recent_traffic: Optional[Dict[int, int]],
 ) -> NeverSubscribedStreamDict:
+    is_archived = raw_stream_dict["deactivated"]
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
@@ -243,6 +249,7 @@ def build_stream_dict_for_never_sub(
 
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
+        is_archived=is_archived,
         can_remove_subscribers_group=can_remove_subscribers_group_id,
         creator_id=creator_id,
         date_created=date_created,
@@ -448,9 +455,10 @@ def has_metadata_access_to_previously_subscribed_stream(
 def gather_subscriptions_helper(
     user_profile: UserProfile,
     include_subscribers: bool = True,
+    include_archived_streams: bool = False,
 ) -> SubscriptionInfo:
     realm = user_profile.realm
-    all_streams = get_active_streams(realm).values(
+    all_streams = get_all_streams(realm, include_archived_streams=include_archived_streams).values(
         *Stream.API_FIELDS,
         # The realm_id and recipient_id are generally not needed in the API.
         "realm_id",
@@ -518,7 +526,9 @@ def gather_subscriptions_helper(
                 unsubscribed.append(stream_dict)
 
     if user_profile.can_access_public_streams():
-        never_subscribed_stream_ids = set(all_streams_map) - sub_unsub_stream_ids
+        never_subscribed_stream_ids = {
+            stream["id"] for stream in all_streams if not stream["deactivated"]
+        } - sub_unsub_stream_ids
     else:
         web_public_stream_ids = {stream["id"] for stream in all_streams if stream["is_web_public"]}
         never_subscribed_stream_ids = web_public_stream_ids - sub_unsub_stream_ids

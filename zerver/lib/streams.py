@@ -868,6 +868,7 @@ def stream_to_dict(
         stream_weekly_traffic = None
 
     return APIStreamDict(
+        is_archived=stream.deactivated,
         can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
@@ -898,6 +899,7 @@ def get_streams_for_user(
     include_public: bool = True,
     include_web_public: bool = False,
     include_subscribed: bool = True,
+    exclude_archived: bool = True,
     include_all_active: bool = False,
     include_owner_subscribed: bool = False,
 ) -> List[Stream]:
@@ -906,8 +908,11 @@ def get_streams_for_user(
 
     include_public = include_public and user_profile.can_access_public_streams()
 
-    # Start out with all active streams in the realm.
-    query = Stream.objects.filter(realm=user_profile.realm, deactivated=False)
+    # Start out with all streams in the realm.
+    query = Stream.objects.filter(realm=user_profile.realm)
+
+    if exclude_archived:
+        query = query.filter(deactivated=False)
 
     if include_all_active:
         streams = query.only(*Stream.API_FIELDS)
@@ -961,6 +966,7 @@ def do_get_streams(
     include_public: bool = True,
     include_web_public: bool = False,
     include_subscribed: bool = True,
+    exclude_archived: bool = True,
     include_all_active: bool = False,
     include_default: bool = False,
     include_owner_subscribed: bool = False,
@@ -972,6 +978,7 @@ def do_get_streams(
         include_public,
         include_web_public,
         include_subscribed,
+        exclude_archived,
         include_all_active,
         include_owner_subscribed,
     )

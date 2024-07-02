@@ -109,11 +109,6 @@ class BinaryDict<T> {
         this.trues.delete(k);
         this.falses.set(k, v);
     }
-
-    delete(k: number): void {
-        this.trues.delete(k);
-        this.falses.delete(k);
-    }
 }
 
 // The stream_info variable maps stream ids to stream properties objects
@@ -144,6 +139,10 @@ export function rename_sub(sub: StreamSubscription, new_name: string): void {
 }
 
 export function subscribe_myself(sub: StreamSubscription): void {
+    if (sub.is_archived) {
+        blueslip.warn("Can't subscribe to an archived stream.");
+        return;
+    }
     const user_id = people.my_current_user_id();
     peer_data.add_subscriber(sub.stream_id, user_id);
     sub.subscribed = true;
@@ -282,12 +281,14 @@ export function slug_to_name(slug: string): string {
 }
 
 export function delete_sub(stream_id: number): void {
-    if (!stream_info.get(stream_id)) {
+    const sub = get_sub_by_id(stream_id);
+    if (sub === undefined || !stream_info.get(stream_id)) {
         blueslip.warn("Failed to archive stream " + stream_id.toString());
         return;
     }
-    sub_store.delete_sub(stream_id);
-    stream_info.delete(stream_id);
+    sub.subscribed = false;
+    sub.is_archived = true;
+    stream_info.set_false(stream_id, sub);
 }
 
 export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
@@ -480,11 +481,9 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     // Spectators cannot subscribe to any streams.
     //
     // Note that the correctness of this logic relies on the fact that
-    // one cannot be subscribed to a deactivated stream, and
-    // deactivated streams are automatically made private during the
-    // archive stream process.
+    // one cannot be subscribed to a deactivated stream.
     return (
-        (sub.subscribed || (!current_user.is_guest && !sub.invite_only)) &&
+        (sub.subscribed || (!current_user.is_guest && !(sub.invite_only || sub.is_archived))) &&
         !page_params.is_spectator
     );
 }
@@ -565,6 +564,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
 }
 
 export function can_post_messages_in_stream(stream: StreamSubscription): boolean {
+    if (stream.is_archived) {
+        return false;
+    }
+
     if (page_params.is_spectator) {
         return false;
     }
@@ -629,6 +632,11 @@ export function get_stream_privacy_policy(stream_id: number): string {
         return settings_config.stream_privacy_policy_values.private.code;
     }
     return settings_config.stream_privacy_policy_values.private_with_public_history.code;
+}
+
+export function is_stream_archived(stream_id: number): boolean {
+    const sub = sub_store.get(stream_id);
+    return sub ? sub.is_archived : false;
 }
 
 export function is_web_public(stream_id: number): boolean {
