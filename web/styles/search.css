@@ -74,6 +74,12 @@
         align-self: center;
     }
 
+    .search-input-and-pills.freshly-opened {
+        > .pill {
+            border-color: var(--focus-outline-input-pill);
+        }
+    }
+
     .navbar-search:not(.expanded) {
         right: 0;
 
