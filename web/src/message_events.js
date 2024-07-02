@@ -173,6 +173,7 @@ export function update_messages(events) {
     const messages_to_rerender = [];
     let any_topic_edited = false;
     let changed_narrow = false;
+    let refreshed_current_narrow = false;
     let changed_compose = false;
     let any_message_content_edited = false;
     let any_stream_changed = false;
@@ -285,6 +286,11 @@ export function update_messages(events) {
                 const message = message_store.get(message_id);
                 if (message !== undefined) {
                     event_messages.push(message);
+                } else {
+                    // If we don't have the message locally, we need to
+                    // refresh the current narrow after the update to fetch
+                    // the updated messages.
+                    refreshed_current_narrow = true;
                 }
             }
             // The event.message_ids received from the server are not in sorted order.
@@ -429,6 +435,44 @@ export function update_messages(events) {
                 }
             }
 
+            // If a message was moved to the current narrow and we don't have
+            // the message cached, we need to refresh the narrow to display the message.
+            if (!changed_narrow && refreshed_current_narrow && current_filter) {
+                let is_narrowed_to_new_stream = false;
+                if (stream_changed) {
+                    const new_stream_name = sub_store.get(new_stream_id).name;
+                    is_narrowed_to_new_stream = current_filter.has_operand(
+                        "channel",
+                        new_stream_name,
+                    );
+                } else {
+                    is_narrowed_to_new_stream = current_filter.has_operand(
+                        "channel",
+                        old_stream_name,
+                    );
+                }
+
+                let is_narrowed_to_new_topic = false;
+                if (topic_edited) {
+                    is_narrowed_to_new_topic =
+                        is_narrowed_to_new_stream && current_filter.has_operand("topic", new_topic);
+                } else {
+                    is_narrowed_to_new_topic =
+                        is_narrowed_to_new_stream &&
+                        current_filter.has_operand("topic", orig_topic);
+                }
+
+                if (
+                    is_narrowed_to_new_topic ||
+                    (is_narrowed_to_new_stream && !current_filter.has_operator("topic"))
+                ) {
+                    message_view.show(current_filter.terms(), {
+                        then_select_id: current_selected_id,
+                        trigger: "stream/topic change",
+                    });
+                }
+            }
+
             // Ensure messages that are no longer part of this
             // narrow are deleted and messages that are now part
             // of this narrow are added to the message_list.
@@ -439,7 +483,7 @@ export function update_messages(events) {
             // this should be a loop over all valid message_list_data
             // objects, without the rerender (which will naturally
             // happen in the following code).
-            if (!changed_narrow && current_filter) {
+            if (!changed_narrow && !refreshed_current_narrow && current_filter) {
                 let message_ids_to_remove = [];
                 if (current_filter.can_apply_locally()) {
                     const predicate = current_filter.predicate();
@@ -539,7 +583,7 @@ export function update_messages(events) {
         // large organizations.
 
         for (const list of message_lists.all_rendered_message_lists()) {
-            if (changed_narrow && list === message_lists.current) {
+            if ((changed_narrow || refreshed_current_narrow) && list === message_lists.current) {
                 // Avoid updating current message list if user switched to a different narrow and
                 // we don't want to preserver the rendered state for the current one.
                 continue;
