@@ -130,13 +130,14 @@ function sort_mentioned_in(a: Attachment, b: Attachment): number {
     return -1;
 }
 
+let attachmetFilesWidget: ListWidget.ListWidget<Attachment, Attachment>;
 function render_attachments_ui(): void {
     set_upload_space_stats();
 
     const $uploaded_files_table = $("#uploaded_files_table").expectOne();
     const $search_input = $<HTMLInputElement>("input#upload_file_search");
 
-    ListWidget.create<Attachment>($uploaded_files_table, attachments, {
+    attachmetFilesWidget = ListWidget.create<Attachment>($uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         get_item: ListWidget.default_get_item,
         modifier_html(attachment) {
@@ -151,6 +152,10 @@ function render_attachments_ui(): void {
                 scroll_util.reset_scrollbar(
                     $uploaded_files_table.closest(".progressive-table-wrapper"),
                 );
+                ListWidget.updateActionsColumn(
+                    attachmetFilesWidget.get_total_rows_to_render(),
+                    "#uploaded_files_table_action_column",
+                );
             },
         },
         $parent_container: $("#attachments-settings").expectOne(),
@@ -163,7 +168,10 @@ function render_attachments_ui(): void {
         },
         $simplebar_container: $("#attachments-settings .progressive-table-wrapper"),
     });
-
+    ListWidget.updateActionsColumn(
+        attachmetFilesWidget.get_total_rows_to_render(),
+        "#uploaded_files_table_action_column",
+    );
     scroll_util.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 

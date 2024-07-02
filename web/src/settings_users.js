@@ -133,6 +133,10 @@ function add_value_to_filters(section, key, value) {
     // This hard_redraw will rerun the relevant predicate function
     // and in turn apply the new filters.
     section.list_widget.hard_redraw();
+    ListWidget.updateActionsColumn(
+        section.list_widget.get_total_rows_to_render(),
+        "#admin_deactivated_users_table_action_column",
+    );
 }
 
 function role_selected_handler(event, dropdown, widget) {
@@ -394,6 +398,12 @@ section.deactivated.create_table = (deactivated_users) => {
     );
 
     loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
+
+    ListWidget.updateActionsColumn(
+        section.deactivated.list_widget.get_total_rows_to_render(),
+        "#admin_deactivated_users_table_action_column",
+    );
+
     $("#admin_deactivated_users_table").show();
 };
 
@@ -450,6 +460,10 @@ export function redraw_deactivated_users_list() {
     }
     const deactivated_user_ids = people.get_non_active_human_ids();
     redraw_users_list(section.deactivated, deactivated_user_ids);
+    ListWidget.updateActionsColumn(
+        section.deactivated.list_widget.get_total_rows_to_render(),
+        "#admin_deactivated_users_table_action_column",
+    );
     should_redraw_deactivated_users_list = false;
 }
 

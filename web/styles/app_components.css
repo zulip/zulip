@@ -782,6 +782,11 @@ div.overlay {
     .actions {
         width: 1%;
         white-space: nowrap;
+
+        /* When the on-empty-table class is applied, change width to auto */
+        &.on-empty-table {
+            width: auto;
+        }
     }
 
     & th,

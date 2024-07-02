@@ -81,6 +81,8 @@ function sort_invitee(a: Invite, b: Invite): number {
     return util.strcmp(str1, str2);
 }
 
+let invitationWidget: ListWidget.ListWidget<Invite, Invite>;
+
 function populate_invites(invites_data: {invites: Invite[]}): void {
     if (!meta.loaded) {
         return;
@@ -89,7 +91,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
     add_invited_as_text(invites_data.invites);
 
     const $invites_table = $("#admin_invites_table").expectOne();
-    ListWidget.create($invites_table, invites_data.invites, {
+    invitationWidget = ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
@@ -123,6 +125,12 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
                 const invitee_email_matched = item.email.toLowerCase().includes(value);
                 return referrer_email_matched || referrer_name_matched || invitee_email_matched;
             },
+            onupdate() {
+                ListWidget.updateActionsColumn(
+                    invitationWidget.get_total_rows_to_render(),
+                    "#admin_invites_table_action_column",
+                );
+            },
         },
         $parent_container: $("#admin-invites-list").expectOne(),
         init_sort: sort_invitee,
@@ -138,6 +146,10 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
         $simplebar_container: $("#admin-invites-list .progressive-table-wrapper"),
     });
 
+    ListWidget.updateActionsColumn(
+        invitationWidget.get_total_rows_to_render(),
+        "#admin_invites_table_action_column",
+    );
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
 }
 
@@ -204,6 +216,12 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         success() {
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
+            if (invitationWidget) {
+                ListWidget.updateActionsColumn(
+                    invitationWidget.get_total_rows_to_render(),
+                    "#admin_invites_table_action_column",
+                );
+            }
         },
     });
 }
