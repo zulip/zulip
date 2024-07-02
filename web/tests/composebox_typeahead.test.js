@@ -459,6 +459,7 @@ const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
     reaction_type: "unicode_emoji",
+    is_realm_emoji: false,
     type: "emoji",
 });
 

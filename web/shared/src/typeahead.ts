@@ -52,6 +52,11 @@ export type EmojiSuggestion = Emoji & {
     type: "emoji";
 };
 
+export type BaseEmoji = {emoji_name: string} & (
+    | {is_realm_emoji: false; emoji_code: string}
+    | {is_realm_emoji: true; emoji_code?: undefined}
+);
+
 export function remove_diacritics(s: string): string {
     return s.normalize("NFKD").replace(unicode_marks, "");
 }
@@ -314,7 +319,7 @@ export function triage<T>(
     };
 }
 
-export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string): T[] {
+export function sort_emojis<T extends BaseEmoji>(objs: T[], query: string): T[] {
     // replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
     query = query.toLowerCase();
@@ -326,11 +331,9 @@ export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string)
 
     const popular_set = new Set(popular_emojis);
 
-    function is_popular(obj: EmojiSuggestion): boolean {
+    function is_popular(obj: BaseEmoji): boolean {
         return (
-            obj.reaction_type === "unicode_emoji" &&
-            popular_set.has(obj.emoji_code) &&
-            decent_match(obj.emoji_name)
+            !obj.is_realm_emoji && popular_set.has(obj.emoji_code) && decent_match(obj.emoji_name)
         );
     }
 
@@ -364,7 +367,7 @@ export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string)
     const unicode_emoji_codes = new Set();
     const sorted_unique_results: T[] = [];
     for (const emoji of sorted_results_with_possible_duplicates) {
-        if (emoji.reaction_type !== "unicode_emoji") {
+        if (emoji.is_realm_emoji) {
             sorted_unique_results.push(emoji);
         } else if (
             !unicode_emoji_codes.has(emoji.emoji_code) &&
