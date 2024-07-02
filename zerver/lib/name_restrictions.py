@@ -111,7 +111,6 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "intern",
     "outreachy",
     "gsoc",
-    "gci",
     "externship",
     # Things that sound like security
     "auth",
