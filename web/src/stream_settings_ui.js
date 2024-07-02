@@ -236,7 +236,7 @@ export function add_sub_to_table(sub) {
         // list, so they are more visible.
         stream_ui_updates.row_for_stream_id(sub.stream_id).trigger("click");
         stream_create.reset_created_stream();
-        // goto topic `stream events` of the newly created stream
+        // Go to the newly created stream interleaved view.
         browser_history.go_to_location(hash_util.by_stream_url(sub.stream_id));
         if (stream_create.should_show_first_stream_created_modal()) {
             stream_create.set_first_stream_created_modal_shown();
