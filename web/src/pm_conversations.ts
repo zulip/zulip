@@ -90,6 +90,13 @@ class RecentDirectMessages {
             .map((conversation) => conversation.user_ids_string);
     }
 
+    has_conversation(user_ids_string: string): boolean {
+        // Returns a boolean indicating whether we have a record proving
+        // this particular direct message conversation exists.
+        const recipient_ids_string = people.pm_lookup_key(user_ids_string);
+        return this.recent_message_ids.get(recipient_ids_string) !== undefined;
+    }
+
     initialize(params: StateData["pm_conversations"]): void {
         for (const conversation of params.recent_private_conversations) {
             this.insert(conversation.user_ids, conversation.max_message_id);
