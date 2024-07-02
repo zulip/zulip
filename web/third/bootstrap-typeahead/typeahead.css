@@ -1,6 +1,7 @@
 /* CSS for Bootstrap typeahead */
 
 .dropdown-menu {
+  display: none;
   min-width: 160px;
   list-style: none;
 }
