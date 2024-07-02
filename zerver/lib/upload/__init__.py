@@ -260,6 +260,17 @@ def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> Non
 def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None:
     file_path = user_avatar_path(user_profile)
 
+    final_file_path = upload_backend.get_avatar_path(file_path, medium)
+
+    if settings.LOCAL_AVATARS_DIR is not None:
+        output_path = os.path.join(
+            settings.LOCAL_AVATARS_DIR,
+            final_file_path,
+        )
+
+        if os.path.isfile(output_path):
+            return
+
     image_data, _ = upload_backend.get_avatar_contents(file_path)
 
     if medium:
@@ -267,7 +278,7 @@ def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None
     else:
         resized_avatar = resize_avatar(image_data)
     upload_backend.upload_single_avatar_image(
-        upload_backend.get_avatar_path(file_path, medium),
+        final_file_path,
         user_profile=user_profile,
         image_data=resized_avatar,
         content_type="image/png",

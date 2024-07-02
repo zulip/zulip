@@ -126,12 +126,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         image_data: bytes,
         content_type: Optional[str],
     ) -> None:
-        output_path = os.path.join(
-            assert_is_not_none(settings.LOCAL_AVATARS_DIR),
-            file_path,
-        )
-        if not os.path.isfile(output_path):
-            write_local_file("avatars", file_path, image_data)
+        write_local_file("avatars", file_path, image_data)
 
     @override
     def delete_avatar_image(self, path_id: str) -> None:
