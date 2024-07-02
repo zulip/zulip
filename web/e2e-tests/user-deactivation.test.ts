@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {Page} from "puppeteer";
+import type {ElementHandle, Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
@@ -134,6 +134,108 @@ async function test_bot_deactivation_and_reactivation(page: Page): Promise<void>
     await page.waitForSelector(default_bot_user_row + " .fa-user-times");
 }
 
+async function test_deactivate_user_with_ban_reason(page: Page): Promise<void> {
+    await page.waitForSelector("#settings_overlay_container.show", {visible: true});
+    await page.click("li[data-section='users']");
+    await page.waitForSelector("#admin-user-list.show", {visible: true});
+
+    await page.reload();
+    await page.waitForSelector("#admin-user-list.show", {visible: true});
+    const activate_users_section = ".tab-container .ind-tab[data-tab-key='active']";
+    await page.waitForSelector(activate_users_section, {visible: true});
+    await page.click(activate_users_section);
+
+    const aaron_user_row = await user_row(page, "aaron");
+    await page.waitForSelector(aaron_user_row, {visible: true});
+    await page.waitForSelector(aaron_user_row + " .fa-user-times");
+    await page.click(aaron_user_row + " .deactivate");
+    await common.wait_for_micromodal_to_open(page);
+
+    // Wait for checkbox
+    await page.waitForSelector("#ban_reason_checkbox", {visible: true});
+
+    // Click ban reason checkbox
+    await page.click("#ban_reason_checkbox");
+    await page.waitForSelector("#ban_reason_dropdown", {visible: true});
+
+    await page.click("#id-deactivation-message");
+    await page.waitForSelector("#id-deactivation-message", {visible: true});
+
+    // Choose ban reason
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+
+    // Deactivate user
+    await page.click(".micromodal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
+}
+
+async function get_text(element: ElementHandle): Promise<string> {
+    const text = await (await element.getProperty("value")).jsonValue();
+    assert.ok(typeof text === "string");
+    return text;
+}
+
+async function get_text_from_textarea(page: Page, selector: string): Promise<string> {
+    const elements = await page.$$(selector);
+    const texts = await Promise.all(elements.map(async (element) => get_text(element)));
+    return texts.join("").trim();
+}
+
+async function test_ban_reason(page: Page): Promise<void> {
+    // This test depends on test_deactivate_user_with_ban_reason
+    // First we open the deactivated users section
+    await page.reload();
+    await page.waitForSelector("#admin-user-list.show", {visible: true});
+    const deactivated_users_section = ".tab-container .ind-tab[data-tab-key='deactivated']";
+    await page.waitForSelector(deactivated_users_section, {visible: true});
+    await page.click(deactivated_users_section);
+
+    const aaron_user_row = await user_row(page, "aaron");
+    await page.waitForSelector(aaron_user_row, {visible: true});
+    await page.waitForSelector(aaron_user_row + " .ban_reason");
+
+    // Click to inspect aarons ban reason
+    await page.click(aaron_user_row + " .ban_reason");
+    await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector("#ban_reason_field_textarea");
+
+    // Verify it was correctly stored
+    assert.strictEqual(
+        await get_text_from_textarea(page, "#ban_reason_field_textarea"),
+        "Disruptive behavior",
+    );
+
+    // Delete it
+    const ban_reason_text_area = await page.$("#ban_reason_field_textarea");
+    if (ban_reason_text_area) {
+        // These three clicks open the text area and select the whole text to delete it
+        await ban_reason_text_area.click({clickCount: 3});
+
+        // Change it
+        await ban_reason_text_area.press("Backspace");
+        await ban_reason_text_area.type("This user did not comply with the privacy policy");
+    }
+
+    // Save it
+    await page.click(".micromodal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
+    await page.reload();
+
+    // Click to inspect aarons ban reason
+    await page.click(aaron_user_row + " .ban_reason");
+    await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector("#ban_reason_field_textarea");
+
+    // Verify it was correctly stored
+    assert.strictEqual(
+        await get_text_from_textarea(page, "#ban_reason_field_textarea"),
+        "This user did not comply with the privacy policy",
+    );
+}
+
 async function user_deactivation_test(page: Page): Promise<void> {
     await common.log_in(page);
     await navigate_to_user_list(page);
@@ -141,6 +243,8 @@ async function user_deactivation_test(page: Page): Promise<void> {
     await test_reactivate_user(page);
     await test_deactivated_users_section(page);
     await test_bot_deactivation_and_reactivation(page);
+    await test_deactivate_user_with_ban_reason(page);
+    await test_ban_reason(page);
 }
 
 common.run_test(user_deactivation_test);

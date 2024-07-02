@@ -5,6 +5,7 @@ import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
+import render_settings_ban_reason from "../templates/edit_ban_reason.hbs";
 
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
@@ -12,6 +13,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as people from "./people";
+import {usual_ban_reasons} from "./people";
 import {invite_schema} from "./settings_invites";
 import {realm} from "./state_data";
 
@@ -48,7 +50,9 @@ export function confirm_deactivation(
                 admin_email: people.my_current_email(),
                 realm_url,
                 realm_name,
+                usual_ban_reasons,
             };
+
             const html_body = render_settings_deactivation_user_modal(opts);
 
             function set_email_field_visibility(dialog_widget_id: string): void {
@@ -66,6 +70,44 @@ export function confirm_deactivation(
                 });
             }
 
+            function ban_reason_dropdown_visibility(dialog_widget_id: string): void {
+                const $ban_reason_checkbox = $(`#${dialog_widget_id}`).find(".ban_reason");
+
+                const $ban_reason_dropdown = $(`#${dialog_widget_id}`).find(".choose-ban-reason");
+
+                $ban_reason_dropdown.hide();
+
+                $ban_reason_checkbox.on("change", () => {
+                    if ($ban_reason_checkbox.is(":checked")) {
+                        $ban_reason_dropdown.show();
+                    } else {
+                        $ban_reason_dropdown.hide();
+                    }
+                });
+            }
+
+            function ban_reason_field_visibility(dialog_widget_id: string): void {
+                const $ban_reason_dropdown = $(`#${dialog_widget_id}`).find(".choose-ban-reason");
+
+                const $ban_reason_field = $(`#${dialog_widget_id}`).find(".ban-reason-body");
+
+                $ban_reason_field.hide();
+
+                $ban_reason_dropdown.on("change", () => {
+                    if ($("#id-deactivation-message").val() === "8") {
+                        $ban_reason_field.show();
+                    } else {
+                        $ban_reason_field.hide();
+                    }
+                });
+            }
+
+            function post_render_functions(): void {
+                set_email_field_visibility("deactivate-user-modal");
+                ban_reason_dropdown_visibility("deactivate-user-modal");
+                ban_reason_field_visibility("deactivate-user-modal");
+            }
+
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
@@ -76,7 +118,7 @@ export function confirm_deactivation(
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
-                post_render: set_email_field_visibility,
+                post_render: post_render_functions,
                 loading_spinner,
             });
         },
@@ -133,6 +175,38 @@ export function confirm_reactivation(
         html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
         html_body,
+        on_click: handle_confirm,
+        loading_spinner,
+    });
+}
+
+export function edit_ban_reason(
+    user_id: number,
+    handle_confirm: () => void,
+    loading_spinner: boolean,
+): void {
+    const user = people.get_by_user_id(user_id);
+    let ban_reason = user.ban_reason;
+    if (ban_reason === undefined) {
+        ban_reason = null;
+    }
+
+    const opts: {
+        username: string;
+        ban_reason: string | null;
+    } = {
+        username: user.full_name,
+        ban_reason,
+    };
+
+    const html_body = render_settings_ban_reason(opts);
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "{name} Ban Reason"}, {name: user.full_name}),
+        help_link: "/help/deactivate-or-reactivate-a-user#deactivating-a-user",
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Save changes"}),
+        id: "deactivate-user-modal",
         on_click: handle_confirm,
         loading_spinner,
     });

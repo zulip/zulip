@@ -943,6 +943,9 @@ def apply_event(
             if not person["is_bot"]:
                 person["profile_data"] = {}
             state["raw_users"][person_user_id] = person
+            if user_profile.is_realm_admin:
+                # When a person is created, they are active hence the ban reason is empty
+                state["raw_users"][person_user_id]["ban_reason"] = ""
         elif event["op"] == "update":
             is_me = person_user_id == user_profile.id
 
@@ -998,8 +1001,22 @@ def apply_event(
 
                     if was_admin and not now_admin:
                         state["realm_bots"] = []
+                        # A person who is no longer and admin should not know the ban reason
+                        state["raw_users"] = {
+                            k: {key: value for key, value in v.items() if key != "ban_reason"}
+                            for k, v in state["raw_users"].items()
+                        }
+
                     if not was_admin and now_admin:
                         state["realm_bots"] = get_owned_bot_dicts(user_profile)
+                        state["raw_users"] = get_users_for_api(
+                            user_profile.realm,
+                            user_profile,
+                            client_gravatar=client_gravatar,
+                            user_avatar_url_field_optional=False,
+                            include_custom_profile_fields=user_profile is not None,
+                            user_list_incomplete=user_list_incomplete,
+                        )
 
             if person_user_id in state["raw_users"]:
                 p = state["raw_users"][person_user_id]

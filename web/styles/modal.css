@@ -259,10 +259,12 @@
     }
 }
 
-.email_field {
+.email_field,
+.ban_reason_field {
     margin-top: 10px;
 
-    .email_field_textarea {
+    .email_field_textarea,
+    .ban_reason_field_textarea {
         width: 97%;
         resize: vertical;
         margin-bottom: 10px;
@@ -273,7 +275,8 @@
         padding-top: 10px;
     }
 
-    .email-body {
+    .email-body,
+    .ban-reason-body {
         margin-left: 20px;
         margin-top: 20px;
     }

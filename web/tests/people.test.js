@@ -556,6 +556,12 @@ test_people("my_custom_profile_data", () => {
     assert.equal(people.my_custom_profile_data(4), "My phone number");
 });
 
+test_people("set_ban_reason", () => {
+    people.add_active_user(stewie);
+    people.setBanReason(stewie.user_id, "Ban Reason");
+    assert.equal(stewie.ban_reason, "Ban Reason");
+});
+
 test_people("get_custom_fields_by_type", () => {
     people.add_active_user(stewie);
     const person = people.get_by_user_id(stewie.user_id);

@@ -1236,6 +1236,9 @@ realm_user_person_types = dict(
             ("user_id", int),
             ("is_active", bool),
         ],
+        optional_keys=[
+            ("ban_reason", str),
+        ],
     ),
 )
 
@@ -1244,6 +1247,9 @@ realm_user_update_event = event_dict_type(
         ("type", Equals("realm_user")),
         ("op", Equals("update")),
         ("person", UnionType(list(realm_user_person_types.values()))),
+    ],
+    optional_keys=[
+        ("ban_reason", str),
     ],
 )
 _check_realm_user_update = make_checker(realm_user_update_event)

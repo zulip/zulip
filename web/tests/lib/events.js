@@ -571,6 +571,16 @@ exports.fixtures = {
         },
     },
 
+    realm_user__update_ban_reason: {
+        type: "realm_user",
+        op: "update",
+        person: {
+            user_id: test_user.user_id,
+            full_name: "Bob NewName",
+        },
+        ban_reason: "Ban Reason",
+    },
+
     realm_user_settings_defaults__emojiset: {
         type: "realm_user_settings_defaults",
         op: "update",

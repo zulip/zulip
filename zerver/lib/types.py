@@ -320,6 +320,7 @@ class RawUserDict(TypedDict):
     bot_type: Optional[int]
     long_term_idle: bool
     email_address_visibility: int
+    ban_reason: Optional[str]
 
 
 class RemoteRealmDictValue(TypedDict):

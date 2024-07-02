@@ -1,0 +1,12 @@
+<p>
+    {{#tr}}
+        This is the reason why <z-user></z-user> was deactivated. As an admin, you can alter this
+        message.
+        {{#*inline "z-user"}}<strong>{{username}}</strong>{{#if email}} &lt;{{email}}&gt;{{/if}}{{/inline}}
+    {{/tr}}
+</p>
+<div class="ban_reason_field">
+    <div class="ban-reason-body">
+        <textarea class="ban_reason_field_textarea settings_textarea" rows="8" maxlength="2000" id="ban_reason_field_textarea">{{ban_reason}}</textarea>
+    </div>
+</div>
