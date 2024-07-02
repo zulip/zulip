@@ -1515,5 +1515,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": ""
+  "{username} reacted with {emoji_name}": "",
+  "New organization icon": "Bagong icon ng organisasyon",
+  "New organization logo": "Bagong logo ng organisasyon",
+  "New profile picture": "Bagong larawan ng profile"
 }

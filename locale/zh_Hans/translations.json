@@ -1607,5 +1607,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "{username} [发言道]({link_to_message})：",
-  "{username} reacted with {emoji_name}": "{username} 已添加 {emoji_name} "
+  "{username} reacted with {emoji_name}": "{username} 已添加 {emoji_name} ",
+  "New organization icon": "新的组织图标",
+  "New organization logo": "新的组织标志",
+  "New profile picture": "新的个人资料照片"
 }

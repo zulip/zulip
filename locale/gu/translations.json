@@ -1654,5 +1654,8 @@
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (મૂળભૂત)",
   "{user_time} local time": "{user_time} સ્થાનિક સમય",
   "{username} [said]({link_to_message}):": "{username} [કહ્યું]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} ને {emoji_name} સાથે પ્રતિક્રિયા આપી."
+  "{username} reacted with {emoji_name}": "{username} ને {emoji_name} સાથે પ્રતિક્રિયા આપી.",
+  "New organization icon": "નવો સંગઠન આઇકન",
+  "New organization logo": "નવો સંગઠન લોગો",
+  "New profile picture": "નવી પ્રોફાઇલ તસવીર"
 }

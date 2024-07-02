@@ -1586,5 +1586,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "{username} [dywedodd]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "Adweithiodd {username} gyda {emoji_name}"
+  "{username} reacted with {emoji_name}": "Adweithiodd {username} gyda {emoji_name}",
+  "New organization icon": "Eicon sefydliad newydd",
+  "New organization logo": "Logo sefydliad newydd",
+  "New profile picture": "Llun proffil newydd"
 }

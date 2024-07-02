@@ -1551,5 +1551,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "{username} [zei]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} reageerde met {emoji_name}"
+  "{username} reacted with {emoji_name}": "{username} reageerde met {emoji_name}",
+  "New organization icon": "Nieuw organisatiepictogram",
+  "New organization logo": "Nieuw organisatielogo",
+  "New profile picture": "Nieuwe profielfoto"
 }

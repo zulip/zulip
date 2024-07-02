@@ -43,6 +43,7 @@ import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
+import * as upload_widget from "./upload_widget";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
@@ -635,10 +636,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
             formData.append("config_data", JSON.stringify(config_data));
         }
 
-        const $file_input = $("#bot-edit-form").find(".edit_bot_avatar_file_input");
-        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
-            formData.append("file-" + i, file);
-        }
+        formData.append("file-0", upload_widget.get_edited_file());
 
         const $submit_btn = $("#user-profile-modal .dialog_submit_button");
         const $cancel_btn = $("#user-profile-modal .dialog_exit_button");

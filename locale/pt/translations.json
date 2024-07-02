@@ -1645,5 +1645,8 @@
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (padrão)",
   "{user_time} local time": "{user_time} hora local",
   "{username} [said]({link_to_message}):": "{username} [disse]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} reagiu com {emoji_name}"
+  "{username} reacted with {emoji_name}": "{username} reagiu com {emoji_name}",
+  "New organization icon": "Novo ícone de organização",
+  "New organization logo": "Novo logotipo de organização",
+  "New profile picture": "Nova foto de perfil"
 }

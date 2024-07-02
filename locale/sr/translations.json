@@ -1650,5 +1650,8 @@
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (предефинисано)",
   "{user_time} local time": "{user_time} локално време",
   "{username} [said]({link_to_message}):": "{username} [је рекао]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} је реаговао са {emoji_name}"
+  "{username} reacted with {emoji_name}": "{username} је реаговао са {emoji_name}",
+  "New organization icon": "Нова икона организације",
+  "New organization logo": "Нови лого организације",
+  "New profile picture": "Нова слика профила"
 }

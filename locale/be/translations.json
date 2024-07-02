@@ -1666,5 +1666,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": ""
+  "{username} reacted with {emoji_name}": "",
+  "New organization icon": "Новая абразок арганізацыі",
+  "New organization logo": "Новы лагатып арганізацыі",
+  "New profile picture": "Новая фатаграфія профілю"
 }

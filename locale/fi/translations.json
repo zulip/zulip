@@ -1666,5 +1666,8 @@
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (oletus)",
   "{user_time} local time": "{user_time} paikallista aikaa",
   "{username} [said]({link_to_message}):": "{username} [kirjoitti]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} reagoi emojilla {emoji_name}"
+  "{username} reacted with {emoji_name}": "{username} reagoi emojilla {emoji_name}",
+  "New organization icon": "Uusi organisaation kuvake",
+  "New organization logo": "Uusi organisaation logo",
+  "New profile picture": "Uusi profiilikuva"
 }

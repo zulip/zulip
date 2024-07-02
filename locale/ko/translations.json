@@ -1578,5 +1578,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "{username} [말함]({link_to_message}):",
-  "{username} reacted with {emoji_name}": " {emoji_name}에 반응한 {username}"
+  "{username} reacted with {emoji_name}": " {emoji_name}에 반응한 {username}",
+  "New organization icon": "새 조직 아이콘",
+  "New organization logo": "새 조직 로고",
+  "New profile picture": "새 프로필 사진"
 }

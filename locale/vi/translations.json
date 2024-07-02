@@ -1585,5 +1585,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": "{username} đã phản ứng bằng {emoji_name}"
+  "{username} reacted with {emoji_name}": "{username} đã phản ứng bằng {emoji_name}",
+  "New organization icon": "Biểu tượng tổ chức mới",
+  "New organization logo": "Logo tổ chức mới",
+  "New profile picture": "Ảnh hồ sơ mới"
 }

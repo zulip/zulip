@@ -1520,5 +1520,8 @@
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": ""
+  "{username} reacted with {emoji_name}": "",
+  "New organization icon": "Nauja organizacijos piktograma",
+  "New organization logo": "Naujas organizacijos logotipas",
+  "New profile picture": "Nauja profilio nuotrauka"
 }
