@@ -1456,13 +1456,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, stream, new_topic_name)
-        self.assert_length(messages, 4)
+        self.assert_length(messages, 3)
         self.assertEqual(
             messages[2].content,
-            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
-        )
-        self.assertEqual(
-            messages[3].content,
             f"This topic was moved here from #**public stream>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
@@ -1477,13 +1473,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, stream, new_resolved_topic_name)
-        self.assert_length(messages, 6)
+        self.assert_length(messages, 4)
         self.assertEqual(
-            messages[4].content,
-            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
-        )
-        self.assertEqual(
-            messages[5].content,
+            messages[3].content,
             f"This topic was moved here from #**public stream>{new_topic_name}** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
@@ -1752,6 +1744,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             old_topic_name=original_topic,
             new_topic_name=resolve_topic,
             changed_messages=changed_messages,
+            pre_truncation_new_topic_name=resolve_topic,
         )
 
         topic_messages = get_topic_messages(admin_user, stream, resolve_topic)

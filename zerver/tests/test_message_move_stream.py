@@ -1441,13 +1441,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, new_stream, new_topic_name)
-        self.assert_length(messages, 5)
+        self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
-            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
-        )
-        self.assertEqual(
-            messages[4].content,
             f"This topic was moved here from #**{first_stream.name}>test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
@@ -1464,13 +1460,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, new_stream, new_topic_name)
-        self.assert_length(messages, 7)
+        self.assert_length(messages, 5)
         self.assertEqual(
-            messages[5].content,
-            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
-        )
-        self.assertEqual(
-            messages[6].content,
+            messages[4].content,
             f"This topic was moved here from #**{second_stream.name}>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
