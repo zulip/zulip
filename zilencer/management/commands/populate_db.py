@@ -334,8 +334,7 @@ class Command(ZulipBaseCommand):
                 string_id="zulip",
                 name="Zulip Dev",
                 emails_restricted_to_domains=False,
-                description="The Zulip development environment default organization."
-                "  It's great for testing!",
+                description="Welcome to Zulip",
                 invite_required=False,
                 plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                 org_type=Realm.ORG_TYPES["business"]["id"],
