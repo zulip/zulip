@@ -191,39 +191,43 @@ function handle_operators_supporting_id_based_api(data) {
         return data;
     }
 
-    data.narrow = JSON.parse(data.narrow);
-    data.narrow = data.narrow.map((filter) => {
-        if (operators_supporting_ids.has(filter.operator)) {
-            filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
+    const parsed_narrow_data = JSON.parse(data.narrow);
+
+    const narrow_filter = [];
+    for (const data of parsed_narrow_data) {
+        const narrow_item = data;
+        if (operators_supporting_ids.has(data.operator)) {
+            narrow_item.operand = people.emails_strings_to_user_ids_array(data.operand);
         }
 
-        if (operators_supporting_id.has(filter.operator)) {
-            if (filter.operator === "id") {
+        if (operators_supporting_id.has(data.operator)) {
+            if (data.operator === "id") {
                 // The message ID may not exist locally,
                 // so send the filter to the server as is.
-                return filter;
+                narrow_filter.push(narrow_item);
+                continue;
             }
 
-            if (filter.operator === "stream") {
-                const stream_id = stream_data.get_stream_id(filter.operand);
+            if (data.operator === "stream") {
+                const stream_id = stream_data.get_stream_id(data.operand);
                 if (stream_id !== undefined) {
-                    filter.operand = stream_id;
+                    narrow_item.operand = stream_id;
                 }
 
-                return filter;
+                narrow_filter.push(narrow_item);
+                continue;
             }
 
             // The other operands supporting object IDs all work with user objects.
-            const person = people.get_by_email(filter.operand);
+            const person = people.get_by_email(data.operand);
             if (person !== undefined) {
-                filter.operand = person.user_id;
+                narrow_item.operand = person.user_id;
             }
         }
+        narrow_filter.push(narrow_item);
+    }
 
-        return filter;
-    });
-
-    data.narrow = JSON.stringify(data.narrow);
+    data.narrow = JSON.stringify(narrow_filter);
     return data;
 }
 
