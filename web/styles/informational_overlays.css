@@ -49,6 +49,10 @@
     & td.operator {
         font-size: 0.9em;
     }
+
+    .poll-question-header {
+        display: inline;
+    }
 }
 
 .hotkeys_table {
