@@ -17,8 +17,8 @@ export type Recipient =
       });
 type TypingStatusWorker = {
     get_current_time: () => number;
-    notify_server_start: (recipient: Recipient) => void;
-    notify_server_stop: (recipient: Recipient) => void;
+    notify_server_composing_start: (recipient: Recipient) => void;
+    notify_server_composing_stop: (recipient: Recipient) => void;
 };
 
 type TypingStatusState = {
@@ -53,18 +53,18 @@ function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
 }
 
 /** Exported only for tests. */
-export let state: TypingStatusState | null = null;
+export let composing_state: TypingStatusState | null = null;
 
 /** Exported only for tests. */
-export function stop_last_notification(worker: TypingStatusWorker): void {
-    assert(state !== null, "State object should not be null here.");
-    clearTimeout(state.idle_timer);
-    worker.notify_server_stop(state.current_recipient);
-    state = null;
+export function stop_last_notification_for_composing(worker: TypingStatusWorker): void {
+    assert(composing_state !== null, "State object should not be null here.");
+    clearTimeout(composing_state.idle_timer);
+    worker.notify_server_composing_stop(composing_state.current_recipient);
+    composing_state = null;
 }
 
 /** Exported only for tests. */
-export function start_or_extend_idle_timer(
+export function start_or_extend_idle_timer_for_composing(
     worker: TypingStatusWorker,
     typing_stopped_wait_period: number,
 ): ReturnType<typeof setTimeout> {
@@ -73,40 +73,48 @@ export function start_or_extend_idle_timer(
         // if we've been idle, we need to tell folks, and if
         // our current recipients has changed, previous code will
         // have stopped the timer.
-        stop_last_notification(worker);
+        stop_last_notification_for_composing(worker);
     }
 
-    if (state?.idle_timer) {
-        clearTimeout(state.idle_timer);
+    if (composing_state?.idle_timer) {
+        clearTimeout(composing_state.idle_timer);
     }
     return setTimeout(on_idle_timeout, typing_stopped_wait_period);
 }
 
-function set_next_start_time(current_time: number, typing_started_wait_period: number): void {
-    assert(state !== null, "State object should not be null here.");
-    state.next_send_start_time = current_time + typing_started_wait_period;
+function set_next_start_time_for_composing(
+    current_time: number,
+    typing_started_wait_period: number,
+): void {
+    assert(composing_state !== null, "State object should not be null here.");
+    composing_state.next_send_start_time = current_time + typing_started_wait_period;
 }
 
-function actually_ping_server(
+function actually_ping_server_for_composing(
     worker: TypingStatusWorker,
     recipient: Recipient,
     current_time: number,
     typing_started_wait_period: number,
 ): void {
-    worker.notify_server_start(recipient);
-    set_next_start_time(current_time, typing_started_wait_period);
+    worker.notify_server_composing_start(recipient);
+    set_next_start_time_for_composing(current_time, typing_started_wait_period);
 }
 
 /** Exported only for tests. */
-export function maybe_ping_server(
+export function maybe_ping_server_for_composing(
     worker: TypingStatusWorker,
     recipient: Recipient,
     typing_started_wait_period: number,
 ): void {
-    assert(state !== null, "State object should not be null here.");
+    assert(composing_state !== null, "State object should not be null here.");
     const current_time = worker.get_current_time();
-    if (current_time > state.next_send_start_time) {
-        actually_ping_server(worker, recipient, current_time, typing_started_wait_period);
+    if (current_time > composing_state.next_send_start_time) {
+        actually_ping_server_for_composing(
+            worker,
+            recipient,
+            current_time,
+            typing_started_wait_period,
+        );
     }
 }
 
@@ -134,20 +142,23 @@ export function maybe_ping_server(
  *   * Stream message: An Object containing stream_id, topic and message_type="stream".
  *   * No message is being composed: `null`
  */
-export function update(
+export function update_composing_status(
     worker: TypingStatusWorker,
     new_recipient: Recipient | null,
     typing_started_wait_period: number,
     typing_stopped_wait_period: number,
 ): void {
-    if (state !== null) {
-        if (same_recipient(new_recipient, state.current_recipient)) {
+    if (composing_state !== null) {
+        if (same_recipient(new_recipient, composing_state.current_recipient)) {
             // Nothing has really changed, except we may need
             // to send a ping to the server.
-            maybe_ping_server(worker, new_recipient!, typing_started_wait_period);
+            maybe_ping_server_for_composing(worker, new_recipient!, typing_started_wait_period);
 
             // We can also extend out our idle time.
-            state.idle_timer = start_or_extend_idle_timer(worker, typing_stopped_wait_period);
+            composing_state.idle_timer = start_or_extend_idle_timer_for_composing(
+                worker,
+                typing_stopped_wait_period,
+            );
 
             return;
         }
@@ -155,7 +166,7 @@ export function update(
         // We apparently stopped talking to our old recipients,
         // so we must stop the old notification.  Don't return
         // yet, because we may have new recipients.
-        stop_last_notification(worker);
+        stop_last_notification_for_composing(worker);
     }
 
     if (new_recipient === null) {
@@ -166,11 +177,16 @@ export function update(
 
     // We just started talking to these recipients, so notify
     // the server.
-    state = {
+    composing_state = {
         current_recipient: new_recipient,
         next_send_start_time: 0,
-        idle_timer: start_or_extend_idle_timer(worker, typing_stopped_wait_period),
+        idle_timer: start_or_extend_idle_timer_for_composing(worker, typing_stopped_wait_period),
     };
     const current_time = worker.get_current_time();
-    actually_ping_server(worker, new_recipient, current_time, typing_started_wait_period);
+    actually_ping_server_for_composing(
+        worker,
+        new_recipient,
+        current_time,
+        typing_started_wait_period,
+    );
 }
