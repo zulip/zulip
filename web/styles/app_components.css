@@ -938,6 +938,14 @@ div.overlay {
     }
 }
 
+.zulip-icon-lock {
+    /* The lock icon is bottom heavy, so to make it
+       appear better aligned, we pull it up by a
+       uniform margin throughout the UI. */
+    /* 3.5px at 16px/1em */
+    margin-top: -0.2188em !important;
+}
+
 /* This includes css needed to display messages in an overlay. */
 .overlay-messages-container {
     position: relative;
