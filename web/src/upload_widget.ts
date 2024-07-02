@@ -171,6 +171,21 @@ const image_editor_options: ImageEditorOptions = {
     },
 };
 
+async function is_image_scalable(file: File): Promise<boolean> {
+    return new Promise((resolve) => {
+        const image = new Image();
+        image.addEventListener("load", function () {
+            if (image_editor_options.cropperOptions?.aspectRatio === 1) {
+                resolve(this.width !== this.height);
+            } else {
+                // aspect ratio is 4
+                resolve(this.width / this.height !== 4);
+            }
+        });
+        image.src = URL.createObjectURL(file);
+    });
+}
+
 async function scale_image(file: File): Promise<File> {
     return new Promise((resolve, reject) => {
         const image = new Image();
@@ -242,11 +257,13 @@ export function build_widget(
     let reset_scale = false;
     let edited = false;
     let alternate_button = false;
-    function accept(file: File): void {
+    let scalable = true;
+    async function accept(file: File): Promise<void> {
         if (image_editor_options.cropperOptions && image_editor_options.actions) {
             image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
             image_editor_options.actions.cropSquare = cropper_options.cropSquare;
         }
+        scalable = await is_image_scalable(file);
         $file_name_field.text(file.name);
         if ($preview_text && $preview_image) {
             $preview_image.addClass("upload_widget_image_preview");
@@ -264,12 +281,14 @@ export function build_widget(
                 $other_elements_to_hide?.hide();
                 $preview_text.show();
                 $save_button.show();
-                if (!alternate_button) {
-                    $scale_to_fit_button.show();
-                    $reset_scale_to_fit_button.hide();
-                } else {
-                    $scale_to_fit_button.hide();
-                    $reset_scale_to_fit_button.show();
+                if (scalable) {
+                    if (!alternate_button) {
+                        $scale_to_fit_button.show();
+                        $reset_scale_to_fit_button.hide();
+                    } else {
+                        $scale_to_fit_button.hide();
+                        $reset_scale_to_fit_button.show();
+                    }
                 }
                 $clear_button.show();
 
@@ -296,9 +315,9 @@ export function build_widget(
                                 uppy.removeFile(fileID);
                                 uppy.close();
                                 if (reset_scale) {
-                                    accept(original_file);
+                                    void accept(original_file);
                                 } else {
-                                    accept(edited_file);
+                                    void accept(edited_file);
                                 }
                                 reset_scale = !reset_scale;
                             } else {
@@ -410,7 +429,7 @@ export function build_widget(
                     void scale_image(original_file).then((scaled_file) => {
                         edited_file = scaled_file;
                     });
-                    accept(original_file);
+                    void accept(original_file);
                 }
             }
         } else {
@@ -460,6 +479,7 @@ export function build_direct_upload_widget(
     let first = true;
     let reset_scale = false;
     let edited = false;
+    let scalable = true;
     function submit(): void {
         $(".uppy-DashboardContent-save").trigger("click");
     }
@@ -473,7 +493,7 @@ export function build_direct_upload_widget(
         first = true;
     }
 
-    function accept(file: File): void {
+    async function accept(file: File): Promise<void> {
         $input_error.hide();
         if (first) {
             first = false;
@@ -482,7 +502,7 @@ export function build_direct_upload_widget(
                 html_body: "<div id='ImageEditorDiv'></div>",
                 html_submit_button: `${$t_html({
                     defaultMessage: "Save changes",
-                })} <button class='modal__btn direct_widget_save' id='scale_to_fit'>Scale to fit</button> <button class='modal__btn hide direct_widget_save' id='reset_scale_to_fit'>Reset scale</button>`,
+                })} <button class='modal__btn hide direct_widget_save' id='scale_to_fit'>Scale to fit</button> <button class='modal__btn hide direct_widget_save' id='reset_scale_to_fit'>Reset scale</button>`,
                 on_click: submit,
                 on_hidden: clear,
             });
@@ -510,6 +530,11 @@ export function build_direct_upload_widget(
                 image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
                 image_editor_options.actions.cropSquare = cropper_options.cropSquare;
             }
+
+            scalable = await is_image_scalable(file);
+            if (scalable) {
+                $scaleButton.show();
+            }
         }
 
         uppy = new Uppy({
@@ -534,9 +559,9 @@ export function build_direct_upload_widget(
                         uppy.removeFile(fileID);
                         uppy.close();
                         if (reset_scale) {
-                            accept(original_file);
+                            void accept(original_file);
                         } else {
-                            accept(edited_file);
+                            void accept(edited_file);
                         }
                         reset_scale = !reset_scale;
                     } else {
@@ -600,7 +625,7 @@ export function build_direct_upload_widget(
                     void scale_image(original_file).then((scaled_file) => {
                         edited_file = scaled_file;
                     });
-                    accept(original_file);
+                    void accept(original_file);
                 }
             }
         } else {
