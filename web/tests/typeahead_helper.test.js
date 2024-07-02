@@ -834,34 +834,15 @@ test("render_stream", ({mock_template}) => {
     // Test render_stream with short description
     let rendered = false;
     const stream = {
-        description: "This is a short description.",
+        description: "This is the description of the test stream.",
+        rendered_description: "This is the description of the test stream.",
         stream_id: 42,
-        name: "Short description",
+        name: "test stream",
     };
 
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.stream, stream);
-        assert.equal(args.secondary, stream.description);
-        rendered = true;
-        return "typeahead-item-stub";
-    });
-    assert.equal(th.render_stream(stream), "typeahead-item-stub");
-    assert.ok(rendered);
-});
-
-test("render_stream w/long description", ({mock_template}) => {
-    // Test render_stream with long description
-    let rendered = false;
-    const stream = {
-        description: "This is a very very very very very long description.",
-        stream_id: 43,
-        name: "Long description",
-    };
-
-    mock_template("typeahead_list_item.hbs", false, (args) => {
-        assert.equal(args.stream, stream);
-        const short_desc = stream.description.slice(0, 35);
-        assert.equal(args.secondary, short_desc + "...");
+        assert.equal(args.secondary, stream.rendered_description);
         rendered = true;
         return "typeahead-item-stub";
     });

@@ -804,6 +804,7 @@ strong {
             padding: 3px 10px;
             gap: 5px;
             font-weight: normal;
+            max-width: 292px;
             line-height: 20px;
             color: var(--color-dropdown-item);
             white-space: nowrap;
@@ -837,6 +838,12 @@ strong {
 
             .typeahead-text-container {
                 align-self: center;
+
+                &.has_rendered_markdown {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
 
                 & > * {
                     margin-right: 3px;
@@ -1354,17 +1361,16 @@ div.focused-message-list {
 
     .active {
         .unsubscribed_icon {
-            display: block;
+            visibility: visible;
             float: right;
             margin-top: 5px;
-            margin-right: -12px;
-            font-size: 0.8em;
             color: hsl(96deg 7% 73%);
         }
     }
 
     .unsubscribed_icon {
-        display: none;
+        visibility: hidden;
+        font-size: 0.8em;
     }
 }
 

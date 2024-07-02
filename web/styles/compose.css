@@ -151,6 +151,10 @@
 .autocomplete_secondary {
     opacity: 0.8;
     font-size: 85%;
+
+    & code {
+        display: inline-block;
+    }
 }
 
 .active .autocomplete_secondary {
