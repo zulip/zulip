@@ -159,6 +159,7 @@ class HomeTest(ZulipTestCase):
         "realm_embedded_bots",
         "realm_emoji",
         "realm_enable_guest_user_indicator",
+        "realm_enable_guest_user_dm_warning",
         "realm_enable_read_receipts",
         "realm_enable_spectator_access",
         "realm_filters",

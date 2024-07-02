@@ -4809,6 +4809,13 @@ paths:
                                         guest users to prominently highlight their status.
 
                                         **Changes**: New in Zulip 8.0 (feature level 216).
+                                    enable_guest_user_dm_warning:
+                                      type: boolean
+                                      description: |
+                                        Whether clients should display a warning when a user is composing
+                                        a DM to a guest user in this organization.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 293).
                                     can_access_all_users_group:
                                       type: integer
                                       description: |
@@ -16590,6 +16597,15 @@ paths:
                           guest users to prominently highlight their status.
 
                           **Changes**: New in Zulip 8.0 (feature level 216).
+                      realm_enable_guest_user_dm_warning:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether clients should display a warning when a user is composing
+                          a DM to a guest user in this organization.
+
+                          **Changes**: New in Zulip 10.0 (feature level 293).
                       realm_can_access_all_users_group:
                         type: integer
                         description: |
