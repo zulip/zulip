@@ -587,9 +587,18 @@ li.active-sub-filter {
     display: grid;
     grid-template-areas: "selected-home-view";
     line-height: var(--line-height-sidebar-row);
+    /* Explicitly ensure parity with the line-height
+       for the sake of low-resolution screens, whose
+       font-rendering and rounding may cause icons
+       to appear out of alignment. */
+    grid-auto-rows: var(--line-height-sidebar-row);
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
+            /* Again, for the sake of low-resolution screens,
+               we'll let the actual label take 1 as a line-height
+               value, and allow grid to handle the alignment. */
+            line-height: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -641,17 +650,6 @@ li.top_left_scheduled_messages {
         /* Use display: grid to preserve the grid
            layout when visible. */
         display: grid;
-    }
-}
-
-.top_left_row {
-    /* The row grid for the outer .top_left_row
-       is chiefly for lefthand spacing and placing
-       the inner row content and vdots. */
-    grid-template-columns: 7px 0 minmax(0, 1fr) 0 30px 0;
-
-    .sidebar-menu-icon {
-        grid-area: ending-anchor-element;
     }
 }
 
@@ -729,6 +727,21 @@ li.top_left_scheduled_messages {
        (which alters the box size) or `margin` (which notoriously bleeds outside
        of the element it's defined on). */
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+}
+
+.top_left_row {
+    /* We stretch the items on the overall
+       nav row, so there's no unclickable
+       gaps between nav rows. */
+    align-items: stretch;
+    /* The row grid for the outer .top_left_row
+       is chiefly for lefthand spacing and placing
+       the inner row content and vdots. */
+    grid-template-columns: 7px 0 minmax(0, 1fr) 0 30px 0;
+
+    .sidebar-menu-icon {
+        grid-area: ending-anchor-element;
+    }
 }
 
 #direct-messages-section-header,
@@ -974,6 +987,11 @@ li.top_left_scheduled_messages {
        so it remains hidden otherwise. */
     justify-content: center;
     text-align: center;
+    /* Ensure icons are vertically aligned, in
+       case they appear in a grid definition,
+       like the nav rows, that use a different
+       centering regime for the row. */
+    align-self: center;
     /* Set the icon size, which will be inherited
        by .zulip-icon */
     font-size: 17px;
