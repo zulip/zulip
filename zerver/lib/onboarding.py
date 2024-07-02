@@ -87,14 +87,10 @@ Hello, and welcome to Zulip!👋 This is a direct message from me, Welcome Bot.
 
 {demo_organization_text}
 
-I can also help you get set up! Just click anywhere on this message or press `r` to reply.
-
-Here are a few messages I understand: {bot_commands}
 """).format(
             getting_started_text=getting_started_string,
             organization_setup_text=organization_setup_string,
             demo_organization_text=demo_organization_warning_string,
-            bot_commands=bot_commands(),
         )
 
     internal_send_private_message(
@@ -181,8 +177,8 @@ or browse the [Help center](/help/) to learn more!
 """).format(bot_commands=bot_commands(no_help_command=True))
     else:
         return _("""
-I’m sorry, I did not understand your message. Please try
-one of the following commands: {bot_commands}
+You can chat with me as much as you like! To
+get help, try one of the following messages: {bot_commands}
 """).format(bot_commands=bot_commands())
 
 
@@ -191,7 +187,24 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     to welcome-bot, trigger the welcome-bot reply."""
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
+    human_user_recipient_id = send_request.message.sender.recipient_id
+    assert human_user_recipient_id is not None
     content = select_welcome_bot_response(human_response_lower)
+    realm_id = send_request.realm.id
+    commands = bot_commands()
+    if (
+        commands in content
+        and Message.objects.filter(
+            realm_id=realm_id,
+            sender_id=welcome_bot.id,
+            recipient_id=human_user_recipient_id,
+            content__icontains=commands,
+        ).exists()
+    ):
+        # If the bot has already sent bot commands to this user and
+        # If the bot does not understand the current message sent by this user then
+        # Do not send any message
+        return
 
     internal_send_private_message(
         welcome_bot,
