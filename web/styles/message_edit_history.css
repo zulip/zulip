@@ -62,4 +62,99 @@
         justify-content: center;
         align-items: center;
     }
+
+    .messagebox {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center; /* Center items vertically */
+    }
+
+    .delete-edit-history {
+        display: block;
+        background-color: hsl(0deg 100% 70%);
+        color: hsl(0deg 0% 100%);
+        border: none;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: hsl(0deg 0% 0%);
+    }
+
+    .modal-content {
+        background-color: hsl(0deg 0% 100%);
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid hsl(0deg 0% 35%);
+        width: 80%;
+    }
+
+    .close {
+        color: hsl(0deg 0% 67%);
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: hsl(0deg 0% 0%);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    #confirm-delete-btn,
+    #cancel-delete-btn {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        cursor: pointer;
+    }
+
+    #confirm-delete-btn {
+        background-color: hsl(2deg 64% 58%);
+        color: hsl(0deg 0% 100%);
+    }
+
+    #cancel-delete-btn {
+        background-color: hsl(194deg 66% 61%);
+        color: hsl(0deg 0% 100%);
+    }
+
+    #confirmation-modal {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 9999;
+    }
+
+    .deleted_message_box {
+        display: block;
+        background-color: hsl(0deg 0% 20%);
+        color: hsl(0deg 0% 100%);
+        font-weight: bold;
+        padding: 10px;
+        text-align: center;
+        border-radius: 5px;
+        margin: 10px 0;
+        font-style: italic;
+        width: 100%;
+        border: none;
+    }
+
+    .deleted_message_box .stream_label .private_message_header_name {
+        color: hsl(0deg 100% 70%);
+    }
 }

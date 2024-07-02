@@ -1,4 +1,5 @@
 import ClipboardJS from "clipboard";
+import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -57,12 +58,19 @@ export const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
+
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
 // move several topics in a row with the same settings.
 export let notify_old_thread_default = false;
-
 export let notify_new_thread_default = true;
+
+Handlebars.registerHelper("ifNotLast", function (index, length, options) {
+    if (index !== length - 1) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+});
 
 export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     if (!is_message_editable_ignoring_permissions(message)) {

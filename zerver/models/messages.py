@@ -94,6 +94,13 @@ class AbstractMessage(models.Model):
     # message, oldest first.
     edit_history = models.TextField(null=True)
 
+    # Three variables needed to handle deletion of specific edited message in their history
+    is_deleted = models.BooleanField(default=False)
+
+    date_deleted_history = models.IntegerField(default=-1, db_index=True)
+
+    deleter_history_id = models.IntegerField(default=-1)
+
     # Whether the message contains a (link to) an uploaded file.
     has_attachment = models.BooleanField(default=False, db_index=True)
     # Whether the message contains a visible image element.
@@ -281,6 +288,27 @@ class Message(AbstractMessage):
         if content.startswith("/me "):
             return True
         return False
+
+    def mark_as_deleted(self) -> None:
+        self.is_deleted = True
+        self.save(update_fields=["is_deleted"])
+
+    def get_deleted_status(self) -> bool:
+        return self.is_deleted
+
+    def set_deleted_history(self, timestamp: int) -> None:
+        self.date_deleted_history = timestamp
+        self.save(update_fields=["date_deleted_history"])
+
+    def get_deleted_history_timestamp(self) -> int:
+        return self.date_deleted_history
+
+    def set_deleter_history(self, user_profile_id: int) -> None:
+        self.deleter_history_id = user_profile_id
+        self.save(update_fields=["deleter_history_id"])
+
+    def get_deleter_history(self) -> int:
+        return self.deleter_history_id
 
 
 def get_context_for_message(message: Message) -> QuerySet[Message]:

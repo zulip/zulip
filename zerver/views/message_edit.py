@@ -35,7 +35,8 @@ def fill_edit_history_entries(
     This fills out the message edit history entries from the database
     to have the current topic + content as of that time, plus data on
     whatever changed. This makes it much simpler to do future
-    processing.
+    processing.if (msg.deleted_history_timestamp)
+                    deleted_timestamp = msg.deleted_history_timestamp;
     """
     prev_content = message.content
     prev_rendered_content = message.rendered_content
@@ -78,6 +79,17 @@ def fill_edit_history_entries(
             formatted_entry["prev_stream"] = edit_history_event["prev_stream"]
             formatted_entry["stream"] = edit_history_event["stream"]
 
+        if "is_deleted" in edit_history_event:
+            formatted_entry["is_deleted"] = edit_history_event["is_deleted"]
+
+        if "deleted_history_timestamp" in edit_history_event:
+            formatted_entry["deleted_history_timestamp"] = edit_history_event[
+                "deleted_history_timestamp"
+            ]
+
+        if "user_deleted" in edit_history_event:
+            formatted_entry["user_deleted"] = edit_history_event["user_deleted"]
+
         formatted_edit_history.append(formatted_entry)
 
     initial_message_history: FormattedEditHistoryEvent = {
@@ -88,9 +100,49 @@ def fill_edit_history_entries(
         "user_id": message.sender_id,
     }
 
+    if message.get_deleted_status() is True:
+        initial_message_history["is_deleted"] = message.get_deleted_status()
+
+        if initial_message_history["is_deleted"] is True:
+            initial_message_history["deleted_history_timestamp"] = (
+                message.get_deleted_history_timestamp()
+            )
+            initial_message_history["user_deleted"] = message.get_deleter_history()
+
     formatted_edit_history.append(initial_message_history)
 
     return formatted_edit_history
+
+
+@typed_endpoint
+def delete_edit_history_message(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    message_id: PathOnly[NonNegativeInt],
+    editted_message_id: Optional[Json[NonNegativeInt]] = None,
+) -> HttpResponse:
+    timestamp = timezone_now()
+    message = access_message(user_profile, message_id)
+    if message.edit_history is not None:
+        raw_edit_history = orjson.loads(message.edit_history)
+        raw_edit_history.reverse()
+
+    if editted_message_id is not None:
+        raw_edit_history[editted_message_id - 1]["is_deleted"] = True
+        raw_edit_history[editted_message_id - 1]["deleted_history_timestamp"] = (
+            datetime_to_timestamp(timestamp)
+        )
+        raw_edit_history[editted_message_id - 1]["user_deleted"] = user_profile.id
+        raw_edit_history.reverse()
+        message.edit_history = orjson.dumps(raw_edit_history).decode()
+        message.save(update_fields=["edit_history"])
+    else:
+        message.mark_as_deleted()
+        message.set_deleted_history(datetime_to_timestamp(timestamp))
+        message.set_deleter_history(user_profile.id)
+
+    return json_success(request)
 
 
 @typed_endpoint

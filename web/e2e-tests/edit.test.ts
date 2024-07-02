@@ -94,6 +94,34 @@ async function test_edit_private_message(page: Page): Promise<void> {
     ]);
 }
 
+async function test_edit_message_history(page: Page): Promise<void> {
+    await page.click(".message_edit_notice");
+    await page.waitForSelector(".message-edit-history-container .message_row", {visible: true});
+
+    await page.click(".delete-edit-history");
+    await page.waitForSelector(".message-edit-history-container .message_row .confirm-delete-btn", {
+        visible: true,
+    });
+
+    await page.click(".confirm-delete-btn");
+    await page.reload();
+    await page.click(".message_edit_notice");
+
+    await page.waitForSelector(
+        ".message-edit-history-container .overlay-messages-list .overlay-message-row .active .message_row .messagebox .deleted_message_box",
+        {visible: true},
+    );
+
+    const elements = await page.$$(
+        ".deleted_message_box .stream_label .private_message_header_name",
+    );
+    const texts = await Promise.all(
+        elements.map(async (element) => await page.evaluate((el) => el.textContent, element)),
+    );
+    const delete_message = texts.join("").trim();
+    assert.strictEqual(delete_message, "Deleted by Desdemona");
+}
+
 async function edit_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
@@ -102,6 +130,7 @@ async function edit_tests(page: Page): Promise<void> {
     await test_stream_message_edit(page);
     await test_edit_message_with_slash_me(page);
     await test_edit_private_message(page);
+    await test_edit_message_history(page);
 }
 
 common.run_test(edit_tests);

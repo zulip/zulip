@@ -648,6 +648,7 @@ class EditMessageTest(ZulipTestCase):
         )
 
     def test_edit_history_unedited(self) -> None:
+        #####
         self.login("hamlet")
 
         msg_id = self.send_stream_message(
@@ -710,6 +711,7 @@ class EditMessageTest(ZulipTestCase):
                 "user_id",
                 "prev_rendered_content",
                 "prev_rendered_content_version",
+                "is_deleted",
             },
         )
 
@@ -726,7 +728,7 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(history[0]["user_id"], hamlet.id)
         self.assertEqual(
             set(history[0].keys()),
-            {"timestamp", "prev_topic", "topic", "user_id"},
+            {"timestamp", "prev_topic", "topic", "user_id", "is_deleted"},
         )
 
         self.login("iago")
@@ -741,7 +743,9 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(history[0]["prev_stream"], stream_1.id)
         self.assertEqual(history[0]["stream"], stream_2.id)
         self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
-        self.assertEqual(set(history[0].keys()), {"timestamp", "prev_stream", "stream", "user_id"})
+        self.assertEqual(
+            set(history[0].keys()), {"timestamp", "prev_stream", "stream", "user_id", "is_deleted"}
+        )
 
         self.login("hamlet")
         result = self.client_patch(
@@ -767,6 +771,7 @@ class EditMessageTest(ZulipTestCase):
                 "user_id",
                 "prev_rendered_content",
                 "prev_rendered_content_version",
+                "is_deleted",
             },
         )
 
@@ -805,6 +810,7 @@ class EditMessageTest(ZulipTestCase):
                 "prev_stream",
                 "stream",
                 "user_id",
+                "is_deleted",
             },
         )
 
@@ -844,13 +850,16 @@ class EditMessageTest(ZulipTestCase):
             if i in {0, 2, 4}:
                 expected_entries.add("prev_topic")
                 expected_entries.add("topic")
+                expected_entries.add("is_deleted")
             if i in {1, 2, 5}:
                 expected_entries.add("prev_content")
                 expected_entries.add("prev_rendered_content")
                 expected_entries.add("content_html_diff")
+                expected_entries.add("is_deleted")
             if i in {0, 3}:
                 expected_entries.add("prev_stream")
                 expected_entries.add("stream")
+                expected_entries.add("is_deleted")
             self.assertEqual(expected_entries, set(entry.keys()))
         self.assert_length(message_history, 7)
         self.assertEqual(message_history[0]["topic"], "topic 4")
@@ -1654,4 +1663,72 @@ class EditMessageTest(ZulipTestCase):
                 "content": content,
             },
         )
+        self.assert_json_success(result)
+
+    # We need to test these two cases separately because they work in different ways
+    def test_edit_history_delete_edit(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Denmark",
+            topic_name="editing",
+            content="1",
+        )
+        new_content_1 = "2"
+        self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": new_content_1,
+            },
+        )
+        new_content_2 = "3"
+        self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": new_content_2,
+            },
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}/history", info={"editted_message_id": 1}
+        )
+        self.assert_json_success(result)
+
+        # Now we need to check attributes
+        result = self.client_get(f"/json/messages/{msg_id}/history")
+
+        message_history = self.assert_json_success(result)["message_history"]
+        self.assertTrue(message_history[1]["is_deleted"])
+        assert_is_not_none(message_history[1]["deleted_history_timestamp"])
+        assert message_history[1]["user_deleted"] == hamlet.id
+
+    def test_edit_history_delete_original_post(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Denmark",
+            topic_name="editing",
+            content="1",
+        )
+        new_content_1 = "2"
+        self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": new_content_1,
+            },
+        )
+        new_content_2 = "3"
+        self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": new_content_2,
+            },
+        )
+
+        # If its successful then message was deleted successfully
+        result = self.client_patch(f"/json/messages/{msg_id}/history")
+        self.assert_json_success(result)
+
+        result = self.client_get(f"/json/messages/{msg_id}/history")
         self.assert_json_success(result)
