@@ -5,9 +5,6 @@
         {{/if}}
         <span class="pill-label {{#if strikethrough}} strikethrough {{/if}}" >
             <span class="pill-value">{{display_value}}</span>
-            {{#unless is_active}}
-                <i class="fa fa-ban deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Bot is deactivated' }}{{else}}{{t 'User is deactivated' }}{{/if}}"></i>
-            {{/unless}}
             {{#if is_current_user}}<span class="my_user_status">{{t '(you)'}}</span>{{/if}}
             {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
             {{~#if deactivated}}&nbsp;({{t 'deactivated'}}){{~/if~}}
@@ -16,4 +13,7 @@
             {{~/if~}}
         </span>
     </a>
+    {{#unless is_active}}
+        <i class="fa fa-ban pill-deactivated deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Bot is deactivated' }}{{else}}{{t 'User is deactivated' }}{{/if}}"></i>
+    {{/unless}}
 </span>
