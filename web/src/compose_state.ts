@@ -17,6 +17,7 @@ let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 // the narrow and the user should still be able to see the banner once after
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
+let recipient_guest_emails_for_dm_warning: string[] | undefined;
 
 export function set_recipient_edited_manually(flag: boolean): void {
     recipient_edited_manually = flag;
@@ -56,6 +57,14 @@ export function set_recipient_viewed_topic_resolved_banner(flag: boolean): void 
 
 export function has_recipient_viewed_topic_resolved_banner(): boolean {
     return recipient_viewed_topic_resolved_banner;
+}
+
+export function set_recipient_guest_emails_for_dm_warning(guest_emails: string[]): void {
+    recipient_guest_emails_for_dm_warning = guest_emails;
+}
+
+export function get_recipient_guest_emails_for_dm_warning(): string[] | undefined {
+    return recipient_guest_emails_for_dm_warning;
 }
 
 export function composing(): boolean {

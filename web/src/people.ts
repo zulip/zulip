@@ -662,6 +662,25 @@ export function pm_with_operand_ids(operand: string): number[] | undefined {
     return user_ids;
 }
 
+export function filter_guest_emails(email_string: string): string[] {
+    const emails = email_string.split(",");
+    const guest_emails = emails.filter((email) => get_by_email(email)?.is_guest);
+    return guest_emails;
+}
+
+export function get_dm_guest_banner_text(guest_emails: string[]): string {
+    const names = emails_to_full_names_string(guest_emails).split(", ");
+    if (names.length === 1) {
+        return $t({defaultMessage: "{name} is a guest in this organization."}, {name: names[0]});
+    }
+    const banner_names = names.slice(0, -1).join(", ");
+    const last_guest_full_name = names.at(-1);
+    return $t(
+        {defaultMessage: "{names} and {name} are guests in this organization."},
+        {names: banner_names, name: last_guest_full_name},
+    );
+}
+
 export function emails_to_slug(emails_string: string): string | undefined {
     let slug = reply_to_to_user_ids_string(emails_string);
 
