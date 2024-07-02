@@ -194,39 +194,43 @@ function handle_operators_supporting_id_based_api(data) {
         return data;
     }
 
-    data.narrow = JSON.parse(data.narrow);
-    data.narrow = data.narrow.map((filter) => {
-        if (operators_supporting_ids.has(filter.operator)) {
-            filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
+    const parsed_narrow_data = JSON.parse(data.narrow);
+
+    const narrow_terms = [];
+    for (const raw_term of parsed_narrow_data) {
+        const narrow_term = raw_term;
+        if (operators_supporting_ids.has(raw_term.operator)) {
+            narrow_term.operand = people.emails_strings_to_user_ids_array(raw_term.operand);
         }
 
-        if (operators_supporting_id.has(filter.operator)) {
-            if (filter.operator === "id") {
+        if (operators_supporting_id.has(raw_term.operator)) {
+            if (raw_term.operator === "id") {
                 // The message ID may not exist locally,
-                // so send the filter to the server as is.
-                return filter;
+                // so send the term to the server as is.
+                narrow_terms.push(narrow_term);
+                continue;
             }
 
-            if (filter.operator === "stream") {
-                const stream_id = stream_data.get_stream_id(filter.operand);
+            if (raw_term.operator === "stream") {
+                const stream_id = stream_data.get_stream_id(raw_term.operand);
                 if (stream_id !== undefined) {
-                    filter.operand = stream_id;
+                    narrow_term.operand = stream_id;
                 }
 
-                return filter;
+                narrow_terms.push(narrow_term);
+                continue;
             }
 
             // The other operands supporting object IDs all work with user objects.
-            const person = people.get_by_email(filter.operand);
+            const person = people.get_by_email(raw_term.operand);
             if (person !== undefined) {
-                filter.operand = person.user_id;
+                narrow_term.operand = person.user_id;
             }
         }
+        narrow_terms.push(narrow_term);
+    }
 
-        return filter;
-    });
-
-    data.narrow = JSON.stringify(data.narrow);
+    data.narrow = JSON.stringify(narrow_terms);
     return data;
 }
 
