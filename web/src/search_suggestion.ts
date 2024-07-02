@@ -830,6 +830,11 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
     const search_strings = [];
     for (const suggestion of suggestion_line) {
         if (suggestion.search_string !== "") {
+            // This is rendered as "Direct messages" and we want to make sure
+            // that we don't add another suggestion for "is:dm" in parallel.
+            if (suggestion.search_string === "is:private") {
+                suggestion.search_string = "is:dm";
+            }
             search_strings.push(suggestion.search_string);
         }
     }
@@ -967,10 +972,7 @@ export function get_search_result(query_from_pills: string, query_from_text: str
     const base = get_default_suggestion_line(base_terms);
     const attacher = new Attacher(base);
 
-    // Display the default first
-    // `has` and `is` operators work only on predefined categories. Default suggestion
-    // is not displayed in that case. e.g. `messages that contain abc` as
-    // a suggestion for `has:abc` does not make sense.
+    // Display the default first, unless it has invalid terms.
     if (last.operator === "search") {
         suggestion_line = [
             {
@@ -982,7 +984,10 @@ export function get_search_result(query_from_pills: string, query_from_text: str
             },
         ];
         attacher.push([...attacher.base, ...suggestion_line]);
-    } else if (all_search_terms.length > 0 && last.operator !== "has" && last.operator !== "is") {
+    } else if (
+        all_search_terms.length > 0 &&
+        all_search_terms.every((term) => Filter.is_valid_search_term(term))
+    ) {
         suggestion_line = get_default_suggestion_line(all_search_terms);
         attacher.push(suggestion_line);
     }

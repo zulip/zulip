@@ -173,12 +173,12 @@ test("dm_suggestions", ({override, mock_template}) => {
 
     query = "dm:t";
     suggestions = get_suggestions(query);
-    expected = ["dm:t", "dm:ted@zulip.com"];
+    expected = ["dm:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-dm:t";
     suggestions = get_suggestions(query);
-    expected = ["-dm:t", "is:dm -dm:ted@zulip.com"];
+    expected = ["is:dm -dm:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "dm:ted@zulip.com";
@@ -188,17 +188,17 @@ test("dm_suggestions", ({override, mock_template}) => {
 
     query = "sender:ted";
     suggestions = get_suggestions(query);
-    expected = ["sender:ted", "sender:ted@zulip.com"];
+    expected = ["sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:te";
     suggestions = get_suggestions(query);
-    expected = ["sender:te", "sender:ted@zulip.com"];
+    expected = ["sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-sender:te";
     suggestions = get_suggestions(query);
-    expected = ["-sender:te", "-sender:ted@zulip.com"];
+    expected = ["-sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted@zulip.com";
@@ -208,7 +208,7 @@ test("dm_suggestions", ({override, mock_template}) => {
 
     query = "is:unread from:ted";
     suggestions = get_suggestions(query);
-    expected = ["is:unread sender:ted", "is:unread sender:ted@zulip.com", "is:unread"];
+    expected = ["is:unread sender:ted@zulip.com", "is:unread"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Users can enter bizarre queries, and if they do, we want to
@@ -243,15 +243,9 @@ test("dm_suggestions", ({override, mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    // Make sure it handles past context correctly
-    query = "stream:Denmark dm:";
+    query = "from:ted@zulip.com";
     suggestions = get_suggestions(query);
-    expected = ["channel:Denmark dm:", "channel:Denmark"];
-    assert.deepEqual(suggestions.strings, expected);
-
-    query = "from:ted@zulip.com from:";
-    suggestions = get_suggestions(query);
-    expected = ["sender:ted@zulip.com sender:", "sender:ted@zulip.com"];
+    expected = ["sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     // "pm-with" operator returns search result
@@ -264,7 +258,7 @@ test("dm_suggestions", ({override, mock_template}) => {
 
     query = "pm-with:t";
     suggestions = get_suggestions(query);
-    expected = ["dm:t", "dm:ted@zulip.com"];
+    expected = ["dm:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -304,15 +298,7 @@ test("group_suggestions", ({mock_template}) => {
 
     query = "-dm:bob@zulip.co";
     suggestions = get_suggestions(query);
-    expected = [
-        "-dm:bob@zulip.co",
-        "is:dm -dm:bob@zulip.com",
-    ];
-    assert.deepEqual(suggestions.strings, expected);
-
-    query = "-dm:bob@zulip.com,red";
-    suggestions = get_suggestions(query);
-    expected = ["-dm:bob@zulip.com,red"];
+    expected = ["is:dm -dm:bob@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     // If user types "pm-with" operator, show suggestions for
@@ -344,21 +330,17 @@ test("group_suggestions", ({mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    // Doesn't show ted@ because it's invalid in combination
+    // Doesn't show dms because it's invalid in combination
     // with a channel.
     query = "channel:Denmark has:link dm:bob@zulip.com,Smit";
     suggestions = get_suggestions(query);
-    expected = [
-        "channel:Denmark has:link dm:bob@zulip.com,Smit",
-        "channel:Denmark has:link",
-        "channel:Denmark",
-    ];
+    expected = ["channel:Denmark has:link", "channel:Denmark"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Invalid emails don't give suggestions
     query = "has:link dm:invalid@zulip.com,Smit";
     suggestions = get_suggestions(query);
-    expected = ["has:link dm:invalid@zulip.com,Smit", "has:link"];
+    expected = ["has:link"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -635,12 +617,7 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
 
     query = "is:starred sender:m";
     suggestions = get_suggestions(query);
-    expected = ["is:starred sender:m", "is:starred sender:myself@zulip.com", "is:starred"];
-    assert.deepEqual(suggestions.strings, expected);
-
-    query = "sender:alice@zulip.com sender:";
-    suggestions = get_suggestions(query);
-    expected = ["sender:alice@zulip.com sender:", "sender:alice@zulip.com"];
+    expected = ["is:starred sender:myself@zulip.com", "is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -785,9 +762,7 @@ test("whitespace_glitch", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("channel_completion", ({override, mock_template}) => {
-    mock_template("search_description.hbs", true, (_data, html) => html);
-
+test("channel_completion", ({override}) => {
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
     stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
 
@@ -795,12 +770,12 @@ test("channel_completion", ({override, mock_template}) => {
 
     let query = "channel:of";
     let suggestions = get_suggestions(query);
-    let expected = ["channel:of", "channel:office"];
+    let expected = ["channel:office"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-channel:of";
     suggestions = get_suggestions(query);
-    expected = ["-channel:of", "-channel:office"];
+    expected = ["-channel:office"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "hel";
@@ -967,7 +942,7 @@ test("people_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted sm";
-    expected = ["sender:ted+sm", "sender:ted@zulip.com"];
+    expected = ["sender:ted@zulip.com"];
     suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, expected);
 
@@ -977,7 +952,7 @@ test("people_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted@tulip.com new";
-    expected = ["sender:ted@tulip.com+new"];
+    expected = []; // Invalid email
     suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -990,7 +965,7 @@ test("operator_suggestions", ({override, mock_template}) => {
     // Completed operator should return nothing
     let query = "channel:";
     let suggestions = get_suggestions(query);
-    let expected = ["channel:"];
+    let expected = [];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "ch";
@@ -1015,27 +990,25 @@ test("operator_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("queries_with_spaces", ({mock_template}) => {
-    mock_template("search_description.hbs", true, (_data, html) => html);
-
+test("queries_with_spaces", () => {
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
     stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
 
     // test allowing spaces with quotes surrounding operand
     let query = 'channel:"dev he"';
     let suggestions = get_suggestions(query);
-    let expected = ["channel:dev+he", "channel:dev+help"];
+    let expected = ["channel:dev+help"];
     assert.deepEqual(suggestions.strings, expected);
 
     // test mismatched quote
     query = 'channel:"dev h';
     suggestions = get_suggestions(query);
-    expected = ["channel:dev+h", "channel:dev+help"];
+    expected = ["channel:dev+help"];
     assert.deepEqual(suggestions.strings, expected);
 
     // test extra space after operator still works
     query = "channel: offi";
     suggestions = get_suggestions(query);
-    expected = ["channel:offi", "channel:office"];
+    expected = ["channel:office"];
     assert.deepEqual(suggestions.strings, expected);
 });
