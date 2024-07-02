@@ -26,6 +26,15 @@ const stream_data = zrequire("stream_data");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
+const people = zrequire("people");
+
+const alice = {
+    email: "alice@zulip.com",
+    user_id: 10,
+    full_name: "Alice Smith",
+};
+people.add_active_user(alice);
+people.initialize_current_user(alice.user_id);
 
 // Helper test function
 function test_reply_label(expected_label) {

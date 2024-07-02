@@ -823,22 +823,31 @@ test_ui("DM policy disabled", ({override, override_rewire}) => {
         settings_config.private_message_policy_values.disabled.code,
     );
     let reply_disabled = false;
-    override_rewire(compose_closed_ui, "update_reply_button_state", (disabled = false) => {
-        reply_disabled = disabled;
-    });
+    let is_direct_message_narrow = false;
+    override_rewire(
+        compose_closed_ui,
+        "update_reply_button_state",
+        (direct_message_narrow = true, disabled = false) => {
+            reply_disabled = disabled;
+            is_direct_message_narrow = direct_message_narrow;
+        },
+    );
     // For single bot recipient, Bot, the "Message X" button is not disabled
     override(narrow_state, "pm_ids_string", () => "33");
     compose_closed_ui.update_buttons_for_private();
+    assert.ok(is_direct_message_narrow);
     assert.ok(!reply_disabled);
     // For human user, Alice, the "Message X" button is disabled
     override(narrow_state, "pm_ids_string", () => "31");
     compose_closed_ui.update_buttons_for_private();
+    assert.ok(is_direct_message_narrow);
     assert.ok(reply_disabled);
 });
 
 test_ui("narrow_button_titles", ({override}) => {
     override(narrow_state, "pm_ids_string", () => "31");
     override(narrow_state, "is_message_feed_visible", () => true);
+    override(narrow_state, "stream_sub", () => social);
     compose_closed_ui.update_buttons_for_private();
     assert.equal(
         $("#new_conversation_button").text(),
