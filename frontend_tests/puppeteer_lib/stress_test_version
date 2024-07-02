@@ -1,0 +1,5 @@
+# Updating this file will trigger puppeteer workflow
+# in GitHub Actions that will run 400 tests in CI to
+# catch flakes. It will on run for pushes to your fork
+# or to pull requests.
+version = 0.0
