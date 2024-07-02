@@ -1,6 +1,9 @@
+import assert from "minimalistic-assert";
+
 import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
 import * as message_lists from "./message_lists";
+import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import type {NarrowTerm} from "./state_data";
@@ -264,6 +267,17 @@ export function _possible_unread_message_ids(
     let sub;
     let topic_name;
     let current_filter_pm_string;
+
+    if (current_filter.can_bucket_by("channel", "topic", "with")) {
+        const with_operand = current_filter.operands("with")[0];
+        assert(with_operand !== undefined);
+        const msg_id = Number.parseInt(with_operand, 10);
+        const msg = message_store.get(msg_id);
+        if (msg !== undefined && msg.type === "stream") {
+            return unread.get_msg_ids_for_topic(msg.stream_id, msg.topic);
+        }
+        return [];
+    }
 
     if (current_filter.can_bucket_by("channel", "topic")) {
         sub = stream_sub(current_filter);

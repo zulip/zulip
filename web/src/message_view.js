@@ -87,7 +87,17 @@ export function changehash(newhash, trigger) {
         return;
     }
     message_viewport.stop_auto_scrolling();
-    browser_history.set_hash(newhash);
+
+    // It is important to use `replaceState` rather than `replace` in case
+    // of "retarget topic location" because we retarget to the last unread.
+    // Using `replce` would update the hash and load it once more.
+    // This would impact the `narrow_pointer` for users with
+    // `mark_read_on_scroll_state_policy` set.
+    if (trigger === "retarget topic location") {
+        window.history.replaceState(null, "", newhash);
+    } else {
+        browser_history.set_hash(newhash);
+    }
 }
 
 export function update_hash_to_match_filter(filter, trigger) {
@@ -134,10 +144,12 @@ function create_and_update_message_list(filter, id_info, opts) {
         // Populate the message list if we can apply our filter locally (i.e.
         // with no backend help) and we have the message we want to select.
         // Also update id_info accordingly.
-        maybe_add_local_messages({
-            id_info,
-            msg_data,
-        });
+        if (!filter.requires_adjustment_for_moved_with_target) {
+            maybe_add_local_messages({
+                id_info,
+                msg_data,
+            });
+        }
 
         if (!id_info.local_select_id) {
             // If we're not actually ready to select an ID, we need to
@@ -306,6 +318,7 @@ export function show(raw_terms, opts) {
         raw_terms = [{operator: "is", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
+    filter.try_adjusting_for_moved_with_target();
 
     if (try_rendering_locally_for_same_narrow(filter, opts)) {
         return;
@@ -642,7 +655,18 @@ export function show(raw_terms, opts) {
                 }
                 message_fetch.load_messages_for_narrow({
                     anchor,
+                    validate_filter_topic_post_fetch:
+                        filter.requires_adjustment_for_moved_with_target,
                     cont() {
+                        if (
+                            !filter.requires_adjustment_for_moved_with_target &&
+                            filter.has_operator("with")
+                        ) {
+                            // In this situation, we've adjusted our filter via
+                            // filter.try_adjusting_for_moved_with_target, and should
+                            // update the URL hash accordingly.
+                            update_hash_to_match_filter(filter, "retarget topic location");
+                        }
                         if (!select_immediately) {
                             render_message_list_with_selected_message({
                                 id_info,
