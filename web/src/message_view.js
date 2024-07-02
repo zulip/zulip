@@ -233,18 +233,24 @@ function try_rendering_locally_for_same_narrow(filter, opts) {
         return false;
     }
 
-    // If the difference between the current filter and the new filter
-    // is just a `near` operator, or just the value of a `near` operator,
-    // we can render the new filter without a rerender of the message list
-    // if the target message in the `near` operator is already rendered.
-    const excluded_operators = ["near"];
-    if (!filter.equals(current_filter, excluded_operators)) {
-        return false;
-    }
-
     if (filter.has_operator("near")) {
         const target_id = Number.parseInt(filter.operands("near")[0], 10);
-        if (!message_lists.current?.get(target_id)) {
+        const target_message = message_lists.current?.get(target_id);
+        if (!target_message) {
+            return false;
+        }
+
+        const adjusted_terms = Filter.adjusted_terms_if_moved(filter.terms(), target_message);
+        if (adjusted_terms !== null) {
+            filter = new Filter(adjusted_terms);
+        }
+
+        // If the difference between the current filter and the new filter
+        // is just a `near` operator, or just the value of a `near` operator,
+        // we can render the new filter without a rerender of the message list
+        // if the target message in the `near` operator is already rendered.
+        const excluded_operators = ["near"];
+        if (!filter.equals(current_filter, excluded_operators)) {
             return false;
         }
 
@@ -256,7 +262,7 @@ function try_rendering_locally_for_same_narrow(filter, opts) {
         }
 
         message_lists.current.data.filter = filter;
-        update_hash_to_match_filter(filter);
+        update_hash_to_match_filter(filter, "retarget message location");
         return true;
     }
 
@@ -402,38 +408,6 @@ export function show(raw_terms, opts) {
         if (id_info.target_id && filter.has_operator("channel") && filter.has_operator("topic")) {
             const target_message = message_store.get(id_info.target_id);
 
-            function adjusted_terms_if_moved(raw_terms, message) {
-                const adjusted_terms = [];
-                let terms_changed = false;
-
-                for (const term of raw_terms) {
-                    const adjusted_term = {...term};
-                    if (
-                        Filter.canonicalize_operator(term.operator) === "channel" &&
-                        !util.lower_same(term.operand, message.display_recipient)
-                    ) {
-                        adjusted_term.operand = message.display_recipient;
-                        terms_changed = true;
-                    }
-
-                    if (
-                        Filter.canonicalize_operator(term.operator) === "topic" &&
-                        !util.lower_same(term.operand, message.topic)
-                    ) {
-                        adjusted_term.operand = message.topic;
-                        terms_changed = true;
-                    }
-
-                    adjusted_terms.push(adjusted_term);
-                }
-
-                if (!terms_changed) {
-                    return null;
-                }
-
-                return adjusted_terms;
-            }
-
             if (target_message) {
                 // If we have the target message ID for the narrow in our
                 // local cache, and the target message has been moved from
@@ -447,7 +421,10 @@ export function show(raw_terms, opts) {
                     // The stream name is invalid or incorrect in the URL.
                     // We reconstruct the narrow with the data from the
                     // target message ID that we have.
-                    const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
+                    const adjusted_terms = Filter.adjusted_terms_if_moved(
+                        raw_terms,
+                        target_message,
+                    );
 
                     if (adjusted_terms === null) {
                         blueslip.error("adjusted_terms impossibly null");
@@ -485,7 +462,10 @@ export function show(raw_terms, opts) {
                     !narrow_matches_target_message &&
                     (narrow_exists_in_edit_history || !realm.realm_allow_edit_history)
                 ) {
-                    const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
+                    const adjusted_terms = Filter.adjusted_terms_if_moved(
+                        raw_terms,
+                        target_message,
+                    );
                     if (adjusted_terms !== null) {
                         show(adjusted_terms, {
                             ...opts,

@@ -1,0 +1,136 @@
+[
+    {
+        "recipient_type": "channel",
+        "channel": "Lecture 3 Heaps",
+        "color": "#A6DCBF",
+        "topic": "✔ problem 2a clarification",
+        "users": {
+            "John Lin": {},
+            "Dal Kim": {}
+        },
+        "messages": [
+            {
+                "sender": "John Lin",
+                "content": "I'm confused -- why does the code for this one say: \n\n```python\nint my_array[] = {0, 1, 2, 3}\n```\nBut in 2b it's:\n\n```python\nint my_array[4] = {0, 1, 2, 3}\n```\nis it a typo?",
+                "edited": true,
+                "date": {"year": 2024, "month": 6, "day": 19, "hour": 18, "minute": 0}
+            },
+            {
+                "sender": "Dal Kim",
+                "content": "Nope, both are correct! Take a look at slide 17 in the lecture notes.",
+                "reactions": {
+                    "+1": ["John Lin"]
+                },
+                "date": {"year": 2024, "month": 6, "day": 19, "hour": 18, "minute": 37}
+            },
+            {
+                "sender": "Notification Bot",
+                "content": "@_**Dal Kim** has marked this topic as resolved.",
+                "date": {"year": 2024, "month": 6, "day": 19, "hour": 19, "minute": 0}
+            }
+        ],
+        "screenshot": "static/images/landing-page/education/message_formatting_day_1.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "Lecture 3 Heaps",
+        "color": "#A6DCBF",
+        "topic": "lecture notes and recording",
+        "users": {
+            "Elena Gracia": {},
+            "Dal Kim": {},
+            "John Lin": {},
+            "Maxy Stert": {},
+            "Kevin Lin": {}
+        },
+        "messages": [
+            {
+                "sender": "Elena Gracia",
+                "content": "Here are the notes for today's class: [lecture3.pdf](#). You can also [watch the recording](#) if you missed it.",
+                "reactions": {
+                    "+1": ["Dal Kim", "John Lin", "Maxy Stert", "Kevin Lin"]
+                },
+                "starred": true,
+                "date": {"year": 2024, "month": 5, "day": 21, "hour": 11, "minute": 3}
+            }
+        ],
+        "screenshot": "static/images/landing-page/education/interactive_messaging_day_1.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "staff",
+        "invite_only": true,
+        "color": "#E4523D",
+        "topic": "assignment #3 solutions",
+        "users": {
+            "Dal Kim": {},
+            "Zoe Davis": {}
+        },
+        "messages": [
+            {
+                "sender": "Dal Kim",
+                "content": "Can someone double-check my solution for problem 4? The run time is $$O(\\log n)$$, right?",
+                "date": {"year": 2024, "month": 5, "day": 19, "hour": 14, "minute": 40}
+            },
+            {
+                "sender": "Zoe Davis",
+                "content": "Yep, that's the amortized time, but the upper bound of it is $$O(2^{2\\sqrt{\\log \\log n}})$$.",
+                "reactions": {
+                    "+1": ["Iago"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 19, "hour": 15, "minute": 43}
+            }
+        ],
+        "screenshot": "static/images/landing-page/education/message_formatting_day_2.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "announcements",
+        "color": "#A6C7E5",
+        "topic": "homework reminders",
+        "users": {
+            "Elena Gracia": {}
+        },
+        "messages": [
+            {
+                "sender": "Elena Gracia",
+                "content": "@**everyone** Please remember to submit your assignments before <time:2024-05-12T00:00:00+05:30>! You will lose **at least 25%** of the credit if your assignment is late.",
+                "date": {"year": 2024, "month": 5, "day": 21, "hour": 13, "minute": 10}
+            },
+            {
+                "sender": "Elena Gracia",
+                "content": "It sounds like many of you are stuck at the bonus problem, so here's a hint. Please think about the question first before you view it\n\n```spoiler Hint for bonus problem\nHint\n```",
+                "date": {"year": 2024, "month": 5, "day": 21, "hour": 14, "minute": 11}
+            }
+        ],
+        "screenshot": "static/images/landing-page/education/interactive_messaging_day_2.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "announcements",
+        "color": "#A6C7E5",
+        "topic": "rescheduling office hours",
+        "user_groups": [
+            {
+                "group_name": "section 1",
+                "members": ["Dal Kim"]
+            }
+        ],
+        "users": {
+            "Dal Kim": {}
+        },
+        "messages": [
+            {
+                "sender": "Dal Kim",
+                "content": "@*section 1* I need to reschedule my office hours this week. Which time works better?",
+                "date": {"year": 2024, "month": 5, "day": 20, "hour": 15, "minute": 15}
+            },
+            {
+                "sender": "Dal Kim",
+                "content": "/poll Section 1 office hours\nThursday 1-2 PM\nFriday 10-11 AM",
+                "date": {"year": 2024, "month": 5, "day": 20, "hour": 15, "minute": 20}
+            }
+        ],
+        "screenshot": "static/images/landing-page/education/interactive_messaging_day_3.png"
+    }
+]

@@ -288,10 +288,17 @@ function test_extract_property_name() {
 }
 
 function test_sync_realm_settings() {
+    const $subsection_stub = $.create("org-subsection-stub");
+    $subsection_stub.set_find_results(
+        ".save-button-controls",
+        $.create("save-button-controls-stub").addClass("hide"),
+    );
+
     {
         /* Test invalid settings property sync */
         const $property_elem = $("#id_realm_invalid_settings_property");
         $property_elem.attr("id", "id_realm_invalid_settings_property");
+        $property_elem.closest = () => $subsection_stub;
         $property_elem.length = 1;
 
         blueslip.expect("error", "Element refers to unknown property");
@@ -302,6 +309,7 @@ function test_sync_realm_settings() {
         const $property_elem = $(`#id_realm_${CSS.escape(property_name)}`);
         $property_elem.length = 1;
         $property_elem.attr("id", `id_realm_${CSS.escape(property_name)}`);
+        $property_elem.closest = () => $subsection_stub;
 
         /* Each policy is initialized to 'by_members' and then all the values are tested
         in the following order - by_admins_only, by_moderators_only, by_full_members,
@@ -328,6 +336,7 @@ function test_sync_realm_settings() {
         $property_dropdown_elem.length = 1;
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
+        $property_dropdown_elem.closest = () => $subsection_stub;
 
         realm.realm_message_content_edit_limit_seconds = 120;
 
@@ -351,6 +360,7 @@ function test_sync_realm_settings() {
         const $property_elem = $("#id_realm_org_join_restrictions");
         $property_elem.length = 1;
         $property_elem.attr("id", "id_realm_org_join_restrictions");
+        $property_elem.closest = () => $subsection_stub;
 
         realm.realm_emails_restricted_to_domains = true;
         realm.realm_disallow_disposable_email_addresses = false;
@@ -366,6 +376,27 @@ function test_sync_realm_settings() {
         realm.realm_disallow_disposable_email_addresses = false;
         settings_org.sync_realm_settings("emails_restricted_to_domains");
         assert.equal($("#id_realm_org_join_restrictions").val(), "no_restriction");
+    }
+
+    {
+        // Test hiding save-discard buttons on live-updating.
+        const $property_elem = $("#id_realm_invite_to_realm_policy");
+        $property_elem.length = 1;
+        $property_elem.attr("id", "id_realm_invite_to_realm_policy");
+        $property_elem.closest = () => $subsection_stub;
+
+        const save_button_stubs = createSaveButtons("subsection-stub");
+        $subsection_stub.set_find_results(
+            ".save-button-controls",
+            save_button_stubs.$save_button_controls,
+        );
+        $property_elem.val(settings_config.common_policy_values.by_admins_only.code);
+        realm.realm_invite_to_realm_policy = settings_config.common_policy_values.by_members.code;
+        save_button_stubs.$save_button_controls.removeClass("hide");
+        $subsection_stub.set_find_results(".prop-element", [$property_elem]);
+
+        settings_org.sync_realm_settings("invite_to_realm_policy");
+        assert.equal(save_button_stubs.props.hidden, true);
     }
 }
 
@@ -444,15 +475,20 @@ function test_discard_changes_button(discard_changes) {
     );
 
     const $discard_button_parent = $(".settings-subsection-parent");
-    $discard_button_parent.find = () => [
+    $discard_button_parent.set_find_results(".prop-element", [
         $allow_edit_history,
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
         $edit_topic_policy,
-    ];
+    ]);
 
-    const {$discard_button, props} = createSaveButtons("msg-editing");
-    $discard_button.closest = (selector) => $(selector);
+    const {$discard_button, $save_button_controls, props} = createSaveButtons("msg-editing");
+    $discard_button.closest = (selector) => {
+        assert.equal(selector, ".settings-subsection-parent");
+        return $discard_button_parent;
+    };
+
+    $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
 
     discard_changes(ev);
 

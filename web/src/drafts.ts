@@ -663,6 +663,27 @@ export function initialize(): void {
     window.addEventListener("beforeunload", () => {
         update_draft();
     });
+
+    // Show exact time when draft was saved in UTC format.
+    tippy.delegate("body", {
+        target: ".drafts-list .recipient_row_date",
+        appendTo: () => document.body,
+        delay: [750, 20], // LONG_HOVER_DELAY
+        onShow(instance) {
+            const $time_elem = $(instance.reference);
+            const $row = $time_elem.closest(".overlay-message-row");
+            const draft_id = $row.attr("data-draft-id");
+            assert(typeof draft_id === "string");
+            const draft = draft_model.getDraft(draft_id);
+            if (draft) {
+                const time = new Date(draft.updatedAt);
+                instance.setContent(timerender.get_full_datetime_clarification(time));
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
 
 export function initialize_ui(): void {

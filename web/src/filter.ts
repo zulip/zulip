@@ -726,6 +726,45 @@ export class Filter {
         return true;
     }
 
+    static adjusted_terms_if_moved(raw_terms: NarrowTerm[], message: Message): NarrowTerm[] | null {
+        if (message.type !== "stream") {
+            return null;
+        }
+
+        assert(typeof message.display_recipient === "string");
+        assert(typeof message.topic === "string");
+
+        const adjusted_terms = [];
+        let terms_changed = false;
+
+        for (const term of raw_terms) {
+            const adjusted_term = {...term};
+            if (
+                Filter.canonicalize_operator(term.operator) === "channel" &&
+                !util.lower_same(term.operand, message.display_recipient)
+            ) {
+                adjusted_term.operand = message.display_recipient;
+                terms_changed = true;
+            }
+
+            if (
+                Filter.canonicalize_operator(term.operator) === "topic" &&
+                !util.lower_same(term.operand, message.topic)
+            ) {
+                adjusted_term.operand = message.topic;
+                terms_changed = true;
+            }
+
+            adjusted_terms.push(adjusted_term);
+        }
+
+        if (!terms_changed) {
+            return null;
+        }
+
+        return adjusted_terms;
+    }
+
     equals(filter: Filter, excluded_operators?: string[]): boolean {
         return _.isEqual(
             filter.sorted_terms(excluded_operators),

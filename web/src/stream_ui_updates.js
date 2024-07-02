@@ -399,7 +399,12 @@ export function update_setting_element(sub, setting_name) {
     }
 
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
-    settings_org.discard_stream_property_element_changes($elem, sub);
+    const $subsection = $elem.closest(".settings-subsection-parent");
+    if ($subsection.find(".save-button-controls").hasClass("hide")) {
+        settings_org.discard_stream_property_element_changes($elem);
+    } else {
+        settings_org.discard_stream_settings_subsection_changes($subsection, sub);
+    }
 }
 
 export function enable_or_disable_add_subscribers_elements(

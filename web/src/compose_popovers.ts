@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_compose_control_buttons_popover from "../templates/popovers/compose_control_buttons/compose_control_buttons_popover.hbs";
@@ -11,7 +12,7 @@ import * as popovers from "./popovers";
 import * as rows from "./rows";
 import {parse_html} from "./ui_util";
 
-export function initialize() {
+export function initialize(): void {
     // compose box buttons popover shown on mobile widths.
     // We want this click event to propagate and hide other popovers
     // that could possibly obstruct user from using this popover.
@@ -52,7 +53,7 @@ export function initialize() {
             // Destroy instance so that event handlers
             // are destroyed too.
             instance.destroy();
-            popover_menus.popover_instances.compose_mobile_button = undefined;
+            popover_menus.popover_instances.compose_mobile_button = null;
         },
     });
 
@@ -62,6 +63,7 @@ export function initialize() {
     popover_menus.register_popover_menu(".compose_control_menu_wrapper", {
         placement: "top",
         onShow(instance) {
+            assert(instance.reference instanceof HTMLElement);
             const parent_row = rows.get_closest_row(instance.reference);
             let preview_mode_on;
             // If the popover is opened from a message edit form, we want to
@@ -85,7 +87,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.compose_control_buttons = undefined;
+            popover_menus.popover_instances.compose_control_buttons = null;
         },
     });
 }
