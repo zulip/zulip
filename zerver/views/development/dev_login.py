@@ -15,9 +15,9 @@ from zerver.lib.exceptions import (
     RealmDeactivatedError,
     UserDeactivatedError,
 )
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import validate_login_email
 from zerver.models import Realm, UserProfile
@@ -66,10 +66,11 @@ def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> No
 
 
 @csrf_exempt
-@has_request_variables
+@typed_endpoint
 def dev_direct_login(
     request: HttpRequest,
-    next: str = REQ(default="/"),
+    *,
+    next: str = "/",
 ) -> HttpResponse:
     # This function allows logging in without a password and should only be called
     # in development environments.  It may be called if the DevAuthBackend is included
@@ -106,8 +107,8 @@ def check_dev_auth_backend() -> None:
 
 @csrf_exempt
 @require_post
-@has_request_variables
-def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpResponse:
+@typed_endpoint
+def api_dev_fetch_api_key(request: HttpRequest, *, username: str) -> HttpResponse:
     """This function allows logging in without a password on the Zulip
     mobile apps when connecting to a Zulip development environment.  It
     requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.

@@ -10,8 +10,8 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
-from zerver.lib.request import has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -177,7 +177,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
 
 
 @webhook_view("Pivotal", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint_without_parameters
 def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     topic_name = content = None
     try:
