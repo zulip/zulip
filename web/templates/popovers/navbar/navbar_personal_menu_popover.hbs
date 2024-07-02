@@ -16,13 +16,6 @@
         </header>
         <section class="dropdown-menu-list-section personal-menu-actions" data-user-id="{{user_id}}">
             <ul role="menu" class="popover-menu-list">
-                {{#if user_time}}
-                <li role="none" class="text-item hidden-for-spectators popover-menu-list-item">
-                    <i class="popover-menu-icon zulip-icon zulip-icon-clock" aria-hidden="true"></i>
-                    {{#tr}}{user_time} local time{{/tr}}
-                </li>
-                <li role="separator" class="popover-menu-separator"></li>
-                {{/if}}
                 {{#if status_content_available}}
                 <li role="none" class="text-item popover-menu-list-item">
                     <span class="personal-menu-status-wrapper">
