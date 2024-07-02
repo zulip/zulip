@@ -143,6 +143,7 @@ class RawStreamDict(TypedDict):
     date_created: datetime
     description: str
     first_message_id: Optional[int]
+    is_recently_active: Optional[int]
     history_public_to_subscribers: bool
     id: int
     invite_only: bool
@@ -186,6 +187,7 @@ class SubscriptionStreamDict(TypedDict):
     desktop_notifications: Optional[bool]
     email_notifications: Optional[bool]
     first_message_id: Optional[int]
+    is_recently_active: Optional[int]
     history_public_to_subscribers: bool
     in_home_view: bool
     invite_only: bool
@@ -210,6 +212,7 @@ class NeverSubscribedStreamDict(TypedDict):
     date_created: int
     description: str
     first_message_id: Optional[int]
+    is_recently_active: Optional[int]
     history_public_to_subscribers: bool
     invite_only: bool
     is_announcement_only: bool
@@ -234,6 +237,7 @@ class DefaultStreamDict(TypedDict):
     date_created: int
     description: str
     first_message_id: Optional[int]
+    is_recently_active: Optional[int]
     history_public_to_subscribers: bool
     invite_only: bool
     is_web_public: bool

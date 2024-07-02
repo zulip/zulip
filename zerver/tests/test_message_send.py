@@ -2353,6 +2353,33 @@ class StreamMessagesTest(ZulipTestCase):
         )
         self.assertEqual(recent_conversation["max_message_id"], message2_id)
 
+    def test_stream_becomes_active_on_message_send(self) -> None:
+        # Mark a stream as inactive
+        stream = self.make_stream("inactive_stream")
+        stream.is_recently_active = False
+        stream.save()
+        self.assertEqual(stream.is_recently_active, False)
+
+        # Send a message to the stream
+        sender = self.example_user("hamlet")
+        self.subscribe(sender, stream.name)    
+        sending_client = make_client(name="test suite")
+        message = Message(
+            sender=sender,
+            recipient=stream.recipient,
+            realm=stream.realm,
+            content="message_content",
+            date_sent=timezone_now(),
+            sending_client=sending_client,
+        )
+        message.set_topic_name("topic_name")
+        message_dict = build_message_send_dict(message=message)
+        do_send_messages([message_dict])
+
+        # The stream should now be active
+        stream.refresh_from_db()
+        self.assertEqual(stream.is_recently_active, True)
+
 
 class PersonalMessageSendTest(ZulipTestCase):
     def test_personal_to_self(self) -> None:

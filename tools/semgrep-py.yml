@@ -42,6 +42,7 @@ rules:
     paths:
       exclude:
         - "**/migrations/"
+        - zerver/management/commands/update_stream_active_status.py
 
   - id: dont-use-empty-select_related
     pattern-either:

@@ -60,4 +60,12 @@ class zulip::app_frontend_once {
     minute => '22',
   }
 
+  # 1st day every 3 months.
+  zulip::cron { 'update-stream-active-status':
+    minute => '0',
+    hour   => '0',
+    day    => '1',
+    month  => '*/3',
+    manage => 'update_stream_active_status',
+  }
 }

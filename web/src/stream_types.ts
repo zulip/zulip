@@ -28,6 +28,7 @@ export const stream_schema = z.object({
         MODERATORS: StreamPostPolicy.MODERATORS,
     }),
     can_remove_subscribers_group: z.number(),
+    is_recently_active: z.boolean(),
 });
 
 export const stream_specific_notification_settings_schema = z.object({

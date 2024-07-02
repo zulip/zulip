@@ -141,6 +141,9 @@ class Stream(models.Model):
     # stream based on what messages they have cached.
     first_message_id = models.IntegerField(null=True, db_index=True)
 
+    # Whether a message has been sent to this stream in the last X days.
+    is_recently_active = models.BooleanField(default=True)
+
     stream_permission_group_settings = {
         "can_remove_subscribers_group": GroupPermissionSetting(
             require_system_group=True,
@@ -193,6 +196,7 @@ class Stream(models.Model):
         "rendered_description",
         "stream_post_policy",
         "can_remove_subscribers_group_id",
+        "is_recently_active",
     ]
 
     def to_dict(self) -> DefaultStreamDict:
@@ -211,6 +215,7 @@ class Stream(models.Model):
             stream_id=self.id,
             stream_post_policy=self.stream_post_policy,
             is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+            is_recently_active=self.is_recently_active,
         )
 
 
