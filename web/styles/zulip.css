@@ -2214,6 +2214,13 @@ body:not(.hide-left-sidebar) {
 }
 
 .simplebar-content-wrapper {
+    /* `simplebar-content-wrapper` has `tabindex=-1` set, which makes sure
+       that it does not get focus when navigating via a keyboard.
+
+       But in a few situations, we programmatically focus this
+       element, and in this case, we don't want to see the outline. */
+    outline: none;
+
     /* This prevents the popover from closing once the top/bottom is reached */
     overscroll-behavior: contain;
 }
