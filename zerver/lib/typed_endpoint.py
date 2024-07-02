@@ -372,7 +372,12 @@ def parse_value_for_parameter(parameter: FuncParam[T], value: object) -> T:
         elif error["type"] == "value_error":
             context["msg"] = error["msg"]
             error_template = _("Invalid {var_name}: {msg}")
-
+        elif error["type"] == "model_type":
+            context["msg"] = error["msg"]
+            error_template = _("Invalid {var_name}: {msg}")
+        elif error["type"] == "missing":
+            context["msg"] = error["msg"]
+            error_template = _("{var_name} field is missing: {msg}")
         assert error_template is not None, MISSING_ERROR_TEMPLATE.format(
             error_type=error["type"],
             url=error.get("url", "(documentation unavailable)"),

@@ -1,3 +1,4 @@
+import re
 from typing import List, Optional
 
 from django.core.exceptions import ValidationError
@@ -34,3 +35,12 @@ def check_url(val: str) -> str:
         return val
     except ValidationError:
         raise ValueError(_("Not a URL"))
+
+
+def check_color(var_name: str, val: object) -> str:
+    s = str(val)
+    valid_color_pattern = re.compile(r"^#([a-fA-F0-9]{3,6})$")
+    matched_results = valid_color_pattern.match(s)
+    if not matched_results:
+        raise ValueError(_("{var_name} is not a valid hex color code").format(var_name=var_name))
+    return s

@@ -3403,7 +3403,9 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, "color is not a valid hex color code")
+        self.assert_json_error(
+            result, "Invalid subscription_data[0]: Value error, color is not a valid hex color code"
+        )
 
     def test_set_color_missing_stream_id(self) -> None:
         """
@@ -3420,7 +3422,9 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, "stream_id key is missing from subscription_data[0]")
+        self.assert_json_error(
+            result, 'subscription_data[0]["stream_id"] field is missing: Field required'
+        )
 
     def test_set_color_unsubscribed_stream_id(self) -> None:
         """
@@ -3468,7 +3472,9 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, "value key is missing from subscription_data[0]")
+        self.assert_json_error(
+            result, 'subscription_data[0]["value"] field is missing: Field required'
+        )
 
     def test_set_stream_wildcard_mentions_notify(self) -> None:
         """
@@ -3733,7 +3739,9 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, f"{property_name} is not a string")
+        self.assert_json_error(
+            result, "Invalid subscription_data[0]: Value error, color is not a valid hex color code"
+        )
 
     def test_json_subscription_property_invalid_stream(self) -> None:
         test_user = self.example_user("hamlet")
@@ -3842,7 +3850,9 @@ class SubscriptionRestApiTest(ZulipTestCase):
             ).decode(),
         }
         result = self.api_post(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, 'subscriptions[0]["color"] is not a valid hex color code')
+        self.assert_json_error(
+            result, "Invalid subscriptions[0]: Value error, add.color is not a valid hex color code"
+        )
 
     def test_api_valid_property(self) -> None:
         """
@@ -3885,7 +3895,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         result = self.api_patch(
             user,
             "/api/v1/users/me/subscriptions/121",
-            {"property": "is_muted", "value": "somevalue"},
+            {"property": "is_muted", "value": orjson.dumps(True).decode()},
         )
         self.assert_json_error(result, "Invalid channel ID")
 
@@ -3900,8 +3910,11 @@ class SubscriptionRestApiTest(ZulipTestCase):
             result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
             self.assert_json_error(result, expected_message)
 
-        check_for_error(["foo"], "add[0] is not a dict")
-        check_for_error([{"bogus": "foo"}], "name key is missing from add[0]")
+        check_for_error(
+            ["foo"],
+            "Invalid add[0]: Input should be a valid dictionary or instance of AddSubscriptionData",
+        )
+        check_for_error([{"bogus": "foo"}], 'add[0]["name"] field is missing: Field required')
         check_for_error([{"name": {}}], 'add[0]["name"] is not a string')
 
     def test_bad_principals(self) -> None:
@@ -3913,7 +3926,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "principals": orjson.dumps([{}]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "principals is not an allowed_type")
+        self.assert_json_error(result, 'principals["list[str]"][0] is not a string')
 
     def test_bad_delete_parameters(self) -> None:
         user = self.example_user("hamlet")
