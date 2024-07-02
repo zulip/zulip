@@ -76,6 +76,7 @@ Dependencies:
 
 """
 
+import logging
 import re
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableSequence, Optional, Sequence
 
@@ -491,7 +492,11 @@ class FencedBlockPreprocessor(Preprocessor):
                 startinline=True,
             )
 
-            code = highliter.hilite().rstrip("\n")
+            try:
+                code = highliter.hilite().rstrip("\n")
+            except Exception as e:
+                logging.error("Processing fenced code block with lang %s", e)
+                code = CODE_WRAP.format(langclass, self._escape(text))
         else:
             code = CODE_WRAP.format(langclass, self._escape(text))
 
