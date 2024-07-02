@@ -36,6 +36,9 @@
         // Type stubs are not part of the top-level project.
         "web/src/types",
 
+        // This is a separate package with its own TypeScript configuration.
+        "help-beta",
+
         // Skip walking large generated directories.
         "docs/_build",
         "static/webpack-bundles",
