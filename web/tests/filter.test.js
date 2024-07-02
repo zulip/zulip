@@ -1945,7 +1945,7 @@ test("navbar_helpers", () => {
             terms: dm_group_including_guest,
             is_common_narrow: true,
             icon: "envelope",
-            title: "translated: alice (guest) and joe",
+            title: "joe and translated: alice (guest)",
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
         {
@@ -1954,8 +1954,8 @@ test("navbar_helpers", () => {
             icon: "envelope",
             title: properly_separated_names([
                 joe.full_name,
-                steve.full_name,
                 "sally@doesnotexist.com",
+                steve.full_name,
             ]),
             redirect_url_with_search: "/#narrow/dm/undefined",
         },
