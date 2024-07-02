@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
+import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
@@ -47,6 +48,22 @@ export const LONG_HOVER_DELAY: [number, number] = [750, 20];
 // keyboard shortcut. For these tooltips, it's very important to avoid
 // distracting users unnecessarily.
 export const EXTRA_LONG_HOVER_DELAY: [number, number] = [1500, 20];
+export const topic_visibility_tooltip_prop = {
+    delay: LONG_HOVER_DELAY,
+    appendTo: () => document.body,
+    onShow(instance: tippy.Instance) {
+        const $elem = $(instance.reference);
+        const current_visibility_policy_str = $elem.attr("data-tippy-content");
+        instance.setContent(
+            ui_util.parse_html(
+                render_change_visibility_policy_button_tooltip({current_visibility_policy_str}),
+            ),
+        );
+    },
+    onHidden(instance: tippy.Instance) {
+        instance.destroy();
+    },
+};
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -656,6 +673,15 @@ export function initialize(): void {
                 ),
             );
         },
+    });
+
+    tippy.delegate("body", {
+        target: [
+            "#recent_view .recipient_bar_icon",
+            "#inbox-view .recipient_bar_icon",
+            "#left-sidebar-container .change_visibility_policy > i",
+        ].join(","),
+        ...topic_visibility_tooltip_prop,
     });
 
     tippy.delegate("body", {
