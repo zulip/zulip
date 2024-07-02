@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_jump_to_sent_message_conversation_banner from "../templates/compose_banner/jump_to_sent_message_conversation_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
@@ -225,6 +226,77 @@ function get_above_composebox_narrow_url(message: Message): string {
         above_composebox_narrow_url = message.pm_with_url;
     }
     return above_composebox_narrow_url;
+}
+
+export function maybe_show_one_time_non_interleaved_view_messages_fading_banner(): void {
+    // Remove message fading banners if exists. Helps in live-updating banner.
+    compose_banner.clear_non_interleaved_view_messages_fading_banner();
+    compose_banner.clear_interleaved_view_messages_fading_banner();
+
+    if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("non_interleaved_view_messages_fading")) {
+        return;
+    }
+
+    // Wait to display the banner the first time until there's actually fading.
+    const faded_messages_exist = $(".focused-message-list .recipient_row").hasClass("message-fade");
+    if (!faded_messages_exist) {
+        return;
+    }
+
+    const context = {
+        banner_type: compose_banner.INFO,
+        classname: compose_banner.CLASSNAMES.non_interleaved_view_messages_fading,
+        banner_text: $t({
+            defaultMessage:
+                "Messages in your view are faded to remind you that you are viewing a different conversation from the one you are composing to.",
+        }),
+        button_text: $t({defaultMessage: "Got it"}),
+        hide_close_button: true,
+    };
+    const new_row_html = render_compose_banner(context);
+
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+}
+
+export function maybe_show_one_time_interleaved_view_messages_fading_banner(): void {
+    // Remove message fading banners if exists. Helps in live-updating banner.
+    compose_banner.clear_non_interleaved_view_messages_fading_banner();
+    compose_banner.clear_interleaved_view_messages_fading_banner();
+
+    if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("interleaved_view_messages_fading")) {
+        return;
+    }
+
+    // Wait to display the banner the first time until there's actually fading.
+    const faded_messages_exist = $(".focused-message-list .recipient_row").hasClass("message-fade");
+    if (!faded_messages_exist) {
+        return;
+    }
+
+    let banner_text = $t({
+        defaultMessage:
+            "Your message view does not include the conversation you are composing to. Messages in other conversations are faded to make it easier to see where your message will be sent.",
+    });
+    const not_faded_messages_exist = $(".focused-message-list .recipient_row").is(
+        ":not(.message-fade)",
+    );
+    if (not_faded_messages_exist) {
+        banner_text = $t({
+            defaultMessage:
+                "Your message view is not limited to the conversation you are composing to. Messages in other conversations are faded to make it easier to see where your message will be sent.",
+        });
+    }
+
+    const context = {
+        banner_type: compose_banner.INFO,
+        classname: compose_banner.CLASSNAMES.interleaved_view_messages_fading,
+        banner_text,
+        button_text: $t({defaultMessage: "Got it"}),
+        hide_close_button: true,
+    };
+    const new_row_html = render_compose_banner(context);
+
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
 export function reify_message_id(opts: {old_id: number; new_id: number}): void {

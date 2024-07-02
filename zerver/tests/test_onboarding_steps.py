@@ -25,10 +25,12 @@ class TestGetNextOnboardingSteps(ZulipTestCase):
 
         do_mark_onboarding_step_as_read(self.user, "intro_inbox_view_modal")
         onboarding_steps = get_next_onboarding_steps(self.user)
-        self.assert_length(onboarding_steps, 3)
+        self.assert_length(onboarding_steps, 5)
         self.assertEqual(onboarding_steps[0]["name"], "intro_recent_view_modal")
         self.assertEqual(onboarding_steps[1]["name"], "first_stream_created_banner")
         self.assertEqual(onboarding_steps[2]["name"], "jump_to_conversation_banner")
+        self.assertEqual(onboarding_steps[3]["name"], "non_interleaved_view_messages_fading")
+        self.assertEqual(onboarding_steps[4]["name"], "interleaved_view_messages_fading")
 
         with self.settings(TUTORIAL_ENABLED=False):
             onboarding_steps = get_next_onboarding_steps(self.user)
