@@ -141,7 +141,7 @@ function create_user_group() {
             $t_html({defaultMessage: "The group description cannot contain newline characters."}),
             $(".user_group_create_info"),
         );
-        return undefined;
+        return;
     }
     data.name = group_name;
     data.description = description;
@@ -157,7 +157,7 @@ function create_user_group() {
         text: $t({defaultMessage: "Creating group..."}),
     });
 
-    return channel.post({
+    channel.post({
         url: "/json/user_groups/create",
         data,
         success() {
