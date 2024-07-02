@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -18,6 +19,7 @@ import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
@@ -96,8 +98,12 @@ function build_stream_popover(opts) {
         return;
     }
 
+    const stream_hash = hash_util.by_stream_url(stream_id);
     const content = render_left_sidebar_stream_actions_popover({
-        stream: sub_store.get(stream_id),
+        stream: {
+            ...sub_store.get(stream_id),
+            url: browser_history.get_full_url(stream_hash),
+        },
     });
 
     popover_menus.toggle_popover_menu(elt, {
@@ -121,7 +127,14 @@ function build_stream_popover(opts) {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
 
-                const stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
+                // Admin can change any stream's name & description either stream is public or
+                // private, subscribed or unsubscribed.
+                const can_change_name_description = current_user.is_admin;
+                const can_change_stream_permissions = stream_data.can_change_permissions(sub);
+                let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
+                if (!can_change_stream_permissions && !can_change_name_description) {
+                    stream_edit_hash = hash_util.channels_settings_edit_url(sub, "personal");
+                }
                 browser_history.go_to_location(stream_edit_hash);
             });
 
@@ -191,6 +204,10 @@ function build_stream_popover(opts) {
                 $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
                 $(e.currentTarget).hide();
                 e.stopPropagation();
+            });
+
+            new ClipboardJS($popper.find(".copy_stream_link")[0]).on("success", () => {
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden() {
