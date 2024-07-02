@@ -666,6 +666,18 @@ class ArchivedUserMessage(AbstractUserMessage):
         return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
 
 
+class ImageAttachment(models.Model):
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    path_id = models.TextField(db_index=True, unique=True)
+
+    original_width_px = models.IntegerField()
+    original_height_px = models.IntegerField()
+    frames = models.IntegerField()
+
+    # Contains a list of zerver.lib.thumbnail.StoredThumbnailFormat objects, serialized
+    thumbnail_metadata = models.JSONField(default=list, null=False)
+
+
 class AbstractAttachment(models.Model):
     file_name = models.TextField(db_index=True)
 
@@ -682,6 +694,8 @@ class AbstractAttachment(models.Model):
     )
     # Size of the uploaded file, in bytes
     size = models.IntegerField()
+
+    content_type = models.TextField(null=True)
 
     # The two fields below serve as caches to let us avoid looking up
     # the corresponding messages/streams to check permissions before

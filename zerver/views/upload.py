@@ -2,13 +2,14 @@ import base64
 import binascii
 import os
 from datetime import timedelta
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 from urllib.parse import quote, urlsplit
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
 from django.core.signing import BadSignature, TimestampSigner
+from django.db import transaction
 from django.http import (
     FileResponse,
     HttpRequest,
@@ -30,6 +31,11 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mime_types import guess_type
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
+from zerver.lib.thumbnail import (
+    THUMBNAIL_OUTPUT_FORMATS,
+    BaseThumbnailFormat,
+    StoredThumbnailFormat,
+)
 from zerver.lib.upload import (
     check_upload_within_quota,
     get_public_upload_root_url,
@@ -38,7 +44,8 @@ from zerver.lib.upload import (
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
-from zerver.models import UserProfile
+from zerver.models import ImageAttachment, UserProfile
+from zerver.worker.thumbnail import ensure_thumbnails
 
 
 def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
@@ -156,8 +163,16 @@ def serve_file_backend(
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     realm_id_str: str,
     filename: str,
+    thumbnail_format: Optional[str] = None,
 ) -> HttpResponseBase:
-    return serve_file(request, maybe_user_profile, realm_id_str, filename, url_only=False)
+    return serve_file(
+        request,
+        maybe_user_profile,
+        realm_id_str,
+        filename,
+        url_only=False,
+        thumbnail_format=thumbnail_format,
+    )
 
 
 def serve_file_url_backend(
@@ -193,6 +208,7 @@ def serve_file(
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     realm_id_str: str,
     filename: str,
+    thumbnail_format: Optional[str] = None,
     url_only: bool = False,
     force_download: bool = False,
 ) -> HttpResponseBase:
@@ -225,8 +241,81 @@ def serve_file(
         patch_vary_headers(response, ("Accept",))
         return response
     if url_only:
+        # TODO: Does this need to handle thumbnails?
         url = generate_unauthed_file_access_url(path_id)
         return json_success(request, data=dict(url=url))
+
+    if thumbnail_format is not None:
+        # Check if this is something that we thumbnail at all
+        try:
+            image_attachment = ImageAttachment.objects.get(path_id=path_id)
+        except ImageAttachment.DoesNotExist:
+            return serve_image_error(404, "images/errors/image-not-exist.png")
+
+        # Validate that this is a potential thumbnail format
+        requested_format = BaseThumbnailFormat.from_string(thumbnail_format)
+        if requested_format is None:
+            return serve_image_error(404, "images/errors/image-not-exist.png")
+
+        rendered_formats = [StoredThumbnailFormat(**f) for f in image_attachment.thumbnail_metadata]
+
+        # We never generate animated versions if the input was still,
+        # so filter those out
+        if image_attachment.frames == 1:
+            potential_output_formats = [
+                thumbnail_format
+                for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS
+                if not thumbnail_format.animated
+            ]
+        else:
+            potential_output_formats = THUMBNAIL_OUTPUT_FORMATS
+        if requested_format not in potential_output_formats:
+            if rendered_formats == []:
+                # We haven't rendered anything, and they requested
+                # something we don't support.
+                return serve_image_error(404, "images/errors/image-not-exist.png")
+
+            accepted_types = sorted(
+                request.accepted_types,
+                key=lambda e: float(e.params.get("q", "1.0")),
+                reverse=True,
+            )
+
+            def q_for(content_type: str) -> float:
+                for potential_type in accepted_types:
+                    if potential_type.match(content_type):
+                        return float(potential_type.params.get("q", "1.0"))
+                return 0.0
+
+            # Serve a "close" format -- preferring animated which
+            # matches, followed by the format they requested, or one
+            # their browser supports, in the size closest to what they
+            # requested, with the minimum bytes.
+            def grade_format(
+                possible_format: StoredThumbnailFormat,
+            ) -> Tuple[bool, bool, float, int, int]:
+                assert requested_format is not None
+                return (
+                    possible_format.animated != requested_format.animated,
+                    possible_format.extension != requested_format.extension,
+                    1.0 - q_for(possible_format.content_type),
+                    abs(requested_format.max_width - possible_format.max_width),
+                    possible_format.byte_size,
+                )
+
+            requested_format = sorted(rendered_formats, key=grade_format)[0]
+        elif requested_format not in rendered_formats:
+            print(f"{requested_format} not in {rendered_formats}")
+            # They requested a valid format, but one we've not
+            # rendered yet.  Take a lock on the row, then render every
+            # missing format, synchronously.
+            with transaction.atomic(savepoint=False):
+                ensure_thumbnails(
+                    ImageAttachment.objects.select_for_update().get(id=image_attachment.id)
+                )
+
+        # Update the path that we are fetching to be the thumbnail
+        path_id = "thumbnail/" + path_id + "/" + str(requested_format)
 
     if settings.LOCAL_UPLOADS_DIR is not None:
         return serve_local(request, path_id, force_download=force_download)
@@ -300,10 +389,7 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
     else:
         response = internal_nginx_redirect(quote(f"/internal/local/user_avatars/{path}"))
 
-    # We do _not_ mark the contents as immutable for caching purposes,
-    # since the path for avatar images is hashed only by their user-id
-    # and a salt, and as such are reused when a user's avatar is
-    # updated.
+    patch_cache_control(response, max_age=31536000, public=True, immutable=True)
     return response
 
 
@@ -325,5 +411,5 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         )
     check_upload_within_quota(user_profile.realm, file_size)
 
-    uri = upload_message_attachment_from_request(user_file, user_profile, file_size)
+    uri = upload_message_attachment_from_request(user_file, user_profile)
     return json_success(request, data={"uri": uri})

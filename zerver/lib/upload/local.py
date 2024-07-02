@@ -80,11 +80,9 @@ class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_attachment(
         self,
         path_id: str,
-        uploaded_file_size: int,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
-        target_realm: Realm,
+        user_profile: Optional[UserProfile],
     ) -> None:
         write_local_file("files", path_id, file_data)
 
@@ -125,6 +123,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         user_profile: UserProfile,
         image_data: bytes,
         content_type: Optional[str],
+        future: bool = True,
     ) -> None:
         output_path = os.path.join(
             assert_is_not_none(settings.LOCAL_AVATARS_DIR),

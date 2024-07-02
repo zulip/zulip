@@ -26,7 +26,7 @@ from typing import (
     Union,
     cast,
 )
-from urllib.parse import parse_qs, quote, urlencode, urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qs, quote, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -46,6 +46,7 @@ import requests
 import uri_template
 import urllib3.exceptions
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
@@ -68,7 +69,7 @@ from zerver.lib.mention import (
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
-from zerver.lib.thumbnail import user_uploads_or_external
+from zerver.lib.thumbnail import get_user_upload_previews
 from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
@@ -138,6 +139,7 @@ class DbData:
     sent_by_bot: bool
     stream_names: Dict[str, int]
     translate_emoticons: bool
+    user_upload_previews: Dict[str, Optional[Tuple[str, bool]]]
 
 
 # Format version of the Markdown rendering; stored along with rendered
@@ -628,18 +630,23 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if data_id is not None:
             a.set("data-id", data_id)
         img = SubElement(a, "img")
-        if (
-            settings.THUMBNAIL_IMAGES
-            and (not already_thumbnailed)
-            and user_uploads_or_external(image_url)
-        ):
-            # We strip leading '/' from relative URLs here to ensure
-            # consistency in what gets passed to /thumbnail
-            image_url = image_url.lstrip("/")
-            img.set("src", "/thumbnail?" + urlencode({"url": image_url, "size": "thumbnail"}))
-            img.set(
-                "data-src-fullsize", "/thumbnail?" + urlencode({"url": image_url, "size": "full"})
-            )
+        if image_url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
+            path_id = image_url[len("/user_uploads/") :]
+            if path_id in self.zmd.zulip_db_data.user_upload_previews:
+                preview_data = self.zmd.zulip_db_data.user_upload_previews[path_id]
+                if preview_data is None:
+                    # This image has not yet been thumbnailed --
+                    # render a spinner, and we will re-render once the
+                    # thumbnailing completes.  TODO: Make this
+                    # client-side
+                    img.set("src", staticfiles_storage.url("images/loading/loader-white.svg"))
+                else:
+                    img.set("src", preview_data[0])
+                    img.set("data-src-fullsize", image_url)
+                    if preview_data[1]:
+                        img.set("data-animated", "true")
+            else:
+                img.set("src", image_url)
         else:
             img.set("src", image_url)
 
@@ -736,6 +743,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
+
+        # Check against the previews we generated -- if we didn't
+        # generate at least a stub spinner preview, then this isn't a
+        # valid image file.
+        if url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
+            path_id = url[len("/user_uploads/") :]
+            return path_id in self.zmd.zulip_db_data.user_upload_previews
 
         return any(parsed_url.path.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
 
@@ -2668,6 +2682,7 @@ def do_convert(
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
             translate_emoticons=translate_emoticons,
+            user_upload_previews=get_user_upload_previews(message_realm.id, content),
         )
 
     try:

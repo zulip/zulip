@@ -948,7 +948,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(
             url,
-            "/user_avatars/5/fc2b9f1a81f4508a4df2d95451a2a77e0524ca0e-medium.png?version=2",
+            "/user_avatars/5/ff062b0fee41738b38c4312bb33bdf3fe2aad463-medium.png",
         )
 
         url = get_avatar_field(
@@ -998,7 +998,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         with self.settings(S3_AVATAR_BUCKET="bucket"):
             backend = S3UploadBackend()
             self.assertEqual(
-                backend.get_avatar_url("hash", False), "https://bucket.s3.amazonaws.com/hash"
+                backend.get_avatar_url("hash", False), "https://bucket.s3.amazonaws.com/hash.png"
             )
             self.assertEqual(
                 backend.get_avatar_url("hash", True),
@@ -1104,11 +1104,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.save()
         response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
         redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "?foo=bar"))
 
         response = self.client_get(f"/avatar/{cordelia.id}", {"foo": "bar"})
         redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "?foo=bar"))
 
         response = self.client_get("/avatar/")
         self.assertEqual(response.status_code, 404)
@@ -1119,11 +1119,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             # Test /avatar/<email_or_id> endpoint with HTTP basic auth.
             response = self.api_get(hamlet, "/avatar/cordelia@zulip.com", {"foo": "bar"})
             redirect_url = response["Location"]
-            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "?foo=bar"))
 
             response = self.api_get(hamlet, f"/avatar/{cordelia.id}", {"foo": "bar"})
             redirect_url = response["Location"]
-            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "?foo=bar"))
 
             # Test cross_realm_bot avatar access using email.
             response = self.api_get(hamlet, "/avatar/welcome-bot@zulip.com", {"foo": "bar"})
@@ -1179,11 +1179,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.save()
         response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
         redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "&foo=bar"))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "?foo=bar"))
 
         response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
         redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "&foo=bar"))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "?foo=bar"))
 
         self.logout()
 
@@ -1191,11 +1191,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             # Test /avatar/<email_or_id>/medium endpoint with HTTP basic auth.
             response = self.api_get(hamlet, "/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
             redirect_url = response["Location"]
-            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "&foo=bar"))
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "?foo=bar"))
 
             response = self.api_get(hamlet, f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
             redirect_url = response["Location"]
-            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "&foo=bar"))
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "?foo=bar"))
 
             # Without spectators enabled, no unauthenticated access.
             response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
@@ -1836,14 +1836,14 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(0, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
 
         data = b"zulip!"
-        upload_message_attachment("dummy.txt", len(data), "text/plain", data, self.user_profile)
+        upload_message_attachment("dummy.txt", "text/plain", data, self.user_profile)
         # notify_attachment_update function calls currently_used_upload_space_bytes which
         # updates the cache.
         self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
         self.assert_length(data, self.realm.currently_used_upload_space_bytes())
 
         data2 = b"more-data!"
-        upload_message_attachment("dummy2.txt", len(data2), "text/plain", data2, self.user_profile)
+        upload_message_attachment("dummy2.txt", "text/plain", data2, self.user_profile)
         self.assertEqual(
             len(data) + len(data2),
             cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0],
@@ -1876,7 +1876,7 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assert_length(data2, self.realm.currently_used_upload_space_bytes())
 
         data3 = b"even-more-data!"
-        upload_message_attachment("dummy3.txt", len(data3), "text/plain", data3, self.user_profile)
+        upload_message_attachment("dummy3.txt", "text/plain", data3, self.user_profile)
         self.assertEqual(len(data2) + len(data3), self.realm.currently_used_upload_space_bytes())
 
 

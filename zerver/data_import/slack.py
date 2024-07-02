@@ -44,7 +44,7 @@ from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
 )
-from zerver.lib.emoji import codepoint_to_name
+from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import resize_logo
@@ -223,7 +223,7 @@ def build_realmemoji(
             realmemoji = RealmEmoji(
                 name=emoji_name,
                 id=emoji_id,
-                file_name=posixpath.basename(split_url.path),
+                file_name=get_emoji_file_name(posixpath.basename(split_url.path), emoji_id),
                 deactivated=False,
             )
 

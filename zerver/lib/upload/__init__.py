@@ -9,9 +9,10 @@ from urllib.parse import unquote, urljoin
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.utils.translation import gettext as _
 
-from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import guess_type
 from zerver.lib.outgoing_http import OutgoingSession
@@ -19,6 +20,7 @@ from zerver.lib.thumbnail import (
     MAX_EMOJI_GIF_FILE_SIZE_BYTES,
     MEDIUM_AVATAR_SIZE,
     BadImageError,
+    maybe_thumbnail,
     resize_avatar,
     resize_emoji,
 )
@@ -41,7 +43,12 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 
 
 def create_attachment(
-    file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
+    file_name: str,
+    path_id: str,
+    content_type: str,
+    file_data: bytes,
+    user_profile: UserProfile,
+    realm: Realm,
 ) -> None:
     assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
         user_profile.delivery_email
@@ -51,8 +58,10 @@ def create_attachment(
         path_id=path_id,
         owner=user_profile,
         realm=realm,
-        size=file_size,
+        size=len(file_data),
+        content_type=content_type,
     )
+    maybe_thumbnail(attachment, file_data)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
@@ -118,7 +127,6 @@ def sanitize_name(value: str) -> str:
 
 def upload_message_attachment(
     uploaded_file_name: str,
-    uploaded_file_size: int,
     content_type: str,
     file_data: bytes,
     user_profile: UserProfile,
@@ -129,21 +137,21 @@ def upload_message_attachment(
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
-    upload_backend.upload_message_attachment(
-        path_id,
-        uploaded_file_size,
-        content_type,
-        file_data,
-        user_profile,
-        target_realm,
-    )
-    create_attachment(
-        uploaded_file_name,
-        path_id,
-        user_profile,
-        target_realm,
-        uploaded_file_size,
-    )
+    with transaction.atomic():
+        upload_backend.upload_message_attachment(
+            path_id,
+            content_type,
+            file_data,
+            user_profile,
+        )
+        create_attachment(
+            uploaded_file_name,
+            path_id,
+            content_type,
+            file_data,
+            user_profile,
+            target_realm,
+        )
     return f"/user_uploads/{path_id}"
 
 
@@ -170,11 +178,11 @@ def claim_attachment(
 
 
 def upload_message_attachment_from_request(
-    user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
+    user_file: UploadedFile, user_profile: UserProfile
 ) -> str:
     uploaded_file_name, content_type = get_file_info(user_file)
     return upload_message_attachment(
-        uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
+        uploaded_file_name, content_type, user_file.read(), user_profile
     )
 
 
@@ -208,6 +216,7 @@ def write_avatar_images(
     *,
     content_type: Optional[str],
     backend: Optional[ZulipUploadBackend] = None,
+    future: bool = True,
 ) -> None:
     if backend is None:
         backend = upload_backend
@@ -216,6 +225,7 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=image_data,
         content_type=content_type,
+        future=future,
     )
 
     backend.upload_single_avatar_image(
@@ -223,6 +233,7 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=resize_avatar(image_data),
         content_type="image/png",
+        future=future,
     )
 
     backend.upload_single_avatar_image(
@@ -230,6 +241,7 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=resize_avatar(image_data, MEDIUM_AVATAR_SIZE),
         content_type="image/png",
+        future=future,
     )
 
 
@@ -238,23 +250,31 @@ def upload_avatar_image(
     user_profile: UserProfile,
     content_type: Optional[str] = None,
     backend: Optional[ZulipUploadBackend] = None,
+    future: bool = True,
 ) -> None:
     if content_type is None:
         content_type = guess_type(user_file.name)[0]
-    file_path = user_avatar_path(user_profile)
+    file_path = user_avatar_path(user_profile, future=future)
 
     image_data = user_file.read()
     write_avatar_images(
-        file_path, user_profile, image_data, content_type=content_type, backend=backend
+        file_path,
+        user_profile,
+        image_data,
+        content_type=content_type,
+        backend=backend,
+        future=future,
     )
 
 
 def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    source_file_path = user_avatar_path(source_profile)
-    target_file_path = user_avatar_path(target_profile)
+    source_file_path = user_avatar_path(source_profile, future=False)
+    target_file_path = user_avatar_path(target_profile, future=True)
 
     image_data, content_type = upload_backend.get_avatar_contents(source_file_path)
-    write_avatar_images(target_file_path, target_profile, image_data, content_type=content_type)
+    write_avatar_images(
+        target_file_path, target_profile, image_data, content_type=content_type, future=True
+    )
 
 
 def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None:
@@ -271,11 +291,12 @@ def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None
         user_profile=user_profile,
         image_data=resized_avatar,
         content_type="image/png",
+        future=False,
     )
 
 
-def delete_avatar_image(user_profile: UserProfile) -> None:
-    path_id = user_avatar_path(user_profile)
+def delete_avatar_image(user_profile: UserProfile, avatar_version: int) -> None:
+    path_id = user_avatar_base_path_from_ids(user_profile.id, avatar_version, user_profile.realm_id)
     upload_backend.delete_avatar_image(path_id)
 
 

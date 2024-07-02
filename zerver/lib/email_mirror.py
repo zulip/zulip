@@ -327,7 +327,6 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
             if isinstance(attachment, bytes):
                 upload_url = upload_message_attachment(
                     filename,
-                    len(attachment),
                     content_type,
                     attachment,
                     sender,

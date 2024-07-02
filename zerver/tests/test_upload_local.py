@@ -30,9 +30,7 @@ from zerver.models.users import get_system_bot
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
     def test_upload_message_attachment(self) -> None:
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
@@ -47,9 +45,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_save_attachment_contents(self) -> None:
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
@@ -68,7 +64,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(user_profile.realm, internal_realm)
 
         url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
+            "dummy.txt", "text/plain", b"zulip!", user_profile, zulip_realm
         )
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
@@ -96,9 +92,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 1005):
-            url = upload_message_attachment(
-                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-            )
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
             path_id = re.sub(r"/user_uploads/", "", url)
