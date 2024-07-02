@@ -1,0 +1,17 @@
+{
+	"id": "95a9344a-2590-48ce-8d83-07e28b6d22c6",
+	"issueUrl": "https://radar-api.service.newrelic.com/accounts/1/issues/0ea2df1c-adab-45d2-aae0-042b609d2322?notifier=SLACK",
+	"title": "main_app-UBUNTU query result is > 2.0 for 1 minutes on 'High CPU'",
+	"priority": "CRITICAL",
+	"impactedEntities": ["main_app-UBUNTU"],
+	"totalIncidents": 1,
+	"state": "CLOSED",
+	"trigger": "INCIDENT_CLOSED",
+	"isCorrelated": false,
+    "createdAt": 1713766590228,
+	"updatedAt": "123123123129312381923",
+	"sources": ["newrelic"],
+	"alertPolicyNames": ["Golden Signals"],
+	"alertConditionNames": ["High CPU"],
+	"workflowName": "DBA Team workflow"
+}

@@ -782,9 +782,11 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
     "newrelic": [
-        ScreenshotConfig("incident_active_new.json", "001.png"),
-        ScreenshotConfig("incident_acknowledged_new.json", "002.png"),
-        ScreenshotConfig("incident_closed_new.json", "003.png"),
+        ScreenshotConfig("incident_activated_new_default_payload.json", "001.png"),
+        ScreenshotConfig("incident_activated_new_provided_base_payload.json", "002.png"),
+        ScreenshotConfig(
+            "incident_provided_base_with_zulip_custom_fields.json", "custom_payload_notif.png"
+        ),
     ],
     "opbeat": [ScreenshotConfig("error_reopen.json")],
     "opencollective": [ScreenshotConfig("one_time_donation.json")],
