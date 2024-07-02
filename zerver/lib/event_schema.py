@@ -1808,6 +1808,8 @@ group_type = DictType(
     required_keys=[
         ("id", int),
         ("name", str),
+        ("creator_id", OptionalType(int)),
+        ("date_created", int),
         ("members", ListType(int)),
         ("direct_subgroup_ids", ListType(int)),
         ("description", str),

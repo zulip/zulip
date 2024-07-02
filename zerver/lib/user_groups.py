@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from typing import Collection, Dict, Iterable, Iterator, List, Mapping, Optional, TypedDict, Union
 
 from django.conf import settings
@@ -12,6 +13,7 @@ from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL, Literal
 
 from zerver.lib.exceptions import JsonableError, PreviousSettingValueMismatchedError
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
 from zerver.models import (
     GroupGroupMembership,
@@ -42,6 +44,8 @@ class UserGroupDict(TypedDict):
     id: int
     name: str
     description: str
+    creator_id: int | None
+    date_created: int
     members: List[int]
     direct_subgroup_ids: List[int]
     is_system_group: bool
@@ -366,9 +370,22 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
 
     group_dicts: Dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
+        if user_group.creator is not None:
+            creator_id: Optional[int] = user_group.creator.id
+        else:
+            creator_id = None
+
+        # This check is necessary to make mypy happy
+        date_created: datetime = (
+            user_group.date_created
+            if user_group.date_created is not None
+            else Realm.objects.get(id=user_group.realm_id).date_created
+        )
         group_dicts[user_group.id] = dict(
             id=user_group.id,
             name=user_group.name,
+            creator_id=creator_id,
+            date_created=datetime_to_timestamp(date_created),
             description=user_group.description,
             members=[],
             direct_subgroup_ids=[],
