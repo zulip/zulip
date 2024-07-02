@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
@@ -456,10 +457,13 @@ export function set_up() {
             password_quality = (await import("./password_quality")).password_quality;
             $("#pw_strength .bar").removeClass("hide");
 
-            $("#new_password").on("input", () => {
-                const $field = $("#new_password");
-                password_quality($field.val(), $("#pw_strength .bar"), $field);
-            });
+            const $new_pw_field = $("#new_password");
+            $new_pw_field.on(
+                "input",
+                _.debounce(() => {
+                    password_quality($new_pw_field.val(), $("#pw_strength .bar"), $new_pw_field);
+                }, 500),
+            );
         }
     });
 
