@@ -11,6 +11,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.per_request_cache import return_same_value_during_entire_request
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
+from zerver.models.users import UserProfile
 
 if TYPE_CHECKING:
     from zerver.models import Recipient
@@ -128,6 +129,8 @@ def bulk_fetch_stream_names(
 
 def bulk_fetch_user_display_recipients(
     recipient_tuples: Set[Tuple[int, int, int]],
+    *,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> Dict[int, List[UserDisplayRecipient]]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
@@ -162,7 +165,18 @@ def bulk_fetch_user_display_recipients(
         user_ids_to_fetch |= huddle_user_ids
 
     # Fetch the needed user dictionaries.
-    user_display_recipients = bulk_fetch_single_user_display_recipients(list(user_ids_to_fetch))
+    if user_profile_cache is not None:
+        user_display_recipients = {
+            id: UserDisplayRecipient(
+                email=user_profile_cache[id].email,
+                full_name=user_profile_cache[id].full_name,
+                id=id,
+                is_mirror_dummy=user_profile_cache[id].is_mirror_dummy,
+            )
+            for id in user_ids_to_fetch
+        }
+    else:
+        user_display_recipients = bulk_fetch_single_user_display_recipients(list(user_ids_to_fetch))
 
     result = {}
 
@@ -180,6 +194,7 @@ def bulk_fetch_user_display_recipients(
 
 def bulk_fetch_display_recipients(
     recipient_tuples: Set[Tuple[int, int, int]],
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> Dict[int, DisplayRecipientT]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
@@ -195,7 +210,7 @@ def bulk_fetch_display_recipients(
 
     stream_display_recipients = bulk_fetch_stream_names(stream_recipients)
     personal_and_huddle_display_recipients = bulk_fetch_user_display_recipients(
-        personal_and_huddle_recipients
+        personal_and_huddle_recipients, user_profile_cache=user_profile_cache
     )
 
     # Glue the dicts together and return:

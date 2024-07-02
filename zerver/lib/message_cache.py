@@ -5,6 +5,7 @@ from email.headerregistry import Address
 from typing import Any, Dict, Iterable, List, Optional, TypedDict
 
 import orjson
+from django_stubs_ext import ValuesQuerySet
 
 from zerver.lib.avatar import get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_set_many, cache_with_key, to_dict_cache_key, to_dict_cache_key_id
@@ -27,6 +28,18 @@ class RawReactionRow(TypedDict):
     user_profile__email: str
     user_profile__full_name: str
     user_profile_id: int
+
+
+class SenderInfoDict(TypedDict):
+    id: int
+    full_name: str
+    delivery_email: str
+    email: str
+    realm__string_id: str
+    avatar_source: str
+    avatar_version: int
+    is_mirror_dummy: bool
+    email_address_visibility: int
 
 
 def sew_messages_and_reactions(
@@ -73,8 +86,16 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24)
-def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -> bytes:
-    return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
+def message_to_encoded_cache(
+    message: Message,
+    realm_id: Optional[int] = None,
+    is_channel_unsubscription_notification: bool = False,
+) -> bytes:
+    return MessageDict.messages_to_encoded_cache(
+        [message],
+        realm_id,
+        is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+    )[message.id]
 
 
 def update_message_cache(
@@ -151,13 +172,22 @@ class MessageDict:
     """
 
     @staticmethod
-    def wide_dict(message: Message, realm_id: Optional[int] = None) -> Dict[str, Any]:
+    def wide_dict(
+        message: Message,
+        realm_id: Optional[int] = None,
+        is_channel_unsubscription_notification: bool = False,
+        user_profile_cache: Optional[Dict[int, UserProfile]] = None,
+    ) -> Dict[str, Any]:
         """
         The next two lines get the cacheable field related
         to our message object, with the side effect of
         populating the cache.
         """
-        encoded_object_bytes = message_to_encoded_cache(message, realm_id)
+        encoded_object_bytes = message_to_encoded_cache(
+            message,
+            realm_id,
+            is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+        )
         obj = extract_message_dict(encoded_object_bytes)
 
         """
@@ -166,8 +196,8 @@ class MessageDict:
         since that step happens later in the queue
         processor.
         """
-        MessageDict.bulk_hydrate_sender_info([obj])
-        MessageDict.bulk_hydrate_recipient_info([obj])
+        MessageDict.bulk_hydrate_sender_info([obj], user_profile_cache=user_profile_cache)
+        MessageDict.bulk_hydrate_recipient_info([obj], user_profile_cache=user_profile_cache)
 
         return obj
 
@@ -273,15 +303,25 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache(
-        messages: Iterable[Message], realm_id: Optional[int] = None
+        messages: Iterable[Message],
+        realm_id: Optional[int] = None,
+        *,
+        is_channel_unsubscription_notification: bool = False,
     ) -> Dict[int, bytes]:
-        messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
+        messages_dict = MessageDict.messages_to_encoded_cache_helper(
+            messages,
+            realm_id,
+            is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+        )
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
         return encoded_messages
 
     @staticmethod
     def messages_to_encoded_cache_helper(
-        messages: Iterable[Message], realm_id: Optional[int] = None
+        messages: Iterable[Message],
+        realm_id: Optional[int] = None,
+        *,
+        is_channel_unsubscription_notification: bool = False,
     ) -> List[Dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects
@@ -317,7 +357,13 @@ class MessageDict:
             for message in messages
         ]
 
-        MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
+        if is_channel_unsubscription_notification:
+            for message in message_rows:
+                message["submessages"] = []
+                message["reactions"] = []
+        else:
+            MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
+
         return [MessageDict.build_dict_from_raw_db_row(row) for row in message_rows]
 
     @staticmethod
@@ -455,27 +501,46 @@ class MessageDict:
         return obj
 
     @staticmethod
-    def bulk_hydrate_sender_info(objs: List[Dict[str, Any]]) -> None:
+    def bulk_hydrate_sender_info(
+        objs: List[Dict[str, Any]], user_profile_cache: Optional[Dict[int, UserProfile]] = None
+    ) -> None:
         sender_ids = list({obj["sender_id"] for obj in objs})
 
         if not sender_ids:
             return
+        sender_dict: Dict[int, SenderInfoDict] = {}
 
-        query = UserProfile.objects.values(
-            "id",
-            "full_name",
-            "delivery_email",
-            "email",
-            "realm__string_id",
-            "avatar_source",
-            "avatar_version",
-            "is_mirror_dummy",
-            "email_address_visibility",
-        )
+        if user_profile_cache:
+            for id in sender_ids:
+                user = user_profile_cache[id]
 
-        rows = query_for_ids(query, sender_ids, "zerver_userprofile.id")
+                sender_dict[user.id] = SenderInfoDict(
+                    id=user.id,
+                    full_name=user.full_name,
+                    delivery_email=user.delivery_email,
+                    email=user.email,
+                    realm__string_id=user.realm.string_id,
+                    avatar_source=user.avatar_source,
+                    avatar_version=user.avatar_version,
+                    is_mirror_dummy=user.is_mirror_dummy,
+                    email_address_visibility=user.email_address_visibility,
+                )
+        else:
+            query: ValuesQuerySet[UserProfile, SenderInfoDict] = UserProfile.objects.values(
+                "id",
+                "full_name",
+                "delivery_email",
+                "email",
+                "realm__string_id",
+                "avatar_source",
+                "avatar_version",
+                "is_mirror_dummy",
+                "email_address_visibility",
+            )
 
-        sender_dict = {row["id"]: row for row in rows}
+            rows = query_for_ids(query, sender_ids, "zerver_userprofile.id")
+
+            sender_dict = {row["id"]: row for row in rows}
 
         for obj in objs:
             sender_id = obj["sender_id"]
@@ -532,7 +597,9 @@ class MessageDict:
             obj["stream_id"] = recipient_type_id
 
     @staticmethod
-    def bulk_hydrate_recipient_info(objs: List[Dict[str, Any]]) -> None:
+    def bulk_hydrate_recipient_info(
+        objs: List[Dict[str, Any]], user_profile_cache: Optional[Dict[int, UserProfile]] = None
+    ) -> None:
         recipient_tuples = {  # We use set to eliminate duplicate tuples.
             (
                 obj["recipient_id"],
@@ -541,7 +608,9 @@ class MessageDict:
             )
             for obj in objs
         }
-        display_recipients = bulk_fetch_display_recipients(recipient_tuples)
+        display_recipients = bulk_fetch_display_recipients(
+            recipient_tuples, user_profile_cache=user_profile_cache
+        )
 
         for obj in objs:
             MessageDict.hydrate_recipient_info(obj, display_recipients[obj["recipient_id"]])
