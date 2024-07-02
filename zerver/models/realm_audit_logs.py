@@ -125,6 +125,8 @@ class AbstractRealmAuditLog(models.Model):
     USER_GROUP_DESCRIPTION_CHANGED = 721
     USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
 
+    CUSTOM_EMAIL_SENT = 800
+
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
