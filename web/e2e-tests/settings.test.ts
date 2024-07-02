@@ -33,13 +33,21 @@ async function open_settings(page: Page): Promise<void> {
 }
 
 async function close_settings_and_date_picker(page: Page): Promise<void> {
-    const date_picker_selector = ".custom_user_field_value.datepicker.form-control";
+    const date_picker_selector = ".custom_user_field_value.datepicker";
     await page.click(date_picker_selector);
 
     await page.waitForSelector(".flatpickr-calendar", {visible: true});
 
+    // Closes the calendar
     await page.keyboard.press("Escape");
     await page.waitForSelector(".flatpickr-calendar", {hidden: true});
+
+    // Verifies custom profile fields is still available
+    await page.waitForSelector(".custom_user_field_value.datepicker", {visible: true});
+
+    // Second escape closes the whole dialog
+    await page.keyboard.press("Escape");
+    await page.waitForSelector(".custom_user_field_value.datepicker", {hidden: true});
 }
 
 async function test_change_full_name(page: Page): Promise<void> {
