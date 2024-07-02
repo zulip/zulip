@@ -1869,6 +1869,12 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     @extend %hide-left-sidebar;
 
     &.fluid_layout_width {
+        /* Since left sidebar is closed, update margin-left from --left-sidebar-width
+           to --navbar-left-column-width. Add sufficient space to the right of left column */
+        .column-middle {
+            margin-left: calc(var(--navbar-left-column-width) + 30px);
+        }
+
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
