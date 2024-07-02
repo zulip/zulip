@@ -278,6 +278,8 @@ const realm_schema = z.object({
     realm_description: z.string(),
     realm_digest_emails_enabled: NOT_TYPED_YET,
     realm_digest_weekday: NOT_TYPED_YET,
+    realm_direct_message_initiator_group: z.number(),
+    realm_direct_message_permission_group: z.number(),
     realm_disallow_disposable_email_addresses: z.boolean(),
     realm_domains: z.array(
         z.object({
@@ -345,7 +347,6 @@ const realm_schema = z.object({
         }),
     ),
     realm_presence_disabled: z.boolean(),
-    realm_private_message_policy: z.number(),
     realm_push_notifications_enabled: z.boolean(),
     realm_push_notifications_enabled_end_timestamp: NOT_TYPED_YET,
     realm_require_unique_names: z.boolean(),

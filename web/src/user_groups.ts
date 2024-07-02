@@ -225,6 +225,16 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
     return false;
 }
 
+function get_display_name_for_system_group_option(setting_name: string, name: string): string {
+    if (setting_name === "direct_message_permission_group") {
+        if (name === "Nobody") {
+            return "Direct messages disabled";
+        }
+        return name.replace(" and ", " or ");
+    }
+    return name;
+}
+
 export function get_realm_user_groups_for_dropdown_list_widget(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
@@ -277,7 +287,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
                 throw new Error(`Unknown group name: ${group.name}`);
             }
             return {
-                name: group.display_name,
+                name: get_display_name_for_system_group_option(setting_name, group.display_name),
                 unique_id: user_group.id,
             };
         });

@@ -62,7 +62,6 @@ from zerver.models.realms import (
     InviteToRealmPolicyEnum,
     MoveMessagesBetweenStreamsPolicyEnum,
     OrgTypeEnum,
-    PrivateMessagePolicyEnum,
     WildcardMentionPolicyEnum,
 )
 from zerver.views.user_settings import check_settings_values
@@ -149,13 +148,14 @@ def update_realm(
     bot_creation_policy: Optional[Json[BotCreationPolicyEnum]] = None,
     can_create_public_channel_group: Optional[Json[GroupSettingChangeRequest]] = None,
     can_create_private_channel_group: Optional[Json[GroupSettingChangeRequest]] = None,
+    direct_message_initiator_group: Optional[Json[GroupSettingChangeRequest]] = None,
+    direct_message_permission_group: Optional[Json[GroupSettingChangeRequest]] = None,
     create_web_public_stream_policy: Optional[Json[CreateWebPublicStreamPolicyEnum]] = None,
     invite_to_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
     move_messages_between_streams_policy: Optional[
         Json[MoveMessagesBetweenStreamsPolicyEnum]
     ] = None,
     user_group_edit_policy: Optional[Json[CommonPolicyEnum]] = None,
-    private_message_policy: Optional[Json[PrivateMessagePolicyEnum]] = None,
     wildcard_mention_policy: Optional[Json[WildcardMentionPolicyEnum]] = None,
     video_chat_provider: Optional[Json[int]] = None,
     jitsi_server_url_raw: Annotated[

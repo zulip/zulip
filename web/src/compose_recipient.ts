@@ -18,10 +18,9 @@ import * as drafts from "./drafts";
 import * as dropdown_widget from "./dropdown_widget";
 import type {Option} from "./dropdown_widget";
 import {$t} from "./i18n";
+import {previous_direct_messages_exist} from "./message_util";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
-import * as settings_config from "./settings_config";
-import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
@@ -116,12 +115,7 @@ export function update_on_recipient_change(): void {
 export function get_posting_policy_error_message(): string {
     if (compose_state.selected_recipient_id === "direct") {
         const recipients = compose_pm_pill.get_user_ids_string();
-        if (!people.user_can_direct_message(recipients)) {
-            return $t({
-                defaultMessage: "You are not allowed to send direct messages in this organization.",
-            });
-        }
-        return "";
+        return compose_validate.check_dm_permissions_and_get_error_string(recipients);
     }
 
     if (!isNumber(compose_state.selected_recipient_id)) {
@@ -256,16 +250,16 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
 function get_options_for_recipient_widget(): Option[] {
     const options: (Option | DirectMessagesOption)[] =
         stream_data.get_options_for_dropdown_widget();
-
+    const recipients = compose_pm_pill.get_user_ids_string();
     const direct_messages_option = {
         is_direct_message: true,
         unique_id: compose_state.DIRECT_MESSAGE_ID,
         name: $t({defaultMessage: "Direct message"}),
     };
-
     if (
-        realm.realm_private_message_policy ===
-        settings_config.private_message_policy_values.by_anyone.code
+        (previous_direct_messages_exist(recipients) ||
+            people.user_can_initiate_direct_message_thread(recipients)) &&
+        people.user_can_direct_message(recipients)
     ) {
         options.unshift(direct_messages_option);
     } else {

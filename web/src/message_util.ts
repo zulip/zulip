@@ -112,3 +112,10 @@ export function get_topics_for_message_ids(message_ids: number[]): Map<string, [
     }
     return topics;
 }
+
+export function previous_direct_messages_exist(user_ids_string: string): boolean {
+    const previous_direct_messages_exist = all_messages_data
+        .all_messages()
+        .find((message) => message.is_private && message.to_user_ids === user_ids_string);
+    return Boolean(previous_direct_messages_exist);
+}
