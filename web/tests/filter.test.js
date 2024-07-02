@@ -2429,3 +2429,30 @@ run_test("adjusted_terms_if_moved", () => {
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.deepStrictEqual(result, expected);
 });
+
+run_test("can_newly_match_moved_messages", () => {
+    // Matches stream
+    let filter = new Filter([{operator: "channel", operand: "general"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("General", "test"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("random-stream", "test"), false);
+
+    // Matches topic
+    filter = new Filter([{operator: "topic", operand: "Test topic"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "Test topic"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test topic"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "random topic"), false);
+
+    // Matches common narrows
+    filter = new Filter([{operator: "is", operand: "followed"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
+
+    filter = new Filter([{operator: "is", operand: "starred"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), false);
+
+    filter = new Filter([{negated: true, operator: "channel", operand: "general"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("something-else", "test"), true);
+
+    filter = new Filter([{negated: true, operator: "is", operand: "followed"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
+});

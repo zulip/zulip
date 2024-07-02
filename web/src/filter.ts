@@ -917,6 +917,15 @@ export class Filter {
         );
     }
 
+    has_operand_case_insensitive(operator: string, operand: string): boolean {
+        return this._terms.some(
+            (term) =>
+                !term.negated &&
+                term.operator === operator &&
+                term.operand.toLowerCase() === operand.toLowerCase(),
+        );
+    }
+
     has_operand(operator: string, operand: string): boolean {
         return this._terms.some(
             (term) => !term.negated && term.operator === operator && term.operand === operand,
@@ -1599,5 +1608,52 @@ export class Filter {
             this.setup_filter(adjusted_terms);
         }
         this.requires_adjustment_for_moved_with_target = false;
+    }
+
+    can_newly_match_moved_messages(new_channel: string, new_topic: string): boolean {
+        // Checks if any of the operators on this Filter object have
+        // the property that it's possible for their true value to
+        // change as a result of messages being moved into the
+        // channel/topic pair provided in the parameters.
+        if (this.has_operand_case_insensitive("channel", new_channel)) {
+            return true;
+        }
+
+        if (this.has_operand_case_insensitive("topic", new_topic)) {
+            return true;
+        }
+
+        const term_types = this.sorted_term_types();
+        const can_match_moved_msg_term_types = new Set([
+            // For some of these operators, we could return `false`
+            // with more analysis of either the pre-move location,
+            // user_topic metadata, etc.
+            //
+            // It might be worth the effort for the more common views,
+            // such as the Combined Feed, but some of these operators
+            // are very unlikely to be used in practice.
+            "not-channel",
+            "not-topic",
+            "is-followed",
+            "not-is-followed",
+            "is-resolved",
+            "not-is-resolved",
+            "channels-public",
+            "not-channels-public",
+            "is-muted",
+            "not-is-muted",
+            "in-home",
+            "not-in-home",
+            "in-all",
+            "not-in-all",
+        ]);
+
+        for (const term of term_types) {
+            if (can_match_moved_msg_term_types.has(term)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
