@@ -57,9 +57,9 @@ export class SettingsPanelMenu {
             html_class: "org-user-settings-switcher",
             child_wants_focus: true,
             values: [
-                {label: $t({defaultMessage: "Users"}), key: "active"},
+                {label: $t({defaultMessage: "Active"}), key: "active"},
                 {
-                    label: $t({defaultMessage: "Deactivated users"}),
+                    label: $t({defaultMessage: "Deactivated"}),
                     key: "deactivated",
                 },
                 {label: $t({defaultMessage: "Invitations"}), key: "invitations"},
