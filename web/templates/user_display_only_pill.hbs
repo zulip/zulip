@@ -1,5 +1,5 @@
-<span class="pill-container display_only_pill {{#if is_inline}}inline_with_text_pill{{/if}}">
-    <a data-user-id="{{user_id}}" class="view_user_profile pill" tabindex="0">
+<span class="pill-container display_only_pill inline_with_text_pill">
+    <a data-user-id="{{user_id}}" class="view_user_profile pill tippy-zulip-delayed-tooltip" data-tippy-content="{{display_value}}" tabindex="0">
         {{#if img_src}}
         <img class="pill-image" src="{{img_src}}" />
         {{/if}}
@@ -13,4 +13,7 @@
             {{~/if~}}
         </span>
     </a>
+    {{#unless is_active}}
+        <i class="fa fa-ban pill-deactivated deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Bot is deactivated' }}{{else}}{{t 'User is deactivated' }}{{/if}}"></i>
+    {{/unless}}
 </span>

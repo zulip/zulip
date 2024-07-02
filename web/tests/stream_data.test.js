@@ -828,10 +828,34 @@ test("create_sub", () => {
     assert.equal(antarctica_sub.color, "#76ce90");
 });
 
-test("creator_id", () => {
+test("creator_id_and_is_active", () => {
+    const creator_id = 1;
+    const stream_id = 102;
+
+    const test_user = {
+        user_id: creator_id,
+        email: "test@example.com",
+        full_name: "Test User",
+        is_active: true,
+    };
+
+    const sub = {
+        stream_id,
+        subscribed: false,
+        color: "blue",
+        is_muted: true,
+        invite_only: false,
+        can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        name: "Test Stream",
+        creator_id,
+    };
+
     people.add_active_user(test_user);
     realm.realm_can_access_all_users_group = everyone_group.id;
     current_user.user_id = me.user_id;
+    stream_data.add_sub(sub);
+
     // When creator id is not a valid user id
     assert.throws(() => stream_data.maybe_get_creator_details(-1), {
         name: "Error",
@@ -841,11 +865,21 @@ test("creator_id", () => {
     // When there is no creator
     assert.equal(stream_data.maybe_get_creator_details(null), undefined);
 
+    // Ensure creator details can be fetched
     const creator_details = people.get_by_user_id(test_user.user_id);
     assert.deepStrictEqual(
         stream_data.maybe_get_creator_details(test_user.user_id),
         creator_details,
     );
+
+    // Check that is_active is set correctly
+    const settings_sub = stream_settings_data.get_sub_for_settings(sub);
+    assert.strictEqual(settings_sub.creator.is_active, true);
+
+    // Deactivate the user and re-check
+    people.deactivate(test_user);
+    const settings_sub_after_deactivation = stream_settings_data.get_sub_for_settings(sub);
+    assert.strictEqual(settings_sub_after_deactivation.creator.is_active, false);
 });
 
 test("initialize", () => {
@@ -1262,3 +1296,5 @@ test("can_access_stream_email", () => {
     page_params.is_spectator = true;
     assert.equal(stream_data.can_access_stream_email(social), false);
 });
+
+test("is_active", () => {});
