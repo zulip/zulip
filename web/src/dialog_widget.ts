@@ -198,6 +198,7 @@ export function launch(conf: DialogWidgetConfig): string {
     }
 
     const $submit_button = $dialog.find(".dialog_submit_button");
+    const $dialog_form = $dialog.find('.modal__content');
 
     if (conf.update_submit_disabled_state_on_change) {
         const $inputs = $dialog.find(".modal__content").find("input,select,textarea,button");
@@ -223,6 +224,28 @@ export function launch(conf: DialogWidgetConfig): string {
     if (conf.form_id) {
         $submit_button.attr("form", conf.form_id);
     }
+
+    $dialog_form.on("keydown", (e) => {
+        if (e.keyCode !== 13) {
+            return
+        }
+        e.preventDefault();
+
+        if ($submit_button.prop("disabled")) {
+            return;
+        }
+
+        if (conf.validate_input && !conf.validate_input(e)) {
+            return;
+        }
+        if (conf.loading_spinner) {
+            show_dialog_spinner();
+        } else if (conf.close_on_submit) {
+            close();
+        }
+        $("#dialog_error").hide();
+        conf.on_click(e);
+    })
 
     // Set up handlers.
     $submit_button.on("click", (e) => {
