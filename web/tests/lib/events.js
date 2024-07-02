@@ -54,6 +54,7 @@ exports.test_streams = {
         message_retention_days: null,
         stream_post_policy: 1,
         can_remove_subscribers_group: 2,
+        default_code_block_language: "text",
     },
     test: {
         name: "test",
@@ -70,6 +71,7 @@ exports.test_streams = {
         message_retention_days: null,
         stream_post_policy: 1,
         can_remove_subscribers_group: 2,
+        default_code_block_language: "text",
     },
 };
 

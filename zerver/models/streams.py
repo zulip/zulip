@@ -34,6 +34,7 @@ class Stream(models.Model):
     deactivated = models.BooleanField(default=False)
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default="")
     rendered_description = models.TextField(default="")
+    default_code_block_language = models.TextField(default="")
 
     # Foreign key to the Recipient object for STREAM type messages to this stream.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
@@ -193,6 +194,7 @@ class Stream(models.Model):
         "rendered_description",
         "stream_post_policy",
         "can_remove_subscribers_group_id",
+        "default_code_block_language",
     ]
 
     def to_dict(self) -> DefaultStreamDict:
@@ -208,6 +210,7 @@ class Stream(models.Model):
             message_retention_days=self.message_retention_days,
             name=self.name,
             rendered_description=self.rendered_description,
+            default_code_block_language=self.default_code_block_language,
             stream_id=self.id,
             stream_post_policy=self.stream_post_policy,
             is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,

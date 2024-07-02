@@ -450,6 +450,7 @@ def send_subscription_add_events(
                 subscribers=stream_subscribers,
                 # Fields from Stream.API_FIELDS
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
+                default_code_block_language=stream_dict["default_code_block_language"],
                 creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
@@ -1668,3 +1669,34 @@ def do_change_stream_group_based_setting(
         name=stream.name,
     )
     send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+
+def do_change_default_code_block_language(
+    stream: Stream, new_default_code_block_language: str, *, acting_user: UserProfile
+) -> None:
+    old_default_code_block_language = stream.default_code_block_language
+    with transaction.atomic():
+        stream.default_code_block_language = new_default_code_block_language
+        stream.save(update_fields=["default_code_block_language"])
+        RealmAuditLog.objects.create(
+            realm=stream.realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_default_code_block_language,
+                RealmAuditLog.NEW_VALUE: new_default_code_block_language,
+                "property": "default_code_block_language",
+            },
+        )
+    event = dict(
+        type="stream",
+        op="update",
+        property="default_code_block_language",
+        name=stream.name,
+        stream_id=stream.id,
+        value=new_default_code_block_language,
+        rendered_description=stream.rendered_description,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))

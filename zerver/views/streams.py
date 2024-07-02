@@ -30,6 +30,7 @@ from zerver.actions.message_send import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_default_code_block_language,
     do_change_stream_description,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
@@ -243,6 +244,7 @@ def update_stream_backend(
     can_remove_subscribers_group_id: Optional[int] = REQ(
         "can_remove_subscribers_group", json_validator=check_int, default=None
     ),
+    default_code_block_language: Optional[str] = REQ("default_code_block_language", default=None),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -392,6 +394,11 @@ def update_stream_backend(
             do_change_stream_group_based_setting(
                 stream, setting_name, user_group, acting_user=user_profile
             )
+
+    if default_code_block_language is not None:
+        do_change_default_code_block_language(
+            stream, default_code_block_language, acting_user=user_profile
+        )
 
     return json_success(request)
 
@@ -555,6 +562,7 @@ def add_subscriptions_backend(
     can_remove_subscribers_group_id: Optional[int] = REQ(
         "can_remove_subscribers_group", json_validator=check_int, default=None
     ),
+    default_code_block_language: str = REQ("default_code_block_language", default=""),
     announce: bool = REQ(json_validator=check_bool, default=False),
     principals: Union[Sequence[str], Sequence[int]] = REQ(
         json_validator=check_principals,
@@ -607,7 +615,7 @@ def add_subscriptions_backend(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
         stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
-
+        stream_dict_copy["default_code_block_language"] = default_code_block_language
         stream_dicts.append(stream_dict_copy)
 
     is_subscribing_other_users = False
@@ -725,10 +733,10 @@ def send_messages_for_new_subscribers(
     if new_subscriptions:
         for email, subscribed_stream_names in new_subscriptions.items():
             if email == user_profile.email:
-                # Don't send a Zulip if you invited yourself.
+                # Don't send a Zulip invitation if you invited yourself.
                 continue
             if bots[email]:
-                # Don't send invitation Zulips to bots
+                # Don't send Zulip invitations to bots
                 continue
 
             # For each user, we notify them about newly subscribed streams, except for
