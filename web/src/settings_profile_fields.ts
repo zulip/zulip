@@ -22,6 +22,7 @@ import type {CustomProfileField} from "./state_data";
 import {current_user, realm} from "./state_data";
 import type {HTMLSelectOneElement, UserExternalAccountData} from "./types";
 import * as ui_report from "./ui_report";
+import * as util from "./util";
 
 type FieldChoice = {
     value: string;
@@ -284,13 +285,16 @@ function open_custom_profile_field_form_modal(): void {
 }
 
 function add_choice_row(this: HTMLElement, e: JQuery.TriggeredEvent): void {
-    const $curr_choice_row = $(this).parent();
-    if ($curr_choice_row.next().hasClass("choice-row")) {
+    const $delete_choice_button = $(this).parent().find("button.delete-choice");
+
+    // We use delete button to determine if this was a new empty choice.
+    if ($delete_choice_button.is(":visible")) {
         return;
     }
     // Display delete buttons for all existing choices before creating the new row,
     // which will not have the delete button so that there is at least one option present.
-    $curr_choice_row.find("button.delete-choice").show();
+    $delete_choice_button.show();
+
     assert(e.delegateTarget instanceof HTMLElement);
     const choices_div = e.delegateTarget;
     create_choice_row($(choices_div));
@@ -395,6 +399,36 @@ function disable_submit_btn_if_no_property_changed(
     );
 }
 
+function alphabetize_profile_field_choices($sortable_element: JQuery): void {
+    assert($sortable_element[0] !== undefined);
+    const sortable_instance = SortableJS.get($sortable_element[0]);
+    assert(sortable_instance !== undefined);
+
+    const choices_array: [string, string][] = [];
+    const empty_choices_array: [string, string][] = [];
+
+    const choices_id_array = sortable_instance.toArray();
+    for (const choice_id of choices_id_array) {
+        const choice_value = $(sortable_instance.el)
+            .find<HTMLInputElement>(`div[data-value="${choice_id}"] input`)
+            .val()!;
+
+        // Remove empty choices from the array that we will sort. After sorting, we append these
+        // to the sorted array.;
+        if (choice_value.length === 0) {
+            empty_choices_array.push(["", choice_id]);
+            continue;
+        }
+
+        choices_array.push([choice_value, choice_id]);
+    }
+
+    choices_array.sort((a, b) => util.strcmp(a[0], b[0]));
+    choices_array.push(...empty_choices_array);
+
+    sortable_instance.sort(choices_array.map((v) => v[1]));
+}
+
 function set_up_select_field_edit_form(
     $profile_field_form: JQuery,
     field: CustomProfileField,
@@ -426,6 +460,7 @@ function set_up_select_field_edit_form(
         },
         filter: "input",
         preventOnFilter: false,
+        dataIdAttr: "data-value",
         onSort() {
             disable_submit_btn_if_no_property_changed($profile_field_form, field);
         },
@@ -497,15 +532,27 @@ function open_edit_form_modal(this: HTMLElement): void {
         // Set initial value in edit form
         $profile_field_form.find("input[name=name]").val(field.name);
         $profile_field_form.find("input[name=hint]").val(field.hint);
+        const $edit_profile_field_choices_container = $profile_field_form.find(
+            ".edit_profile_field_choices_container",
+        );
 
-        $profile_field_form
-            .find(".edit_profile_field_choices_container")
-            .on("input", ".choice-row input", add_choice_row);
-        $profile_field_form
-            .find(".edit_profile_field_choices_container")
-            .on("click", "button.delete-choice", function (this: HTMLElement) {
+        $edit_profile_field_choices_container.on("input", ".choice-row input", add_choice_row);
+        $edit_profile_field_choices_container.on(
+            "click",
+            "button.delete-choice",
+            function (this: HTMLElement) {
                 delete_choice_row_for_edit(this, $profile_field_form, field);
-            });
+            },
+        );
+        $profile_field_form.on(
+            "click",
+            ".profile-field-choices-wrapper > button.alphabetize-choices-button",
+            function (this: HTMLElement) {
+                assert(this instanceof HTMLButtonElement);
+                alphabetize_profile_field_choices($edit_profile_field_choices_container);
+                disable_submit_btn_if_no_property_changed($profile_field_form, field);
+            },
+        );
 
         $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop("disabled", true);
         // Setup onInput event listeners to disable/enable submit button,
@@ -716,17 +763,19 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
 
 function set_up_select_field(): void {
     const field_types = realm.custom_profile_field_types;
+    const $profile_field_choices = $("#profile_field_choices");
 
-    create_choice_row($("#profile_field_choices"));
+    create_choice_row($profile_field_choices);
 
     if (current_user.is_admin) {
-        const choice_list = $("#profile_field_choices")[0]!;
+        const choice_list = $profile_field_choices[0]!;
         SortableJS.create(choice_list, {
             onUpdate() {
                 // Do nothing on drag. We process the order on submission
             },
             filter: "input",
             preventOnFilter: false,
+            dataIdAttr: "data-value",
         });
     }
 
@@ -749,10 +798,18 @@ function set_up_select_field(): void {
         },
     );
 
-    $("#profile_field_choices").on("input", ".choice-row input", add_choice_row);
-    $("#profile_field_choices").on("click", "button.delete-choice", function (this: HTMLElement) {
+    $profile_field_choices.on("input", ".choice-row input", add_choice_row);
+    $profile_field_choices.on("click", "button.delete-choice", function (this: HTMLElement) {
         delete_choice_row(this);
     });
+    $("#profile_field_choices_row").on(
+        "click",
+        "button.alphabetize-choices-button",
+        function (this: HTMLElement) {
+            assert(this instanceof HTMLButtonElement);
+            alphabetize_profile_field_choices($profile_field_choices);
+        },
+    );
 }
 
 function set_up_external_account_field(): void {
