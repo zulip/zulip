@@ -19,7 +19,7 @@
                 ["user", "ip:223.230.114.198"],
                 [
                     "url",
-                    "file:///mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/trigger-exception-with-external.html"
+                    "/mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/trigger-exception-with-external.html"
                 ]
             ],
             "_metrics": {
@@ -41,7 +41,7 @@
             "culprit": "?(/mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/external.js)",
             "errors": [
                 {
-                    "url": "file:///mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/external.js",
+                    "url": "/mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/external.js",
                     "type": "js_no_source"
                 }
             ],
@@ -51,7 +51,7 @@
                         "stacktrace": {
                             "frames": [
                                 {
-                                    "abs_path": "file:///mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/external.js",
+                                    "abs_path": "/mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/external.js",
                                     "filename": "/mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/external.js",
                                     "colno": 25,
                                     "data": {
@@ -93,7 +93,7 @@
             "received": 1592406695.060435,
             "request": {
                 "cookies": null,
-                "url": "file:///mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/trigger-exception-with-external.html",
+                "url": "/mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/trigger-exception-with-external.html",
                 "headers": [
                     [
                         "User-Agent",
