@@ -315,6 +315,7 @@ def json_change_settings(
     email_address_visibility: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
+    automatically_detect_time_zone: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if (
         default_language is not None

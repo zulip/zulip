@@ -72,6 +72,7 @@ class UserBaseSettings(models.Model):
     display_emoji_reaction_users = models.BooleanField(default=True)
     twenty_four_hour_time = models.BooleanField(default=False)
     starred_message_counts = models.BooleanField(default=True)
+    automatically_detect_time_zone = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_DARK = 2
     COLOR_SCHEME_LIGHT = 3
@@ -329,6 +330,7 @@ class UserBaseSettings(models.Model):
         web_stream_unreads_count_display_policy=int,
         web_font_size_px=int,
         web_line_height_percent=int,
+        automatically_detect_time_zone=bool,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(

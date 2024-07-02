@@ -32,6 +32,11 @@
                             </select>
                         </div>
                     </div>
+                    {{> settings_checkbox
+                      setting_name="automatically_offer_update_time_zone"
+                      is_checked=settings_object.automatically_detect_time_zone
+                      label=settings_label.automatically_detect_time_zone
+                      }}
                 </form>
 
                 <form class="custom-profile-fields-form grid"></form>

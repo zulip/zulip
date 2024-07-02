@@ -1180,7 +1180,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm=hamlet.realm,
             event_time__gte=now,
             event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-        )
+        ).order_by("id")
         self.assert_length(audit_log_entries, 2)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
