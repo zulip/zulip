@@ -377,6 +377,9 @@ export function get_user_type(user_id: number): string | undefined {
 }
 
 export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
+    if (emails_string === "") {
+        return undefined;
+    }
     const emails = emails_string.split(",");
     return email_list_to_user_ids_string(emails);
 }
@@ -670,6 +673,25 @@ export function pm_with_operand_ids(operand: string): number[] | undefined {
     user_ids = sort_numerically(user_ids);
 
     return user_ids;
+}
+
+export function filter_guest_ids(guest_ids: number[]): number[] {
+    const guest_emails = guest_ids.filter((id) => get_by_user_id(id)?.is_guest);
+    return guest_emails;
+}
+
+export function get_dm_guest_banner_text(guest_ids: number[]): string {
+    const emails = guest_ids.map((id) => get_by_user_id(id).email);
+    const names = emails_to_full_names_string(emails).split(", ");
+    if (names.length === 1) {
+        return $t({defaultMessage: "{name} is a guest in this organization."}, {name: names[0]});
+    }
+    const banner_names = names.slice(0, -1).join(", ");
+    const last_guest_full_name = names.at(-1);
+    return $t(
+        {defaultMessage: "{names} and {name} are guests in this organization."},
+        {names: banner_names, name: last_guest_full_name},
+    );
 }
 
 export function emails_to_slug(emails_string: string): string | undefined {

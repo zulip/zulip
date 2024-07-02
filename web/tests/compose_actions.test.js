@@ -88,6 +88,7 @@ const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
+const compose_validate = zrequire("compose_validate");
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
@@ -139,6 +140,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_actions, "clear_textarea", noop);
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
+    override_rewire(compose_validate, "warn_if_guest_in_dm_recipient", noop);
     mock_template("inline_decorated_stream_name.hbs", false, noop);
 
     let compose_defaults;

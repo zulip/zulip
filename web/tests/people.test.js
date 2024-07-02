@@ -809,6 +809,29 @@ test_people("dm_matches_search_string", () => {
     assert.ok(!result);
 });
 
+test_people("filter_guest_ids", () => {
+    people.add_active_user(emp401);
+    people.add_active_user(emp402);
+    people.add_active_user(guest);
+    const guest2 = {
+        ...guest,
+        user_id: 34,
+    };
+    people.add_active_user(guest2);
+
+    assert.equal(emp401.user_id, 401);
+    assert.equal(emp402.user_id, 402);
+
+    let ids = [401, 402];
+    let guest_ids = people.filter_guest_ids(ids);
+    assert.equal(guest_ids.length, 0);
+
+    ids = [401, 402, 33, 34];
+    guest_ids = people.filter_guest_ids(ids);
+    assert.equal(guest_ids[0], 33);
+    assert.equal(guest_ids[1], 34);
+});
+
 test_people("multi_user_methods", () => {
     people.add_active_user(emp401);
     people.add_active_user(emp402);
@@ -1481,6 +1504,45 @@ test_people("user_can_initiate_direct_message_thread", () => {
 
     realm.realm_direct_message_initiator_group = everyone.id;
     assert.ok(people.user_can_initiate_direct_message_thread("32"));
+});
+
+test_people("test_get_dm_guest_warning_text", () => {
+    const guest1 = {
+        full_name: "Guest 1",
+        user_id: 33,
+        email: "guest1@example.com",
+    };
+
+    const guest2 = {
+        full_name: "Guest 2",
+        user_id: 34,
+        email: "guest2@example.com",
+    };
+
+    const guest3 = {
+        full_name: "Guest 3",
+        user_id: 35,
+        email: "guest3@example.com",
+    };
+
+    people.add_active_user(guest1);
+    people.add_active_user(guest2);
+    people.add_active_user(guest3);
+
+    let banner_text = people.get_dm_guest_banner_text([33]);
+    assert.equal(banner_text, $t({defaultMessage: "Guest 1 is a guest in this organization."}));
+
+    banner_text = people.get_dm_guest_banner_text([33, 34]);
+    assert.equal(
+        banner_text,
+        $t({defaultMessage: "Guest 1 and Guest 2 are guests in this organization."}),
+    );
+
+    banner_text = people.get_dm_guest_banner_text([33, 34, 35]);
+    assert.equal(
+        banner_text,
+        $t({defaultMessage: "Guest 1, Guest 2 and Guest 3 are guests in this organization."}),
+    );
 });
 
 // reset to native Date()
