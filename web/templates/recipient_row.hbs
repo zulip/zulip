@@ -89,9 +89,9 @@
         <span class="private_message_header_name">
             {{#tr}}You and <z-user-names></z-user-names>
             {{#*inline "z-user-names"}}
-                {{#each recipient_users}}
-                    {{full_name}}{{#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{/if}}{{#unless @last}},{{/unless}}
-                {{/each}}
+                {{#each recipient_users~}}
+                    {{full_name}}{{#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{/if}}{{#unless @last}},&nbsp;{{/unless}}
+                {{~/each}}
             {{/inline}}
             {{/tr}}
         </span>
