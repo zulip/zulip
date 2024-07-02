@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, List, Mapping, Sequence
+from typing import Any, Dict, List, Mapping, Sequence
 
 import markdown
 from django.utils.html import escape as escape_html
@@ -8,7 +8,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 from zerver.openapi.openapi import (
     Parameter,
     check_deprecated_consistency,
@@ -36,6 +36,13 @@ OBJECT_DETAILS_TEMPLATE = """
 </ul>
 """.strip()
 
+ONEOF_OBJECT_DETAILS_TEMPLATE = """
+<p>An object with the following fields:</p>
+<ul>
+{values}
+</ul>
+""".strip()
+
 OBJECT_LIST_ITEM_TEMPLATE = """
 <li>
 <code>{value}</code>: <span class=api-field-type>{data_type}</span> {required} {description}{object_details}
@@ -49,6 +56,17 @@ OBJECT_DESCRIPTION_TEMPLATE = """
 
 OBJECT_CODE_TEMPLATE = "<code>{value}</code>".strip()
 
+ONEOF_DETAILS_TEMPLATE = """
+<p>This parameter must be one of the following:</p>
+<ol>
+{values}
+</ol>
+""".strip()
+
+ONEOF_LIST_ITEM_TEMPLATE = """
+<li>{item}</li>
+""".strip()
+
 
 class MarkdownArgumentsTableGenerator(Extension):
     @override
@@ -56,7 +74,7 @@ class MarkdownArgumentsTableGenerator(Extension):
         md.preprocessors.register(
             APIArgumentsTablePreprocessor(md, self.getConfigs()),
             "generate_api_arguments",
-            PREPROCESSOR_PRIORITES["generate_api_arguments"],
+            PREPROCESSOR_PRIORITIES["generate_api_arguments"],
         )
 
 
@@ -99,6 +117,24 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             else:
                 done = True
         return lines
+
+    def render_oneof_block(self, object_schema: Dict[str, Any], name: str) -> str:
+        md_engine = markdown.Markdown(extensions=[])
+        content = ""
+        for element in object_schema["oneOf"]:
+            if "items" in element and "properties" in element["items"]:
+                content += ONEOF_LIST_ITEM_TEMPLATE.format(
+                    item=self.render_object_details(element["items"], str(name), True)
+                )
+            elif "properties" in element:
+                content += ONEOF_LIST_ITEM_TEMPLATE.format(
+                    item=self.render_object_details(element, str(name), True)
+                )
+            elif "description" in element:
+                content += ONEOF_LIST_ITEM_TEMPLATE.format(
+                    item=md_engine.convert(element["description"])
+                )
+        return ONEOF_DETAILS_TEMPLATE.format(values=content)
 
     def render_parameters(self, parameters: Sequence[Parameter]) -> List[str]:
         lines = []
@@ -159,6 +195,8 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                     object_block = self.render_object_details(object_schema["items"], str(name))
                 elif "properties" in object_schema:
                     object_block = self.render_object_details(object_schema, str(name))
+                elif "oneOf" in object_schema:
+                    object_block = self.render_oneof_block(object_schema, str(name))
 
             lines.append(
                 API_PARAMETER_TEMPLATE.format(
@@ -174,7 +212,9 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
         return lines
 
-    def render_object_details(self, schema: Mapping[str, Any], name: str) -> str:
+    def render_object_details(
+        self, schema: Mapping[str, Any], name: str, oneof: bool = False
+    ) -> str:
         md_engine = markdown.Markdown(extensions=[])
         li_elements = []
 
@@ -227,6 +267,8 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             details = ""
             if "object" in data_type and "properties" in object_values[value]:
                 details += self.render_object_details(object_values[value], str(value))
+            elif "oneOf" in object_values[value]:
+                details += self.render_oneof_block(object_values[value], str(value))
 
             li = OBJECT_LIST_ITEM_TEMPLATE.format(
                 value=value,
@@ -237,11 +279,15 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             )
 
             li_elements.append(li)
-
-        object_details = OBJECT_DETAILS_TEMPLATE.format(
-            argument=name,
-            values="\n".join(li_elements),
-        )
+        if oneof:
+            object_details = ONEOF_OBJECT_DETAILS_TEMPLATE.format(
+                values="\n".join(li_elements),
+            )
+        else:
+            object_details = OBJECT_DETAILS_TEMPLATE.format(
+                argument=name,
+                values="\n".join(li_elements),
+            )
         return object_details
 
 

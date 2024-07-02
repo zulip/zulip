@@ -181,7 +181,7 @@ functions like `access_stream_by_id` that we test carefully, and then
 use linting and other coding conventions to require that all access to
 data from code paths that might share that data with users be mediated
 through those functions. So rather than having each view function do
-it own security checks for whether the user can access a given stream,
+it own security checks for whether the user can access a given channel,
 and needing to test each of those copies of the logic, we only need to
 do that work once for each major type of data structure and level of
 access.
@@ -190,12 +190,12 @@ These `access_*_by_*` functions are written in a special style, with each
 conditional on its own line (so our test coverage tooling helps verify
 that every case is tested), detailed comments, and carefully
 considered error-handling to avoid leaking information such as whether
-the stream ID requested exists or not.
+the channel ID requested exists or not.
 
 We will typically also write tests for a given view verifying that it
 provides the appropriate errors when improper access is attempted, but
 these tests are defense in depth; the main way we prevent invalid
-access to streams is not offering developers a way to get a Stream
+access to channels is not offering developers a way to get a `Stream`
 object in server code except as mediated through these security check
 functions.
 

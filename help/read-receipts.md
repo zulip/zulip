@@ -4,9 +4,9 @@ Read receipts let you check who has read a message. You can see read receipts
 for any message, including both [channel messages](/help/introduction-to-channels)
 and [direct messages](/help/direct-messages).
 
-With privacy in mind, Zulip lets you [control][configure-personal-read-recipts]
+With privacy in mind, Zulip lets you [control][configure-personal-read-receipts]
 whether your read receipts are shared, and administrators can
-[choose][configure-organization-read-recipts] whether to enable read receipts in
+[choose][configure-organization-read-receipts] whether to enable read receipts in
 their organization.
 
 !!! tip ""
@@ -58,7 +58,7 @@ You can configure:
 
 * Whether read receipts are enabled in your organization.
 * Whether new users will allow others to view read receipts by default. (Note
-  that users [can always change this setting][configure-personal-read-recipts]
+  that users [can always change this setting][configure-personal-read-receipts]
   once they join.)
 
 ### Configure whether read receipts are enabled in your organization
@@ -90,6 +90,6 @@ You can configure:
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
 
-[configure-personal-read-recipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages
-[configure-organization-read-recipts]:
+[configure-personal-read-receipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages
+[configure-organization-read-receipts]:
     /help/read-receipts#configure-whether-read-receipts-are-enabled-in-your-organization

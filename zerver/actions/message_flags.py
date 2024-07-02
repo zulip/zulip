@@ -45,7 +45,7 @@ def do_mark_all_as_read(
         UserMessage.objects.filter(
             user_profile=user_profile,
         )
-        .extra(
+        .extra(  # noqa: S610
             where=[UserMessage.where_active_push_notification()],
         )
         .values_list("message_id", flat=True)[0:10000]
@@ -62,7 +62,7 @@ def do_mark_all_as_read(
             query = (
                 UserMessage.select_for_update_query()
                 .filter(user_profile=user_profile)
-                .extra(where=[UserMessage.where_unread()])[:batch_size]
+                .extra(where=[UserMessage.where_unread()])[:batch_size]  # noqa: S610
             )
             # This updated_count is the same as the number of UserMessage
             # rows selected, because due to the FOR UPDATE lock, we're guaranteed
@@ -114,7 +114,7 @@ def do_mark_stream_messages_as_read(
                 user_profile=user_profile,
                 message__recipient_id=stream_recipient_id,
             )
-            .extra(
+            .extra(  # noqa: S610
                 where=[UserMessage.where_unread()],
             )
         )
@@ -166,7 +166,7 @@ def do_mark_muted_user_messages_as_read(
         query = (
             UserMessage.select_for_update_query()
             .filter(user_profile=user_profile, message__sender=muted_user)
-            .extra(where=[UserMessage.where_unread()])
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
         )
         message_ids = list(query.values_list("message_id", flat=True))
 
@@ -238,7 +238,7 @@ def do_clear_mobile_push_notifications_for_ids(
             message_id__in=message_ids,
             user_profile_id__in=user_profile_ids,
         )
-        .extra(
+        .extra(  # noqa: S610
             where=[UserMessage.where_active_push_notification()],
         )
         .values_list("user_profile_id", "message_id")

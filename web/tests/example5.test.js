@@ -20,7 +20,7 @@ const {run_test, noop} = require("./lib/test");
 
 // First we tell the compiler to skip certain modules and just
 // replace them with {}.
-const huddle_data = mock_esm("../src/huddle_data");
+const direct_message_group_data = mock_esm("../src/direct_message_group_data");
 const message_lists = mock_esm("../src/message_lists");
 const message_notifications = mock_esm("../src/message_notifications");
 const message_util = mock_esm("../src/message_util");
@@ -91,11 +91,12 @@ run_test("insert_message", ({override}) => {
         id: 1001,
         content: "example content",
         topic: "Foo",
+        type: "stream",
     };
 
     assert.equal(message_store.get(new_message.id), undefined);
 
-    helper.redirect(huddle_data, "process_loaded_messages");
+    helper.redirect(direct_message_group_data, "process_loaded_messages");
     helper.redirect(message_notifications, "received_messages");
     helper.redirect(message_util, "add_new_messages_data");
     helper.redirect(message_util, "add_new_messages");
@@ -110,7 +111,7 @@ run_test("insert_message", ({override}) => {
     // the code invokes various objects when a new message
     // comes in:
     assert.deepEqual(helper.events, [
-        [huddle_data, "process_loaded_messages"],
+        [direct_message_group_data, "process_loaded_messages"],
         [message_util, "add_new_messages_data"],
         [message_util, "add_new_messages"],
         [unread_ui, "update_unread_counts"],

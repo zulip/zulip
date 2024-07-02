@@ -44,6 +44,7 @@ import re2
 import regex
 import requests
 import uri_template
+import urllib3.exceptions
 from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
@@ -131,7 +132,7 @@ class MessageRenderingResult:
 @dataclass
 class DbData:
     mention_data: MentionData
-    realm_uri: str
+    realm_url: str
     realm_alert_words_automaton: Optional[ahocorasick.Automaton]
     active_realm_emoji: Dict[str, EmojiInfo]
     sent_by_bot: bool
@@ -273,9 +274,9 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
     """
 
     if db_data:
-        realm_uri_prefix = db_data.realm_uri + "/"
-        if link.startswith((realm_uri_prefix + "#", realm_uri_prefix + "user_uploads/")):
-            return link[len(realm_uri_prefix) :]
+        realm_url_prefix = db_data.realm_url + "/"
+        if link.startswith((realm_url_prefix + "#", realm_url_prefix + "user_uploads/")):
+            return link[len(realm_url_prefix) :]
 
     return link
 
@@ -474,7 +475,7 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
                     elif element.get("property") == "og:description":
                         og["desc"] = element.get("content")
 
-    except requests.RequestException:
+    except (requests.RequestException, urllib3.exceptions.HTTPError):
         return None
 
     return None if og["image"] is None else og
@@ -1417,7 +1418,15 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         # Use HTML5 <time> element for valid timestamps.
         time_element = Element("time")
         if timestamp.tzinfo:
-            timestamp = timestamp.astimezone(timezone.utc)
+            try:
+                timestamp = timestamp.astimezone(timezone.utc)
+            except ValueError:
+                error_element = Element("span")
+                error_element.set("class", "timestamp-error")
+                error_element.text = markdown.util.AtomicString(
+                    f"Invalid time format: {time_input_string}"
+                )
+                return error_element
         else:
             timestamp = timestamp.replace(tzinfo=timezone.utc)
         time_element.set("datetime", timestamp.isoformat().replace("+00:00", "Z"))
@@ -2655,7 +2664,7 @@ def do_convert(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
             active_realm_emoji=active_realm_emoji,
-            realm_uri=message_realm.url,
+            realm_url=message_realm.url,
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
             translate_emoticons=translate_emoticons,

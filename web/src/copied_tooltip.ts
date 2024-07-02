@@ -1,4 +1,4 @@
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import {$t} from "./i18n";
 
@@ -8,7 +8,7 @@ export function show_copied_confirmation(
     timeout_in_ms = 1000,
 ): void {
     // Display a tooltip to notify the user the message or code was copied.
-    const instance = tippy(copy_button, {
+    const instance = tippy.default(copy_button, {
         placement: "top",
         appendTo: () => document.body,
         onUntrigger() {

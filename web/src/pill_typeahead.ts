@@ -6,28 +6,127 @@ import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as people from "./people";
 import type {User} from "./people";
 import * as stream_pill from "./stream_pill";
-import type {StreamPillData} from "./stream_pill";
+import type {StreamPillData, StreamPillWidget} from "./stream_pill";
 import * as typeahead_helper from "./typeahead_helper";
 import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import type {UserGroupPillData} from "./user_group_pill";
-import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
-import type {UserPillData} from "./user_pill";
+import type {UserPillData, UserPillWidget} from "./user_pill";
 
-function person_matcher(query: string, item: User): boolean {
+function person_matcher(query: string, item: UserPillData): boolean {
     return (
-        people.is_known_user_id(item.user_id) && typeahead_helper.query_matches_person(query, item)
+        people.is_known_user_id(item.user.user_id) &&
+        typeahead_helper.query_matches_person(query, item)
     );
 }
 
-function group_matcher(query: string, item: UserGroup): boolean {
+function group_matcher(query: string, item: UserGroupPillData): boolean {
     return typeahead_helper.query_matches_name(query, item);
 }
 
 type TypeaheadItem = UserGroupPillData | StreamPillData | UserPillData;
 
-export function set_up(
+export function set_up_user(
+    $input: JQuery,
+    pills: UserPillWidget,
+    opts: {
+        exclude_bots?: boolean;
+        update_func?: () => void;
+    },
+): void {
+    const exclude_bots = opts.exclude_bots;
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    new Typeahead(bootstrap_typeahead_input, {
+        items: 5,
+        dropup: true,
+        source(_query: string): UserPillData[] {
+            return user_pill.typeahead_source(pills, exclude_bots);
+        },
+        highlighter_html(item: UserPillData, _query: string): string {
+            return typeahead_helper.render_person(item);
+        },
+        matcher(item: UserPillData, query: string): boolean {
+            query = query.toLowerCase();
+            query = query.replaceAll("\u00A0", " ");
+            return person_matcher(query, item);
+        },
+        sorter(matches: UserPillData[], query: string): UserPillData[] {
+            const users = matches.filter((match) => people.is_known_user_id(match.user.user_id));
+            return typeahead_helper.sort_recipients({users, query}).map((item) => {
+                assert(item.type === "user");
+                return item;
+            });
+        },
+        updater(item: UserPillData, _query: string): undefined {
+            if (people.is_known_user_id(item.user.user_id)) {
+                user_pill.append_user(item.user, pills);
+            }
+            $input.trigger("focus");
+            opts.update_func?.();
+        },
+        stopAdvance: true,
+    });
+}
+
+export function set_up_stream(
+    $input: JQuery,
+    pills: StreamPillWidget,
+    opts: {
+        help_on_empty_strings?: boolean;
+        invite_streams?: boolean;
+        update_func?: () => void;
+    },
+): void {
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    opts.help_on_empty_strings ||= false;
+    new Typeahead(bootstrap_typeahead_input, {
+        items: 12,
+        dropup: true,
+        helpOnEmptyStrings: true,
+        source(_query: string): StreamPillData[] {
+            return stream_pill.typeahead_source(pills, opts.invite_streams);
+        },
+        highlighter_html(item: StreamPillData, _query: string): string {
+            return typeahead_helper.render_stream(item);
+        },
+        matcher(item: StreamPillData, query: string): boolean {
+            query = query.toLowerCase();
+            query = query.replaceAll("\u00A0", " ");
+            query = query.trim();
+            if (query.startsWith("#")) {
+                query = query.slice(1);
+            }
+            return item.name.toLowerCase().includes(query);
+        },
+        sorter(matches: StreamPillData[], query: string): StreamPillData[] {
+            const stream_matches: StreamPillData[] = [];
+            for (const match of matches) {
+                assert(match.type === "stream");
+                stream_matches.push(match);
+            }
+            query = query.trim();
+            if (query.startsWith("#")) {
+                query = query.slice(1);
+            }
+            return typeahead_helper.sort_streams_by_name(stream_matches, query);
+        },
+        updater(item: StreamPillData, _query: string): undefined {
+            stream_pill.append_stream(item, pills, false);
+            $input.trigger("focus");
+            opts.update_func?.();
+        },
+        stopAdvance: true,
+    });
+}
+
+export function set_up_combined(
     $input: JQuery,
     pills: CombinedPillContainer,
     opts: {
@@ -74,10 +173,9 @@ export function set_up(
                     // If user_source is specified in opts, it
                     // is given priority. Otherwise we use
                     // default user_pill.typeahead_source.
-                    const users: UserPillData[] = opts.user_source().map((user) => ({
-                        ...user,
-                        type: "user",
-                    }));
+                    const users: UserPillData[] = opts
+                        .user_source()
+                        .map((user) => ({type: "user", user}));
                     source = [...source, ...users];
                 } else {
                     source = [...source, ...user_pill.typeahead_source(pills, exclude_bots)];
@@ -99,10 +197,7 @@ export function set_up(
             // handles `include_users` cases along with
             // default cases.
             assert(item.type === "user");
-            return typeahead_helper.render_person({
-                ...item,
-                is_broadcast: undefined,
-            });
+            return typeahead_helper.render_person(item);
         },
         matcher(item: TypeaheadItem, query: string): boolean {
             query = query.toLowerCase();
@@ -136,7 +231,7 @@ export function set_up(
             const users: UserPillData[] = [];
             if (include_users) {
                 for (const match of matches) {
-                    if (match.type === "user" && people.is_known_user_id(match.user_id)) {
+                    if (match.type === "user" && people.is_known_user_id(match.user.user_id)) {
                         users.push(match);
                     }
                 }
@@ -168,9 +263,9 @@ export function set_up(
             } else if (
                 include_users &&
                 item.type === "user" &&
-                people.is_known_user_id(item.user_id)
+                people.is_known_user_id(item.user.user_id)
             ) {
-                user_pill.append_user(item, pills);
+                user_pill.append_user(item.user, pills);
             }
 
             $input.trigger("focus");

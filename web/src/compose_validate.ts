@@ -206,10 +206,10 @@ export function warn_if_mentioning_unsubscribed_user(
         return;
     }
 
-    if (mentioned.is_broadcast) {
+    if (mentioned.type === "broadcast") {
         return; // don't check if @all/@everyone/@stream
     }
-    const user_id = mentioned.user_id;
+    const user_id = mentioned.user.user_id;
 
     const stream_id = get_stream_id_for_textarea($textarea);
     if (!stream_id) {
@@ -237,7 +237,7 @@ export function warn_if_mentioning_unsubscribed_user(
                     ? $t({defaultMessage: "Subscribe them"})
                     : null,
                 can_subscribe_other_users,
-                name: mentioned.full_name,
+                name: mentioned.user.full_name,
                 classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
                 should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             };

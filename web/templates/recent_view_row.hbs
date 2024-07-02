@@ -1,7 +1,7 @@
 <tr id="recent_conversation:{{conversation_key}}" class="{{#if unread_count}}unread_topic{{/if}} {{#if is_private}}private_conversation_row{{/if}}">
     <td class="recent_topic_stream">
         <div class="flex_container flex_container_pm">
-            <div class="left_part recent_view_focusable">
+            <div class="left_part recent_view_focusable" data-col-index="{{ column_indexes.stream }}">
                 {{#if is_private}}
                 <span class="fa fa-envelope"></span>
                 <a href="{{pm_url}}">{{t "Direct messages" }}</a>
@@ -30,22 +30,22 @@
     </td>
     <td class="recent_topic_name"{{#if (not is_spectator) }} colspan="2"{{/if}}>
         <div class="flex_container">
-            <div class="left_part recent_view_focusable line_clamp">
+            <div class="left_part recent_view_focusable line_clamp" data-col-index="{{ column_indexes.topic }}">
                 {{#if is_private}}
                 <a href="{{pm_url}}">{{{rendered_pm_with}}}</a>
                 {{else}}
-                <a href="{{topic_url}}">{{topic}}</a>
+                <a class="white-space-preserve-wrap" href="{{topic_url}}">{{topic}}</a>
                 {{/if}}
             </div>
             <div class="right_part">
                 {{#if is_private}}
                 <div class="recent_topic_actions">
-                    <div class="recent_view_focusable">
+                    <div class="recent_view_focusable" data-col-index="{{ column_indexes.read }}">
                         <span class="unread_count unread_count_pm {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                     </div>
                 </div>
                 <div class="recent_topic_actions dummy_action_button">
-                    <div class="recent_view_focusable">
+                    <div class="recent_view_focusable" data-col-index="{{ column_indexes.read }}">
                         {{!-- Invisible icon, used only for alignment of unread count. --}}
                         <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon"></i>
                     </div>
@@ -54,13 +54,13 @@
                 <span class="unread_mention_info tippy-zulip-tooltip {{#unless mention_in_unread}}unread_hidden{{/unless}}"
                   data-tippy-content="{{t 'You have mentions'}}">@</span>
                 <div class="recent_topic_actions">
-                    <div class="recent_view_focusable hidden-for-spectators">
+                    <div class="recent_view_focusable hidden-for-spectators" data-col-index="{{ column_indexes.read }}">
                         <span class="unread_count {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                     </div>
                 </div>
                 <div class="recent_topic_actions">
                     <div class="hidden-for-spectators">
-                        <span class="recent_view_focusable change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
+                        <span class="recent_view_focusable change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-col-index="{{ column_indexes.mute }}">
                             {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
                                 <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic'}}"
                                   role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You follow this topic' }}"></i>
@@ -104,7 +104,7 @@
     </td>
     <td class="recent_topic_timestamp">
         <div class="last_msg_time tippy-zulip-tooltip" data-tippy-content="{{this.full_last_msg_date_time}}">
-            <a href="{{last_msg_url}}">{{ last_msg_time }}</a>
+            <a href="{{last_msg_url}}" tabindex="-1">{{ last_msg_time }}</a>
         </div>
     </td>
 </tr>

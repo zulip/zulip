@@ -128,12 +128,14 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
+    const is_spectator = page_params.is_spectator;
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
         stream_muted: sub.is_muted,
         topic_name,
         topic_unmuted,
+        is_spectator,
         can_move_topic,
         can_rename_topic,
         is_realm_admin: current_user.is_admin,
@@ -200,7 +202,7 @@ export function get_gear_menu_content_context() {
     const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
     return {
         realm_name: realm.realm_name,
-        realm_url: new URL(realm.realm_uri).hostname,
+        realm_url: new URL(realm.realm_url).hostname,
         is_owner: current_user.is_owner,
         is_admin: current_user.is_admin,
         is_spectator: page_params.is_spectator,
@@ -228,5 +230,8 @@ export function get_gear_menu_content_context() {
         show_webathena: page_params.show_webathena,
         sponsorship_pending: page_params.sponsorship_pending,
         user_has_billing_access,
+        // user color scheme
+        user_color_scheme: user_settings.color_scheme,
+        color_scheme_values: settings_config.color_scheme_values,
     };
 }

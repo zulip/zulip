@@ -160,7 +160,12 @@ class EmailChangeTestCase(ZulipTestCase):
         self.login_user(user_profile)
         activation_url = self.generate_email_change_link(new_email)
 
-        do_deactivate_realm(user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
 
         response = self.client_get(activation_url)
         self.assertEqual(response.status_code, 302)

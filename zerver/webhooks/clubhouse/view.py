@@ -172,7 +172,7 @@ def get_epic_create_body(payload: WildValue, action: WildValue) -> str:
     )
 
 
-def get_comment_added_body(entity: str, payload: WildValue, action: WildValue) -> str:
+def get_comment_added_body(entity: str, payload: WildValue, ignored_action: WildValue) -> str:
     actions = payload["actions"]
     kwargs = {"entity": entity}
     for action in actions:
@@ -456,9 +456,7 @@ def get_story_update_attachment_body(payload: WildValue, action: WildValue) -> O
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
 
 
-def get_story_joined_label_list(
-    payload: WildValue, action: WildValue, label_ids_added: List[int]
-) -> str:
+def get_story_joined_label_list(payload: WildValue, label_ids_added: List[int]) -> str:
     labels = []
 
     for label_id in label_ids_added:
@@ -491,7 +489,7 @@ def get_story_label_body(payload: WildValue, action: WildValue) -> Optional[str]
         return None
 
     label_ids_added = label_ids["adds"].tame(check_list(check_int))
-    kwargs.update(labels=get_story_joined_label_list(payload, action, label_ids_added))
+    kwargs.update(labels=get_story_joined_label_list(payload, label_ids_added))
 
     return (
         STORY_LABEL_TEMPLATE.format(**kwargs)
@@ -622,7 +620,7 @@ def get_story_update_batch_body(payload: WildValue, action: WildValue) -> Option
         if "adds" in label_ids:
             label_ids_added = label_ids["adds"].tame(check_list(check_int))
             last_change = "label"
-            labels = get_story_joined_label_list(payload, action, label_ids_added)
+            labels = get_story_joined_label_list(payload, label_ids_added)
             templates.append(
                 STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE.format(
                     operation="{} added".format("was" if len(templates) == 0 else "and"),
@@ -666,9 +664,9 @@ def get_entity_name(entity: str, payload: WildValue, action: WildValue) -> Optio
     name = action["name"].tame(check_string) if "name" in action else None
 
     if name is None or action["entity_type"] == "branch":
-        for action in payload["actions"]:
-            if action["entity_type"].tame(check_string) == entity:
-                name = action["name"].tame(check_string)
+        for other_action in payload["actions"]:
+            if other_action["entity_type"].tame(check_string) == entity:
+                name = other_action["name"].tame(check_string)
 
     if name is None:
         for ref in payload["references"]:

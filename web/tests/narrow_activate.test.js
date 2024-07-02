@@ -6,6 +6,7 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
+set_global("history", {});
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},
 });
@@ -46,7 +47,7 @@ const message_view_header = mock_esm("../src/message_view_header");
 const message_viewport = mock_esm("../src/message_viewport");
 const narrow_history = mock_esm("../src/narrow_history");
 const narrow_title = mock_esm("../src/narrow_title");
-const stream_list = mock_esm("../src/stream_list");
+const stream_list = mock_esm("../src/stream_list", {is_zoomed_in: () => false});
 const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area");
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
@@ -59,7 +60,7 @@ mock_esm("../src/unread_ui", {
 });
 
 //
-// We have strange hacks in narrow.activate to sleep 0
+// We have strange hacks in message_view.show to sleep 0
 // seconds.
 set_global("setTimeout", (f, t) => {
     assert.equal(t, 0);
@@ -74,7 +75,7 @@ const {buddy_list} = zrequire("buddy_list");
 const activity_ui = zrequire("activity_ui");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
-const narrow = zrequire("narrow");
+const message_view = zrequire("message_view");
 const people = zrequire("people");
 
 const denmark = {
@@ -210,7 +211,7 @@ run_test("basics", ({override}) => {
         opts.cont();
     };
 
-    narrow.activate(terms, {
+    message_view.show(terms, {
         then_select_id: selected_id,
     });
 
@@ -242,7 +243,7 @@ run_test("basics", ({override}) => {
     message_lists.current.selected_id = () => -1;
     message_lists.current.get_row = () => row;
 
-    narrow.activate([{operator: "is", operand: "private"}], {
+    message_view.show([{operator: "is", operand: "private"}], {
         then_select_id: selected_id,
     });
 
@@ -253,7 +254,7 @@ run_test("basics", ({override}) => {
     row.get_offset_to_window = () => ({top: 100, bottom: 150});
     message_lists.current.get_row = () => row;
 
-    narrow.activate(terms, {
+    message_view.show(terms, {
         then_select_id: selected_id,
     });
 
@@ -265,7 +266,7 @@ run_test("basics", ({override}) => {
     row.get_offset_to_window = () => ({top: 150, bottom: 250});
     message_lists.current.get_row = () => row;
 
-    narrow.activate(terms, {
+    message_view.show(terms, {
         then_select_id: selected_id,
     });
 

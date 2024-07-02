@@ -13,11 +13,12 @@ import random
 import sys
 import time
 import traceback
-from typing import Any, Dict, List, NoReturn, Optional
+from typing import Any, Dict, List, Literal, NoReturn, Optional
 
 sys.path.append(".")
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
+from scripts.lib.zulip_tools import atomic_nagios_write
 
 setup_path()
 
@@ -47,43 +48,33 @@ parser.add_argument("--insecure", action="store_true")
 options = parser.parse_args()
 
 
-def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> NoReturn:
-    states = {
-        "OK": 0,
-        "WARNING": 1,
-        "CRITICAL": 2,
-        "UNKNOWN": 3,
-    }
-
-    now = int(time.time())
+def report(
+    state: Literal["ok", "warning", "critical", "unknown"],
+    timestamp: Optional[float] = None,
+    msg: Optional[str] = None,
+) -> NoReturn:
     if msg is None:
         msg = f"send time was {timestamp}"
-    state_file_path = "/var/lib/nagios_state/check_send_receive_state"
-    with open(state_file_path + ".tmp", "w") as f:
-        f.write(f"{now}|{states[state]}|{state}|{msg}\n")
-    os.rename(state_file_path + ".tmp", state_file_path)
-    if states[state] > 0:
-        print(f"{state}: {msg}")
-    sys.exit(states[state])
+    sys.exit(atomic_nagios_write("check_send_receive_state", state, msg))
 
 
 def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
     result = sender.send_message(message)
     if result["result"] != "success":
-        report("CRITICAL", msg=f"Error sending Zulip, args were: {message}, {result}")
+        report("critical", msg=f"Error sending Zulip, args were: {message}, {result}")
 
 
 def get_zulips() -> List[Dict[str, Any]]:
     global last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
     if "error" in res.get("result", {}):
-        report("CRITICAL", msg="Error receiving Zulips, error was: {}".format(res["msg"]))
+        report("critical", msg="Error receiving Zulips, error was: {}".format(res["msg"]))
     for event in res["events"]:
         last_event_id = max(last_event_id, int(event["id"]))
     # If we get a heartbeat event, that means we've been hanging for
     # 40s, and we should bail.
     if "heartbeat" in (event["type"] for event in res["events"]):
-        report("CRITICAL", msg="Got heartbeat waiting for Zulip, which means get_events is hanging")
+        report("critical", msg="Got heartbeat waiting for Zulip, which means get_events is hanging")
     return [event["message"] for event in res["events"]]
 
 
@@ -120,10 +111,10 @@ zulip_recipient = zulip.Client(
 try:
     res = zulip_recipient.register(event_types=["message"])
     if "error" in res.get("result", {}):
-        report("CRITICAL", msg="Error subscribing to Zulips: {}".format(res["msg"]))
+        report("critical", msg="Error subscribing to Zulips: {}".format(res["msg"]))
     queue_id, last_event_id = (res["queue_id"], res["last_event_id"])
 except Exception:
-    report("CRITICAL", msg=f"Error subscribing to Zulips:\n{traceback.format_exc()}")
+    report("critical", msg=f"Error subscribing to Zulips:\n{traceback.format_exc()}")
 msg_to_send = str(random.getrandbits(64))
 time_start = time.perf_counter()
 
@@ -148,8 +139,8 @@ while msg_to_send not in msg_content:
 zulip_recipient.deregister(queue_id)
 
 if seconds_diff > 12:
-    report("CRITICAL", timestamp=seconds_diff)
+    report("critical", timestamp=seconds_diff)
 if seconds_diff > 3:
-    report("WARNING", timestamp=seconds_diff)
+    report("warning", timestamp=seconds_diff)
 else:
-    report("OK", timestamp=seconds_diff)
+    report("ok", timestamp=seconds_diff)

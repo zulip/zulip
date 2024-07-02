@@ -9,8 +9,8 @@ import * as compose_fade from "./compose_fade";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
+import * as direct_message_group_data from "./direct_message_group_data";
 import * as drafts from "./drafts";
-import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
@@ -18,7 +18,7 @@ import * as message_lists from "./message_lists";
 import * as message_notifications from "./message_notifications";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
@@ -56,14 +56,10 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             }
 
             let new_messages = [];
-            const elsewhere_messages = [];
-
             for (const elem of messages) {
                 if (Object.hasOwn(data.messages, elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
-                } else {
-                    elsewhere_messages.push(elem);
                 }
             }
 
@@ -81,7 +77,6 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
-            compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error(xhr) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
@@ -119,7 +114,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
-    huddle_data.process_loaded_messages(messages);
+    direct_message_group_data.process_loaded_messages(messages);
 
     // all_messages_data is the data that we use to populate
     // other lists, so we always update this
@@ -155,7 +150,11 @@ export function insert_new_messages(messages, sent_by_this_client) {
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
     if (sent_by_this_client) {
-        compose_notifications.notify_local_mixes(messages, need_user_to_scroll);
+        compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
+            narrow_to_recipient(message_id) {
+                message_view.narrow_by_topic(message_id, {trigger: "outside_current_view"});
+            },
+        });
     }
 
     if (any_untracked_unread_messages) {
@@ -166,6 +165,8 @@ export function insert_new_messages(messages, sent_by_this_client) {
     message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+
+    return messages;
 }
 
 export function update_messages(events) {
@@ -287,6 +288,7 @@ export function update_messages(events) {
                 }
             }
             // The event.message_ids received from the server are not in sorted order.
+            // Sorts in ascending order.
             event_messages.sort((a, b) => a.id - b.id);
 
             if (
@@ -304,6 +306,18 @@ export function update_messages(events) {
 
             if (going_forward_change) {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
+            }
+
+            // Remove the stream_topic_entry for the old topics;
+            // must be called before we call set message topic.
+            const num_messages = event_messages.length;
+            if (num_messages > 0) {
+                stream_topic_history.remove_messages({
+                    stream_id: old_stream_id,
+                    topic_name: orig_topic,
+                    num_messages,
+                    max_removed_msg_id: event_messages[num_messages - 1].id,
+                });
             }
 
             for (const moved_message of event_messages) {
@@ -333,23 +347,6 @@ export function update_messages(events) {
                     ];
                 }
                 moved_message.last_edit_timestamp = event.edit_timestamp;
-
-                // Remove the Recent Conversations entry for the old topics;
-                // must be called before we call set_message_topic.
-                //
-                // TODO: Use a single bulk request to do this removal.
-                // Note that we need to be careful to only remove IDs
-                // that were present in stream_topic_history data.
-                // This may not be possible to do correctly without extra
-                // complexity; the present loop assumes stream_topic_history has
-                // only messages in message_store, but that's been false
-                // since we added the server_history feature.
-                stream_topic_history.remove_messages({
-                    stream_id: moved_message.stream_id,
-                    topic_name: moved_message.topic,
-                    num_messages: 1,
-                    max_removed_msg_id: moved_message.id,
-                });
 
                 // Update the unread counts; again, this must be called
                 // before we modify the topic field on the message.
@@ -428,7 +425,7 @@ export function update_messages(events) {
                         trigger: "stream/topic change",
                         then_select_id: current_selected_id,
                     };
-                    narrow.activate(terms, opts);
+                    message_view.show(terms, opts);
                 }
             }
 
@@ -583,4 +580,5 @@ export function remove_messages(message_ids) {
     recent_view_ui.update_topics_of_deleted_message_ids(message_ids);
     starred_messages.remove(message_ids);
     starred_messages_ui.rerender_ui();
+    message_store.remove(message_ids);
 }

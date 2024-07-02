@@ -52,6 +52,7 @@ class ErrorCode(Enum):
     REMOTE_BILLING_UNAUTHENTICATED_USER = auto()
     REMOTE_REALM_SERVER_MISMATCH_ERROR = auto()
     PUSH_NOTIFICATIONS_DISALLOWED = auto()
+    EXPECTATION_MISMATCH = auto()
 
 
 class JsonableError(Exception):
@@ -656,3 +657,15 @@ class TopicWildcardMentionNotAllowedError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to use topic wildcard mentions in this topic.")
+
+
+class PreviousSettingValueMismatchedError(JsonableError):
+    code: ErrorCode = ErrorCode.EXPECTATION_MISMATCH
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("'old' value does not match the expected value.")

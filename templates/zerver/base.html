@@ -23,6 +23,10 @@
         {% include 'zerver/meta_tags.html' %}
         {% endif %}
 
+        {% if sentry_params is defined %}
+        <script id="sentry-params" type="text/json">{{ sentry_params|tojson }}</script>
+        {% endif %}
+
         {% block webpack %}
             {% for filename in webpack_entry(entrypoint) -%}
                 {% if filename.endswith(".css") -%}

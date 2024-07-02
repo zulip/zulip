@@ -169,7 +169,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
-        self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
+        self.assertIn("This organization has been deactivated.", result.content.decode())
         self.assertNotIn("It has moved to", result.content.decode())
 
     def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set(self) -> None:
@@ -180,7 +180,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assertIn(
-            'It has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.',
+            'This organization has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.',
             result.content.decode(),
         )
 
@@ -190,7 +190,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assertIn(
-            'It has moved to <a href="http://new-subdomain-name.testserver">http://new-subdomain-name.testserver</a>.',
+            'This organization has moved to <a href="http://new-subdomain-name.testserver">http://new-subdomain-name.testserver</a>.',
             result.content.decode(),
         )
 
@@ -215,7 +215,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assertIn(
-            'It has moved to <a href="http://new-name-1.testserver">http://new-name-1.testserver</a>.',
+            'This organization has moved to <a href="http://new-name-1.testserver">http://new-name-1.testserver</a>.',
             result.content.decode(),
         )
 
@@ -223,7 +223,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/login/", follow=True)
         self.assertIn(
-            'It has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
+            'This organization has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
             result.content.decode(),
         )
 
@@ -556,7 +556,12 @@ class PasswordResetTest(ZulipTestCase):
     def test_password_reset_with_deactivated_realm(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        do_deactivate_realm(user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
 
         # start the password reset process by supplying an email address
         with self.assertLogs(level="INFO") as m:
@@ -660,7 +665,8 @@ class PasswordResetTest(ZulipTestCase):
 
         # check the redirect link telling you to check mail for password reset link
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
+        self.assert_in_response("There is no Zulip organization at", result)
+        self.assert_in_response("Please try a different URL", result)
 
         from django.core.mail import outbox
 
@@ -899,7 +905,8 @@ class LoginTest(ZulipTestCase):
     def test_login_invalid_subdomain(self) -> None:
         result = self.login_with_return(self.example_email("hamlet"), "xxx", subdomain="invalid")
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
+        self.assert_in_response("There is no Zulip organization at", result)
+        self.assert_in_response("Please try a different URL", result)
         self.assert_logged_in_user_id(None)
 
     def test_register(self) -> None:
@@ -1147,7 +1154,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Enqueue a fake digest email.
         context = {
             "name": "",
-            "realm_uri": "",
+            "realm_url": "",
             "unread_pms": [],
             "hot_conversations": [],
             "new_users": [],
@@ -1303,7 +1310,7 @@ class RealmCreationTest(ZulipTestCase):
 
         # Check welcome messages
         for stream_name, text, message_count in [
-            (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), "learn about new features", 3),
+            (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), "a great place to say “hi”", 2),
             (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), "Use this topic to try out", 5),
         ]:
             stream = get_stream(stream_name, realm)
@@ -4348,7 +4355,12 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_deactivated_realm(self) -> None:
-        do_deactivate_realm(get_realm("zulip"), acting_user=None)
+        do_deactivate_realm(
+            get_realm("zulip"),
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 200)

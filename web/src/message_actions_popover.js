@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_actions_popover from "../templates/popovers/actions_popover.hbs";
+import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_reply from "./compose_reply";
@@ -46,7 +46,7 @@ export function toggle_message_actions_menu(message) {
         return true;
     }
 
-    if (message.locally_echoed || message_edit.is_editing(message.id)) {
+    if (message.locally_echoed || message_edit.currently_editing_messages.has(message.id)) {
         // Don't open the popup for locally echoed messages for now.
         // It creates bugs with things like keyboard handlers when
         // we get the server response.
@@ -90,7 +90,7 @@ export function initialize() {
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
-            instance.setContent(parse_html(render_actions_popover(args)));
+            instance.setContent(parse_html(render_message_actions_popover(args)));
             $row.addClass("has_actions_popover");
         },
         onMount(instance) {

@@ -106,9 +106,6 @@ markdown_whitespace_rules: List["Rule"] = [
     {
         "pattern": "^#+[A-Za-z0-9]",
         "description": "Missing space after # in heading",
-        "exclude_line": {
-            ("docs/subsystems/hotspots.md", "#hotspot_new_hotspot_name_icon {"),
-        },
         "good_lines": ["### some heading", "# another heading"],
         "bad_lines": ["###some heading", "#another heading"],
     },
@@ -124,6 +121,7 @@ js_rules = RuleList(
                 "web/src/message_store.ts",
                 "web/src/types.ts",
                 "web/src/util.ts",
+                "web/src/message_helper.ts",
                 "web/tests/",
             },
             "exclude_pattern": "emails",
@@ -732,6 +730,9 @@ html_rules: List["Rule"] = [
     {
         "pattern": r"(?i:data-tippy-allowHTML)",
         "description": "Never use data-tippy-allowHTML; for an HTML tooltip, set data-tooltip-template-id to the id of a <template> containing the tooltip content.",
+        "exclude": {
+            "templates/corporate/support/sponsorship_discount_forms.html",
+        },
     },
 ]
 
@@ -835,6 +836,14 @@ markdown_rules = RuleList(
         {
             "pattern": r"\[(?P<url>[^\]]+)\]\((?P=url)\)",
             "description": "Linkified Markdown URLs should use cleaner <http://example.com> syntax.",
+            "exclude": {"help/"},
+        },
+        {
+            "pattern": r"<http(s?)://[^>]+>",
+            "description": """Autolinks are not allowed in /help documentation due to the upcoming migration to mdx.
+            Use Linkified markdown URLs [url](url) instead.
+            See https://github.com/mdx-js/mdx/issues/1049 for more info.""",
+            "include_only": {"help/"},
         },
         {
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",

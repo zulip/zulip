@@ -23,7 +23,7 @@ def query_for_ids(
     """
     assert user_ids
     clause = f"{field} IN %s"
-    query = query.extra(
+    query = query.extra(  # noqa: S610
         where=[clause],
         params=(tuple(user_ids),),
     )

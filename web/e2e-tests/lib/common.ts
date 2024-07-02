@@ -49,7 +49,7 @@ export const pm_recipient = {
     },
 };
 
-export const fullname: Record<string, string> = {
+export const fullname = {
     cordelia: "Cordelia, Lear's daughter",
     othello: "Othello, the Moor of Venice",
     hamlet: "King Hamlet",
@@ -139,8 +139,7 @@ export async function fill_form(
     async function is_dropdown(page: Page, name: string): Promise<boolean> {
         return (await page.$(`select[name="${CSS.escape(name)}"]`)) !== null;
     }
-    for (const name of Object.keys(params)) {
-        const value = params[name];
+    for (const [name, value] of Object.entries(params)) {
         if (typeof value === "boolean") {
             await page.$eval(
                 `${form_selector} input[name="${CSS.escape(name)}"]`,
@@ -207,7 +206,7 @@ export async function get_text_from_selector(page: Page, selector: string): Prom
 
 export async function check_compose_state(
     page: Page,
-    params: Record<string, string>,
+    params: {stream_name?: string; topic?: string; content: string},
 ): Promise<void> {
     const form_params: Record<string, string> = {content: params.content};
     if (params.stream_name) {
@@ -237,9 +236,6 @@ export async function get_stream_id(page: Page, stream_name: string): Promise<nu
 }
 
 export async function get_user_id_from_name(page: Page, name: string): Promise<number | undefined> {
-    if (fullname[name] !== undefined) {
-        name = fullname[name];
-    }
     return await page.evaluate((name: string) => zulip_test.get_user_id_from_name(name), name);
 }
 
@@ -247,9 +243,6 @@ export async function get_internal_email_from_name(
     page: Page,
     name: string,
 ): Promise<string | undefined> {
-    if (fullname[name] !== undefined) {
-        name = fullname[name];
-    }
     return await page.evaluate((fullname: string) => {
         const user_id = zulip_test.get_user_id_from_name(fullname);
         return user_id === undefined ? undefined : zulip_test.get_person_by_user_id(user_id).email;
@@ -547,7 +540,7 @@ export async function open_streams_modal(page: Page): Promise<void> {
 
     await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
     const url = await page_url_with_fragment(page);
-    assert.ok(url.includes("#channels/all"));
+    assert.ok(url.includes("#channels/notsubscribed"));
 }
 
 export async function open_personal_menu(page: Page): Promise<void> {
@@ -628,9 +621,9 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
             columnNumber,
         }: ConsoleMessageLocation): Promise<string> => {
             let frame = new StackFrame({
-                fileName: url,
-                lineNumber: lineNumber === undefined ? undefined : lineNumber + 1,
-                columnNumber: columnNumber === undefined ? undefined : columnNumber + 1,
+                ...(url !== undefined && {fileName: url}),
+                ...(lineNumber !== undefined && {lineNumber: lineNumber + 1}),
+                ...(columnNumber !== undefined && {columnNumber: columnNumber + 1}),
             });
             try {
                 frame = await gps.getMappedLocation(frame);

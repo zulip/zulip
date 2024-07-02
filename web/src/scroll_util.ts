@@ -1,15 +1,13 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
 
 // This type is helpful for testing, where we may have a dummy object instead of an actual jquery object.
 type JQueryOrZJQuery = {__zjquery?: true} & JQuery;
 
 export function get_content_element($element: JQuery): JQuery {
-    const element = $element.expectOne()[0];
-    const sb: unknown = SimpleBar.instances.get(element);
+    const element = $element.expectOne()[0]!;
+    const sb = SimpleBar.instances.get(element);
     if (sb) {
-        assert(sb instanceof SimpleBar); // https://github.com/Grsmto/simplebar/pull/689
         return $(sb.getContentElement()!);
     }
     return $element;
@@ -21,24 +19,22 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
         return $element;
     }
 
-    const element = $element.expectOne()[0];
-    const sb: unknown = SimpleBar.instances.get(element);
+    const element = $element.expectOne()[0]!;
+    const sb = SimpleBar.instances.get(element);
     if (sb) {
-        assert(sb instanceof SimpleBar); // https://github.com/Grsmto/simplebar/pull/689
         return $(sb.getScrollElement()!);
     } else if ("simplebar" in element.dataset) {
         // The SimpleBar mutation observer hasn’t processed this element yet.
         // Create the SimpleBar early in case we need to add event listeners.
-        return $(new SimpleBar(element).getScrollElement()!);
+        return $(new SimpleBar(element, {tabIndex: -1}).getScrollElement()!);
     }
     return $element;
 }
 
 export function reset_scrollbar($element: JQuery): void {
-    const element = $element.expectOne()[0];
-    const sb: unknown = SimpleBar.instances.get(element);
+    const element = $element.expectOne()[0]!;
+    const sb = SimpleBar.instances.get(element);
     if (sb) {
-        assert(sb instanceof SimpleBar); // https://github.com/Grsmto/simplebar/pull/689
         sb.getScrollElement()!.scrollTop = 0;
     } else {
         element.scrollTop = 0;

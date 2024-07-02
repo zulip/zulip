@@ -1,22 +1,13 @@
 import _ from "lodash";
+import type {z} from "zod";
 
 import * as blueslip from "./blueslip";
-import type {User} from "./people";
+import type {StateData, realm_emoji_map_schema, server_emoji_schema} from "./state_data";
 
 // This is the data structure that we get from the server on initialization.
-export type ServerEmoji = {
-    id: string;
-    author_id: number;
-    deactivated: boolean;
-    name: string;
-    source_url: string;
-    still_url: string | null;
+export type ServerEmoji = z.infer<typeof server_emoji_schema>;
 
-    // Added later in `settings_emoji.ts` when setting up the emoji settings.
-    author?: User | null;
-};
-
-type RealmEmojiMap = Record<string, ServerEmoji>;
+type RealmEmojiMap = z.infer<typeof realm_emoji_map_schema>;
 
 // The data the server provides about unicode emojis.
 type ServerUnicodeEmojiData = {
@@ -25,11 +16,6 @@ type ServerUnicodeEmojiData = {
     emoji_catalog: Record<string, string[]>;
     emoticon_conversions: Record<string, string>;
     names: string[];
-};
-
-type EmojiParams = {
-    realm_emoji: RealmEmojiMap;
-    emoji_codes: ServerUnicodeEmojiData;
 };
 
 export type EmoticonTranslation = {
@@ -46,20 +32,27 @@ type RealmEmoji = {
 };
 
 // Data structure which every widget(like Emoji Picker) in the web app is supposed to use for displaying emojis.
-type EmojiDict = {
+export type EmojiDict = {
     name: string;
     display_name: string;
     aliases: string[];
-    is_realm_emoji: boolean;
     has_reacted: boolean;
-    emoji_code?: string;
     url?: string;
-};
+} & (
+    | {
+          is_realm_emoji: true;
+          emoji_code?: undefined;
+      }
+    | {
+          is_realm_emoji: false;
+          emoji_code: string;
+      }
+);
 
 // Details needed by template to render an emoji.
 export type EmojiRenderingDetails = {
     emoji_name: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_code: string;
     url?: string;
     still_url?: string | null;
@@ -226,6 +219,7 @@ function build_emojis_by_name({
             is_realm_emoji: true,
             url: realm_emoji.emoji_url,
             has_reacted: false,
+            emoji_code: undefined,
         };
 
         // We want the realm emoji to overwrite any existing entry in this map.
@@ -317,7 +311,7 @@ export function get_emoji_details_by_name(emoji_name: string): EmojiRenderingDet
 export function get_emoji_details_for_rendering(opts: {
     emoji_name: string;
     emoji_code: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
 }): EmojiRenderingDetails {
     if (opts.reaction_type !== "unicode_emoji") {
         const realm_emoji = all_realm_emojis.get(opts.emoji_code);
@@ -371,7 +365,9 @@ function build_default_emoji_aliases({
     return map;
 }
 
-export function initialize(params: EmojiParams): void {
+export function initialize(
+    params: StateData["emoji"] & {emoji_codes: ServerUnicodeEmojiData},
+): void {
     emoji_codes = params.emoji_codes;
 
     emoticon_translations = build_emoticon_translations({

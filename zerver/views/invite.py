@@ -20,7 +20,7 @@ from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOw
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.validator import check_int, check_int_in, check_list, check_none_or
+from zerver.lib.validator import check_bool, check_int, check_int_in, check_list, check_none_or
 from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
@@ -59,6 +59,7 @@ def invite_users_backend(
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -99,6 +100,7 @@ def invite_users_backend(
         invitee_emails,
         streams,
         invite_expires_in_minutes=invite_expires_in_minutes,
+        include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
     )
 
@@ -179,10 +181,10 @@ def revoke_multiuse_invite(
 @require_member_or_admin
 @has_request_variables
 def resend_user_invite_email(
-    request: HttpRequest, user_profile: UserProfile, prereg_id: int
+    request: HttpRequest, user_profile: UserProfile, invite_id: int
 ) -> HttpResponse:
     try:
-        prereg_user = PreregistrationUser.objects.get(id=prereg_id)
+        prereg_user = PreregistrationUser.objects.get(id=invite_id)
     except PreregistrationUser.DoesNotExist:
         raise JsonableError(_("No such invitation"))
 
@@ -213,6 +215,7 @@ def generate_multiuse_invite_backend(
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     if not user_profile.can_create_multiuse_invite_to_realm():
         # Guest users case will not be handled here as it will
@@ -244,6 +247,10 @@ def generate_multiuse_invite_backend(
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
     invite_link = do_create_multiuse_invite_link(
-        user_profile, invite_as, invite_expires_in_minutes, streams
+        user_profile,
+        invite_as,
+        invite_expires_in_minutes,
+        include_realm_default_subscriptions,
+        streams,
     )
     return json_success(request, data={"invite_link": invite_link})

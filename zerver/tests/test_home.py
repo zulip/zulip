@@ -11,6 +11,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
+from version import ZULIP_VERSION
 from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.users import change_user_is_active
@@ -55,7 +56,6 @@ class HomeTest(ZulipTestCase):
         "page_type",
         "promote_sponsoring_zulip",
         "request_language",
-        "server_sentry_dsn",
         "show_billing",
         "show_plans",
         "show_remote_billing",
@@ -114,6 +114,7 @@ class HomeTest(ZulipTestCase):
         "password_min_guesses",
         "password_min_length",
         "presences",
+        "presence_last_update_id",
         "queue_id",
         "realm_add_custom_emoji_policy",
         "realm_allow_edit_history",
@@ -125,6 +126,8 @@ class HomeTest(ZulipTestCase):
         "realm_bot_domain",
         "realm_bots",
         "realm_can_access_all_users_group",
+        "realm_can_create_private_channel_group",
+        "realm_can_create_public_channel_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
@@ -257,7 +260,7 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(54):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -355,7 +358,6 @@ class HomeTest(ZulipTestCase):
             "promote_sponsoring_zulip",
             "realm_rendered_description",
             "request_language",
-            "server_sentry_dsn",
             "show_billing",
             "show_plans",
             "show_remote_billing",
@@ -494,47 +496,47 @@ class HomeTest(ZulipTestCase):
             )
 
     def test_sentry_keys(self) -> None:
-        def home_params() -> Dict[str, Any]:
+        def sentry_params() -> Dict[str, Any] | None:
             result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
-            return self._get_page_params(result)
+            return self._get_sentry_params(result)
 
-        self.login("hamlet")
-        page_params = home_params()
-        self.assertEqual(page_params["server_sentry_dsn"], None)
-        self.assertEqual(
-            [], [key for key in page_params if key != "server_sentry_dsn" and "sentry" in key]
-        )
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        self.assertIsNone(sentry_params())
 
         with self.settings(SENTRY_FRONTEND_DSN="https://aaa@bbb.ingest.sentry.io/1234"):
-            page_params = home_params()
             self.assertEqual(
-                page_params["server_sentry_dsn"], "https://aaa@bbb.ingest.sentry.io/1234"
+                sentry_params(),
+                {
+                    "dsn": "https://aaa@bbb.ingest.sentry.io/1234",
+                    "environment": "development",
+                    "realm_key": "zulip",
+                    "sample_rate": 1.0,
+                    "server_version": ZULIP_VERSION,
+                    "trace_rate": 0.1,
+                    "user": {"id": user.id, "role": "Member"},
+                },
             )
-            self.assertEqual(page_params["realm_sentry_key"], "zulip")
-            self.assertEqual(page_params["server_sentry_environment"], "development")
-            self.assertEqual(page_params["server_sentry_sample_rate"], 1.0)
-            self.assertEqual(page_params["server_sentry_trace_rate"], 0.1)
 
         # Make sure these still exist for logged-out users as well
         realm = get_realm("zulip")
         do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
         self.logout()
-        page_params = home_params()
-        self.assertEqual(page_params["server_sentry_dsn"], None)
-        self.assertEqual(
-            [], [key for key in page_params if key != "server_sentry_dsn" and "sentry" in key]
-        )
+        self.assertIsNone(sentry_params())
 
         with self.settings(SENTRY_FRONTEND_DSN="https://aaa@bbb.ingest.sentry.io/1234"):
-            page_params = home_params()
             self.assertEqual(
-                page_params["server_sentry_dsn"], "https://aaa@bbb.ingest.sentry.io/1234"
+                sentry_params(),
+                {
+                    "dsn": "https://aaa@bbb.ingest.sentry.io/1234",
+                    "environment": "development",
+                    "realm_key": "zulip",
+                    "sample_rate": 1.0,
+                    "server_version": ZULIP_VERSION,
+                    "trace_rate": 0.1,
+                },
             )
-            self.assertEqual(page_params["realm_sentry_key"], "zulip")
-            self.assertEqual(page_params["server_sentry_environment"], "development")
-            self.assertEqual(page_params["server_sentry_sample_rate"], 1.0)
-            self.assertEqual(page_params["server_sentry_trace_rate"], 0.1)
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
@@ -562,7 +564,7 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(54):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
@@ -593,7 +595,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(47):
+        with self.assert_database_query_count(49):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -666,7 +668,7 @@ class HomeTest(ZulipTestCase):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
-            self.assert_in_response("your mission-critical communications with Zulip", result)
+            self.assert_in_response("Zulip lets us move faster, connect with each", result)
 
     def test_accept_terms_of_service(self) -> None:
         self.login("hamlet")
@@ -1229,7 +1231,7 @@ class HomeTest(ZulipTestCase):
             with patch("zerver.views.home.get_subdomain", return_value=""):
                 result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response("your mission-critical communications with Zulip", result)
+            self.assert_in_response("Zulip lets us move faster, connect with each", result)
 
             with patch("zerver.views.home.get_subdomain", return_value="subdomain"):
                 result = self._get_home_page()

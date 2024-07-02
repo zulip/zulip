@@ -1,5 +1,10 @@
 :root {
     --color-background-modal: hsl(0deg 0% 98%);
+    /*
+        It is fine if footer is longer than that
+        since we are only trying to avoid overlap.
+    */
+    --height-footer: 495px;
 }
 
 [data-tippy-root] .tippy-box .tippy-content {
@@ -115,7 +120,6 @@ html {
 .help {
     .app-main {
         padding: 0;
-        margin-top: 59px;
     }
 
     /* Markdown processor generates lots of spurious <p></p> */
@@ -128,9 +132,10 @@ html {
         z-index: 1;
         /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
         height: calc(100vh - 59px);
+        top: 59px;
 
         border-right: 1px solid hsl(219deg 10% 97%);
-        position: fixed;
+        position: sticky;
 
         background-color: hsl(153deg 32% 55%);
         color: hsl(0deg 0% 100%);
@@ -257,7 +262,6 @@ html {
     background-color: hsl(0deg 0% 100%);
     width: calc(100vw - 300px);
     height: calc(100% - 59px);
-    margin-left: 300px;
 
     & :target {
         scroll-margin-top: 59px;
@@ -1010,18 +1014,11 @@ input.new-organization-button {
 }
 
 .error_page {
-    min-height: calc(100vh - 290px);
+    min-height: calc(100vh - var(--height-footer));
+    padding: 20px 10px 50px;
     height: 100%;
     background-color: hsl(163deg 42% 85%);
     font-family: "Source Sans 3 VF", sans-serif;
-}
-
-.error_page .container {
-    padding: 20px 0;
-}
-
-.error_page .row-fluid {
-    margin-top: 60px;
 }
 
 .error_page img {
@@ -1228,10 +1225,6 @@ input.new-organization-button {
         }
     }
 
-    .help .app-main {
-        margin-top: 39px;
-    }
-
     .help .markdown {
         height: calc(100vh - 39px);
     }
@@ -1408,6 +1401,47 @@ label.label-title {
     color: hsl(176deg 46.4% 41%);
 }
 
+.api-event-header {
+    .api-event-name {
+        color: hsl(14deg 75% 60%);
+        font-size: 1.1rem;
+
+        .api-event-op {
+            color: hsl(14deg 60% 60%);
+            font-size: 1rem;
+        }
+    }
+}
+
+.api-events-table {
+    column-count: 3;
+    column-gap: 10px;
+    margin: 15px 0 0 10px;
+
+    .api-event-type,
+    .api-event-link {
+        line-height: 100%;
+        font-weight: 600;
+        margin-bottom: 7px;
+    }
+
+    .api-event-ops {
+        margin-left: 12px;
+    }
+}
+
+@media (width <= 1000px) {
+    .api-events-table {
+        column-count: 2;
+    }
+}
+
+@media (width <= 500px) {
+    .api-events-table {
+        column-count: 1;
+    }
+}
+
 .desktop-redirect-box {
     text-align: center;
 
@@ -1423,10 +1457,6 @@ label.label-title {
 
 .desktop-redirect-image {
     margin-bottom: 20px;
-}
-
-.unsupported_browser_page {
-    padding-bottom: 80px;
 }
 
 #navbar-custom-message {

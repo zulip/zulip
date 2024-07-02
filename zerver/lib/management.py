@@ -2,7 +2,7 @@
 import logging
 import os
 import sys
-from argparse import ArgumentParser, RawTextHelpFormatter, _ActionsContainer
+from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
 from functools import reduce, wraps
 from typing import Any, Dict, Optional, Protocol
@@ -78,8 +78,23 @@ class ZulipBaseCommand(BaseCommand):
     @override
     def create_parser(self, prog_name: str, subcommand: str, **kwargs: Any) -> CommandParser:
         parser = super().create_parser(prog_name, subcommand, **kwargs)
+        parser.add_argument(
+            "--automated",
+            help="This command is run non-interactively (enables Sentry, etc)",
+            action=BooleanOptionalAction,
+            default=not sys.stdin.isatty(),
+        )
         parser.formatter_class = RawTextHelpFormatter
         return parser
+
+    @override
+    def execute(self, *args: Any, **options: Any) -> None:
+        if settings.SENTRY_DSN and not options["automated"]:  # nocoverage
+            import sentry_sdk
+
+            # This deactivates Sentry
+            sentry_sdk.init()
+        super().execute(*args, **options)
 
     def add_realm_args(
         self, parser: ArgumentParser, *, required: bool = False, help: Optional[str] = None

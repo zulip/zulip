@@ -48,16 +48,17 @@ currently composing to.
 
 {start_tabs}
 
-{!start-composing.md!}
+1. [Open the compose box](/help/open-the-compose-box).
 
-1. If composing a channel message, click the **Go to conversation**
-   (<i class="zulip-icon zulip-icon-arrow-left-circle"></i>) button in the
-   compose box.
+1. Click the highlighted **Go to conversation** (<i class="zulip-icon
+   zulip-icon-chevron-right"></i>) button at the top of the compose box. It will
+   be clickable only if you're viewing a different conversation from the one you
+   are composing to.
 
 !!! keyboard_tip ""
 
-    For both channel and direct messages, use <kbd>Ctrl</kbd> + <kbd>.</kbd> to
-    go to the conversation you are composing to.
+    Use <kbd>Ctrl</kbd> + <kbd>.</kbd> to go to the conversation you're
+    composing to.
 
 {end_tabs}
 

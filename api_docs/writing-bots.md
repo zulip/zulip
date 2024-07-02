@@ -191,7 +191,7 @@ def usage(self):
         This plugin will allow users to flag messages
         as being follow-up items.  Users should preface
         messages with "@followup".
-        Before running this, make sure to create a stream
+        Before running this, make sure to create a channel
         called "followup" that your API user can send to.
         '''
 ```
@@ -247,7 +247,7 @@ about where the message is sent to.
 ```python
 bot_handler.send_message(dict(
     type='stream', # can be 'stream' or 'private'
-    to=stream_name, # either the stream name or user's email
+    to=channel_name, # either the channel name or user's email
     subject=subject, # message subject
     content=message, # content of the sent message
 ))

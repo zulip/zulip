@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 // You won't find every click handler here, but it's a good place to start!
 
@@ -20,7 +20,7 @@ import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
@@ -41,7 +41,6 @@ import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
-import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 export function initialize() {
@@ -185,7 +184,7 @@ export function initialize() {
         assert(message_lists.current !== undefined);
         message_lists.current.select_id(id);
 
-        if (message_edit.is_editing(id)) {
+        if (message_edit.currently_editing_messages.has(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
             return;
         }
@@ -417,42 +416,6 @@ export function initialize() {
         message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 
-    // Mute topic in a unmuted stream
-    $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_mute", (e) => {
-        e.stopPropagation();
-        user_topics.set_visibility_policy_for_element(
-            $(e.target),
-            user_topics.all_visibility_policies.MUTED,
-        );
-    });
-
-    // Unmute topic in a unmuted stream
-    $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_unmute", (e) => {
-        e.stopPropagation();
-        user_topics.set_visibility_policy_for_element(
-            $(e.target),
-            user_topics.all_visibility_policies.INHERIT,
-        );
-    });
-
-    // Unmute topic in a muted stream
-    $("body").on("click", ".message_header .stream_muted.on_hover_topic_unmute", (e) => {
-        e.stopPropagation();
-        user_topics.set_visibility_policy_for_element(
-            $(e.target),
-            user_topics.all_visibility_policies.UNMUTED,
-        );
-    });
-
-    // Mute topic in a muted stream
-    $("body").on("click", ".message_header .stream_muted.on_hover_topic_mute", (e) => {
-        e.stopPropagation();
-        user_topics.set_visibility_policy_for_element(
-            $(e.target),
-            user_topics.all_visibility_policies.INHERIT,
-        );
-    });
-
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
@@ -474,7 +437,7 @@ export function initialize() {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.by_recipient(row_id, {trigger: "message header"});
+        message_view.narrow_by_recipient(row_id, {trigger: "message header"});
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
@@ -483,7 +446,7 @@ export function initialize() {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.by_topic(row_id, {trigger: "message header"});
+        message_view.narrow_by_topic(row_id, {trigger: "message header"});
     });
 
     // SIDEBARS
@@ -519,7 +482,7 @@ export function initialize() {
             // This will default to "bottom" placement for this tooltip.
             placement = "auto";
         }
-        tippy($elem[0], {
+        tippy.default($elem[0], {
             // Quickly display and hide right sidebar tooltips
             // so that they don't stick and overlap with
             // each other.
@@ -779,9 +742,9 @@ export function initialize() {
 
     $("body").on(
         "click",
-        ".direct-messages-container.zoom-out #private_messages_section_header",
+        ".direct-messages-container.zoom-out #direct-messages-section-header",
         (e) => {
-            if ($(e.target).closest("#show_all_private_messages").length === 1) {
+            if ($(e.target).closest("#show-all-direct-messages").length === 1) {
                 // Let the browser handle the "direct message feed" widget.
                 return;
             }
@@ -813,7 +776,7 @@ export function initialize() {
      * this click handler rather than just a link. */
     $("body").on(
         "click",
-        ".direct-messages-container.zoom-in #private_messages_section_header",
+        ".direct-messages-container.zoom-in #direct-messages-section-header",
         (e) => {
             e.preventDefault();
             e.stopPropagation();

@@ -33,6 +33,15 @@
     & hr {
         border-bottom: 1px solid hsl(0deg 0% 87%);
         border-top: 1px solid hsl(0deg 0% 87%);
+        /* Override Bootstrap with doubled interelement space */
+        margin: calc(var(--markdown-interelement-space-px) * 2) 0;
+
+        &:first-child {
+            /* When a horizontal rule opens a message, or any other
+               area in the message area (e.g., spoilers), there
+               should be no space above the rule. */
+            margin-top: 0;
+        }
     }
 
     /* Headings */
@@ -117,7 +126,7 @@
     }
 
     & thead {
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-rendered-markdown-thead);
     }
 
     & tr {
@@ -126,28 +135,31 @@
     }
 
     & tr th {
-        border: 1px solid hsl(0deg 0% 80%);
+        border: 1px solid var(--color-border-rendered-markdown-table);
         padding: 4px;
         text-align: left;
     }
 
     & tr td {
-        border: 1px solid hsl(0deg 0% 80%);
+        border: 1px solid var(--color-border-rendered-markdown-table);
         padding: 4px;
     }
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
     .emoji {
-        height: calc(20em / 14);
-        width: calc(20em / 14);
-        /* "Eyeballed" styles to compensate for inline-block emoji
-          positioning in messages.
-          By coordinating the emoji height and width above with the
-          `line-height` on messages in the future, these properties
-          should no longer be necessary: */
-        position: relative;
-        margin-top: -7px;
-        top: 3px;
+        /* The box for emoji is allowed to be larger than the size of the
+           line-height. */
+        height: var(--length-line-oversize-block);
+        width: var(--length-line-oversize-block);
+        /* A negative top and bottom margin adjustment allows emoji
+           to size larger than the size of the line, without disturbing
+           the surrounding lines of text. */
+        margin: var(--length-line-oversize-block-margin-adjust) auto;
+        /* We set the alignment programmatically, as an em value.
+           Because the negative margins above are equal, top and bottom,
+           this vertical offset value works without adjustment for
+           oversize emoji blocks. */
+        vertical-align: var(--line-fitted-vertical-align-offset-em);
     }
 
     /* Mentions and alert words */
@@ -158,8 +170,6 @@
     .user-group-mention,
     .user-mention,
     .topic-mention {
-        font-size: 14px;
-        line-height: 17px;
         padding: 0 3px;
         border-radius: 3px;
         white-space: nowrap;
@@ -190,6 +200,11 @@
             color: var(--color-text-self-group-mention);
             font-weight: 600;
         }
+    }
+
+    .stream-topic {
+        /* Display whitespace within topics. */
+        white-space: pre-wrap;
     }
 
     .user-group-mention {
@@ -247,11 +262,11 @@
             padding: 8px 5px;
             font-weight: bold;
 
-            > p {
+            > :not(.spoiler-button) {
                 /* Disallow margin from ordinary rendered-markdown
-                   paragraphs. The header's vertical space is handled
+                   elements. The header's vertical space is handled
                    independently by padding on .spoiler-header. */
-                margin: 0;
+                margin-bottom: 0;
                 /* Message grows to push the arrow to the right,
                    but shrinks so as to allow long multi-line
                    spoiler messages to wrap. */
@@ -402,7 +417,9 @@
        `.rendered_markdown` out of the baseline group
        formed with EDITED/MOVED markers and the
        timestamp when the first child of the rendered
-       markdown is a media element or KaTeX. */
+       markdown is a horizontal rule, a media element,
+       or KaTeX. */
+    &:has(> hr:first-child),
     &:has(> .message_inline_image:first-child),
     &:has(> p:first-child > .katex-display) {
         align-self: center;
@@ -498,7 +515,7 @@
     .message_inline_image img,
     .message_inline_ref img {
         /* We use `scale-down` so that images smaller than the container are
-           neither scaled up up or cropped to fit. This preserves
+           neither scaled up nor cropped to fit. This preserves
            their aspect ratio, which is often helpful. */
         object-fit: scale-down;
 

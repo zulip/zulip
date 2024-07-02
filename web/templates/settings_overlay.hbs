@@ -9,7 +9,7 @@
     </div>
     <div class="sidebar-wrapper">
         <div class="center tab-container settings-sticky-bar"></div>
-        <div class="sidebar left" data-simplebar>
+        <div class="sidebar left" data-simplebar data-simplebar-tab-index="-1">
             <div class="sidebar-list dark-grey small-text">
                 <ul class="normal-settings-list">
                     <li tabindex="0" data-section="profile">
@@ -86,17 +86,10 @@
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{#unless is_guest}}
-                    <li tabindex="0" data-section="user-list-admin">
+                    <li tabindex="0" data-section="users">
                         <i class="icon fa fa-user" aria-hidden="true"></i>
                         <div class="text">{{t "Users" }}</div>
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    </li>
-                    {{/unless}}
-                    {{#unless is_guest}}
-                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="deactivated-users-admin">
-                        <i class="icon fa fa-user-times" aria-hidden="true"></i>
-                        <div class="text">{{t "Deactivated users" }}</div>
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if can_edit_user_panel }}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
@@ -104,12 +97,6 @@
                         <i class="icon zulip-icon zulip-icon-smart-toy" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if can_create_new_bots}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    </li>
-                    {{/unless}}
-                    {{#unless is_guest}}
-                    <li tabindex="0" data-section="invites-list-admin">
-                        <i class="icon fa fa-user-plus" aria-hidden="true"></i>
-                        <div class="text">{{t "Invitations" }}</div>
                     </li>
                     {{/unless}}
                     {{#if is_admin}}
@@ -124,7 +111,7 @@
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{#unless is_guest}}
-                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-streams-list">
+                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-channels-list">
                         <i class="icon fa fa-exchange" aria-hidden="true"></i>
                         <div class="text">{{t "Default channels" }}</div>
                         {{#unless is_admin}}
@@ -160,7 +147,7 @@
                 <span class="exit-sign">&times;</span>
             </div>
         </div>
-        <div id="settings_content" data-simplebar data-simplebar-auto-hide="false">
+        <div id="settings_content" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
             <div class="organization-box organization">
 
             </div>

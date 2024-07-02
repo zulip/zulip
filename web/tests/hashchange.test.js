@@ -22,6 +22,9 @@ const overlays = mock_esm("../src/overlays");
 const popovers = mock_esm("../src/popovers");
 const recent_view_ui = mock_esm("../src/recent_view_ui");
 const settings = mock_esm("../src/settings");
+mock_esm("../src/settings_data", {
+    user_can_create_public_streams: () => true,
+});
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const ui_util = mock_esm("../src/ui_util");
 const ui_report = mock_esm("../src/ui_report");
@@ -31,7 +34,7 @@ const browser_history = zrequire("browser_history");
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
-const narrow = zrequire("../src/narrow");
+const message_view = zrequire("../src/message_view");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 
@@ -169,7 +172,13 @@ function test_helper({override, override_rewire, change_tab}) {
         };
     }
 
-    stub(admin, "launch");
+    function stub_with_args(module, func_name) {
+        module[func_name] = (...args) => {
+            events.push([module, func_name, args]);
+        };
+    }
+
+    stub_with_args(admin, "launch");
     stub(admin, "build_page");
     stub(drafts_overlay_ui, "launch");
     stub(message_viewport, "stop_auto_scrolling");
@@ -181,9 +190,9 @@ function test_helper({override, override_rewire, change_tab}) {
     stub(ui_report, "error");
 
     if (change_tab) {
-        override_rewire(narrow, "activate", (terms) => {
+        override_rewire(message_view, "show", (terms) => {
             narrow_terms = terms;
-            events.push("narrow.activate");
+            events.push("message_view.show");
         });
 
         override(info_overlay, "show", (name) => {
@@ -237,7 +246,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.activate",
+        "message_view.show",
     ]);
 
     helper.clear_events();
@@ -245,7 +254,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.activate",
+        "message_view.show",
     ]);
 
     // Test old "#recent_topics" hash redirects to "#recent".
@@ -268,7 +277,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.activate",
+        "message_view.show",
     ]);
     let terms = helper.get_narrow_terms();
     assert.equal(terms[0].operand, "Denmark");
@@ -280,7 +289,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "narrow.activate",
+        "message_view.show",
     ]);
     terms = helper.get_narrow_terms();
     assert.equal(terms.length, 0);
@@ -352,7 +361,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [settings, "launch"],
     ]);
 
-    window.location.hash = "#organization/user-list-admin";
+    window.location.hash = "#organization/users/active";
 
     helper.clear_events();
     $window_stub.trigger("hashchange");
@@ -360,7 +369,22 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [overlays, "close_for_hash_change"],
         [settings, "build_page"],
         [admin, "build_page"],
-        [admin, "launch"],
+        [admin, "launch", ["users", "active"]],
+    ]);
+
+    window.location.hash = "#organization/user-list-admin";
+
+    // Check whether `user-list-admin` is redirect to `users`, we
+    // cannot test the exact hashchange here, since the section url
+    // takes effect in `admin.launch` and that's why we're checking
+    // the arguments passed to `admin.launch`.
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [settings, "build_page"],
+        [admin, "build_page"],
+        [admin, "launch", ["users", "active"]],
     ]);
 
     helper.clear_events();
@@ -369,13 +393,13 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([[ui_util, "blur_active_element"]]);
 });
 
-run_test("save_narrow", ({override, override_rewire}) => {
+run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
     const helper = test_helper({override, override_rewire});
 
     let terms = [{operator: "is", operand: "dm"}];
 
     blueslip.expect("error", "browser does not support pushState");
-    narrow.save_narrow(terms);
+    message_view.update_hash_to_match_filter(new Filter(terms));
 
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(window.location.hash, "#narrow/is/dm");
@@ -388,7 +412,7 @@ run_test("save_narrow", ({override, override_rewire}) => {
     terms = [{operator: "is", operand: "starred"}];
 
     helper.clear_events();
-    narrow.save_narrow(terms);
+    message_view.update_hash_to_match_filter(new Filter(terms));
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
 });

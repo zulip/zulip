@@ -30,15 +30,15 @@ type EditHistoryEntry = {
     edited_by_notice: string;
     timestamp: number; // require to set data-message-id for overlay message row
     is_stream: boolean;
-    recipient_bar_color?: string;
-    body_to_render?: string;
-    topic_edited?: boolean;
-    prev_topic?: string;
-    new_topic?: string;
-    stream_changed?: boolean;
-    prev_stream?: string;
-    prev_stream_id?: number;
-    new_stream?: string;
+    recipient_bar_color: string | undefined;
+    body_to_render: string | undefined;
+    topic_edited: boolean | undefined;
+    prev_topic: string | undefined;
+    new_topic: string | undefined;
+    stream_changed: boolean | undefined;
+    prev_stream: string | undefined;
+    prev_stream_id: number | undefined;
+    new_stream: string | undefined;
 };
 
 const server_message_history_schema = z.object({
@@ -115,12 +115,12 @@ export function fetch_and_render_message_history(message: Message): void {
     void channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
-        success(data) {
-            const clean_data = server_message_history_schema.parse(data);
+        success(raw_data) {
+            const data = server_message_history_schema.parse(raw_data);
 
             const content_edit_history: EditHistoryEntry[] = [];
             let prev_stream_item: EditHistoryEntry | null = null;
-            for (const [index, msg] of clean_data.message_history.entries()) {
+            for (const [index, msg] of data.message_history.entries()) {
                 // Format times and dates nicely for display
                 const time = new Date(msg.timestamp * 1000);
                 const edited_at_time = timerender.get_full_datetime(time, "time");
@@ -240,7 +240,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 .each(function () {
                     rendered_markdown.update_elements($(this));
                 });
-            const first_element_id = content_edit_history[0].timestamp;
+            const first_element_id = content_edit_history[0]!.timestamp;
             messages_overlay_ui.set_initial_element(
                 String(first_element_id),
                 keyboard_handling_context,

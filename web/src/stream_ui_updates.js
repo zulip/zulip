@@ -28,16 +28,27 @@ function settings_button_for_sub(sub) {
     );
 }
 
-export let subscribed_only = true;
+export let show_subscribed = true;
+export let show_not_subscribed = false;
 
 export function is_subscribed_stream_tab_active() {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
-    return subscribed_only;
+    return show_subscribed;
 }
 
-export function set_subscribed_only(value) {
-    subscribed_only = value;
+export function is_not_subscribed_stream_tab_active() {
+    // Returns true if "not-subscribed" tab in stream settings is open
+    // otherwise false.
+    return show_not_subscribed;
+}
+
+export function set_show_subscribed(value) {
+    show_subscribed = value;
+}
+
+export function set_show_not_subscribed(value) {
+    show_not_subscribed = value;
 }
 
 export function update_web_public_stream_privacy_option_state($container) {
@@ -245,6 +256,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
         .prop("disabled", !sub.can_change_stream_permissions);
 
     if (!sub.can_change_stream_permissions) {
+        $general_settings_container.find(".default-stream").addClass("control-label-disabled");
         return;
     }
 
@@ -324,15 +336,20 @@ export function update_stream_row_in_settings_tab(sub) {
     // This is in the left panel.
     // This function display/hide stream row in stream settings tab,
     // used to display immediate effect of add/removal subscription event.
-    // If user is subscribed to stream, it will show sub row under
-    // "Subscribed" tab, otherwise if stream is not public hide
-    // stream row under tab.
-    if (is_subscribed_stream_tab_active()) {
-        const $sub_row = row_for_stream_id(sub.stream_id);
-        if (sub.subscribed) {
-            $sub_row.removeClass("notdisplayed");
+    // If user is subscribed or unsubscribed to stream, it will show sub or unsub
+    // row under "Subscribed" or "Not subscribed" (only if the stream is public) tab, otherwise
+    // if stream is not public hide stream row under tab.
+
+    if (is_subscribed_stream_tab_active() || is_not_subscribed_stream_tab_active()) {
+        const $row = row_for_stream_id(sub.stream_id);
+
+        if (
+            (is_subscribed_stream_tab_active() && sub.subscribed) ||
+            (is_not_subscribed_stream_tab_active() && !sub.subscribed)
+        ) {
+            $row.removeClass("notdisplayed");
         } else if (sub.invite_only || current_user.is_guest) {
-            $sub_row.addClass("notdisplayed");
+            $row.addClass("notdisplayed");
         }
     }
 }
@@ -382,7 +399,12 @@ export function update_setting_element(sub, setting_name) {
     }
 
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
-    settings_org.discard_property_element_changes($elem, false, sub);
+    const $subsection = $elem.closest(".settings-subsection-parent");
+    if ($subsection.find(".save-button-controls").hasClass("hide")) {
+        settings_org.discard_stream_property_element_changes($elem);
+    } else {
+        settings_org.discard_stream_settings_subsection_changes($subsection, sub);
+    }
 }
 
 export function enable_or_disable_add_subscribers_elements(
@@ -391,16 +413,11 @@ export function enable_or_disable_add_subscribers_elements(
     stream_creation = false,
 ) {
     const $input_element = $container_elem.find(".input").expectOne();
-    const $add_subscribers_button = $container_elem
-        .find('button[name="add_subscriber"]')
-        .expectOne();
     const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
     $input_element.prop("contenteditable", enable_elem);
-    $add_subscribers_button.prop("disabled", !enable_elem);
 
     if (enable_elem) {
-        $add_subscribers_button.css("pointer-events", "");
         $add_subscribers_container[0]?._tippy?.destroy();
         $container_elem.find(".add_subscribers_container").removeClass("add_subscribers_disabled");
     } else {
@@ -419,6 +436,14 @@ export function enable_or_disable_add_subscribers_elements(
             $container_elem
                 .find(".add_all_users_to_stream_btn_container")
                 .addClass("add_subscribers_disabled");
+        }
+    } else {
+        const $add_subscribers_button = $container_elem
+            .find('button[name="add_subscriber"]')
+            .expectOne();
+        $add_subscribers_button.prop("disabled", !enable_elem);
+        if (enable_elem) {
+            $add_subscribers_button.css("pointer-events", "");
         }
     }
 }

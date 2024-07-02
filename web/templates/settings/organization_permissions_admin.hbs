@@ -30,7 +30,7 @@
 
                 <div class="input-group">
                     <label for="realm_org_join_restrictions" class="settings-field-label">{{t "Restrict email domains of new users?" }}</label>
-                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element settings_select bootstrap-focus-style">
+                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
                         <option value="no_restriction">{{t "No restrictions" }}</option>
                         <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
                         <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
@@ -68,12 +68,11 @@
                 {{> settings_save_discard_widget section_name="stream-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                <div class="input-group">
-                    <label for="realm_create_public_stream_policy" class="settings-field-label">{{t "Who can create public channels" }}</label>
-                    <select name="realm_create_public_stream_policy" id="id_realm_create_public_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_policy_values}}
-                    </select>
-                </div>
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_create_public_channel_group"
+                  label=(t 'Who can create public channels')
+                  value_type="number"}}
+
                 {{> upgrade_tip_widget }}
                 {{> settings_checkbox
                   setting_name="realm_enable_spectator_access"
@@ -88,12 +87,12 @@
                         {{> dropdown_options_widget option_values=create_web_public_stream_policy_values}}
                     </select>
                 </div>
-                <div class="input-group">
-                    <label for="realm_create_private_stream_policy" class="settings-field-label">{{t "Who can create private channels" }}</label>
-                    <select name="realm_create_private_stream_policy" id="id_realm_create_private_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_policy_values}}
-                    </select>
-                </div>
+
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_create_private_channel_group"
+                  label=(t 'Who can create private channels')
+                  value_type="number"}}
+
                 <div class="input-group">
                     <label for="realm_invite_to_stream_policy" class="settings-field-label">{{t "Who can add users to channels" }}</label>
                     <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">

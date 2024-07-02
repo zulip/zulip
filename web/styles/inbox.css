@@ -2,7 +2,8 @@
     display: flex;
     flex-direction: column;
     background: var(--color-background-inbox);
-    font-size: 15px;
+    /* Ensure inbox font-size is at least 15px. */
+    font-size: max(15px, var(--base-font-size-px));
     padding: 0;
     min-height: 100vh;
 
@@ -116,7 +117,6 @@
             height: var(--height-inbox-search);
             padding-right: 28px;
             padding-left: 30px;
-            font-size: 14px;
             font-style: normal;
             font-weight: 400;
             line-height: 17px;
@@ -147,7 +147,7 @@
             overflow: hidden;
             border-radius: 5px;
             border: 1px solid hsl(0deg 0% 0% / 20%);
-            margin-bottom: var(--max-unexpanded-compose-height);
+            margin-bottom: var(--max-unmaximized-compose-height);
             /* margin(5) + search left padding(30) + search right padding (28) + border(2px) = 65px */
             max-width: calc(
                 var(--width-inbox-search) + var(--width-inbox-filters-dropdown) +
@@ -255,8 +255,9 @@
 
             .user_circle {
                 /* size of the user activity circle */
-                min-width: 6px;
-                height: 6px;
+                /* 6px at 15px/1em */
+                min-width: 0.4em;
+                height: 0.4em;
                 margin-right: 5px;
                 top: 0;
             }
@@ -324,12 +325,22 @@
             }
 
             .unread-count-focus-outline {
+                /* Because the inbox view font-size will
+                   never be smaller than the em-equivalent
+                   of 15px, we restate the base font-size
+                   here so that unreads match others in
+                   the UI at legacy size (14px). */
+                font-size: var(--base-font-size-px);
                 grid-area: unread_count;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 border-radius: 3px;
-                padding: 5px;
+                padding: 0 5px;
+                /* Stretch to the row to keep unread
+                   count from affecting overall row
+                   size as test scales up. */
+                align-self: stretch;
 
                 &:focus {
                     outline: 2px solid var(--color-outline-focus);
@@ -363,6 +374,7 @@
 
                 & a {
                     padding: 1px 0;
+                    white-space: pre;
                 }
             }
 
@@ -567,8 +579,12 @@
     width: 220px;
 }
 
-.recent-view-filter-dropdown-list-container .dropdown-list-item-common-styles,
-.inbox-filter-dropdown-list-container .dropdown-list-item-common-styles {
+.recent-view-filter-dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles,
+.inbox-filter-dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles {
     padding: 5px 10px;
     display: flex;
     flex-direction: column;

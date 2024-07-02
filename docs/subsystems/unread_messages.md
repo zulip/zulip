@@ -1,8 +1,8 @@
 # Unread message synchronization
 
-In general displaying unread counts for all streams and topics may require
+In general displaying unread counts for all channels and topics may require
 downloading an unbounded number of messages. Consider a user who has a muted
-stream or topic and has not read the backlog in a month; to have an accurate
+channel or topic and has not read the backlog in a month; to have an accurate
 unread count we would need to load all messages this user has received in the
 past month. This is inefficient for web clients and even more for mobile
 devices.

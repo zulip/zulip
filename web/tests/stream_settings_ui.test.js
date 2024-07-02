@@ -105,8 +105,47 @@ run_test("redraw_left_panel", ({mock_template}) => {
         date_created: 1691057093,
         creator_id: null,
     };
+    const abcd = {
+        elem: "abcd",
+        subscribed: false,
+        name: "Abcd",
+        stream_id: 106,
+        description: "India town",
+        subscribers: [1, 2, 3],
+        stream_weekly_traffic: 0,
+        color: "red",
+        can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
+    };
+    const utopia = {
+        elem: "utopia",
+        subscribed: false,
+        name: "Utopia",
+        stream_id: 107,
+        description: "movie",
+        subscribers: [1, 2, 3, 4],
+        stream_weekly_traffic: 8,
+        color: "red",
+        can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
+    };
+    const jerry = {
+        elem: "jerry",
+        subscribed: false,
+        name: "Jerry",
+        stream_id: 108,
+        description: "cat",
+        subscribers: [1],
+        stream_weekly_traffic: 4,
+        color: "red",
+        can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
+    };
 
-    const sub_row_data = [denmark, poland, pomona, cpp, zzyzx];
+    const sub_row_data = [denmark, poland, pomona, cpp, zzyzx, abcd, utopia, jerry];
 
     for (const sub of sub_row_data) {
         stream_data.create_sub_from_server_data(sub);
@@ -154,65 +193,106 @@ run_test("redraw_left_panel", ({mock_template}) => {
     }
 
     // Search with single keyword
-    test_filter({input: "Po", subscribed_only: false}, [poland, pomona]);
+    test_filter({input: "Po", show_subscribed: false, show_not_subscribed: false}, [
+        poland,
+        pomona,
+    ]);
     assert.ok(ui_called);
 
     // The denmark row is active, even though it's not displayed.
     assert.ok($denmark_row.hasClass("active"));
 
     // Search with multiple keywords
-    test_filter({input: "Denmark, Pol", subscribed_only: false}, [denmark, poland]);
-    test_filter({input: "Den, Pol", subscribed_only: false}, [denmark, poland]);
+    test_filter({input: "Denmark, Pol", show_subscribed: false, show_not_subscribed: false}, [
+        denmark,
+        poland,
+    ]);
+    test_filter({input: "Den, Pol", show_subscribed: false, show_not_subscribed: false}, [
+        denmark,
+        poland,
+    ]);
 
     // Search is case-insensitive
-    test_filter({input: "po", subscribed_only: false}, [poland, pomona]);
+    test_filter({input: "po", show_subscribed: false, show_not_subscribed: false}, [
+        poland,
+        pomona,
+    ]);
 
     // Search handles unusual characters like C++
-    test_filter({input: "c++", subscribed_only: false}, [cpp]);
+    test_filter({input: "c++", show_subscribed: false, show_not_subscribed: false}, [cpp]);
 
     // Search subscribed streams only
-    test_filter({input: "d", subscribed_only: true}, [poland]);
+    test_filter({input: "d", show_subscribed: true, show_not_subscribed: false}, [poland]);
+
+    // Search unsubscribed streams only
+    test_filter({input: "d", show_subscribed: false, show_not_subscribed: true}, [abcd, denmark]);
 
     // Search terms match stream description
-    test_filter({input: "Co", subscribed_only: false}, [denmark, pomona]);
+    test_filter({input: "Co", show_subscribed: false, show_not_subscribed: false}, [
+        denmark,
+        pomona,
+    ]);
 
     // Search names AND descriptions
-    test_filter({input: "Mon", subscribed_only: false}, [pomona, poland]);
+    test_filter({input: "Mon", show_subscribed: false, show_not_subscribed: false}, [
+        pomona,
+        poland,
+    ]);
 
     // Explicitly order streams by name
-    test_filter({input: "", subscribed_only: false, sort_order: "by-stream-name"}, [
-        cpp,
-        denmark,
-        poland,
-        pomona,
-        zzyzx,
-    ]);
+    test_filter(
+        {
+            input: "",
+            show_subscribed: false,
+            show_not_subscribed: false,
+            sort_order: "by-stream-name",
+        },
+        [abcd, cpp, denmark, jerry, poland, pomona, utopia, zzyzx],
+    );
 
     // Order streams by subscriber count
-    test_filter({input: "", subscribed_only: false, sort_order: "by-subscriber-count"}, [
-        poland,
-        cpp,
-        zzyzx,
-        denmark,
-        pomona,
-    ]);
+    test_filter(
+        {
+            input: "",
+            show_subscribed: false,
+            show_not_subscribed: false,
+            sort_order: "by-subscriber-count",
+        },
+        [utopia, abcd, poland, cpp, zzyzx, denmark, jerry, pomona],
+    );
 
     // Order streams by weekly traffic
-    test_filter({input: "", subscribed_only: false, sort_order: "by-weekly-traffic"}, [
-        poland,
-        cpp,
-        zzyzx,
-        pomona,
-        denmark,
-    ]);
+    test_filter(
+        {
+            input: "",
+            show_subscribed: false,
+            show_not_subscribed: false,
+            sort_order: "by-weekly-traffic",
+        },
+        [poland, utopia, cpp, zzyzx, jerry, abcd, pomona, denmark],
+    );
 
     // Sort for subscribed only.
-    test_filter({input: "", subscribed_only: true, sort_order: "by-subscriber-count"}, [
-        poland,
-        cpp,
-        zzyzx,
-        pomona,
-    ]);
+    test_filter(
+        {
+            input: "",
+            show_subscribed: true,
+            show_not_subscribed: false,
+            sort_order: "by-subscriber-count",
+        },
+        [poland, cpp, zzyzx, pomona],
+    );
+
+    // Sort for unsubscribed only.
+    test_filter(
+        {
+            input: "",
+            show_subscribed: false,
+            show_not_subscribed: true,
+            sort_order: "by-subscriber-count",
+        },
+        [utopia, abcd, denmark, jerry],
+    );
 
     // active stream-row is not included in results
     $(".stream-row-denmark").addClass("active");
@@ -225,11 +305,66 @@ run_test("redraw_left_panel", ({mock_template}) => {
         $(".stream-row-denmark").removeClass("active");
     };
 
-    test_filter({input: "d", subscribed_only: true}, [poland]);
+    test_filter({input: "d", show_subscribed: true}, [poland]);
     assert.ok($(".stream-row-denmark").hasClass("active"));
 
     stream_settings_ui.switch_stream_tab("subscribed");
     assert.ok(!$(".stream-row-denmark").hasClass("active"));
     assert.ok(!$(".right .settings").visible());
     assert.ok($(".nothing-selected").visible());
+});
+
+run_test("close color container when scrolling", ({mock_template}) => {
+    // Test to see if logic of the colorpicker closing is correct
+    const admins_group = {
+        name: "Admins",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    user_groups.initialize({realm_user_groups: [admins_group]});
+
+    const denmark = {
+        elem: "denmark",
+        subscribed: false,
+        name: "Denmark",
+        stream_id: denmark_stream_id,
+        description: "Copenhagen",
+        subscribers: [1],
+        stream_weekly_traffic: null,
+        color: "red",
+        can_remove_subscribers_group: admins_group.id,
+    };
+
+    const populated_subs = [denmark];
+
+    mock_template("stream_settings/browse_streams_list.hbs", false, (data) => {
+        data.subscriptions = populated_subs;
+    });
+
+    stream_settings_ui.render_left_panel_superset();
+
+    const sub_stubs = [];
+
+    for (const data of populated_subs) {
+        const sub_row = `.stream-row-${CSS.escape(data.elem)}`;
+        sub_stubs.push(sub_row);
+
+        $(sub_row).attr("data-stream-id", data.stream_id);
+    }
+
+    $.create("#streams_overlay_container .stream-row", {children: sub_stubs});
+
+    let colorpicker_closed = false;
+
+    $("#stream_settings").on("scroll", () => {
+        // Set colorpicker_closed to true when scrolling to test out the logic
+        colorpicker_closed = true;
+    });
+
+    $("#stream_settings").trigger("scroll");
+
+    // Check that the variable was indeed changed following the logic
+    assert.ok(colorpicker_closed);
 });

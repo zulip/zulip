@@ -9,11 +9,12 @@ from types import FrameType
 from typing import Any, Iterator, List, Optional
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.utils import autoreload
 from sentry_sdk import configure_scope
 from typing_extensions import override
 
+from zerver.lib.management import ZulipBaseCommand
 from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 
 
@@ -33,7 +34,7 @@ def log_and_exit_if_exception(
             sys.exit(1)
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--queue_name", metavar="<queue name>", help="queue to process")

@@ -111,7 +111,6 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "intern",
     "outreachy",
     "gsoc",
-    "gci",
     "externship",
     # Things that sound like security
     "auth",
@@ -147,6 +146,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "api",
     "assets",
     "audio",
+    "avatar",
     "badges",
     "beta",
     "billing",

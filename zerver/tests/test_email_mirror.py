@@ -1282,7 +1282,12 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         mm_address = create_missed_message_address(user_profile, message)
 
-        do_deactivate_realm(user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestMissedMessageEmailMessages body")

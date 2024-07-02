@@ -1,5 +1,12 @@
 <div class="current-plan-information">
-    <p class="support-section-header">📅 Current plan information:</p>
+    <p class="support-section-header">
+        {% if plan_data.stripe_customer_url %}
+        <a target="_blank" rel="noopener noreferrer" href="{{ plan_data.stripe_customer_url }}"><i class="fa fa-credit-card"></i></a>
+        {% else %}
+        <i class="fa fa-credit-card"></i>
+        {% endif %}
+        Current plan information:
+    </p>
     {% if plan_data.warning %}
     <div class="current-plan-data-missing">
         <b>{{ plan_data.warning }}</b><br />
@@ -11,7 +18,7 @@
     <!-- Any data below doesn't makes sense for sponsored organizations. -->
     {% else %}
     {% if plan_data.current_plan.discount %}
-        <b>Discount</b>: {{ format_discount(plan_data.current_plan.discount) }}%<br />
+        <b>Discount</b>: {{ plan_data.current_plan.discount }}%<br />
     {% endif %}
     {% if plan_data.is_legacy_plan %}
         <b>End date</b>: {{ plan_data.current_plan.end_date.strftime('%d %B %Y') }}<br />

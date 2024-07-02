@@ -32,7 +32,7 @@ define zulip::cron(
     $cron_require = []
   }
   if $command != undef {
-    $run = $command
+    $run = "${sentry}${command}"
   } elsif $manage != undef {
     $run = "cd /home/zulip/deployments/current/ && ${sentry}./manage.py ${manage} >/dev/null"
   } else {

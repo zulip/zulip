@@ -14,10 +14,15 @@ channels_operators: List[str] = ["channels", "streams"]
 
 def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
     supported_operators = [*channel_operators, "topic", "sender", "is"]
+    unsupported_is_operands = ["followed"]
     for narrow_term in narrow:
         operator = narrow_term.operator
         if operator not in supported_operators:
             raise JsonableError(_("Operator {operator} not supported.").format(operator=operator))
+        if operator == "is" and narrow_term.operand in unsupported_is_operands:
+            raise JsonableError(
+                _("Operand {operand} not supported.").format(operand=narrow_term.operand)
+            )
 
 
 class NarrowPredicate(Protocol):

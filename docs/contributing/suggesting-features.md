@@ -33,25 +33,25 @@ Steps and best practices for starting a conversation:
 1. [**Join** the Zulip development
    community](https://zulip.com/development-community/) if you don't already
    have an account.
-2. Pick an **appropriate stream** to discuss your idea:
-   - [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback) for suggestions for
-     the Zulip web app or server. Use this stream if you aren't sure which stream is
+2. Pick an **appropriate channel** to discuss your idea:
+   - [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) for suggestions for
+     the Zulip web app or server. Use this channel if you aren't sure which channel is
      most appropriate.
-   - [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) for suggestions
+   - [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile) for suggestions
      for the mobile apps.
-   - [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) for suggestions
+   - [#desktop](https://chat.zulip.org/#narrow/channel/16-desktop) for suggestions
      that are specific to the Zulip desktop app.
-   - [#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal)
+   - [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal)
      for suggestions for the terminal app.
    - [#production
-     help](https://chat.zulip.org/#narrow/stream/31-production-help) for suggestions
+     help](https://chat.zulip.org/#narrow/channel/31-production-help) for suggestions
      related to self-hosting Zulip.
 3. **[Start a new topic](https://zulip.com/help/starting-a-new-topic)** for
    discussing your suggestions, using a brief summary of your idea as the
    name of the topic.
 
 If you aren't sure where to post or how to name your topic, don't worry!
-Moderators can always rename the topic, or move the thread to another stream.
+Moderators can always rename the topic, or move the thread to another channel.
 
 Members of the development community will jump in to discuss your idea. You can
 help by participating in the discussion, including replying to any follow-up

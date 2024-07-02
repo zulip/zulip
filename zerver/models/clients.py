@@ -11,6 +11,7 @@ from zerver.lib.cache import cache_with_key
 
 class Client(models.Model):
     MAX_NAME_LENGTH = 30
+    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True, unique=True)
 
     @override

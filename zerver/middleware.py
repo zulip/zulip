@@ -569,7 +569,10 @@ class HostDomainMiddleware(MiddlewareMixin):
                 # organizations even if it does not host a realm.
                 return None
 
-            return render(request, "zerver/invalid_realm.html", status=404)
+            context = {
+                "current_url": request.get_host(),
+            }
+            return render(request, "zerver/invalid_realm.html", status=404, context=context)
 
         set_tag("realm", request_notes.realm.string_id)
 

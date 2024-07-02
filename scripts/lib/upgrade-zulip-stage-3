@@ -158,7 +158,8 @@ def fill_memcached_caches() -> None:
     if HAS_FILLED_CACHES or migrations_needed:
         return
     subprocess.check_call(
-        ["./manage.py", "fill_memcached_caches", "--skip-checks"], preexec_fn=su_to_zulip
+        ["./manage.py", "fill_memcached_caches", "--automated", "--skip-checks"],
+        preexec_fn=su_to_zulip,
     )
     HAS_FILLED_CACHES = True
 
@@ -486,7 +487,7 @@ if args.audit_fts_indexes:
     logging.info("Correcting full-text search indexes for updated dictionary files")
     logging.info("This may take a while but the server should work while it runs.")
     subprocess.check_call(
-        ["./manage.py", "audit_fts_indexes", "--skip-checks"], preexec_fn=su_to_zulip
+        ["./manage.py", "audit_fts_indexes", "--automated", "--skip-checks"], preexec_fn=su_to_zulip
     )
 
 if not args.skip_purge_old_deployments:

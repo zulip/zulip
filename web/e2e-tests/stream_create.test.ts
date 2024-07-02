@@ -22,6 +22,7 @@ async function await_user_hidden(page: Page, name: string): Promise<void> {
 
 async function add_user_to_stream(page: Page, name: string): Promise<void> {
     const user_id = await common.get_user_id_from_name(page, name);
+    assert(user_id !== undefined);
     await page.evaluate((user_id) => {
         zulip_test.add_user_id_to_new_stream(user_id);
     }, user_id);
@@ -35,6 +36,8 @@ async function stream_name_error(page: Page): Promise<string> {
 
 async function click_create_new_stream(page: Page): Promise<void> {
     await page.click("#add_new_subscription .create_stream_button");
+    await page.type("#create_stream_name", "Test Stream 1");
+    await page.click("#stream_creation_go_to_subscribers");
     await page.waitForSelector(".finalize_create_stream", {visible: true});
 
     // sanity check that desdemona is the initial subsscriber
@@ -52,8 +55,8 @@ async function test_user_filter_ui(page: Page): Promise<void> {
     // Desdemona should be there by default
     await await_user_visible(page, "desdemona");
 
-    await add_user_to_stream(page, "cordelia");
-    await add_user_to_stream(page, "othello");
+    await add_user_to_stream(page, common.fullname.cordelia);
+    await add_user_to_stream(page, common.fullname.othello);
 
     await page.type(`form#stream_creation_form [name="user_list_filter"]`, "ot", {delay: 100});
     await page.waitForSelector("#create_stream_subscribers", {visible: true});
@@ -64,24 +67,30 @@ async function test_user_filter_ui(page: Page): Promise<void> {
                 .length === 1,
     );
 
-    await await_user_hidden(page, "cordelia");
+    await await_user_hidden(page, common.fullname.cordelia);
     await await_user_hidden(page, "desdemona");
-    await await_user_visible(page, "othello");
+    await await_user_visible(page, common.fullname.othello);
 
     // Clear the filter.
     await clear_ot_filter_with_backspace(page);
 
-    await await_user_visible(page, "cordelia");
+    await await_user_visible(page, common.fullname.cordelia);
     await await_user_visible(page, "desdemona");
-    await await_user_visible(page, "othello");
+    await await_user_visible(page, common.fullname.othello);
 }
 
 async function create_stream(page: Page): Promise<void> {
-    await page.waitForSelector('xpath///*[text()="Create channel"]', {visible: true});
+    await page.click("#stream_creation_go_to_configure_channel_settings");
+    await page.waitForSelector('xpath///*[text()="Configure new channel settings"]', {
+        visible: true,
+    });
+
     await common.fill_form(page, "form#stream_creation_form", {
         stream_name: "Puppeteer",
         stream_description: "Everything Puppeteer",
     });
+    await page.click("#stream_creation_go_to_subscribers");
+    await page.type("#create_stream_name", "Test Stream 2");
     await page.click("form#stream_creation_form .finalize_create_stream");
     // an explanatory modal is shown for the first stream created
     await common.wait_for_micromodal_to_open(page);
@@ -116,16 +125,16 @@ async function test_streams_with_empty_names_cannot_be_created(page: Page): Prom
     await page.click("#add_new_subscription .create_stream_button");
     await page.waitForSelector("form#stream_creation_form", {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "  "});
-    await page.click("form#stream_creation_form button.finalize_create_stream");
+    await page.click("form#stream_creation_form button#stream_creation_go_to_subscribers");
     assert.strictEqual(await stream_name_error(page), "Choose a name for the new channel.");
 }
 
 async function test_streams_with_duplicate_names_cannot_be_created(page: Page): Promise<void> {
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "Puppeteer"});
-    await page.click("form#stream_creation_form button.finalize_create_stream");
+    await page.click("form#stream_creation_form button#stream_creation_go_to_subscribers");
     assert.strictEqual(await stream_name_error(page), "A channel with this name already exists.");
 
-    const cancel_button_selector = "form#stream_creation_form button.button.white";
+    const cancel_button_selector = "form#stream_creation_form button.create_stream_cancel";
     await page.click(cancel_button_selector);
 }
 

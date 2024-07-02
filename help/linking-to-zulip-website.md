@@ -15,7 +15,7 @@ website (e.g., **Sponsors** or **Acknowledgements**).
    logo](https://github.com/zulip/zulip/tree/main/static/images/logo),
    preferably a **round Zulip icon** (available in `.png` and `.svg` formats).
 
-1. Link to <https://zulip.com/>.
+1. Link to [https://zulip.com/](https://zulip.com/).
 
 2. If appropriate, add a brief description:
 

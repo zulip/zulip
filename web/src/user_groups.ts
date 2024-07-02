@@ -1,24 +1,22 @@
+import type {z} from "zod";
+
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
 import * as settings_config from "./settings_config";
+import type {StateData, user_group_schema} from "./state_data";
 import {current_user} from "./state_data";
 import type {UserOrMention} from "./typeahead_helper";
 import type {UserGroupUpdateEvent} from "./types";
 
-export type UserGroup = {
-    description: string;
-    id: number;
-    name: string;
-    members: Set<number>;
-    is_system_group: boolean;
-    direct_subgroup_ids: Set<number>;
-    can_mention_group: number;
-};
+type UserGroupRaw = z.infer<typeof user_group_schema>;
 
 // The members field is a number array which we convert
 // to a Set in the initialize function.
-type UserGroupRaw = Omit<UserGroup, "members"> & {members: number[]};
+export type UserGroup = Omit<UserGroupRaw, "members" | "direct_subgroup_ids"> & {
+    members: Set<number>;
+    direct_subgroup_ids: Set<number>;
+};
 
 type UserGroupForDropdownListWidget = {
     name: string;
@@ -165,7 +163,7 @@ export function remove_subgroups(user_group_id: number, subgroup_ids: number[]):
     }
 }
 
-export function initialize(params: {realm_user_groups: UserGroupRaw[]}): void {
+export function initialize(params: StateData["user_groups"]): void {
     for (const user_group of params.realm_user_groups) {
         add(user_group);
     }

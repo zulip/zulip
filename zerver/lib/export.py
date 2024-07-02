@@ -71,6 +71,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -143,6 +144,7 @@ ALL_ZULIP_TABLES = {
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
+    "zerver_presencesequence",
     "zerver_pushdevicetoken",
     "zerver_reaction",
     "zerver_realm",
@@ -687,6 +689,13 @@ def get_realm_config() -> Config:
     Config(
         table="zerver_realmauthenticationmethod",
         model=RealmAuthenticationMethod,
+        normal_parent=realm_config,
+        include_rows="realm_id__in",
+    )
+
+    Config(
+        table="zerver_presencesequence",
+        model=PresenceSequence,
         normal_parent=realm_config,
         include_rows="realm_id__in",
     )

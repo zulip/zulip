@@ -13,6 +13,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     read_test_image_file,
 )
+from zerver.lib.thumbnail import resize_emoji
 from zerver.lib.transfer import (
     transfer_avatars_to_s3,
     transfer_emoji_to_s3,
@@ -20,7 +21,6 @@ from zerver.lib.transfer import (
     transfer_uploads_to_s3,
 )
 from zerver.lib.upload import upload_message_attachment
-from zerver.lib.upload.base import resize_emoji
 from zerver.models import Attachment, RealmEmoji
 
 
@@ -103,9 +103,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         resized_key = bucket.Object(emoji_path)
 
         image_data = read_test_image_file("img.png")
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
+        resized_image_data, still_image_data = resize_emoji(image_data, "img.png")
 
-        self.assertEqual(is_animated, False)
         self.assertEqual(still_image_data, None)
         self.assertEqual(image_data, original_key.get()["Body"].read())
         self.assertEqual(resized_image_data, resized_key.get()["Body"].read())
@@ -135,9 +134,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         )
 
         image_data = read_test_image_file("animated_img.gif")
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
+        resized_image_data, still_image_data = resize_emoji(image_data, "animated_img.gif")
 
-        self.assertEqual(is_animated, True)
         self.assertEqual(type(still_image_data), bytes)
         self.assertEqual(image_data, original_key.get()["Body"].read())
         self.assertEqual(resized_image_data, resized_key.get()["Body"].read())

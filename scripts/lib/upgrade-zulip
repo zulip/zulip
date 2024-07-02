@@ -57,7 +57,7 @@ try:
         [unpack_zulip, archived_tarball_path], preexec_fn=su_to_zulip, text=True
     )
 
-    # Chdir to deploy_path and then run upgrade-zulip-stage-2 from the
+    # chdir to deploy_path and then run upgrade-zulip-stage-2 from the
     # new version of Zulip (having the upgrade logic run from the new
     # version is much better for fixing bugs in the upgrade process).
     deploy_path = deploy_path.strip()

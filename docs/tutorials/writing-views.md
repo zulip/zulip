@@ -35,7 +35,7 @@ or JSON (data for Zulip clients on all platforms, custom bots, and
 integrations).
 
 The format of the URL patterns in Django is [documented
-here](https://docs.djangoproject.com/en/3.2/topics/http/urls/), and
+here](https://docs.djangoproject.com/en/5.0/topics/http/urls/), and
 the Zulip specific details for these are discussed in detail in the
 [life of a request doc](life-of-a-request.md#options).
 
@@ -74,7 +74,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 This decorator ensures that the request was a POST--here, we're
 checking that the registration submission page is requested with a
 post, and inside the function, we'll check the form data. If you
-request this page with GET, you'll get a HTTP 405 METHOD NOT ALLOWED
+request this page with GET, you'll get an HTTP 405 METHOD NOT ALLOWED
 error.
 
 `zulip_login_required`:
@@ -93,7 +93,7 @@ specific to Zulip.
 def home(request: HttpRequest) -> HttpResponse:
 ```
 
-[login-required-link]: https://docs.djangoproject.com/en/3.2/topics/auth/default/#django.contrib.auth.decorators.login_required
+[login-required-link]: https://docs.djangoproject.com/en/5.0/topics/auth/default/#django.contrib.auth.decorators.login_required
 
 ### Writing a template
 

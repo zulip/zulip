@@ -121,6 +121,11 @@
     </div>
     {{tooltip_hotkey_hints "T"}}
 </template>
+<template id="my-reactions-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="recent_topics">
+        <div>{{t 'Reactions to your messages' }}</div>
+    </div>
+</template>
 <template id="inbox-tooltip-template">
     <div class="views-tooltip-container" data-view-code="inbox">
         <div>{{t 'Inbox' }}</div>
@@ -132,7 +137,7 @@
     {{t 'Drafts' }}
     {{tooltip_hotkey_hints "D"}}
 </template>
-<template id="show-all-pms-template">
+<template id="show-all-direct-messages-template">
     {{t 'Direct message feed' }}
     {{tooltip_hotkey_hints "Shift" "P"}}
 </template>
@@ -198,9 +203,12 @@
     {{t 'Search' }}
     {{tooltip_hotkey_hints "/"}}
 </template>
-<template id="streamlist-toggle-tooltip-template" >
-    {{t 'View channels' }}
+<template id="show-left-sidebar-tooltip-template" >
+    {{t 'Show left sidebar' }}
     {{tooltip_hotkey_hints "Q"}}
+</template>
+<template id="hide-left-sidebar-tooltip-template" >
+    {{t 'Hide left sidebar' }}
 </template>
 <template id="show-userlist-tooltip-template">
     {{t 'Show user list' }}

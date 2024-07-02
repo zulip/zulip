@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import * as helpers from "./helpers";
@@ -19,18 +20,21 @@ function hide_submit_loading_indicator(): void {
 
 function validate_data(data: helpers.FormDataObject): boolean {
     let found_error = false;
+    assert(data.description !== undefined);
     if (data.description.trim() === "") {
         $("#sponsorship-description-error").text("Organization description cannot be blank.");
         hide_submit_loading_indicator();
         found_error = true;
     }
 
+    assert(data.paid_users_count !== undefined);
     if (data.paid_users_count.trim() === "") {
         $("#sponsorship-paid-users-count-error").text("Number of paid staff cannot be blank.");
         hide_submit_loading_indicator();
         found_error = true;
     }
 
+    assert(data.expected_total_users !== undefined);
     if (data.expected_total_users.trim() === "") {
         $("#sponsorship-expected-total-users-error").text(
             "Expected number of users cannot be blank.",
@@ -107,8 +111,8 @@ $(() => {
     // form otherwise the sponsorship pending message is partially
     // hidden due to browser preserving scroll position.
     // https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration
-    if (history.scrollRestoration) {
-        history.scrollRestoration = "manual";
+    if (window.history.scrollRestoration) {
+        window.history.scrollRestoration = "manual";
     }
 
     initialize();

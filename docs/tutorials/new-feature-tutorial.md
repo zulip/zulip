@@ -20,7 +20,7 @@ tests, use Django's tooling.
 Zulip's [directory structure](../overview/directory-structure.md)
 will also be helpful to review when creating a new feature. Many
 aspects of the structure will be familiar to Django developers. Visit
-[Django's documentation](https://docs.djangoproject.com/en/3.2/#index-first-steps)
+[Django's documentation](https://docs.djangoproject.com/en/5.0/#index-first-steps)
 for more information about how Django projects are typically
 organized. And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on
@@ -83,14 +83,13 @@ following commands:
 ./manage.py migrate
 ```
 
-You can read our
+It's highly recommended to read our
 [database migration documentation](../subsystems/schema-migrations.md)
 to learn more about creating and applying database migrations.
 
-**Test your changes:** Once you've run the migration, flush memcached
-on your development server (`./scripts/setup/flush-memcached`) and then
-[restart the development server](../development/remote.md#running-the-development-server)
-to avoid interacting with cached objects.
+**Test your changes:** Once you've run the migration, [restart the
+development
+server](../development/remote.md#running-the-development-server).
 
 ### Backend changes
 
@@ -172,7 +171,7 @@ guide to adding or updating documentation for an API endpoint.
 ## Example feature
 
 This example describes the process of adding a new setting to Zulip: a
-flag that allows an admin to require topics on stream messages (the default
+flag that allows an admin to require topics on channel messages (the default
 behavior is that topics can have no subject). This flag is an
 actual Zulip feature. You can review [the original commit](https://github.com/zulip/zulip/pull/5660/commits/aeeb81d3ff0e0cc201e891cec07e1d2cd0a2060d)
 in the Zulip repo. (This commit displays the work of setting up a checkbox
@@ -241,7 +240,7 @@ Create the migration file using the Django `makemigrations` command:
 (NNNN is a number that is equal to the number of migrations.)
 
 If you run into problems, the
-[Django migration documentation](https://docs.djangoproject.com/en/3.2/topics/migrations/)
+[Django migration documentation](https://docs.djangoproject.com/en/5.0/topics/migrations/)
 is helpful.
 
 ### Test your migration changes
@@ -262,9 +261,8 @@ Running migrations:
   Applying zerver.NNNN_realm_mandatory_topics... OK
 ```
 
-Once you've run the migration, flush memcached on your development
-server (`./scripts/setup/flush-memcached`) and then [restart the development server](../development/remote.md#running-the-development-server)
-to avoid interacting with cached objects.
+Once you've run the migration, [restart the development
+server](../development/remote.md#running-the-development-server).
 
 ### Handle database interactions
 
@@ -304,7 +302,7 @@ an 'update' event with the name of the property and the new value. It
 then calls `send_event`, passing the event and the list of users whose
 browser sessions should be notified as the second argument. The latter
 argument can be a single user (if the setting is a personal one, like
-time display format), members in a particular stream only or all
+time display format), members in a particular channel only or all
 active users in a realm.
 
 ```python
@@ -570,7 +568,7 @@ In frontend, we have split the `property_types` into three objects:
 - `org_permissions`: This contains properties for the "organization
   permissions" section. These properties control security controls
   like who can join the organization and whether normal users can
-  create streams or upload custom emoji.
+  create channels or upload custom emoji.
 
 Once you've determined whether the new setting belongs, the next step
 is to find the right subsection of that page to put the setting

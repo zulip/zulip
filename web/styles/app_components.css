@@ -13,6 +13,15 @@
     display: none;
 }
 
+.show {
+    display: block;
+}
+
+.hidden {
+    display: none;
+    visibility: hidden;
+}
+
 kbd {
     display: inline-block;
     border: 1px solid hsl(0deg 0% 80%);
@@ -115,7 +124,6 @@ input::placeholder {
         box-shadow: none;
 
         cursor: pointer;
-        transition: all 0.2s ease;
 
         /* -- button style variations -- */
         &.no-style {
@@ -377,6 +385,11 @@ div.overlay {
     margin: 0;
 }
 
+/* TODO: Once all layouts using this button
+   are modernized, the Font Awesome icon
+   should be replaced with a Zulip icon,
+   and its formatting should have no extra
+   space around its viewbox in SVG. */
 .clear_search_button {
     &:hover {
         color: hsl(0deg 0% 0%);
@@ -444,22 +457,6 @@ div.overlay {
 
 .dependent-settings-block {
     margin: 15px 0 -5px 23px;
-}
-
-@media (width < $md_min) {
-    /* Override Bootstrap's responsive grid to display input at full width */
-    .input-append .stream-list-filter {
-        /* Input width = 100% - 10px margin x2 - 6px padding x2 - 1px border x2. */
-        width: calc(100% - 34px);
-        margin-left: 10px;
-    }
-
-    .input-append .topic-list-filter {
-        /* Input width = 100% - 11px margin x2 - 6px padding x2 - 1px border x2. */
-        width: calc(100% - 36px);
-        margin-left: 11px;
-        margin-bottom: 5px;
-    }
 }
 
 .topic-list-filter {
@@ -530,14 +527,14 @@ div.overlay {
 
 .upgrade-tip,
 .upgrade-or-sponsorship-tip,
-.tip {
+.tip,
+.invite-stream-notice {
     position: relative;
     display: block;
     background-color: hsl(46deg 63% 95%);
     border: 1px solid hsl(49deg 20% 84%);
     border-radius: 4px;
     padding: 10px;
-    margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
     color: hsl(0deg 0% 40%);
@@ -548,6 +545,16 @@ div.overlay {
         font-family: FontAwesome;
         font-weight: 600;
     }
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip,
+.tip {
+    margin: 10px 0;
+}
+
+.invite-stream-notice {
+    margin-bottom: 20px;
 }
 
 .tip::before {
@@ -586,9 +593,11 @@ div.overlay {
 .unread_count {
     float: right;
     padding: 0 4px;
-    height: 16px;
-    line-height: 16px;
-    font-size: 12px;
+    /* 12px at 14px/em */
+    font-size: 0.8571em;
+    /* 16px at 12px/em, owing to font-size above. */
+    height: 1.3333em;
+    line-height: 1.3333em;
     font-weight: normal;
     border-radius: 4px;
     background-color: var(--color-background-unread-counter);
@@ -785,12 +794,12 @@ div.overlay {
     }
 
     & td {
-        border-top: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid var(--color-border-table-striped);
     }
 }
 
 .table-bordered {
-    border: 1px solid hsl(0deg 0% 87%);
+    border: 1px solid var(--color-border-table-bordered);
     border-collapse: separate;
     border-left: 0;
     border-radius: 4px;
@@ -800,8 +809,8 @@ div.overlay {
 
     & th,
     td {
-        border-left: 1px solid hsl(0deg 0% 87%);
-        border-top: 1px solid hsl(0deg 0% 87%);
+        border-left: 1px solid var(--color-border-table-bordered);
+        border-top: 1px solid var(--color-border-table-bordered);
         padding: 4px 5px;
         text-align: left;
     }
@@ -927,6 +936,14 @@ div.overlay {
     &.zulip-icon-users {
         font-size: 0.8em;
     }
+}
+
+.zulip-icon-lock {
+    /* The lock icon is bottom heavy, so to make it
+       appear better aligned, we pull it up by a
+       uniform margin throughout the UI. */
+    /* 3.5px at 16px/1em */
+    margin-top: -0.2188em !important;
 }
 
 /* This includes css needed to display messages in an overlay. */
@@ -1141,55 +1158,6 @@ div.overlay {
     }
 }
 
-/* Icon-based tab picker used for topics popover. */
-.tabs-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    padding: 1px;
-    margin: 0 10px;
-    height: 33px;
-    gap: 2px;
-    background-color: var(--color-background-tab-picker-container);
-    border-radius: 5px;
-
-    & i {
-        z-index: 2;
-        color: var(--color-tab-picker-icon);
-        font-size: 16px;
-    }
-
-    .selected-tab {
-        background-color: var(--color-background-tab-picker-selected-tab);
-        outline: 1px solid var(--color-outline-tab-picker-tab-option);
-        outline-offset: -1px;
-        z-index: 1;
-    }
-
-    .tab-option {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box;
-        width: 100%;
-        height: 31px;
-        cursor: pointer;
-        border-radius: 5px;
-
-        &:hover:not(.selected-tab) {
-            background-color: var(
-                --color-background-tab-picker-tab-option-hover
-            );
-        }
-
-        &:active:not(.selected-tab) {
-            outline: 1px solid var(--color-outline-tab-picker-tab-option);
-            outline-offset: -1px;
-        }
-    }
-}
-
 /**
  * Use the "tab-picker-vertical" class in conjunction
  * for a vertical tab picker.
@@ -1317,4 +1285,12 @@ div.overlay {
             );
         }
     }
+}
+
+.text-success {
+    color: hsl(120.91deg 32.04% 40.39%);
+}
+
+.text-error {
+    color: hsl(1.06deg 44.66% 50.39%);
 }

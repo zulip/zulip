@@ -73,9 +73,9 @@ class UserBaseSettings(models.Model):
     twenty_four_hour_time = models.BooleanField(default=False)
     starred_message_counts = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
-    COLOR_SCHEME_NIGHT = 2
+    COLOR_SCHEME_DARK = 2
     COLOR_SCHEME_LIGHT = 3
-    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
+    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_DARK, COLOR_SCHEME_LIGHT]
     color_scheme = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
 
     # Information density is established through
@@ -408,6 +408,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         EMBEDDED_BOT,
     ]
 
+    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
+
     # For historical reasons, Zulip has two email fields.  The
     # `delivery_email` field is the user's email address, where all
     # email notifications will be sent, and is used for all
@@ -545,7 +547,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     #
     # In Django, the convention is to use an empty string instead of NULL/None
     # for text-based fields. For more information, see
-    # https://docs.djangoproject.com/en/3.2/ref/models/fields/#django.db.models.Field.null.
+    # https://docs.djangoproject.com/en/5.0/ref/models/fields/#django.db.models.Field.null.
     timezone = models.CharField(max_length=40, default="")
 
     AVATAR_FROM_GRAVATAR = "G"
@@ -558,6 +560,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
     )
     avatar_version = models.PositiveSmallIntegerField(default=1)
+    # This is only used for LDAP-provided avatars; it contains the
+    # SHA256 hex digest of most recent raw contents that LDAP provided
+    # us, pre-thumbnailing.
     avatar_hash = models.CharField(null=True, max_length=64)
 
     # TODO: TUTORIAL_STATUS was originally an optimization designed to
@@ -575,12 +580,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     tutorial_status = models.CharField(
         default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1
     )
-
-    # Contains serialized JSON of the form:
-    #    [("step 1", true), ("step 2", false)]
-    # where the second element of each tuple is if the step has been
-    # completed.
-    onboarding_steps = models.TextField(default="[]")
 
     zoom_token = models.JSONField(default=None, null=True)
 
@@ -725,12 +724,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def allowed_bot_types(self) -> List[int]:
-        from zerver.models import Realm
+        from zerver.models.realms import BotCreationPolicyEnum
 
         allowed_bot_types = []
         if (
             self.is_realm_admin
-            or self.realm.bot_creation_policy != Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+            or self.realm.bot_creation_policy != BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
         ):
             allowed_bot_types.append(UserProfile.DEFAULT_BOT)
         allowed_bot_types += [
@@ -747,15 +746,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             return True
         return False
 
-    def has_permission(self, policy_name: str) -> bool:
+    def has_permission(self, policy_name: str, realm: Optional["Realm"] = None) -> bool:
         from zerver.lib.user_groups import is_user_in_group
         from zerver.models import Realm
 
         if policy_name not in [
             "add_custom_emoji_policy",
+            "can_create_private_channel_group",
+            "can_create_public_channel_group",
             "create_multiuse_invite_group",
-            "create_private_stream_policy",
-            "create_public_stream_policy",
             "create_web_public_stream_policy",
             "delete_own_message_policy",
             "edit_topic_policy",
@@ -767,7 +766,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             raise AssertionError("Invalid policy")
 
         if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-            allowed_user_group = getattr(self.realm, policy_name)
+            if realm is None:
+                # realm is passed by the caller only when we optimize
+                # the number of database queries by fetching the group
+                # setting fields using select_related.
+                realm = self.realm
+            allowed_user_group = getattr(realm, policy_name)
             return is_user_in_group(allowed_user_group, self)
 
         policy_value = getattr(self.realm, policy_name)
@@ -804,11 +808,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         assert policy_value == Realm.POLICY_FULL_MEMBERS_ONLY
         return not self.is_provisional_member
 
-    def can_create_public_streams(self) -> bool:
-        return self.has_permission("create_public_stream_policy")
+    def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
+        return self.has_permission("can_create_public_channel_group", realm)
 
-    def can_create_private_streams(self) -> bool:
-        return self.has_permission("create_private_stream_policy")
+    def can_create_private_streams(self, realm: Optional["Realm"] = None) -> bool:
+        return self.has_permission("can_create_private_channel_group", realm)
 
     def can_create_web_public_streams(self) -> bool:
         if not self.realm.web_public_streams_enabled():

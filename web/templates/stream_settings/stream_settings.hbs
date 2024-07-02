@@ -53,27 +53,18 @@
                   rendered_description=rendered_description
                   }}
             </div>
-            <div class="stream-permissions settings-subsection-parent" id="stream_permission_settings">
-                <div class="subsection-header">
-                    <h3 class="stream_setting_subsection_title">{{t "Channel permissions" }}
-                    </h3>
-                    {{> ../settings/settings_save_discard_widget section_name="stream-permissions" }}
-                </div>
-
-                <div class="stream-permissions-warning-banner"></div>
-
-                {{> stream_types
-                  stream_post_policy_values=../stream_post_policy_values
-                  stream_privacy_policy_values=../stream_privacy_policy_values
-                  stream_privacy_policy=../stream_privacy_policy
-                  check_default_stream=../check_default_stream
-                  zulip_plan_is_not_limited=../zulip_plan_is_not_limited
-                  upgrade_text_for_wide_organization_logo=../upgrade_text_for_wide_organization_logo
-                  is_business_type_org=../is_business_type_org
-                  org_level_message_retention_setting=../org_level_message_retention_setting
-                  is_stream_edit=true
-                  can_remove_subscribers_setting_widget_name="can_remove_subscribers_group" }}
-            </div>
+            {{> stream_types
+              stream_post_policy_values=../stream_post_policy_values
+              stream_privacy_policy_values=../stream_privacy_policy_values
+              stream_privacy_policy=../stream_privacy_policy
+              check_default_stream=../check_default_stream
+              zulip_plan_is_not_limited=../zulip_plan_is_not_limited
+              upgrade_text_for_wide_organization_logo=../upgrade_text_for_wide_organization_logo
+              is_business_type_org=../is_business_type_org
+              org_level_message_retention_setting=../org_level_message_retention_setting
+              is_stream_edit=true
+              can_remove_subscribers_setting_widget_name="can_remove_subscribers_group"
+              }}
             {{/with}}
             <div class="stream_details_box">
                 <div class="stream_details_box_header">

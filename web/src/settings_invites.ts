@@ -39,7 +39,7 @@ export const invite_schema = z.intersection(
     ]),
 );
 type Invite = z.output<typeof invite_schema> & {
-    invited_as_text?: string;
+    invited_as_text?: string | undefined;
     invited_absolute_time?: string;
     expiry_date_absolute_time?: string;
     is_admin?: boolean;

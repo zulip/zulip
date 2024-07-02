@@ -44,24 +44,16 @@
         </div>
     </div>
     <div class="message_comp">
-        <div id="compose_banners" data-simplebar></div>
+        <div id="compose_banners" data-simplebar data-simplebar-tab-index="-1"></div>
         <div class="composition-area">
             <form id="send_message_form" action="/json/messages" method="post">
                 <div class="compose_table">
                     <div id="compose_top">
-                        <div id="compose_top_right" class="order-2">
-                            <button type="button" class="expand_composebox_button fa fa-chevron-up" aria-label="{{t 'Expand compose' }}" data-tippy-content="{{t 'Expand compose' }}"></button>
-                            <button type="button" class="collapse_composebox_button fa fa-chevron-down" aria-label="{{t 'Collapse compose' }}" data-tippy-content="{{t 'Collapse compose' }}"></button>
-                            <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
-                        </div>
-                        <div id="compose-recipient" class="order-1">
-                            <div class="topic-marker-container order-1">
-                                <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle" data-tooltip-template-id="narrow_to_compose_recipients_tooltip"></a>
-                            </div>
+                        <div id="compose-recipient">
                             {{> dropdown_widget_wrapper
                               widget_name="compose_select_recipient"}}
                             <div class="topic-marker-container">
-                                <i class="zulip-icon zulip-icon-chevron-right" aria-hidden="true"></i>
+                                <a role="button" class="conversation-arrow zulip-icon zulip-icon-chevron-right"></a>
                             </div>
                             <div id="compose_recipient_box">
                                 <input type="text" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
@@ -76,40 +68,46 @@
                             </div>
                         </div>
                     </div>
-                    <div class="messagebox-wrapper">
-                        <div class="messagebox">
+                    <div class="messagebox">
+                        <div id="message-content-container" class="surround-formatting-buttons-row">
                             <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
                             <div id="preview-message-area-container">
-                                <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
+                                <div class="scrolling_list preview_message_area" data-simplebar data-simplebar-tab-index="-1" id="preview_message_area" style="display:none;">
                                     <div class="markdown_preview_spinner"></div>
                                     <div class="preview_content rendered_markdown"></div>
                                 </div>
                             </div>
+                            <div class="composebox-buttons">
+                                <button type="button" class="maximize-composebox-button zulip-icon zulip-icon-maximize-diagonal" aria-label="{{t 'Maximize compose box' }}" data-tippy-content="{{t 'Maximize compose box' }}"></button>
+                                <button type="button" class="expand-composebox-button zulip-icon zulip-icon-expand-diagonal" aria-label="{{t 'Expand compose box' }}" data-tippy-content="{{t 'Expand compose box' }}"></button>
+                                <button type="button" class="collapse-composebox-button zulip-icon zulip-icon-collapse-diagonal" aria-label="{{t 'Collapse compose box' }}" data-tippy-content="{{t 'Collapse compose box' }}"></button>
+                            </div>
                             <div class="drag"></div>
+                        </div>
 
-                            <div id="message-send-controls-container">
-                                <a id="compose-drafts-button" role="button" class="send-control-button hide-sm" tabindex=0 href="#drafts">
-                                    <span class="compose-drafts-text">{{t 'Drafts' }}</span><span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span>
-                                </a>
-                                <span id="compose-limit-indicator" class="tippy-zulip-tooltip" data-tippy-content="{{t 'Maximum message length: {max_message_length} characters' }}"></span>
-                                <div class="message-send-controls">
-                                    <button type="submit" id="compose-send-button" class="send_message compose-submit-button compose-send-or-save-button" aria-label="{{t 'Send' }}">
-                                        <img class="loader" alt="" src="" />
-                                        <i class="zulip-icon zulip-icon-send"></i>
-                                    </button>
-                                    <button class="send-control-button send-related-action-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send options' }}">
-                                        <i class="zulip-icon zulip-icon-more-vertical"></i>
-                                    </button>
-                                </div>
+                        <div id="message-send-controls-container">
+                            <a id="compose-drafts-button" role="button" class="send-control-button hide-sm" tabindex=0 href="#drafts">
+                                <span class="compose-drafts-text">{{t 'Drafts' }}</span><span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span>
+                            </a>
+                            <span id="compose-limit-indicator" class="tippy-zulip-tooltip" data-tippy-content="{{t 'Maximum message length: {max_message_length} characters' }}"></span>
+                            <div class="message-send-controls">
+                                <button type="submit" id="compose-send-button" class="send_message compose-submit-button compose-send-or-save-button" aria-label="{{t 'Send' }}">
+                                    <img class="loader" alt="" src="" />
+                                    <i class="zulip-icon zulip-icon-send"></i>
+                                </button>
+                                <button class="send-control-button send-related-action-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send options' }}">
+                                    <i class="zulip-icon zulip-icon-more-vertical"></i>
+                                </button>
                             </div>
+                        </div>
 
-                            <div id="message-formatting-controls-container">
-                                {{> compose_control_buttons }}
-                            </div>
+                        <div id="message-formatting-controls-container">
+                            {{> compose_control_buttons }}
                         </div>
                     </div>
                 </div>
             </form>
         </div>
+        <button type="button" class="close zulip-icon zulip-icon-close" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
     </div>
 </div>

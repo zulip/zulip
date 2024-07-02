@@ -11,7 +11,12 @@ export function make_indicator(
         text,
         width,
         height,
-    }: {abs_positioned?: boolean; text?: string; width?: number; height?: number} = {},
+    }: {
+        abs_positioned?: boolean;
+        text?: string;
+        width?: number | undefined;
+        height?: number | undefined;
+    } = {},
 ): void {
     let $container = $outer_container;
 

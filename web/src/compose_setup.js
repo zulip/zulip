@@ -17,7 +17,8 @@ import * as dialog_widget from "./dialog_widget";
 import * as flatpickr from "./flatpickr";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as narrow from "./narrow";
+import * as message_view from "./message_view";
+import * as narrow_state from "./narrow_state";
 import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as poll_modal from "./poll_modal";
@@ -89,6 +90,10 @@ export function initialize() {
         } else {
             $(".add-poll").parent().removeClass("disabled-on-hover");
         }
+
+        if (compose_state.get_is_content_unedited_restored_draft()) {
+            compose_state.set_is_content_unedited_restored_draft(false);
+        }
     });
 
     $("#compose form").on("submit", (e) => {
@@ -102,8 +107,6 @@ export function initialize() {
     // there is a change in compose height like when a compose banner is displayed.
     const update_compose_max_height = new ResizeObserver(resize.reset_compose_message_max_height);
     update_compose_max_height.observe(document.querySelector("#compose"));
-
-    upload.feature_check($("#compose .compose_upload_file"));
 
     function get_input_info(event) {
         const $edit_banners_container = $(event.target).closest(".edit_form_banners");
@@ -180,9 +183,23 @@ export function initialize() {
                     // user-triggered edit to that field.
                     $input.trigger("input");
 
-                    // TODO: Probably this should also renarrow to the
-                    // new topic, if we were currently viewing the old
-                    // topic, just as if a message edit had occurred.
+                    // Renarrow to the unresolved topic if currently viewing the resolved topic.
+                    const current_filter = narrow_state.filter();
+                    const channel_name = sub_store.maybe_get_stream_name(stream_id);
+                    if (
+                        current_filter &&
+                        (current_filter.is_conversation_view() ||
+                            current_filter.is_conversation_view_with_near()) &&
+                        current_filter.has_topic(channel_name, topic_name)
+                    ) {
+                        message_view.show(
+                            [
+                                {operator: "channel", operand: channel_name},
+                                {operator: "topic", operand: new_topic},
+                            ],
+                            {},
+                        );
+                    }
                 } else {
                     message_edit.toggle_resolve_topic(message_id, topic_name, true);
                 }
@@ -285,7 +302,18 @@ export function initialize() {
         `.${CSS.escape(compose_banner.CLASSNAMES.search_view)} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            narrow.to_compose_target();
+            message_view.to_compose_target();
+        },
+    );
+
+    const jump_to_conversation_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.jump_to_sent_message_conversation)}`;
+    $("body").on(
+        "click",
+        `${jump_to_conversation_banner_selector} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            $(event.target).parents(`${jump_to_conversation_banner_selector}`).remove();
+            onboarding_steps.post_onboarding_step_as_read("jump_to_conversation_banner");
         },
     );
 
@@ -422,7 +450,14 @@ export function initialize() {
         compose.clear_preview_area();
     });
 
-    $("#compose").on("click", ".expand_composebox_button", (e) => {
+    $("#compose").on("click", ".expand-composebox-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        compose_ui.make_compose_box_intermediate_size();
+    });
+
+    $("#compose").on("click", ".maximize-composebox-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -431,10 +466,10 @@ export function initialize() {
 
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
-        narrow.to_compose_target();
+        message_view.to_compose_target();
     });
 
-    $("#compose").on("click", ".collapse_composebox_button", (e) => {
+    $("#compose").on("click", ".collapse-composebox-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 

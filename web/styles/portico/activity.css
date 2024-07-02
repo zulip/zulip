@@ -501,3 +501,32 @@ tr.admin td:first-child {
 .current-plan-container {
     background-color: hsl(31deg 100% 83%);
 }
+
+.discounted-price-form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+
+    .support-submit-button {
+        margin-top: 5px;
+    }
+}
+
+.container {
+    width: 940px;
+    margin-right: auto;
+    margin-left: auto;
+
+    @media (width <= 767px) {
+        width: auto;
+    }
+
+    @media (767px < width <= 979px) {
+        width: 724px;
+    }
+
+    @media (width >= 1180px) {
+        width: 1170px;
+    }
+}

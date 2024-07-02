@@ -35,6 +35,12 @@
                             {{/if}}
                         </span>
                     </div>
+                    <div class="not_subscribed_streams_tab_empty_text">
+                        <span>
+                            {{t 'No channels to show.'}}
+                            <a href="#channels/all">{{t 'View all channels'}}</a>
+                        </span>
+                    </div>
                     <div class="all_streams_tab_empty_text">
                         <span>
                             {{t 'There are no channels you can view in this organization.'}}
@@ -44,7 +50,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="streams-list" data-simplebar>
+                <div class="streams-list" data-simplebar data-simplebar-tab-index="-1">
                 </div>
             </div>
             <div class="right">
@@ -62,7 +68,7 @@
                     </span>
                     {{/if}}
                 </div>
-                <div id="stream_settings" class="settings" data-simplebar data-simplebar-auto-hide="false">
+                <div id="stream_settings" class="settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                     {{!-- edit stream here --}}
                 </div>
                 {{> stream_creation_form }}

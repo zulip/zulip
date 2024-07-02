@@ -1,5 +1,5 @@
 import $ from "jquery";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
@@ -80,11 +80,12 @@ function insert_tip_box() {
         is_admin: current_user.is_admin,
     });
     $(".organization-box")
-        .find(".settings-section")
+        .find(".settings-section, .user-settings-section")
         .not("#emoji-settings")
         .not("#organization-auth-settings")
         .not("#admin-bot-list")
         .not("#admin-invites-list")
+        .not("#admin-user-list")
         .prepend($(tip_box_html));
 }
 
@@ -272,14 +273,19 @@ export function build_page() {
             }),
         };
 
-        tippy($("#realm_can_access_all_users_group_widget_container")[0], opts);
+        tippy.default($("#realm_can_access_all_users_group_widget_container")[0], opts);
     }
 }
 
-export function launch(section) {
+export function launch(section, user_settings_tab) {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
-    settings_panel_menu.org_settings.activate_section_or_default(section);
-    settings_toggle.highlight_toggle("organization");
+    if (section !== "") {
+        settings_panel_menu.org_settings.set_current_tab(section);
+    }
+    if (section === "users") {
+        settings_panel_menu.org_settings.set_user_settings_tab(user_settings_tab);
+    }
+    settings_toggle.goto("organization");
 }

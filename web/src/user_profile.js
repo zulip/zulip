@@ -1,12 +1,15 @@
 import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import $ from "jquery";
+import _ from "lodash";
 
 import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
+import render_user_custom_profile_fields from "../templates/user_custom_profile_fields.hbs";
+import render_user_full_name from "../templates/user_full_name.hbs";
 import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
@@ -49,6 +52,7 @@ let user_streams_list_widget;
 let user_profile_subscribe_widget;
 let toggler;
 let bot_owner_dropdown_widget;
+let original_values;
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -91,6 +95,44 @@ export function update_user_profile_streams_list_for_users(user_ids) {
         const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
         user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
+    }
+}
+
+export function update_profile_modal_ui(user, new_data) {
+    if (!(modals.any_active() && modals.active_modal() === "#user-profile-modal")) {
+        return;
+    }
+    if (original_values?.user_id === undefined) {
+        // This occurs if say, the "channel" tab is open.
+        return;
+    }
+    const current_user_id = Number.parseInt(original_values.user_id, 10);
+    if (current_user_id !== user.user_id) {
+        return;
+    }
+    if (new_data.bot_owner_id !== undefined) {
+        const $bot_owner_field = $(".bot_owner_user_field");
+        $bot_owner_field.attr("data-field-id", new_data.bot_owner_id);
+    }
+    if (new_data.avatar_url !== undefined) {
+        $("#avatar").css(
+            "background-image",
+            `url(${CSS.escape(people.medium_avatar_url_for_person(user))})`,
+        );
+    }
+    if (new_data.delivery_email !== undefined) {
+        $("#email").find(".value").text(new_data.delivery_email);
+    }
+    if (new_data.role !== undefined && !user.is_bot) {
+        const user_type = settings_config.user_role_map.get(new_data.role);
+        $("#user-type").find(".value").text(user_type);
+    }
+    if (new_data.full_name !== undefined || new_data.role !== undefined) {
+        const user_type = {
+            name: user.full_name,
+            should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+        };
+        $("#name .user-profile-name").html(render_user_full_name(user_type));
     }
 }
 
@@ -322,6 +364,30 @@ export function get_custom_profile_field_data(user, field, field_types) {
     return profile_field;
 }
 
+export function update_user_custom_profile_fields(user) {
+    if (!(modals.any_active() && modals.active_modal() === "#user-profile-modal")) {
+        return;
+    }
+    const current_user_id = Number.parseInt(original_values.user_id, 10);
+    if (current_user_id !== user.user_id) {
+        return;
+    }
+    const $custom_profile_field = $("#content");
+    const field_types = realm.custom_profile_field_types;
+
+    const profile_fields = realm.custom_profile_fields
+        .map((f) => get_custom_profile_field_data(user, f, field_types))
+        .filter((f) => f.name !== undefined);
+
+    const profile_data = {profile_fields};
+    $custom_profile_field.html(render_user_custom_profile_fields(profile_data));
+    custom_profile_fields_ui.initialize_custom_user_type_fields(
+        "#user-profile-modal #content",
+        user.user_id,
+        false,
+    );
+}
+
 export function hide_user_profile() {
     modals.close_if_open("user-profile-modal");
 }
@@ -421,6 +487,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
     modals.open("user-profile-modal", {autoremove: true, on_hide: on_user_profile_hide});
     $(".tabcontent").hide();
+    $("#user-profile-modal .dialog_submit_button").prop("disabled", true);
 
     let default_tab = 0;
 
@@ -465,7 +532,6 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
                     break;
             }
             setTimeout(() => {
-                $(".modal__body .simplebar-content-wrapper").attr("tabindex", "-1");
                 $(".modal__container .ind-tab").attr("tabindex", "-1");
                 $(".modal__container .ind-tab.selected").attr("tabindex", "0");
             }, 0);
@@ -537,6 +603,11 @@ export function show_edit_bot_info_modal(user_id, $container) {
     const bot_type = bot.bot_type.toString();
     const service = bot_data.get_services(bot.user_id)[0];
     edit_bot_post_render();
+    original_values = get_current_values($("#bot-edit-form"));
+    $("#bot-edit-form").on("input", "input, select, button", (e) => {
+        e.preventDefault();
+        toggle_submit_button($("#bot-edit-form"));
+    });
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
         const $full_name = $("#bot-edit-form").find("input[name='full_name']");
@@ -581,7 +652,15 @@ export function show_edit_bot_info_modal(user_id, $container) {
             contentType: false,
             success() {
                 avatar_widget.clear();
-                hide_user_profile();
+                hide_button_spinner($submit_btn);
+                original_values = get_current_values($("#bot-edit-form"));
+                toggle_submit_button($("#edit-user-form"));
+                ui_report.success(
+                    $t_html({defaultMessage: "Saved"}),
+                    $("#user-profile-modal .save-success"),
+                    1200,
+                );
+                $cancel_btn.prop("disabled", false);
             },
             error(xhr) {
                 ui_report.error(
@@ -740,6 +819,23 @@ function get_human_profile_data(fields_user_pills) {
     return new_profile_data;
 }
 
+function get_current_values($edit_form) {
+    const current_values = dialog_widget.get_current_values(
+        $edit_form.find("input, select, textarea, button, .pill-container"),
+    );
+    return current_values;
+}
+
+function toggle_submit_button($edit_form) {
+    const current_values = get_current_values($edit_form);
+    const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+    if (!_.isEqual(original_values, current_values)) {
+        $submit_btn.prop("disabled", false);
+    } else {
+        $submit_btn.prop("disabled", true);
+    }
+}
+
 export function show_edit_user_info_modal(user_id, $container) {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -781,7 +877,11 @@ export function show_edit_user_info_modal(user_id, $container) {
         custom_profile_field_form_selector,
         user_id,
         true,
+        () => {
+            toggle_submit_button($("#edit-user-form"));
+        },
     );
+    original_values = get_current_values($("#edit-user-form"));
 
     // Handle deactivation
     $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
@@ -807,6 +907,11 @@ export function show_edit_user_info_modal(user_id, $container) {
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
+    $("#edit-user-form").on("input", "input, select, textarea", (e) => {
+        e.preventDefault();
+        toggle_submit_button($("#edit-user-form"));
+    });
+
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
         const $full_name = $("#edit-user-form").find("input[name='full_name']");
@@ -828,7 +933,15 @@ export function show_edit_user_info_modal(user_id, $container) {
             url,
             data,
             success() {
-                hide_user_profile();
+                hide_button_spinner($submit_btn);
+                original_values = get_current_values($("#edit-user-form"));
+                toggle_submit_button($("#edit-user-form"));
+                ui_report.success(
+                    $t_html({defaultMessage: "Saved"}),
+                    $("#user-profile-modal .save-success"),
+                    1200,
+                );
+                $cancel_btn.prop("disabled", false);
             },
             error(xhr) {
                 ui_report.error(

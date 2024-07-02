@@ -348,8 +348,13 @@ export function update_settings_for_unsubscribed(slim_sub) {
 }
 
 function triage_stream(left_panel_params, sub) {
-    if (left_panel_params.subscribed_only && !sub.subscribed) {
+    if (left_panel_params.show_subscribed && !sub.subscribed) {
         // reject non-subscribed streams
+        return "rejected";
+    }
+
+    if (left_panel_params.show_not_subscribed && sub.subscribed) {
+        // reject subscribed streams
         return "rejected";
     }
 
@@ -426,6 +431,10 @@ export function update_empty_left_panel_message() {
         has_streams =
             stream_data.subscribed_subs().length ||
             $("#channels_overlay_container .stream-row:not(.notdisplayed)").length;
+    } else if (stream_ui_updates.is_not_subscribed_stream_tab_active()) {
+        has_streams =
+            stream_data.unsubscribed_subs().length ||
+            $("#channels_overlay_container .stream-row:not(.notdisplayed)").length;
     } else {
         has_streams = stream_data.get_unsorted_subs().length;
     }
@@ -433,17 +442,18 @@ export function update_empty_left_panel_message() {
         $(".no-streams-to-show").hide();
         return;
     }
+    $(".no-streams-to-show").children().hide();
     if (stream_ui_updates.is_subscribed_stream_tab_active()) {
-        $(".all_streams_tab_empty_text").hide();
         $(".subscribed_streams_tab_empty_text").show();
+    } else if (stream_ui_updates.is_not_subscribed_stream_tab_active()) {
+        $(".not_subscribed_streams_tab_empty_text").show();
     } else {
-        $(".subscribed_streams_tab_empty_text").hide();
         $(".all_streams_tab_empty_text").show();
     }
     $(".no-streams-to-show").show();
 }
 
-// LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
+// LeftPanelParams { input: String, show_subscribed: Boolean, sort_order: String }
 export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     // We only get left_panel_params passed in from tests.  Real
     // code calls get_left_panel_params().
@@ -507,7 +517,8 @@ export function get_left_panel_params() {
     const input = $search_box.expectOne().val().trim();
     const params = {
         input,
-        subscribed_only: stream_ui_updates.subscribed_only,
+        show_subscribed: stream_ui_updates.show_subscribed,
+        show_not_subscribed: stream_ui_updates.show_not_subscribed,
         sort_order,
     };
     return params;
@@ -523,10 +534,23 @@ export function switch_stream_tab(tab_name) {
         use `toggler.goto`.
     */
 
-    if (tab_name === "all-streams") {
-        stream_ui_updates.set_subscribed_only(false);
-    } else if (tab_name === "subscribed") {
-        stream_ui_updates.set_subscribed_only(true);
+    switch (tab_name) {
+        case "all-streams": {
+            stream_ui_updates.set_show_subscribed(false);
+            stream_ui_updates.set_show_not_subscribed(false);
+            break;
+        }
+        case "subscribed": {
+            stream_ui_updates.set_show_subscribed(true);
+            stream_ui_updates.set_show_not_subscribed(false);
+            break;
+        }
+        case "not-subscribed": {
+            stream_ui_updates.set_show_subscribed(false);
+            stream_ui_updates.set_show_not_subscribed(true);
+            break;
+        }
+        // No default
     }
 
     redraw_left_panel();
@@ -597,11 +621,12 @@ export function setup_page(callback) {
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Stream settings".
-        stream_ui_updates.set_subscribed_only(true);
+        stream_ui_updates.set_show_subscribed(true);
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
+                {label: $t({defaultMessage: "Not subscribed"}), key: "not-subscribed"},
                 {label: $t({defaultMessage: "All channels"}), key: "all-streams"},
             ],
             callback(_value, key) {
@@ -615,6 +640,7 @@ export function setup_page(callback) {
         }
         if (current_user.is_guest) {
             toggler.disable_tab("all-streams");
+            toggler.disable_tab("not-subscribed");
         }
 
         // show the "Stream settings" header by default.
@@ -744,6 +770,12 @@ export function change_state(section, left_side_tab, right_side_tab) {
         return;
     }
 
+    if (section === "notsubscribed") {
+        toggler.goto("not-subscribed");
+        stream_edit.empty_right_panel();
+        return;
+    }
+
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
@@ -845,10 +877,27 @@ export function toggle_view(event) {
     const active_data = stream_settings_components.get_active_data();
     const stream_filter_tab = active_data.$tabs.first().text();
 
-    if (event === "right_arrow" && stream_filter_tab === "Subscribed") {
-        toggler.goto("all-streams");
-    } else if (event === "left_arrow" && stream_filter_tab === "All channels") {
-        toggler.goto("subscribed");
+    switch (event) {
+        case "right_arrow":
+            switch (stream_filter_tab) {
+                case "Subscribed":
+                    toggler.goto("not-subscribed");
+                    break;
+                case "Not subscribed":
+                    toggler.goto("all-streams");
+                    break;
+            }
+            break;
+        case "left_arrow":
+            switch (stream_filter_tab) {
+                case "Not subscribed":
+                    toggler.goto("subscribed");
+                    break;
+                case "All channels":
+                    toggler.goto("not-subscribed");
+                    break;
+            }
+            break;
     }
 }
 
@@ -898,10 +947,10 @@ export function update_stream_privacy_choices(policy) {
         $container = $("#stream_permission_settings");
     }
 
-    if (policy === "create_private_stream_policy") {
+    if (policy === "can_create_private_channel_group") {
         stream_ui_updates.update_private_stream_privacy_option_state($container);
     }
-    if (policy === "create_public_stream_policy") {
+    if (policy === "can_create_public_channel_group") {
         stream_settings_components.update_public_stream_privacy_option_state($container);
     }
     if (policy === "create_web_public_stream_policy") {

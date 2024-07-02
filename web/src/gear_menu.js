@@ -1,16 +1,15 @@
 import $ from "jquery";
 import WinChan from "winchan";
 
-import render_gear_menu_popover from "../templates/gear_menu_popover.hbs";
+import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as dark_theme from "./dark_theme";
-import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as settings_preferences from "./settings_preferences";
+import * as theme from "./theme";
 import {parse_html} from "./ui_util";
 
 /*
@@ -86,7 +85,7 @@ the selector and then calls browser_history.go_to_location.
 */
 
 function render(instance) {
-    const rendered_gear_menu = render_gear_menu_popover(
+    const rendered_gear_menu = render_navbar_gear_menu_popover(
         popover_menus_data.get_gear_menu_content_context(),
     );
     instance.setContent(parse_html(rendered_gear_menu));
@@ -157,27 +156,10 @@ export function initialize() {
                 settings_preferences.launch_default_language_setting_modal();
             });
 
-            // We cannot update recipient bar color using dark_theme.enable/disable due to
-            // it being called before message lists are initialized and the order cannot be changed.
-            // Also, since these buttons are only visible for spectators which doesn't have events,
-            // if theme is changed in a different tab, the theme of this tab remains the same.
-            $popper.on("click", "#gear-menu-dropdown .gear-menu-select-dark-theme", (e) => {
-                popover_menus.hide_current_popover_if_visible(instance);
-                e.preventDefault();
-                e.stopPropagation();
+            $popper.on("change", "input[name='theme-select']", (e) => {
+                const theme_code = Number.parseInt($(e.currentTarget).attr("data-theme-code"), 10);
                 requestAnimationFrame(() => {
-                    dark_theme.enable();
-                    message_lists.update_recipient_bar_background_color();
-                });
-            });
-
-            $popper.on("click", "#gear-menu-dropdown .gear-menu-select-light-theme", (e) => {
-                popover_menus.hide_current_popover_if_visible(instance);
-                e.preventDefault();
-                e.stopPropagation();
-                requestAnimationFrame(() => {
-                    dark_theme.disable();
-                    message_lists.update_recipient_bar_background_color();
+                    theme.set_theme_for_spectator(theme_code);
                 });
             });
         },

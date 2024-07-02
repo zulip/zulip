@@ -170,11 +170,7 @@ not let the notifications become too "sticky" either.
 
 ## Roadmap
 
-The most likely big change to typing indicators is that we will
-add them for stream conversations. This will require some thought
-for large streams, in terms of both usability and performance.
-
-Another area for refinement is to tune the timing values a bit.
+An area for refinement is to tune the timing values a bit.
 Right now, we are possibly too aggressive about sending `stop`
 messages when users are just pausing to think. It's possible
 to better account for typing speed or other heuristic things

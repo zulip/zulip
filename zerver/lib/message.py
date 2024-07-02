@@ -59,6 +59,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
+from zerver.models.realms import WildcardMentionPolicyEnum
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -564,7 +565,7 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
         UserMessage.objects.filter(
             user_profile=user_profile,
         )
-        .extra(
+        .extra(  # noqa: S610
             where=[UserMessage.where_starred()],
         )
         .order_by(
@@ -578,10 +579,11 @@ def get_raw_unread_data(
     user_profile: UserProfile, message_ids: Optional[List[int]] = None
 ) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
-
+    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     user_msgs = (
         UserMessage.objects.filter(
             user_profile=user_profile,
+            message_id__gte=first_visible_message_id,
         )
         .exclude(
             message__recipient_id__in=excluded_recipient_ids,
@@ -604,7 +606,7 @@ def get_raw_unread_data(
         user_msgs = user_msgs.filter(message_id__in=message_ids)
     else:
         # At page load we need all unread messages.
-        user_msgs = user_msgs.extra(
+        user_msgs = user_msgs.extra(  # noqa: S610
             where=[UserMessage.where_unread()],
         )
 
@@ -1173,22 +1175,22 @@ def wildcard_mention_policy_authorizes_user(sender: UserProfile, realm: Realm) -
     This check is used only if the participants count in the topic or the subscribers
     count in the stream is greater than 'Realm.WILDCARD_MENTION_THRESHOLD'.
     """
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_NOBODY:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.NOBODY:
         return False
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_EVERYONE:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.EVERYONE:
         return True
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_ADMINS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.ADMINS:
         return sender.is_realm_admin
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MODERATORS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MODERATORS:
         return sender.is_realm_admin or sender.is_moderator
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.FULL_MEMBERS:
         return sender.is_realm_admin or (not sender.is_provisional_member and not sender.is_guest)
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MEMBERS:
+    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MEMBERS:
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")
@@ -1220,21 +1222,23 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[i
 
     for group in user_groups:
         can_mention_group = group.can_mention_group
-        can_mention_group_name = can_mention_group.named_user_group.name
+        if (
+            hasattr(can_mention_group, "named_user_group")
+            and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
+        ):
+            continue
         if sender_is_system_bot:
-            if can_mention_group_name == SystemGroups.EVERYONE:
-                continue
             raise JsonableError(
-                _(
-                    "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
-                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group_name)
+                _("You are not allowed to mention user group '{user_group_name}'.").format(
+                    user_group_name=group.name
+                )
             )
 
         if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
             raise JsonableError(
-                _(
-                    "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
-                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group_name)
+                _("You are not allowed to mention user group '{user_group_name}'.").format(
+                    user_group_name=group.name
+                )
             )
 
 
@@ -1431,4 +1435,4 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
 
 def remove_single_newlines(content: str) -> str:
     content = content.strip("\n")
-    return re.sub(r"(?<!\n)\n(?![\n0-9*-])", " ", content)
+    return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. )", " ", content)

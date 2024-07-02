@@ -2,8 +2,10 @@ import logging
 from email.headerregistry import Address
 from typing import Any, Dict, Literal, Optional, Tuple, Union
 
+import zoneinfo
 from django.conf import settings
 from django.db import transaction
+from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
@@ -15,11 +17,17 @@ from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.retention import move_messages_to_archive
-from zerver.lib.send_email import FromAddress, send_email_to_admins
+from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
+from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
+    get_group_setting_value_for_api,
+    get_group_setting_value_for_audit_log_data,
+)
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
@@ -151,22 +159,43 @@ def do_set_push_notifications_enabled_end_timestamp(
 
 @transaction.atomic(savepoint=False)
 def do_change_realm_permission_group_setting(
-    realm: Realm, setting_name: str, user_group: UserGroup, *, acting_user: Optional[UserProfile]
+    realm: Realm,
+    setting_name: str,
+    user_group: UserGroup,
+    old_setting_api_value: Optional[Union[int, AnonymousSettingGroupDict]] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
     user_group to update and and the user who initiated the update.
     """
     assert setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
-    old_user_group_id = getattr(realm, setting_name).id
+    old_value = getattr(realm, setting_name)
 
     setattr(realm, setting_name, user_group)
     realm.save(update_fields=[setting_name])
+
+    if old_setting_api_value is None:
+        # Most production callers will have computed this as part of
+        # verifying whether there's an actual change to make, but it
+        # feels quite clumsy to have to pass it from unit tests, so we
+        # compute it here if not provided by the caller.
+        old_setting_api_value = get_group_setting_value_for_api(old_value)
+    new_setting_api_value = get_group_setting_value_for_api(user_group)
+
+    if not hasattr(old_value, "named_user_group") and hasattr(user_group, "named_user_group"):
+        # We delete the UserGroup which the setting was set to
+        # previously if it does not have any linked NamedUserGroup
+        # object, as it is not used anywhere else. A new UserGroup
+        # object would be created if the setting is later set to
+        # a combination of users and groups.
+        old_value.delete()
 
     event = dict(
         type="realm",
         op="update_dict",
         property="default",
-        data={setting_name: user_group.id},
+        data={setting_name: new_setting_api_value},
     )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
@@ -178,8 +207,12 @@ def do_change_realm_permission_group_setting(
         event_time=event_time,
         acting_user=acting_user,
         extra_data={
-            RealmAuditLog.OLD_VALUE: old_user_group_id,
-            RealmAuditLog.NEW_VALUE: user_group.id,
+            RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
+                old_setting_api_value
+            ),
+            RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
+                new_setting_api_value
+            ),
             "property": setting_name,
         },
     )
@@ -455,7 +488,24 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+RealmDeactivationReasonType = Literal[
+    "owner_request",
+    "tos_violation",
+    "inactivity",
+    "self_hosting_migration",
+    # When we change the subdomain of a realm, we leave
+    # behind a deactivated gravestone realm.
+    "subdomain_change",
+]
+
+
+def do_deactivate_realm(
+    realm: Realm,
+    *,
+    acting_user: Optional[UserProfile],
+    deactivation_reason: RealmDeactivationReasonType,
+    email_owners: bool,
+) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -481,6 +531,7 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             acting_user=acting_user,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "deactivation_reason": deactivation_reason,
             },
         )
 
@@ -509,6 +560,12 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     # cached_db session plugin we're using, and our session engine
     # declared in zerver/lib/safe_session_cached_db.py enforces this.
     delete_realm_user_sessions(realm)
+
+    # Flag to send deactivated realm email to organization owners; is false
+    # for realm exports and realm subdomain changes so that those actions
+    # do not email active organization owners.
+    if email_owners:
+        do_send_realm_deactivation_email(realm, acting_user)
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -740,7 +797,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
     )
     context = {
         "confirmation_url": url,
-        "realm_uri": realm.url,
+        "realm_url": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
     }
@@ -753,3 +810,64 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
         language=language,
         context=context,
     )
+
+
+def do_send_realm_deactivation_email(realm: Realm, acting_user: Optional[UserProfile]) -> None:
+    shared_context: Dict[str, Any] = {
+        "realm_name": realm.name,
+    }
+    deactivation_time = timezone_now()
+    owners = set(realm.get_human_owner_users())
+    anonymous_deactivation = False
+
+    # The realm was deactivated via the deactivate_realm management command.
+    if acting_user is None:
+        anonymous_deactivation = True
+
+    # This realm was deactivated from the support panel; we do not share the
+    # deactivating user's information in this case.
+    if acting_user is not None and acting_user not in owners:
+        anonymous_deactivation = True
+
+    for owner in owners:
+        owner_tz = owner.timezone
+        if owner_tz == "":
+            owner_tz = timezone_get_current_timezone_name()
+        local_date = deactivation_time.astimezone(
+            zoneinfo.ZoneInfo(canonicalize_timezone(owner_tz))
+        ).date()
+
+        if anonymous_deactivation:
+            context = dict(
+                acting_user=False,
+                initiated_deactivation=False,
+                event_date=local_date,
+                **shared_context,
+            )
+        else:
+            assert acting_user is not None
+            if owner == acting_user:
+                context = dict(
+                    acting_user=True,
+                    initiated_deactivation=True,
+                    event_date=local_date,
+                    **shared_context,
+                )
+            else:
+                context = dict(
+                    acting_user=True,
+                    initiated_deactivation=False,
+                    deactivating_owner=acting_user.full_name,
+                    event_date=local_date,
+                    **shared_context,
+                )
+
+        send_email(
+            "zerver/emails/realm_deactivated",
+            to_emails=[owner.delivery_email],
+            from_name=FromAddress.security_email_from_name(language=owner.default_language),
+            from_address=FromAddress.SUPPORT,
+            language=owner.default_language,
+            context=context,
+            realm=realm,
+        )

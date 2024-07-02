@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const message_link_test_cases = require("../../zerver/tests/fixtures/message_link_test_cases");
+
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
@@ -88,39 +90,12 @@ run_test("get_current_nth_hash_section", () => {
 });
 
 run_test("test_is_same_server_message_link", () => {
-    const dm_message_link = "#narrow/dm/9,15-dm/near/43";
-    assert.equal(hash_parser.is_same_server_message_link(dm_message_link), true);
-
-    const group_message_link = "#narrow/dm/9,16,15-group/near/68";
-    assert.equal(hash_parser.is_same_server_message_link(group_message_link), true);
-
-    const stream_message_link = "#narrow/stream/8-design/topic/desktop/near/82";
-    assert.equal(hash_parser.is_same_server_message_link(stream_message_link), true);
-
-    const stream_link = "#narrow/stream/8-design";
-    assert.equal(hash_parser.is_same_server_message_link(stream_link), false);
-
-    const topic_link = "#narrow/stream/8-design/topic/desktop";
-    assert.equal(hash_parser.is_same_server_message_link(topic_link), false);
-
-    const dm_link = "#narrow/dm/15-John";
-    assert.equal(hash_parser.is_same_server_message_link(dm_link), false);
-
-    const search_link = "#narrow/search/database";
-    assert.equal(hash_parser.is_same_server_message_link(search_link), false);
-
-    const different_server_message_link =
-        "https://fakechat.zulip.org/#narrow/dm/8,1848,2369-group/near/1717378";
-    assert.equal(hash_parser.is_same_server_message_link(different_server_message_link), false);
-
-    const drafts_link = "#drafts";
-    assert.equal(hash_parser.is_same_server_message_link(drafts_link), false);
-
-    const empty_link = "#";
-    assert.equal(hash_parser.is_same_server_message_link(empty_link), false);
-
-    const non_zulip_link = "https://www.google.com";
-    assert.equal(hash_parser.is_same_server_message_link(non_zulip_link), false);
+    for (const message_link_test_case of message_link_test_cases) {
+        assert.equal(
+            hash_parser.is_same_server_message_link(message_link_test_case.message_link),
+            message_link_test_case.expected_output,
+        );
+    }
 });
 
 run_test("build_reload_url", () => {
@@ -176,6 +151,26 @@ run_test("test_is_subscribers_section_opened_for_stream", () => {
 
     window.location.hash = "#";
     assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), false);
+});
+
+run_test("test_is_in_specified_hash_category", () => {
+    window.location.hash = "#channels/1/Design/subscribers";
+    assert.equal(hash_parser.is_in_specified_hash_category(["channels", "channel"]), true);
+
+    window.location.hash = "#channels/99/.EC.A1.B0.EB.A6.AC.EB.B2.95.20.F0.9F.98.8E/subscribers";
+    assert.equal(hash_parser.is_in_specified_hash_category(["channels", "channel"]), true);
+
+    window.location.hash = "#gro/channels/channel";
+    assert.equal(hash_parser.is_in_specified_hash_category(["stream", "channel", "group"]), false);
+
+    window.location.hash = "#some/stream/channel/group";
+    assert.equal(hash_parser.is_in_specified_hash_category(["stream", "channel", "group"]), false);
+
+    window.location.hash = "#some/stream/channel/group";
+    assert.equal(hash_parser.is_in_specified_hash_category([""]), false);
+
+    window.location.hash = "#some/stream/channel/group";
+    assert.equal(hash_parser.is_in_specified_hash_category([]), false);
 });
 
 run_test("test_parse_narrow", () => {

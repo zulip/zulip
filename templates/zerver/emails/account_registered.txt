@@ -13,7 +13,7 @@
 
 {% trans apps_page_link="https://zulip.com/apps/" %}You will use the following info to log into the Zulip web, mobile and desktop apps ({{ apps_page_link}}):{% endtrans %}
 
-* {% trans organization_url=realm_uri %}Organization URL: {{ organization_url }}{% endtrans %}
+* {% trans organization_url=realm_url %}Organization URL: {{ organization_url }}{% endtrans %}
 
 {% if ldap %}
 {% if ldap_username %}

@@ -3,7 +3,7 @@
   "version": "0.0.18",
   "license": "Apache-2.0",
   "scripts": {
-    "prepare": "rm -rf lib && tsc && cp src/*.flow lib",
+    "prepare": "tsc --build --clean && rm -rf lib && tsc && cp src/*.flow lib",
     "version": "tools/npm-version",
     "postversion": "tools/npm-postversion"
   },
@@ -12,7 +12,7 @@
     "lodash": "^4.17.19"
   },
   "devDependencies": {
-    "typescript": "^4.8.2"
+    "typescript": "^5.0.2"
   },
   "files": [
     "icons",

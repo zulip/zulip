@@ -9,7 +9,6 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 
-import {page_params} from "./base_page_params";
 import {BlueslipError, display_stacktrace} from "./blueslip_stacktrace";
 
 if (Error.stackTraceLimit !== undefined) {
@@ -81,7 +80,7 @@ export function info(msg: string, more_info?: unknown): void {
 export function warn(msg: string, more_info?: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.warn(...args);
-    if (page_params.development_environment) {
+    if (DEVELOPMENT) {
         console.trace();
     }
 }
@@ -100,7 +99,7 @@ export function error(msg: string, more_info?: object | undefined, original_erro
     logger.error(...args);
 
     // Throw an error in development; this will show a dialog (see below).
-    if (page_params.development_environment) {
+    if (DEVELOPMENT) {
         throw new BlueslipError(msg, more_info, original_error);
     }
     // This function returns to its caller in production!  To raise a
@@ -109,11 +108,17 @@ export function error(msg: string, more_info?: object | undefined, original_erro
 
 // Install a window-wide onerror handler in development to display the stacktraces, to make them
 // hard to miss
-if (page_params.development_environment) {
+if (DEVELOPMENT) {
     $(window).on("error", (event: JQuery.TriggeredEvent) => {
         const {originalEvent} = event;
-        if (originalEvent instanceof ErrorEvent && originalEvent.error instanceof Error) {
+        if (originalEvent instanceof ErrorEvent) {
             void display_stacktrace(originalEvent.error);
+        }
+    });
+    $(window).on("unhandledrejection", (event: JQuery.TriggeredEvent) => {
+        const {originalEvent} = event;
+        if (originalEvent instanceof PromiseRejectionEvent) {
+            void display_stacktrace(originalEvent.reason);
         }
     });
 }

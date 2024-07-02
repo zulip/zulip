@@ -7,26 +7,20 @@ import type {User} from "./people";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import type {StateData} from "./state_data";
 import {current_user, realm} from "./state_data";
+import type {StreamPostPolicy} from "./stream_types";
 import * as sub_store from "./sub_store";
 import type {
     ApiStreamSubscription,
     NeverSubscribedStream,
     Stream,
-    StreamPostPolicy,
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-
-type StreamInitParams = {
-    subscriptions: ApiStreamSubscription[];
-    unsubscribed: ApiStreamSubscription[];
-    never_subscribed: NeverSubscribedStream[];
-    realm_default_streams: Stream[];
-};
 
 // Type for the parameter of `create_sub_from_server_data` function.
 type ApiGenericStreamSubscription =
@@ -270,7 +264,7 @@ export function slug_to_name(slug: string): string {
     */
     const m = /^(\d+)(-.*)?$/.exec(slug);
     if (m) {
-        const stream_id = Number.parseInt(m[1], 10);
+        const stream_id = Number.parseInt(m[1]!, 10);
         const sub = sub_store.get(stream_id);
         if (sub) {
             return sub.name;
@@ -296,12 +290,12 @@ export function delete_sub(stream_id: number): void {
     stream_info.delete(stream_id);
 }
 
-export function get_non_default_stream_names(): {name: string; unique_id: string}[] {
+export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
     let subs = [...stream_info.values()];
     subs = subs.filter((sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only);
     const names = subs.map((sub) => ({
         name: sub.name,
-        unique_id: sub.stream_id.toString(),
+        unique_id: sub.stream_id,
     }));
     return names;
 }
@@ -365,32 +359,14 @@ export function get_streams_for_user(user_id: number): {
     };
 }
 
-export function get_invite_stream_data(): InviteStreamData[] {
-    function get_data(sub: StreamSubscription): InviteStreamData {
-        return {
-            name: sub.name,
-            stream_id: sub.stream_id,
-            invite_only: sub.invite_only,
-            is_web_public: sub.is_web_public,
-            default_stream: default_stream_ids.has(sub.stream_id),
-        };
-    }
-
+export function get_invite_stream_data(): StreamSubscription[] {
     const streams = [];
-
-    // Invite users to all default streams...
-    for (const stream_id of default_stream_ids) {
-        const sub = sub_store.get(stream_id)!;
-        streams.push(get_data(sub));
-    }
-
-    // ...plus all your subscribed streams (avoiding repeats).
-    for (const sub of subscribed_subs()) {
-        if (!default_stream_ids.has(sub.stream_id)) {
-            streams.push(get_data(sub));
+    const all_subs = get_unsorted_subs();
+    for (const sub of all_subs) {
+        if (can_subscribe_others(sub)) {
+            streams.push(sub);
         }
     }
-
     return streams;
 }
 
@@ -445,7 +421,7 @@ export function receives_notifications(
         return false;
     }
     if (sub[notification_name] !== null) {
-        return sub[notification_name]!;
+        return sub[notification_name];
     }
     return user_settings[settings_config.generalize_stream_notification_setting[notification_name]];
 }
@@ -834,7 +810,7 @@ export function get_new_stream_announcements_stream(): string {
     return "";
 }
 
-export function initialize(params: StreamInitParams): void {
+export function initialize(params: StateData["stream_data"]): void {
     /*
         We get `params` data, which is data that we "own"
         and which has already been removed from `state_data`.

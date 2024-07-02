@@ -13,7 +13,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
         const resolved = new Map<string, Set<string>>();
         const nameSymbol = Symbol("DebugRequirePluginName");
         type NamedRequest = ResolveRequest & {
-            [nameSymbol]?: string;
+            [nameSymbol]?: string | undefined;
         };
         let debugRequirePath: string | false = false;
 

@@ -20,9 +20,9 @@ Developers](internationalization.md).
 These are the steps you should follow if you want to help translate
 Zulip:
 
-1. Join [#translation][translation-stream] in the [Zulip development
+1. Join [#translation][translation-channel] in the [Zulip development
    community server](https://zulip.com/development-community/), and say hello.
-   That stream is also the right place for any questions, updates on your
+   That channel is also the right place for any questions, updates on your
    progress, reporting problematic strings, etc.
 
 1. Sign up for [Transifex](https://www.transifex.com) and ask to join the [Zulip
@@ -86,7 +86,7 @@ Some useful tips for your translating journey:
   the string with `Ctrl+F` in your browser.
 
 - When in doubt, ask for context in
-  [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
+  [#translation](https://chat.zulip.org/#narrow/channel/58-translation) in
   the [Zulip development community server](https://zulip.com/development-community/).
 
 - If there are multiple possible translations for a term, search for it in
@@ -181,7 +181,7 @@ translation:
 
 We maintain translation style guides for Zulip, giving guidance on how
 Zulip should be translated into specific languages (e.g. what word to
-translate words like "stream" to), with reasoning, so that future
+translate words like "channel" to), with reasoning, so that future
 translators can understand and preserve those decisions:
 
 - [Chinese](chinese.md)
@@ -209,8 +209,8 @@ properly capitalized in a way consistent with how Zulip does
 capitalization in general. This means that:
 
 - The first letter of a sentence or phrase should be capitalized.
-  - Correct: "Stream settings"
-  - Incorrect: "Stream Settings"
+  - Correct: "Channel settings"
+  - Incorrect: "Channel Settings"
 - All proper nouns should be capitalized.
   - Correct: "This is Zulip"
   - Incorrect: "This is zulip"
@@ -225,4 +225,4 @@ suite](../testing/testing.md#other-test-suites)
 (`./tools/check-capitalization`; `tools/lib/capitalization.py` has
 some exclude lists, e.g. `IGNORED_PHRASES`).
 
-[translation-stream]: https://chat.zulip.org/#narrow/stream/58-translation
+[translation-channel]: https://chat.zulip.org/#narrow/channel/58-translation

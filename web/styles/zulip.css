@@ -23,12 +23,17 @@ body {
     width: 100%;
     margin: 0;
     padding: 0;
-    font-size: 14px;
-    line-height: calc(20 / 14);
+    font-size: var(--base-font-size-px);
+    /* The line-height used in most of the UI should be at least
+       its legacy value, but should expand with larger base
+       line-height values. */
+    line-height: max(
+        var(--legacy-body-line-height-unitless),
+        var(--base-line-height-unitless)
+    );
     font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
-    transition: background-color 200ms linear;
 
     /* Implementation for fluid layout width setting. */
     .header-main,
@@ -318,10 +323,6 @@ p.n-margin {
     }
 }
 
-.recent_view_container #recent_view_table {
-    margin-top: var(--navbar-fixed-height);
-}
-
 .app {
     min-width: 100%;
     min-height: 100%;
@@ -354,6 +355,14 @@ body.has-overlay-scrollbar {
        emoji picker can render on top of the user status picker. */
     z-index: 106;
     background-color: hsl(0deg 0% 0% / 70%);
+}
+
+.white-space-preserve-wrap {
+    white-space: pre-wrap;
+}
+
+.white-space-preserve {
+    white-space: pre;
 }
 
 /* Set flex display on login buttons only in the
@@ -786,17 +795,17 @@ strong {
    + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
    basic idea of this fix is to remove decorations from :hover and apply them only
    on :focus. */
-.typeahead-menu {
+.typeahead.dropdown-menu .typeahead-menu {
     & li {
         word-break: break-word;
 
         & a {
-            display: block;
-            padding: 3px 20px;
-            clear: both;
+            display: flex;
+            padding: 3px 10px;
+            gap: 5px;
             font-weight: normal;
             line-height: 20px;
-            color: hsl(0deg 0% 20%);
+            color: var(--color-dropdown-item);
             white-space: nowrap;
 
             /* hidden text just to maintain line height for a blank option */
@@ -807,19 +816,10 @@ strong {
                 }
             }
 
-            &:hover {
-                text-decoration: none;
-            }
-
+            &:hover,
             &:focus {
-                color: hsl(0deg 0% 100%);
                 text-decoration: none;
-                background-color: hsl(200deg 100% 38%);
-                background-image: linear-gradient(
-                    to bottom,
-                    hsl(200deg 100% 40%),
-                    hsl(200deg 100% 35%)
-                );
+                outline: 0;
             }
 
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
@@ -827,35 +827,31 @@ strong {
             Most of the style rules related to color, gradient etc. which are generally common throughout
             the app are defined in user_circles.css and are not overridden here. */
             .user_circle {
-                width: 8px;
-                height: 8px;
-                margin: 0 5px 0 -6px;
+                width: var(--length-user-status-circle);
+                height: var(--length-user-status-circle);
                 position: relative;
-                top: 6px;
-                right: 8px;
-                display: inline-block;
+                left: -2px;
+                flex-shrink: 0;
+                align-self: center;
+            }
+
+            .typeahead-text-container {
+                align-self: center;
+
+                & > * {
+                    margin-right: 3px;
+                }
             }
         }
     }
 
     .active > a {
-        color: hsl(0deg 0% 100%);
-        text-decoration: none;
-        background-color: hsl(200deg 100% 38%);
-        background-image: linear-gradient(
-            to bottom,
-            hsl(200deg 100% 40%),
-            hsl(200deg 100% 35%)
-        );
-        outline: 0;
-
-        .user_circle_empty {
-            border-color: hsl(0deg 0% 25%);
+        &,
+        &:hover,
+        &:focus {
+            color: var(--color-active-dropdown-item);
+            background-color: var(--background-color-active-typeahead-item);
         }
-    }
-
-    .active > a:hover {
-        text-decoration: none;
     }
 }
 
@@ -966,15 +962,6 @@ td.pointer {
     [data-tippy-root] {
         width: max-content;
         word-wrap: unset;
-    }
-
-    > .view_read_receipts {
-        font-size: 14px;
-        height: 16px;
-
-        &:hover {
-            color: hsl(200deg 100% 40%);
-        }
     }
 
     .edit_content {
@@ -1225,7 +1212,7 @@ div.focused-message-list {
         display: none;
         width: 100%;
         height: 24px;
-        margin-bottom: 4px;
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
         color: var(--color-text-show-more-less-button);
         background-color: var(--color-show-more-less-button-background);
         border-radius: 4px;
@@ -1308,19 +1295,19 @@ div.focused-message-list {
     visibility: hidden;
 }
 
-#streamlist-toggle-button {
+#header-container .left-sidebar-toggle-button {
     text-decoration: none;
     color: var(--color-navbar-icon);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: var(--header-height);
+    height: var(--header-height);
 
     &:hover {
         background-color: var(--color-header-button-hover);
 
-        #streamlist-toggle-unreadcount {
+        .left-sidebar-toggle-unreadcount {
             border-color: var(--color-header-button-hover-no-alpha);
         }
     }
@@ -1340,13 +1327,13 @@ div.focused-message-list {
 
     &:active,
     &:focus-visible {
-        #streamlist-toggle-unreadcount {
+        .left-sidebar-toggle-unreadcount {
             border-color: var(--color-header-button-focus-no-alpha);
         }
     }
 }
 
-#streamlist-toggle-unreadcount {
+.left-sidebar-toggle-unreadcount {
     position: absolute;
     display: none;
     height: 6px;
@@ -1361,16 +1348,11 @@ div.focused-message-list {
 }
 
 .typeahead.dropdown-menu {
-    /* Use default color until some other typeahead overrides it. */
-    color: var(--color-text-default);
-
-    a {
-        color: inherit;
+    a strong.typeahead-strong-section {
+        white-space: pre;
     }
 
     .active {
-        color: hsl(0deg 0% 100%);
-
         .unsubscribed_icon {
             display: block;
             float: right;
@@ -1390,11 +1372,6 @@ div.focused-message-list {
     display: inline-block;
     height: 21px;
     width: 21px;
-    position: relative;
-    margin-top: -4px;
-    vertical-align: middle;
-    top: 2px;
-    right: 8px;
     border-radius: 4px;
 
     /* For FontAwesome icons and zulip icons used in place of images for some users. */
@@ -1406,26 +1383,35 @@ div.focused-message-list {
     }
 
     &.no-presence-circle {
-        margin-left: 9px;
-        top: 3px;
+        margin-left: 14px;
     }
 }
 
 nav {
     .column-left {
         text-align: left;
-        margin-left: 15px;
+        display: flex;
+        justify-content: left;
+        gap: 4px;
+
+        .brand {
+            display: flex;
+            align-items: center;
+        }
 
         .nav-logo {
             display: inline-block;
-            vertical-align: top;
-            margin-top: 8px;
-            height: 25px;
+            height: 20px;
             max-width: 200px;
 
             @media (height < $short_navbar_cutoff_height) {
                 height: 15px;
             }
+        }
+
+        .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
+            top: 10px;
+            left: 21px;
         }
     }
 
@@ -1443,7 +1429,7 @@ nav {
 
 #bottom_whitespace {
     display: block;
-    height: var(--max-unexpanded-compose-height);
+    height: var(--max-unmaximized-compose-height);
 }
 
 .operator_value {
@@ -1556,56 +1542,12 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-textarea.invitee_emails {
-    min-height: 40px;
-    max-height: 300px;
-    width: 96%;
-    max-width: 96%;
-    resize: vertical !important;
-
-    color: hsl(0deg 0% 33%);
-    background-color: hsl(0deg 0% 100%);
-    border-radius: 4px;
-    vertical-align: middle;
-    border: 1px solid hsl(0deg 0% 80%);
-    padding: 4px 6px;
-
-    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-    transition:
-        border linear 0.2s,
-        box-shadow linear 0.2s;
-
-    &:focus {
-        border-color: hsl(206.5deg 80% 62% / 80%);
-        outline: 0;
-
-        box-shadow:
-            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-            0 0 8px hsl(206.5deg 80% 62% / 60%);
-    }
-
-    &:disabled {
-        cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
-    }
-}
-
 #custom-expiration-time-input,
 #invite-user-form {
     margin: 0;
 }
 
-select.invite-expires-in,
-select.custom-expiration-time,
-select.invite-as {
-    width: 220px;
-    height: 30px;
-    padding: 0 6px;
-    color: hsl(0deg 0% 33%);
-    border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
-    cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+.invite-user-select {
     vertical-align: middle;
 }
 
@@ -1618,43 +1560,10 @@ select.invite-as {
     vertical-align: bottom;
 }
 
-.invite-stream-controls button {
-    color: hsl(207.79deg 56.2% 52.55%);
-    background-color: transparent;
-
-    &:focus,
-    &:hover {
-        color: hsl(207.78deg 56.25% 37.65%);
-        text-decoration: underline;
-        background-color: transparent;
-    }
-}
-
-#invite-stream-checkboxes {
-    & i.zulip-icon-globe {
-        font-size: 80%;
-    }
-}
-
-.invite_type_radio_section {
-    margin: 2px 2px 2px 5px;
-
-    & div {
-        width: fit-content;
-    }
-
-    & input[type="radio"] {
-        cursor: pointer;
-
-        &:disabled {
-            cursor: not-allowed;
-        }
-    }
-
-    .control-label-disabled label {
-        pointer-events: none;
-        cursor: not-allowed;
-    }
+.add_streams_container {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
 }
 
 #custom-expiration-time-input {
@@ -1684,6 +1593,8 @@ select.invite-as {
 }
 
 .empty_feed_notice {
+    max-width: 600px;
+    margin: 0 auto;
     padding: 3em 1em;
     text-align: center;
 }
@@ -1716,11 +1627,12 @@ select.invite-as {
 }
 
 .status-emoji {
-    height: 16px;
-    width: 16px;
+    /* 16px at 14px/1em */
+    height: 1.1429em;
+    width: 1.1429em;
     /* We are setting minimum width here because when the user's name is very long,
     emoji's width decreases and causes it to break. */
-    min-width: 16px;
+    min-width: 1.1429em;
     /* In most contexts, status emoji appear immediately after a name
       field with no margin. Position the status emoji with 3px of left
       margin to space it from the name, and set no right margin so
@@ -1991,43 +1903,32 @@ select.invite-as {
     }
 }
 
+#realm-navbar-icon-logo {
+    display: none;
+    width: 20px;
+    height: 20px;
+}
+
 .hide-right-sidebar {
     @extend %hide-right-sidebar;
+
+    &.fluid_layout_width {
+        #compose-content,
+        .app-main .column-middle {
+            margin-right: 7px;
+        }
+    }
 }
 
 .hide-right-sidebar-by-visibility .app-main .column-right {
     visibility: hidden;
 }
 
-@media (width < $xl_min) {
-    .default-sidebar-behaviour {
-        @extend %hide-right-sidebar;
+%hide-left-sidebar {
+    .app-main .column-left {
+        display: none;
 
-        .app-main .column-middle {
-            margin-right: 7px;
-        }
-
-        #navbar-middle {
-            /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
-            margin-right: calc(var(--header-height) * 4 + 10px);
-        }
-
-        #typing_notifications,
-        #scheduled_message_indicator,
-        #compose-content {
-            margin-right: 7px;
-        }
-    }
-}
-
-@media (width < $md_min) {
-    .default-sidebar-behaviour {
-        .app-main .column-left,
-        .header-main .column-left {
-            display: none;
-        }
-
-        .app-main .column-left.expanded {
+        &.expanded {
             display: block;
             position: absolute;
             float: none;
@@ -2042,6 +1943,79 @@ select.invite-as {
                 padding-left: 10px;
                 width: var(--left-sidebar-width);
             }
+        }
+    }
+}
+
+.hide-left-sidebar {
+    @extend %hide-left-sidebar;
+
+    &.fluid_layout_width {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+    }
+}
+
+body:not(.hide-left-sidebar) {
+    /* User can clearly see the unread count in the left sidebar. So,
+       we don't need an indicator here as it will only serve as a disctraction. */
+    #header-container .column-left .left-sidebar-toggle-unreadcount {
+        display: none !important;
+    }
+}
+
+@media (width < $xl_min) {
+    .default-sidebar-behaviour {
+        @extend %hide-right-sidebar;
+
+        .app-main .column-middle {
+            margin-right: 7px;
+        }
+
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+            margin-right: calc(var(--header-height) * 4 + 3px);
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-right: 7px;
+        }
+    }
+
+    .hide-left-sidebar {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+
+        #realm-navbar-icon-logo {
+            display: inline-block;
+        }
+
+        #realm-navbar-wide-logo {
+            display: none;
+        }
+
+        #top_navbar .column-left {
+            width: auto;
+        }
+
+        #navbar-middle {
+            margin-left: var(--left-sidebar-width-with-realm-icon-logo);
+        }
+    }
+}
+
+@media (width < $md_min) {
+    .default-sidebar-behaviour {
+        @extend %hide-left-sidebar;
+
+        .header-main .column-left {
+            display: none;
         }
 
         .app-main .column-middle {
@@ -2125,13 +2099,22 @@ select.invite-as {
         height: var(--header-height) !important;
     }
 
-    #streamlist-toggle-button {
+    .left-sidebar-toggle-button {
         height: var(--header-height);
     }
 
-    #streamlist-toggle-unreadcount {
+    nav
+        .column-left
+        .left-sidebar-toggle-button
+        .left-sidebar-toggle-unreadcount {
+        top: 5px;
+        left: 16px;
+    }
+
+    .left-sidebar-toggle-unreadcount {
         /* Adjust in response to shorter navbar. */
         top: 5px;
+        right: 4px;
     }
 
     #top_navbar .column-right #personal-menu .header-button-avatar {
@@ -2231,32 +2214,35 @@ select.invite-as {
 }
 
 .simplebar-content-wrapper {
-    /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
-        but we don't want it to have an outline when focused anywhere in the app. */
+    /* `simplebar-content-wrapper` has `tabindex=-1` set, which makes sure
+       that it does not get focus when navigating via a keyboard.
+
+       But in a few situations, we programmatically focus this
+       element, and in this case, we don't want to see the outline. */
     outline: none;
 
     /* This prevents the popover from closing once the top/bottom is reached */
     overscroll-behavior: contain;
 }
 
-.dropdown-list-container {
-    .dropdown-list-search {
-        display: flex;
+.popover-filter-input-wrapper {
+    display: flex;
 
-        .dropdown-list-search-input {
-            background: var(--color-background-widget-input);
-            color: var(--color-text-dropdown-input);
-            width: 100%;
-            margin: 4px 4px 2px;
+    .popover-filter-input {
+        background: var(--color-background-widget-input);
+        color: var(--color-text-dropdown-input);
+        width: 100%;
+        margin: 4px 4px 2px;
 
-            &:focus {
-                background: hsl(0deg 0% 100%);
-                border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
-                box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
-            }
+        &:focus {
+            background: hsl(0deg 0% 100%);
+            border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
+            box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
         }
     }
+}
 
+.dropdown-list-container {
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -2265,23 +2251,31 @@ select.invite-as {
         .dropdown-list {
             list-style: none;
             margin: 0;
-
-            .list-item:focus {
-                background-color: hsl(220deg 12% 4.9% / 5%);
-                outline: none;
-            }
         }
+    }
 
-        .no-dropdown-items {
-            color: hsl(0deg 0% 60%);
-            display: none;
-        }
+    .no-dropdown-items {
+        color: hsl(0deg 0% 60%);
+        display: none;
+        padding: 3px 10px 3px 8px;
+        font-weight: 400;
+        line-height: 20px;
+        white-space: normal;
     }
 }
 
-.dropdown-list-container .dropdown-list-item-common-styles {
+.dropdown-list-container .list-item {
+    color: var(--color-dropdown-item);
+
+    &:focus {
+        background-color: var(--background-color-active-dropdown-item);
+        outline: none;
+    }
+}
+
+.dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
     display: block;
-    color: hsl(0deg 0% 20%);
+    color: var(--color-dropdown-item);
     padding: 3px 10px 3px 8px;
     font-weight: 400;
     line-height: 20px;
@@ -2294,13 +2288,11 @@ select.invite-as {
         padding-right: 2px;
     }
 
+    &:focus,
     &:hover {
+        color: var(--color-dropdown-item);
         text-decoration: none;
-        background-color: hsl(220deg 12% 4.9% / 5%);
-    }
-
-    &:focus {
-        text-decoration: none;
+        background-color: var(--background-color-active-dropdown-item);
         outline: none;
     }
 }
@@ -2323,7 +2315,6 @@ select.invite-as {
     }
 }
 
-#unstar_all_messages,
 .emoji-popover-tab-item {
     .zulip-icon-star {
         position: relative;
@@ -2347,9 +2338,6 @@ select.invite-as {
     width: calc(var(--right-sidebar-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
-    /* Move the column to the right with absolute
-       positioning, rather than margin. */
-    right: 7px;
 
     & a:focus {
         filter: none;

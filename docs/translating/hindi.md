@@ -1,7 +1,7 @@
 # Hindi translation style guide (हिन्दी अनुवाद शैली मार्गदर्शक)
 
 - Use _आप_ as the second-person pronoun. Don't use तुम or तू.
-  (See [chat thread](https://chat.zulip.org/#narrow/stream/58-translation/topic/Hindi.20Translation/near/1762384).)
+  (See [chat thread](https://chat.zulip.org/#narrow/channel/58-translation/topic/Hindi.20Translation/near/1762384).)
 
 - Imperative, active, and continuous verbs, e.g. _manage streams_ -
   _चैनल प्रबंधित करें_, not _चैनल प्रबंधन_.
@@ -22,7 +22,7 @@ Zulip friendly and usable.
 ## Terms (शर्तें)
 
 - Message - **संदेश**
-- Private message (PM) - **निजी संदेश**
+- Direct message (DM) - **सीधा संदेश**
 - Stream - **धारा**: the use of the literal Hindi word for stream
   "प्रवाह" is very confusing and not the correct metaphor for Hindi
   speaking people. The correct term would be "धारा".

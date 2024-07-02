@@ -3,7 +3,7 @@
 import $ from "jquery";
 import _, {isNumber} from "lodash";
 import assert from "minimalistic-assert";
-import type {Instance, Placement} from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
@@ -73,7 +73,7 @@ export function update_narrow_to_recipient_visibility(): void {
             !composing_to_current_topic_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
             return;
         }
     } else if (message_type === "private") {
@@ -83,11 +83,11 @@ export function update_narrow_to_recipient_visibility(): void {
             !composing_to_current_private_message_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
             return;
         }
     }
-    $(".narrow_to_compose_recipients").toggleClass("invisible", true);
+    $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
 }
 
 function update_fade(): void {
@@ -238,7 +238,7 @@ export function possibly_update_stream_name_in_compose(stream_id: number): void 
     }
 }
 
-function item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void {
+function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
     const recipient_id_str = $(event.currentTarget).attr("data-unique-id");
     assert(recipient_id_str !== undefined);
     let recipient_id: string | number = recipient_id_str;
@@ -246,6 +246,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void
         recipient_id = Number.parseInt(recipient_id, 10);
     }
     compose_state.set_selected_recipient_id(recipient_id);
+    compose_state.set_recipient_edited_manually(true);
     on_compose_select_recipient_update();
     dropdown.hide();
     event.preventDefault();
@@ -273,7 +274,7 @@ function get_options_for_recipient_widget(): Option[] {
     return options;
 }
 
-function compose_recipient_dropdown_on_show(dropdown: Instance): void {
+function compose_recipient_dropdown_on_show(dropdown: tippy.Instance): void {
     // Offset to display dropdown above compose.
     let top_offset = 5;
     const window_height = window.innerHeight;
@@ -285,7 +286,7 @@ function compose_recipient_dropdown_on_show(dropdown: Instance): void {
     // pixels below compose starting from top of compose box.
     const bottom_space = window_height - recipient_input_top - search_box_and_padding_height;
     // Show dropdown on top / bottom based on available space.
-    let placement: Placement = "top-start";
+    let placement: tippy.Placement = "top-start";
     if (bottom_space > top_space) {
         placement = "bottom-start";
         top_offset = -30;
@@ -314,7 +315,7 @@ function on_hidden_callback(): void {
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
-        ui_util.place_caret_at_end($("input#stream_message_recipient_topic")[0]);
+        ui_util.place_caret_at_end($("input#stream_message_recipient_topic")[0]!);
     } else {
         if (compose_state.private_message_recipient().length === 0) {
             $("#private_message_recipient").trigger("focus").trigger("select");

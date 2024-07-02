@@ -15,7 +15,7 @@ to receive updates to the Zulip data. The simplest example is a new
 message being sent by one client; other clients must be notified in
 order to display the message. But a complete application like Zulip
 has dozens of different types of data that need to be synced to other
-clients, whether it be new streams, changes in a user's name or
+clients, whether it be new channels, changes in a user's name or
 avatar, settings changes, etc. In Zulip, we call these updates that
 need to be sent to other clients **events**.
 
@@ -68,7 +68,7 @@ Usually, this list of users is one of 3 things:
 - Everyone in the realm (e.g. for organization-level settings changes,
   like new realm emoji).
 - Everyone who would receive a given message (for messages, emoji
-  reactions, message editing, etc.); i.e. the subscribers to a stream
+  reactions, message editing, etc.); i.e. the subscribers to a channel
   or the people on a direct message thread.
 
 It is the responsibility of the caller of `send_event` to choose the
@@ -176,7 +176,7 @@ When a client starts up, it usually wants to get 2 things from the
 server:
 
 - The "current state" of various pieces of data, e.g. the current
-  settings, set of users in the organization (for typeahead), stream,
+  settings, set of users in the organization (for typeahead), channel,
   messages, etc. (aka the "initial state").
 - A subscription to receive updates to those data when they are
   changed by a client (aka an event queue).

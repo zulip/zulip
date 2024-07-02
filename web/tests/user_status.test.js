@@ -119,7 +119,7 @@ run_test("basics", () => {
         type: "user_status",
         emoji_name: "",
         emoji_code: "",
-        reaction_type: "",
+        reaction_type: "unicode_emoji",
         status_text: "",
     });
     assert.deepEqual(user_status.get_status_emoji(2), undefined);

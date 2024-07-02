@@ -100,7 +100,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         )
 
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
-            result = self.client_patch(url, request)
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.client_patch(url, request)
 
         cordelia = self.example_user("cordelia")
         cordelia_calls = [

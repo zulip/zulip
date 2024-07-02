@@ -6,7 +6,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing_extensions import override
 
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 
 START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
@@ -116,6 +116,8 @@ TAB_SECTION_LABELS = {
     "v6": "Zulip Server 6.0+",
     "v4": "Zulip Server 4.0+",
     "all-versions": "All versions",
+    "by-card": "Pay by credit card",
+    "by-invoice": "Pay by invoice",
     "for-a-bot": "For a bot",
     "for-yourself": "For yourself",
 }
@@ -127,7 +129,7 @@ class TabbedSectionsGenerator(Extension):
         md.preprocessors.register(
             TabbedSectionsPreprocessor(md, self.getConfigs()),
             "tabbed_sections",
-            PREPROCESSOR_PRIORITES["tabbed_sections"],
+            PREPROCESSOR_PRIORITIES["tabbed_sections"],
         )
 
 

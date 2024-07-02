@@ -18,7 +18,7 @@
                 <p>
                     {% trans %}
                     You've successfully unsubscribed from Zulip {{ subscription_type }} emails for
-                    <a href="{{ realm_uri }}">{{ realm_name }}</a>.
+                    <a href="{{ realm_url }}">{{ realm_name }}</a>.
                     {% endtrans %}
                 </p>
 
@@ -26,7 +26,7 @@
                 <p>
                     {% trans %}
                     You can undo this change or review your preferences in your
-                    <a href="{{ realm_uri }}/#settings/notifications">notification settings</a>.
+                    <a href="{{ realm_url }}/#settings/notifications">notification settings</a>.
                     {% endtrans %}
                 </p>
                 {% endif %}

@@ -34,8 +34,7 @@ export function get_group(section) {
         case "bot-list-admin":
             return "org_bots";
 
-        case "user-list-admin":
-        case "deactivated-users-admin":
+        case "users":
             return "org_users";
 
         case "profile":
@@ -67,10 +66,9 @@ export function initialize() {
     load_func_dict.set("org_bots", settings_users.set_up_bots);
     load_func_dict.set("org_users", settings_users.set_up_humans);
     load_func_dict.set("emoji-settings", settings_emoji.set_up);
-    load_func_dict.set("default-streams-list", settings_streams.set_up);
+    load_func_dict.set("default-channels-list", settings_streams.set_up);
     load_func_dict.set("linkifier-settings", settings_linkifiers.set_up);
     load_func_dict.set("playground-settings", settings_playgrounds.set_up);
-    load_func_dict.set("invites-list-admin", settings_invites.set_up);
     load_func_dict.set("profile-field-settings", settings_profile_fields.set_up);
     load_func_dict.set("data-exports-admin", settings_exports.set_up);
     load_func_dict.set(

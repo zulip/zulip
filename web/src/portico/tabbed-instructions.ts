@@ -58,7 +58,7 @@ export function activate_correct_tab($tabbed_section: JQuery): void {
     const $active_list_items = $li.filter(".active");
     if (!$active_list_items.length) {
         $li.first().addClass("active");
-        const tab_key = $li.first()[0].dataset.tabKey;
+        const tab_key = $li.first()[0]!.dataset.tabKey;
         if (tab_key) {
             $blocks.filter("[data-tab-key=" + tab_key + "]").addClass("active");
         } else {

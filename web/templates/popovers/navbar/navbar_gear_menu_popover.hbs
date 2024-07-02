@@ -1,0 +1,191 @@
+<div class="popover-menu" id="gear-menu-dropdown" aria-labelledby="settings-dropdown" data-simplebar data-simplebar-tab-index="-1">
+    <div class="org-info-container">
+        <div class="org-info org-name">{{realm_name}}</div>
+        <div class="org-info org-url">{{realm_url}}</div>
+        {{#if is_self_hosted }}
+        <div class="org-info org-version">
+            <a href="#about-zulip" class="navigate-link-on-enter popover-menu-link">{{version_display_string}}</a>
+        </div>
+        {{#if server_needs_upgrade }}
+        <div class="org-info org-upgrade">
+            <a href="https://zulip.readthedocs.io/en/stable/production/upgrade.html" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t 'Upgrade to the latest release' }}</a>
+        </div>
+        {{/if}}
+        {{else}}
+        <div class="org-info org-plan hidden-for-spectators">
+            {{#if is_plan_limited }}
+            <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">Zulip Cloud Free</a>
+            {{else if is_plan_standard}}
+            <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">Zulip Cloud Standard</a>
+            {{else if is_plan_standard_sponsored_for_free}}
+            <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">Zulip Cloud Standard (sponsored)</a>
+            {{else if is_plan_plus}}
+            <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">Zulip Cloud Plus</a>
+            {{/if}}
+        </div>
+        {{/if}}
+        {{#if (and (not is_self_hosted) user_has_billing_access (not is_plan_standard_sponsored_for_free)) }}
+        {{#if sponsorship_pending }}
+        <div class="org-info org-upgrade">
+            <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t "Sponsorship request pending" }}</a>
+        </div>
+        {{else}}
+        {{#if is_plan_limited }}
+        <div class="org-info org-upgrade">
+            <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t "Upgrade to {standard_plan_name}" }}</a>
+        </div>
+        {{/if}}
+        {{#unless is_org_on_paid_plan}}
+        {{#if is_education_org }}
+        <div class="org-info org-upgrade">
+            <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t 'Request education pricing' }}</a>
+        </div>
+        {{else if (not is_business_org) }}
+        <div class="org-info org-upgrade">
+            <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t 'Request sponsorship' }}</a>
+        </div>
+        {{/if}}
+        {{/unless}}
+        {{/if}}
+        {{/if}}
+    </div>
+    <ul role="menu" class="popover-menu-list">
+        {{!-- Group 1 --}}
+        <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
+            <a role="menuitem" href="#channels/subscribed" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-hash" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Channel settings' }}</span>
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item admin-menu-item hidden-for-spectators">
+            <a role="menuitem" href="#organization" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-building" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Organization settings' }}</span>
+            </a>
+        </li>
+        {{#unless is_guest}}
+        <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
+            <a role="menuitem" href="#groups/your" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-user-cog" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Group settings' }}</span>
+            </a>
+        </li>
+        {{/unless}}
+        <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
+            <a role="menuitem" href="#settings" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-tool" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Personal settings' }}</span>
+            </a>
+        </li>
+        {{#unless is_guest}}
+        <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
+            <a role="menuitem" href="/stats" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-bar-chart" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Usage statistics' }}</span>
+            </a>
+        </li>
+        {{/unless}}
+        <li role="none" class="popover-menu-list-item only-visible-for-spectators">
+            <div role="group" class="theme-switcher tab-picker" aria-label="{{t 'App theme' }}">
+                <input type="radio" id="select-automatic-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.automatic.code}}" {{#if (eq user_color_scheme color_scheme_values.automatic.code)}}checked{{/if}} />
+                <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-automatic-theme" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
+                    <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+                </label>
+                <input type="radio" id="select-light-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.light.code}}" {{#if (eq user_color_scheme color_scheme_values.light.code)}}checked{{/if}} />
+                <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-light-theme" aria-label="{{t 'Select light theme' }}" data-tippy-content="{{t 'Light theme' }}" tabindex="0">
+                    <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i>
+                </label>
+                <input type="radio" id="select-dark-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.dark.code}}" {{#if (eq user_color_scheme color_scheme_values.dark.code)}}checked{{/if}} />
+                <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-dark-theme" aria-label="{{t 'Select dark theme' }}" data-tippy-content="{{t 'Dark theme' }}" tabindex="0">
+                    <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i>
+                </label>
+                <span class="slider"></span>
+            </div>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item only-visible-for-spectators">
+            <a role="menuitem" tabindex="0" class="change-language-spectator popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-f-globe" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Select language' }}</span>
+            </a>
+        </li>
+        {{!-- Group 2 --}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Desktop & mobile apps' }}</span>
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" href="/integrations/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-git-pull-request" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Integrations' }}</span>
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" href="/api/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-file-text" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'API documentation' }}</span>
+            </a>
+        </li>
+        {{#if show_billing}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" href="/billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-credit-card" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Billing' }}</span>
+            </a>
+        </li>
+        {{/if}}
+        {{#if promote_sponsoring_zulip}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-heart" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Support Zulip' }}</span>
+            </a>
+        </li>
+        {{/if}}
+        {{#if show_remote_billing }}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" href="/self-hosted-billing/" id="open-self-hosted-billing" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-rocket" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Plan management' }}</span>
+            </a>
+        </li>
+        {{/if}}
+        {{#if show_plans}}
+        {{!-- This will be hidden for self hosted realms since they will have corporate disabled. --}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-rocket" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Plans and pricing' }}</span>
+            </a>
+        </li>
+        {{/if}}
+        {{!-- Group 3 --}}
+        {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator show_webathena)}}
+        <li role="separator" class="popover-menu-separator"></li>
+        {{/if}}
+        {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" tabindex="0" class="invite-user-link popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Invite users' }}</span>
+            </a>
+        </li>
+        {{/if}}
+        {{#if show_webathena}}
+        <li role="none" class="link-item popover-menu-list-item" title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu">
+            <a role="menuitem" href="#webathena" class="webathena_login popover-menu-link">
+                <i class="popover-menu-icon fa fa-bolt" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Link with Webathena' }}</span>
+            </a>
+        </li>
+        {{/if}}
+        <li role="none" class="link-item popover-menu-list-item only-visible-for-spectators">
+            <a role="menuitem" href="{{login_link}}" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-log-in" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Log in' }}</span>
+            </a>
+        </li>
+    </ul>
+</div>

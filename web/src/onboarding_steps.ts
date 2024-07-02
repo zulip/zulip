@@ -1,7 +1,10 @@
+import type {z} from "zod";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {current_user} from "./state_data";
-import type {OnboardingStep} from "./state_data";
+import type {StateData, onboarding_step_schema} from "./state_data";
+
+export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 
 export const ONE_TIME_NOTICES_TO_DISPLAY = new Set<string>();
 
@@ -21,7 +24,7 @@ export function post_onboarding_step_as_read(onboarding_step_name: string): void
     });
 }
 
-export function update_notice_to_display(onboarding_steps: OnboardingStep[]): void {
+export function update_onboarding_steps_to_display(onboarding_steps: OnboardingStep[]): void {
     ONE_TIME_NOTICES_TO_DISPLAY.clear();
 
     for (const onboarding_step of onboarding_steps) {
@@ -31,6 +34,6 @@ export function update_notice_to_display(onboarding_steps: OnboardingStep[]): vo
     }
 }
 
-export function initialize(): void {
-    update_notice_to_display(current_user.onboarding_steps);
+export function initialize(params: StateData["onboarding_steps"]): void {
+    update_onboarding_steps_to_display(params.onboarding_steps);
 }

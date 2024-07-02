@@ -22,7 +22,6 @@ from typing import (
     Union,
 )
 
-import gcm
 import lxml.html
 import orjson
 from django.conf import settings
@@ -31,6 +30,12 @@ from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from firebase_admin import App as FCMApp
+from firebase_admin import credentials as firebase_credentials
+from firebase_admin import exceptions as firebase_exceptions
+from firebase_admin import initialize_app as firebase_initialize_app
+from firebase_admin import messaging as firebase_messaging
+from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 from typing_extensions import TypeAlias, override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
@@ -44,7 +49,6 @@ from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message_and_usermessage, huddle_users
 from zerver.lib.notification_data import get_mentioned_user_group
-from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
     record_push_notifications_recently_working,
     send_json_to_push_bouncer,
@@ -54,6 +58,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.url_decoding import is_same_server_message_link
 from zerver.lib.users import check_can_access_user
 from zerver.models import (
     AbstractPushDeviceToken,
@@ -353,69 +358,61 @@ def send_apple_push_notification(
 
 
 #
-# Sending to GCM, for Android
+# Sending to FCM, for Android
 #
 
 
-class FCMSession(OutgoingSession):
-    def __init__(self) -> None:
-        # We don't set up retries, since the gcm package does that for us.
-        super().__init__(role="fcm", timeout=5)
+# Note: This is a timeout value per retry, not a total timeout.
+FCM_REQUEST_TIMEOUT = 5
 
 
-def make_gcm_client() -> gcm.GCM:  # nocoverage
-    # From GCM upstream's doc for migrating to FCM:
-    #
-    #   FCM supports HTTP and XMPP protocols that are virtually
-    #   identical to the GCM server protocols, so you don't need to
-    #   update your sending logic for the migration.
-    #
-    #   https://developers.google.com/cloud-messaging/android/android-migrate-fcm
-    #
-    # The one thing we're required to change on the server is the URL of
-    # the endpoint.  So we get to keep using the GCM client library we've
-    # been using (as long as we're happy with it) -- just monkey-patch in
-    # that one change, because the library's API doesn't anticipate that
-    # as a customization point.
-    gcm.gcm.GCM_URL = "https://fcm.googleapis.com/fcm/send"
-    return gcm.GCM(settings.ANDROID_GCM_API_KEY)
+def make_fcm_app() -> FCMApp:  # nocoverage
+    if settings.ANDROID_FCM_CREDENTIALS_PATH is None:
+        return None
+
+    fcm_credentials = firebase_credentials.Certificate(settings.ANDROID_FCM_CREDENTIALS_PATH)
+    fcm_app = firebase_initialize_app(
+        fcm_credentials, options=dict(httpTimeout=FCM_REQUEST_TIMEOUT)
+    )
+
+    return fcm_app
 
 
-if settings.ANDROID_GCM_API_KEY:  # nocoverage
-    gcm_client = make_gcm_client()
+if settings.ANDROID_FCM_CREDENTIALS_PATH:  # nocoverage
+    fcm_app = make_fcm_app()
 else:
-    gcm_client = None
+    fcm_app = None
 
 
-def has_gcm_credentials() -> bool:  # nocoverage
-    return gcm_client is not None
+def has_fcm_credentials() -> bool:  # nocoverage
+    return fcm_app is not None
 
 
 # This is purely used in testing
 def send_android_push_notification_to_user(
     user_profile: UserProfile, data: Dict[str, Any], options: Dict[str, Any]
 ) -> None:
-    devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM))
+    devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM))
     send_android_push_notification(
         UserPushIdentityCompat(user_id=user_profile.id), devices, data, options
     )
 
 
-def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
+def parse_fcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     """
-    Parse GCM options, supplying defaults, and raising an error if invalid.
+    Parse FCM options, supplying defaults, and raising an error if invalid.
 
     The options permitted here form part of the Zulip notification
     bouncer's API.  They are:
 
-    `priority`: Passed through to GCM; see upstream doc linked below.
+    `priority`: Passed through to FCM; see upstream doc linked below.
         Zulip servers should always set this; when unset, we guess a value
         based on the behavior of old server versions.
 
     Including unrecognized options is an error.
 
-    For details on options' semantics, see this GCM upstream doc:
-      https://firebase.google.com/docs/cloud-messaging/http-server-ref
+    For details on options' semantics, see this FCM upstream doc:
+      https://firebase.google.com/docs/cloud-messaging/android/message-priority
 
     Returns `priority`.
     """
@@ -454,63 +451,56 @@ def send_android_push_notification(
     remote: Optional["RemoteZulipServer"] = None,
 ) -> int:
     """
-    Send a GCM message to the given devices.
+    Send a FCM message to the given devices.
 
     See https://firebase.google.com/docs/cloud-messaging/http-server-ref
-    for the GCM upstream API which this talks to.
+    for the FCM upstream API which this talks to.
 
     data: The JSON object (decoded) to send as the 'data' parameter of
-        the GCM message.
-    options: Additional options to control the GCM message sent.
-        For details, see `parse_gcm_options`.
+        the FCM message.
+    options: Additional options to control the FCM message sent.
+        For details, see `parse_fcm_options`.
     """
     if not devices:
         return 0
-    if not gcm_client:
+    if not fcm_app:
         logger.debug(
-            "Skipping sending a GCM push notification since "
-            "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset"
+            "Skipping sending a FCM push notification since "
+            "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_FCM_CREDENTIALS_PATH are both unset"
         )
         return 0
 
     if remote:
         logger.info(
-            "GCM: Sending notification for remote user %s:%s to %d devices",
+            "FCM: Sending notification for remote user %s:%s to %d devices",
             remote.uuid,
             user_identity,
             len(devices),
         )
     else:
         logger.info(
-            "GCM: Sending notification for local user %s to %d devices", user_identity, len(devices)
+            "FCM: Sending notification for local user %s to %d devices", user_identity, len(devices)
         )
-    reg_ids = [device.token for device in devices]
-    priority = parse_gcm_options(options, data)
-    try:
-        # See https://firebase.google.com/docs/cloud-messaging/http-server-ref .
-        # Two kwargs `retries` and `session` get eaten by `json_request`;
-        # the rest pass through to the GCM server.
-        #
-        # One initial request plus 2 retries, with 5-second timeouts,
-        # and expected 1 + 2 seconds (the gcm module jitters its
-        # backoff by ±50%, so worst case * 1.5) between them, totals
-        # 18s expected, up to 19.5s worst case.
-        res = gcm_client.json_request(
-            registration_ids=reg_ids,
-            priority=priority,
-            data=data,
-            retries=2,
-            session=FCMSession(),
-        )
-    except OSError:
-        logger.warning("Error while pushing to GCM", exc_info=True)
-        return 0
 
-    successfully_sent_count = 0
-    if res and "success" in res:
-        for reg_id, msg_id in res["success"].items():
-            logger.info("GCM: Sent %s as %s", reg_id, msg_id)
-        successfully_sent_count = len(res["success"].keys())
+    token_list = [device.token for device in devices]
+    priority = parse_fcm_options(options, data)
+
+    # The API requires all values to be strings. Our data dict is going to have
+    # things like an integer realm and user ids etc., so just convert everything
+    # like that.
+    data = {k: str(v) if not isinstance(v, str) else v for k, v in data.items()}
+    messages = [
+        firebase_messaging.Message(
+            data=data, token=token, android=firebase_messaging.AndroidConfig(priority=priority)
+        )
+        for token in token_list
+    ]
+
+    try:
+        batch_response = firebase_messaging.send_each(messages, app=fcm_app)
+    except firebase_exceptions.FirebaseError:
+        logger.warning("Error while pushing to FCM", exc_info=True)
+        return 0
 
     if remote:
         assert settings.ZILENCER_ENABLED
@@ -518,55 +508,30 @@ def send_android_push_notification(
     else:
         DeviceTokenClass = PushDeviceToken
 
-    # res.canonical will contain results when there are duplicate registrations for the same
-    # device. The "canonical" registration is the latest registration made by the device.
-    # Ref: https://developer.android.com/google/gcm/adv.html#canonical
-    if "canonical" in res:
-        for reg_id, new_reg_id in res["canonical"].items():
-            if reg_id == new_reg_id:
-                # I'm not sure if this should happen. In any case, not really actionable.
-                logger.warning("GCM: Got canonical ref but it already matches our ID %s!", reg_id)
-            elif not DeviceTokenClass._default_manager.filter(
-                token=new_reg_id, kind=DeviceTokenClass.GCM
-            ).exists():
-                # This case shouldn't happen; any time we get a canonical ref it should have been
-                # previously registered in our system.
-                #
-                # That said, recovery is easy: just update the current PDT object to use the new ID.
-                logger.warning(
-                    "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating.",
-                    new_reg_id,
-                    reg_id,
-                )
-                DeviceTokenClass._default_manager.filter(
-                    token=reg_id, kind=DeviceTokenClass.GCM
-                ).update(token=new_reg_id)
-            else:
-                # Since we know the new ID is registered in our system we can just drop the old one.
-                logger.info("GCM: Got canonical ref %s, dropping %s", new_reg_id, reg_id)
+    successfully_sent_count = 0
+    for idx, response in enumerate(batch_response.responses):
+        # We enumerate to have idx to track which token the response
+        # corresponds to. send_each() preserves the order of the messages,
+        # so this works.
 
+        token = token_list[idx]
+        if response.success:
+            successfully_sent_count += 1
+            logger.info("FCM: Sent message with ID: %s to %s", response.message_id, token)
+        else:
+            error = response.exception
+            if isinstance(error, FCMUnregisteredError):
+                logger.info("FCM: Removing %s due to %s", token, error.code)
+
+                # We remove all entries for this token (There
+                # could be multiple for different Zulip servers).
                 DeviceTokenClass._default_manager.filter(
-                    token=reg_id, kind=DeviceTokenClass.GCM
+                    token=token, kind=DeviceTokenClass.FCM
                 ).delete()
-
-    if "errors" in res:
-        for error, reg_ids in res["errors"].items():
-            if error in ["NotRegistered", "InvalidRegistration"]:
-                for reg_id in reg_ids:
-                    logger.info("GCM: Removing %s", reg_id)
-                    # We remove all entries for this token (There
-                    # could be multiple for different Zulip servers).
-                    DeviceTokenClass._default_manager.filter(
-                        token=reg_id, kind=DeviceTokenClass.GCM
-                    ).delete()
             else:
-                for reg_id in reg_ids:
-                    logger.warning("GCM: Delivery to %s failed: %s", reg_id, error)
+                logger.warning("FCM: Delivery failed for %s: %s:%s", token, error.__class__, error)
 
     return successfully_sent_count
-
-    # python-gcm handles retrying of the unsent messages.
-    # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
 
 
 #
@@ -579,7 +544,7 @@ def uses_notification_bouncer() -> bool:
 
 
 def sends_notifications_directly() -> bool:
-    return has_apns_credentials() and has_gcm_credentials() and not uses_notification_bouncer()
+    return has_apns_credentials() and has_fcm_credentials() and not uses_notification_bouncer()
 
 
 def send_notifications_to_bouncer(
@@ -640,7 +605,7 @@ def send_notifications_to_bouncer(
             sorted(apple_deleted_devices),
         )
         PushDeviceToken.objects.filter(
-            kind=PushDeviceToken.GCM, token__in=android_deleted_devices
+            kind=PushDeviceToken.FCM, token__in=android_deleted_devices
         ).delete()
         PushDeviceToken.objects.filter(
             kind=PushDeviceToken.APNS, token__in=apple_deleted_devices
@@ -806,13 +771,13 @@ def push_notifications_configured() -> bool:
         # works -- e.g., that we have ever successfully sent to the bouncer --
         # but this is a good start.
         return True
-    if settings.DEVELOPMENT and (has_apns_credentials() or has_gcm_credentials()):  # nocoverage
+    if settings.DEVELOPMENT and (has_apns_credentials() or has_fcm_credentials()):  # nocoverage
         # Since much of the notifications logic is platform-specific, the mobile
         # developers often work on just one platform at a time, so we should
         # only require one to be configured.
         return True
-    elif has_apns_credentials() and has_gcm_credentials():  # nocoverage
-        # We have the needed configuration to send through APNs and GCM directly
+    elif has_apns_credentials() and has_fcm_credentials():  # nocoverage
+        # We have the needed configuration to send through APNs and FCM directly
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
     return False
@@ -922,11 +887,60 @@ def get_mobile_push_content(rendered_content: str) -> str:
             plain_text += elem.tail or ""
         return plain_text
 
+    def is_user_said_paragraph(element: lxml.html.HtmlElement) -> bool:
+        # The user said paragraph has these exact elements:
+        # 1. A user mention
+        # 2. A same server message link ("said")
+        # 3. A colon (:)
+        user_mention_elements = element.find_class("user-mention")
+        if len(user_mention_elements) != 1:
+            return False
+
+        message_link_elements = []
+        anchor_elements = element.cssselect("a[href]")
+        for elem in anchor_elements:
+            href = elem.get("href")
+            if is_same_server_message_link(href):
+                message_link_elements.append(elem)
+
+        if len(message_link_elements) != 1:
+            return False
+
+        remaining_text = (
+            element.text_content()
+            .replace(user_mention_elements[0].text_content(), "")
+            .replace(message_link_elements[0].text_content(), "")
+        )
+        return remaining_text.strip() == ":"
+
+    def get_collapsible_status_array(elements: List[lxml.html.HtmlElement]) -> List[bool]:
+        collapsible_status: List[bool] = [
+            element.tag == "blockquote" or is_user_said_paragraph(element) for element in elements
+        ]
+        return collapsible_status
+
+    def potentially_collapse_quotes(element: lxml.html.HtmlElement) -> None:
+        children = element.getchildren()
+        collapsible_status = get_collapsible_status_array(children)
+
+        if all(collapsible_status) or all(not x for x in collapsible_status):
+            return
+
+        collapse_element = lxml.html.Element("p")
+        collapse_element.text = "[…]"
+        for index, child in enumerate(children):
+            if collapsible_status[index]:
+                if index > 0 and collapsible_status[index - 1]:
+                    child.drop_tree()
+                else:
+                    child.getparent().replace(child, collapse_element)
+
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
         return _("New message")
 
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     change_katex_to_raw_latex(elem)
+    potentially_collapse_quotes(elem)
     plain_text = process(elem)
     return plain_text
 
@@ -1069,7 +1083,7 @@ def get_apns_badge_count_future(
     # we expect to use this once we resolve client-side bugs.
     return (
         UserMessage.objects.filter(user_profile=user_profile)
-        .extra(where=[UserMessage.where_active_push_notification()])
+        .extra(where=[UserMessage.where_active_push_notification()])  # noqa: S610
         .exclude(
             # If we've just marked some messages as read, they're still
             # marked as having active notifications; we'll clear that flag
@@ -1122,7 +1136,7 @@ def get_message_payload_gcm(
     mentioned_user_group_name: Optional[str] = None,
     can_access_sender: bool = True,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """A `message` payload + options, for Android via GCM/FCM."""
+    """A `message` payload + options, for Android via FCM."""
     data = get_message_payload(
         user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
     )
@@ -1157,7 +1171,7 @@ def get_remove_payload_gcm(
     user_profile: UserProfile,
     message_ids: List[int],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """A `remove` payload + options, for Android via GCM/FCM."""
+    """A `remove` payload + options, for Android via FCM."""
     gcm_payload = get_base_payload(user_profile)
     gcm_payload.update(
         event="remove",
@@ -1227,7 +1241,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM).order_by("id")
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM).order_by("id")
     )
     apple_devices = list(
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
@@ -1397,7 +1411,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM).order_by("id")
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM).order_by("id")
     )
 
     apple_devices = list(
@@ -1443,19 +1457,20 @@ def send_test_push_notification_directly_to_devices(
     payload["event"] = "test"
 
     apple_devices = [device for device in devices if device.kind == PushDeviceToken.APNS]
-    android_devices = [device for device in devices if device.kind == PushDeviceToken.GCM]
+    android_devices = [device for device in devices if device.kind == PushDeviceToken.FCM]
     # Let's make the payloads separate objects to make sure mutating to make e.g. Android
     # adjustments doesn't affect the Apple payload and vice versa.
     apple_payload = copy.deepcopy(payload)
     android_payload = copy.deepcopy(payload)
 
-    realm_uri = base_payload["realm_uri"]
+    # TODO/compatibility: Backwards-compatibility name for realm_url.
+    realm_url = base_payload.get("realm_url", base_payload["realm_uri"])
     realm_name = base_payload["realm_name"]
     apns_data = {
         "alert": {
             "title": _("Test notification"),
-            "body": _("This is a test notification from {realm_name} ({realm_uri}).").format(
-                realm_name=realm_name, realm_uri=realm_uri
+            "body": _("This is a test notification from {realm_name} ({realm_url}).").format(
+                realm_name=realm_name, realm_url=realm_url
             ),
         },
         "sound": "default",

@@ -4,9 +4,13 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const blueslip = require("./lib/zblueslip");
 
 const unread = mock_esm("../src/unread");
 
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 mock_esm("../src/user_status", {
     get_status_emoji: () => ({
         emoji_code: "20",
@@ -212,6 +216,14 @@ test("get_active_user_ids_string", () => {
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     set_pm_with_filter("bob@zulip.com,alice@zulip.com");
+    assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
+
+    blueslip.expect("warn", "Unknown emails");
+    set_pm_with_filter("invalid@zulip.com");
+    assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
+    blueslip.reset();
+
+    set_pm_with_filter("bob@zulip.com,alice@zulip.com,me@zulip.com");
     assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
 });
 

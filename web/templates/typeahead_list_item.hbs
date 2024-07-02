@@ -4,7 +4,6 @@
     {{else}}
         <span class='emoji emoji-{{ emoji_code }}'></span>
     {{/if}}
-    &nbsp;&nbsp;
 {{else if is_person}}
     {{#if user_circle_class}}
     <span class="{{user_circle_class}} user_circle"></span>
@@ -17,30 +16,31 @@
 {{else if is_user_group}}
     <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>
 {{/if}}
-<strong>
-    {{~#if stream}}
-        {{> inline_decorated_stream_name stream=stream }}
-    {{else}}
-        {{~ primary ~}}
+{{!-- Separate container to ensure overflowing text remains in this container. --}}
+<div class="typeahead-text-container">
+    <strong class="typeahead-strong-section">
+        {{~#if stream~}}
+            {{~> inline_decorated_stream_name stream=stream ~}}
+            {{~else~}}
+            {{~ primary ~}}
+        {{~/if~}}
+    </strong>
+    {{~#if has_pronouns}}
+        <span class="pronouns">({{pronouns}})</span>
+    {{~/if}}
+    {{~#if should_add_guest_user_indicator}}
+        <i>({{t 'guest'}})</i>
+    {{~/if}}
+    {{~#if has_status}}
+    {{> status_emoji status_emoji_info}}
+    {{~/if}}
+    {{~#if has_secondary}}
+    <small class="autocomplete_secondary">
+        {{~ secondary ~}}
+    </small>
+    {{#if is_unsubscribed}}
+    <span class="fa fa-exclamation-triangle unsubscribed_icon"
+      title="{{t 'You are not currently subscribed to this channel.' }}"></span>
     {{/if}}
-</strong>
-{{~#if has_pronouns}}
-    <span class="pronouns">({{pronouns}})</span>
-{{~/if}}
-{{~#if should_add_guest_user_indicator}}
-    <i>({{t 'guest'}})</i>
-{{~/if}}
-{{~#if has_status}}
-{{> status_emoji status_emoji_info}}
-{{~/if}}
-{{~#if has_secondary}}
-&nbsp;&nbsp;
-<small class="autocomplete_secondary">
-    {{~ secondary ~}}
-</small>
-{{#if is_unsubscribed}}
-&nbsp;
-<span class="fa fa-exclamation-triangle unsubscribed_icon"
-  title="{{t 'You are not currently subscribed to this channel.' }}"></span>
-{{/if}}
-{{~/if}}
+    {{~/if}}
+</div>

@@ -87,10 +87,14 @@ export function create_ajax_request(
             $(form_error).hide();
             $(form_success).show();
             if (["autopay", "invoice"].includes(form_name)) {
-                if ("pushState" in history) {
-                    history.pushState("", document.title, location.pathname + location.search);
+                if ("pushState" in window.history) {
+                    window.history.pushState(
+                        "",
+                        document.title,
+                        window.location.pathname + window.location.search,
+                    );
                 } else {
-                    location.hash = "";
+                    window.location.hash = "";
                 }
             }
             success_callback(response);
@@ -157,8 +161,8 @@ export function update_discount_details(
     $("#sponsorship-discount-details").text(discount_notice);
 }
 
-export function is_valid_input(elem: JQuery<HTMLFormElement>): boolean {
-    return elem[0].checkValidity();
+export function is_valid_input($elem: JQuery<HTMLFormElement>): boolean {
+    return $elem[0]!.checkValidity();
 }
 
 export function redirect_to_billing_with_successful_upgrade(billing_base_url: string): void {

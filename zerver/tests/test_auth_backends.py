@@ -92,8 +92,8 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
     use_s3_backend,
 )
+from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.types import Validator
-from zerver.lib.upload.base import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.users import get_all_api_keys, get_api_key, get_users_for_api
 from zerver.lib.utils import assert_is_not_none
@@ -214,7 +214,12 @@ class AuthBackendTest(ZulipTestCase):
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated realm
-        do_deactivate_realm(user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
         result = backend.authenticate(**good_kwargs)
 
         self.assertIsNone(result)
@@ -1220,7 +1225,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         result = self.social_auth_test(account_data_dict, subdomain="nonexistent")
-        self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
+        self.assert_in_response("There is no Zulip organization at", result)
         self.assertEqual(result.status_code, 404)
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
@@ -1542,7 +1547,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
         iago = self.example_user("iago")
         with self.captureOnCommitCallbacks(execute=True):
-            do_invite_users(iago, [email], [], invite_expires_in_minutes=2 * 24 * 60)
+            do_invite_users(
+                iago,
+                [email],
+                [],
+                include_realm_default_subscriptions=True,
+                invite_expires_in_minutes=2 * 24 * 60,
+            )
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1889,6 +1900,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
                 iago,
                 [email],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
                 invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
             )
@@ -4702,7 +4714,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
         # Now confirm an invitation link works
         referrer = self.example_user("hamlet")
-        multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
+        multiuse_obj = MultiuseInvite.objects.create(
+            realm=realm, referred_by=referrer, include_realm_default_subscriptions=False
+        )
         multiuse_obj.streams.set(streams)
         validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
@@ -4980,7 +4994,12 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Account is deactivated", 401)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            self.user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
@@ -5042,7 +5061,12 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Account is deactivated", 401)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            self.user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         self.assert_json_error_contains(result, "This organization has been deactivated", 401)
 
@@ -6334,7 +6358,12 @@ class TestLDAP(ZulipLDAPTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = "nonexisting@zulip.com"
-            do_deactivate_realm(backend._realm, acting_user=None)
+            do_deactivate_realm(
+                backend._realm,
+                acting_user=None,
+                deactivation_reason="owner_request",
+                email_owners=False,
+            )
             with self.assertRaisesRegex(Exception, "Realm has been deactivated"):
                 backend.get_or_build_user(email, _LDAPUser())
 
@@ -7455,7 +7484,12 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
 
     def test_inactive_realm_failure(self) -> None:
         payload = {"email": self.email}
-        do_deactivate_realm(self.user_profile.realm, acting_user=None)
+        do_deactivate_realm(
+            self.user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]

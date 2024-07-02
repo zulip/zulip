@@ -491,7 +491,6 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"], display_name="Zabbix"),
-    WebhookIntegration("gci", ["misc"], display_name="Google Code-in", stream_name="gci"),
 ]
 
 INTEGRATIONS: Dict[str, Integration] = {
@@ -750,7 +749,6 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "freshping": [ScreenshotConfig("freshping_check_unreachable.json")],
     "freshstatus": [ScreenshotConfig("freshstatus_incident_open.json")],
     "front": [ScreenshotConfig("inbound_message.json")],
-    "gci": [ScreenshotConfig("task_abandoned_by_student.json")],
     "gitea": [ScreenshotConfig("pull_request__merged.json")],
     "github": [ScreenshotConfig("push__1_commit.json")],
     "githubsponsors": [ScreenshotConfig("created.json")],
@@ -758,7 +756,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "gocd": [ScreenshotConfig("pipeline.json")],
     "gogs": [ScreenshotConfig("pull_request__opened.json")],
     "gosquared": [ScreenshotConfig("traffic_spike.json", image_name="000.png")],
-    "grafana": [ScreenshotConfig("alert.json")],
+    "grafana": [ScreenshotConfig("alert_values_v11.json")],
     "greenhouse": [ScreenshotConfig("candidate_stage_change.json", image_name="000.png")],
     "groove": [ScreenshotConfig("ticket_started.json")],
     "harbor": [ScreenshotConfig("scanning_completed.json")],

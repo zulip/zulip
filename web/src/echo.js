@@ -194,12 +194,12 @@ export function insert_local_message(message_request, local_id_float, insert_new
         message.topic_links = markdown.get_topic_links(message.topic);
     }
 
-    waiting_for_id.set(message.local_id, message);
-    waiting_for_ack.set(message.local_id, message);
-
     message.display_recipient = build_display_recipient(message);
 
-    insert_new_messages([message], true);
+    [message] = insert_new_messages([message], true);
+
+    waiting_for_id.set(message.local_id, message);
+    waiting_for_ack.set(message.local_id, message);
 
     return message;
 }
@@ -240,14 +240,14 @@ export function try_deliver_locally(message_request, insert_new_messages) {
     }
 
     // Now that we've committed to delivering the message locally, we
-    // shrink the compose-box if it is in the full-screen state. This
+    // shrink the compose-box if it is in an expanded state. This
     // would have happened anyway in clear_compose_box, however, we
     // need to this operation before inserting the local message into
     // the feed. Otherwise, the out-of-view notification will be
     // always triggered on the top of compose-box, regardless of
     // whether the message would be visible after shrinking compose,
-    // because compose occludes the whole screen.
-    if (compose_ui.is_full_size()) {
+    // because compose occludes the whole screen in full size state.
+    if (compose_ui.is_expanded()) {
         compose_ui.make_compose_box_original_size();
     }
 

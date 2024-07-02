@@ -44,7 +44,7 @@ EXTERNAL_HOST = "zulip.example.com"
 ## representing the host/domain names that your users can enter in
 ## their browsers to access Zulip.  This is a security measure; for
 ## details, see the Django documentation:
-## https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts
+## https://docs.djangoproject.com/en/5.0/ref/settings/#allowed-hosts
 ##
 ## Zulip automatically adds to this list "localhost", "127.0.0.1", and
 ## patterns representing EXTERNAL_HOST and subdomains of it.  If you are
@@ -606,6 +606,8 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## optionally RABBITMQ_PORT, to the hostname and port here.
 # RABBITMQ_HOST = "127.0.0.1"
 # RABBITMQ_PORT = 5672
+## To use a different RabbitMQ "virtual host", adjust this.
+# RABBITMQ_VHOST = "/"
 ## To use another RabbitMQ user than the default "zulip", set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = "zulip"
 ## To access the RabbitMQ server over TLS, set this to True; this is
@@ -788,6 +790,7 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # S3_AVATAR_BUCKET = ""
 # S3_REGION = None
 # S3_ENDPOINT_URL = None
+# S3_AVATAR_PUBLIC_URL_PREFIX = None
 # S3_ADDRESSING_STYLE = "auto"
 # S3_SKIP_PROXY = True
 # S3_UPLOADS_STORAGE_CLASS = "STANDARD"

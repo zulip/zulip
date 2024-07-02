@@ -1,11 +1,11 @@
+import type {z} from "zod";
+
 import * as channel from "./channel";
+import type {StateData, muted_user_schema} from "./state_data";
 import * as timerender from "./timerender";
 import {get_time_from_date_muted} from "./util";
 
-type RawMutedUser = {
-    id: number;
-    timestamp: number;
-};
+export type RawMutedUser = z.infer<typeof muted_user_schema>;
 
 type MutedUser = {
     id: number;
@@ -81,6 +81,6 @@ export function unmute_user(user_id: number): void {
     });
 }
 
-export function initialize(params: {muted_users: RawMutedUser[]}): void {
+export function initialize(params: StateData["muted_users"]): void {
     set_muted_users(params.muted_users);
 }

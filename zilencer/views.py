@@ -5,7 +5,6 @@ from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Type, TypedDict, TypeVar, Union
 from uuid import UUID
 
-import DNS
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -18,6 +17,8 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
+from dns import resolver as dns_resolver
+from dns.exception import DNSException
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints
 from pydantic.functional_validators import AfterValidator
 from typing_extensions import Annotated
@@ -25,6 +26,7 @@ from typing_extensions import Annotated
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
     COUNT_STATS,
+    LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER,
     REMOTE_INSTALLATION_COUNT_STATS,
     do_increment_logging_stat,
 )
@@ -104,7 +106,7 @@ def validate_uuid(uuid: str) -> None:
 
 
 def validate_bouncer_token_request(token: str, kind: int) -> None:
-    if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.GCM]:
+    if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.FCM]:
         raise JsonableError(err_("Invalid token type"))
     validate_token(token, kind)
 
@@ -145,7 +147,7 @@ def register_remote_server(
         AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.API_KEY_LENGTH)),
     ] = None,
 ) -> HttpResponse:
-    # StringConstraints validated the the field lengths, but we still need to
+    # StringConstraints validated the field lengths, but we still need to
     # validate the format of these fields.
     try:
         # TODO: Ideally we'd not abuse the URL validator this way
@@ -167,22 +169,28 @@ def register_remote_server(
 
     contact_email_domain = Address(addr_spec=contact_email).domain.lower()
     if contact_email_domain == "example.com":
-        raise JsonableError(_("Invalid address."))
+        raise JsonableError(_("Invalid email address."))
 
     # Check if the domain has an MX record
+    resolver = dns_resolver.Resolver()
+    resolver.timeout = 3
+    dns_mx_check_successful = False
     try:
-        records = DNS.mxlookup(contact_email_domain)
-        dns_ms_check_successful = True
-        if not records:
-            dns_ms_check_successful = False
-    except DNS.Base.ServerError:
-        dns_ms_check_successful = False
-    if not dns_ms_check_successful:
-        raise JsonableError(
-            _("{domain} does not exist or is not configured to accept email.").format(
-                domain=contact_email_domain
+        if resolver.resolve(contact_email_domain, "MX"):
+            dns_mx_check_successful = True
+    except DNSException:
+        pass
+    if not dns_mx_check_successful:
+        # Check if the A/AAAA exist, for better error reporting
+        try:
+            resolver.resolve_name(contact_email_domain)
+            raise JsonableError(
+                _("{domain} is invalid because it does not have any MX records").format(
+                    domain=contact_email_domain
+                )
             )
-        )
+        except DNSException:
+            raise JsonableError(_("{domain} does not exist").format(domain=contact_email_domain))
 
     try:
         validate_uuid(zulip_org_id)
@@ -558,9 +566,9 @@ def remote_server_notify_push(
     android_devices = list(
         RemotePushDeviceToken.objects.filter(
             user_identity.filter_q(),
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             server=server,
-        )
+        ).order_by("id")
     )
     if android_devices and user_id is not None and user_uuid is not None:
         android_devices = delete_duplicate_registrations(
@@ -572,7 +580,7 @@ def remote_server_notify_push(
             user_identity.filter_q(),
             kind=RemotePushDeviceToken.APNS,
             server=server,
-        )
+        ).order_by("id")
     )
     if apple_devices and user_id is not None and user_uuid is not None:
         apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
@@ -647,6 +655,9 @@ def remote_server_notify_push(
     # PushBouncerSession).  The timeouts in the FCM and APNS codepaths
     # must be set accordingly; see send_android_push_notification and
     # send_apple_push_notification.
+    # TODO: This limit can be slightly exceeded now after changing the library
+    # used for sending FCM notifications. This is pending adjustment after
+    # getting some data on the behavior of the new API.
 
     gcm_payload = truncate_payload(gcm_payload)
     android_successfully_delivered = send_android_push_notification(
@@ -726,7 +737,7 @@ def get_deleted_devices(
     android_devices_we_have = RemotePushDeviceToken.objects.filter(
         user_identity.filter_q(),
         token__in=android_devices,
-        kind=RemotePushDeviceToken.GCM,
+        kind=RemotePushDeviceToken.FCM,
         server=server,
     ).values_list("token", flat=True)
     apple_devices_we_have = RemotePushDeviceToken.objects.filter(
@@ -751,9 +762,17 @@ def validate_incoming_table_data(
 ) -> None:
     last_id = get_last_id_from_server(server, model)
     for row in rows:
-        if is_count_stat and (
-            row["property"] not in COUNT_STATS
-            or row["property"] in BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES
+        # We are silent about stats not in COUNT_STATS which are
+        # in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER --
+        # these are stats we stopped recording, but old versions
+        # may still have and report.
+        if (
+            is_count_stat
+            and (
+                row["property"] not in COUNT_STATS
+                or row["property"] in BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES
+            )
+            and row["property"] not in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
         ):
             raise JsonableError(_("Invalid property {property}").format(property=row["property"]))
 
@@ -1128,6 +1147,7 @@ def remote_server_post_analytics(
     realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None,
     realms: Optional[Json[List[RealmDataForAnalytics]]] = None,
     version: Optional[Json[str]] = None,
+    merge_base: Optional[Json[str]] = None,
     api_feature_level: Optional[Json[int]] = None,
 ) -> HttpResponse:
     # Lock the server, preventing this from racing with other
@@ -1137,10 +1157,15 @@ def remote_server_post_analytics(
     remote_server_version_updated = False
     if version is not None:
         version = version[0 : RemoteZulipServer.VERSION_MAX_LENGTH]
-    if version != server.last_version or api_feature_level != server.last_api_feature_level:
+    if (
+        version != server.last_version
+        or merge_base != server.last_merge_base
+        or api_feature_level != server.last_api_feature_level
+    ):
         server.last_version = version
+        server.last_merge_base = merge_base
         server.last_api_feature_level = api_feature_level
-        server.save(update_fields=["last_version", "last_api_feature_level"])
+        server.save(update_fields=["last_version", "last_merge_base", "last_api_feature_level"])
         remote_server_version_updated = True
 
     validate_incoming_table_data(
@@ -1171,6 +1196,17 @@ def remote_server_post_analytics(
 
     realm_id_to_remote_realm = build_realm_id_to_remote_realm_dict(server, realms)
 
+    # Note that due to skipping rows from the remote server which
+    # match LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER, we may
+    # theoretically choose to omit the last RemoteRealmCount (or
+    # InstallationCount, below) row sent by the remote server, causing
+    # them to attempt to re-send that row repeatedlly.  Since the last
+    # CountStat is not currently a skipped type, this is, in practice,
+    # unlikely to occur.
+    #
+    # TODO: Record the high-water RealmCount and InstallationCount's
+    # `remote_id` values on the RemoteServer, rather than computing
+    # them via get_last_id_from_server
     remote_realm_counts = [
         RemoteRealmCount(
             remote_realm=realm_id_to_remote_realm.get(row.realm),
@@ -1183,6 +1219,7 @@ def remote_server_post_analytics(
             value=row.value,
         )
         for row in realm_counts
+        if row.property not in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
     ]
     batch_create_table_data(server, RemoteRealmCount, remote_realm_counts)
 
@@ -1196,6 +1233,7 @@ def remote_server_post_analytics(
             value=row.value,
         )
         for row in installation_counts
+        if row.property not in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
     ]
     batch_create_table_data(server, RemoteInstallationCount, remote_installation_counts)
 

@@ -148,7 +148,7 @@ export const update_elements = ($content: JQuery): void => {
                 //
                 // In these cases, the best we can do is leave the
                 // existing name in the existing mention pill
-                // HTML. Clicking on the pill will show the the
+                // HTML. Clicking on the pill will show the
                 // "Unknown user" popover.
                 if (person === undefined) {
                     people.add_inaccessible_user(user_id);
@@ -274,7 +274,7 @@ export const update_elements = ($content: JQuery): void => {
     });
 
     // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,
-    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.js`.
+    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.ts`.
     $content.find("div.codehilite").each(function (): void {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
@@ -296,7 +296,11 @@ export const update_elements = ($content: JQuery): void => {
             // popover listing the options.
             let title = $t({defaultMessage: "View in playground"});
             const $view_in_playground_button = $buttonContainer.find(".code_external_link");
-            if (playground_info && playground_info.length === 1) {
+            if (
+                playground_info &&
+                playground_info.length === 1 &&
+                playground_info[0] !== undefined
+            ) {
                 title = $t(
                     {defaultMessage: "View in {playground_name}"},
                     {playground_name: playground_info[0].name},
@@ -308,7 +312,7 @@ export const update_elements = ($content: JQuery): void => {
             $view_in_playground_button.attr("aria-label", title);
         }
         const $copy_button = $buttonContainer.find(".copy_codeblock");
-        const clipboard = new ClipboardJS($copy_button[0], {
+        const clipboard = new ClipboardJS($copy_button[0]!, {
             text(copy_element) {
                 const $code = $(copy_element).parent().siblings("code");
                 return $code.text();
@@ -316,7 +320,7 @@ export const update_elements = ($content: JQuery): void => {
         });
 
         clipboard.on("success", () => {
-            show_copied_confirmation($copy_button[0]);
+            show_copied_confirmation($copy_button[0]!);
         });
         $codehilite.addClass("zulip-code-block");
     });
@@ -327,7 +331,7 @@ export const update_elements = ($content: JQuery): void => {
         $content
             .find(".emoji")
             .text(function () {
-                const text = $(this).attr("title");
+                const text = $(this).attr("title") ?? "";
                 return ":" + text + ":";
             })
             .contents()

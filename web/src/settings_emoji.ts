@@ -221,6 +221,7 @@ function show_modal(): void {
         const emoji: Record<string, string> = {};
 
         function submit_custom_emoji_request(formData: FormData): void {
+            assert(emoji.name !== undefined);
             void channel.post({
                 url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
                 data: formData,
@@ -241,6 +242,7 @@ function show_modal(): void {
         for (const obj of $("#add-custom-emoji-form").serializeArray()) {
             emoji[obj.name] = obj.value;
         }
+        assert(emoji.name !== undefined);
 
         if (emoji.name.trim() === "") {
             ui_report.client_error(
@@ -263,7 +265,7 @@ function show_modal(): void {
         }
 
         const formData = new FormData();
-        const files = $<HTMLInputElement>("input#emoji_file_input")[0].files;
+        const files = $<HTMLInputElement>("input#emoji_file_input")[0]!.files;
         assert(files !== null);
         for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);

@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import {$t, $t_html} from "./i18n";
@@ -27,12 +28,45 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
     ),
 };
 
+const MENTIONS_VIEW_EMPTY_BANNER = {
+    title: $t({defaultMessage: "This view will show messages where you are mentioned."}),
+    html: $t_html(
+        {
+            defaultMessage:
+                "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a stream. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
+        },
+        {
+            "z-link": (content_html) =>
+                `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
+                    "",
+                )}</a>`,
+        },
+    ),
+};
+
+const STARRED_MESSAGES_VIEW_EMPTY_BANNER = {
+    title: $t({defaultMessage: "You have no starred messages."}),
+    html: $t_html(
+        {
+            defaultMessage:
+                "Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <star-icon></star-icon>. <z-link>Learn more</z-link>",
+        },
+        {
+            "star-icon": () => `<i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>`,
+            "z-link": (content_html) =>
+                `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
+                    "",
+                )}</a>`,
+        },
+    ),
+};
+
 function retrieve_search_query_data(): SearchData {
     // when search bar contains multiple filters, only retrieve search queries
     const current_filter = narrow_state.filter();
     assert(current_filter !== undefined);
     const search_query = current_filter.operands("search")[0];
-    const query_words = search_query.split(" ");
+    const query_words = search_query!.split(" ");
 
     const search_string_result: SearchData = {
         query_words: [],
@@ -96,7 +130,8 @@ function pick_empty_narrow_banner(): NarrowBannerData {
         return default_banner;
     }
 
-    const first_term = current_filter.terms()[0];
+    const first_term = current_filter.terms()[0]!;
+    const current_terms_types = current_filter.sorted_term_types();
     const first_operator = first_term.operator;
     const first_operand = first_term.operand;
     const num_terms = current_filter.terms().length;
@@ -160,6 +195,26 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             return default_banner;
         }
 
+        if (
+            _.isEqual(current_terms_types, ["sender", "has-reaction"]) &&
+            current_filter.operands("sender")[0] === people.my_current_email()
+        ) {
+            return {
+                title: $t({defaultMessage: "None of your messages have emoji reactions yet."}),
+                html: $t_html(
+                    {
+                        defaultMessage: "Learn more about emoji reactions <z-link>here</z-link>.",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">${content_html.join(
+                                "",
+                            )}</a>`,
+                    },
+                ),
+            };
+        }
+
         // For other multi-operator narrows, we just use the default banner
         return {
             title: default_banner_for_multiple_filters,
@@ -170,37 +225,9 @@ function pick_empty_narrow_banner(): NarrowBannerData {
         case "is":
             switch (first_operand) {
                 case "starred":
-                    // You currently have no starred messages.
-                    return {
-                        title: $t({defaultMessage: "You have no starred messages."}),
-                        html: $t_html(
-                            {
-                                defaultMessage:
-                                    "Learn more about starring messages <z-link>here</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
-                    };
+                    return STARRED_MESSAGES_VIEW_EMPTY_BANNER;
                 case "mentioned":
-                    return {
-                        title: $t({defaultMessage: "You haven't been mentioned yet!"}),
-                        html: $t_html(
-                            {
-                                defaultMessage: "Learn more about mentions <z-link>here</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
-                    };
+                    return MENTIONS_VIEW_EMPTY_BANNER;
                 case "dm":
                     // You have no direct messages.
                     if (
@@ -238,6 +265,10 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 case "resolved":
                     return {
                         title: $t({defaultMessage: "No topics are marked as resolved."}),
+                    };
+                case "followed":
+                    return {
+                        title: $t({defaultMessage: "You aren't following any topics."}),
                     };
             }
             // fallthrough to default case if no match is found
@@ -292,7 +323,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 };
             }
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
-            assert(user_ids !== undefined);
+            assert(user_ids?.[0] !== undefined);
             if (
                 realm.realm_private_message_policy ===
                     settings_config.private_message_policy_values.disabled.code &&

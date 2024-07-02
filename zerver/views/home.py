@@ -160,7 +160,10 @@ def home(request: HttpRequest) -> HttpResponse:
         return redirect(reverse("remote_billing_legacy_server_login"))
     realm = get_realm_from_request(request)
     if realm is None:
-        return render(request, "zerver/invalid_realm.html", status=404)
+        context = {
+            "current_url": request.get_host(),
+        }
+        return render(request, "zerver/invalid_realm.html", status=404, context=context)
     if realm.allow_web_public_streams_access():
         return web_public_view(home_real)(request)
     return zulip_login_required(home_real)(request)
@@ -175,7 +178,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if banned_desktop_app:
         return render(
             request,
-            "zerver/insecure_desktop_app.html",
+            "zerver/portico_error_pages/insecure_desktop_app.html",
             context={
                 "auto_update_broken": auto_update_broken,
             },
@@ -184,7 +187,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if unsupported_browser:
         return render(
             request,
-            "zerver/unsupported_browser.html",
+            "zerver/portico_error_pages/unsupported_browser.html",
             context={
                 "browser_name": browser_name,
             },

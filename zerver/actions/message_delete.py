@@ -39,6 +39,7 @@ def check_update_first_message_id(
         property="first_message_id",
         value=stream.first_message_id,
         stream_id=stream.id,
+        name=stream.name,
     )
     send_event_on_commit(realm, stream_event, users_to_notify)
 

@@ -14,10 +14,13 @@
         display: none;
     }
 
+    /* TODO: Remove the `.navbar_title` span from the `message_view_header.hbs`
+       template. That span predates the use of flexbox, and makes it so that
+       elements like the `.narrow_description` have different line-height and
+       sizing contexts depending on whether it's a view or a narrow being shown. */
+
     .message-header-stream-settings-button,
     .navbar_title {
-        font-weight: 600;
-        font-size: 16px;
         padding: 0 2px 0 6px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -32,14 +35,14 @@
         align-items: baseline;
 
         .zulip-icon {
-            font-size: 14px;
             /* Pull the icon out of baseline alignment,
                and center with stream name. */
             align-self: center;
         }
 
         .zulip-icon-inbox {
-            font-size: 16px;
+            /* 16px at 16px em, inherited from .navbar_title */
+            font-size: 1em;
         }
 
         .fa-envelope {
@@ -61,18 +64,17 @@
 
         .fa {
             .fa-envelope {
-                font-size: 14px;
+                /* 14px at 16px em, inherited from .navbar_title */
+                font-size: 0.875em;
                 margin: 0 5px;
-            }
-
-            .fa-hashtag {
-                font-size: 1.2rem;
-                margin: 0 2px 0 5px;
             }
         }
     }
 
     .message-header-navbar-title {
+        font-weight: 600;
+        /* 16px at 14px em */
+        font-size: 1.1429em;
         /* Allow long navbar titles (e.g., stream names) to collapse. */
         flex: 0 1 auto;
         overflow: hidden;
@@ -80,32 +82,30 @@
     }
 
     .narrow_description {
-        /* the actual value of flex shrink does not matter, it is the
-           ratio of this value to other flex items that determines the
-           behavior while shrinking, here the other item has the .stream
-           class and a flex of 1, so the value here *is* the ratio, and
-           is chosen such that the narrow description shrinks to close
-           before the stream name must begin to shrink */
-        flex-shrink: 100;
+        /* Flexbox's baseline alignment is responsible for
+           matching the description's baseline to the title.
+           Here, normal just ensures a comfortable, i18n-friendly
+           line height for the description. */
+        line-height: normal;
         background: none;
-        font-size: 14px;
         color: inherit;
         font-weight: 400;
         padding-left: 10px;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-
-    /* The very last element in the navbar is the search icon, the second
-       last element is either the narrow description (for stream narrows) or
-       the "title" (for other narrows). The flex-grow property ensures these
-       elements take up the entirety of the white space, while flex-shrink
-       accommodates narrower viewports. Setting flex-basis 0 enables an
-       ellipsis to be displayed, as the 0 takes the place of the max-content
-       default that would otherwise run titles under the search box. */
-    .navbar_title,
-    .narrow_description {
+        /* The very last element in the navbar is the search icon, the second
+        last element is the narrow description (even if it is empty when a
+        channel contains no description). The flex-grow property ensures this
+        element takes up the entirety of the white space, while flex-shrink
+        accommodates narrower viewports. Setting flex-basis 0 enables an
+        ellipsis to be displayed, as the 0 takes the place of the max-content
+        default that would otherwise run titles under the search box. */
         flex: 1 1 0;
         margin: 0;
+
+        .help_link_widget,
+        .fa {
+            margin: 0;
+        }
     }
 }

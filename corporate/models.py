@@ -1,4 +1,3 @@
-from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 
@@ -27,10 +26,16 @@ class Customer(models.Model):
 
     stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending = models.BooleanField(default=False)
-    # A percentage, like 85.
-    default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)
+
+    # Discounted price for required_plan_tier in cents.
+    # We treat 0 as no discount. Not using `null` here keeps the
+    # checks simpler and avoids the cases where we forget to
+    # check for both `null` and 0.
+    monthly_discounted_price = models.IntegerField(default=0, null=False)
+    annual_discounted_price = models.IntegerField(default=0, null=False)
+
     minimum_licenses = models.PositiveIntegerField(null=True)
-    # Used for limiting a default_discount or a fixed_price
+    # Used for limiting discounted price or a fixed_price
     # to be used only for a particular CustomerPlan tier.
     required_plan_tier = models.SmallIntegerField(null=True)
     # Some non-profit organizations on manual license management pay
@@ -64,10 +69,15 @@ class Customer(models.Model):
         else:
             return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
 
-    def get_discount_for_plan_tier(self, plan_tier: int) -> Optional[Decimal]:
-        if self.required_plan_tier is None or self.required_plan_tier == plan_tier:
-            return self.default_discount
-        return None
+    def get_discounted_price_for_plan(self, plan_tier: int, schedule: int) -> Optional[int]:
+        if plan_tier != self.required_plan_tier:
+            return None
+
+        if schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
+            return self.annual_discounted_price
+
+        assert schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY
+        return self.monthly_discounted_price
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
@@ -325,8 +335,10 @@ class CustomerPlan(AbstractCustomerPlan):
     # can't be set via the self-serve billing system.
     price_per_license = models.IntegerField(null=True)
 
-    # Discount that was applied. For display purposes only.
-    discount = models.DecimalField(decimal_places=4, max_digits=6, null=True)
+    # Discount for current `billing_schedule`. For display purposes only.
+    # Explicitly set to be TextField to avoid being used in calculations.
+    # NOTE: This discount can be different for annual and monthly schedules.
+    discount = models.TextField(null=True)
 
     # Initialized with the time of plan creation. Used for calculating
     # start of next billing cycle, next invoice date etc. This value
@@ -513,7 +525,7 @@ class LicenseLedger(models.Model):
 
     event_time = models.DateTimeField()
 
-    # The number of licenses ("seats") purchased by the the organization at the time of ledger
+    # The number of licenses ("seats") purchased by the organization at the time of ledger
     # entry creation. Normally, to add a user the organization needs at least one spare license.
     # Once a license is purchased, it is valid till the end of the billing period, irrespective
     # of whether the license is used or not. So the value of licenses will never decrease for

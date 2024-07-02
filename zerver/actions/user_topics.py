@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -9,9 +10,10 @@ from zerver.lib.user_topics import (
     get_topic_mutes,
 )
 from zerver.models import Stream, UserProfile
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
+@transaction.atomic(savepoint=False)
 def bulk_do_set_user_topic_visibility_policy(
     user_profiles: List[UserProfile],
     stream: Stream,
@@ -47,7 +49,7 @@ def bulk_do_set_user_topic_visibility_policy(
             muted_topics_event = dict(
                 type="muted_topics", muted_topics=get_topic_mutes(user_profile)
             )
-            send_event(user_profile.realm, muted_topics_event, [user_profile.id])
+            send_event_on_commit(user_profile.realm, muted_topics_event, [user_profile.id])
 
         user_topic_event: Dict[str, Any] = {
             "type": "user_topic",
@@ -57,7 +59,7 @@ def bulk_do_set_user_topic_visibility_policy(
             "visibility_policy": visibility_policy,
         }
 
-        send_event(user_profile.realm, user_topic_event, [user_profile.id])
+        send_event_on_commit(user_profile.realm, user_topic_event, [user_profile.id])
 
 
 def do_set_user_topic_visibility_policy(

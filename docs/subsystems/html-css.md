@@ -46,7 +46,7 @@ styling, clean up now-unused CSS, etc., to keep things maintainable.
 
 Opt to write CSS in CSS files. Avoid using the `style=` attribute in
 HTML except for styles that are set dynamically. For example, we set
-the colors for specific streams (`{{stream_color}}`) on different
+the colors for specific channels (`{{stream_color}}`) on different
 elements dynamically, in files like `user_stream_list_item.hbs`:
 
 ```html

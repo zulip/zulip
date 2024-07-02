@@ -34,7 +34,7 @@ function _save_narrow_state(): void {
         narrow_pointer,
         narrow_offset,
     };
-    history.replaceState(narrow_data, "", window.location.href);
+    browser_history.update_current_history_state_data(narrow_data);
 }
 
 // Safari limits you to 100 replaceState calls in 30 seconds.

@@ -13,9 +13,6 @@ VENV_CACHE_PATH = "/srv/zulip-venv-cache"
 VENV_DEPENDENCIES = [
     "build-essential",
     "libffi-dev",
-    "libfreetype6-dev",  # Needed for image types with Pillow
-    "zlib1g-dev",  # Needed to handle compressed PNGs with Pillow
-    "libjpeg-dev",  # Needed to handle JPEGs with Pillow
     "libldap2-dev",
     "python3-dev",  # Needed to install typed-ast dependency of mypy
     "python3-pip",
@@ -31,13 +28,11 @@ VENV_DEPENDENCIES = [
     "pkg-config",
     "jq",  # No longer used in production (clean me up later)
     "libsasl2-dev",  # For building python-ldap from source
+    "libvips",  # For thumbnailing
 ]
 
 COMMON_YUM_VENV_DEPENDENCIES = [
     "libffi-devel",
-    "freetype-devel",
-    "zlib-devel",
-    "libjpeg-turbo-devel",
     "openldap-devel",
     "libyaml-devel",
     # Needed by python-xmlsec:
@@ -51,6 +46,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "postgresql-libs",  # libpq-dev on apt
     "openssl-devel",
     "jq",
+    "libvips",  # For thumbnailing
 ]
 
 REDHAT_VENV_DEPENDENCIES = [

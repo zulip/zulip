@@ -89,12 +89,12 @@ You can filter the messages by searching for relevant terms.
 
 > Możesz przefiltrować wiadomości poprzez wyszukiwanie.
 
-**group PM**: czat grupowy, different from _wiadomość_ since the usage
+**group DM**: czat grupowy, different from _wiadomość_ since the usage
 of _czat grupowy_ seems more common
 
 example:
 
-You can start a group PM with users in your organization.
+You can start a group DM with users in your organization.
 
 > Możesz rozpocząć czat grupowy z użytkownikami w Twojej organizacji.
 
@@ -190,21 +190,21 @@ You can pin streams in the left-side panel.
 
 > Możesz przypiąć wybrane kanały w menu kontekstowym po lewej.
 
-**private message**: prywatna wiadomość
+**direct message**: Wiadomość bezpośrednia
 
 example:
 
-You can send a private message to other users in your organization.
+You can send a direct message to other users in your organization.
 
-> Możesz wysłać prywatną wiadomość do innych użytkowników w Twojej organizacji.
+> Możesz wysłać bezpośrednią wiadomość do innych użytkowników w Twojej organizacji.
 
-**PM**: PM, translation could be confusing
+**DM**: DM, translation could be confusing
 
 example:
 
-Private messages are often abbreviated to PM.
+Direct messages are often abbreviated to DM.
 
-> Prywatne wiadomości są też nazywane PMami, od angielskiego "private message".
+> Wiadomości bezpośrednie są też nazywane DMami, od angielskiego "direct message".
 
 **private stream**: prywatny kanał
 **public stream**: publiczny kanał

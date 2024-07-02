@@ -45,7 +45,7 @@ to do the same thing. If you think the other code has actively bad
 style, fix it (in a separate commit).
 
 When in doubt, ask in
-[#development help](https://chat.zulip.org/#narrow/stream/49-development-help).
+[#development help](https://chat.zulip.org/#narrow/channel/49-development-help).
 
 ### Use the linters
 
@@ -254,7 +254,7 @@ for bar in bars:
 ...which makes a database query for every `Bar`. While this may be fast
 locally in development, it may be quite slow in production! Instead,
 tell Django's [QuerySet
-API](https://docs.djangoproject.com/en/dev/ref/models/querysets/) to
+API](https://docs.djangoproject.com/en/5.0/ref/models/querysets/) to
 _prefetch_ the data in the initial query:
 
 ```python

@@ -2,7 +2,6 @@ import base64
 import binascii
 import os
 from datetime import timedelta
-from mimetypes import guess_type
 from typing import List, Optional, Union
 from urllib.parse import quote, urlsplit
 
@@ -28,6 +27,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import zulip_redirect_to_login
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mime_types import guess_type
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.upload import (
@@ -285,9 +285,10 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
         # We do not expect clients to hit this URL when using the S3
         # backend; however, there is no reason to not serve the
         # redirect to S3 where the content lives.
-        return redirect(
-            get_public_upload_root_url() + path + "?" + request.GET.urlencode(), permanent=True
-        )
+        url = get_public_upload_root_url() + path
+        if request.GET.urlencode():
+            url += "?" + request.GET.urlencode()
+        return redirect(url, permanent=True)
 
     local_path = os.path.join(settings.LOCAL_AVATARS_DIR, path)
     assert_is_local_storage_path("avatars", local_path)

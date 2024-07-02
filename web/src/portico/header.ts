@@ -59,7 +59,7 @@ $(() => {
         $("#logout_form").trigger("submit");
     });
 
-    $(".top-menu-tab-input").on("click", function (this: HTMLElement) {
+    $(".top-menu-tab-input").on("click", function () {
         on_tab_menu_selection_change(this);
     });
 

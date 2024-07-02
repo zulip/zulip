@@ -179,7 +179,7 @@ Zulip is somewhat unusual among web apps in sending essentially all of the
 data required for the entire Zulip web app in this single request,
 which is part of why the Zulip web app loads very quickly -- one only
 needs a single round trip aside from cacheable assets (avatars, images, JS,
-CSS). Data on other users in the organization, streams, supported
+CSS). Data on other users in the organization, channels, supported
 emoji, custom profile fields, etc., is all included. The nice thing
 about this model is that essentially every UI element in the Zulip
 client can be rendered immediately without paying latency to the
@@ -211,21 +211,21 @@ typical organization but potentially multiple seconds for large open
 organizations with 10,000s of users. There is also smaller
 variability based on a individual user's personal data state,
 primarily in that having 10,000s of unread messages results in a
-somewhat expensive query to find which streams/topics those are in.
+somewhat expensive query to find which channels/topics those are in.
 
 We consider any organization having normal `page_params` fetch times
 greater than a second to be a bug, and there is ongoing work to fix that.
 
 It can help when thinking about this to imagine `page_params` as what
 in another web app would have been 25 or so HTTP GET requests, each
-fetching data of a given type (users, streams, custom emoji, etc.); in
+fetching data of a given type (users, channels, custom emoji, etc.); in
 Zulip, we just do all of those in a single API request. In the
 future, we will likely move to a design that does much of the database
 fetching work for different features in parallel to improve latency.
 
-For organizations with 10K+ users and many default streams, the
+For organizations with 10K+ users and many default channels, the
 majority of time spent constructing `page_params` is spent marshalling
-data on which users are subscribed to which streams, which is an area
+data on which users are subscribed to which channels, which is an area
 of active optimization work.
 
 ### Fetching message history
@@ -238,7 +238,7 @@ it does a large number of these requests:
 - Most of these requests are from users clicking into different views
   -- to avoid certain subtle bugs, Zulip's web app currently fetches
   content from the server even when it has the history for the
-  relevant stream/topic cached locally.
+  relevant channel/topic cached locally.
 - When a browser opens the Zulip web app, it will eventually fetch and
   cache in the browser all messages newer than the oldest unread
   message in a non-muted context. This can be in total extremely
@@ -314,7 +314,7 @@ but are also extremely cheap (~3ms).
 
 ### Other endpoints
 
-Other API actions, like subscribing to a stream, editing settings,
+Other API actions, like subscribing to a channel, editing settings,
 registering an account, etc., are vanishingly rare compared to the
 requests detailed above, fundamentally because almost nobody changes
 these things more than a few dozen times over the lifetime of their

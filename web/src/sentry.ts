@@ -1,8 +1,5 @@
 import * as Sentry from "@sentry/browser";
-import assert from "minimalistic-assert";
-
-import {page_params} from "./base_page_params";
-import {current_user, realm} from "./state_data";
+import {z} from "zod";
 
 type UserInfo = {
     id?: string;
@@ -10,13 +7,22 @@ type UserInfo = {
     role?: string;
 };
 
-const sentry_key =
-    // No parameter is the portico pages, empty string is the empty realm
-    page_params.realm_sentry_key === undefined
-        ? "www"
-        : page_params.realm_sentry_key === ""
-          ? "(root)"
-          : page_params.realm_sentry_key;
+const sentry_params_schema = z.object({
+    dsn: z.string(),
+    environment: z.string(),
+    realm_key: z.string(),
+    sample_rate: z.number(),
+    server_version: z.string(),
+    trace_rate: z.number(),
+    user: z.object({id: z.number(), role: z.string()}).optional(),
+});
+
+const sentry_params_json =
+    window.document?.querySelector("script#sentry-params")?.textContent ?? undefined;
+const sentry_params =
+    sentry_params_json === undefined
+        ? undefined
+        : sentry_params_schema.parse(JSON.parse(sentry_params_json));
 
 export function normalize_path(path: string, is_portico = false): string {
     if (path === undefined) {
@@ -39,36 +45,7 @@ export function shouldCreateSpanForRequest(url: string): boolean {
     return parsed.pathname !== "/json/events";
 }
 
-export function initialize(): void {
-    // The current_user and realm structures are not available until this is
-    // called from ui_init.initialize_everything.
-    assert(page_params.page_type === "home");
-
-    const user_role = current_user.is_owner
-        ? "Organization owner"
-        : current_user.is_admin
-          ? "Organization administrator"
-          : current_user.is_moderator
-            ? "Moderator"
-            : current_user.is_guest
-              ? "Guest"
-              : page_params.is_spectator
-                ? "Spectator"
-                : current_user.user_id
-                  ? "Member"
-                  : "Logged out";
-    const user_info: UserInfo = {realm: sentry_key, role: user_role};
-    if (current_user.user_id) {
-        user_info.id = current_user.user_id.toString();
-    }
-    Sentry.setTags({
-        user_role,
-        server_version: realm.zulip_version,
-    });
-    Sentry.setUser(user_info);
-}
-
-if (page_params.server_sentry_dsn) {
+if (sentry_params !== undefined) {
     const sample_rates = new Map([
         // This is controlled by shouldCreateSpanForRequest, above, but also put here for consistency
         ["call GET /json/events", 0],
@@ -78,8 +55,8 @@ if (page_params.server_sentry_dsn) {
     ]);
 
     Sentry.init({
-        dsn: page_params.server_sentry_dsn,
-        environment: page_params.server_sentry_environment ?? "development",
+        dsn: sentry_params.dsn,
+        environment: sentry_params.environment,
         tunnel: "/error_tracing",
 
         release: "zulip-server@" + ZULIP_VERSION,
@@ -90,25 +67,34 @@ if (page_params.server_sentry_dsn) {
                     return {
                         ...context,
                         metadata: {source: "custom"},
-                        name: normalize_path(location.pathname, sentry_key === "www"),
+                        name: normalize_path(
+                            window.location.pathname,
+                            sentry_params.realm_key === "www",
+                        ),
                     };
                 },
                 shouldCreateSpanForRequest,
             }),
         ],
-        sampleRate: page_params.server_sentry_sample_rate ?? 0,
+        sampleRate: sentry_params.sample_rate,
         tracesSampler(samplingContext) {
-            const base_rate = page_params.server_sentry_trace_rate ?? 0;
+            const base_rate = sentry_params.trace_rate;
             const name = samplingContext.transactionContext.name;
             return base_rate * (sample_rates.get(name) ?? 1);
         },
         initialScope(scope) {
+            const user_role = sentry_params.user?.role ?? "Logged out";
             const user_info: UserInfo = {
-                realm: sentry_key,
+                realm: sentry_params.realm_key,
+                role: user_role,
             };
+            if (sentry_params.user !== undefined) {
+                user_info.id = sentry_params.user.id.toString();
+            }
             scope.setTags({
-                realm: sentry_key,
-                user_role: "Browser",
+                realm: sentry_params.realm_key,
+                server_version: sentry_params.server_version,
+                user_role,
             });
             scope.setUser(user_info);
             return scope;

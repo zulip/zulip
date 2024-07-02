@@ -2,10 +2,11 @@ import os
 from typing import Any, Iterator
 
 import orjson
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from django.db.models import QuerySet
 from typing_extensions import override
 
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.markdown import render_message_markdown
 from zerver.models import Message
 
@@ -19,7 +20,7 @@ def queryset_iterator(queryset: QuerySet[Message], chunksize: int = 5000) -> Ite
         queryset = queryset.filter(id__gt=msg_id)
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """
     Render messages to a file.
     Usage: ./manage.py render_messages <destination> [--amount=10000]

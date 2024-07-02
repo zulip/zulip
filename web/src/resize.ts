@@ -16,7 +16,13 @@ function get_new_heights(): {
     buddy_list_wrapper_max_height: number;
 } {
     const viewport_height = message_viewport.height();
-    const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").outerHeight(true) ?? 0;
+
+    // If invite user link is not displayed, `.right-sidebar-shortcuts` is displayed with just
+    // margin which we don't want to consider in height calculation of buddy list.
+    let right_sidebar_shortcuts_height = 0;
+    if ($("#right-sidebar .invite-user-link").css("display") !== "none") {
+        right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").outerHeight(true) ?? 0;
+    }
 
     let stream_filters_max_height =
         viewport_height -
@@ -24,7 +30,7 @@ function get_new_heights(): {
         Number.parseInt($("#left-sidebar-navigation-area").css("marginTop"), 10) -
         Number.parseInt($("#left-sidebar-navigation-area").css("marginBottom"), 10) -
         ($("#left-sidebar-navigation-list").outerHeight(true) ?? 0) -
-        ($("#private_messages_sticky_header").outerHeight(true) ?? 0);
+        ($("#direct-messages-sticky-header").outerHeight(true) ?? 0);
 
     // Don't let us crush the stream sidebar completely out of view
     stream_filters_max_height = Math.max(80, stream_filters_max_height);
@@ -35,7 +41,7 @@ function get_new_heights(): {
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
         ($("#userlist-header").outerHeight(true) ?? 0) -
-        ($("#user_search_section").outerHeight(true) ?? 0) -
+        ($("#user_search_section:not(.notdisplayed)").outerHeight(true) ?? 0) -
         right_sidebar_shortcuts_height;
 
     const buddy_list_wrapper_max_height = Math.max(80, usable_height);
@@ -54,6 +60,10 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
         return undefined;
     }
 
+    return watch_manual_resize_for_element(box);
+}
+
+export function watch_manual_resize_for_element(box: Element): (() => void)[] {
     let height: number;
     let mousedown = false;
 
@@ -71,7 +81,7 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
             mousedown = false;
             if (height !== box.clientHeight) {
                 height = box.clientHeight;
-                autosize.destroy($(element)).height(height + "px");
+                autosize.destroy($(box)).height(height + "px");
             }
         }
     };
@@ -100,24 +110,26 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
     const compose_non_textarea_height = compose_height - compose_textarea_height;
 
     // We ensure that the last message is not overlapped by compose box.
+    // TODO: Remove subtraction of 2 when we remove the margin in #29953
     $("textarea#compose-textarea").css(
         "max-height",
         // Because <textarea> max-height includes padding, we subtract
-        // 10 for the padding and 10 for the selected message border.
-        bottom_whitespace_height - compose_non_textarea_height - 20,
+        // 10 for the padding and 2 for the margin.
+        bottom_whitespace_height - compose_non_textarea_height - 2 - 10,
     );
     $("#preview_message_area").css(
         "max-height",
-        // Because <div> max-height doesn't include padding, we only
-        // subtract 10 for the selected message border.
-        bottom_whitespace_height - compose_non_textarea_height - 10,
+        // Because <div> max-height doesn't include padding, we subtract
+        // 2 for the margin.
+        bottom_whitespace_height - compose_non_textarea_height - 2,
     );
     $("#scroll-to-bottom-button-container").css("bottom", compose_height);
+    compose_ui.autosize_textarea($("#compose-textarea"));
 }
 
 export function resize_bottom_whitespace(): void {
     const bottom_whitespace_height = get_bottom_whitespace_height();
-    $("html").css("--max-unexpanded-compose-height", `${bottom_whitespace_height}px`);
+    $("html").css("--max-unmaximized-compose-height", `${bottom_whitespace_height}px`);
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
@@ -192,7 +204,7 @@ function resize_navbar_alerts(): void {
         navbar_alerts_height + "px",
     );
 
-    // If the compose-box is in expanded state,
+    // If the compose-box is in full sized state,
     // reset its height as well.
     if (compose_ui.is_full_size()) {
         compose_ui.set_compose_box_top(true);

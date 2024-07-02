@@ -1,13 +1,14 @@
 from typing import Any
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.transfer import transfer_uploads_to_s3
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Transfer uploads to S3 """
 
     @override

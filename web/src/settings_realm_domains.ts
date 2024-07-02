@@ -114,7 +114,7 @@ export function setup_realm_domains_modal_handlers(): void {
         const domain = $widget.find(".new-realm-domain").val();
         const allow_subdomains = $widget.find<HTMLInputElement>(
             "input.new-realm-domain-allow-subdomains",
-        )[0].checked;
+        )[0]!.checked;
         const data = {
             domain,
             allow_subdomains: JSON.stringify(allow_subdomains),

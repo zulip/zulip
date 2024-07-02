@@ -319,7 +319,7 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
 
-    const all_private_messages_icon = "#show_all_private_messages";
+    const all_private_messages_icon = "#show-all-direct-messages";
     await page.waitForSelector(all_private_messages_icon, {visible: true});
     await page.click(all_private_messages_icon);
     await expect_all_direct_messages(page);
@@ -347,16 +347,16 @@ async function test_search_venice(page: Page): Promise<void> {
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
 
     await page.click("#streams_header .left-sidebar-title");
-    await page.waitForSelector(".input-append.notdisplayed");
+    await page.waitForSelector(".stream_search_section.notdisplayed");
 }
 
 async function test_stream_search_filters_stream_list(page: Page): Promise<void> {
     console.log("Filter streams using left side bar");
 
-    await page.waitForSelector(".input-append.notdisplayed"); // Stream filter box invisible initially
+    await page.waitForSelector(".stream_search_section.notdisplayed"); // Stream filter box invisible initially
     await page.click("#streams_header .left-sidebar-title");
 
-    await page.waitForSelector("#streams_list .input-append.notdisplayed", {hidden: true});
+    await page.waitForSelector("#streams_list .stream_search_section.notdisplayed", {hidden: true});
 
     // assert streams exist by waiting till they're visible
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
@@ -543,16 +543,34 @@ async function message_basic_tests(page: Page): Promise<void> {
     await common.send_multiple_messages(page, [
         {stream_name: "Verona", topic: "test", content: "verona test a"},
         {stream_name: "Verona", topic: "test", content: "verona test b"},
-        {stream_name: "Verona", topic: "other topic", content: "verona other topic c"},
-        {stream_name: "Denmark", topic: "test", content: "denmark message"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message a"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message b"},
-        {recipient: "cordelia@zulip.com", content: "direct message c"},
+        {
+            stream_name: "Verona",
+            topic: "other topic",
+            content: "verona other topic c",
+            outside_view: true,
+        },
+        {stream_name: "Denmark", topic: "test", content: "denmark message", outside_view: true},
+        {
+            recipient: "cordelia@zulip.com, hamlet@zulip.com",
+            content: "group direct message a",
+            outside_view: true,
+        },
+        {
+            recipient: "cordelia@zulip.com, hamlet@zulip.com",
+            content: "group direct message b",
+            outside_view: true,
+        },
+        {recipient: "cordelia@zulip.com", content: "direct message c", outside_view: true},
         {stream_name: "Verona", topic: "test", content: "verona test d"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message d"},
-        {recipient: "cordelia@zulip.com", content: "direct message e"},
+        {
+            recipient: "cordelia@zulip.com, hamlet@zulip.com",
+            content: "group direct message d",
+            outside_view: true,
+        },
+        {recipient: "cordelia@zulip.com", content: "direct message e", outside_view: true},
     ]);
 
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await expect_home(page);
 
     await test_navigations_from_home(page);

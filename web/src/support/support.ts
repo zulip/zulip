@@ -46,4 +46,58 @@ $(() => {
     });
 
     new ClipboardJS("a.copy-button");
+
+    $("body").on(
+        "blur",
+        "input[name='monthly_discounted_price']",
+        function (this: HTMLInputElement) {
+            const input_monthly_price = $(this).val();
+            if (!input_monthly_price) {
+                return;
+            }
+            const monthly_price = Number.parseInt(input_monthly_price, 10);
+            const $annual_price = $(this).siblings("input[name='annual_discounted_price']");
+            // Update the annual price input if it's empty
+            if (!$annual_price.val()) {
+                const data_original_monthly_price = $(this).attr("data-original-monthly-price");
+                const data_original_annual_price = $annual_price.attr("data-original-annual-price");
+                if (data_original_monthly_price && data_original_annual_price) {
+                    const original_monthly_price = Number.parseInt(data_original_monthly_price, 10);
+                    const original_annual_price = Number.parseInt(data_original_annual_price, 10);
+                    let derived_annual_price =
+                        (original_annual_price / original_monthly_price) * monthly_price;
+                    derived_annual_price = Math.round(derived_annual_price);
+                    $annual_price.val(derived_annual_price);
+                }
+            }
+        },
+    );
+
+    $("body").on(
+        "blur",
+        "input[name='annual_discounted_price']",
+        function (this: HTMLInputElement) {
+            const input_annual_price = $(this).val();
+            if (!input_annual_price) {
+                return;
+            }
+            const annual_price = Number.parseInt(input_annual_price, 10);
+            const $monthly_price = $(this).siblings("input[name='monthly_discounted_price']");
+            // Update the monthly price input if it's empty
+            if (!$monthly_price.val()) {
+                const data_original_monthly_price = $monthly_price.attr(
+                    "data-original-monthly-price",
+                );
+                const data_original_annual_price = $(this).attr("data-original-annual-price");
+                if (data_original_monthly_price && data_original_annual_price) {
+                    const original_monthly_price = Number.parseInt(data_original_monthly_price, 10);
+                    const original_annual_price = Number.parseInt(data_original_annual_price, 10);
+                    let derived_monthly_price =
+                        (original_monthly_price / original_annual_price) * annual_price;
+                    derived_monthly_price = Math.round(derived_monthly_price);
+                    $monthly_price.val(derived_monthly_price);
+                }
+            }
+        },
+    );
 });

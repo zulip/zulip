@@ -69,13 +69,6 @@ a:focus {
 p {
   margin: 0 0 10px;
 }
-.text-error {
-  color: #b94a48;
-}
-a.text-error:hover,
-a.text-error:focus {
-  color: #953b39;
-}
 h1,
 h2,
 h3,
@@ -236,9 +229,6 @@ input:focus:invalid:focus {
   background-color: transparent;
   cursor: default;
 }
-.dropdown {
-  position: relative;
-}
 .close {
   float: right;
   font-size: 20px;
@@ -262,18 +252,8 @@ button.close {
   border: 0;
   -webkit-appearance: none;
 }
-.hide {
-  display: none;
-}
-.show {
-  display: block;
-}
 @-ms-viewport {
   width: device-width;
-}
-.hidden {
-  display: none;
-  visibility: hidden;
 }
 @media (min-width: 768px) and (max-width: 979px) {
   input {

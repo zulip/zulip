@@ -8,7 +8,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
-from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import (
     internal_send_huddle_message,
@@ -43,6 +42,7 @@ from zerver.models import (
     DefaultStreamGroup,
     Message,
     NamedUserGroup,
+    OnboardingStep,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -139,18 +139,15 @@ def set_up_streams_for_new_human_user(
         streams = []
         acting_user = None
 
-    user_was_invited = prereg_user is not None and (
-        prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
-    )
-
     if add_initial_stream_subscriptions:
-        # If the Preregistration object didn't explicitly list some streams (it
-        # happens when user directly signs up without any invitation), we add the
-        # default streams for the realm. Note that we are fine with "slim" Stream
-        # objects for calling bulk_add_subscriptions and add_new_user_history,
-        # which we verify in StreamSetupTest tests that check query counts.
-        if len(streams) == 0 and not user_was_invited:
-            streams = get_slim_realm_default_streams(realm.id)
+        # If prereg_user.include_realm_default_subscriptions is true, we
+        # add the default streams for the realm to the list of streams.
+        # Note that we are fine with "slim" Stream objects for calling
+        # bulk_add_subscriptions and add_new_user_history, which we verify
+        # in StreamSetupTest tests that check query counts.
+        if prereg_user is None or prereg_user.include_realm_default_subscriptions:
+            default_streams = get_slim_realm_default_streams(realm.id)
+            streams = list(set(streams) | set(default_streams))
 
         for default_stream_group in default_stream_groups:
             default_stream_group_streams = default_stream_group.streams.all()
@@ -179,7 +176,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     Mark the very most recent messages as unread.
     """
 
-    # Find recipient ids for the the user's streams, limiting to just
+    # Find recipient ids for the user's streams, limiting to just
     # those where we can access the streams' full history.
     #
     # TODO: This will do database queries in a loop if many private
@@ -233,6 +230,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 # * Fills in some recent historical messages
 # * Notifies other users in realm and Zulip about the signup
 # * Deactivates PreregistrationUser objects
+# * Mark 'visibility_policy_banner' as read
 def process_new_human_user(
     user_profile: UserProfile,
     prereg_user: Optional[PreregistrationUser] = None,
@@ -308,6 +306,10 @@ def process_new_human_user(
     from zerver.lib.onboarding import send_initial_direct_message
 
     send_initial_direct_message(user_profile)
+
+    # The 'visibility_policy_banner' is only displayed to existing users.
+    # Mark it as read for a new user.
+    OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
 
 
 def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -> None:
@@ -517,12 +519,6 @@ def do_create_user(
             realm_creation_audit_log.acting_user = user_profile
             realm_creation_audit_log.save(update_fields=["acting_user"])
 
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
-        )
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
             billing_session.update_license_ledger_if_needed(event_time)
@@ -582,7 +578,8 @@ def do_create_user(
     if realm_creation:
         from zerver.lib.onboarding import send_initial_realm_messages
 
-        send_initial_realm_messages(realm)
+        with override_language(realm.default_language):
+            send_initial_realm_messages(realm)
 
     return user_profile
 
@@ -625,12 +622,6 @@ def do_activate_mirror_dummy_user(
             },
         )
         maybe_enqueue_audit_log_upload(user_profile.realm)
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
-        )
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
             billing_session.update_license_ledger_if_needed(event_time)
@@ -679,12 +670,6 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         )
         bot_owner_changed = True
 
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-    )
     if settings.BILLING_ENABLED:
         billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
         billing_session.update_license_ledger_if_needed(event_time)

@@ -43,7 +43,7 @@ def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
 
 
 def pop_numerals(ver: str) -> Tuple[List[int], str]:
-    match = re.search(r"^( \d+ (?: \. \d+ )* ) (.*)", ver, re.X)
+    match = re.search(r"^( \d+ (?: \. \d+ )* ) (.*)", ver, re.VERBOSE)
     if match is None:
         return [], ver
     numerals, rest = match.groups()
@@ -94,9 +94,9 @@ def version_lt(ver1: str, ver2: str) -> Optional[bool]:
 
 
 def find_mobile_os(user_agent: str) -> Optional[str]:
-    if re.search(r"\b Android \b", user_agent, re.I | re.X):
+    if re.search(r"\b Android \b", user_agent, re.IGNORECASE | re.VERBOSE):
         return "android"
-    if re.search(r"\b(?: iOS | iPhone\ OS )\b", user_agent, re.I | re.X):
+    if re.search(r"\b(?: iOS | iPhone\ OS )\b", user_agent, re.IGNORECASE | re.VERBOSE):
         return "ios"
     return None
 

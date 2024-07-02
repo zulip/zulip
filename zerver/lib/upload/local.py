@@ -9,17 +9,10 @@ from typing import IO, Any, BinaryIO, Callable, Iterator, Literal, Optional, Tup
 from django.conf import settings
 from typing_extensions import override
 
-from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.mime_types import guess_type
+from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.upload.base import (
-    MEDIUM_AVATAR_SIZE,
-    ZulipUploadBackend,
-    create_attachment,
-    resize_avatar,
-    resize_emoji,
-    resize_logo,
-    sanitize_name,
-)
+from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmEmoji, UserProfile
 
@@ -72,35 +65,28 @@ class LocalUploadBackend(ZulipUploadBackend):
         return "/user_avatars/"
 
     @override
-    def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
+    def generate_message_upload_path(self, realm_id: str, sanitized_file_name: str) -> str:
         # Split into 256 subdirectories to prevent directories from getting too big
         return "/".join(
             [
                 realm_id,
                 format(random.randint(0, 255), "x"),
                 secrets.token_urlsafe(18),
-                sanitize_name(uploaded_file_name),
+                sanitized_file_name,
             ]
         )
 
     @override
     def upload_message_attachment(
         self,
-        uploaded_file_name: str,
+        path_id: str,
         uploaded_file_size: int,
-        content_type: Optional[str],
+        content_type: str,
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
-    ) -> str:
-        if target_realm is None:
-            target_realm = user_profile.realm
-
-        path = self.generate_message_upload_path(str(target_realm.id), uploaded_file_name)
-
-        write_local_file("files", path, file_data)
-        create_attachment(uploaded_file_name, path, user_profile, target_realm, uploaded_file_size)
-        return "/user_uploads/" + path
+        target_realm: Realm,
+    ) -> None:
+        write_local_file("files", path_id, file_data)
 
     @override
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
@@ -123,70 +109,30 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        medium_suffix = "-medium" if medium else ""
-        return f"/user_avatars/{hash_key}{medium_suffix}.png"
-
-    def write_avatar_images(self, file_path: str, image_data: bytes) -> None:
-        write_local_file("avatars", file_path + ".original", image_data)
-
-        resized_data = resize_avatar(image_data)
-        write_local_file("avatars", file_path + ".png", resized_data)
-
-        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        write_local_file("avatars", file_path + "-medium.png", resized_medium)
+        return "/user_avatars/" + self.get_avatar_path(hash_key, medium)
 
     @override
-    def upload_avatar_image(
+    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+        image_data = read_local_file("avatars", file_path + ".original")
+        content_type = guess_type(file_path)[0]
+        return image_data, content_type or "application/octet-stream"
+
+    @override
+    def upload_single_avatar_image(
         self,
-        user_file: IO[bytes],
-        acting_user_profile: UserProfile,
-        target_user_profile: UserProfile,
-        content_type: Optional[str] = None,
+        file_path: str,
+        *,
+        user_profile: UserProfile,
+        image_data: bytes,
+        content_type: Optional[str],
     ) -> None:
-        file_path = user_avatar_path(target_user_profile)
-
-        image_data = user_file.read()
-        self.write_avatar_images(file_path, image_data)
+        write_local_file("avatars", file_path, image_data)
 
     @override
-    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
-        source_file_path = user_avatar_path(source_profile)
-        target_file_path = user_avatar_path(target_profile)
-
-        image_data = read_local_file("avatars", source_file_path + ".original")
-        self.write_avatar_images(target_file_path, image_data)
-
-    @override
-    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
-        file_extension = "-medium.png" if is_medium else ".png"
-        file_path = user_avatar_path(user_profile)
-
-        output_path = os.path.join(
-            assert_is_not_none(settings.LOCAL_AVATARS_DIR),
-            file_path + file_extension,
-        )
-        if os.path.isfile(output_path):
-            return
-
-        image_path = os.path.join(
-            assert_is_not_none(settings.LOCAL_AVATARS_DIR),
-            file_path + ".original",
-        )
-        with open(image_path, "rb") as f:
-            image_data = f.read()
-        if is_medium:
-            resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        else:
-            resized_avatar = resize_avatar(image_data)
-        write_local_file("avatars", file_path + file_extension, resized_avatar)
-
-    @override
-    def delete_avatar_image(self, user: UserProfile) -> None:
-        path_id = user_avatar_path(user)
-
+    def delete_avatar_image(self, path_id: str) -> None:
         delete_local_file("avatars", path_id + ".original")
-        delete_local_file("avatars", path_id + ".png")
-        delete_local_file("avatars", path_id + "-medium.png")
+        delete_local_file("avatars", self.get_avatar_path(path_id, True))
+        delete_local_file("avatars", self.get_avatar_path(path_id, False))
 
     @override
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
@@ -245,26 +191,10 @@ class LocalUploadBackend(ZulipUploadBackend):
             )
 
     @override
-    def upload_emoji_image(
-        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
-    ) -> bool:
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=user_profile.realm_id,
-            emoji_file_name=emoji_file_name,
-        )
-
-        image_data = emoji_file.read()
-        write_local_file("avatars", f"{emoji_path}.original", image_data)
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
-        write_local_file("avatars", emoji_path, resized_image_data)
-        if is_animated:
-            assert still_image_data is not None
-            still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
-                realm_id=user_profile.realm_id,
-                emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
-            )
-            write_local_file("avatars", still_path, still_image_data)
-        return is_animated
+    def upload_single_emoji_image(
+        self, path: str, content_type: Optional[str], user_profile: UserProfile, image_data: bytes
+    ) -> None:
+        write_local_file("avatars", path, image_data)
 
     @override
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:

@@ -38,6 +38,7 @@ class Recipient(models.Model):
     objects are subscribed to which Recipient objects.
     """
 
+    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, stream, huddle}

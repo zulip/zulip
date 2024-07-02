@@ -280,7 +280,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     override(
         hash_util,
         "by_conversation_and_time_url",
-        () => "https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado",
+        () => "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado",
     );
 
     override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
@@ -356,7 +356,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
-                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n" +
+                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n" +
                     "```quote\n" +
                     `${quote_text}\n` +
                     "```",
@@ -489,13 +489,13 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
 
     compose_ui.make_compose_box_full_size();
     assert.ok($("#compose").hasClass("compose-fullscreen"));
-    assert.ok(compose_ui.is_full_size());
+    assert.ok(compose_ui.is_expanded());
     assert.ok(autosize_destroyed);
     assert.ok(compose_box_top_set);
 
     compose_ui.make_compose_box_original_size();
     assert.ok(!$("#compose").hasClass("compose-fullscreen"));
-    assert.ok(!compose_ui.is_full_size());
+    assert.ok(!compose_ui.is_expanded());
     assert.ok(!compose_box_top_set);
 });
 

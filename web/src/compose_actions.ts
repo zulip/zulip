@@ -33,14 +33,14 @@ type ComposeActionsStartOpts = {
     force_close?: boolean;
     trigger?: string;
     private_message_recipient?: string;
-    message?: Message;
-    stream_id?: number;
+    message?: Message | undefined;
+    stream_id?: number | undefined;
     topic?: string;
     content?: string;
     draft_id?: string;
     skip_scrolling_selected_message?: boolean;
     is_reply?: boolean;
-    keep_composebox_empty?: boolean;
+    keep_composebox_empty?: boolean | undefined;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that
@@ -122,6 +122,7 @@ function clear_box(): void {
     compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
 
     compose_state.set_recipient_edited_manually(false);
+    compose_state.set_is_content_unedited_restored_draft(false);
     clear_textarea();
     compose_validate.check_overflow_text();
     drafts.set_compose_draft_id(undefined);
@@ -135,12 +136,24 @@ function clear_box(): void {
 
 let autosize_callback_opts: ComposeActionsStartOpts;
 export function autosize_message_content(opts: ComposeActionsStartOpts): void {
-    if (!compose_ui.is_full_size()) {
+    if (!compose_ui.is_expanded()) {
         autosize_callback_opts = opts;
+        let has_resized_once = false;
         $("textarea#compose-textarea")
             .off("autosize:resized")
-            .one("autosize:resized", () => {
-                maybe_scroll_up_selected_message(autosize_callback_opts);
+            .on("autosize:resized", (e) => {
+                if (!has_resized_once) {
+                    has_resized_once = true;
+                    maybe_scroll_up_selected_message(autosize_callback_opts);
+                }
+                const height = $(e.currentTarget).height()!;
+                const max_height = Number.parseFloat($(e.currentTarget).css("max-height"));
+                // We add 5px to account for minor differences in height detected in Chrome.
+                if (height + 5 >= max_height) {
+                    $("#compose").addClass("automatically-expanded");
+                } else {
+                    $("#compose").removeClass("automatically-expanded");
+                }
             });
         autosize($("textarea#compose-textarea"));
     }
@@ -148,7 +161,6 @@ export function autosize_message_content(opts: ComposeActionsStartOpts): void {
 
 export function expand_compose_box(): void {
     $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
-    $("#compose_close").show();
     $("#compose_controls").hide();
     $(".message_comp").show();
 }
@@ -269,6 +281,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     const subbed_streams = stream_data.subscribed_subs();
     if (
         subbed_streams.length === 1 &&
+        subbed_streams[0] !== undefined &&
         (is_clear_topic_button_triggered ||
             (opts.trigger === "compose_hotkey" && opts.message_type === "stream"))
     ) {
@@ -305,6 +318,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
 
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
+    let restoring_last_draft = false;
     if (
         compose_state.can_restore_drafts() &&
         !opts.content &&
@@ -314,6 +328,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     ) {
         const possible_last_draft = drafts.get_last_restorable_draft_based_on_compose_state();
         if (possible_last_draft !== undefined) {
+            restoring_last_draft = true;
             opts.draft_id = possible_last_draft.id;
             // Add a space at the end so that if the user starts typing
             // as soon as the composebox opens, they have a bit of separation
@@ -330,6 +345,11 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         // If we were provided with message content, we might need to
         // display that it's too long.
         compose_validate.check_overflow_text();
+    }
+    // This has to happen after we insert the content, so that the next "input" event
+    // is from user input.
+    if (restoring_last_draft) {
+        compose_state.set_is_content_unedited_restored_draft(true);
     }
 
     compose_state.set_message_type(opts.message_type);
@@ -368,7 +388,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
 
 export function cancel(): void {
     // As user closes the compose box, restore the compose box max height
-    if (compose_ui.is_full_size()) {
+    if (compose_ui.is_expanded()) {
         compose_ui.make_compose_box_original_size();
     }
 
@@ -386,7 +406,6 @@ export function cancel(): void {
         return;
     }
     hide_box();
-    $("#compose_close").hide();
     clear_box();
     compose_banner.clear_message_sent_banners();
     call_hooks(compose_cancel_hooks);
@@ -405,7 +424,7 @@ export function on_show_navigation_view(): void {
     }
 
     // Leave the compose box open if there is content or if the recipient was edited.
-    if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
+    if (compose_state.has_novel_message_content() || compose_state.is_recipient_edited_manually()) {
         return;
     }
 
@@ -425,7 +444,10 @@ export function on_topic_narrow(): void {
     if (compose_state.stream_name() !== narrow_state.stream_name()) {
         // If we changed streams, then we only leave the
         // compose box open if there is content or if the recipient was edited.
-        if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
+        if (
+            compose_state.has_novel_message_content() ||
+            compose_state.is_recipient_edited_manually()
+        ) {
             compose_fade.update_message_list();
             return;
         }
@@ -436,7 +458,7 @@ export function on_topic_narrow(): void {
     }
 
     if (
-        (compose_state.topic() && compose_state.has_message_content()) ||
+        (compose_state.topic() && compose_state.has_novel_message_content()) ||
         compose_state.is_recipient_edited_manually()
     ) {
         // If the user has written something to a different topic or edited it,
@@ -491,7 +513,7 @@ export function on_narrow(opts: NarrowActivateOpts): void {
         return;
     }
 
-    if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
+    if (compose_state.has_novel_message_content() || compose_state.is_recipient_edited_manually()) {
         compose_fade.update_message_list();
         return;
     }
@@ -516,7 +538,11 @@ export function on_narrow(opts: NarrowActivateOpts): void {
             opts.private_message_recipient
         ) {
             const emails = opts.private_message_recipient.split(",");
-            if (emails.length !== 1 || !people.get_by_email(emails[0])!.is_bot) {
+            if (
+                emails.length !== 1 ||
+                emails[0] === undefined ||
+                !people.get_by_email(emails[0])!.is_bot
+            ) {
                 // If we are navigating between direct message conversations,
                 // we want the compose box to close for non-bot users.
                 if (compose_state.composing()) {

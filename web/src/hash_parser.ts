@@ -1,6 +1,6 @@
 export function get_hash_category(hash?: string): string {
     // given "#channels/subscribed", returns "channels"
-    return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
+    return hash ? hash.replace(/^#/, "").split(/\//)[0]! : "";
 }
 
 export function get_hash_section(hash?: string): string {
@@ -12,7 +12,7 @@ export function get_hash_section(hash?: string): string {
 
     const parts = hash.replace(/\/$/, "").split(/\//);
 
-    return parts[1] || "";
+    return parts[1] ?? "";
 }
 
 function get_nth_hash_section(hash: string, n: number): string {
@@ -88,7 +88,7 @@ export function is_editing_stream(desired_stream_id: number): boolean {
 
     // if the string casted to a number is valid, and another component
     // after exists then it's a stream name/id pair.
-    const stream_id = Number.parseFloat(hash_components[1]);
+    const stream_id = Number.parseFloat(hash_components[1]!);
 
     return stream_id === desired_stream_id;
 }
@@ -109,6 +109,11 @@ export function is_subscribers_section_opened_for_stream(): boolean {
         return false;
     }
     return hash_components[3] === "subscribers";
+}
+
+export function is_in_specified_hash_category(hash_categories: string[]): boolean {
+    const main_hash = get_hash_category(window.location.hash);
+    return hash_categories.includes(main_hash);
 }
 
 export const allowed_web_public_narrows = [

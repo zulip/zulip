@@ -62,7 +62,7 @@ class IntegrationsTestCase(ZulipTestCase):
         message = (
             '"{path}" does not exist for webhook {webhook_name}.\n'
             "Consider updating zerver.lib.integrations.DOC_SCREENSHOT_CONFIG\n"
-            'and running "tools/generate-integration-docs-screenshot" to keep the screenshots up-to-date.'
+            'and running "tools/screenshots/generate-integration-docs-screenshot" to keep the screenshots up-to-date.'
         )
         for integration_name in DOC_SCREENSHOT_CONFIG:
             configs = DOC_SCREENSHOT_CONFIG[integration_name]

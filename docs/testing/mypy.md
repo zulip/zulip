@@ -120,7 +120,7 @@ We use the `mypy_django_plugin` plugin from the
 [django-stubs](https://github.com/typeddjango/django-stubs) project,
 which supports accurate type inference for classes like
 `QuerySet`. For example, `Stream.objects.filter(realm=realm)` is
-simple Django code to fetch all the streams in a realm. With this
+simple Django code to fetch all the channels in a realm. With this
 plugin, mypy will correctly determine its type is `QuerySet[Stream]`,
 aka a standard, lazily evaluated Django query object that can be
 iterated through to access `Stream` objects, without the developer

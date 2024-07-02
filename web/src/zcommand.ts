@@ -3,11 +3,11 @@ import {z} from "zod";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
-import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as markdown from "./markdown";
-import * as message_lists from "./message_lists";
+import * as settings_config from "./settings_config";
+import * as theme from "./theme";
 
 /*
 
@@ -64,21 +64,20 @@ export function tell_user(msg: string): void {
 
 export function switch_to_light_theme(): void {
     send({
-        command: "/day",
-        on_success(data) {
-            const clean_data = data_schema.parse(data);
+        command: "/light",
+        on_success(raw_data) {
+            const data = data_schema.parse(raw_data);
             requestAnimationFrame(() => {
-                dark_theme.disable();
-                message_lists.update_recipient_bar_background_color();
+                theme.set_theme_and_update(settings_config.color_scheme_values.light.code);
             });
             feedback_widget.show({
                 populate($container) {
-                    const rendered_msg = markdown.parse_non_message(clean_data.msg);
+                    const rendered_msg = markdown.parse_non_message(data.msg);
                     $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({
-                        command: "/night",
+                        command: "/dark",
                     });
                 },
                 title_text: $t({defaultMessage: "Light theme"}),
@@ -90,21 +89,20 @@ export function switch_to_light_theme(): void {
 
 export function switch_to_dark_theme(): void {
     send({
-        command: "/night",
-        on_success(data) {
-            const clean_data = data_schema.parse(data);
+        command: "/dark",
+        on_success(raw_data) {
+            const data = data_schema.parse(raw_data);
             requestAnimationFrame(() => {
-                dark_theme.enable();
-                message_lists.update_recipient_bar_background_color();
+                theme.set_theme_and_update(settings_config.color_scheme_values.dark.code);
             });
             feedback_widget.show({
                 populate($container) {
-                    const rendered_msg = markdown.parse_non_message(clean_data.msg);
+                    const rendered_msg = markdown.parse_non_message(data.msg);
                     $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({
-                        command: "/day",
+                        command: "/light",
                     });
                 },
                 title_text: $t({defaultMessage: "Dark theme"}),
@@ -133,14 +131,14 @@ export function process(message_content: string): boolean {
         return true;
     }
 
-    const day_commands = ["/day", "/light"];
-    if (day_commands.includes(content)) {
+    const light_commands = ["/day", "/light"];
+    if (light_commands.includes(content)) {
         switch_to_light_theme();
         return true;
     }
 
-    const night_commands = ["/night", "/dark"];
-    if (night_commands.includes(content)) {
+    const dark_commands = ["/night", "/dark"];
+    if (dark_commands.includes(content)) {
         switch_to_dark_theme();
         return true;
     }

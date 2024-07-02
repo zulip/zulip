@@ -226,6 +226,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
     event_last_message_id = models.IntegerField(null=True)
 
     class Meta:
+        ordering = ["id"]
         indexes = [
             models.Index(
                 name="zerver_realmauditlog_realm__event_type__event_time",
@@ -239,6 +240,19 @@ class RealmAuditLog(AbstractRealmAuditLog):
                         AbstractRealmAuditLog.SUBSCRIPTION_CREATED,
                         AbstractRealmAuditLog.SUBSCRIPTION_ACTIVATED,
                         AbstractRealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+                    ]
+                ),
+            ),
+            models.Index(
+                # Used in analytics/lib/counts.py for computing active users for realm_active_humans
+                name="zerver_realmauditlog_user_activations_idx",
+                fields=["modified_user", "event_time"],
+                condition=Q(
+                    event_type__in=[
+                        AbstractRealmAuditLog.USER_CREATED,
+                        AbstractRealmAuditLog.USER_ACTIVATED,
+                        AbstractRealmAuditLog.USER_DEACTIVATED,
+                        AbstractRealmAuditLog.USER_REACTIVATED,
                     ]
                 ),
             ),

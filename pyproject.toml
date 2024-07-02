@@ -55,7 +55,6 @@ module = [
     "ahocorasick.*",
     "bitfield.*",
     "bmemcached.*",
-    "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
     "circuitbreaker.*",
     "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
@@ -66,15 +65,15 @@ module = [
     "django_scim.*",
     "DNS.*",
     "fakeldap.*",
-    "gcm.*",
+    "firebase_admin.*",
     "gitlint.*",
     "jsonref.*",
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
-    "moto.*", # https://github.com/spulec/moto/issues/4944
     "onelogin.*",
     "pyinotify.*",
     "pyoembed.*",
     "pyuca.*",
+    "pyvips.*",
     "re2.*",
     "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
     "scim2_filter_parser.attr_paths",
@@ -115,6 +114,7 @@ select = [
     "EXE", # shebang
     "F", # flakes
     "FLY", # string formatting
+    "FURB", # refurbishing
     "G", # logging format
     "I", # import sorting
     "INT", # gettext

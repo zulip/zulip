@@ -117,7 +117,7 @@ class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
             "/api/v1/typing",
             {"type": "stream", "op": "start", "stream_id": "invalid", "topic": "test"},
         )
-        self.assert_json_error(result, 'Argument "stream_id" is not valid JSON.')
+        self.assert_json_error(result, "stream_id is not valid JSON")
 
     def test_includes_stream_id_but_not_topic(self) -> None:
         sender = self.example_user("hamlet")

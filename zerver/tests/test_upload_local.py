@@ -3,13 +3,14 @@ import re
 from io import BytesIO, StringIO
 from urllib.parse import urlsplit
 
+import pyvips
 from django.conf import settings
-from PIL import Image
 
 import zerver.lib.upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, read_test_image_file
+from zerver.lib.thumbnail import DEFAULT_EMOJI_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.upload import (
     all_message_attachments,
     delete_export_tarball,
@@ -20,7 +21,6 @@ from zerver.lib.upload import (
     upload_export_tarball,
     upload_message_attachment,
 )
-from zerver.lib.upload.base import DEFAULT_EMOJI_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.upload.local import write_local_file
 from zerver.models import Attachment, RealmEmoji
 from zerver.models.realms import get_realm
@@ -164,13 +164,13 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             image_data = f.read()
 
         resized_avatar = resize_avatar(image_data)
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
+        zerver.lib.upload.ensure_avatar_image(user_profile)
         output_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + ".png")
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
 
         resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        zerver.lib.upload.ensure_avatar_image(user_profile, medium=True)
         output_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + "-medium.png")
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
@@ -229,9 +229,9 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         with open(file_path + ".original", "rb") as original_file:
             self.assertEqual(read_test_image_file("img.png"), original_file.read())
 
-        expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
-        with Image.open(file_path) as resized_image:
-            self.assertEqual(expected_size, resized_image.size)
+        resized_emoji = pyvips.Image.new_from_file(file_path)
+        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_emoji.width)
+        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_emoji.height)
 
     def test_tarball_upload_and_deletion(self) -> None:
         user_profile = self.example_user("iago")

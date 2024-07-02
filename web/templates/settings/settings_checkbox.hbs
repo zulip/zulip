@@ -1,7 +1,7 @@
 {{#unless (eq render_only false)}}
 <div class="input-group {{#if is_disabled}}control-label-disabled{{/if}}">
     <label class="checkbox">
-        <input type="checkbox" class="{{setting_name}} inline-block setting-widget prop-element" name="{{setting_name}}" data-setting-widget-type="boolean"
+        <input type="checkbox" class="{{setting_name}} inline-block setting-widget {{#unless skip_prop_element}}prop-element{{/unless}}" name="{{setting_name}}" data-setting-widget-type="boolean"
           id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" {{#if is_checked}}checked="checked"{{/if}} {{#if is_disabled}}disabled{{/if}} />
         <span></span>
     </label>

@@ -2,7 +2,7 @@ import {subDays} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
@@ -154,7 +154,7 @@ export const draft_model = (function () {
     }
 
     function getDraft(id: string): LocalStorageDraft | false {
-        return get()[id] || false;
+        return get()[id] ?? false;
     }
 
     function getDraftCount(): number {
@@ -191,8 +191,9 @@ export const draft_model = (function () {
             return _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
         }
 
-        if (drafts[id]) {
-            changed = !check_if_equal(drafts[id], draft);
+        const old_draft = drafts[id];
+        if (old_draft !== undefined) {
+            changed = !check_if_equal(old_draft, draft);
             drafts[id] = draft;
             save(drafts);
         }
@@ -264,9 +265,7 @@ export function rename_stream_recipient(
     new_stream_id: number,
     new_topic: string,
 ): void {
-    const current_drafts = draft_model.get();
-    for (const draft_id of Object.keys(current_drafts)) {
-        const draft = current_drafts[draft_id];
+    for (const [draft_id, draft] of Object.entries(draft_model.get())) {
         if (draft.type !== "stream" || draft.stream_id === undefined) {
             continue;
         }
@@ -364,11 +363,11 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
 
 function draft_notify(): void {
     // Display a tooltip to notify the user about the saved draft.
-    const instance = tippy(".top_left_drafts .unread_count", {
+    const instance = tippy.default(".top_left_drafts .unread_count", {
         content: $t({defaultMessage: "Saved as draft"}),
         arrow: true,
         placement: "right",
-    })[0];
+    })[0]!;
     instance.show();
     function remove_instance(): void {
         instance.destroy();
@@ -537,8 +536,7 @@ export function get_last_restorable_draft_based_on_compose_state():
     );
     return drafts_for_compose_state
         .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
-        .filter((draft) => !draft.is_sending_saving && draft.drafts_version >= 1)
-        .pop();
+        .findLast((draft) => !draft.is_sending_saving && draft.drafts_version >= 1);
 }
 
 export function remove_old_drafts(): void {
@@ -555,7 +553,7 @@ type FormattedDraft =
     | {
           is_stream: true;
           draft_id: string;
-          stream_name?: string;
+          stream_name?: string | undefined;
           recipient_bar_color: string;
           stream_privacy_icon_color: string;
           topic: string;
@@ -655,9 +653,7 @@ export function initialize(): void {
     // refreshed in the middle of sending a message. We
     // reset the field on page reload to ensure that drafts
     // don't get stuck in that state.
-    const current_drafts = draft_model.get();
-    for (const draft_id of Object.keys(current_drafts)) {
-        const draft = current_drafts[draft_id];
+    for (const [draft_id, draft] of Object.entries(draft_model.get())) {
         if (draft.is_sending_saving) {
             draft.is_sending_saving = false;
             draft_model.editDraft(draft_id, draft);
@@ -666,6 +662,27 @@ export function initialize(): void {
 
     window.addEventListener("beforeunload", () => {
         update_draft();
+    });
+
+    // Show exact time when draft was saved in UTC format.
+    tippy.delegate("body", {
+        target: ".drafts-list .recipient_row_date",
+        appendTo: () => document.body,
+        delay: [750, 20], // LONG_HOVER_DELAY
+        onShow(instance) {
+            const $time_elem = $(instance.reference);
+            const $row = $time_elem.closest(".overlay-message-row");
+            const draft_id = $row.attr("data-draft-id");
+            assert(typeof draft_id === "string");
+            const draft = draft_model.getDraft(draft_id);
+            if (draft) {
+                const time = new Date(draft.updatedAt);
+                instance.setContent(timerender.get_full_datetime_clarification(time));
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 }
 

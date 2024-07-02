@@ -55,13 +55,10 @@ export function initialize(): void {
         },
         showErrors(error_map) {
             $("*[class$='-error']").hide();
-            for (const key in error_map) {
-                if (Object.prototype.hasOwnProperty.call(error_map, key)) {
-                    const error = error_map[key];
-                    const $error_element = $(`.${CSS.escape(key)}-error`);
-                    $error_element.text(error);
-                    $error_element.show();
-                }
+            for (const [key, error] of Object.entries(error_map)) {
+                const $error_element = $(`.${CSS.escape(key)}-error`);
+                $error_element.text(error);
+                $error_element.show();
             }
         },
     });

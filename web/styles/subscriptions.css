@@ -49,10 +49,6 @@
     white-space: normal;
 }
 
-.control-label-disabled {
-    color: hsl(0deg 0% 64%);
-}
-
 .sub_setting_checkbox {
     display: flex;
 
@@ -141,6 +137,9 @@ h4.user_group_setting_subsection_title {
     .member_list_container,
     .subscriber_list_container {
         position: relative;
+        border-bottom: 1px solid var(--color-border-table-subscriber-list);
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
         max-height: var(--stream-subscriber-list-max-height);
         overflow: auto;
         text-align: left;
@@ -186,24 +185,16 @@ h4.user_group_setting_subsection_title {
                 z-index: 1;
             }
 
-            & tbody tr:last-child td {
-                border-bottom: 1px solid hsl(0deg 0% 87%);
-
-                &:first-of-type {
-                    border-bottom-left-radius: 4px;
-                }
-
-                &:last-of-type {
-                    border-bottom-right-radius: 4px;
-                }
-            }
-
             .hidden-subscriber-email {
                 font-style: italic;
             }
 
             th.user-remove-actions {
                 min-width: 80px;
+            }
+
+            .strikethrough {
+                text-decoration: line-through;
             }
         }
     }
@@ -264,6 +255,10 @@ h4.user_group_setting_subsection_title {
 .add_subscribers_container .add_subscriber_btn_wrapper,
 .add_members_container .add_member_btn_wrapper {
     padding-left: 5px;
+}
+
+.choose-subscribers-label {
+    display: inline;
 }
 
 .remove-subscriber-form {
@@ -523,7 +518,7 @@ h4.user_group_setting_subsection_title {
     }
 
     #announce-new-stream {
-        margin: 25px auto;
+        margin: 20px auto;
 
         & div[class^="fa"] {
             margin-left: 3px;
@@ -731,6 +726,8 @@ h4.user_group_setting_subsection_title {
         }
 
         .settings-sticky-footer {
+            display: flex;
+            justify-content: space-between;
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
@@ -747,9 +744,14 @@ h4.user_group_setting_subsection_title {
             }
         }
 
-        .add_all_users_to_user_group,
+        .add_all_users_to_user_group {
+            margin-left: 10px;
+        }
+
         .add_all_users_to_stream {
             margin-left: 10px;
+            /* same bottom margin as h4.stream_setting_subsection_title */
+            margin-bottom: 5px;
         }
 
         .create_user_group_member_list_header,
@@ -1063,7 +1065,7 @@ div.settings-radio-input-parent {
     }
 
     .default-stream {
-        margin: 25px 0;
+        margin: 20px 0;
         width: fit-content;
 
         .inline {

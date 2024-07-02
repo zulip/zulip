@@ -29,7 +29,7 @@ from zerver.actions.create_user import (
     process_new_human_user,
     set_up_streams_for_new_human_user,
 )
-from zerver.actions.default_streams import do_add_default_stream
+from zerver.actions.default_streams import do_add_default_stream, do_remove_default_stream
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -46,7 +46,10 @@ from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
 from zerver.lib.create_user import create_user
-from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
+from zerver.lib.default_streams import (
+    get_default_streams_for_realm_as_dicts,
+    get_slim_realm_default_streams,
+)
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_future_email
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
@@ -64,7 +67,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import CommonPolicyEnum, InviteToRealmPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
@@ -134,6 +137,7 @@ class StreamSetupTest(ZulipTestCase):
             admin,
             [new_user_email],
             streams,
+            include_realm_default_subscriptions=False,
             invite_expires_in_minutes=1000,
         )
 
@@ -174,6 +178,7 @@ class InviteUserBase(ZulipTestCase):
         invite_expires_in_minutes: Optional[int] = INVITATION_LINK_VALIDITY_MINUTES,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
+        include_realm_default_subscriptions: bool = False,
         realm: Optional[Realm] = None,
     ) -> "TestHttpResponse":
         """
@@ -198,6 +203,9 @@ class InviteUserBase(ZulipTestCase):
                     "invite_expires_in_minutes": invite_expires_in,
                     "stream_ids": orjson.dumps(stream_ids).decode(),
                     "invite_as": invite_as,
+                    "include_realm_default_subscriptions": orjson.dumps(
+                        include_realm_default_subscriptions
+                    ).decode(),
                 },
                 subdomain=realm.string_id if realm else "zulip",
             )
@@ -792,13 +800,44 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_success(self.invite(invitee, []))
         self.assertTrue(find_key_by_email(invitee))
 
-        default_streams = get_default_streams_for_realm_as_dicts(realm.id)
+        default_streams = get_slim_realm_default_streams(realm.id)
         self.assert_length(default_streams, 3)
 
         self.submit_reg_form_for_user(invitee, "password")
-        # If no streams are provided, user is not subscribed to
-        # default streams as well.
+        # If no streams are provided, user is not subscribed to default
+        # streams as well if include_realm_default_subscriptions is False.
         self.check_user_subscribed_only_to_streams("bob", [])
+
+        verona = get_stream("Verona", realm)
+        sandbox = get_stream("sandbox", realm)
+        zulip = get_stream("Zulip", realm)
+        default_streams = get_slim_realm_default_streams(realm.id)
+        self.assert_length(default_streams, 3)
+        self.assertCountEqual(default_streams, [verona, sandbox, zulip])
+
+        # Check that user is subscribed to the streams that were set as default
+        # at the time of account creation and not at the time of inviting them.
+        invitee = self.nonreg_email("test")
+        self.assert_json_success(self.invite(invitee, [], include_realm_default_subscriptions=True))
+        self.assertTrue(find_key_by_email(invitee))
+
+        denmark = get_stream("Denmark", realm)
+        do_add_default_stream(denmark)
+        do_remove_default_stream(verona)
+        self.submit_reg_form_for_user(invitee, "password")
+        self.check_user_subscribed_only_to_streams("test", [denmark, sandbox, zulip])
+
+        default_streams = get_slim_realm_default_streams(realm.id)
+        self.assertCountEqual(default_streams, [denmark, sandbox, zulip])
+        invitee = self.nonreg_email("test1")
+        self.assert_json_success(
+            self.invite(invitee, [verona.name], include_realm_default_subscriptions=True)
+        )
+        self.assertTrue(find_key_by_email(invitee))
+        # Check that the user is subscribed to both default streams and stream
+        # passed in streams list.
+        self.submit_reg_form_for_user(invitee, "password")
+        self.check_user_subscribed_only_to_streams("test1", [denmark, sandbox, verona, zulip])
 
     def test_can_invite_others_to_realm(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
@@ -806,7 +845,7 @@ class InviteUserTest(InviteUserBase):
 
         realm = get_realm("zulip")
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_NOBODY, acting_user=None
+            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.NOBODY, acting_user=None
         )
         desdemona = self.example_user("desdemona")
         self.assertFalse(validation_func(desdemona))
@@ -819,7 +858,7 @@ class InviteUserTest(InviteUserBase):
         """
         realm = get_realm("zulip")
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_NOBODY, acting_user=None
+            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.NOBODY, acting_user=None
         )
         self.login("desdemona")
         email = "alice-test@zulip.com"
@@ -831,7 +870,7 @@ class InviteUserTest(InviteUserBase):
         )
 
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.ADMINS_ONLY, acting_user=None
         )
 
         self.login("shiva")
@@ -851,7 +890,10 @@ class InviteUserTest(InviteUserBase):
         mail.outbox = []
 
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+            realm,
+            "invite_to_realm_policy",
+            InviteToRealmPolicyEnum.MODERATORS_ONLY,
+            acting_user=None,
         )
         self.login("hamlet")
         email = "carol-test@zulip.com"
@@ -871,7 +913,7 @@ class InviteUserTest(InviteUserBase):
         mail.outbox = []
 
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.MEMBERS_ONLY, acting_user=None
         )
 
         self.login("polonius")
@@ -889,7 +931,10 @@ class InviteUserTest(InviteUserBase):
         mail.outbox = []
 
         do_set_realm_property(
-            realm, "invite_to_realm_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+            realm,
+            "invite_to_realm_policy",
+            InviteToRealmPolicyEnum.FULL_MEMBERS_ONLY,
+            acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
 
@@ -1287,7 +1332,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     def test_invite_without_permission_to_subscribe_others(self) -> None:
         realm = get_realm("zulip")
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
         )
 
         invitee = self.nonreg_email("alice")
@@ -1298,9 +1343,30 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             result, "You do not have permission to subscribe other users to channels."
         )
 
-        result = self.invite(invitee, [])
+        # User will be subscribed to default streams even when the
+        # referrer does not have permission to subscribe others.
+        result = self.invite(invitee, [], include_realm_default_subscriptions=True)
         self.assert_json_success(result)
         self.check_sent_emails([invitee])
+
+        self.submit_reg_form_for_user(invitee, "password")
+
+        default_streams = get_slim_realm_default_streams(realm.id)
+        self.assert_length(default_streams, 3)
+        self.check_user_subscribed_only_to_streams("alice", default_streams)
+        mail.outbox.pop()
+
+        invitee = self.nonreg_email("newguy")
+        # The invited user will not be subscribed to default streams as well.
+        result = self.invite(invitee, [], include_realm_default_subscriptions=False)
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+
+        self.submit_reg_form_for_user(invitee, "password")
+        default_streams = get_slim_realm_default_streams(realm.id)
+        self.assert_length(default_streams, 3)
+
+        self.check_user_subscribed_only_to_streams("newguy", [])
         mail.outbox.pop()
 
         self.login("iago")
@@ -1311,13 +1377,24 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         mail.outbox.pop()
 
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
         )
         self.login("hamlet")
         invitee = self.nonreg_email("test")
         result = self.invite(invitee, ["Denmark", "Scotland"])
         self.assert_json_success(result)
         self.check_sent_emails([invitee])
+        mail.outbox.pop()
+
+        invitee = self.nonreg_email("test1")
+        result = self.invite(invitee, [], include_realm_default_subscriptions=True)
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+
+        self.submit_reg_form_for_user(invitee, "password")
+        self.check_user_subscribed_only_to_streams(
+            "test1", get_slim_realm_default_streams(realm.id)
+        )
 
     def test_invitation_reminder_email(self) -> None:
         # All users belong to zulip realm
@@ -1490,6 +1567,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
@@ -1498,12 +1576,14 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
@@ -1515,6 +1595,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
                 lear_user,
                 ["foo@zulip.com"],
                 [],
+                include_realm_default_subscriptions=True,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
@@ -1726,37 +1807,49 @@ class InvitationsTestCase(InviteUserBase):
                 user_profile,
                 ["TestOne@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 hamlet,
                 ["TestThree@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 othello,
                 ["TestFour@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 self.mit_user("sipbtest"),
                 ["TestOne@mit.edu"],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
+
         do_create_multiuse_invite_link(
-            user_profile, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+            user_profile,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         )
         do_create_multiuse_invite_link(
-            hamlet, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+            hamlet,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         )
         self.assert_length(do_get_invites_controlled_by_user(user_profile), 6)
         self.assert_length(do_get_invites_controlled_by_user(hamlet), 2)
@@ -1786,6 +1879,7 @@ class InvitationsTestCase(InviteUserBase):
                 user_profile,
                 ["TestOne@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
@@ -1796,10 +1890,14 @@ class InvitationsTestCase(InviteUserBase):
                 user_profile,
                 ["TestTwo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_create_multiuse_invite_link(
-                othello, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+                othello,
+                PreregistrationUser.INVITE_AS["MEMBER"],
+                invite_expires_in_minutes,
+                include_realm_default_subscriptions=False,
             )
 
         prereg_user_three = PreregistrationUser(
@@ -1813,7 +1911,10 @@ class InvitationsTestCase(InviteUserBase):
         )
 
         do_create_multiuse_invite_link(
-            hamlet, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+            hamlet,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         )
 
         result = self.client_get("/json/invites")
@@ -1843,19 +1944,27 @@ class InvitationsTestCase(InviteUserBase):
                 user_profile,
                 ["TestOne@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=None,
             )
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=100 * 24 * 60,
             )
             do_create_multiuse_invite_link(
-                user_profile, PreregistrationUser.INVITE_AS["MEMBER"], None
+                user_profile,
+                PreregistrationUser.INVITE_AS["MEMBER"],
+                None,
+                include_realm_default_subscriptions=False,
             )
             do_create_multiuse_invite_link(
-                user_profile, PreregistrationUser.INVITE_AS["MEMBER"], 100
+                user_profile,
+                PreregistrationUser.INVITE_AS["MEMBER"],
+                100,
+                include_realm_default_subscriptions=False,
             )
 
         result = self.client_get("/json/invites")
@@ -2289,9 +2398,16 @@ class MultiuseInviteTest(ZulipTestCase):
         self.realm.save()
 
     def generate_multiuse_invite_link(
-        self, streams: Optional[List[Stream]] = None, date_sent: Optional[datetime] = None
+        self,
+        streams: Optional[List[Stream]] = None,
+        date_sent: Optional[datetime] = None,
+        include_realm_default_subscriptions: bool = False,
     ) -> str:
-        invite = MultiuseInvite(realm=self.realm, referred_by=self.example_user("iago"))
+        invite = MultiuseInvite(
+            realm=self.realm,
+            referred_by=self.example_user("iago"),
+            include_realm_default_subscriptions=include_realm_default_subscriptions,
+        )
         invite.save()
 
         if streams is not None:
@@ -2389,9 +2505,13 @@ class MultiuseInviteTest(ZulipTestCase):
         name1 = "newuser"
         name2 = "bob"
         name3 = "alice"
+        name4 = "test"
+        name5 = "test1"
         email1 = self.nonreg_email(name1)
         email2 = self.nonreg_email(name2)
         email3 = self.nonreg_email(name3)
+        email4 = self.nonreg_email(name4)
+        email5 = self.nonreg_email(name5)
 
         stream_names = ["Rome", "Scotland", "Venice"]
         streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
@@ -2406,11 +2526,32 @@ class MultiuseInviteTest(ZulipTestCase):
         self.check_user_subscribed_only_to_streams(name2, streams)
 
         streams = []
-        invite_link = self.generate_multiuse_invite_link(streams=streams)
+        invite_link = self.generate_multiuse_invite_link(
+            streams=streams, include_realm_default_subscriptions=True
+        )
         self.check_user_able_to_register(email3, invite_link)
-        # User is not subscribed to default streams as well.
-        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 3)
-        self.check_user_subscribed_only_to_streams(name3, [])
+        self.assert_length(get_slim_realm_default_streams(self.realm.id), 3)
+        self.check_user_subscribed_only_to_streams(
+            name3, get_slim_realm_default_streams(self.realm.id)
+        )
+
+        invite_link = self.generate_multiuse_invite_link(
+            streams=streams, include_realm_default_subscriptions=False
+        )
+        self.check_user_able_to_register(email4, invite_link)
+        self.check_user_subscribed_only_to_streams(name4, [])
+
+        default_streams = get_slim_realm_default_streams(self.realm.id)
+        self.assert_length(default_streams, 3)
+        rome = get_stream("Rome", self.realm)
+        invite_link = self.generate_multiuse_invite_link(
+            streams=[rome], include_realm_default_subscriptions=True
+        )
+        self.check_user_able_to_register(email5, invite_link)
+        rome = get_stream("Rome", self.realm)
+        self.check_user_subscribed_only_to_streams(
+            name5, [rome, default_streams[0], default_streams[1], default_streams[2]]
+        )
 
     def test_multiuse_link_different_realms(self) -> None:
         """
@@ -2468,11 +2609,54 @@ class MultiuseInviteTest(ZulipTestCase):
 
         self.login("iago")
         stream_ids = []
+        default_streams = get_slim_realm_default_streams(self.realm.id)
+        verona = get_stream("Verona", self.realm)
+        sandbox = get_stream("sandbox", self.realm)
+        zulip = get_stream("Zulip", self.realm)
+        self.assertCountEqual(default_streams, [verona, sandbox, zulip])
+
+        # Check that user is subscribed to the streams that were set as default
+        # at the time of account creation and not at the time of inviting them.
         result = self.client_post(
             "/json/invites/multiuse",
             {
                 "stream_ids": orjson.dumps(stream_ids).decode(),
                 "invite_expires_in_minutes": 2 * 24 * 60,
+                "include_realm_default_subscriptions": orjson.dumps(True).decode(),
+            },
+        )
+        invite_link = self.assert_json_success(result)["invite_link"]
+
+        denmark = get_stream("Denmark", self.realm)
+        do_add_default_stream(denmark)
+        do_remove_default_stream(verona)
+        self.check_user_able_to_register(self.nonreg_email("test1"), invite_link)
+        self.check_user_subscribed_only_to_streams("test1", [denmark, sandbox, zulip])
+
+        stream_ids = [verona.id]
+        self.login("iago")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+                "include_realm_default_subscriptions": orjson.dumps(True).decode(),
+            },
+        )
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("newguy"), invite_link)
+        default_streams = get_slim_realm_default_streams(self.realm.id)
+        self.assertCountEqual(default_streams, [denmark, sandbox, zulip])
+        self.check_user_subscribed_only_to_streams("newguy", [denmark, sandbox, verona, zulip])
+
+        self.login("iago")
+        stream_ids = []
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
             },
         )
         invite_link = self.assert_json_success(result)["invite_link"]
@@ -2490,7 +2674,7 @@ class MultiuseInviteTest(ZulipTestCase):
             realm, "create_multiuse_invite_group", members_group, acting_user=None
         )
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
         )
 
         self.login("hamlet")
@@ -2513,9 +2697,14 @@ class MultiuseInviteTest(ZulipTestCase):
             {
                 "stream_ids": orjson.dumps([]).decode(),
                 "invite_expires_in_minutes": 2 * 24 * 60,
+                "include_realm_default_subscriptions": orjson.dumps(True).decode(),
             },
         )
-        self.assert_json_success(result)
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
+        default_streams = get_slim_realm_default_streams(realm.id)
+        self.assert_length(default_streams, 3)
+        self.check_user_subscribed_only_to_streams("alice", default_streams)
 
         self.login("iago")
         result = self.client_post(
@@ -2528,7 +2717,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assert_json_success(result)
 
         do_set_realm_property(
-            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
         )
         self.login("hamlet")
         result = self.client_post(

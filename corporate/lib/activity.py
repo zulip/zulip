@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -20,10 +20,9 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
 )
-from corporate.models import Customer, CustomerPlan, LicenseLedger
+from corporate.models import CustomerPlan, LicenseLedger
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_encoding import append_url_query_string
-from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm
 from zilencer.models import (
     RemoteCustomerUserCount,
@@ -160,11 +159,12 @@ def remote_installation_support_link(hostname: str) -> Markup:
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
-def get_plan_rate_percentage(discount: Optional[Decimal]) -> str:
-    if discount is None or discount == Decimal(0):
+def get_plan_rate_percentage(discount: Optional[str]) -> str:
+    # CustomerPlan.discount is a string field that stores the discount.
+    if discount is None or discount == "0":
         return "100%"
 
-    rate = 100 - discount
+    rate = 100 - Decimal(discount)
     if rate * 100 % 100 == 0:
         precision = 0
     else:
@@ -191,17 +191,14 @@ def get_remote_activity_plan_data(
     elif remote_realm is not None:
         renewal_cents = RemoteRealmBillingSession(
             remote_realm=remote_realm
-        ).get_customer_plan_renewal_amount(plan, license_ledger)
+        ).get_annual_recurring_revenue_for_support_data(plan, license_ledger)
         current_rate = get_plan_rate_percentage(plan.discount)
     else:
         assert remote_server is not None
         renewal_cents = RemoteServerBillingSession(
             remote_server=remote_server
-        ).get_customer_plan_renewal_amount(plan, license_ledger)
+        ).get_annual_recurring_revenue_for_support_data(plan, license_ledger)
         current_rate = get_plan_rate_percentage(plan.discount)
-
-    if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-        renewal_cents *= 12
 
     return RemoteActivityPlanData(
         current_status=plan.get_plan_status_as_text(),
@@ -211,23 +208,11 @@ def get_remote_activity_plan_data(
     )
 
 
-def get_realms_with_default_discount_dict() -> Dict[str, Decimal]:
-    realms_with_default_discount: Dict[str, Any] = {}
-    customers = (
-        Customer.objects.exclude(default_discount=None)
-        .exclude(default_discount=0)
-        .exclude(realm=None)
-    )
-    for customer in customers:
-        assert customer.realm is not None
-        realms_with_default_discount[customer.realm.string_id] = assert_is_not_none(
-            customer.default_discount
-        )
-    return realms_with_default_discount
-
-
-def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverage
+def get_estimated_arr_and_rate_by_realm() -> Tuple[Dict[str, int], Dict[str, str]]:  # nocoverage
+    # NOTE: Customers without a plan might still have a discount attached to them which
+    # are not included in `plan_rate`.
     annual_revenue = {}
+    plan_rate = {}
     plans = (
         CustomerPlan.objects.filter(
             status=CustomerPlan.ACTIVE,
@@ -250,11 +235,10 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
         assert latest_ledger_entry is not None
         renewal_cents = RealmBillingSession(
             realm=plan.customer.realm
-        ).get_customer_plan_renewal_amount(plan, latest_ledger_entry)
-        if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-            renewal_cents *= 12
+        ).get_annual_recurring_revenue_for_support_data(plan, latest_ledger_entry)
         annual_revenue[plan.customer.realm.string_id] = renewal_cents
-    return annual_revenue
+        plan_rate[plan.customer.realm.string_id] = get_plan_rate_percentage(plan.discount)
+    return annual_revenue, plan_rate
 
 
 def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # nocoverage

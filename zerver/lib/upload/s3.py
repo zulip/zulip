@@ -2,7 +2,6 @@ import logging
 import os
 import secrets
 from datetime import datetime
-from mimetypes import guess_type
 from typing import IO, Any, BinaryIO, Callable, Iterator, List, Literal, Optional, Tuple
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
@@ -10,20 +9,12 @@ import boto3
 import botocore
 from botocore.client import Config
 from django.conf import settings
-from mypy_boto3_s3.service_resource import Bucket, Object
+from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import override
 
-from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.upload.base import (
-    INLINE_MIME_TYPES,
-    MEDIUM_AVATAR_SIZE,
-    ZulipUploadBackend,
-    create_attachment,
-    resize_avatar,
-    resize_emoji,
-    resize_logo,
-    sanitize_name,
-)
+from zerver.lib.mime_types import guess_type
+from zerver.lib.thumbnail import resize_avatar, resize_logo
+from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
 
 # Duration that the signed upload URLs that we redirect to when
@@ -158,6 +149,15 @@ class S3UploadBackend(ZulipUploadBackend):
         # hundreds of avatar URLs in single `GET /messages` request,
         # we instead back-compute the URL pattern here.
 
+        # The S3_AVATAR_PUBLIC_URL_PREFIX setting is used to override
+        # this prefix, for instance if a CloudFront distribution is
+        # used.
+        if settings.S3_AVATAR_PUBLIC_URL_PREFIX is not None:
+            prefix = settings.S3_AVATAR_PUBLIC_URL_PREFIX
+            if not prefix.endswith("/"):
+                prefix += "/"
+            return prefix
+
         DUMMY_KEY = "dummy_key_ignored"
 
         # We do not access self.avatar_bucket.meta.client directly,
@@ -191,43 +191,33 @@ class S3UploadBackend(ZulipUploadBackend):
         return urljoin(self.public_upload_url_base, key)
 
     @override
-    def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
+    def generate_message_upload_path(self, realm_id: str, sanitized_file_name: str) -> str:
         return "/".join(
             [
                 realm_id,
                 secrets.token_urlsafe(18),
-                sanitize_name(uploaded_file_name),
+                sanitized_file_name,
             ]
         )
 
     @override
     def upload_message_attachment(
         self,
-        uploaded_file_name: str,
+        path_id: str,
         uploaded_file_size: int,
-        content_type: Optional[str],
+        content_type: str,
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
-    ) -> str:
-        if target_realm is None:
-            target_realm = user_profile.realm
-        s3_file_name = self.generate_message_upload_path(str(target_realm.id), uploaded_file_name)
-        url = f"/user_uploads/{s3_file_name}"
-
+        target_realm: Realm,
+    ) -> None:
         upload_image_to_s3(
             self.uploads_bucket,
-            s3_file_name,
+            path_id,
             content_type,
             user_profile,
             file_data,
             settings.S3_UPLOADS_STORAGE_CLASS,
         )
-
-        create_attachment(
-            uploaded_file_name, s3_file_name, user_profile, target_realm, uploaded_file_size
-        )
-        return url
 
     @override
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
@@ -258,107 +248,48 @@ class S3UploadBackend(ZulipUploadBackend):
                         item["LastModified"],
                     )
 
-    def write_avatar_images(
+    @override
+    def get_avatar_path(self, hash_key: str, medium: bool = False) -> str:
+        # BUG: The else case should be f"{hash_key}.png".
+        # See #12852 for details on this bug and how to migrate it.
+        if medium:
+            return f"{hash_key}-medium.png"
+        else:
+            return hash_key
+
+    @override
+    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
+        return self.get_public_upload_url(self.get_avatar_path(hash_key, medium))
+
+    @override
+    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+        key = self.avatar_bucket.Object(file_path + ".original")
+        image_data = key.get()["Body"].read()
+        content_type = key.content_type
+        return image_data, content_type
+
+    @override
+    def upload_single_avatar_image(
         self,
-        s3_file_name: str,
-        target_user_profile: UserProfile,
+        file_path: str,
+        *,
+        user_profile: UserProfile,
         image_data: bytes,
         content_type: Optional[str],
     ) -> None:
         upload_image_to_s3(
             self.avatar_bucket,
-            s3_file_name + ".original",
+            file_path,
             content_type,
-            target_user_profile,
+            user_profile,
             image_data,
         )
 
-        # custom 500px wide version
-        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            s3_file_name + "-medium.png",
-            "image/png",
-            target_user_profile,
-            resized_medium,
-        )
-
-        resized_data = resize_avatar(image_data)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            s3_file_name,
-            "image/png",
-            target_user_profile,
-            resized_data,
-        )
-        # See avatar_url in avatar.py for URL.  (That code also handles the case
-        # that users use gravatar.)
-
-    def get_avatar_key(self, file_name: str) -> Object:
-        key = self.avatar_bucket.Object(file_name)
-        return key
-
     @override
-    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        medium_suffix = "-medium.png" if medium else ""
-        return self.get_public_upload_url(f"{hash_key}{medium_suffix}")
-
-    @override
-    def upload_avatar_image(
-        self,
-        user_file: IO[bytes],
-        acting_user_profile: UserProfile,
-        target_user_profile: UserProfile,
-        content_type: Optional[str] = None,
-    ) -> None:
-        if content_type is None:
-            content_type = guess_type(user_file.name)[0]
-        s3_file_name = user_avatar_path(target_user_profile)
-
-        image_data = user_file.read()
-        self.write_avatar_images(s3_file_name, target_user_profile, image_data, content_type)
-
-    @override
-    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
-        s3_source_file_name = user_avatar_path(source_profile)
-        s3_target_file_name = user_avatar_path(target_profile)
-
-        key = self.get_avatar_key(s3_source_file_name + ".original")
-        image_data = key.get()["Body"].read()
-        content_type = key.content_type
-
-        self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)
-
-    @override
-    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
-        # BUG: The else case should be user_avatar_path(user_profile) + ".png".
-        # See #12852 for details on this bug and how to migrate it.
-        file_extension = "-medium.png" if is_medium else ""
-        file_path = user_avatar_path(user_profile)
-        s3_file_name = file_path
-
-        key = self.avatar_bucket.Object(file_path + ".original")
-        image_data = key.get()["Body"].read()
-
-        if is_medium:
-            resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        else:
-            resized_avatar = resize_avatar(image_data)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            s3_file_name + file_extension,
-            "image/png",
-            user_profile,
-            resized_avatar,
-        )
-
-    @override
-    def delete_avatar_image(self, user: UserProfile) -> None:
-        path_id = user_avatar_path(user)
-
+    def delete_avatar_image(self, path_id: str) -> None:
         self.delete_file_from_s3(path_id + ".original", self.avatar_bucket)
-        self.delete_file_from_s3(path_id + "-medium.png", self.avatar_bucket)
-        self.delete_file_from_s3(path_id, self.avatar_bucket)
+        self.delete_file_from_s3(self.get_avatar_path(path_id, True), self.avatar_bucket)
+        self.delete_file_from_s3(self.get_avatar_path(path_id, False), self.avatar_bucket)
 
     @override
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
@@ -445,47 +376,16 @@ class S3UploadBackend(ZulipUploadBackend):
             return self.get_public_upload_url(emoji_path)
 
     @override
-    def upload_emoji_image(
-        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
-    ) -> bool:
-        content_type = guess_type(emoji_file_name)[0]
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=user_profile.realm_id,
-            emoji_file_name=emoji_file_name,
-        )
-
-        image_data = emoji_file.read()
+    def upload_single_emoji_image(
+        self, path: str, content_type: Optional[str], user_profile: UserProfile, image_data: bytes
+    ) -> None:
         upload_image_to_s3(
             self.avatar_bucket,
-            f"{emoji_path}.original",
+            path,
             content_type,
             user_profile,
             image_data,
         )
-
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            emoji_path,
-            content_type,
-            user_profile,
-            resized_image_data,
-        )
-        if is_animated:
-            still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
-                realm_id=user_profile.realm_id,
-                emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
-            )
-            assert still_image_data is not None
-            upload_image_to_s3(
-                self.avatar_bucket,
-                still_path,
-                "image/png",
-                user_profile,
-                still_image_data,
-            )
-
-        return is_animated
 
     @override
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:

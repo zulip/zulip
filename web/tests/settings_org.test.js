@@ -26,7 +26,6 @@ const settings_bots = zrequire("settings_bots");
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
-const dropdown_widget = zrequire("dropdown_widget");
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -100,8 +99,6 @@ function test_submit_settings_form(override, submit_form) {
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
         realm_invite_to_stream_policy: settings_config.common_policy_values.by_admins_only.code,
-        realm_create_private_stream_policy: settings_config.common_policy_values.by_members.code,
-        realm_create_public_stream_policy: settings_config.common_policy_values.by_members.code,
         realm_invite_to_realm_policy: settings_config.common_policy_values.by_members.code,
     });
 
@@ -135,16 +132,6 @@ function test_submit_settings_form(override, submit_form) {
     $invite_to_stream_policy_elem.attr("id", "id_realm_invite_to_stream_policy");
     $invite_to_stream_policy_elem.data = () => "number";
 
-    const $create_public_stream_policy_elem = $("#id_realm_create_public_stream_policy");
-    $create_public_stream_policy_elem.val("2");
-    $create_public_stream_policy_elem.attr("id", "id_realm_create_public_stream_policy");
-    $create_public_stream_policy_elem.data = () => "number";
-
-    const $create_private_stream_policy_elem = $("#id_realm_create_private_stream_policy");
-    $create_private_stream_policy_elem.val("2");
-    $create_private_stream_policy_elem.attr("id", "id_realm_create_private_stream_policy");
-    $create_private_stream_policy_elem.data = () => "number";
-
     const $add_custom_emoji_policy_elem = $("#id_realm_add_custom_emoji_policy");
     $add_custom_emoji_policy_elem.val("1");
     $add_custom_emoji_policy_elem.attr("id", "id_realm_add_custom_emoji_policy");
@@ -164,8 +151,6 @@ function test_submit_settings_form(override, submit_form) {
     $subsection_elem.set_find_results(".prop-element", [
         $bot_creation_policy_elem,
         $add_custom_emoji_policy_elem,
-        $create_public_stream_policy_elem,
-        $create_private_stream_policy_elem,
         $invite_to_realm_policy_elem,
         $invite_to_stream_policy_elem,
     ]);
@@ -179,8 +164,6 @@ function test_submit_settings_form(override, submit_form) {
         invite_to_realm_policy: 2,
         invite_to_stream_policy: 1,
         add_custom_emoji_policy: 1,
-        create_public_stream_policy: 2,
-        create_private_stream_policy: 2,
     };
     assert.deepEqual(data, expected_value);
 
@@ -305,10 +288,17 @@ function test_extract_property_name() {
 }
 
 function test_sync_realm_settings() {
+    const $subsection_stub = $.create("org-subsection-stub");
+    $subsection_stub.set_find_results(
+        ".save-button-controls",
+        $.create("save-button-controls-stub").addClass("hide"),
+    );
+
     {
         /* Test invalid settings property sync */
         const $property_elem = $("#id_realm_invalid_settings_property");
         $property_elem.attr("id", "id_realm_invalid_settings_property");
+        $property_elem.closest = () => $subsection_stub;
         $property_elem.length = 1;
 
         blueslip.expect("error", "Element refers to unknown property");
@@ -319,6 +309,7 @@ function test_sync_realm_settings() {
         const $property_elem = $(`#id_realm_${CSS.escape(property_name)}`);
         $property_elem.length = 1;
         $property_elem.attr("id", `id_realm_${CSS.escape(property_name)}`);
+        $property_elem.closest = () => $subsection_stub;
 
         /* Each policy is initialized to 'by_members' and then all the values are tested
         in the following order - by_admins_only, by_moderators_only, by_full_members,
@@ -334,8 +325,6 @@ function test_sync_realm_settings() {
         }
     }
 
-    test_common_policy("create_private_stream_policy");
-    test_common_policy("create_public_stream_policy");
     test_common_policy("invite_to_stream_policy");
     test_common_policy("invite_to_realm_policy");
 
@@ -347,8 +336,8 @@ function test_sync_realm_settings() {
         $property_dropdown_elem.length = 1;
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
+        $property_dropdown_elem.closest = () => $subsection_stub;
 
-        realm.realm_create_public_stream_policy = 1;
         realm.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
@@ -371,6 +360,7 @@ function test_sync_realm_settings() {
         const $property_elem = $("#id_realm_org_join_restrictions");
         $property_elem.length = 1;
         $property_elem.attr("id", "id_realm_org_join_restrictions");
+        $property_elem.closest = () => $subsection_stub;
 
         realm.realm_emails_restricted_to_domains = true;
         realm.realm_disallow_disposable_email_addresses = false;
@@ -386,6 +376,27 @@ function test_sync_realm_settings() {
         realm.realm_disallow_disposable_email_addresses = false;
         settings_org.sync_realm_settings("emails_restricted_to_domains");
         assert.equal($("#id_realm_org_join_restrictions").val(), "no_restriction");
+    }
+
+    {
+        // Test hiding save-discard buttons on live-updating.
+        const $property_elem = $("#id_realm_invite_to_realm_policy");
+        $property_elem.length = 1;
+        $property_elem.attr("id", "id_realm_invite_to_realm_policy");
+        $property_elem.closest = () => $subsection_stub;
+
+        const save_button_stubs = createSaveButtons("subsection-stub");
+        $subsection_stub.set_find_results(
+            ".save-button-controls",
+            save_button_stubs.$save_button_controls,
+        );
+        $property_elem.val(settings_config.common_policy_values.by_admins_only.code);
+        realm.realm_invite_to_realm_policy = settings_config.common_policy_values.by_members.code;
+        save_button_stubs.$save_button_controls.removeClass("hide");
+        $subsection_stub.set_find_results(".prop-element", [$property_elem]);
+
+        settings_org.sync_realm_settings("invite_to_realm_policy");
+        assert.equal(save_button_stubs.props.hidden, true);
     }
 }
 
@@ -464,15 +475,20 @@ function test_discard_changes_button(discard_changes) {
     );
 
     const $discard_button_parent = $(".settings-subsection-parent");
-    $discard_button_parent.find = () => [
+    $discard_button_parent.set_find_results(".prop-element", [
         $allow_edit_history,
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
         $edit_topic_policy,
-    ];
+    ]);
 
-    const {$discard_button, props} = createSaveButtons("msg-editing");
-    $discard_button.closest = (selector) => $(selector);
+    const {$discard_button, $save_button_controls, props} = createSaveButtons("msg-editing");
+    $discard_button.closest = (selector) => {
+        assert.equal(selector, ".settings-subsection-parent");
+        return $discard_button_parent;
+    };
+
+    $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
 
     discard_changes(ev);
 
@@ -509,10 +525,7 @@ test("set_up", ({override, override_rewire}) => {
         upload_realm_logo_or_icon = f;
     };
 
-    override_rewire(dropdown_widget, "DropdownWidget", () => ({
-        setup: noop,
-        render: noop,
-    }));
+    override_rewire(settings_org, "init_dropdown_widgets", noop);
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
         $.create("<stub edit limit custom input parent>"),
     );

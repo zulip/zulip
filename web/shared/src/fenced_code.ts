@@ -215,9 +215,9 @@ export function process_fenced_code(content: string): string {
     consume_line = function consume_line(output_lines: string[], line: string) {
         const match = fence_re.exec(line);
         if (match) {
-            const fence = match[1];
-            const lang = match[3];
-            const header = match[5];
+            const fence = match[1]!;
+            const lang = match[3]!;
+            const header = match[5]!;
             const handler = handler_for_fence(output_lines, fence, lang, header);
             handler_stack.push(handler);
         } else {
@@ -255,7 +255,7 @@ export function get_unused_fence(content: string): string {
     let match;
     fence_length_re.lastIndex = 0;
     while ((match = fence_length_re.exec(content)) !== null) {
-        length = Math.max(length, match[1].length + 1);
+        length = Math.max(length, match[1]!.length + 1);
     }
     return "`".repeat(length);
 }

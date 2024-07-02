@@ -157,6 +157,20 @@
     color: hsl(0deg 0% 100%) !important;
 }
 
+#user-profile-modal .save-success {
+    vertical-align: top;
+    background-color: transparent;
+    border-radius: 4px;
+    margin-right: 10px;
+    color: hsl(156deg 30% 50%);
+    padding: 0.5rem 1rem;
+    line-height: 1.15;
+
+    &:not(:empty) {
+        border: 1px solid hsl(156deg 30% 50%);
+    }
+}
+
 #read_receipts_error,
 #dialog_error {
     margin-bottom: 10px;

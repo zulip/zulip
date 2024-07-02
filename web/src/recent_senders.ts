@@ -2,7 +2,6 @@ import _ from "lodash";
 
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
-import type {Message} from "./message_store";
 import * as people from "./people";
 import type {User} from "./people";
 
@@ -114,7 +113,12 @@ function add_topic_message(opts: {
     id_tracker.add(message_id);
 }
 
-export function process_stream_message(message: Message & {type: "stream"}): void {
+export function process_stream_message(message: {
+    stream_id: number;
+    topic: string;
+    sender_id: number;
+    id: number;
+}): void {
     const stream_id = message.stream_id;
     const topic = message.topic;
     const sender_id = message.sender_id;

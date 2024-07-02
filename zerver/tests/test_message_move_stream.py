@@ -10,8 +10,12 @@ from zerver.lib.message import has_message_access
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.url_encoding import near_stream_message_url
-from zerver.models import Message, Realm, Stream, UserMessage, UserProfile
-from zerver.models.realms import get_realm
+from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models.realms import (
+    EditTopicPolicyEnum,
+    MoveMessagesBetweenStreamsPolicyEnum,
+    get_realm,
+)
 from zerver.models.streams import get_stream
 
 
@@ -110,7 +114,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
 
@@ -809,11 +813,11 @@ class MessageMoveStreamTest(ZulipTestCase):
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
 
-        # Check sending messages when policy is Realm.POLICY_NOBODY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.NOBODY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_NOBODY,
+            MoveMessagesBetweenStreamsPolicyEnum.NOBODY,
             acting_user=None,
         )
         check_move_message_according_to_policy(UserProfile.ROLE_REALM_OWNER, expect_fail=True)
@@ -821,11 +825,11 @@ class MessageMoveStreamTest(ZulipTestCase):
             UserProfile.ROLE_REALM_ADMINISTRATOR, expect_fail=True
         )
 
-        # Check sending messages when policy is Realm.POLICY_ADMINS_ONLY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.ADMINS_ONLY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_ADMINS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.ADMINS_ONLY,
             acting_user=None,
         )
         check_move_message_according_to_policy(UserProfile.ROLE_MODERATOR, expect_fail=True)
@@ -834,11 +838,11 @@ class MessageMoveStreamTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_2", "new_stream_2", "test"
         )
-        # Check sending messages when policy is Realm.POLICY_MODERATORS_ONLY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MODERATORS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
             acting_user=None,
         )
         check_move_message_according_to_policy(UserProfile.ROLE_MEMBER, expect_fail=True)
@@ -847,11 +851,11 @@ class MessageMoveStreamTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_3", "new_stream_3", "test"
         )
-        # Check sending messages when policy is Realm.POLICY_FULL_MEMBERS_ONLY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.FULL_MEMBERS_ONLY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.FULL_MEMBERS_ONLY,
             acting_user=None,
         )
         do_set_realm_property(
@@ -865,11 +869,11 @@ class MessageMoveStreamTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_4", "new_stream_4", "test"
         )
-        # Check sending messages when policy is Realm.POLICY_MEMBERS_ONLY.
+        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY.
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
         check_move_message_according_to_policy(UserProfile.ROLE_GUEST, expect_fail=True)
@@ -900,7 +904,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_set_realm_property(
             cordelia.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
 
@@ -968,7 +972,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
 
@@ -1059,14 +1063,14 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
         realm = user_profile.realm
-        realm.edit_topic_policy = Realm.POLICY_ADMINS_ONLY
+        realm.edit_topic_policy = EditTopicPolicyEnum.ADMINS_ONLY
         realm.save()
         self.login("cordelia")
 
         do_set_realm_property(
             user_profile.realm,
             "move_messages_between_streams_policy",
-            Realm.POLICY_MEMBERS_ONLY,
+            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
             acting_user=None,
         )
 

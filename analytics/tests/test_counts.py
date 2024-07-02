@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
 from unittest import mock
 
-import orjson
 import time_machine
 from django.apps import apps
 from django.db import models
@@ -60,6 +59,7 @@ from zerver.lib.push_notifications import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Client,
@@ -118,7 +118,7 @@ class AnalyticsTestCase(ZulipTestCase):
         RemoteRealm.objects.all().delete()
 
     # Lightweight creation of users, streams, and messages
-    def create_user(self, **kwargs: Any) -> UserProfile:
+    def create_user(self, skip_auditlog: bool = False, **kwargs: Any) -> UserProfile:
         self.name_counter += 1
         defaults = {
             "email": f"user{self.name_counter}@domain.tld",
@@ -136,7 +136,7 @@ class AnalyticsTestCase(ZulipTestCase):
             if kwargs["is_bot"]:
                 pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
                 pass_kwargs["bot_owner"] = None
-            return create_user(
+            user = create_user(
                 kwargs["email"],
                 "password",
                 kwargs["realm"],
@@ -145,6 +145,18 @@ class AnalyticsTestCase(ZulipTestCase):
                 role=UserProfile.ROLE_REALM_ADMINISTRATOR,
                 **pass_kwargs,
             )
+            if not skip_auditlog:
+                RealmAuditLog.objects.create(
+                    realm=kwargs["realm"],
+                    acting_user=None,
+                    modified_user=user,
+                    event_type=RealmAuditLog.USER_CREATED,
+                    event_time=kwargs["date_joined"],
+                    extra_data={
+                        RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(kwargs["realm"])
+                    },
+                )
+            return user
 
     def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
         self.name_counter += 1
@@ -531,34 +543,6 @@ class TestCountStats(AnalyticsTestCase):
         # This huddle should not show up anywhere
         self.create_huddle_with_recipient()
 
-    def test_active_users_by_is_bot(self) -> None:
-        stat = COUNT_STATS["active_users:is_bot:day"]
-        self.current_property = stat.property
-
-        # To be included
-        self.create_user(is_bot=True)
-        self.create_user(is_bot=True, date_joined=self.TIME_ZERO - 25 * self.HOUR)
-        self.create_user(is_bot=False)
-
-        # To be excluded
-        self.create_user(is_active=False)
-
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-
-        self.assertTableState(
-            RealmCount,
-            ["value", "subgroup", "realm"],
-            [
-                [2, "true"],
-                [1, "false"],
-                [3, "false", self.second_realm],
-                [1, "false", self.no_message_realm],
-            ],
-        )
-        self.assertTableState(InstallationCount, ["value", "subgroup"], [[2, "true"], [5, "false"]])
-        self.assertTableState(UserCount, [], [])
-        self.assertTableState(StreamCount, [], [])
-
     def test_upload_quota_used_bytes(self) -> None:
         stat = COUNT_STATS["upload_quota_used_bytes::day"]
         self.current_property = stat.property
@@ -593,31 +577,6 @@ class TestCountStats(AnalyticsTestCase):
                 [10, None, self.second_realm, self.TIME_ZERO + self.DAY],
             ],
         )
-
-    def test_active_users_by_is_bot_for_realm_constraint(self) -> None:
-        # For single Realm
-
-        COUNT_STATS = get_count_stats(self.default_realm)
-        stat = COUNT_STATS["active_users:is_bot:day"]
-        self.current_property = stat.property
-
-        # To be included
-        self.create_user(is_bot=True, date_joined=self.TIME_ZERO - 25 * self.HOUR)
-        self.create_user(is_bot=False)
-
-        # To be excluded
-        self.create_user(
-            email="test@second.analytics",
-            realm=self.second_realm,
-            date_joined=self.TIME_ZERO - 2 * self.DAY,
-        )
-
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
-        self.assertTableState(RealmCount, ["value", "subgroup"], [[1, "true"], [1, "false"]])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ["value", "subgroup"], [])
-        self.assertTableState(UserCount, [], [])
-        self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_by_is_bot(self) -> None:
         stat = COUNT_STATS["messages_sent:is_bot:hour"]
@@ -1407,46 +1366,6 @@ class TestLoggingCountStats(AnalyticsTestCase):
         self.assertTableState(UserCount, ["property", "value"], [["user test", 1]])
         self.assertTableState(StreamCount, ["property", "value"], [["stream test", 1]])
 
-    def test_active_users_log_by_is_bot(self) -> None:
-        property = "active_users_log:is_bot:day"
-        user = do_create_user(
-            "email", "password", self.default_realm, "full_name", acting_user=None
-        )
-        self.assertEqual(
-            1,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-        do_deactivate_user(user, acting_user=None)
-        self.assertEqual(
-            0,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-        do_activate_mirror_dummy_user(user, acting_user=None)
-        self.assertEqual(
-            1,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-        do_deactivate_user(user, acting_user=None)
-        self.assertEqual(
-            0,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-        do_reactivate_user(user, acting_user=None)
-        self.assertEqual(
-            1,
-            RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
-                "value__sum"
-            ],
-        )
-
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     def test_mobile_pushes_received_count(self) -> None:
         self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
@@ -1461,13 +1380,13 @@ class TestLoggingCountStats(AnalyticsTestCase):
         token = "aaaa"
 
         RemotePushDeviceToken.objects.create(
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             token=hex_to_b64(token),
             user_uuid=(hamlet.uuid),
             server=self.server,
         )
         RemotePushDeviceToken.objects.create(
-            kind=RemotePushDeviceToken.GCM,
+            kind=RemotePushDeviceToken.FCM,
             token=hex_to_b64(token + "aa"),
             user_uuid=(hamlet.uuid),
             server=self.server,
@@ -1724,6 +1643,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(2)
@@ -1735,6 +1655,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(4)
@@ -1745,6 +1666,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(4)
@@ -1755,6 +1677,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             self.assert_length(skipped, 1)
@@ -1878,7 +1801,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.user = self.create_user()
+        self.user = self.create_user(skip_auditlog=True)
         self.stat = COUNT_STATS["active_users_audit:is_bot:day"]
         self.current_property = self.stat.property
 
@@ -1899,25 +1822,25 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.add_event(RealmAuditLog.USER_CREATED, 1)
         self.add_event(RealmAuditLog.USER_DEACTIVATED, 0)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, ["subgroup"], [["false"]])
+        self.assertTableState(RealmCount, ["subgroup"], [["false"]])
 
     def test_user_reactivated_in_future(self) -> None:
         self.add_event(RealmAuditLog.USER_DEACTIVATED, 1)
         self.add_event(RealmAuditLog.USER_REACTIVATED, 0)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, [], [])
+        self.assertTableState(RealmCount, [], [])
 
     def test_user_active_then_deactivated_same_day(self) -> None:
         self.add_event(RealmAuditLog.USER_CREATED, 1)
         self.add_event(RealmAuditLog.USER_DEACTIVATED, 0.5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, [], [])
+        self.assertTableState(RealmCount, [], [])
 
     def test_user_unactive_then_activated_same_day(self) -> None:
         self.add_event(RealmAuditLog.USER_DEACTIVATED, 1)
         self.add_event(RealmAuditLog.USER_REACTIVATED, 0.5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, ["subgroup"], [["false"]])
+        self.assertTableState(RealmCount, ["subgroup"], [["false"]])
 
     # Arguably these next two tests are duplicates of the _in_future tests, but are
     # a guard against future refactorings where they may no longer be duplicates
@@ -1926,14 +1849,14 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.add_event(RealmAuditLog.USER_DEACTIVATED, 1)
         process_count_stat(self.stat, self.TIME_ZERO)
         self.assertTableState(
-            UserCount, ["subgroup", "end_time"], [["false", self.TIME_ZERO - self.DAY]]
+            RealmCount, ["subgroup", "end_time"], [["false", self.TIME_ZERO - self.DAY]]
         )
 
     def test_user_deactivated_then_reactivated_with_day_gap(self) -> None:
         self.add_event(RealmAuditLog.USER_DEACTIVATED, 2)
         self.add_event(RealmAuditLog.USER_REACTIVATED, 1)
         process_count_stat(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, ["subgroup"], [["false"]])
+        self.assertTableState(RealmCount, ["subgroup"], [["false"]])
 
     def test_event_types(self) -> None:
         self.add_event(RealmAuditLog.USER_CREATED, 4)
@@ -1943,7 +1866,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         for i in range(4):
             do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO - i * self.DAY)
         self.assertTableState(
-            UserCount,
+            RealmCount,
             ["subgroup", "end_time"],
             [["false", self.TIME_ZERO - i * self.DAY] for i in [3, 1, 0]],
         )
@@ -1951,19 +1874,14 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     # Also tests that aggregation to RealmCount and InstallationCount is
     # being done, and that we're storing the user correctly in UserCount
     def test_multiple_users_realms_and_bots(self) -> None:
-        user1 = self.create_user()
-        user2 = self.create_user()
+        user1 = self.create_user(skip_auditlog=True)
+        user2 = self.create_user(skip_auditlog=True)
         second_realm = do_create_realm(string_id="moo", name="moo")
-        user3 = self.create_user(realm=second_realm)
-        user4 = self.create_user(realm=second_realm, is_bot=True)
+        user3 = self.create_user(skip_auditlog=True, realm=second_realm)
+        user4 = self.create_user(skip_auditlog=True, realm=second_realm, is_bot=True)
         for user in [user1, user2, user3, user4]:
             self.add_event(RealmAuditLog.USER_CREATED, 1, user=user)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(
-            UserCount,
-            ["subgroup", "user"],
-            [["false", user1], ["false", user2], ["false", user3], ["true", user4]],
-        )
         self.assertTableState(
             RealmCount,
             ["value", "subgroup", "realm"],
@@ -1987,7 +1905,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.add_event(RealmAuditLog.USER_CREATED, 2)
         process_count_stat(self.stat, self.TIME_ZERO)
         self.assertTableState(
-            UserCount,
+            RealmCount,
             ["subgroup", "end_time"],
             [["false", self.TIME_ZERO], ["false", self.TIME_ZERO - self.DAY]],
         )
@@ -1997,39 +1915,37 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     # that situation doesn't throw an error.
     def test_empty_realm_or_user_with_no_relevant_activity(self) -> None:
         self.add_event(RealmAuditLog.USER_SOFT_ACTIVATED, 1)
-        self.create_user()  # also test a user with no RealmAuditLog entries
+        self.create_user(skip_auditlog=True)  # also test a user with no RealmAuditLog entries
         do_create_realm(string_id="moo", name="moo")
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, [], [])
+        self.assertTableState(RealmCount, [], [])
 
     def test_max_audit_entry_is_unrelated(self) -> None:
         self.add_event(RealmAuditLog.USER_CREATED, 1)
         self.add_event(RealmAuditLog.USER_SOFT_ACTIVATED, 0.5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, ["subgroup"], [["false"]])
+        self.assertTableState(RealmCount, ["subgroup"], [["false"]])
 
     # Simultaneous related audit entries should not be allowed, and so not testing for that.
     def test_simultaneous_unrelated_audit_entry(self) -> None:
         self.add_event(RealmAuditLog.USER_CREATED, 1)
         self.add_event(RealmAuditLog.USER_SOFT_ACTIVATED, 1)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, ["subgroup"], [["false"]])
+        self.assertTableState(RealmCount, ["subgroup"], [["false"]])
 
     def test_simultaneous_max_audit_entries_of_different_users(self) -> None:
-        user1 = self.create_user()
-        user2 = self.create_user()
-        user3 = self.create_user()
+        user1 = self.create_user(skip_auditlog=True)
+        user2 = self.create_user(skip_auditlog=True)
+        user3 = self.create_user(skip_auditlog=True)
         self.add_event(RealmAuditLog.USER_CREATED, 0.5, user=user1)
         self.add_event(RealmAuditLog.USER_CREATED, 0.5, user=user2)
         self.add_event(RealmAuditLog.USER_CREATED, 1, user=user3)
         self.add_event(RealmAuditLog.USER_DEACTIVATED, 0.5, user=user3)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
-        self.assertTableState(UserCount, ["user", "subgroup"], [[user1, "false"], [user2, "false"]])
+        self.assertTableState(RealmCount, ["value", "subgroup"], [[2, "false"]])
 
     def test_end_to_end_with_actions_dot_py(self) -> None:
-        user1 = do_create_user(
-            "email1", "password", self.default_realm, "full_name", acting_user=None
-        )
+        do_create_user("email1", "password", self.default_realm, "full_name", acting_user=None)
         user2 = do_create_user(
             "email2", "password", self.default_realm, "full_name", acting_user=None
         )
@@ -2044,17 +1960,15 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         do_reactivate_user(user4, acting_user=None)
         end_time = floor_to_day(timezone_now()) + self.DAY
         do_fill_count_stat_at_hour(self.stat, end_time)
-        for user in [user1, user3, user4]:
-            self.assertTrue(
-                UserCount.objects.filter(
-                    user=user,
-                    property=self.current_property,
-                    subgroup="false",
-                    end_time=end_time,
-                    value=1,
-                ).exists()
-            )
-        self.assertFalse(UserCount.objects.filter(user=user2, end_time=end_time).exists())
+        self.assertTrue(
+            RealmCount.objects.filter(
+                realm=self.default_realm,
+                property=self.current_property,
+                subgroup="false",
+                end_time=end_time,
+                value=3,
+            ).exists()
+        )
 
 
 class TestRealmActiveHumans(AnalyticsTestCase):
@@ -2064,18 +1978,6 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         self.stat = COUNT_STATS["realm_active_humans::day"]
         self.current_property = self.stat.property
 
-    def mark_audit_active(self, user: UserProfile, end_time: Optional[datetime] = None) -> None:
-        if end_time is None:
-            end_time = self.TIME_ZERO
-        UserCount.objects.create(
-            user=user,
-            realm=user.realm,
-            property="active_users_audit:is_bot:day",
-            subgroup=orjson.dumps(user.is_bot).decode(),
-            end_time=end_time,
-            value=1,
-        )
-
     def mark_15day_active(self, user: UserProfile, end_time: Optional[datetime] = None) -> None:
         if end_time is None:
             end_time = self.TIME_ZERO
@@ -2083,38 +1985,35 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             user=user, realm=user.realm, property="15day_actives::day", end_time=end_time, value=1
         )
 
-    def test_basic_boolean_logic(self) -> None:
+    def test_basic_logic(self) -> None:
         user = self.create_user()
-        self.mark_audit_active(user, end_time=self.TIME_ZERO - self.DAY)
         self.mark_15day_active(user, end_time=self.TIME_ZERO)
-        self.mark_audit_active(user, end_time=self.TIME_ZERO + self.DAY)
         self.mark_15day_active(user, end_time=self.TIME_ZERO + self.DAY)
 
         for i in [-1, 0, 1]:
             do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO + i * self.DAY)
-        self.assertTableState(RealmCount, ["value", "end_time"], [[1, self.TIME_ZERO + self.DAY]])
+        self.assertTableState(
+            RealmCount, ["value", "end_time"], [[1, self.TIME_ZERO], [1, self.TIME_ZERO + self.DAY]]
+        )
 
     def test_bots_not_counted(self) -> None:
         bot = self.create_user(is_bot=True)
-        self.mark_audit_active(bot)
         self.mark_15day_active(bot)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(RealmCount, [], [])
 
     def test_multiple_users_realms_and_times(self) -> None:
-        user1 = self.create_user()
-        user2 = self.create_user()
+        user1 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY)
+        user2 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY)
         second_realm = do_create_realm(string_id="second", name="second")
-        user3 = self.create_user(realm=second_realm)
-        user4 = self.create_user(realm=second_realm)
-        user5 = self.create_user(realm=second_realm)
+        user3 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY, realm=second_realm)
+        user4 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY, realm=second_realm)
+        user5 = self.create_user(date_joined=self.TIME_ZERO - 2 * self.DAY, realm=second_realm)
 
-        for user in [user1, user2, user3, user4, user5]:
-            self.mark_audit_active(user)
-            self.mark_15day_active(user)
         for user in [user1, user3, user4]:
-            self.mark_audit_active(user, end_time=self.TIME_ZERO - self.DAY)
             self.mark_15day_active(user, end_time=self.TIME_ZERO - self.DAY)
+        for user in [user1, user2, user3, user4, user5]:
+            self.mark_15day_active(user)
 
         for i in [-1, 0, 1]:
             do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO + i * self.DAY)
@@ -2122,17 +2021,14 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             RealmCount,
             ["value", "realm", "end_time"],
             [
-                [2, self.default_realm, self.TIME_ZERO],
-                [3, second_realm, self.TIME_ZERO],
                 [1, self.default_realm, self.TIME_ZERO - self.DAY],
                 [2, second_realm, self.TIME_ZERO - self.DAY],
+                [2, self.default_realm, self.TIME_ZERO],
+                [3, second_realm, self.TIME_ZERO],
             ],
         )
 
         # Check that adding spurious entries doesn't make a difference
-        self.mark_audit_active(user1, end_time=self.TIME_ZERO + self.DAY)
-        self.mark_15day_active(user2, end_time=self.TIME_ZERO + self.DAY)
-        self.mark_15day_active(user2, end_time=self.TIME_ZERO - self.DAY)
         self.create_user()
         third_realm = do_create_realm(string_id="third", name="third")
         self.create_user(realm=third_realm)
@@ -2145,10 +2041,10 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             RealmCount,
             ["value", "realm", "end_time"],
             [
-                [2, self.default_realm, self.TIME_ZERO],
-                [3, second_realm, self.TIME_ZERO],
                 [1, self.default_realm, self.TIME_ZERO - self.DAY],
                 [2, second_realm, self.TIME_ZERO - self.DAY],
+                [2, self.default_realm, self.TIME_ZERO],
+                [3, second_realm, self.TIME_ZERO],
             ],
         )
 

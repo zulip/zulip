@@ -16,7 +16,7 @@ import sys
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import IO, Any, Dict, List, Optional, Sequence, Set, Union, overload
+from typing import IO, Any, Dict, List, Literal, Optional, Sequence, Set, Union, overload
 from urllib.parse import SplitResult
 
 import zoneinfo
@@ -721,6 +721,32 @@ def listening_publicly(port: int) -> List[str]:
         .splitlines()
     )
     return [line.split()[4] for line in lines]
+
+
+def atomic_nagios_write(
+    name: str,
+    status: Literal["ok", "warning", "critical", "unknown"],
+    message: Optional[str] = None,
+    event_time: Optional[int] = None,
+) -> int:
+    if message is None:
+        message = status
+    if event_time is None:
+        event_time = int(time.time())
+    if status == "ok":
+        status_int = 0
+    elif status == "warning":
+        status_int = 1
+    elif status == "critical":
+        status_int = 2
+    elif status == "unknown":
+        status_int = 3
+
+    path = "/var/lib/nagios_state/" + name
+    with open(path + ".tmp", "w") as fh:
+        fh.write("|".join([str(event_time), str(status_int), status, message]) + "\n")
+    os.rename(path + ".tmp", path)
+    return status_int
 
 
 if __name__ == "__main__":

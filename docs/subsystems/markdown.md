@@ -104,7 +104,7 @@ places:
 - The frontend Markdown processor (`web/src/markdown.ts` and sometimes
   `web/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
-- If desired, the typeahead logic in `web/src/composebox_typeahead.js`.
+- If desired, the typeahead logic in `web/src/composebox_typeahead.ts`.
 - The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
 - The in-app Markdown documentation (`markdown_help_rows` in `web/src/info_overlay.ts`).
 - The list of changes to Markdown at the end of this document.
@@ -139,7 +139,7 @@ that depend on realm-specific or user-specific data. For example, the
 realm could have
 [linkifiers](https://zulip.com/help/add-a-custom-linkifier)
 or [custom emoji](https://zulip.com/help/custom-emoji)
-configured, and Zulip supports mentions for streams, users, and user
+configured, and Zulip supports mentions for channels, users, and user
 groups (which depend on data like users' names, IDs, etc.).
 
 At a backend code level, these are controlled by the `message_realm`
@@ -151,7 +151,7 @@ processor object via e.g. `_md_engine.zulip_db_data`, and then
 individual Markdown rules can access the data from there.
 
 For non-message contexts (e.g. an organization's profile (aka the
-thing on the right-hand side of the login page), stream descriptions,
+thing on the right-hand side of the login page), channel descriptions,
 or rendering custom profile fields), one needs to just pass in a
 `message_realm` (see, for example, `zulip_default_context` for the
 organization profile code for this). But for messages, we need to
@@ -253,7 +253,7 @@ accurate.
 - Disable link-by-reference syntax,
   `[foo][bar]` ... `[bar]: https://google.com`.
 
-- Enable linking to other streams using `#**streamName**`.
+- Enable linking to other channels using `#**channelName**`.
 
 ### Code
 

@@ -4,8 +4,8 @@ import {page_params} from "./base_page_params";
 import {$t, $t_html} from "./i18n";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import {realm} from "./state_data";
+import {StreamPostPolicy} from "./stream_types";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
-import {StreamPostPolicy} from "./sub_store";
 import type {
     FollowedTopicNotificationSettings,
     PmNotificationSettings,
@@ -108,11 +108,11 @@ export const color_scheme_values = {
         code: 1,
         description: $t({defaultMessage: "Automatic (follows system settings)"}),
     },
-    day: {
+    light: {
         code: 3,
         description: $t({defaultMessage: "Light"}),
     },
-    night: {
+    dark: {
         code: 2,
         description: $t({defaultMessage: "Dark"}),
     },
@@ -519,17 +519,17 @@ export const expires_in_values = {
         description: $t({defaultMessage: "1 day"}),
         default: false,
     },
-    threeDays: {
+    three_days: {
         value: 3 * 24 * 60,
         description: $t({defaultMessage: "3 days"}),
         default: false,
     },
-    tenDays: {
+    ten_days: {
         value: 10 * 24 * 60,
         description: $t({defaultMessage: "10 days"}),
         default: true,
     },
-    thirtyDays: {
+    thirty_days: {
         value: 30 * 24 * 60,
         description: $t({defaultMessage: "30 days"}),
         default: false,
@@ -995,23 +995,21 @@ export const stream_privacy_policy_values = {
         name: $t({defaultMessage: "Web-public"}),
         description: $t({
             defaultMessage:
-                "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
+                "Anyone on the internet can view messages; members of your organization can join.",
         }),
     },
     public: {
         code: "public",
         name: $t({defaultMessage: "Public"}),
         description: $t({
-            defaultMessage:
-                "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining",
+            defaultMessage: "Members of your organization can view messages and join",
         }),
     },
     private_with_public_history: {
         code: "invite-only-public-history",
         name: $t({defaultMessage: "Private, shared history"}),
         description: $t({
-            defaultMessage:
-                "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users",
+            defaultMessage: "Joining and viewing messages requires being added by a subscriber",
         }),
     },
     private: {
@@ -1019,7 +1017,7 @@ export const stream_privacy_policy_values = {
         name: $t({defaultMessage: "Private, protected history"}),
         description: $t({
             defaultMessage:
-                "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users",
+                "Joining and viewing messages requires being added by a subscriber; new subscribers cannot see messages sent before they joined",
         }),
     },
 };
@@ -1046,3 +1044,5 @@ export const stream_post_policy_values = {
         description: $t({defaultMessage: "Admins only"}),
     },
 } as const;
+
+export type {Settings as GenericUserSettings};

@@ -5,8 +5,15 @@ import * as channel from "./channel";
 import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
-import type {Submessage} from "./types";
 import * as widgetize from "./widgetize";
+
+export type Submessage = {
+    id: number;
+    sender_id: number;
+    message_id: number;
+    content: string;
+    msg_type: string;
+};
 
 export const zform_widget_extra_data_schema = z
     .object({
@@ -90,8 +97,9 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
 
 export function process_widget_rows_in_list(list: MessageList | undefined): void {
     for (const message_id of widgetize.widget_event_handlers.keys()) {
-        if (list?.get(message_id) !== undefined) {
-            process_submessages({message_id, $row: list.get_row(message_id)});
+        const $row = list?.get_row(message_id);
+        if ($row && $row.length !== 0) {
+            process_submessages({message_id, $row});
         }
     }
 }

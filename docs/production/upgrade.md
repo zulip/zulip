@@ -187,7 +187,7 @@ Useful logs are available in a few places:
 
 If you need help and don't have a support contract, you can visit
 [#production
-help](https://chat.zulip.org/#narrow/stream/31-production-help) in the
+help](https://chat.zulip.org/#narrow/channel/31-production-help) in the
 [Zulip development community
 server](https://zulip.com/development-community/) for best-effort help.
 Please include the relevant error output from the above logs in a

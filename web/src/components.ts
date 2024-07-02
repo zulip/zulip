@@ -23,6 +23,7 @@ export type Toggle = {
     value: () => string | undefined;
     get: () => JQuery;
     goto: (name: string) => void;
+    register_event_handlers: () => void;
 };
 
 export function toggle(opts: {
@@ -82,7 +83,7 @@ export function toggle(opts: {
 
         meta.idx = idx;
         if (opts.callback) {
-            opts.callback(opts.values[idx].label, opts.values[idx].key);
+            opts.callback(opts.values[idx]!.label, opts.values[idx]!.key);
         }
 
         if (!opts.child_wants_focus) {
@@ -115,10 +116,14 @@ export function toggle(opts: {
         return false;
     }
 
-    meta.$ind_tab.on("click", function () {
-        const idx = Number($(this).attr("data-tab-id"));
-        select_tab(idx);
-    });
+    function register_event_handlers(): void {
+        meta.$ind_tab.off("click");
+        meta.$ind_tab.on("click", function () {
+            const idx = Number($(this).attr("data-tab-id"));
+            select_tab(idx);
+        });
+    }
+    register_event_handlers();
 
     keydown_util.handle({
         $elem: meta.$ind_tab,
@@ -162,7 +167,7 @@ export function toggle(opts: {
 
         value() {
             if (meta.idx >= 0) {
-                return opts.values[meta.idx].label;
+                return opts.values[meta.idx]!.label;
             }
             /* istanbul ignore next */
             return undefined;
@@ -186,6 +191,8 @@ export function toggle(opts: {
                 select_tab(idx);
             }
         },
+
+        register_event_handlers,
     };
 
     return prototype;

@@ -272,19 +272,26 @@ def maybe_send_to_registration(
         )
 
         streams_to_subscribe = None
+        include_realm_default_subscriptions = None
         if multiuse_obj is not None:
             # If the user came here explicitly via a multiuse invite link, then
             # we use the defaults implied by the invite.
             streams_to_subscribe = list(multiuse_obj.streams.all())
+            include_realm_default_subscriptions = multiuse_obj.include_realm_default_subscriptions
         elif existing_prereg_user:
             # Otherwise, the user is doing this signup not via any invite link,
             # but we can use the pre-existing PreregistrationUser for these values
             # since it tells how they were intended to be, when the user was invited.
             streams_to_subscribe = list(existing_prereg_user.streams.all())
+            include_realm_default_subscriptions = (
+                existing_prereg_user.include_realm_default_subscriptions
+            )
             invited_as = existing_prereg_user.invited_as
 
         if streams_to_subscribe:
             prereg_user.streams.set(streams_to_subscribe)
+        if include_realm_default_subscriptions is not None:
+            prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
         prereg_user.invited_as = invited_as
         prereg_user.multiuse_invite = multiuse_obj
         prereg_user.save()
@@ -460,19 +467,19 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 def create_response_for_otp_flow(
     key: str, otp: str, user_profile: UserProfile, encrypted_key_field_name: str
 ) -> HttpResponse:
-    realm_uri = user_profile.realm.url
+    realm_url = user_profile.realm.url
 
     # Check if the mobile URI is overridden in settings, if so, replace it
     # This block should only apply to the mobile flow, so we if add others, this
     # needs to be conditional.
-    if realm_uri in settings.REALM_MOBILE_REMAP_URIS:
-        realm_uri = settings.REALM_MOBILE_REMAP_URIS[realm_uri]
+    if realm_url in settings.REALM_MOBILE_REMAP_URIS:
+        realm_url = settings.REALM_MOBILE_REMAP_URIS[realm_url]
 
     params = {
         encrypted_key_field_name: otp_encrypt_api_key(key, otp),
         "email": user_profile.delivery_email,
         "user_id": user_profile.id,
-        "realm": realm_uri,
+        "realm": realm_url,
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
     response = HttpResponse(status=302)
@@ -823,7 +830,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         We need to override this function so that we can redirect to
         realm.url instead of '/'.
         """
-        realm_uri = self.get_user().realm.url
+        realm_url = self.get_user().realm.url
         # This mock.patch business is an unpleasant hack that we'd
         # ideally like to remove by instead patching the upstream
         # module to support better configurability of the
@@ -832,7 +839,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         # process involving pbr -> pkgresources (which is really slow).
         from unittest.mock import patch
 
-        with patch.object(settings, "LOGIN_REDIRECT_URL", realm_uri):
+        with patch.object(settings, "LOGIN_REDIRECT_URL", realm_url):
             return super().done(form_list, **kwargs)
 
 
@@ -921,7 +928,7 @@ def social_auth_subdomain_login_page(request: HttpRequest) -> HttpResponse:
         except Realm.DoesNotExist:
             pass
 
-    return render(request, "zerver/auth_subdomain.html", status=400)
+    return render(request, "zerver/portico_error_pages/auth_subdomain.html", status=400)
 
 
 def start_two_factor_auth(
@@ -1201,7 +1208,7 @@ def password_reset(request: HttpRequest) -> HttpResponse:
         assert e.secs_to_freedom is not None
         return render(
             request,
-            "zerver/rate_limit_exceeded.html",
+            "zerver/portico_error_pages/rate_limit_exceeded.html",
             context={"retry_after": int(e.secs_to_freedom)},
             status=429,
         )

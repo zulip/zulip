@@ -17,7 +17,8 @@ if os.path.exists("/etc/zulip/sharding.json"):
             data,  # backwards compatibility
         )
         shard_regexes = [
-            (re.compile(regex, re.I), port) for regex, port in data.get("shard_regexes", [])
+            (re.compile(regex, re.IGNORECASE), port)
+            for regex, port in data.get("shard_regexes", [])
         ]
 
 

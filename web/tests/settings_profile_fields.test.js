@@ -45,7 +45,9 @@ const custom_profile_field_types = {
     },
 };
 
-mock_esm("sortablejs", {Sortable: {create() {}}});
+const Sortable = {create: noop};
+
+mock_esm("sortablejs", {default: Sortable});
 
 const settings_profile_fields = zrequire("settings_profile_fields");
 
@@ -106,16 +108,16 @@ run_test("populate_profile_fields", ({mock_template}) => {
             id: 30,
             name: "meal",
             hint: "lunch",
-            field_data: JSON.stringify([
-                {
+            field_data: JSON.stringify({
+                0: {
                     text: "lunch",
-                    order: 0,
+                    order: "0",
                 },
-                {
+                1: {
                     text: "dinner",
-                    order: 1,
+                    order: "1",
                 },
-            ]),
+            }),
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
             required: false,
@@ -170,8 +172,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 hint: "lunch",
                 type: SELECT_NAME,
                 choices: [
-                    {order: 0, value: "0", text: "lunch"},
-                    {order: 1, value: "1", text: "dinner"},
+                    {order: "0", value: "0", text: "lunch"},
+                    {order: "1", value: "1", text: "dinner"},
                 ],
                 is_select_field: true,
                 is_external_account_field: false,

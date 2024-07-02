@@ -13,12 +13,11 @@ from psycopg2.sql import SQL
 from analytics.lib.counts import COUNT_STATS
 from corporate.lib.activity import (
     dictfetchall,
-    estimate_annual_recurring_revenue_by_realm,
     fix_rows,
     format_datetime_as_date,
     format_optional_datetime,
+    get_estimated_arr_and_rate_by_realm,
     get_query_data,
-    get_realms_with_default_discount_dict,
     make_table,
     realm_activity_link,
     realm_stats_link,
@@ -28,7 +27,7 @@ from corporate.lib.activity import (
 from corporate.lib.stripe import cents_to_dollar_string
 from corporate.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
-from zerver.lib.request import has_request_variables
+from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
 from zerver.models import Realm
 from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import get_org_type_display_name
@@ -211,8 +210,7 @@ def realm_summary_table() -> str:
     # estimate annual subscription revenue
     total_arr = 0
     if settings.BILLING_ENABLED:
-        estimated_arrs = estimate_annual_recurring_revenue_by_realm()
-        realms_with_default_discount = get_realms_with_default_discount_dict()
+        estimated_arrs, plan_rates = get_estimated_arr_and_rate_by_realm()
 
         for row in rows:
             row["plan_type_string"] = get_plan_type_string(row["plan_type"])
@@ -223,14 +221,9 @@ def realm_summary_table() -> str:
                 row["arr"] = f"${cents_to_dollar_string(estimated_arrs[string_id])}"
 
             if row["plan_type"] in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
-                row["effective_rate"] = 100 - int(realms_with_default_discount.get(string_id, 0))
+                row["effective_rate"] = plan_rates.get(string_id, "")
             elif row["plan_type"] == Realm.PLAN_TYPE_STANDARD_FREE:
                 row["effective_rate"] = 0
-            elif (
-                row["plan_type"] == Realm.PLAN_TYPE_LIMITED
-                and string_id in realms_with_default_discount
-            ):
-                row["effective_rate"] = 100 - int(realms_with_default_discount[string_id])
             else:
                 row["effective_rate"] = ""
 
@@ -298,7 +291,7 @@ def realm_summary_table() -> str:
 
 
 @require_server_admin
-@has_request_variables
+@typed_endpoint_without_parameters
 def get_installation_activity(request: HttpRequest) -> HttpResponse:
     content: str = realm_summary_table()
     title = "Installation activity"

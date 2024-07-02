@@ -57,10 +57,12 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import (
+    get_group_setting_value_for_api,
+    get_recursive_membership_groups,
     get_server_supported_permission_settings,
     user_groups_in_realm_serialized,
 )
-from zerver.lib.user_status import get_user_status_dict
+from zerver.lib.user_status import get_all_users_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
@@ -88,7 +90,13 @@ from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
-from zerver.models.realms import get_realm_domains
+from zerver.models.realms import (
+    CommonMessagePolicyEnum,
+    EditTopicPolicyEnum,
+    get_corresponding_policy_value_for_group_setting,
+    get_realm_domains,
+    get_realm_with_settings,
+)
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
@@ -116,13 +124,14 @@ def always_want(msg_type: str) -> bool:
 def fetch_initial_state_data(
     user_profile: Optional[UserProfile],
     *,
-    realm: Optional[Realm] = None,
+    realm: Realm,
     event_types: Optional[Iterable[str]] = None,
     queue_id: Optional[str] = "",
     client_gravatar: bool = False,
     user_avatar_url_field_optional: bool = False,
     user_settings_object: bool = False,
     slim_presence: bool = False,
+    presence_last_update_id_fetched_by_client: Optional[int] = None,
     include_subscribers: bool = True,
     include_streams: bool = True,
     spectator_requested_language: Optional[str] = None,
@@ -141,10 +150,6 @@ def fetch_initial_state_data(
     corresponding events for changes in the data structures and new
     code to apply_events (and add a test in test_events.py).
     """
-    if realm is None:
-        assert user_profile is not None
-        realm = user_profile.realm
-
     state: Dict[str, Any] = {"queue_id": queue_id}
 
     if event_types is None:
@@ -229,11 +234,23 @@ def fetch_initial_state_data(
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
 
     if want("presence"):
-        state["presences"] = (
-            {}
-            if user_profile is None
-            else get_presences_for_realm(realm, slim_presence, user_profile)
-        )
+        if presence_last_update_id_fetched_by_client is not None:
+            # This param being submitted by the client, means they want to use
+            # the modern API.
+            slim_presence = True
+
+        if user_profile is not None:
+            presences, presence_last_update_id_fetched_by_server = get_presences_for_realm(
+                realm,
+                slim_presence,
+                last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
+                requesting_user_profile=user_profile,
+            )
+            state["presences"] = presences
+            state["presence_last_update_id"] = presence_last_update_id_fetched_by_server
+        else:
+            state["presences"] = {}
+
         # Send server_timestamp, to match the format of `GET /presence` requests.
         state["server_timestamp"] = time.time()
 
@@ -266,7 +283,23 @@ def fetch_initial_state_data(
             setting_name,
             permission_configuration,
         ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                setting_value = getattr(realm, setting_name)
+                state["realm_" + setting_name] = get_group_setting_value_for_api(setting_value)
+                continue
+
             state["realm_" + setting_name] = getattr(realm, permission_configuration.id_field_name)
+
+        state["realm_create_public_stream_policy"] = (
+            get_corresponding_policy_value_for_group_setting(
+                realm, "can_create_public_channel_group", Realm.COMMON_POLICY_TYPES
+            )
+        )
+        state["realm_create_private_stream_policy"] = (
+            get_corresponding_policy_value_for_group_setting(
+                realm, "can_create_private_channel_group", Realm.COMMON_POLICY_TYPES
+            )
+        )
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -286,10 +319,12 @@ def fetch_initial_state_data(
             False if user_profile is None else realm.allow_message_editing
         )
         state["realm_edit_topic_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
+            EditTopicPolicyEnum.ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
         state["realm_delete_own_message_policy"] = (
-            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
+            CommonMessagePolicyEnum.ADMINS_ONLY
+            if user_profile is None
+            else realm.delete_own_message_policy
         )
 
         # This setting determines whether to send presence and also
@@ -514,17 +549,26 @@ def fetch_initial_state_data(
             client_gravatar=False,
         )
 
-        state["can_create_private_streams"] = settings_user.can_create_private_streams()
-        state["can_create_public_streams"] = settings_user.can_create_public_streams()
+        settings_user_recursive_group_ids = set(
+            get_recursive_membership_groups(settings_user).values_list("id", flat=True)
+        )
+
+        state["can_create_private_streams"] = (
+            realm.can_create_private_channel_group_id in settings_user_recursive_group_ids
+        )
+        state["can_create_public_streams"] = (
+            realm.can_create_public_channel_group_id in settings_user_recursive_group_ids
+        )
+
+        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.
         state["can_create_streams"] = (
-            settings_user.can_create_private_streams()
-            or settings_user.can_create_public_streams()
-            or settings_user.can_create_web_public_streams()
+            state["can_create_private_streams"]
+            or state["can_create_public_streams"]
+            or state["can_create_web_public_streams"]
         )
-        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_users_by_email()
         state["is_admin"] = settings_user.is_realm_admin
@@ -679,7 +723,7 @@ def fetch_initial_state_data(
         state["user_status"] = (
             {}
             if user_profile is None
-            else get_user_status_dict(realm=realm, user_profile=user_profile)
+            else get_all_users_status_dict(realm=realm, user_profile=user_profile)
         )
 
     if want("user_topic"):
@@ -1173,8 +1217,6 @@ def apply_event(
                 )
 
             policy_permission_dict = {
-                "create_public_stream_policy": "can_create_public_streams",
-                "create_private_stream_policy": "can_create_private_streams",
                 "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
@@ -1213,6 +1255,32 @@ def apply_event(
                         value["Email"]["enabled"] or value["LDAP"]["enabled"]
                     )
                     state["realm_email_auth_enabled"] = value["Email"]["enabled"]
+
+                if key in ["can_create_public_channel_group", "can_create_private_channel_group"]:
+                    if key == "can_create_public_channel_group":
+                        state["realm_create_public_stream_policy"] = (
+                            get_corresponding_policy_value_for_group_setting(
+                                user_profile.realm,
+                                "can_create_public_channel_group",
+                                Realm.COMMON_POLICY_TYPES,
+                            )
+                        )
+                        state["can_create_public_streams"] = user_profile.has_permission(key)
+                    else:
+                        state["realm_create_private_stream_policy"] = (
+                            get_corresponding_policy_value_for_group_setting(
+                                user_profile.realm,
+                                "can_create_private_channel_group",
+                                Realm.COMMON_POLICY_TYPES,
+                            )
+                        )
+                        state["can_create_private_streams"] = user_profile.has_permission(key)
+
+                    state["can_create_streams"] = (
+                        state["can_create_private_streams"]
+                        or state["can_create_public_streams"]
+                        or state["can_create_web_public_streams"]
+                    )
         elif event["op"] == "deactivated":
             # The realm has just been deactivated.  If our request had
             # arrived a moment later, we'd have rendered the
@@ -1302,6 +1370,15 @@ def apply_event(
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
+        # Note: Fetch_initial_state_data includes
+        # a presence_last_update_id value, reflecting the Max .last_update_id
+        # value of the UserPresence objects in the data. Events don't carry
+        # information about the last_update_id of the UserPresence object
+        # to which they correspond, so we don't (and can't) attempt to update that initial
+        # presence data here.
+        # This means that the state resulting from fetch_initial_state + apply_events will not
+        # match the state of a hypothetical fetch_initial_state fetch that included the fully
+        # updated data. This is intended and not a bug.
         if slim_presence:
             user_key = str(event["user_id"])
         else:
@@ -1557,6 +1634,7 @@ def do_events_register(
     apply_markdown: bool = True,
     client_gravatar: bool = False,
     slim_presence: bool = False,
+    presence_last_update_id_fetched_by_client: Optional[int] = None,
     event_types: Optional[Sequence[str]] = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
@@ -1590,6 +1668,11 @@ def do_events_register(
     else:
         event_types_set = None
 
+    # Fetch the realm object again to prefetch all the
+    # group settings which support anonymous groups
+    # to avoid unnecessary DB queries.
+    realm = get_realm_with_settings(realm_id=realm.id)
+
     if user_profile is None:
         # TODO: Unify the two fetch_initial_state_data code paths.
         assert client_gravatar is False
@@ -1606,8 +1689,9 @@ def do_events_register(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             user_list_incomplete=user_list_incomplete,
-            # slim_presence is a noop, because presence is not included.
+            # These presence params are a noop, because presence is not included.
             slim_presence=True,
+            presence_last_update_id_fetched_by_client=None,
             # Force include_subscribers=False for security reasons.
             include_subscribers=include_subscribers,
             # Force include_streams=False for security reasons.
@@ -1648,12 +1732,14 @@ def do_events_register(
 
     ret = fetch_initial_state_data(
         user_profile,
+        realm=realm,
         event_types=event_types_set,
         queue_id=queue_id,
         client_gravatar=client_gravatar,
         user_avatar_url_field_optional=user_avatar_url_field_optional,
         user_settings_object=user_settings_object,
         slim_presence=slim_presence,
+        presence_last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
         include_subscribers=include_subscribers,
         include_streams=include_streams,
         pronouns_field_type_supported=pronouns_field_type_supported,

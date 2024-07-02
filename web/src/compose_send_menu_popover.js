@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {delegate} from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_send_later_popover from "../templates/popovers/send_later_popover.hbs";
 import render_send_later_modal from "../templates/send_later_modal.hbs";
@@ -142,7 +142,7 @@ export function toggle() {
 }
 
 export function initialize() {
-    delegate("body", {
+    tippy.delegate("body", {
         ...popover_menus.default_popover_props,
         target: "#send_later i",
         onUntrigger() {

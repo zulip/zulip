@@ -126,7 +126,7 @@ export function user_can_invite_users_by_email(): boolean {
 }
 
 export function user_can_create_multiuse_invite(): boolean {
-    if (!current_user.user_id) {
+    if (page_params.is_spectator) {
         return false;
     }
     return user_groups.is_user_in_group(
@@ -140,11 +140,23 @@ export function user_can_subscribe_other_users(): boolean {
 }
 
 export function user_can_create_private_streams(): boolean {
-    return user_has_permission(realm.realm_create_private_stream_policy);
+    if (page_params.is_spectator) {
+        return false;
+    }
+    return user_groups.is_user_in_group(
+        realm.realm_can_create_private_channel_group,
+        current_user.user_id,
+    );
 }
 
 export function user_can_create_public_streams(): boolean {
-    return user_has_permission(realm.realm_create_public_stream_policy);
+    if (page_params.is_spectator) {
+        return false;
+    }
+    return user_groups.is_user_in_group(
+        realm.realm_can_create_public_channel_group,
+        current_user.user_id,
+    );
 }
 
 export function user_can_create_web_public_streams(): boolean {
@@ -164,7 +176,7 @@ export function user_can_edit_user_groups(): boolean {
 }
 
 export function can_edit_user_group(group_id: number): boolean {
-    if (!current_user.user_id) {
+    if (page_params.is_spectator) {
         return false;
     }
 
@@ -213,7 +225,7 @@ export function should_mask_unread_count(sub_muted: boolean): boolean {
 }
 
 export function using_dark_theme(): boolean {
-    if (user_settings.color_scheme === settings_config.color_scheme_values.night.code) {
+    if (user_settings.color_scheme === settings_config.color_scheme_values.dark.code) {
         return true;
     }
 
@@ -245,7 +257,7 @@ export function bot_type_id_to_string(type_id: number): string | undefined {
 }
 
 export function user_can_access_all_other_users(): boolean {
-    if (!current_user.user_id) {
+    if (page_params.is_spectator) {
         return true;
     }
 

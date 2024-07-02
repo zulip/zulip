@@ -59,7 +59,7 @@ type DropdownWidgetOptions = {
     focus_target_on_hidden?: boolean;
     tippy_props?: Partial<tippy.Props>;
     // NOTE: Any value other than `undefined` will be rendered when class is initialized.
-    default_id?: string | number;
+    default_id?: string | number | undefined;
     unique_id_type?: DataTypes;
     // Text to show if the current value is not in `get_options()`.
     text_if_current_value_not_in_options?: string;
@@ -179,6 +179,11 @@ export class DropdownWidget {
             );
             return;
         }
+
+        if (this.disable_for_spectators && page_params.is_spectator) {
+            return;
+        }
+
         this.instance = tippy.delegate(delegate_container, {
             ...popover_menus.default_popover_props,
             target: this.widget_selector,
@@ -243,6 +248,7 @@ export class DropdownWidget {
 
                     function first_item(): JQuery {
                         const first_item = list_items[0];
+                        assert(first_item !== undefined);
                         return $popper.find(`.list-item[data-unique-id="${first_item.unique_id}"]`);
                     }
 

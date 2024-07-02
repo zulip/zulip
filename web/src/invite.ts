@@ -20,19 +20,21 @@ import * as dialog_widget from "./dialog_widget";
 import * as email_pill from "./email_pill";
 import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
+import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import * as stream_pill from "./stream_pill";
 import * as timerender from "./timerender";
 import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
-import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let pills: email_pill.EmailPillWidget;
+let stream_pill_widget: stream_pill.StreamPillWidget;
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -48,6 +50,7 @@ function get_common_invitation_data(): {
     stream_ids: string;
     invite_expires_in_minutes: string;
     invitee_emails: string;
+    include_realm_default_subscriptions: string;
 } {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
@@ -65,14 +68,14 @@ function get_common_invitation_data(): {
     }
 
     let stream_ids: number[] = [];
-    const default_stream_ids = stream_data.get_default_stream_ids();
-    if (default_stream_ids.length !== 0 && $("#invite_select_default_streams").prop("checked")) {
-        stream_ids = default_stream_ids;
+    let include_realm_default_subscriptions = false;
+    if (
+        $("#invite_select_default_streams").prop("checked") ||
+        !settings_data.user_can_subscribe_other_users()
+    ) {
+        include_realm_default_subscriptions = true;
     } else {
-        $<HTMLInputElement>("#invite-stream-checkboxes input:checked").each(function () {
-            const stream_id = Number.parseInt($(this).val()!, 10);
-            stream_ids.push(stream_id);
-        });
+        stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
     }
 
     assert(csrf_token !== undefined);
@@ -85,6 +88,7 @@ function get_common_invitation_data(): {
             .items()
             .map((pill) => email_pill.get_email_from_item(pill))
             .join(","),
+        include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
     const current_email = email_pill.get_current_email(pills);
     if (current_email) {
@@ -99,7 +103,7 @@ function get_common_invitation_data(): {
 
 function beforeSend(): void {
     reset_error_messages();
-    // TODO: You could alternatively parse the textarea here, and return errors to
+    // TODO: You could alternatively parse the emails here, and return errors to
     // the user if they don't match certain constraints (i.e. not real email addresses,
     // aren't in the right domain, etc.)
     //
@@ -201,8 +205,7 @@ function submit_invitation_form(): void {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            $<HTMLTextAreaElement>("textarea#invitee_emails").trigger("focus");
-            $invite_status[0].scrollIntoView();
+            $invite_status[0]!.scrollIntoView();
         },
     });
 }
@@ -222,7 +225,7 @@ function generate_multiuse_invite(): void {
             clipboard.on("success", () => {
                 const tippy_timeout_in_ms = 800;
                 show_copied_confirmation(
-                    $("#copy_generated_invite_link")[0],
+                    $("#copy_generated_invite_link")[0]!,
                     () => {
                         // Do nothing on hide
                     },
@@ -239,15 +242,9 @@ function generate_multiuse_invite(): void {
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            $invite_status[0].scrollIntoView();
+            $invite_status[0]!.scrollIntoView();
         },
     });
-}
-
-export function get_invite_streams(): stream_data.InviteStreamData[] {
-    const streams = stream_data.get_invite_stream_data();
-    streams.sort((a, b) => util.strcmp(a.name, b.name));
-    return streams;
 }
 
 function valid_to(time_valid: number): string {
@@ -301,14 +298,14 @@ function set_custom_time_inputs_visibility(): void {
 }
 
 function set_streams_to_join_list_visibility(): void {
-    const default_streams_selected = $<HTMLInputElement>("input#invite_select_default_streams")[0]
-        .checked;
-    if (default_streams_selected) {
-        $("#streams_to_add .invite-stream-controls").hide();
-        $("#invite-stream-checkboxes").hide();
+    const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
+    const hide_streams_list =
+        realm_has_default_streams &&
+        $<HTMLInputElement>("input#invite_select_default_streams")[0]!.checked;
+    if (hide_streams_list) {
+        $(".add_streams_container").hide();
     } else {
-        $("#streams_to_add .invite-stream-controls").show();
-        $("#invite-stream-checkboxes").show();
+        $(".add_streams_container").show();
     }
 }
 
@@ -336,10 +333,9 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: time_unit_choices,
-        streams: get_invite_streams(),
-        new_stream_announcements_stream: stream_data.get_new_stream_announcements_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
+        can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
     });
 
     function invite_user_modal_post_render(): void {
@@ -350,7 +346,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             create_item_from_text: email_pill.create_item_from_email,
             get_text_from_item: email_pill.get_email_from_item,
         });
-        const $pill_input = $("#invitee_emails_container .pill-container .input");
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
@@ -358,7 +353,12 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         set_custom_time_inputs_visibility();
         set_expires_on_text();
-        set_streams_to_join_list_visibility();
+
+        if (settings_data.user_can_subscribe_other_users()) {
+            set_streams_to_join_list_visibility();
+            const $stream_pill_container = $("#invite_streams_container .pill-container");
+            stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
+        }
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
             dialog_widget.close();
@@ -369,15 +369,20 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $(e.target).parent().remove();
         });
 
-        function toggle_invite_submit_button(): void {
+        function toggle_invite_submit_button(selected_tab?: string): void {
+            if (selected_tab === undefined) {
+                selected_tab = $(".invite_users_option_tabs")
+                    .find(".selected")
+                    .attr("data-tab-key");
+            }
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
-                $pill_input.is(":visible") &&
+                selected_tab === "invite-email-tab" &&
                     pills.items().length === 0 &&
                     email_pill.get_current_email(pills) === null,
             );
-            if ($("#invitee_emails_container").is(":visible")) {
+            if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
                 $button.attr("data-loading-text", $t({defaultMessage: "Inviting..."}));
             } else {
@@ -387,12 +392,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         }
 
         pills.onPillCreate(toggle_invite_submit_button);
-        pills.onPillRemove(toggle_invite_submit_button);
-        pills.onTextInputHook(toggle_invite_submit_button);
-
-        $("#invite-user-modal").on("input", "input, textarea, select", () => {
+        pills.onPillRemove(() => {
             toggle_invite_submit_button();
         });
+        pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
             set_custom_time_inputs_visibility();
@@ -420,7 +423,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_check_all_button").on("click", () => {
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
-            toggle_invite_submit_button();
         });
 
         $("#invite_uncheck_all_button").on("click", () => {
@@ -462,7 +464,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                         $("#invitee_emails_container").hide();
                         break;
                 }
-                toggle_invite_submit_button();
+                toggle_invite_submit_button(key);
                 reset_error_messages();
             },
         });

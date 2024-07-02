@@ -49,6 +49,14 @@ const moderators_group = {
     direct_subgroup_ids: new Set([1]),
 };
 
+const everyone_group = {
+    name: "Everyone",
+    id: 3,
+    members: new Set([me.user_id, test_user.user_id]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
 function test(label, f) {
     run_test(label, (helpers) => {
         current_user.is_admin = false;
@@ -58,7 +66,9 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        user_groups.initialize({realm_user_groups: [admins_group, moderators_group]});
+        user_groups.initialize({
+            realm_user_groups: [admins_group, moderators_group, everyone_group],
+        });
         f(helpers);
     });
 }
@@ -491,7 +501,7 @@ test("default_stream_names", () => {
     stream_data.add_sub(general);
 
     const names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names.sort(), [{name: "public", unique_id: "102"}]);
+    assert.deepEqual(names.sort(), [{name: "public", unique_id: 102}]);
 
     const default_stream_ids = stream_data.get_default_stream_ids();
     assert.deepEqual(default_stream_ids.sort(), [announce.stream_id, general.stream_id]);
@@ -820,7 +830,8 @@ test("create_sub", () => {
 
 test("creator_id", () => {
     people.add_active_user(test_user);
-
+    realm.realm_can_access_all_users_group = everyone_group.id;
+    current_user.user_id = me.user_id;
     // When creator id is not a valid user id
     assert.throws(() => stream_data.maybe_get_creator_details(-1), {
         name: "Error",
@@ -916,6 +927,9 @@ test("get_invite_stream_data", () => {
     };
 
     people.init();
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+    current_user.is_admin = true;
 
     stream_data.add_sub(orie);
     stream_data.set_realm_default_streams([orie]);
@@ -925,7 +939,7 @@ test("get_invite_stream_data", () => {
             name: "Orie",
             stream_id: 320,
             invite_only: false,
-            default_stream: true,
+            subscribed: true,
             is_web_public: false,
         },
     ];
@@ -944,7 +958,38 @@ test("get_invite_stream_data", () => {
         name: "Inviter",
         stream_id: 25,
         invite_only: true,
-        default_stream: false,
+        subscribed: true,
+        is_web_public: false,
+    });
+    assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
+
+    // add unsubscribed private stream
+    const tokyo = {
+        name: "Tokyo",
+        stream_id: 12,
+        invite_only: true,
+        subscribed: false,
+        is_web_public: false,
+    };
+
+    stream_data.add_sub(tokyo);
+    assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
+
+    const random = {
+        name: "Random",
+        stream_id: 34,
+        invite_only: false,
+        subscribed: false,
+        is_web_public: false,
+    };
+
+    stream_data.add_sub(random);
+
+    expected_list.push({
+        name: "Random",
+        stream_id: 34,
+        invite_only: false,
+        subscribed: false,
         is_web_public: false,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);

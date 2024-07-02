@@ -10,6 +10,13 @@ import * as watchdog from "./watchdog";
 const post_presence_response_schema = z.object({
     msg: z.string(),
     result: z.string(),
+    // A bunch of these fields below are .optional() due to the fact
+    // that we have two modes of querying the presence endpoint:
+    // ping_only mode and a mode where we also fetch presence data
+    // for the realm.
+    // For ping_only requests, these fields are not returned in the
+    // response. If we're fetching presence data however, they should
+    // all be present, and send_presence_to_server() will validate that.
     server_timestamp: z.number().optional(),
     zephyr_mirror_active: z.boolean().optional(),
     presences: z
@@ -21,6 +28,7 @@ const post_presence_response_schema = z.object({
             }),
         )
         .optional(),
+    presence_last_update_id: z.number().optional(),
 });
 
 /* Keep in sync with views.py:update_active_status_backend() */
@@ -118,7 +126,7 @@ export function send_presence_to_server(redraw?: () => void): void {
             status: compute_active_status(),
             ping_only: !redraw,
             new_user_input,
-            slim_presence: true,
+            last_update_id: presence.presence_last_update_id,
         },
         success(response) {
             const data = post_presence_response_schema.parse(response);
@@ -141,7 +149,16 @@ export function send_presence_to_server(redraw?: () => void): void {
                     data.server_timestamp !== undefined,
                     "Server timestamp should be present if not a ping only presence request",
                 );
-                presence.set_info(data.presences, data.server_timestamp);
+                assert(
+                    data.presence_last_update_id !== undefined,
+                    "Presence last update id should be present if not a ping only presence request",
+                );
+
+                presence.set_info(
+                    data.presences,
+                    data.server_timestamp,
+                    data.presence_last_update_id,
+                );
                 redraw();
             }
         },

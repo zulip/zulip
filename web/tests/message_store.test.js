@@ -7,6 +7,10 @@ const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {current_user, realm} = require("./lib/zpage_params");
 
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
+
 mock_esm("../src/stream_topic_history", {
     add_message: noop,
 });
@@ -104,7 +108,7 @@ test("process_new_message", () => {
         is_me_message: false,
         id: 2067,
     };
-    message_helper.process_new_message(message);
+    message = message_helper.process_new_message(message);
 
     assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
 
@@ -142,7 +146,7 @@ test("process_new_message", () => {
         id: 2068,
     };
 
-    message_helper.process_new_message(message);
+    message = message_helper.process_new_message(message);
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
@@ -160,9 +164,9 @@ test("message_booleans_parity", () => {
     // This test asserts that both have identical behavior for the
     // flags common between them.
     const assert_bool_match = (flags, expected_message) => {
-        const set_message = {topic: "set_message_booleans", flags};
+        let set_message = {topic: "convert_raw_message_to_message_with_booleans", flags};
         const update_message = {topic: "update_booleans"};
-        message_store.set_message_booleans(set_message);
+        set_message = message_store.convert_raw_message_to_message_with_booleans(set_message);
         message_store.update_booleans(update_message, flags);
         for (const key of Object.keys(expected_message)) {
             assert.equal(
@@ -172,7 +176,7 @@ test("message_booleans_parity", () => {
             );
             assert.equal(update_message[key], expected_message[key]);
         }
-        assert.equal(set_message.topic, "set_message_booleans");
+        assert.equal(set_message.topic, "convert_raw_message_to_message_with_booleans");
         assert.equal(update_message.topic, "update_booleans");
     };
 
@@ -308,27 +312,28 @@ test("update_booleans", () => {
 });
 
 test("update_property", () => {
-    const message1 = {
+    let message1 = {
         type: "stream",
         sender_full_name: alice.full_name,
         sender_id: alice.user_id,
         small_avatar_url: "alice_url",
         stream_id: devel.stream_id,
+        topic: "",
         display_recipient: devel.name,
         id: 100,
     };
-    const message2 = {
+    let message2 = {
         type: "stream",
         sender_full_name: bob.full_name,
         sender_id: bob.user_id,
         small_avatar_url: "bob_url",
         stream_id: denmark.stream_id,
+        topic: "",
         display_recipient: denmark.name,
         id: 101,
     };
-    for (const message of [message1, message2]) {
-        message_helper.process_new_message(message);
-    }
+    message1 = message_helper.process_new_message(message1);
+    message2 = message_helper.process_new_message(message2);
 
     assert.equal(message1.sender_full_name, alice.full_name);
     assert.equal(message2.sender_full_name, bob.full_name);
@@ -351,4 +356,46 @@ test("update_property", () => {
     assert.equal(message1.display_recipient, "Prod");
     assert.equal(message2.stream_id, denmark.stream_id);
     assert.equal(message2.display_recipient, denmark.name);
+});
+
+test("remove", () => {
+    const message1 = {
+        type: "stream",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        stream_id: devel.stream_id,
+        stream: devel.name,
+        display_recipient: devel.name,
+        topic: "test",
+        id: 100,
+    };
+    const message2 = {
+        type: "stream",
+        sender_full_name: bob.full_name,
+        sender_id: bob.user_id,
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        display_recipient: denmark.name,
+        topic: "test",
+        id: 101,
+    };
+    const message3 = {
+        type: "stream",
+        sender_full_name: cindy.full_name,
+        sender_id: cindy.user_id,
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        display_recipient: denmark.name,
+        topic: "test",
+        id: 102,
+    };
+    for (const message of [message1, message2]) {
+        message_helper.process_new_message(message);
+    }
+
+    const deleted_message_ids = [message1.id, message3.id, 104];
+    message_store.remove(deleted_message_ids);
+    assert.equal(message_store.get(message1.id), undefined);
+    assert.equal(message_store.get(message2.id).id, message2.id);
+    assert.equal(message_store.get(message3.id), undefined);
 });

@@ -9,16 +9,16 @@ lifetime of fine-tuning. This page offers some guidelines and resources that the
 ## Where to ask your question
 
 It is almost always best to ask questions and have a conversation in a public
-stream, rather than in direct messages. You’ll get better and faster answers
+channel, rather than in direct messages. You’ll get better and faster answers
 since many people can help, and it makes it possible for others to benefit from
 the discussion.
 
 The [Zulip community
 guide](https://zulip.com/development-community/#where-do-i-send-my-message)
-offers guidelines on how the major public streams in the community are used.
+offers guidelines on how the major public channels in the community are used.
 Don’t stress too much about picking the right place if you’re not sure, as
 moderators can [move your question thread to a different
-stream](https://zulip.com/help/move-content-to-another-stream) if needed.
+channel](https://zulip.com/help/move-content-to-another-stream) if needed.
 
 ## How to ask a great question
 

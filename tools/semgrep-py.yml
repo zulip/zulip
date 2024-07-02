@@ -54,6 +54,7 @@ rules:
 
   - id: dont-import-models-in-migrations
     patterns:
+      - pattern-not: from zerver.lib.mime_types import guess_type
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
       - pattern-not: from zerver.lib.utils import generate_api_key
       - pattern-not: from zerver.models.linkifiers import filter_pattern_validator
@@ -151,6 +152,9 @@ rules:
       - pattern: django.db.migrations.RunSQL(..., [..., ... + ..., ...], ...)
     severity: ERROR
     message: "Do not write a SQL injection vulnerability please"
+    paths:
+      exclude:
+        - zerver/migrations/0531_convert_most_ids_to_bigints.py
 
   - id: translated-format-lazy
     languages: [python]

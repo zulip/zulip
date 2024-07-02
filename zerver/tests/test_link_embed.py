@@ -382,7 +382,7 @@ class PreviewTestCase(ZulipTestCase):
         url = "http://test.org/"
         # Ensure the cache for this is empty
         cache_delete(preview_url_cache_key(url))
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_personal_message(
                 sender,
                 self.example_user("cordelia"),
@@ -425,7 +425,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         original_url = "http://test.org/"
         edited_url = "http://edited.org/"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(
                 user, "Denmark", topic_name="foo", content=original_url
             )
@@ -490,7 +490,7 @@ class PreviewTestCase(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -565,7 +565,7 @@ class PreviewTestCase(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -602,7 +602,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_inline_relative_url_embed_preview(self) -> None:
         # Relative URLs should not be sent for URL preview.
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             self.send_personal_message(
                 self.example_user("prospero"),
                 self.example_user("cordelia"),
@@ -661,7 +661,7 @@ class PreviewTestCase(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/audio.mp3"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -693,7 +693,7 @@ class PreviewTestCase(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/foo.html"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -729,7 +729,7 @@ class PreviewTestCase(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/foo.html"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -770,7 +770,7 @@ class PreviewTestCase(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/foo.html"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -808,7 +808,7 @@ class PreviewTestCase(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -836,7 +836,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_valid_content_type_error_get_data(self) -> None:
         url = "http://test.org/"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish"):
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
             msg_id = self.send_personal_message(
                 self.example_user("hamlet"),
                 self.example_user("cordelia"),
@@ -881,7 +881,7 @@ class PreviewTestCase(ZulipTestCase):
     def test_invalid_url(self) -> None:
         url = "http://test.org/"
         error_url = "http://test.org/x"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish"):
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
             msg_id = self.send_personal_message(
                 self.example_user("hamlet"),
                 self.example_user("cordelia"),
@@ -918,7 +918,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_safe_oembed_html_url(self) -> None:
         url = "http://test.org/"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish"):
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
             msg_id = self.send_personal_message(
                 self.example_user("hamlet"),
                 self.example_user("cordelia"),
@@ -960,7 +960,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_youtube_url_title_replaces_url(self) -> None:
         url = "https://www.youtube.com/watch?v=eSJTXC7Ixgg"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish"):
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
             msg_id = self.send_personal_message(
                 self.example_user("hamlet"),
                 self.example_user("cordelia"),
@@ -998,7 +998,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_custom_title_replaces_youtube_url_title(self) -> None:
         url = "[YouTube link](https://www.youtube.com/watch?v=eSJTXC7Ixgg)"
-        with mock_queue_publish("zerver.actions.message_send.queue_json_publish"):
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
             msg_id = self.send_personal_message(
                 self.example_user("hamlet"),
                 self.example_user("cordelia"),

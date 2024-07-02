@@ -145,6 +145,7 @@ def events_register_backend(
         apply_markdown,
         client_gravatar,
         slim_presence,
+        None,
         event_types,
         queue_lifespan_secs,
         all_public_streams,

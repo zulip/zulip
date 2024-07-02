@@ -92,13 +92,8 @@ def update_message_flags_for_narrow(
     )
     num_after = min(num_after, MAX_MESSAGES_PER_UPDATE - num_before)
 
-    if narrow is not None and len(narrow) > 0:
-        narrow_dict = [x.model_dump() for x in narrow]
-    else:
-        narrow_dict = None
-
     query_info = fetch_messages(
-        narrow=narrow_dict,
+        narrow=narrow,
         user_profile=user_profile,
         realm=user_profile.realm,
         is_web_public_query=False,

@@ -137,7 +137,7 @@ class Stream(models.Model):
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
 
     # The very first message ID in the stream.  Used to help clients
-    # determine whether they might need to display "more topics" for a
+    # determine whether they might need to display "show all topics" for a
     # stream based on what messages they have cached.
     first_message_id = models.IntegerField(null=True, db_index=True)
 
@@ -265,7 +265,7 @@ def bulk_get_streams(realm: Realm, stream_names: Set[str]) -> Dict[str, Any]:
         where_clause = (
             "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         )
-        return get_active_streams(realm).extra(where=[where_clause], params=(list(stream_names),))
+        return get_active_streams(realm).extra(where=[where_clause], params=(list(stream_names),))  # noqa: S610
 
     if not stream_names:
         return {}

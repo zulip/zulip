@@ -4,7 +4,7 @@ import * as input_pill from "./input_pill";
 import type {User} from "./people";
 import * as people from "./people";
 import {realm} from "./state_data";
-import type {CombinedPillContainer} from "./typeahead_helper";
+import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing
@@ -18,11 +18,11 @@ export type UserPill = {
 
 export type UserPillWidget = InputPillContainer<UserPill>;
 
-export type UserPillData = User & {type: "user"};
+export type UserPillData = {type: "user"; user: User};
 
 export function create_item_from_email(
     email: string,
-    current_items: InputPillItem<UserPill>[],
+    current_items: CombinedPillItem[],
     pill_config?: InputPillConfig | undefined,
 ): InputPillItem<UserPill> | undefined {
     // For normal Zulip use, we need to validate the email for our realm.
@@ -30,9 +30,7 @@ export function create_item_from_email(
 
     if (!user) {
         if (realm.realm_is_zephyr_mirror_realm) {
-            const existing_emails = current_items.map((item) => item.email);
-
-            if (existing_emails.includes(email)) {
+            if (current_items.some((item) => item.type === "user" && item.email === email)) {
                 return undefined;
             }
 
@@ -54,9 +52,7 @@ export function create_item_from_email(
         return undefined;
     }
 
-    const existing_ids = current_items.map((item) => item.user_id);
-
-    if (existing_ids.includes(user.user_id)) {
+    if (current_items.some((item) => item.type === "user" && item.user_id === user.user_id)) {
         return undefined;
     }
 
@@ -136,14 +132,11 @@ export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
 }
 
 export function typeahead_source(
-    pill_widget: CombinedPillContainer,
+    pill_widget: UserPillWidget | CombinedPillContainer,
     exclude_bots?: boolean,
 ): UserPillData[] {
     const users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
-    return filter_taken_users(users, pill_widget).map((user) => ({
-        ...user,
-        type: "user",
-    }));
+    return filter_taken_users(users, pill_widget).map((user) => ({type: "user", user}));
 }
 
 export function filter_taken_users(
@@ -155,7 +148,7 @@ export function filter_taken_users(
     return items;
 }
 
-export function append_user(user: User, pills: CombinedPillContainer): void {
+export function append_user(user: User, pills: UserPillWidget | CombinedPillContainer): void {
     if (user) {
         append_person({
             pill_widget: pills,

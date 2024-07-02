@@ -107,6 +107,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -697,6 +698,15 @@ Output:
         assert page_params_json is not None
         page_params = orjson.loads(page_params_json)
         return page_params
+
+    def _get_sentry_params(self, response: "TestHttpResponse") -> Optional[Dict[str, Any]]:
+        doc = lxml.html.document_fromstring(response.content)
+        try:
+            script = cast(lxml.html.HtmlMixin, doc).get_element_by_id("sentry-params")
+        except KeyError:
+            return None
+        assert script is not None and script.text is not None
+        return orjson.loads(script.text)
 
     def check_rendered_logged_in_app(self, result: "TestHttpResponse") -> None:
         """Verifies that a visit of / was a 200 that rendered page_params
@@ -1977,6 +1987,23 @@ Output:
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
 
+    def create_or_update_anonymous_group_for_setting(
+        self,
+        direct_members: List[UserProfile],
+        direct_subgroups: List[NamedUserGroup],
+        existing_setting_group: Optional[UserGroup] = None,
+    ) -> UserGroup:
+        realm = get_realm("zulip")
+        if existing_setting_group is not None:
+            existing_setting_group.direct_members.set(direct_members)
+            existing_setting_group.direct_subgroups.set(direct_subgroups)
+            return existing_setting_group
+
+        user_group = UserGroup.objects.create(realm=realm)
+        user_group.direct_members.set(direct_members)
+        user_group.direct_subgroups.set(direct_subgroups)
+        return user_group
+
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     @contextmanager
@@ -2000,6 +2027,135 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
                 yield lst
 
         self.assert_length(lst, expected_num_events)
+
+    @override
+    def send_personal_message(
+        self,
+        from_user: UserProfile,
+        to_user: UserProfile,
+        content: str = "test content",
+        *,
+        read_by_sender: bool = True,
+        skip_capture_on_commit_callbacks: bool = False,
+    ) -> int:
+        """This function is a wrapper on 'send_personal_message',
+        defined in 'ZulipTestCaseMixin' with an extra parameter
+        'skip_capture_on_commit_callbacks'.
+
+        It should be set to 'True' when making a call with either
+        'verify_action' or 'capture_send_event_calls' as context manager
+        because they already have 'self.captureOnCommitCallbacks'
+        (See the comment in 'capture_send_event_calls').
+
+        For all other cases, we should call 'send_personal_message' with
+        'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
+        'queue_event_on_commit' to work.
+        """
+        if skip_capture_on_commit_callbacks:
+            message_id = super().send_personal_message(
+                from_user,
+                to_user,
+                content,
+                read_by_sender=read_by_sender,
+            )
+        else:
+            with self.captureOnCommitCallbacks(execute=True):
+                message_id = super().send_personal_message(
+                    from_user,
+                    to_user,
+                    content,
+                    read_by_sender=read_by_sender,
+                )
+        return message_id
+
+    @override
+    def send_huddle_message(
+        self,
+        from_user: UserProfile,
+        to_users: List[UserProfile],
+        content: str = "test content",
+        *,
+        read_by_sender: bool = True,
+        skip_capture_on_commit_callbacks: bool = False,
+    ) -> int:
+        """This function is a wrapper on 'send_huddle_message',
+        defined in 'ZulipTestCaseMixin' with an extra parameter
+        'skip_capture_on_commit_callbacks'.
+
+        It should be set to 'True' when making a call with either
+        'verify_action' or 'capture_send_event_calls' as context manager
+        because they already have 'self.captureOnCommitCallbacks'
+        (See the comment in 'capture_send_event_calls').
+
+        For all other cases, we should call 'send_huddle_message' with
+        'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
+        'queue_event_on_commit' to work.
+        """
+        if skip_capture_on_commit_callbacks:
+            message_id = super().send_huddle_message(
+                from_user,
+                to_users,
+                content,
+                read_by_sender=read_by_sender,
+            )
+        else:
+            with self.captureOnCommitCallbacks(execute=True):
+                message_id = super().send_huddle_message(
+                    from_user,
+                    to_users,
+                    content,
+                    read_by_sender=read_by_sender,
+                )
+        return message_id
+
+    @override
+    def send_stream_message(
+        self,
+        sender: UserProfile,
+        stream_name: str,
+        content: str = "test content",
+        topic_name: str = "test",
+        recipient_realm: Optional[Realm] = None,
+        *,
+        allow_unsubscribed_sender: bool = False,
+        read_by_sender: bool = True,
+        skip_capture_on_commit_callbacks: bool = False,
+    ) -> int:
+        """This function is a wrapper on 'send_stream_message',
+        defined in 'ZulipTestCaseMixin' with an extra parameter
+        'skip_capture_on_commit_callbacks'.
+
+        It should be set to 'True' when making a call with either
+        'verify_action' or 'capture_send_event_calls' as context manager
+        because they already have 'self.captureOnCommitCallbacks'
+        (See the comment in 'capture_send_event_calls').
+
+        For all other cases, we should call 'send_stream_message' with
+        'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
+        'queue_event_on_commit' to work.
+        """
+        if skip_capture_on_commit_callbacks:
+            message_id = super().send_stream_message(
+                sender,
+                stream_name,
+                content,
+                topic_name,
+                recipient_realm,
+                allow_unsubscribed_sender=allow_unsubscribed_sender,
+                read_by_sender=read_by_sender,
+            )
+        else:
+            with self.captureOnCommitCallbacks(execute=True):
+                message_id = super().send_stream_message(
+                    sender,
+                    stream_name,
+                    content,
+                    topic_name,
+                    recipient_realm,
+                    allow_unsubscribed_sender=allow_unsubscribed_sender,
+                    read_by_sender=read_by_sender,
+                )
+        return message_id
 
 
 def get_row_ids_in_all_tables() -> Iterator[Tuple[str, Set[int]]]:
@@ -2425,6 +2581,6 @@ class BouncerTestCase(ZulipTestCase):
     def get_generic_payload(self, method: str = "register") -> Dict[str, Any]:
         user_id = 10
         token = "111222"
-        token_kind = PushDeviceToken.GCM
+        token_kind = PushDeviceToken.FCM
 
         return {"user_id": user_id, "token": token, "token_kind": token_kind}

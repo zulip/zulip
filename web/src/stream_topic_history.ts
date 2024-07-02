@@ -12,12 +12,20 @@ const stream_dict = new Map<number, PerStreamHistory>();
 const fetched_stream_ids = new Set<number>();
 const request_pending_stream_ids = new Set<number>();
 
+// This is stream_topic_history_util.get_server_history.
+// We have to indirectly set it to avoid a circular dependency.
+let update_topic_last_message_id: (stream_id: number, topic_name: string) => void;
+export function set_update_topic_last_message_id(
+    f: (stream_id: number, topic_name: string) => void,
+): void {
+    update_topic_last_message_id = f;
+}
+
 export function all_topics_in_cache(sub: StreamSubscription): boolean {
     // Checks whether this browser's cache of contiguous messages
     // (used to locally render narrows) in all_messages_data has all
-    // messages from a given stream, and thus all historical topics
-    // for it.  Because all_messages_data is a range, we just need to
-    // compare it to the range of history on the stream.
+    // messages from a given stream. Because all_messages_data is a range,
+    // we just need to compare it to the range of history on the stream.
 
     // If the cache isn't initialized, it's a clear false.
     if (all_messages_data === undefined || all_messages_data.empty()) {
@@ -42,7 +50,7 @@ export function all_topics_in_cache(sub: StreamSubscription): boolean {
     // we might be missing the oldest topics in this stream in our
     // cache.
     const first_cached_message = all_messages_data.first();
-    return first_cached_message.id <= sub.first_message_id;
+    return first_cached_message!.id <= sub.first_message_id;
 }
 
 export function is_complete_for_stream_id(stream_id: number): boolean {
@@ -78,18 +86,11 @@ export function stream_has_topics(stream_id: number): boolean {
     return history.has_topics();
 }
 
-export type TopicHistoryEntry =
-    | {
-          historical: true;
-          message_id: number;
-          pretty_name: string;
-      }
-    | {
-          historical: false;
-          count: number;
-          message_id: number;
-          pretty_name: string;
-      };
+export type TopicHistoryEntry = {
+    count: number;
+    message_id: number;
+    pretty_name: string;
+};
 
 type ServerTopicHistoryEntry = {
     name: string;
@@ -103,24 +104,10 @@ export class PerStreamHistory {
         we just sort on the fly every time we are called.
 
         Attributes for a topic are:
-        * message_id: The latest message_id in the topic.  Only usable
-          for imprecise applications like sorting.  The message_id
-          cannot be fully accurate given message editing and deleting
-          (as we don't have a way to handle the latest message in a
-          stream having its stream edited or deleted).
-
-          TODO: We can probably fix this limitation by doing a
-          single-message `GET /messages` query with anchor="latest",
-          num_before=0, num_after=0, to update this field when its
-          value becomes ambiguous.  Or probably better to avoid a
-          thundering herd (of a fast query), having the server send
-          the data needed to do this update in stream/topic-edit and
-          delete events (just the new max_message_id for the relevant
-          topic would likely suffice, though we need to think about
-          private stream corner cases).
+        * message_id: The latest message_id in the topic. This is to
+            the best of our knowledge, and may not be accurate if
+            we have not seen all the messages in the topic.
         * pretty_name: The topic_name, with original case.
-        * historical: Whether the user actually received any messages in
-          the topic (has UserMessage rows) or is just viewing the stream.
         * count: Number of known messages in the topic.  Used to detect
           when the last messages in a topic were moved to other topics or
           deleted.
@@ -139,14 +126,42 @@ export class PerStreamHistory {
         return this.topics.size !== 0;
     }
 
-    update_stream_max_message_id(message_id: number): void {
+    update_stream_with_message_id(message_id: number): void {
         if (message_id > this.max_message_id) {
             this.max_message_id = message_id;
+        }
+
+        // Update the first_message_id for the stream.
+        // It is fine if `first_message_id` changes to be higher
+        // due to removal of messages since it will not cause to
+        // display wrong list of topics. So, we don't update it here.
+        // On the other hand, if it changes to be lower
+        // we may miss some topics in autocomplete in the range
+        // of outdated-`first_message_id` to new-`message_id`.
+        // Note that this can only happen if a user moves old
+        // messages to the stream from another stream.
+        const sub = sub_store.get(this.stream_id);
+        if (!sub) {
+            return;
+        }
+
+        if (sub.first_message_id === null || sub.first_message_id === undefined) {
+            fetched_stream_ids.delete(this.stream_id);
+            sub.first_message_id = message_id;
+            return;
+        }
+
+        if (sub.first_message_id > message_id) {
+            fetched_stream_ids.delete(this.stream_id);
+            sub.first_message_id = message_id;
         }
     }
 
     add_or_update(topic_name: string, message_id: number): void {
-        this.update_stream_max_message_id(message_id);
+        // The `message_id` provided here can easily be far from the latest
+        // message in the topic, but it is more important for us to cache the topic
+        // for autocomplete purposes than to have an accurate max message ID.
+        this.update_stream_with_message_id(message_id);
 
         const existing = this.topics.get(topic_name);
 
@@ -154,15 +169,12 @@ export class PerStreamHistory {
             this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
-                historical: false,
                 count: 1,
             });
             return;
         }
 
-        if (!existing.historical) {
-            existing.count += 1;
-        }
+        existing.count += 1;
 
         if (message_id > existing.message_id) {
             existing.message_id = message_id;
@@ -177,25 +189,17 @@ export class PerStreamHistory {
             return;
         }
 
-        if (existing.historical) {
-            // We can't trust that a topic rename applied to
-            // the entire history of historical topic, so we
-            // will always leave it in the sidebar.
-            return;
-        }
-
         if (existing.count <= num_messages) {
             this.topics.delete(topic_name);
-            return;
+            // Verify if this topic still has messages from the server.
+            update_topic_last_message_id(this.stream_id, topic_name);
         }
 
         existing.count -= num_messages;
     }
 
     add_history(server_history: ServerTopicHistoryEntry[]): void {
-        // This method populates historical topics from the
-        // server.  We have less data about these than the
-        // client can maintain for newer topics.
+        // This method populates list of topics from the server.
 
         for (const obj of server_history) {
             const topic_name = obj.name;
@@ -203,9 +207,11 @@ export class PerStreamHistory {
 
             const existing = this.topics.get(topic_name);
 
-            if (existing && !existing.historical) {
-                // Trust out local data more, since it
-                // maintains counts.
+            if (existing) {
+                // If we have a topic in our cache, we update
+                // the message_id to accurately reflect the latest
+                // message in the topic.
+                existing.message_id = message_id;
                 continue;
             }
 
@@ -216,9 +222,9 @@ export class PerStreamHistory {
             this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
-                historical: true,
+                count: 0,
             });
-            this.update_stream_max_message_id(message_id);
+            this.update_stream_with_message_id(message_id);
         }
     }
 
@@ -265,9 +271,13 @@ export function remove_messages(opts: {
         return;
     }
 
-    // This is the normal case of an incoming message.
+    // Adjust our local data structures to account for the
+    // removal of messages from a topic. We can also remove
+    // the topic if it has no messages left or if we cannot
+    // locally determine the current state of the topic.
+    // So, it is important that we return below if we don't have
+    // the topic cached.
     history.maybe_remove(topic_name, num_messages);
-
     const existing_topic = history.topics.get(topic_name);
     if (!existing_topic) {
         return;

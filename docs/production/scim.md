@@ -51,10 +51,10 @@ The Zulip server-side configuration is straightforward:
 
 ## Additional options
 
-- To enable the creation of guest accounts without automatically subscribing them to any initial streams,
+- To enable the creation of guest accounts without automatically subscribing them to any initial channels,
   add `"create_guests_without_streams": True` to your client's config dict in `SCIM_CONFIG`.
   This option is particularly useful for organizations that prefer to manually invite new guest users
-  to the appropriate streams.
+  to the appropriate channels.
 
   Example configuration with the additional option:
 

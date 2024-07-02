@@ -91,7 +91,7 @@ IGNORED_PHRASES = [
     r"find accounts for another email address",
     # SPECIAL CASES
     # Because topics usually are lower-case, this would look weird if it were capitalized
-    r"more topics",
+    r"show all topics",
     # Used alone in a parenthetical where capitalized looks worse.
     r"^deprecated$",
     # We want the similar text in the Private Messages section to have the same capitalization.
@@ -255,6 +255,7 @@ def check_banned_words(text: str) -> List[str]:
             if (
                 "realm_name" in lower_cased_text
                 or "realm_uri" in lower_cased_text
+                or "realm_url" in lower_cased_text
                 or "remote_realm_host" in lower_cased_text
             ):
                 continue

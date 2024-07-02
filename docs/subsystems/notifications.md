@@ -42,7 +42,7 @@ as follows:
     `enable_online_push_notifications` flag is enabled). This data
     structure ignores users for whom the message is not notifiable,
     which is important to avoid this being thousands of `user_ids` for
-    messages to large streams with few currently active users.
+    messages to large channels with few currently active users.
 - The Tornado [event queue system](events-system.md)
   processes that data, as well as data about each user's active event
   queues, to (1) push an event to each queue needing that message and
@@ -153,7 +153,7 @@ structure of the system, when thinking about changes to it:
 - **Future configuration**. Notification settings are an area that we
   expect to only expand with time, with upcoming features like
   following a topic (to get notifications for messages only within
-  that topic in a stream). There are a lot of different workflows
+  that topic in a channel). There are a lot of different workflows
   possible with Zulip's threading, and it's important to make it easy
   for users to set up Zulip's notification to fit as many of those
   workflows as possible.

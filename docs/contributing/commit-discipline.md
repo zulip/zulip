@@ -193,7 +193,7 @@ a few rules to keep in mind:
 - `tests: Compile Handlebars templates with source maps.`
 - `blueslip: Add feature to time common operations.`
 - `gather_subscriptions: Fix exception handling bad input.`
-- `stream_settings: Fix save/discard widget on narrow screens.`
+- `channel_settings: Fix save/discard widget on narrow screens.`
 
 #### Detailed example
 

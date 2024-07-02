@@ -3,29 +3,14 @@ import {z} from "zod";
 import * as channel from "./channel";
 import * as emoji from "./emoji";
 import type {EmojiRenderingDetails} from "./emoji";
+import type {StateData} from "./state_data";
 import {user_settings} from "./user_settings";
+import {user_status_schema} from "./user_status_types";
 
 export type UserStatus = z.infer<typeof user_status_schema>;
 export type UserStatusEmojiInfo = EmojiRenderingDetails & {
     emoji_alt_code?: boolean;
 };
-
-const user_status_schema = z.intersection(
-    z.object({
-        status_text: z.string().optional(),
-        away: z.boolean().optional(),
-    }),
-    z.union([
-        z.object({
-            emoji_name: z.string(),
-            emoji_code: z.string(),
-            reaction_type: z.string(),
-        }),
-        z.object({
-            emoji_name: z.undefined(),
-        }),
-    ]),
-);
 
 const user_status_event_schema = z.intersection(
     z.object({
@@ -37,8 +22,6 @@ const user_status_event_schema = z.intersection(
 );
 
 export type UserStatusEvent = z.infer<typeof user_status_event_schema>;
-
-const user_status_param_schema = z.record(z.string(), user_status_schema);
 
 const user_info = new Map<number, string>();
 const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
@@ -102,6 +85,8 @@ export function get_status_emoji(user_id: number): UserStatusEmojiInfo | undefin
 }
 
 export function set_status_emoji(event: UserStatusEvent): void {
+    // TODO/typescript: Move validation to the caller when
+    // server_events_dispatch.js is converted to TypeScript.
     const opts = user_status_event_schema.parse(event);
 
     if (!opts.emoji_name) {
@@ -119,12 +104,10 @@ export function set_status_emoji(event: UserStatusEvent): void {
     });
 }
 
-export function initialize(params: {user_status: unknown}): void {
+export function initialize(params: StateData["user_status"]): void {
     user_info.clear();
 
-    const user_status = user_status_param_schema.parse(params.user_status);
-
-    for (const [str_user_id, dct] of Object.entries(user_status)) {
+    for (const [str_user_id, dct] of Object.entries(params.user_status)) {
         // JSON does not allow integer keys, so we
         // convert them here.
         const user_id = Number.parseInt(str_user_id, 10);

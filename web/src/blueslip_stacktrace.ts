@@ -28,11 +28,11 @@ type NumberedLine = {
 };
 
 type CleanStackFrame = {
-    full_path?: string;
-    show_path?: string;
-    function_name?: FunctionName;
-    line_number?: number;
-    context?: NumberedLine[];
+    full_path: string | undefined;
+    show_path: string | undefined;
+    function_name: FunctionName | undefined;
+    line_number: number | undefined;
+    context: NumberedLine[] | undefined;
 };
 
 export function exception_msg(
@@ -90,7 +90,7 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     if (fileName === undefined || lineNumber === undefined) {
         return undefined;
     }
-    let sourceContent: string;
+    let sourceContent: string | undefined;
     try {
         sourceContent = await sourceCache[fileName];
     } catch {
@@ -109,41 +109,54 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     }));
 }
 
-export async function display_stacktrace(ex: Error): Promise<void> {
+export async function display_stacktrace(ex: unknown): Promise<void> {
     const errors = [];
-    while (true) {
-        const stackframes: CleanStackFrame[] = await Promise.all(
-            ErrorStackParser.parse(ex).map(async (location: StackFrame) => {
-                try {
-                    location = await stack_trace_gps.getMappedLocation(location);
-                } catch {
-                    // Use unmapped location
-                }
-                return {
-                    full_path: location.getFileName(),
-                    show_path: clean_path(location.getFileName()),
-                    line_number: location.getLineNumber(),
-                    function_name: clean_function_name(location.getFunctionName()),
-                    context: await get_context(location),
-                };
-            }),
-        );
+    do {
+        if (!(ex instanceof Error)) {
+            const prototype: unknown = Object.getPrototypeOf(ex);
+            errors.push({
+                name:
+                    typeof prototype === "object" &&
+                    prototype !== null &&
+                    "constructor" in prototype
+                        ? `thrown ${prototype.constructor.name}`
+                        : "thrown",
+                message: String(ex),
+                stackframes: [],
+            });
+            break;
+        }
+        const stackframes: CleanStackFrame[] =
+            ex instanceof Error
+                ? await Promise.all(
+                      ErrorStackParser.parse(ex).map(async (location: StackFrame) => {
+                          try {
+                              location = await stack_trace_gps.getMappedLocation(location);
+                          } catch {
+                              // Use unmapped location
+                          }
+                          return {
+                              full_path: location.getFileName(),
+                              show_path: clean_path(location.getFileName()),
+                              line_number: location.getLineNumber(),
+                              function_name: clean_function_name(location.getFunctionName()),
+                              context: await get_context(location),
+                          };
+                      }),
+                  )
+                : [];
         let more_info: string | undefined;
         if (ex instanceof BlueslipError) {
             more_info = JSON.stringify(ex.more_info, null, 4);
         }
         errors.push({
+            name: ex.name,
             message: exception_msg(ex),
             more_info,
             stackframes,
         });
-
-        if (ex.cause !== undefined && ex.cause instanceof Error) {
-            ex = ex.cause;
-        } else {
-            break;
-        }
-    }
+        ex = ex.cause;
+    } while (ex !== undefined);
 
     const $alert = $("<div>").addClass("stacktrace").html(render_blueslip_stacktrace({errors}));
     $(".alert-box").append($alert);

@@ -1,6 +1,5 @@
 import $ from "jquery";
-import type {ReferenceElement} from "tippy.js";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import {$t} from "./i18n";
 
@@ -8,21 +7,7 @@ export const status_classes = "alert-error alert-success alert-info alert-warnin
 
 export function phrase_match(query: string, phrase: string): boolean {
     // match "tes" to "test" and "stream test" but not "hostess"
-    let i;
-    query = query.toLowerCase();
-
-    phrase = phrase.toLowerCase();
-    if (phrase.startsWith(query)) {
-        return true;
-    }
-
-    const parts = phrase.split(" ");
-    for (i = 0; i < parts.length; i += 1) {
-        if (parts[i].startsWith(query)) {
-            return true;
-        }
-    }
-    return false;
+    return (" " + phrase.toLowerCase()).includes(" " + query.toLowerCase());
 }
 
 const keys_map = new Map([
@@ -123,8 +108,8 @@ function set_password_toggle_label(
 ): void {
     $(password_selector).attr("aria-label", label);
     if (tippy_tooltips) {
-        const element: ReferenceElement = $(password_selector)[0];
-        const tippy_instance = element._tippy ?? tippy(element);
+        const element: tippy.ReferenceElement = $(password_selector)[0]!;
+        const tippy_instance = element._tippy ?? tippy.default(element);
         tippy_instance.setContent(label);
     } else {
         $(password_selector).attr("title", label);

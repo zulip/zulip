@@ -65,11 +65,20 @@ and [mentions](/help/mention-a-user-or-group), or to include messages in
 
 {end_tabs}
 
-## Troubleshooting desktop notifications
+## Testing desktop notifications
 
-First, make sure you have enabled
-[desktop notifications for DMs](/help/dm-mention-alert-notifications) or for the
-[channel](/help/channel-notifications) you are testing with.
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|notifications}
+
+1. Under **Desktop message notifications**, click **Send a test notification**.
+   If notifications are working, you will receive a test notification.
+
+{end_tabs}
+
+## Troubleshooting desktop notifications
 
 Desktop notifications are triggered when a message arrives, and Zulip is not
 in focus or the message is offscreen. You must have Zulip open in a browser
@@ -78,10 +87,24 @@ tab or in the Zulip desktop app to receive desktop notifications.
 **Visual desktop notifications** appear in the corner of your main monitor.
 **Audible desktop notifications** make a sound.
 
-The most common issue is that your browser or system settings are blocking
-notifications from Zulip.
+To receive notifications in the desktop app, make sure that [Do Not Disturb
+mode](/help/do-not-disturb) is turned off.
+
+### Check notification settings for DMs or channels
+
+If you have successfully received a [test
+notification](#testing-desktop-notifications), but you aren't seeing desktop
+notifications for new messages, check your Zulip notification settings. Make
+sure you have enabled desktop notifications [for
+DMs](/help/dm-mention-alert-notifications) or [for the
+channel](/help/channel-notifications) you are testing. Messages in [muted
+topics](/help/mute-a-topic) will not trigger notifications.
 
 ### Check platform settings
+
+The most common issue is that your browser or system settings are blocking
+notifications from Zulip. Before checking Zulip-specific settings, make sure
+that **Do Not Disturb mode** is not enabled on your computer.
 
 {start_tabs}
 
@@ -140,6 +163,7 @@ Alternate instructions:
 3. Configure the notification style that you would like Zulip to use.
 
 {end_tabs}
+
 
 ## Related articles
 

@@ -7,12 +7,11 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
-from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
-from zerver.lib.avatar import avatar_url_from_dict
+from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
@@ -360,13 +359,6 @@ def do_deactivate_user(
             },
         )
         maybe_enqueue_audit_log_upload(user_profile.realm)
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
-            increment=-1,
-        )
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
             billing_session.update_license_ledger_if_needed(event_time)
@@ -678,7 +670,15 @@ def get_owned_bot_dicts(
             "default_events_register_stream": botdict["default_events_register_stream__name"],
             "default_all_public_streams": botdict["default_all_public_streams"],
             "owner_id": botdict["bot_owner_id"],
-            "avatar_url": avatar_url_from_dict(botdict),
+            "avatar_url": get_avatar_field(
+                user_id=botdict["id"],
+                realm_id=botdict["realm_id"],
+                email=botdict["email"],
+                avatar_source=botdict["avatar_source"],
+                avatar_version=botdict["avatar_version"],
+                medium=False,
+                client_gravatar=False,
+            ),
             "services": services_by_ids[botdict["id"]],
         }
         for botdict in result

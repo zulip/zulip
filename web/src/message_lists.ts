@@ -3,7 +3,6 @@ import $ from "jquery";
 import * as inbox_util from "./inbox_util";
 import type {MessageListData} from "./message_list_data";
 import type {Message} from "./message_store";
-import {stringify_time} from "./timerender";
 import * as ui_util from "./ui_util";
 
 // TODO(typescript): Move this to message_list_view when it's
@@ -11,6 +10,12 @@ import * as ui_util from "./ui_util";
 type MessageListView = {
     update_recipient_bar_background_color: () => void;
     rerender_messages: (messages: Message[], message_content_edited?: boolean) => void;
+    is_fetched_end_rendered: () => boolean;
+    is_fetched_start_rendered: () => boolean;
+    first_rendered_message: () => Message | undefined;
+    last_rendered_message: () => Message | undefined;
+    show_message_as_read: (message: Message, options: {from?: "pointer" | "server"}) => void;
+    show_messages_as_unread: (message_ids: number[]) => void;
     _render_win_start: number;
     _render_win_end: number;
     sticky_recipient_message_id: number | undefined;
@@ -38,8 +43,15 @@ export type MessageList = {
     selected_idx: () => number;
     all_messages: () => Message[];
     get: (id: number) => Message | undefined;
+    has_unread_messages: () => boolean;
+    can_mark_messages_read: () => boolean;
     can_mark_messages_read_without_setting: () => boolean;
     rerender_view: () => void;
+    update_muting_and_rerender: () => void;
+    prev: () => number | undefined;
+    next: () => number | undefined;
+    is_at_end: () => boolean;
+    prevent_reading: () => void;
     resume_reading: () => void;
     data: MessageListData;
     select_id: (message_id: number, opts?: SelectIdOpts) => void;
@@ -48,9 +60,11 @@ export type MessageList = {
         messages: Message[],
         append_opts: {messages_are_new: boolean},
     ) => RenderInfo | undefined;
+    first: () => Message | undefined;
     last: () => Message | undefined;
     visibly_empty: () => boolean;
     selected_message: () => Message;
+    should_preserve_current_rendered_state: () => boolean;
 };
 
 export let current: MessageList | undefined;
@@ -63,12 +77,34 @@ export function set_current(msg_list: MessageList | undefined): void {
 }
 
 export function update_current_message_list(msg_list: MessageList | undefined): void {
-    if (current && !current.preserve_rendered_state) {
+    // Since we change `current` message list in the function, we need to decide if the
+    // current message list needs to be cached or discarded.
+    //
+    // If we are caching the current message list, we need to remove any other message lists
+    // that we have cached with the same filter.
+    //
+    // If we are discarding the current message list, we need to remove the
+    // current message list from the DOM.
+    if (current && !current.should_preserve_current_rendered_state()) {
         // Remove the current message list from the DOM.
         current.view.$list.remove();
         rendered_message_lists.delete(current.id);
     } else {
+        // We plan to keep the current message list cached.
         current?.view.$list.removeClass("focused-message-list");
+        // Remove any existing message lists that we have with the same filter.
+        // TODO: If we start supporting more messages lists than just Combined feed,
+        // make this a proper filter comparison between the lists.
+        if (current?.data.filter.is_in_home()) {
+            for (const [id, msg_list] of rendered_message_lists) {
+                if (id !== current.id && msg_list.data.filter.is_in_home()) {
+                    msg_list.view.$list.remove();
+                    rendered_message_lists.delete(id);
+                    // We only expect to have one instance of a message list filter cached.
+                    break;
+                }
+            }
+        }
     }
 
     current = msg_list;
@@ -110,44 +146,7 @@ export function update_recipient_bar_background_color(): void {
     inbox_util.update_stream_colors();
 }
 
-export function calculate_timestamp_widths(): void {
-    const $temp_time_div = $("<div>");
-    $temp_time_div.attr("id", "calculated-timestamp-widths");
-    // Size the div to the width of the largest timestamp,
-    // but the div out of the document flow with absolute positioning.
-    $temp_time_div.css({
-        width: "max-content",
-        visibility: "hidden",
-        position: "absolute",
-        top: "-100vh",
-    });
-    // We should get a reasonable max-width by looking only at
-    // the first and last minutes of AM and PM
-    const candidate_times = ["00:00", "11:59", "12:00", "23:59"];
-
-    for (const time of candidate_times) {
-        const $temp_time_element = $("<a>");
-        $temp_time_element.attr("class", "message-time");
-        // stringify_time only returns the time, so the date here is
-        // arbitrary and only required for creating a Date object
-        const candidate_timestamp = stringify_time(Date.parse(`1999-07-01T${time}`));
-        $temp_time_element.text(candidate_timestamp);
-        $temp_time_div.append($temp_time_element);
-    }
-
-    // Append the <div> element to calculate the maximum rendered width
-    $("body").append($temp_time_div);
-    const max_timestamp_width = $temp_time_div.width();
-    // Set the width as a CSS variable
-    $(":root").css("--message-box-timestamp-column-width", `${max_timestamp_width}px`);
-    // Clean up by removing the temporary <div> element
-    $temp_time_div.remove();
-}
-
 export function initialize(): void {
-    // We calculate the widths of a candidate set of timestamps,
-    // and use the largest to set `--message-box-timestamp-column-width`
-    calculate_timestamp_widths();
     // For users with automatic color scheme, we need to detect change
     // in `prefers-color-scheme` as it changes based on time.
     ui_util.listener_for_preferred_color_scheme_change(update_recipient_bar_background_color);

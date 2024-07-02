@@ -16,7 +16,7 @@ wheel==0.43.0 \
 https://github.com/zulip/pip/archive/39e8b5ecfcd8d19872f103d680713bc8e9de9d00.zip#egg=pip==20.3.4+git \
     --hash=sha256:2c8ae0783fea3e2b98b422d443b19c443779f0881882f905e0728be7b4043d1b
     # via -r requirements/pip.in
-setuptools==69.5.1 \
-    --hash=sha256:6c1fccdac05a97e598fb0ae3bbed5904ccb317337a51139dcd51453611bbb987 \
-    --hash=sha256:c636ac361bc47580504644275c9ad802c50415c7522212252c033bd15f301f32
+setuptools==70.1.1 \
+    --hash=sha256:937a48c7cdb7a21eb53cd7f9b59e525503aa8abaf3584c730dc5f7a5bec3a650 \
+    --hash=sha256:a58a8fde0541dab0419750bcc521fbdf8585f6e5cb41909df3a472ef7b81ca95
     # via -r requirements/pip.in

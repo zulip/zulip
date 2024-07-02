@@ -353,7 +353,7 @@ def json_change_settings(
 
         do_change_password(user_profile, new_password)
         # Password changes invalidates sessions, see
-        # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
+        # https://docs.djangoproject.com/en/5.0/topics/auth/default/#session-invalidation-on-password-change
         # for details. To avoid this logging the user out of their own
         # session (which would provide a confusing UX at best), we
         # update the session hash here.
@@ -419,7 +419,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
                 max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
             )
         )
-    upload_avatar_image(user_file, user_profile, user_profile)
+    upload_avatar_image(user_file, user_profile)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)
 

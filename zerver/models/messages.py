@@ -26,6 +26,7 @@ from zerver.models.users import UserProfile
 
 
 class AbstractMessage(models.Model):
+    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
     # The target of the message is signified by the Recipient object.
@@ -38,6 +39,27 @@ class AbstractMessage(models.Model):
     #
     # Important for efficient indexes and sharding in multi-realm servers.
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+    class MessageType(models.IntegerChoices):
+        NORMAL = 1
+        RESOLVE_TOPIC_NOTIFICATION = 2
+
+    # IMPORTANT: message.type is not to be confused with the
+    # "recipient type" ("channel" or "direct"), which is is sometimes
+    # called message_type in the APIs, CountStats or some variable
+    # names. We intend to rename those to recipient_type.
+    #
+    # Type of the message, used to distinguish between "normal"
+    # messages and some special kind of messages, such as notification
+    # messages that may be sent by system bots.
+    type = models.PositiveSmallIntegerField(
+        choices=MessageType.choices,
+        default=MessageType.NORMAL,
+        # Note: db_default is a new feature in Django 5.0, so we don't use
+        # it across the codebase yet. It's useful here to simplify the
+        # associated database migration, so we're making use of it.
+        db_default=MessageType.NORMAL,
+    )
 
     # The message's topic.
     #
@@ -131,6 +153,8 @@ class Message(AbstractMessage):
     #   preferred way to indicate a personal or huddle
     #   Recipient type via the API.
     API_RECIPIENT_TYPES = ["direct", "private", "stream", "channel"]
+
+    MAX_POSSIBLE_MESSAGE_ID = 2147483647
 
     search_tsvector = SearchVectorField(null=True)
 

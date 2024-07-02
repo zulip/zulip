@@ -15,6 +15,8 @@ const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_topic_history_util = zrequire("stream_topic_history_util");
 
+stream_topic_history.set_update_topic_last_message_id(noop);
+
 function test(label, f) {
     run_test(label, (helpers) => {
         unread.declare_bankruptcy();
@@ -212,15 +214,23 @@ test("server_history", () => {
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["hist2", "hist1"]);
 
-    // We can try to remove a historical message, but it should
-    // have no effect.
+    // Removing message from a topic fetched from server history, will send
+    // query to the server to get the latest message id in the topic.
+    let update_topic_called = false;
+    stream_topic_history.set_update_topic_last_message_id((stream_id, topic_name) => {
+        assert.equal(stream_id, 66);
+        assert.equal(topic_name, "hist2");
+        update_topic_called = true;
+    });
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "hist2",
         num_messages: 1,
     });
+    assert.equal(update_topic_called, true);
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["hist2", "hist1"]);
+    assert.deepEqual(history, ["hist1"]);
+    stream_topic_history.set_update_topic_last_message_id(noop);
 
     // If we call back to the server for history, the
     // effect is always additive.  We may decide to prune old
@@ -391,4 +401,71 @@ test("all_topics_in_cache", ({override}) => {
 
     sub.first_message_id = 2;
     assert.equal(stream_topic_history.all_topics_in_cache(sub), true);
+});
+
+test("ask_server_for_latest_topic_data", () => {
+    stream_topic_history.set_update_topic_last_message_id((stream_id, topic_name) => {
+        stream_topic_history_util.update_topic_last_message_id(stream_id, topic_name, noop);
+    });
+    const stream_id = 1080;
+
+    let success_callback;
+    let get_message_request_triggered = false;
+    channel.get = (opts) => {
+        get_message_request_triggered = true;
+        assert.equal(opts.url, "/json/messages");
+        assert.deepEqual(opts.data, {
+            anchor: "newest",
+            narrow: '[{"operator":"stream","operand":1080},{"operator":"topic","operand":"Topic1"}]',
+            num_after: 0,
+            num_before: 1,
+        });
+        success_callback = opts.success;
+    };
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 101,
+        topic_name: "topic1",
+    });
+
+    let history = stream_topic_history.get_recent_topic_names(stream_id);
+    let max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(history, ["topic1"]);
+    assert.deepEqual(max_message_id, 101);
+
+    // Remove all cached messages from the topic. This sends a request to the server
+    // to check for the latest message id in the topic.
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "Topic1",
+        num_messages: 1,
+        max_removed_msg_id: 104,
+    });
+    assert.equal(get_message_request_triggered, true);
+    get_message_request_triggered = false;
+
+    // Until we process the response from the server,
+    // the topic is not available.
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, []);
+
+    // Simulate the server responses.
+    // Topic is empty.
+    success_callback({
+        messages: [],
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, []);
+
+    // Topic has a different max_message_id.
+    success_callback({
+        messages: [{id: 102}],
+    });
+
+    // The topic is now available.
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(history, ["Topic1"]);
+    assert.deepEqual(max_message_id, 102);
 });

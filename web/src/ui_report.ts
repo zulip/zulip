@@ -55,7 +55,7 @@ export function success(response_html: string, $status_box: JQuery, remove_after
     message(response_html, $status_box, "alert-success", remove_after);
 }
 
-export function generic_embed_error(error_html: string, remove_after: number): void {
+export function generic_embed_error(error_html: string, remove_after?: number): void {
     const $alert = $("<div>").addClass(["alert", "home-error-bar", "show"]);
     const $exit = $("<div>").addClass("exit");
 

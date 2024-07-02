@@ -1,9 +1,9 @@
+import collections
 import logging
 import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
-from mimetypes import guess_type
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import bmemcached
@@ -27,19 +27,20 @@ from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, Table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.mime_types import guess_type
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
+from zerver.lib.thumbnail import BadImageError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import upload_backend
-from zerver.lib.upload.base import BadImageError, sanitize_name
+from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend
 from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
-from zerver.lib.zulip_update_announcements import send_zulip_update_announcements
+from zerver.lib.zulip_update_announcements import send_zulip_update_announcements_to_realm
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -80,6 +81,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_huddle_hash
 from zerver.models.users import get_system_bot, get_user_profile_by_id
@@ -115,6 +117,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "subscription": {},
     "defaultstream": {},
     "onboardingstep": {},
+    "presencesequence": {},
     "reaction": {},
     "realmauthenticationmethod": {},
     "realmemoji": {},
@@ -155,6 +158,22 @@ path_maps: Dict[str, Dict[str, str]] = {
     "attachment_path": {},
 }
 
+message_id_to_attachments: Dict[str, Dict[int, List[str]]] = {
+    "zerver_message": collections.defaultdict(list),
+    "zerver_scheduledmessage": collections.defaultdict(list),
+}
+
+
+def map_messages_to_attachments(data: TableData) -> None:
+    for attachment in data["zerver_attachment"]:
+        for message_id in attachment["messages"]:
+            message_id_to_attachments["zerver_message"][message_id].append(attachment["path_id"])
+
+        for scheduled_message_id in attachment["scheduled_messages"]:
+            message_id_to_attachments["zerver_scheduledmessage"][scheduled_message_id].append(
+                attachment["path_id"]
+            )
+
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
     if table not in ID_MAP:
@@ -181,16 +200,20 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
     organization being imported (which is only determined at import
     time), we need to rewrite the URLs of links to uploaded files
     during the import process.
+
+    Applied to attachments path_id found in messages of zerver_message and zerver_scheduledmessage tables.
     """
     for message in data[message_table]:
         if message["has_attachment"] is True:
-            for key, value in path_maps["attachment_path"].items():
-                if key in message["content"]:
-                    message["content"] = message["content"].replace(key, value)
-                    if message["rendered_content"]:
-                        message["rendered_content"] = message["rendered_content"].replace(
-                            key, value
-                        )
+            for attachment_path in message_id_to_attachments[message_table][message["id"]]:
+                message["content"] = message["content"].replace(
+                    attachment_path, path_maps["attachment_path"][attachment_path]
+                )
+
+                if message["rendered_content"]:
+                    message["rendered_content"] = message["rendered_content"].replace(
+                        attachment_path, path_maps["attachment_path"][attachment_path]
+                    )
 
 
 def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
@@ -303,14 +326,17 @@ def fix_customprofilefield(data: TableData) -> None:
 
 
 def fix_message_rendered_content(
-    realm: Realm, sender_map: Dict[int, Record], messages: List[Record]
+    realm: Realm,
+    sender_map: Dict[int, Record],
+    messages: List[Record],
+    content_key: str = "content",
+    rendered_content_key: str = "rendered_content",
 ) -> None:
     """
-    This function sets the rendered_content of all the messages
-    after the messages have been imported from a non-Zulip platform.
+    This function sets the rendered_content of the messages we're importing.
     """
     for message in messages:
-        if message["rendered_content"] is not None:
+        if message[rendered_content_key] is not None:
             # For Zulip->Zulip imports, we use the original rendered
             # Markdown; this avoids issues where e.g. a mention can no
             # longer render properly because a user has changed their
@@ -319,7 +345,7 @@ def fix_message_rendered_content(
             # However, we still need to update the data-user-id and
             # similar values stored on mentions, stream mentions, and
             # similar syntax in the rendered HTML.
-            soup = BeautifulSoup(message["rendered_content"], "html.parser")
+            soup = BeautifulSoup(message[rendered_content_key], "html.parser")
 
             user_mentions = soup.findAll("span", {"class": "user-mention"})
             if len(user_mentions) != 0:
@@ -336,7 +362,7 @@ def fix_message_rendered_content(
                     old_user_id = int(mention["data-user-id"])
                     if old_user_id in user_id_map:
                         mention["data-user-id"] = str(user_id_map[old_user_id])
-                message["rendered_content"] = str(soup)
+                message[rendered_content_key] = str(soup)
 
             stream_mentions = soup.findAll("a", {"class": "stream"})
             if len(stream_mentions) != 0:
@@ -345,7 +371,7 @@ def fix_message_rendered_content(
                     old_stream_id = int(mention["data-stream-id"])
                     if old_stream_id in stream_id_map:
                         mention["data-stream-id"] = str(stream_id_map[old_stream_id])
-                message["rendered_content"] = str(soup)
+                message[rendered_content_key] = str(soup)
 
             user_group_mentions = soup.findAll("span", {"class": "user-group-mention"})
             if len(user_group_mentions) != 0:
@@ -354,11 +380,11 @@ def fix_message_rendered_content(
                     old_user_group_id = int(mention["data-user-group-id"])
                     if old_user_group_id in user_group_id_map:
                         mention["data-user-group-id"] = str(user_group_id_map[old_user_group_id])
-                message["rendered_content"] = str(soup)
+                message[rendered_content_key] = str(soup)
             continue
 
         try:
-            content = message["content"]
+            content = message[content_key]
 
             sender_id = message["sender_id"]
             sender = sender_map[sender_id]
@@ -378,7 +404,7 @@ def fix_message_rendered_content(
                 translate_emoticons=translate_emoticons,
             ).rendered_content
 
-            message["rendered_content"] = rendered_content
+            message[rendered_content_key] = rendered_content
             if "scheduled_timestamp" not in message:
                 # This logic runs also for ScheduledMessage, which doesn't use
                 # the rendered_content_version field.
@@ -387,11 +413,35 @@ def fix_message_rendered_content(
             # This generally happens with two possible causes:
             # * rendering Markdown throwing an uncaught exception
             # * rendering Markdown failing with the exception being
-            #   caught in Markdown (which then returns None, causing the the
+            #   caught in Markdown (which then returns None, causing the
             #   rendered_content assert above to fire).
             logging.warning(
                 "Error in Markdown rendering for message ID %s; continuing", message["id"]
             )
+
+
+def fix_message_edit_history(
+    realm: Realm, sender_map: Dict[int, Record], messages: List[Record]
+) -> None:
+    user_id_map = ID_MAP["user_profile"]
+    for message in messages:
+        edit_history_json = message.get("edit_history")
+        if not edit_history_json:
+            continue
+
+        edit_history = orjson.loads(edit_history_json)
+        for edit_history_message_dict in edit_history:
+            edit_history_message_dict["user_id"] = user_id_map[edit_history_message_dict["user_id"]]
+
+        fix_message_rendered_content(
+            realm,
+            sender_map,
+            messages=edit_history,
+            content_key="prev_content",
+            rendered_content_key="prev_rendered_content",
+        )
+
+        message["edit_history"] = orjson.dumps(edit_history).decode()
 
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
@@ -739,38 +789,29 @@ def fix_subscriptions_is_user_active_column(
 
 
 def process_avatars(record: Dict[str, Any]) -> None:
-    # We need to re-import upload_backend here, because in the
-    # import-export unit tests, the Zulip settings are overridden for
-    # specific tests to control the choice of upload backend, and this
-    # reimport ensures that we use the right choice for the current
-    # test. Outside the test suite, settings never change after the
-    # server is started, so this import will have no effect in production.
-    from zerver.lib.upload import upload_backend
-
-    if record["s3_path"].endswith(".original"):
-        user_profile = get_user_profile_by_id(record["user_profile_id"])
-        if settings.LOCAL_AVATARS_DIR is not None:
-            avatar_path = user_avatar_path_from_ids(user_profile.id, record["realm_id"])
-            medium_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + "-medium.png"
-            if os.path.exists(medium_file_path):
-                # We remove the image here primarily to deal with
-                # issues when running the import script multiple
-                # times in development (where one might reuse the
-                # same realm ID from a previous iteration).
-                os.remove(medium_file_path)
-        try:
-            upload_backend.ensure_avatar_image(user_profile=user_profile, is_medium=True)
-            if record.get("importer_should_thumbnail"):
-                upload_backend.ensure_avatar_image(user_profile=user_profile)
-        except BadImageError:
-            logging.warning(
-                "Could not thumbnail avatar image for user %s; ignoring",
-                user_profile.id,
-            )
-            # Delete the record of the avatar to avoid 404s.
-            do_change_avatar_fields(
-                user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
-            )
+    if not record["s3_path"].endswith(".original"):
+        return None
+    user_profile = get_user_profile_by_id(record["user_profile_id"])
+    if settings.LOCAL_AVATARS_DIR is not None:
+        avatar_path = user_avatar_path_from_ids(user_profile.id, record["realm_id"])
+        medium_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + "-medium.png"
+        if os.path.exists(medium_file_path):
+            # We remove the image here primarily to deal with
+            # issues when running the import script multiple
+            # times in development (where one might reuse the
+            # same realm ID from a previous iteration).
+            os.remove(medium_file_path)
+    try:
+        ensure_avatar_image(user_profile=user_profile, medium=True)
+        if record.get("importer_should_thumbnail"):
+            ensure_avatar_image(user_profile=user_profile)
+    except BadImageError:
+        logging.warning(
+            "Could not thumbnail avatar image for user %s; ignoring",
+            user_profile.id,
+        )
+        # Delete the record of the avatar to avoid 404s.
+        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
 
 
 def import_uploads(
@@ -823,12 +864,7 @@ def import_uploads(
             if record["s3_path"].endswith(".original"):
                 relative_path += ".original"
             else:
-                # TODO: This really should be unconditional.  However,
-                # until we fix the S3 upload backend to use the .png
-                # path suffix for its normal avatar URLs, we need to
-                # only do this for the LOCAL_UPLOADS_DIR backend.
-                if not s3_uploads:
-                    relative_path += ".png"
+                relative_path = upload_backend.get_avatar_path(relative_path, medium=False)
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
@@ -1015,6 +1051,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     update_model_ids(UserProfile, data, "user_profile")
     if "zerver_usergroup" in data:
         update_model_ids(UserGroup, data, "usergroup")
+    if "zerver_presencesequence" in data:
+        update_model_ids(PresenceSequence, data, "presencesequence")
 
     # Now we prepare to import the Realm table
     re_map_foreign_keys(
@@ -1051,6 +1089,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         realm.save()
 
+        if "zerver_presencesequence" in data:
+            re_map_foreign_keys(data, "zerver_presencesequence", "realm", related_table="realm")
+            bulk_import_model(data, PresenceSequence)
+        else:
+            # We need to enforce the invariant that every realm must have a PresenceSequence.
+            PresenceSequence.objects.create(realm=realm, last_update_id=0)
+
         if "zerver_usergroup" in data:
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
             bulk_import_model(data, UserGroup)
@@ -1081,7 +1126,18 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # Stream objects are created by Django.
         fix_datetime_fields(data, "zerver_stream")
         re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
+
         re_map_foreign_keys(data, "zerver_stream", "creator", related_table="user_profile")
+        # There's a circular dependency between Stream and UserProfile due to
+        # the .creator attribute. We untangle it by first remembering the creator_id
+        # for all the streams and then removing those fields from the data.
+        # That allows us to successfully import streams, and then later after users
+        # are imported, we can set the .creator_id for all these streams correctly.
+        stream_id_to_creator_id = {}
+        for stream in data["zerver_stream"]:
+            creator_id = stream.pop("creator_id", None)
+            stream_id_to_creator_id[stream["id"]] = creator_id
+
         if role_system_groups_dict is not None:
             # Because the system user groups are missing, we manually set up
             # the defaults for can_remove_subscribers_group for all the
@@ -1136,6 +1192,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     UserProfile.objects.bulk_create(user_profiles)
 
+    # UserProfiles have been loaded, so now we're ready to set .creator_id
+    # for streams based on the mapping we saved earlier.
+    streams = Stream.objects.filter(id__in=stream_id_to_creator_id.keys())
+    for stream in streams:
+        stream.creator_id = stream_id_to_creator_id[stream.id]
+    Stream.objects.bulk_update(streams, ["creator_id"])
+
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
 
@@ -1165,7 +1228,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # We don't import Huddle yet, since we don't have the data to
         # compute huddle hashes until we've imported some of the
         # tables below.
-        # TODO: double-check this.
+        # We can't get huddle hashes without processing subscriptions
+        # first, during which get_huddles_from_subscription is called.
 
     re_map_foreign_keys(
         data,
@@ -1406,6 +1470,18 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     sender_map = {user["id"]: user for user in data["zerver_userprofile"]}
 
+    # TODO: de-dup how we read these json files.
+    attachments_file = os.path.join(import_dir, "attachment.json")
+    if not os.path.exists(attachments_file):
+        raise Exception("Missing attachment.json file!")
+
+    # Important: map_messages_to_attachments should be called before fix_upload_links
+    # which is called by import_message_data and another for zerver_scheduledmessage.
+    with open(attachments_file, "rb") as f:
+        attachment_data = orjson.loads(f.read())
+
+    map_messages_to_attachments(attachment_data)
+
     # Import zerver_message and zerver_usermessage
     import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
 
@@ -1468,15 +1544,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         bulk_import_model(data, UserStatus)
 
     # Do attachments AFTER message data is loaded.
-    # TODO: de-dup how we read these json files.
-    fn = os.path.join(import_dir, "attachment.json")
-    if not os.path.exists(fn):
-        raise Exception("Missing attachment.json file!")
-
-    logging.info("Importing attachment data from %s", fn)
-    with open(fn, "rb") as f:
-        attachment_data = orjson.loads(f.read())
-
+    logging.info("Importing attachment data from %s", attachments_file)
     import_attachments(attachment_data)
 
     # Import the analytics file.
@@ -1516,7 +1584,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         realm=realm, event_type=RealmAuditLog.REALM_EXPORTED, acting_user=None
     ).exists()
     if not is_realm_imported_from_other_zulip_server:
-        send_zulip_update_announcements(skip_delay=False, realm_imported_from_other_product=realm)
+        send_zulip_update_announcements_to_realm(
+            realm, skip_delay=False, realm_imported_from_other_product=True
+        )
 
     return realm
 
@@ -1637,6 +1707,9 @@ def import_message_data(realm: Realm, sender_map: Dict[int, Record], import_dir:
         )
         logging.info("Successfully rendered Markdown for message batch")
 
+        fix_message_edit_history(
+            realm=realm, sender_map=sender_map, messages=data["zerver_message"]
+        )
         # A LOT HAPPENS HERE.
         # This is where we actually import the message data.
         bulk_import_model(data, Message)

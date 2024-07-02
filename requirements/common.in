@@ -25,8 +25,8 @@ regex
 # Needed for manage.py
 ipython
 
-# Needed for image processing
-Pillow
+# Needed for image processing and thumbnailing
+pyvips
 
 # Needed for building complex DB queries
 SQLAlchemy==1.4.*
@@ -52,7 +52,12 @@ django-auth-ldap
 django-bitfield
 
 # Needed for Android push notifications
-python-gcm
+# grpcio-status needs to be pinned to 1.62.* because higher
+# versions demand protobuf>=5.26.1, which conflicts with various
+# other big dependencies of firebase-admin. pip fails to
+# find this resolution by itself.
+grpcio-status==1.62.*
+firebase-admin
 
 # Needed for the email mirror
 html2text

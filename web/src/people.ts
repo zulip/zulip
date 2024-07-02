@@ -1,5 +1,6 @@
 import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
+import type {z} from "zod";
 
 import * as typeahead from "../shared/src/typeahead";
 
@@ -13,50 +14,19 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import type {
+    StateData,
+    cross_realm_bot_schema,
+    profile_datum_schema,
+    user_schema,
+} from "./state_data";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
-export type ProfileData = {
-    value: string;
-    rendered_value?: string;
-};
-
-export type User = {
-    user_id: number;
-    delivery_email: string | null;
-    email: string;
-    full_name: string;
-    // used for caching result of remove_diacritics.
-    name_with_diacritics_removed?: string;
-    date_joined: string;
-    is_active: boolean;
-    is_owner: boolean;
-    is_admin: boolean;
-    is_guest: boolean;
-    is_moderator: boolean;
-    is_billing_admin: boolean;
-    role: number;
-    timezone: string;
-    avatar_url?: string | null;
-    avatar_version: number;
-    profile_data: Record<number, ProfileData>;
-    // used for fake user objects.
-    is_missing_server_data?: boolean;
-    // used for inaccessible user objects.
-    is_inaccessible_user?: boolean;
-} & (
-    | {
-          is_bot: false;
-          bot_type: null;
-      }
-    | {
-          is_bot: true;
-          bot_type: number;
-          bot_owner_id: number | null;
-      }
-);
+export type ProfileDatum = z.infer<typeof profile_datum_schema>;
+export type User = z.infer<typeof user_schema>;
 
 export type SenderInfo = User & {
     avatar_url_small: string;
@@ -69,19 +39,10 @@ export type PseudoMentionUser = {
     email: string;
     pm_recipient_count: number;
     full_name: string;
-    is_broadcast: true;
     idx: number;
 };
 
-export type CrossRealmBot = User & {
-    is_system_bot: boolean;
-};
-
-export type PeopleParams = {
-    realm_users: User[];
-    realm_non_active_users: User[];
-    cross_realm_bots: CrossRealmBot[];
-};
+export type CrossRealmBot = z.infer<typeof cross_realm_bot_schema>;
 
 let people_dict: FoldDict<User>;
 let people_by_name_dict: FoldDict<User>;
@@ -94,6 +55,7 @@ let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
 
 export let INACCESSIBLE_USER_NAME: string;
+export let WELCOME_BOT: CrossRealmBot;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
@@ -271,7 +233,7 @@ function sort_numerically(user_ids: number[]): number[] {
     return user_ids;
 }
 
-export function huddle_string(message: Message): string | undefined {
+export function direct_message_group_string(message: Message): string | undefined {
     if (message.type !== "private") {
         return undefined;
     }
@@ -480,7 +442,7 @@ export function get_recipients(user_ids_string: string): string {
     return names.join(", ");
 }
 
-export function pm_reply_user_string(message: Message): string | undefined {
+export function pm_reply_user_string(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
@@ -530,13 +492,13 @@ export function sorted_other_user_ids(user_ids: number[]): number[] {
     return user_ids;
 }
 
-export function concat_huddle(user_ids: number[], user_id: number): string {
+export function concat_direct_message_group(user_ids: number[], user_id: number): string {
     /*
         We assume user_ids and user_id have already
         been validated by the caller.
 
         The only logic we're encapsulating here is
-        how to encode huddles.
+        how to encode direct message group.
     */
     const sorted_ids = sort_numerically([...user_ids, user_id]);
     return sorted_ids.join(",");
@@ -578,9 +540,7 @@ export function all_user_ids_in_pm(message: Message): number[] | undefined {
     return user_ids;
 }
 
-export function pm_with_user_ids(
-    message: Message & {reply_to?: string; url?: string},
-): number[] | undefined {
+export function pm_with_user_ids(message: Message | MessageWithBooleans): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
     }
@@ -620,10 +580,10 @@ export function pm_perma_link(message: Message): string | undefined {
     return url;
 }
 
-export function pm_with_url(message: Message): string | undefined {
+export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
-    if (!user_ids) {
+    if (user_ids?.[0] === undefined) {
         return undefined;
     }
 
@@ -712,7 +672,7 @@ export function emails_to_slug(emails_string: string): string | undefined {
 
     const emails = emails_string.split(",");
 
-    if (emails.length === 1) {
+    if (emails.length === 1 && emails[0] !== undefined) {
         const person = get_by_email(emails[0]);
         assert(person !== undefined, "Unknown person in emails_to_slug");
         const name = person.full_name;
@@ -739,7 +699,7 @@ export function slug_to_emails(slug: string): string | undefined {
     */
     const m = /^([\d,]+)(-.*)?/.exec(slug);
     if (m) {
-        let user_ids_string = m[1];
+        let user_ids_string = m[1]!;
         user_ids_string = exclude_me_from_string(user_ids_string);
         return user_ids_string_to_emails_string(user_ids_string);
     }
@@ -765,7 +725,7 @@ export function exclude_me_from_string(user_ids_string: string): string {
 }
 
 export function format_small_avatar_url(raw_url: string): string {
-    const url = new URL(raw_url, location.origin);
+    const url = new URL(raw_url, window.location.origin);
     url.search += (url.search ? "&" : "") + "s=50";
     return url.href;
 }
@@ -809,6 +769,7 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
     if (
         recipient_ids.length === 1 &&
+        recipient_ids[0] !== undefined &&
         (is_valid_bot_user(recipient_ids[0]) || is_my_user_id(recipient_ids[0]))
     ) {
         return true;
@@ -845,7 +806,7 @@ export function small_avatar_url_for_person(person: User): string {
 function medium_gravatar_url_for_email(email: string): string {
     const hash = md5(email.toLowerCase());
     const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
-    const url = new URL(avatar_url, location.origin);
+    const url = new URL(avatar_url, window.location.origin);
     url.search += (url.search ? "&" : "") + "s=500";
     return url.href;
 }
@@ -1224,7 +1185,10 @@ export function build_person_matcher(query: string): (user: User) => boolean {
     };
 }
 
-export function filter_people_by_search_terms(users: User[], search_terms: string[]): Set<number> {
+export function filter_people_by_search_terms(users: User[], search_string: string): Set<number> {
+    let search_terms = search_string.toLowerCase().split(/[,|]+/);
+    search_terms = search_terms.map((s) => s.trim());
+
     const filtered_users = new Set<number>();
 
     // Build our matchers outside the loop to avoid some
@@ -1427,6 +1391,9 @@ export function add_cross_realm_user(person: CrossRealmBot): void {
         _add_user(person);
     }
     cross_realm_dict.set(person.user_id, person);
+    if (person.full_name === "Welcome Bot") {
+        WELCOME_BOT = person;
+    }
 }
 
 export function deactivate(person: User): void {
@@ -1489,7 +1456,6 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         // We explicitly don't set `avatar_url` for fake person objects so that fallback code
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.
-        avatar_url: undefined,
         avatar_version: 0,
         timezone: "",
         date_joined: "",
@@ -1531,30 +1497,23 @@ export function get_user_by_id_assert_valid(
 }
 
 function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser[] {
-    let involved_people: DisplayRecipientUser[];
+    let involved_people: DisplayRecipientUser[] = [];
 
-    switch (message.type) {
-        case "stream":
-            involved_people = [
-                {
-                    full_name: message.sender_full_name,
-                    id: message.sender_id,
-                    email: message.sender_email,
-                    is_mirror_dummy: false,
-                },
-            ];
-            break;
-
-        case "private":
-            assert(
-                typeof message.display_recipient !== "string",
-                "Private messages should have list of recipients",
-            );
-            involved_people = message.display_recipient;
-            break;
-
-        default:
-            involved_people = [];
+    if (message.type === "stream") {
+        involved_people = [
+            {
+                full_name: message.sender_full_name,
+                id: message.sender_id,
+                email: message.sender_email,
+                is_mirror_dummy: false,
+            },
+        ];
+    } else if (message.type === "private") {
+        assert(
+            typeof message.display_recipient !== "string",
+            "Private messages should have list of recipients",
+        );
+        involved_people = message.display_recipient;
     }
 
     return involved_people;
@@ -1667,13 +1626,14 @@ export function set_full_name(person_obj: User, new_full_name: string): void {
 
 export function set_custom_profile_field_data(
     user_id: number,
-    field: {id: number} & ProfileData,
+    field: {id: number} & ProfileDatum,
 ): void {
     if (field.id === undefined) {
         blueslip.error("Trying to set undefined field id");
         return;
     }
     const person = get_by_user_id(user_id);
+    assert(person.profile_data !== undefined);
     person.profile_data[field.id] = {
         value: field.value,
         rendered_value: field.rendered_value,
@@ -1706,7 +1666,7 @@ export function my_current_user_id(): number {
     return my_user_id;
 }
 
-export function my_custom_profile_data(field_id: number): ProfileData | null | undefined {
+export function my_custom_profile_data(field_id: number): ProfileDatum | null | undefined {
     if (field_id === undefined) {
         blueslip.error("Undefined field id");
         return undefined;
@@ -1714,7 +1674,10 @@ export function my_custom_profile_data(field_id: number): ProfileData | null | u
     return get_custom_profile_data(my_user_id, field_id);
 }
 
-export function get_custom_profile_data(user_id: number, field_id: number): ProfileData | null {
+export function get_custom_profile_data(
+    user_id: number,
+    field_id: number,
+): ProfileDatum | null | undefined {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
@@ -1726,13 +1689,13 @@ export function get_custom_profile_data(user_id: number, field_id: number): Prof
 export function get_custom_fields_by_type(
     user_id: number,
     field_type: number,
-): ProfileData[] | null {
+): (ProfileDatum | undefined)[] | null {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
         return null;
     }
-    const filteredProfileData: ProfileData[] = [];
+    const filteredProfileData: (ProfileDatum | undefined)[] = [];
     for (const field of realm.custom_profile_fields) {
         if (field.type === field_type) {
             filteredProfileData.push(profile_data[field.id]);
@@ -1760,7 +1723,7 @@ export function sort_but_pin_current_user_on_top(users: User[]): void {
     }
 }
 
-export function initialize(my_user_id: number, params: PeopleParams): void {
+export function initialize(my_user_id: number, params: StateData["people"]): void {
     for (const person of params.realm_users) {
         add_active_user(person);
     }

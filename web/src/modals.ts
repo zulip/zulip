@@ -10,9 +10,9 @@ type Hook = () => void;
 export type ModalConfig = {
     autoremove?: boolean;
     on_show?: () => void;
-    on_shown?: () => void;
-    on_hide?: () => void;
-    on_hidden?: () => void;
+    on_shown?: (() => void) | undefined;
+    on_hide?: (() => void) | undefined;
+    on_hidden?: (() => void) | undefined;
 };
 
 const pre_open_hooks: Hook[] = [];
@@ -44,6 +44,11 @@ export function active_modal(): string | undefined {
 
     const $micromodal = $(".micromodal.modal--open");
     return `#${CSS.escape($micromodal.attr("id")!)}`;
+}
+
+export function is_active(modal_id: string): boolean {
+    const $micromodal = $(".micromodal.modal--open");
+    return $micromodal.attr("id") === modal_id;
 }
 
 // If conf.autoremove is true, the modal element will be removed from the DOM

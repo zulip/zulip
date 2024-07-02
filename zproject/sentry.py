@@ -55,10 +55,10 @@ def traces_sampler(sampling_context: Dict[str, Any]) -> Union[float, bool]:
 
     queue = sampling_context.get("queue")
     if queue is not None and isinstance(queue, str):
-        if isinstance(settings.SENTRY_TRACE_WORKER_RATE, float):
-            return settings.SENTRY_TRACE_WORKER_RATE
-        else:
+        if isinstance(settings.SENTRY_TRACE_WORKER_RATE, dict):
             return settings.SENTRY_TRACE_WORKER_RATE.get(queue, 0.0)
+        else:
+            return settings.SENTRY_TRACE_WORKER_RATE
     else:
         return settings.SENTRY_TRACE_RATE
 
@@ -100,7 +100,7 @@ def setup_sentry(dsn: Optional[str], environment: str) -> None:
     )
 
     # Ignore all of the loggers from django.security that are for user
-    # errors; see https://docs.djangoproject.com/en/3.2/ref/exceptions/#suspiciousoperation
+    # errors; see https://docs.djangoproject.com/en/5.0/ref/exceptions/#suspiciousoperation
     ignore_logger("django.security.SuspiciousOperation")
     ignore_logger("django.security.DisallowedHost")
     ignore_logger("django.security.DisallowedModelAdminLookup")

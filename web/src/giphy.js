@@ -26,13 +26,6 @@ export function focus_current_edit_message() {
     $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`).trigger("focus");
 }
 
-export function is_giphy_enabled() {
-    return (
-        realm.giphy_api_key !== "" &&
-        realm.realm_giphy_rating !== realm.giphy_rating_options.disabled.id
-    );
-}
-
 export function update_giphy_rating() {
     if (
         realm.realm_giphy_rating === realm.giphy_rating_options.disabled.id ||
@@ -109,14 +102,6 @@ async function renderGIPHYGrid(targetEl) {
                     );
                     hide_giphy_popover();
                 },
-                onGifVisible(_gif, e) {
-                    // Set tabindex for all the GIFs that
-                    // are visible to the user. This allows
-                    // user to navigate the GIFs using tab.
-                    // TODO: Remove this after https://github.com/Giphy/giphy-js/issues/174
-                    // is closed.
-                    e.target.tabIndex = 0;
-                },
             },
             targetEl,
         );
@@ -170,6 +155,7 @@ function toggle_giphy_popover(target) {
     popover_menus.toggle_popover_menu(
         target,
         {
+            theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
                 instance.setContent(ui_util.parse_html(render_giphy_picker()));

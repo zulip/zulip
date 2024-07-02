@@ -29,7 +29,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.users import get_api_key, get_users_for_api
 from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
 from zerver.models.clients import get_client
-from zerver.models.realms import get_realm
+from zerver.models.realms import get_realm, get_realm_with_settings
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 from zerver.tornado.event_queue import (
@@ -341,16 +341,17 @@ class GetEventsTest(ZulipTestCase):
         self.assert_length(events, 0)
 
         local_id = "10.01"
-        check_send_message(
-            sender=user_profile,
-            client=get_client("whatever"),
-            recipient_type_name="private",
-            message_to=[recipient_email],
-            topic_name=None,
-            message_content="hello",
-            local_id=local_id,
-            sender_queue_id=queue_id,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            check_send_message(
+                sender=user_profile,
+                client=get_client("whatever"),
+                recipient_type_name="private",
+                message_to=[recipient_email],
+                topic_name=None,
+                message_content="hello",
+                local_id=local_id,
+                sender_queue_id=queue_id,
+            )
 
         result = self.tornado_call(
             get_events,
@@ -374,16 +375,17 @@ class GetEventsTest(ZulipTestCase):
         last_event_id = events[0]["id"]
         local_id = "10.02"
 
-        check_send_message(
-            sender=user_profile,
-            client=get_client("whatever"),
-            recipient_type_name="private",
-            message_to=[recipient_email],
-            topic_name=None,
-            message_content="hello",
-            local_id=local_id,
-            sender_queue_id=queue_id,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            check_send_message(
+                sender=user_profile,
+                client=get_client("whatever"),
+                recipient_type_name="private",
+                message_to=[recipient_email],
+                topic_name=None,
+                message_content="hello",
+                local_id=local_id,
+                sender_queue_id=queue_id,
+            )
 
         result = self.tornado_call(
             get_events,
@@ -610,7 +612,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     def test_realm_bots_non_admin(self) -> None:
         user_profile = self.example_user("cordelia")
         self.assertFalse(user_profile.is_realm_admin)
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assert_length(result["realm_bots"], 0)
 
         # additionally the API key for a random bot is not present in the data
@@ -622,14 +624,14 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertTrue(user_profile.is_realm_admin)
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertGreater(len(result["realm_bots"]), 2)
 
     def test_max_message_id_with_no_history(self) -> None:
         user_profile = self.example_user("aaron")
         # Delete all historical messages for this user
         UserMessage.objects.filter(user_profile=user_profile).delete()
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
     def test_delivery_email_presence_for_non_admins(self) -> None:
@@ -644,7 +646,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
 
         (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
         self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
@@ -655,7 +657,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
 
         (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
         self.assertIsNone(hamlet_obj["delivery_email"])
@@ -672,7 +674,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
 
         (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
         self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
@@ -683,7 +685,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
         self.assertIn("delivery_email", hamlet_obj)
 
@@ -704,6 +706,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         result = fetch_initial_state_data(
             user_profile=hamlet,
+            realm=hamlet.realm,
             user_avatar_url_field_optional=True,
         )
 
@@ -727,6 +730,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         # Test again with client_gravatar = True
         result = fetch_initial_state_data(
             user_profile=hamlet,
+            realm=hamlet.realm,
             client_gravatar=True,
             user_avatar_url_field_optional=True,
         )
@@ -743,6 +747,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         result = fetch_initial_state_data(
             user_profile=hamlet,
+            realm=hamlet.realm,
             user_settings_object=True,
         )
         self.assertIn("user_settings", result)
@@ -752,6 +757,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         result = fetch_initial_state_data(
             user_profile=hamlet,
+            realm=hamlet.realm,
             user_settings_object=False,
         )
         self.assertIn("user_settings", result)
@@ -777,6 +783,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         result = fetch_initial_state_data(
             user_profile=user,
+            realm=user.realm,
             linkifier_url_template=True,
         )
         self.assertEqual(result["realm_filters"], [])
@@ -789,6 +796,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         # The default behavior should be `linkifier_url_template=False`
         result = fetch_initial_state_data(
             user_profile=user,
+            realm=user.realm,
         )
         self.assertEqual(result["realm_filters"], [])
         self.assertEqual(result["realm_linkifiers"], [])
@@ -797,6 +805,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         result = fetch_initial_state_data(
             user_profile=hamlet,
+            realm=hamlet.realm,
             pronouns_field_type_supported=False,
         )
         self.assertIn("custom_profile_fields", result)
@@ -806,6 +815,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         result = fetch_initial_state_data(
             user_profile=hamlet,
+            realm=hamlet.realm,
             pronouns_field_type_supported=True,
         )
         self.assertIn("custom_profile_fields", result)
@@ -1155,9 +1165,14 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        with self.assert_database_query_count(42):
+        # Fetch realm like it is done when calling fetch_initial_state_data
+        # in production to match the query counts with the actual query
+        # count in production.
+        realm = get_realm_with_settings(realm_id=user.realm_id)
+
+        with self.assert_database_query_count(43):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
-                fetch_initial_state_data(user)
+                fetch_initial_state_data(user, realm=realm)
 
         expected_counts = dict(
             alert_words=1,
@@ -1170,7 +1185,7 @@ class FetchQueriesTest(ZulipTestCase):
             muted_users=1,
             onboarding_steps=1,
             presence=1,
-            realm=1,
+            realm=3,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,
@@ -1179,7 +1194,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_filters=0,
             realm_linkifiers=0,
             realm_playgrounds=1,
-            realm_user=3,
+            realm_user=4,
             realm_user_groups=5,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
@@ -1202,6 +1217,11 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.assertEqual(wanted_event_types, set(expected_counts))
 
+        # Fetch realm again here so that the cached foreign key fields
+        # while testing the above case does not reduce the query count
+        # and we test the actual query count for each event type.
+        realm = get_realm_with_settings(realm_id=user.realm_id)
+
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
             with self.assert_database_query_count(count):
@@ -1210,7 +1230,7 @@ class FetchQueriesTest(ZulipTestCase):
                 else:
                     event_types = [event_type]
 
-                fetch_initial_state_data(user, event_types=event_types)
+                fetch_initial_state_data(user, realm=realm, event_types=event_types)
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):

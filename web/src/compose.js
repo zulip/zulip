@@ -96,7 +96,7 @@ export function create_message_object(message_content = compose_state.message_co
     message.topic = "";
 
     if (message.type === "private") {
-        // TODO: this should be collapsed with the code in composebox_typeahead.js
+        // TODO: this should be collapsed with the code in composebox_typeahead.ts
         const recipient = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient);
         message.to = emails;
@@ -126,10 +126,11 @@ export function clear_compose_box() {
      * will have already done this action before echoing the message
      * to avoid the compose box triggering "new message out of view"
      * notifications incorrectly. */
-    if (compose_ui.is_full_size()) {
+    if (compose_ui.is_expanded()) {
         compose_ui.make_compose_box_original_size();
     }
     $("textarea#compose-textarea").val("").trigger("focus");
+    compose_ui.compose_textarea_typeahead?.hide();
     compose_validate.check_overflow_text();
     compose_validate.clear_topic_resolved_warning();
     drafts.set_compose_draft_id(undefined);
@@ -170,6 +171,7 @@ export function send_message_success(request, data) {
 
 export function send_message(request = create_message_object()) {
     compose_state.set_recipient_edited_manually(false);
+    compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
     } else {

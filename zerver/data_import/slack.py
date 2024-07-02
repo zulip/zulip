@@ -47,7 +47,8 @@ from zerver.data_import.slack_message_conversion import (
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.storage import static_path
-from zerver.lib.upload.base import resize_logo, sanitize_name
+from zerver.lib.thumbnail import resize_logo
+from zerver.lib.upload import sanitize_name
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -824,7 +825,7 @@ def get_messages_iterator(
             messages = []
             for message in get_data_file(message_dir):
                 if message.get("user") == "U00":
-                    # Skip messages involving the the "U00" user,
+                    # Skip messages involving the "U00" user,
                     # which is apparently used in some channel rename
                     # messages.  It's likely just the result of some
                     # bug in Slack's export system.  Arguably we could

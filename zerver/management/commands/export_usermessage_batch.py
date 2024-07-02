@@ -4,13 +4,13 @@ import os
 from argparse import ArgumentParser
 from typing import Any
 
-from django.core.management.base import BaseCommand
 from typing_extensions import override
 
 from zerver.lib.export import export_usermessages_batch
+from zerver.lib.management import ZulipBaseCommand
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """UserMessage fetching helper for export.py"""
 
     @override

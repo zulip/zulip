@@ -48,7 +48,7 @@ participants.
 Zulip operates under a **group mentorship** model. While you will have an
 assigned mentor, you will also get lots of feedback from other members of the
 [Zulip development community](https://zulip.com/development-community/) by
-posting your questions and ideas in public streams. We encourage outreach
+posting your questions and ideas in public channels. We encourage outreach
 program participants to help each other out as well!
 
 Program participants work on a variety of issues in their areas of interest,

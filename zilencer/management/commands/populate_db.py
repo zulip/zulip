@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.files.base import File
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from django.core.validators import validate_email
 from django.db import connection
 from django.db.models import F
@@ -36,6 +36,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
@@ -68,7 +69,7 @@ from zerver.models import (
 )
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
-from zerver.models.realms import get_realm
+from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
@@ -201,7 +202,7 @@ def create_alert_words(realm_id: int) -> None:
     AlertWord.objects.bulk_create(recs)
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = "Populate a test database"
 
     @override
@@ -317,7 +318,7 @@ class Command(BaseCommand):
 
         if options["max_topics"] is None:
             # If max_topics is not set, we use a default that's big
-            # enough "more topics" should appear, and scales slowly
+            # enough "show all topics" should appear, and scales slowly
             # with the number of messages.
             options["max_topics"] = 8 + options["num_messages"] // 1000
 
@@ -377,7 +378,7 @@ class Command(BaseCommand):
                 # Default to allowing all members to send mentions in
                 # large streams for the test suite to keep
                 # mention-related tests simple.
-                zulip_realm.wildcard_mention_policy = Realm.WILDCARD_MENTION_POLICY_MEMBERS
+                zulip_realm.wildcard_mention_policy = WildcardMentionPolicyEnum.MEMBERS
                 zulip_realm.save(update_fields=["wildcard_mention_policy"])
 
             # Realms should have matching RemoteRealm entries - simulating having realms registered
@@ -637,12 +638,13 @@ class Command(BaseCommand):
             ]
             stream_dict: Dict[str, Dict[str, Any]] = {
                 "Denmark": {"description": "A Scandinavian country"},
-                "Scotland": {"description": "Located in the United Kingdom"},
-                "Venice": {"description": "A northeastern Italian city"},
+                "Scotland": {"description": "Located in the United Kingdom", "creator": iago},
+                "Venice": {"description": "A northeastern Italian city", "creator": polonius},
                 "Rome": {"description": "Yet another Italian city", "is_web_public": True},
                 "core team": {
                     "description": "A private channel for core team members",
                     "invite_only": True,
+                    "creator": desdemona,
                 },
             }
 
@@ -911,7 +913,7 @@ class Command(BaseCommand):
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:
-            check_add_realm_emoji(zulip_realm, "green_tick", iago, File(fp))
+            check_add_realm_emoji(zulip_realm, "green_tick", iago, File(fp, name="checkbox.png"))
 
         if not options["test_suite"]:
             # Populate users with some bar data
@@ -1001,13 +1003,14 @@ class Command(BaseCommand):
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
                     "ビデオゲーム": {
-                        "description": f"Share your favorite video games!  {raw_emojis[2]}"
+                        "description": f"Share your favorite video games!  {raw_emojis[2]}",
+                        "creator": shiva,
                     },
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     },
-                    "design": {"description": "For design"},
+                    "design": {"description": "For design", "creator": hamlet},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},

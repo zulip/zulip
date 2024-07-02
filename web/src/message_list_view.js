@@ -1,3 +1,4 @@
+import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -202,6 +203,67 @@ function get_users_for_recipient_row(message) {
     }
 
     return users.sort(compare_by_name);
+}
+
+let message_id_to_focus_after_processing_message_events = {
+    id: undefined,
+    selectionStart: undefined,
+    selectionEnd: undefined,
+};
+
+function reset_restore_message_edit_focus_state() {
+    message_id_to_focus_after_processing_message_events = {
+        id: undefined,
+        selectionStart: undefined,
+        selectionEnd: undefined,
+    };
+}
+
+function capture_user_message_editing_state() {
+    if (document.activeElement?.classList.contains("message_edit_content")) {
+        message_id_to_focus_after_processing_message_events = {
+            id: rows.get_message_id(document.activeElement),
+            selectionStart: document.activeElement.selectionStart,
+            selectionEnd: document.activeElement.selectionEnd,
+        };
+    } else {
+        reset_restore_message_edit_focus_state();
+    }
+}
+
+function maybe_restore_focus_to_message_edit_form() {
+    if (
+        // It is possible that selected message might not be the one
+        // user was editing but is less likely the case. It makes
+        // things complicated to think about with selected message being different
+        // from the message edit form we are trying to restore focus to.
+        // So, we simply only restore focus if the selected message is the
+        // one user was editing.
+        message_lists.current?.data.selected_id() !==
+        message_id_to_focus_after_processing_message_events.id
+    ) {
+        // If user has navigated away from the message they were editing,
+        // we don't want to restore focus to the message edit form since
+        // we don't want to capture hotkey inside the message edit form
+        // when they navigate back to the message they were editing.
+        reset_restore_message_edit_focus_state();
+    }
+
+    setTimeout(() => {
+        const $message_edit_content = message_lists.current
+            ?.selected_row()
+            .find(".message_edit_content");
+        if (!$message_edit_content || $message_edit_content.length === 0) {
+            return;
+        }
+
+        $message_edit_content.trigger("focus");
+        $message_edit_content[0].setSelectionRange(
+            message_id_to_focus_after_processing_message_events.selectionStart,
+            message_id_to_focus_after_processing_message_events.selectionEnd,
+        );
+        reset_restore_message_edit_focus_state();
+    }, 0);
 }
 
 function populate_group_from_message_container(group, message_container) {
@@ -826,6 +888,8 @@ export class MessageListView {
             return undefined;
         }
 
+        capture_user_message_editing_state();
+
         const list = this.list; // for convenience
         let orig_scrolltop_offset;
 
@@ -837,15 +901,9 @@ export class MessageListView {
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
-        // each others' data we will make a new message object to add data to
+        // each other's data we will make a new message object to add data to
         // for rendering.
         const message_containers = messages.map((message) => {
-            if (message.starred) {
-                message.starred_status = $t({defaultMessage: "Unstar"});
-            } else {
-                message.starred_status = $t({defaultMessage: "Star"});
-            }
-
             message.url = hash_util.by_conversation_and_time_url(message);
 
             return {msg: message};
@@ -978,6 +1036,10 @@ export class MessageListView {
             this.$list.append($rendered_groups);
             condense.condense_and_collapse($dom_messages);
         }
+
+        // After all the messages are rendered, resize any message edit textarea if required.
+        autosize.update(this.$list.find(".message_edit_content"));
+        maybe_restore_focus_to_message_edit_form();
 
         restore_scroll_position();
 
@@ -1365,7 +1427,7 @@ export class MessageListView {
 
         // If this list not currently displayed, we don't need to select the message.
         if (was_selected && this.list === message_lists.current) {
-            this.list.reselect_selected_id(message_container.msg.id);
+            this.list.reselect_selected_id();
         }
     }
 
@@ -1386,6 +1448,11 @@ export class MessageListView {
     }
 
     rerender_messages(messages, message_content_edited) {
+        // this.render is never called in this code path, we use
+        // `_rerender_message` instead which is optimized for this use
+        // case.
+        capture_user_message_editing_state();
+
         // We need to destroy all the tippy instances from the DOM before re-rendering to
         // prevent the appearance of tooltips whose reference has been removed.
         message_list_tooltips.destroy_all_message_list_tooltips();
@@ -1422,6 +1489,7 @@ export class MessageListView {
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
             this.update_sticky_recipient_headers();
+            maybe_restore_focus_to_message_edit_form();
         }
     }
 
@@ -1481,6 +1549,7 @@ export class MessageListView {
     }
 
     clear_table() {
+        capture_user_message_editing_state();
         // We do not want to call .empty() because that also clears
         // jQuery data.  This does mean, however, that we need to be
         // mindful of memory leaks.
@@ -1624,6 +1693,12 @@ export class MessageListView {
             return;
         }
 
+        const dom_updates = {
+            add_classes: [],
+            remove_classes: [],
+            html_updates: [],
+        };
+
         const $current_sticky_header = $(".sticky_header");
         if ($current_sticky_header.length === 1) {
             // Reset the date on the header in case we changed it.
@@ -1633,17 +1708,21 @@ export class MessageListView {
             const group = this._find_message_group(message_group_id);
             if (group !== undefined) {
                 const rendered_date = group.date;
-                $current_sticky_header.find(".recipient_row_date").html(rendered_date);
-                /* Intentionally remove sticky headers class here to make calculations simpler. */
+                dom_updates.html_updates.push({
+                    $element: $current_sticky_header.find(".recipient_row_date"),
+                    rendered_date,
+                });
             }
-            $current_sticky_header.removeClass("sticky_header");
+            dom_updates.remove_classes.push({
+                $element: $current_sticky_header,
+                class: "sticky_header",
+            });
         }
 
-        /* visible_top is navbar top position + height for us. */
-        const visible_top = message_viewport.message_viewport_info().visible_top;
+        const navbar_bottom = $("#navbar-fixed-container").outerHeight();
         /* We need date to be properly visible on the header, so partially visible headers
            who are about to be scrolled out of view are not acceptable. */
-        const partially_hidden_header_position = visible_top - 1;
+        const partially_hidden_header_position = navbar_bottom - 1;
 
         function is_sticky(header) {
             // header has a box-shadow of `1px` at top but since it doesn't impact
@@ -1652,7 +1731,7 @@ export class MessageListView {
             // This value is dependent upon space between two `recipient_row` message groups.
             const margin_between_recipient_rows = 10;
             const sticky_or_about_to_be_sticky_header_position =
-                visible_top + header_props.height + margin_between_recipient_rows;
+                navbar_bottom + header_props.height + margin_between_recipient_rows;
             if (header_props.top < partially_hidden_header_position) {
                 return -1;
             } else if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
@@ -1696,7 +1775,7 @@ export class MessageListView {
             $sticky_header = $headers.first();
             $message_row = $sticky_header.nextAll(".message_row").first();
         } else {
-            $sticky_header.addClass("sticky_header");
+            dom_updates.add_classes.push({$element: $sticky_header, class: "sticky_header"});
             const sticky_header_props = $sticky_header[0].getBoundingClientRect();
             /* date separator starts to be hidden at this height difference. */
             const date_separator_padding = 7;
@@ -1737,7 +1816,10 @@ export class MessageListView {
         this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
         const rendered_date = timerender.render_date(time);
-        $sticky_header.find(".recipient_row_date").html(rendered_date);
+        dom_updates.html_updates.push({
+            $element: $sticky_header.find(".recipient_row_date"),
+            rendered_date,
+        });
 
         // The following prevents a broken looking situation where
         // there's a recipient row (possibly partially) visible just
@@ -1745,7 +1827,10 @@ export class MessageListView {
         // date. (E.g., both displaying "today"). We avoid this by
         // hiding the date display on the non-sticky previous
         // recipient row.
-        $(".hide-date-separator-header").removeClass("hide-date-separator-header");
+        dom_updates.remove_classes.push({
+            $element: $(".hide-date-separator-header"),
+            class: "hide-date-separator-header",
+        });
         // This corner case only occurs when the date is unchanged
         // from the previous recipient row.
         if ($sticky_header.find(".recipient_row_date.recipient_row_date_unchanged").length) {
@@ -1758,8 +1843,23 @@ export class MessageListView {
             const $prev_header_date_row = $prev_recipient_row.find(".recipient_row_date");
             // Check if the recipient row before sticky header is a date separator.
             if (!$prev_header_date_row.hasClass("recipient_row_date_unchanged")) {
-                $prev_header_date_row.addClass("hide-date-separator-header");
+                dom_updates.add_classes.push({
+                    $element: $prev_header_date_row,
+                    class: "hide-date-separator-header",
+                });
             }
+        }
+
+        // Apply all the updates to the DOM at the end for improved performance.
+        for (const update of dom_updates.remove_classes) {
+            update.$element.removeClass(update.class);
+        }
+        for (const update of dom_updates.add_classes) {
+            update.$element.addClass(update.class);
+        }
+        for (const update of dom_updates.html_updates) {
+            const rendered_date = update.rendered_date;
+            update.$element.html(rendered_date);
         }
     }
 

@@ -28,7 +28,11 @@ export function get_active_user_ids_string(): string | undefined {
         return undefined;
     }
 
-    return people.emails_strings_to_user_ids_string(emails);
+    const users_ids_array = people.emails_strings_to_user_ids_array(emails);
+    if (!users_ids_array || users_ids_array.length === 0) {
+        return undefined;
+    }
+    return people.sorted_other_user_ids(users_ids_array).join(",");
 }
 
 type DisplayObject = {
@@ -38,14 +42,14 @@ type DisplayObject = {
     is_zero: boolean;
     is_active: boolean;
     url: string;
-    status_emoji_info?: UserStatusEmojiInfo;
-    user_circle_class?: string;
+    status_emoji_info: UserStatusEmojiInfo | undefined;
+    user_circle_class: string | undefined;
     is_group: boolean;
     is_bot: boolean;
 };
 
 export function get_conversations(): DisplayObject[] {
-    const private_messages = pm_conversations.recent.get();
+    const conversations = pm_conversations.recent.get();
     const display_objects = [];
 
     // The user_ids_string for the current view, if any.
@@ -53,12 +57,14 @@ export function get_conversations(): DisplayObject[] {
 
     if (
         active_user_ids_string !== undefined &&
-        !private_messages.map((obj) => obj.user_ids_string).includes(active_user_ids_string)
+        !conversations
+            .map((conversation) => conversation.user_ids_string)
+            .includes(active_user_ids_string)
     ) {
-        private_messages.unshift({user_ids_string: active_user_ids_string, max_message_id: -1});
+        conversations.unshift({user_ids_string: active_user_ids_string, max_message_id: -1});
     }
 
-    for (const conversation of private_messages) {
+    for (const conversation of conversations) {
         const user_ids_string = conversation.user_ids_string;
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         assert(reply_to !== undefined);

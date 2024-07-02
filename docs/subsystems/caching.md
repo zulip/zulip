@@ -47,7 +47,7 @@ work.
 As a side note, the policy of using these accessor functions wherever
 possible is a good idea, regardless of caching, because the functions
 also generally take care of details you might not think about
-(e.g. case-insensitive matching of stream names or email addresses).
+(e.g. case-insensitive matching of channel names or email addresses).
 It's amazing how slightly tricky logic that's duplicated in several
 places invariably ends up buggy in some of those places, and in
 aggregate we call these accessor functions hundreds of times in
@@ -252,7 +252,7 @@ multiple servers. We do have a few, however:
 
 Zulip makes extensive use of caching of data in the browser and mobile
 apps; details like which users exist, with metadata like names and
-avatars, similar details for streams, recent message history, etc.
+avatars, similar details for channels, recent message history, etc.
 
 This data is fetched in the `/register` endpoint (or `page_params`
 for the web app), and kept correct over time. The key to keeping these
@@ -263,4 +263,4 @@ cached by clients is changed. Clients are responsible for handling
 the events, updating their state, and rerendering any UI components
 that might display the modified state.
 
-[post-save-signals]: https://docs.djangoproject.com/en/3.2/ref/signals/#post-save
+[post-save-signals]: https://docs.djangoproject.com/en/5.0/ref/signals/#post-save

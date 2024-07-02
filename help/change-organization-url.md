@@ -23,7 +23,7 @@ with the subdomain chosen when the organization was created. Organization
 
 {start_tabs}
 
-Please e-mail [support@zulip.com](mailto:support@zulip.com) with the following
+Please email [support@zulip.com](mailto:support@zulip.com) with the following
 information:
 
 1. Your organization's current subdomain.
@@ -42,7 +42,7 @@ Plus](https://zulip.com/plans/#cloud) licenses.
 
 {start_tabs}
 
-Please e-mail [support@zulip.com](mailto:support@zulip.com) with the following
+Please email [support@zulip.com](mailto:support@zulip.com) with the following
 information:
 
 1. Your organization's current URL.

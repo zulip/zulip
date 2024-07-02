@@ -1,16 +1,17 @@
 from datetime import datetime, timezone
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from corporate.lib.stripe import RemoteServerBillingSession
 from scripts.lib.zulip_tools import TIMESTAMP_FORMAT
+from zerver.lib.management import ZulipBaseCommand
 from zilencer.models import RemoteZulipServer
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = "Assigns an existing RemoteZulipServer to the legacy plan"
 
     @override

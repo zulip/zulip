@@ -291,6 +291,7 @@
         color: var(--color-text-popover-menu);
         line-height: 1.1;
         margin-top: 4px;
+        white-space: pre-wrap;
     }
 }
 
@@ -307,7 +308,7 @@ ul {
             margin-right: 3px;
         }
 
-        &.zulip-icon:not(.tab-option > .zulip-icon) {
+        &.zulip-icon {
             /* These icons are different from font awesome icons,
                 so they need to be aligned separately. */
             line-height: 14px;
@@ -412,14 +413,23 @@ ul {
 
 .user_profile_presence,
 .popover_user_presence {
-    width: 8px;
-    height: 8px;
+    width: var(--length-user-status-circle);
+    height: var(--length-user-status-circle);
     margin: 0 5px;
     display: inline-block;
     float: initial;
     position: relative;
     top: 0;
     flex-shrink: 0;
+}
+
+.user_profile_presence {
+    /* Remove font-size to allow this to scale
+       with the menu header text. Declaring font-size
+       here maintains the legacy design of keeping
+       the user-circle smaller, despite the larger
+       surrounding text and icons. */
+    font-size: var(--base-font-size-px);
 }
 
 .bot-owner-name {
@@ -487,13 +497,14 @@ ul {
 
     .name {
         color: hsl(0deg 0% 20%);
-        width: 120px;
         font-weight: 600;
         margin-right: 10px;
+        overflow-wrap: break-word;
     }
 
     .value {
         vertical-align: top;
+        overflow-wrap: anywhere;
     }
 
     #exit-sign {
@@ -593,7 +604,6 @@ ul {
 
     .col-left {
         padding: 0 10px 0 0;
-        word-break: break-all;
     }
 
     .col-right {
@@ -873,55 +883,40 @@ ul {
     /* The emoji popover has a different background color for the
        header and footer, so we customize the arrow to match this color. */
     .tippy-box[data-placement="top"] .tippy-arrow::before {
-        border-top-color: hsl(0deg 0% 93%);
+        border-top-color: var(--color-border-emoji-picker-tippy-arrow);
     }
 
     .tippy-box[data-placement="bottom"] .tippy-arrow::before {
-        border-bottom-color: hsl(0deg 0% 93%);
+        border-bottom-color: var(--color-border-emoji-picker-tippy-arrow);
+    }
+
+    .tippy-box[data-placement="left"] .tippy-arrow::before {
+        border-left-color: var(--color-border-emoji-picker-tippy-arrow);
     }
 }
 
 #giphy_grid_in_popover {
     /* 300px of GIPHY grid + 5px is the extra gutter space
+     * + 1px for outline.
      * between gif columns. */
-    width: 305px;
+    width: 306px;
     border: 0;
     padding: 0;
+
+    .giphy-content {
+        position: relative;
+        left: 1px;
+    }
 
     .giphy-gif {
         cursor: pointer;
     }
 
-    .giphy-gif-img:focus {
+    .giphy-gif:focus {
         /* Red outline for clear visibility
          * of which image is in focus.
          */
-        outline-color: hsl(0deg 100% 50%);
-    }
-
-    .search-box {
-        display: flex;
-        position: sticky;
-        padding: 2px;
-
-        & input {
-            flex-grow: 1;
-            margin: 5px;
-            border-radius: 3px;
-        }
-
-        .clear_search_button {
-            position: absolute;
-            top: 5px;
-            right: 3px;
-            font-size: 16px;
-
-            &:focus {
-                .fa-remove {
-                    outline: 2px solid var(--color-outline-focus);
-                }
-            }
-        }
+        outline: 1px solid hsl(0deg 100% 50%);
     }
 
     .giphy-scrolling-container {
@@ -1063,52 +1058,19 @@ ul {
     }
 }
 
-.visibility_policy_popover {
-    padding: 0 4px;
-
-    .visibility_policy_popover_container {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-        padding: 1px;
-        background-color: var(--color-background-tab-picker-container);
-        border-radius: 5px;
+.visibility-policy-popover {
+    .popover-menu-list {
+        padding: 2px;
     }
+}
 
-    .visibility_policy_option {
+.recipient-bar-topic-visibility-switcher {
+    .tab-option-content {
+        font-size: 15px;
+        color: var(--color-text-popover-menu);
+        gap: 10px;
+        justify-content: flex-start;
         padding: 2px 13px;
-        border-radius: 4px;
-        cursor: pointer;
-
-        .icon_and_text {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: var(--color-tab-picker-icon);
-            gap: 10px;
-
-            &i {
-                font-size: 16px;
-            }
-        }
-
-        &:hover:not(.selected_visibility_policy) {
-            background-color: var(
-                --color-background-tab-picker-tab-option-hover
-            );
-        }
-
-        &:active:not(.selected_visibility_policy) {
-            outline: 1px solid var(--color-outline-tab-picker-tab-option);
-            outline-offset: -1px;
-        }
-    }
-
-    .selected_visibility_policy {
-        background-color: var(--color-background-tab-picker-selected-tab);
-        outline: 1px solid var(--color-outline-tab-picker-tab-option);
-        outline-offset: -1px;
-        z-index: 1;
     }
 }
 
@@ -1135,8 +1097,8 @@ ul {
 
     .status-circle {
         position: absolute;
-        width: 8px;
-        height: 8px;
+        width: var(--length-user-status-circle);
+        height: var(--length-user-status-circle);
         top: unset;
         left: unset;
         right: -1px;
@@ -1207,6 +1169,7 @@ ul {
         /* Keep menu items on a single line, unless forced to wrap
         by a max-width on the popover. */
         width: max-content;
+        flex: 1 0 0;
     }
 
     .text-item,
@@ -1271,6 +1234,19 @@ ul {
             &:active {
                 background: var(--color-background-active-popover-menu);
             }
+        }
+    }
+
+    .tab-picker {
+        &.popover-menu-tab-group {
+            margin: 2px 10px;
+        }
+
+        .tab-option-content:focus-visible {
+            border-radius: 4px;
+            /* Override the default focus style */
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -1px;
         }
     }
 
@@ -1343,10 +1319,11 @@ ul {
 }
 
 #gear-menu-dropdown {
-    .org-info {
+    .org-info-container {
         padding: 9px 0 5px;
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
 
-        & li {
+        .org-info {
             display: flex;
             justify-content: flex-start;
             font-size: 15px;
@@ -1413,36 +1390,16 @@ ul {
             color: var(--color-gear-menu-blue-text);
         }
     }
-
-    .gear-menu-select-light-theme,
-    .gear-menu-select-dark-theme {
-        display: none;
-    }
 }
 
-ul.popover-menu-outer-list {
+ul.popover-menu-list {
     list-style: none;
     margin: 0;
+    padding: 4px 0;
 
-    li.popover-menu-outer-list-item {
+    li.popover-menu-separator {
+        margin: 4px 0;
         border-bottom: solid 1px var(--color-border-popover-menu-separator);
-
-        &:last-child {
-            border-bottom: none;
-        }
-
-        ul.popover-menu-inner-list {
-            margin: 0;
-            padding: 4px 0;
-            list-style: none;
-            background: none !important;
-        }
-    }
-}
-
-.spectator-view {
-    #gear-menu-dropdown .gear-menu-select-dark-theme {
-        display: block;
     }
 }
 
@@ -1464,16 +1421,5 @@ ul.popover-menu-outer-list {
         padding: 2px 4px;
         border-radius: 3px;
         border: 1px solid var(--color-border-popover-hotkey-hint);
-    }
-}
-
-#theme-switcher {
-    margin: 0 10px;
-
-    .tab-option-content:focus-visible {
-        border-radius: 4px;
-        /* Override the default focus style */
-        outline: 1px solid var(--color-outline-focus) !important;
-        outline-offset: -1px;
     }
 }

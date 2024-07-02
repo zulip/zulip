@@ -19,6 +19,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
+import * as popovers from "./popovers";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
@@ -43,12 +44,22 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
     if ($("#subscription_overlay .right").hasClass("show")) {
         return;
     }
-    if (tab_key_value === "all-streams") {
-        browser_history.update("#channels/all");
-    } else if (tab_key_value === "subscribed") {
-        browser_history.update("#channels/subscribed");
-    } else {
-        blueslip.debug("Unknown tab_key_value: " + tab_key_value);
+    switch (tab_key_value) {
+        case "all-streams": {
+            browser_history.update("#channels/all");
+            break;
+        }
+        case "subscribed": {
+            browser_history.update("#channels/subscribed");
+            break;
+        }
+        case "not-subscribed": {
+            browser_history.update("#channels/notsubscribed");
+            break;
+        }
+        default: {
+            blueslip.debug("Unknown tab_key_value: " + tab_key_value);
+        }
     }
 }
 
@@ -133,6 +144,13 @@ function show_subscription_settings(sub) {
     const color = stream_data.get_color(sub.stream_id);
     stream_color.set_colorpicker_color($colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
+    const $scroll_container = scroll_util.get_scroll_element($("#stream_settings"));
+
+    $scroll_container.on("scroll", () => {
+        $colorpicker.spectrum("destroy");
+        const color = stream_data.get_color(sub.stream_id);
+        stream_color.set_colorpicker_color($colorpicker, color);
+    });
 
     if (!sub.render_subscribers) {
         return;
@@ -204,9 +222,8 @@ function setup_dropdown(sub, slim_sub) {
             event.preventDefault();
             event.stopPropagation();
             can_remove_subscribers_group_widget.render();
-            settings_components.save_discard_widget_status_handler(
-                $("#stream_permission_settings"),
-                false,
+            settings_components.save_discard_stream_settings_widget_status_handler(
+                $(".advanced-configurations-container"),
                 slim_sub,
             );
         },
@@ -220,13 +237,17 @@ function setup_dropdown(sub, slim_sub) {
             $(dropdown.popper).css("min-width", "300px");
         },
     });
-    settings_components.set_can_remove_subscribers_group_widget(
+    settings_components.set_dropdown_setting_widget(
+        "can_remove_subscribers_group",
         can_remove_subscribers_group_widget,
     );
     can_remove_subscribers_group_widget.setup();
 }
 
 export function show_settings_for(node) {
+    // Hide any tooltips or popovers before we rerender / change
+    // currently displayed stream settings.
+    popovers.hide_all();
     const stream_id = get_stream_id(node);
     const slim_sub = sub_store.get(stream_id);
     stream_data.clean_up_description(slim_sub);
@@ -676,7 +697,7 @@ export function initialize() {
         const stream_id = get_stream_id(e.target);
         const sub = sub_store.get(stream_id);
         const $subsection = $(e.target).closest(".settings-subsection-parent");
-        settings_components.save_discard_widget_status_handler($subsection, false, sub);
+        settings_components.save_discard_stream_settings_widget_status_handler($subsection, sub);
         if (sub) {
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
         }
@@ -696,7 +717,10 @@ export function initialize() {
                 $save_button.closest(".subscription_settings.show").attr("data-stream-id"),
             );
             const sub = sub_store.get(stream_id);
-            const data = settings_org.populate_data_for_request($subsection_elem, false, sub);
+            const data = settings_components.populate_data_for_stream_settings_request(
+                $subsection_elem,
+                sub,
+            );
 
             const url = "/json/streams/" + stream_id;
             if (
@@ -732,12 +756,8 @@ export function initialize() {
             const sub = sub_store.get(stream_id);
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
-            for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-                settings_org.discard_property_element_changes(elem, false, sub);
-            }
+            settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
-            const $save_btn_controls = $(e.target).closest(".save-button-controls");
-            settings_components.change_save_button_state($save_btn_controls, "discarded");
         },
     );
 }

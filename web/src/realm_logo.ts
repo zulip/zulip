@@ -88,9 +88,9 @@ export function render(): void {
     }
 
     if (settings_data.using_dark_theme() && realm.realm_night_logo_source !== "D") {
-        $("#realm-logo").attr("src", realm.realm_night_logo_url);
+        $("#realm-navbar-wide-logo").attr("src", realm.realm_night_logo_url);
     } else {
-        $("#realm-logo").attr("src", realm.realm_logo_url);
+        $("#realm-navbar-wide-logo").attr("src", realm.realm_logo_url);
     }
 
     change_logo_delete_button(
@@ -109,6 +109,6 @@ export function initialize(): void {
     // render once
     render();
 
-    // Rerender the realm-logo when the browser detects color scheme changes.
+    // Rerender the realm-navbar-wide-logo when the browser detects color scheme changes.
     ui_util.listener_for_preferred_color_scheme_change(render);
 }

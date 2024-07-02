@@ -678,38 +678,11 @@ def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
     ).format(**kwargs, realm_clause=realm_clause)
 
 
-# Hardcodes the query needed by active_users:is_bot:day, since that is
-# currently the only stat that uses this.
-def count_user_by_realm_query(realm: Optional[Realm]) -> QueryFn:
-    if realm is None:
-        realm_clause: Composable = SQL("")
-    else:
-        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
-    return lambda kwargs: SQL(
-        """
-    INSERT INTO analytics_realmcount
-        (realm_id, value, property, subgroup, end_time)
-    SELECT
-        zerver_realm.id, count(*), %(property)s, {subgroup}, %(time_end)s
-    FROM zerver_realm
-    JOIN zerver_userprofile
-    ON
-        zerver_realm.id = zerver_userprofile.realm_id
-    WHERE
-        zerver_realm.date_created < %(time_end)s AND
-        zerver_userprofile.date_joined >= %(time_start)s AND
-        zerver_userprofile.date_joined < %(time_end)s AND
-        {realm_clause}
-        zerver_userprofile.is_active = TRUE
-    GROUP BY zerver_realm.id {group_by_clause}
-"""
-    ).format(**kwargs, realm_clause=realm_clause)
-
-
-# Currently hardcodes the query needed for active_users_audit:is_bot:day.
-# Assumes that a user cannot have two RealmAuditLog entries with the same event_time and
-# event_type in [RealmAuditLog.USER_CREATED, USER_DEACTIVATED, etc].
-# In particular, it's important to ensure that migrations don't cause that to happen.
+# Hardcodes the query needed for active_users_audit:is_bot:day.
+# Assumes that a user cannot have two RealmAuditLog entries with the
+# same event_time and event_type in [RealmAuditLog.USER_CREATED,
+# USER_DEACTIVATED, etc].  In particular, it's important to ensure
+# that migrations don't cause that to happen.
 def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
@@ -717,28 +690,27 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
         realm_clause = SQL("realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
         """
-    INSERT INTO analytics_usercount
-        (user_id, realm_id, value, property, subgroup, end_time)
+    INSERT INTO analytics_realmcount
+        (realm_id, value, property, subgroup, end_time)
     SELECT
-        ral1.modified_user_id, ral1.realm_id, 1, %(property)s, {subgroup}, %(time_end)s
-    FROM zerver_realmauditlog ral1
+        zerver_userprofile.realm_id, count(*), %(property)s, {subgroup}, %(time_end)s
+    FROM zerver_userprofile
     JOIN (
-        SELECT modified_user_id, max(event_time) AS max_event_time
-        FROM zerver_realmauditlog
-        WHERE
-            event_type in ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated}) AND
-            {realm_clause}
-            event_time < %(time_end)s
-        GROUP BY modified_user_id
-    ) ral2
-    ON
-        ral1.event_time = max_event_time AND
-        ral1.modified_user_id = ral2.modified_user_id
-    JOIN zerver_userprofile
-    ON
-        ral1.modified_user_id = zerver_userprofile.id
+            SELECT DISTINCT ON (modified_user_id)
+                    modified_user_id, event_type
+            FROM
+                    zerver_realmauditlog
+            WHERE
+                    event_type IN ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated}) AND
+                    {realm_clause}
+                    event_time < %(time_end)s
+            ORDER BY
+                    modified_user_id,
+                    event_time DESC
+    ) last_user_event ON last_user_event.modified_user_id = zerver_userprofile.id
     WHERE
-        ral1.event_type in ({user_created}, {user_activated}, {user_reactivated})
+        last_user_event.event_type in ({user_created}, {user_activated}, {user_reactivated})
+    GROUP BY zerver_userprofile.realm_id {group_by_clause}
     """
     ).format(
         **kwargs,
@@ -784,29 +756,45 @@ def count_realm_active_humans_query(realm: Optional[Realm]) -> QueryFn:
     INSERT INTO analytics_realmcount
         (realm_id, value, property, subgroup, end_time)
     SELECT
-        usercount1.realm_id, count(*), %(property)s, NULL, %(time_end)s
+            active_usercount.realm_id, count(*), %(property)s, NULL, %(time_end)s
     FROM (
-        SELECT realm_id, user_id
-        FROM analytics_usercount
-        WHERE
-            property = 'active_users_audit:is_bot:day' AND
-            subgroup = 'false' AND
-            {realm_clause}
-            end_time = %(time_end)s
-    ) usercount1
+            SELECT
+                    realm_id,
+                    user_id
+            FROM
+                    analytics_usercount
+            WHERE
+                    property = '15day_actives::day'
+                    {realm_clause}
+                    AND end_time = %(time_end)s
+    ) active_usercount
+    JOIN zerver_userprofile ON active_usercount.user_id = zerver_userprofile.id
     JOIN (
-        SELECT realm_id, user_id
-        FROM analytics_usercount
-        WHERE
-            property = '15day_actives::day' AND
-            {realm_clause}
-            end_time = %(time_end)s
-    ) usercount2
-    ON
-        usercount1.user_id = usercount2.user_id
-    GROUP BY usercount1.realm_id
+            SELECT DISTINCT ON (modified_user_id)
+                    modified_user_id, event_type
+            FROM
+                    zerver_realmauditlog
+            WHERE
+                    event_type IN ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated})
+                    AND event_time < %(time_end)s
+            ORDER BY
+                    modified_user_id,
+                    event_time DESC
+    ) last_user_event ON last_user_event.modified_user_id = active_usercount.user_id
+    WHERE
+            NOT zerver_userprofile.is_bot
+            AND event_type IN ({user_created}, {user_activated}, {user_reactivated})
+    GROUP BY
+            active_usercount.realm_id
 """
-    ).format(**kwargs, realm_clause=realm_clause)
+    ).format(
+        **kwargs,
+        user_created=Literal(RealmAuditLog.USER_CREATED),
+        user_activated=Literal(RealmAuditLog.USER_ACTIVATED),
+        user_deactivated=Literal(RealmAuditLog.USER_DEACTIVATED),
+        user_reactivated=Literal(RealmAuditLog.USER_REACTIVATED),
+        realm_clause=realm_clause,
+    )
 
 
 # Currently unused and untested
@@ -862,40 +850,14 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
             ),
             CountStat.DAY,
         ),
-        # Number of users stats
-        # Stats that count the number of active users in the UserProfile.is_active sense.
-        # 'active_users_audit:is_bot:day' is the canonical record of which users were
-        # active on which days (in the UserProfile.is_active sense).
+        # Counts the number of active users in the UserProfile.is_active sense.
         # Important that this stay a daily stat, so that 'realm_active_humans::day' works as expected.
         CountStat(
             "active_users_audit:is_bot:day",
             sql_data_collector(
-                UserCount, check_realmauditlog_by_user_query(realm), (UserProfile, "is_bot")
+                RealmCount, check_realmauditlog_by_user_query(realm), (UserProfile, "is_bot")
             ),
             CountStat.DAY,
-        ),
-        # Important note: LoggingCountStat objects aren't passed the
-        # Realm argument, because by nature they have a logging
-        # structure, not a pull-from-database structure, so there's no
-        # way to compute them for a single realm after the fact (the
-        # use case for passing a Realm argument).
-        # Sanity check on 'active_users_audit:is_bot:day', and a archetype for future LoggingCountStats.
-        # In RealmCount, 'active_users_audit:is_bot:day' should be the partial
-        # sum sequence of 'active_users_log:is_bot:day', for any realm that
-        # started after the latter stat was introduced.
-        # Included in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER.
-        LoggingCountStat("active_users_log:is_bot:day", RealmCount, CountStat.DAY),
-        # Another sanity check on 'active_users_audit:is_bot:day'. Is only an
-        # approximation, e.g. if a user is deactivated between the end of the
-        # day and when this stat is run, they won't be counted. However, is the
-        # simplest of the three to inspect by hand.
-        CountStat(
-            "active_users:is_bot:day",
-            sql_data_collector(
-                RealmCount, count_user_by_realm_query(realm), (UserProfile, "is_bot")
-            ),
-            CountStat.DAY,
-            interval=TIMEDELTA_MAX,
         ),
         CountStat(
             "upload_quota_used_bytes::day",
@@ -952,7 +914,7 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
             "realm_active_humans::day",
             sql_data_collector(RealmCount, count_realm_active_humans_query(realm), None),
             CountStat.DAY,
-            dependencies=["active_users_audit:is_bot:day", "15day_actives::day"],
+            dependencies=["15day_actives::day"],
         ),
     ]
 
@@ -991,11 +953,12 @@ BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES = [
 # the stat is still in the future). As these logging counts are designed
 # to be used on the self-hosted installation for either debugging or rate
 # limiting, sending these incomplete counts to the bouncer has low value.
-LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER = [
+LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER = {
     "invites_sent::day",
     "mobile_pushes_sent::day",
     "active_users_log:is_bot:day",
-]
+    "active_users:is_bot:day",
+}
 
 # To avoid refactoring for now COUNT_STATS can be used as before
 COUNT_STATS = get_count_stats()

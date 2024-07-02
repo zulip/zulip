@@ -2,7 +2,7 @@
 # numeric value is considered the highest priority, so the dict
 # below is ordered from highest-to-lowest priority.
 # Priorities for the built-in preprocessors are commented out.
-PREPROCESSOR_PRIORITES = {
+PREPROCESSOR_PRIORITIES = {
     "generate_parameter_description": 535,
     "generate_response_description": 531,
     "generate_api_header": 530,

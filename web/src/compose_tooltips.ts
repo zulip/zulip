@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {delegate} from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
@@ -17,7 +17,7 @@ import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
 export function initialize(): void {
-    delegate("body", {
+    tippy.delegate("body", {
         target: [
             // Ideally this would be `#compose_buttons .button`, but the
             // reply button's actual area is its containing span.
@@ -34,7 +34,7 @@ export function initialize(): void {
             instance.destroy();
         },
     });
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#compose_buttons .compose-reply-button-wrapper",
         delay: EXTRA_LONG_HOVER_DELAY,
         // Only show on mouseenter since for spectators, clicking on these
@@ -81,7 +81,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#new_conversation_button",
         delay: EXTRA_LONG_HOVER_DELAY,
         // Only show on mouseenter since for spectators, clicking on these
@@ -115,7 +115,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         // Only display Tippy content on classes accompanied by a `data-` attribute.
         target: `
         .compose_control_button[data-tooltip-template-id],
@@ -149,7 +149,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".send-control-button",
         delay: LONG_HOVER_DELAY,
         placement: "top",
@@ -176,7 +176,7 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: "#compose-send-button",
         delay: EXTRA_LONG_HOVER_DELAY,
         // By default, tippyjs uses a trigger value of "mouseenter focus",
@@ -198,7 +198,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         target: ".narrow_to_compose_recipients",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -236,7 +236,7 @@ export function initialize(): void {
         },
     });
 
-    delegate("body", {
+    tippy.delegate("body", {
         // TODO: Might need to target just the Send button itself
         // in the new design
         target: ".disabled-message-send-controls",

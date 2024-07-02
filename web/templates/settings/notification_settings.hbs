@@ -65,7 +65,10 @@
         </div>
 
         <div class="input-group">
-            <label for="automatically_follow_topics_policy" class="settings-field-label">{{ settings_label.automatically_follow_topics_policy }}</label>
+            <label for="automatically_follow_topics_policy" class="settings-field-label">
+                {{ settings_label.automatically_follow_topics_policy }}
+                {{> ../help_link_widget link="/help/follow-a-topic" }}
+            </label>
             <select name="automatically_follow_topics_policy" class="setting_automatically_follow_topics_policy prop-element settings_select bootstrap-focus-style"
               id="{{prefix}}automatically_follow_topics_policy" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=automatically_follow_topics_policy_values}}
@@ -73,7 +76,10 @@
         </div>
 
         <div class="input-group">
-            <label for="automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">{{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}</label>
+            <label for="automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
+                {{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}
+                {{> ../help_link_widget link="/help/mute-a-topic" }}
+            </label>
             <select name="automatically_unmute_topics_in_muted_streams_policy" class="setting_automatically_unmute_topics_in_muted_streams_policy prop-element settings_select bootstrap-focus-style"
               id="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
@@ -97,7 +103,7 @@
         </div>
 
         {{#unless for_realm_settings}}
-        <p><a class="send_test_notification">{{t "Test desktop notification" }}</a></p>
+        <p><a class="send_test_notification">{{t "Send a test notification" }}</a></p>
         {{/unless}}
 
         {{#each notification_settings.desktop_notification_settings}}

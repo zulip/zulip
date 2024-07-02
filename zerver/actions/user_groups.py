@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
@@ -11,6 +10,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
+    get_group_setting_value_for_audit_log_data,
     get_role_based_system_groups_dict,
     set_defaults_for_group_settings,
 )
@@ -433,28 +433,19 @@ def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProf
     do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
 
 
-def get_group_setting_value_for_audit_log_data(
-    setting_value: Union[int, AnonymousSettingGroupDict],
-) -> Union[int, Dict[str, List[int]]]:
-    if isinstance(setting_value, int):
-        return setting_value
-
-    return asdict(setting_value)
-
-
 @transaction.atomic(savepoint=False)
 def do_change_user_group_permission_setting(
     user_group: NamedUserGroup,
     setting_name: str,
     setting_value_group: UserGroup,
     *,
+    old_setting_api_value: Union[int, AnonymousSettingGroupDict],
     acting_user: Optional[UserProfile],
 ) -> None:
     old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
     user_group.save()
 
-    old_setting_api_value = get_group_setting_value_for_api(old_value)
     new_setting_api_value = get_group_setting_value_for_api(setting_value_group)
 
     if not hasattr(old_value, "named_user_group") and hasattr(

@@ -14,7 +14,7 @@ type List<Key> = {
 export class ListCursor<Key> {
     highlight_class: string;
     list: List<Key>;
-    curr_key?: Key;
+    curr_key?: Key | undefined;
 
     constructor({highlight_class, list}: {highlight_class: string; list: List<Key>}) {
         this.highlight_class = highlight_class;

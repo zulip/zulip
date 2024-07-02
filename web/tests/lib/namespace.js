@@ -25,46 +25,6 @@ let jquery_function;
 
 const template_path = path.resolve(__dirname, "../../templates");
 
-/* istanbul ignore next */
-function need_to_mock_template_error(filename) {
-    const fn = path.relative(template_path, filename);
-
-    return `
-        Please use mock_template if your test needs to render ${fn}
-
-        We use mock_template in our unit tests to verify that the
-        JS code is calling the template with the proper data. And
-        then we use the results of mock_template to supply the JS
-        code with either the actual HTML from the template or some
-        kind of zjquery stub.
-
-        The basic pattern is this (grep for mock_template to see real
-        world examples):
-
-        run_test("test something calling template", ({mock_template}) => {
-            // We encourage you to set the second argument to false
-            // if you are not actually inspecting or using the results
-            // of actually rendering the template.
-            mock_template("${fn}", false, (data) => {
-                assert.deepEqual(data, {...};
-                // or assert more specific things about the data
-                return "stub-for-zjquery";
-            });
-
-            // If you need the actual HTML from the template, do
-            // something like below instead. (We set the second argument
-            // to true which tells mock_template that is should call
-            // the actual template rendering function and pass in the
-            // resulting html to us.
-            mock_template("${fn}", true, (data, html) => {
-                assert.deepEqual(data, {...};
-                assert.ok(html.startWith(...));
-                return html;
-            });
-        });
-    `;
-}
-
 function load(request, parent, isMain) {
     let module;
 
@@ -104,17 +64,10 @@ function load(request, parent, isMain) {
 
 function template_stub({filename, actual_render}) {
     return function render(...args) {
-        // If our template is being rendered as a partial, always
-        // use the actual implementation.
-        if (in_mid_render) {
+        // If our template was not mocked or is being rendered as a
+        // partial, use the actual implementation.
+        if (!template_mocks.has(filename) || in_mid_render) {
             return actual_render(...args);
-        }
-
-        // Force devs to call mock_template on every top-level template
-        // render so they can introspect the data.
-        /* istanbul ignore if */
-        if (!template_mocks.has(filename)) {
-            throw new Error(need_to_mock_template_error(filename));
         }
 
         used_templates.add(filename);

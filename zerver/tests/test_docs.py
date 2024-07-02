@@ -172,9 +172,9 @@ class DocPageTest(ZulipTestCase):
             "/api/delete-queue": "Delete a previously registered queue",
             "/api/get-events": "dont_block",
             "/api/get-own-user": "does not accept any parameters.",
-            "/api/get-stream-id": "The name of the stream to access.",
+            "/api/get-stream-id": "The name of the channel to access.",
             "/api/get-streams": "include_public",
-            "/api/get-subscriptions": "Get all streams that the user is subscribed to.",
+            "/api/get-subscriptions": "Get all channels that the user is subscribed to.",
             "/api/get-users": "client_gravatar",
             "/api/installation-instructions": "No download required!",
             "/api/register-queue": "apply_markdown",
@@ -254,7 +254,7 @@ class DocPageTest(ZulipTestCase):
         # Test the i18n version of one of these pages.
         self._test("/en/history/", ["Zulip released as open source!"])
         self._test("/values/", ["designed our company"])
-        self._test("/hello/", ["your mission-critical communications with Zulip"])
+        self._test("/hello/", ["Zulip lets us move faster, connect with each"])
         self._test("/communities/", ["Open communities directory"])
         self._test("/development-community/", ["Zulip development community"])
         self._test("/features/", ["Organized team chat solution"])
@@ -516,7 +516,7 @@ class PlansPageTest(ZulipTestCase):
         non_existent_domain = "moo"
         result = self.client_get("/plans/", subdomain=non_existent_domain)
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("does not exist", result)
+        self.assert_in_response("There is no Zulip organization at", result)
 
         realm = get_realm("zulip")
         realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE

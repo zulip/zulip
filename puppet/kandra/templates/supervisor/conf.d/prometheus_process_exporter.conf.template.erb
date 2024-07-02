@@ -1,5 +1,5 @@
 [program:prometheus_process_exporter]
-command=<%= @bin %> -config.path <%= @conf %>
+command=<%= @bin %> -config.path <%= @conf %> -recheck-with-time-limit 1m
 priority=10
 autostart=true
 autorestart=true

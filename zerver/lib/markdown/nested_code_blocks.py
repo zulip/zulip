@@ -6,7 +6,7 @@ from markdown.extensions import Extension
 from typing_extensions import override
 
 from zerver.lib.markdown import ResultWithFamily, walk_tree_with_family
-from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 
 
 class NestedCodeBlocksRenderer(Extension):
@@ -15,7 +15,7 @@ class NestedCodeBlocksRenderer(Extension):
         md.treeprocessors.register(
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
             "nested_code_blocks",
-            PREPROCESSOR_PRIORITES["nested_code_blocks"],
+            PREPROCESSOR_PRIORITIES["nested_code_blocks"],
         )
 
 

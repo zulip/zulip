@@ -3,7 +3,7 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as huddle_data from "./huddle_data";
+import * as direct_message_group_data from "./direct_message_group_data";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
@@ -55,6 +55,16 @@ const consts = {
     recent_view_minimum_load_more_fetch_size: 50000,
 };
 
+export function load_messages_around_anchor(anchor, cont, msg_list_data) {
+    load_messages({
+        anchor,
+        num_before: consts.narrowed_view_backward_batch_size,
+        num_after: consts.narrowed_view_forward_batch_size,
+        msg_list_data,
+        cont,
+    });
+}
+
 function process_result(data, opts) {
     let messages = data.messages;
 
@@ -76,14 +86,14 @@ function process_result(data, opts) {
         }
     }
 
-    huddle_data.process_loaded_messages(messages);
+    direct_message_group_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view();
 
     if (
         message_lists.current !== undefined &&
         opts.msg_list === message_lists.current &&
-        opts.msg_list.narrowed &&
+        !opts.msg_list.is_combined_feed_view &&
         opts.msg_list.visibly_empty()
     ) {
         // The view appears to be empty. However, because in stream
@@ -137,7 +147,11 @@ function get_messages_success(data, opts) {
         });
     }
 
-    if (opts.msg_list && opts.msg_list.narrowed && opts.msg_list !== message_lists.current) {
+    if (
+        opts.msg_list &&
+        !opts.msg_list.is_combined_feed_view &&
+        opts.msg_list !== message_lists.current
+    ) {
         // We unnarrowed before receiving new messages so
         // don't bother processing the newly arrived messages.
         return;
@@ -309,7 +323,7 @@ export function load_messages(opts, attempt = 1) {
             if (
                 opts.msg_list !== undefined &&
                 opts.msg_list !== message_lists.current &&
-                opts.msg_list.narrowed
+                !opts.msg_list.is_combined_feed_view
             ) {
                 // This fetch was for a narrow, and we unnarrowed
                 // before getting an error, so don't bother trying
@@ -330,7 +344,7 @@ export function load_messages(opts, attempt = 1) {
                 if (
                     message_lists.current !== undefined &&
                     opts.msg_list === message_lists.current &&
-                    opts.msg_list.narrowed &&
+                    !opts.msg_list.is_combined_feed_view &&
                     opts.msg_list.visibly_empty()
                 ) {
                     narrow_banner.show_empty_narrow_message();
@@ -451,7 +465,7 @@ export function maybe_load_older_messages(opts) {
 
         let found_first_unread = opts.first_unread_message_id === undefined;
         // This is a soft check because `first_unread_message_id` can be deleted.
-        if (!found_first_unread && msg_list_data.first() <= opts.first_unread_message_id) {
+        if (!found_first_unread && msg_list_data.first().id <= opts.first_unread_message_id) {
             found_first_unread = true;
         }
 
@@ -583,8 +597,8 @@ export function initialize(finished_initial_fetch) {
     // Since `all_messages_data` contains continuous message history
     // which always contains the latest message, it makes sense for
     // Recent view to display the same data and be in sync.
-    all_messages_data.set_add_messages_callback((messages) => {
-        recent_view_ui.process_messages(messages, all_messages_data);
+    all_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
+        recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
     });
 
     // TODO: Ideally we'd have loading indicators for Recent Conversations

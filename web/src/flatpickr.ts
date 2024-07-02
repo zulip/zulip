@@ -25,7 +25,7 @@ export function show_flatpickr(
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
-    flatpickr_instance = flatpickr($flatpickr_input[0], {
+    flatpickr_instance = flatpickr($flatpickr_input[0]!, {
         mode: "single",
         enableTime: true,
         clickOpens: false,

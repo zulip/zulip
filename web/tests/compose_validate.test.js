@@ -666,7 +666,9 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned_details = {
-        email: "foo@bar.com",
+        user: {
+            email: "foo@bar.com",
+        },
     };
 
     let new_banner_rendered = false;
@@ -679,19 +681,19 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         return "<banner-stub>";
     });
 
-    function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
+    function test_noop_case(is_private, is_zephyr_mirror, type) {
         new_banner_rendered = false;
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
         realm.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
-        mentioned_details.is_broadcast = is_broadcast;
+        mentioned_details.type = type;
         compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
         assert.ok(!new_banner_rendered);
     }
 
-    test_noop_case(true, false, false);
-    test_noop_case(false, true, false);
-    test_noop_case(false, false, true);
+    test_noop_case(true, false, "user");
+    test_noop_case(false, true, "user");
+    test_noop_case(false, false, "broadcast");
 
     $("#compose_invite_users").hide();
     compose_state.set_message_type("stream");
@@ -717,11 +719,14 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     // Test mentioning a user that should gets a warning.
     mentioned_details = {
-        email: "foo@bar.com",
-        user_id: 34,
-        full_name: "Foo Barson",
+        type: "user",
+        user: {
+            email: "foo@bar.com",
+            user_id: 34,
+            full_name: "Foo Barson",
+        },
     };
-    people.add_active_user(mentioned_details);
+    people.add_active_user(mentioned_details.user);
 
     new_banner_rendered = false;
     const $banner_container = $("#compose_banners");

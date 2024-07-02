@@ -216,7 +216,11 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
-from zerver.lib.user_groups import AnonymousSettingGroupDict
+from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
+    get_group_setting_value_for_api,
+    get_role_based_system_groups_dict,
+)
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -232,7 +236,6 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
-    UserGroup,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -326,6 +329,7 @@ class BaseAction(ZulipTestCase):
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(
             self.user_profile,
+            realm=self.user_profile.realm,
             event_types=event_types,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
@@ -394,6 +398,7 @@ class BaseAction(ZulipTestCase):
 
         normal_state = fetch_initial_state_data(
             self.user_profile,
+            realm=self.user_profile.realm,
             event_types=event_types,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
@@ -426,6 +431,11 @@ class BaseAction(ZulipTestCase):
                 state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
             # Since time is different for every call, just fix the value
             state["server_timestamp"] = 0
+            if "presence_last_update_id" in state:
+                # We don't adjust presence_last_update_id via apply_events,
+                # since events don't carry the relevant information.
+                # Fix the value just like server_timestamp.
+                state["presence_last_update_id"] = 0
 
         normalize(state1)
         normalize(state2)
@@ -481,7 +491,12 @@ class NormalActionsTest(BaseAction):
         for i in range(3):
             content = "mentioning... @**" + user.full_name + "** hello " + str(i)
             with self.verify_action():
-                self.send_stream_message(self.example_user("cordelia"), "Verona", content)
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
 
     def test_automatically_follow_topic_where_mentioned(self) -> None:
         user = self.example_user("hamlet")
@@ -509,24 +524,42 @@ class NormalActionsTest(BaseAction):
         for i in range(3):
             content = "mentioning... @**" + user.full_name + "** hello " + str(i)
             with self.verify_action(num_events=get_num_events()):
-                self.send_stream_message(self.example_user("cordelia"), "Verona", content)
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
 
     def test_topic_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**topic** hello " + str(i)
             with self.verify_action():
-                self.send_stream_message(self.example_user("cordelia"), "Verona", content)
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
 
     def test_stream_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**all** hello " + str(i)
             with self.verify_action():
-                self.send_stream_message(self.example_user("cordelia"), "Verona", content)
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
 
     def test_pm_send_message_events(self) -> None:
         with self.verify_action():
             self.send_personal_message(
-                self.example_user("cordelia"), self.example_user("hamlet"), "hola"
+                self.example_user("cordelia"),
+                self.example_user("hamlet"),
+                "hola",
+                skip_capture_on_commit_callbacks=True,
             )
 
         # Verify direct message editing - content only edit
@@ -571,7 +604,9 @@ class NormalActionsTest(BaseAction):
             self.example_user("othello"),
         ]
         with self.verify_action():
-            self.send_huddle_message(self.example_user("cordelia"), huddle, "hola")
+            self.send_huddle_message(
+                self.example_user("cordelia"), huddle, "hola", skip_capture_on_commit_callbacks=True
+            )
 
     def test_user_creation_events_on_sending_messages(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -584,24 +619,28 @@ class NormalActionsTest(BaseAction):
         # for bots as they can access all the bots.
         bot = self.create_test_bot("test2", cordelia, full_name="Test bot")
         with self.verify_action(num_events=1) as events:
-            self.send_personal_message(bot, polonius, "hola")
+            self.send_personal_message(bot, polonius, "hola", skip_capture_on_commit_callbacks=True)
         check_direct_message("events[0]", events[0])
 
         with self.verify_action(num_events=2) as events:
-            self.send_personal_message(cordelia, polonius, "hola")
-        check_direct_message("events[0]", events[0])
-        check_realm_user_add("events[1]", events[1])
-        self.assertEqual(events[1]["person"]["user_id"], cordelia.id)
+            self.send_personal_message(
+                cordelia, polonius, "hola", skip_capture_on_commit_callbacks=True
+            )
+        check_realm_user_add("events[0]", events[0])
+        check_direct_message("events[1]", events[1])
+        self.assertEqual(events[0]["person"]["user_id"], cordelia.id)
 
         othello = self.example_user("othello")
         desdemona = self.example_user("desdemona")
 
         with self.verify_action(num_events=3) as events:
-            self.send_huddle_message(othello, [polonius, desdemona, bot], "hola")
-        check_direct_message("events[0]", events[0])
+            self.send_huddle_message(
+                othello, [polonius, desdemona, bot], "hola", skip_capture_on_commit_callbacks=True
+            )
+        check_realm_user_add("events[0]", events[0])
         check_realm_user_add("events[1]", events[1])
-        check_realm_user_add("events[2]", events[2])
-        user_creation_user_ids = {events[1]["person"]["user_id"], events[2]["person"]["user_id"]}
+        check_direct_message("events[2]", events[2])
+        user_creation_user_ids = {events[0]["person"]["user_id"], events[1]["person"]["user_id"]}
         self.assertEqual(user_creation_user_ids, {othello.id, desdemona.id})
 
     def test_stream_send_message_events(self) -> None:
@@ -687,7 +726,9 @@ class NormalActionsTest(BaseAction):
             # Three events are generated:
             # 2 for following the topic and 1 for the message sent.
             with self.verify_action(client_gravatar=False, num_events=3) as events:
-                self.send_stream_message(hamlet, "Verona", "hello", "topic")
+                self.send_stream_message(
+                    hamlet, "Verona", "hello", "topic", skip_capture_on_commit_callbacks=True
+                )
             verify_events_generated_and_reset_visibility_policy(events, "Verona", "topic")
 
         # action: initiation
@@ -714,7 +755,13 @@ class NormalActionsTest(BaseAction):
             # Three events are generated:
             # 2 for following the topic and 1 for the message sent.
             with self.verify_action(client_gravatar=False, num_events=3) as events:
-                self.send_stream_message(hamlet, "Denmark", "hello", f"new topic {index}")
+                self.send_stream_message(
+                    hamlet,
+                    "Denmark",
+                    "hello",
+                    f"new topic {index}",
+                    skip_capture_on_commit_callbacks=True,
+                )
             verify_events_generated_and_reset_visibility_policy(
                 events, "Denmark", f"new topic {index}"
             )
@@ -744,7 +791,9 @@ class NormalActionsTest(BaseAction):
             # Three events are generated:
             # 2 for unmuting the topic and 1 for the message sent.
             with self.verify_action(client_gravatar=False, num_events=3) as events:
-                self.send_stream_message(hamlet, "core team", "hello", "topic")
+                self.send_stream_message(
+                    hamlet, "core team", "hello", "topic", skip_capture_on_commit_callbacks=True
+                )
             verify_events_generated_and_reset_visibility_policy(events, "core team", "topic")
 
         # If current_visibility_policy is already set to the value the policies would set.
@@ -762,7 +811,9 @@ class NormalActionsTest(BaseAction):
         )
         # 1 event for the message sent
         with self.verify_action(client_gravatar=False, num_events=1) as events:
-            self.send_stream_message(hamlet, "core team", "hello", "new Topic")
+            self.send_stream_message(
+                hamlet, "core team", "hello", "new Topic", skip_capture_on_commit_callbacks=True
+            )
 
         do_change_user_setting(
             user_profile=hamlet,
@@ -772,7 +823,9 @@ class NormalActionsTest(BaseAction):
         )
         # Only one message event is generated
         with self.verify_action(client_gravatar=True) as events:
-            self.send_stream_message(hamlet, "core team", "hello")
+            self.send_stream_message(
+                hamlet, "core team", "hello", skip_capture_on_commit_callbacks=True
+            )
         # event-type: message
         check_message("events[0]", events[0])
         assert isinstance(events[0]["message"]["avatar_url"], str)
@@ -785,7 +838,9 @@ class NormalActionsTest(BaseAction):
         )
 
         with self.verify_action(client_gravatar=True) as events:
-            self.send_stream_message(hamlet, "core team", "hello")
+            self.send_stream_message(
+                hamlet, "core team", "hello", skip_capture_on_commit_callbacks=True
+            )
         check_message("events[0]", events[0])
         assert events[0]["message"]["avatar_url"] is None
 
@@ -800,7 +855,9 @@ class NormalActionsTest(BaseAction):
             visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
         with self.verify_action(state_change_expected=True):
-            self.send_stream_message(self.example_user("aaron"), "Verona", "hello")
+            self.send_stream_message(
+                self.example_user("aaron"), "Verona", "hello", skip_capture_on_commit_callbacks=True
+            )
 
     def test_stream_update_message_events(self) -> None:
         iago = self.example_user("iago")
@@ -1032,7 +1089,9 @@ class NormalActionsTest(BaseAction):
             "hello 1",
         )
         with self.verify_action(state_change_expected=True):
-            self.send_stream_message(sender, "Verona", "hello 2")
+            self.send_stream_message(
+                sender, "Verona", "hello 2", skip_capture_on_commit_callbacks=True
+            )
 
     def test_events_for_message_from_inaccessible_sender(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -1042,7 +1101,11 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action() as events:
             self.send_stream_message(
-                othello, "test_stream1", "hello 2", allow_unsubscribed_sender=True
+                othello,
+                "test_stream1",
+                "hello 2",
+                allow_unsubscribed_sender=True,
+                skip_capture_on_commit_callbacks=True,
             )
         check_message("events[0]", events[0])
         message_obj = events[0]["message"]
@@ -1053,7 +1116,11 @@ class NormalActionsTest(BaseAction):
         iago = self.example_user("iago")
         with self.verify_action() as events:
             self.send_stream_message(
-                iago, "test_stream1", "hello 2", allow_unsubscribed_sender=True
+                iago,
+                "test_stream1",
+                "hello 2",
+                allow_unsubscribed_sender=True,
+                skip_capture_on_commit_callbacks=True,
             )
         check_message("events[0]", events[0])
         message_obj = events[0]["message"]
@@ -1115,6 +1182,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         check_invites_changed("events[0]", events[0])
@@ -1132,6 +1200,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 PreregistrationUser.INVITE_AS["MEMBER"],
                 invite_expires_in_minutes,
+                False,
                 streams,
             )
         check_invites_changed("events[0]", events[0])
@@ -1145,6 +1214,7 @@ class NormalActionsTest(BaseAction):
                 user_profile,
                 ["foo@zulip.com"],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
@@ -1167,6 +1237,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         prereg_users = PreregistrationUser.objects.filter(
@@ -1188,6 +1259,7 @@ class NormalActionsTest(BaseAction):
             self.user_profile,
             PreregistrationUser.INVITE_AS["MEMBER"],
             invite_expires_in_minutes,
+            False,
             streams,
         )
 
@@ -1211,6 +1283,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
@@ -1477,20 +1550,20 @@ class NormalActionsTest(BaseAction):
             self.register("test1@zulip.com", "test1")
         self.assert_length(events, 5)
 
-        check_realm_user_add("events[1]", events[1])
+        check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
-        check_subscription_peer_add("events[4]", events[4])
+        check_subscription_peer_add("events[3]", events[3])
 
-        check_message("events[0]", events[0])
+        check_message("events[4]", events[4])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> joined this organization.',
-            events[0]["message"]["content"],
+            events[4]["message"]["content"],
         )
 
+        check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_add_members("events[3]", events[3])
 
     def test_register_events_email_address_visibility(self) -> None:
         realm_user_default = RealmUserDefault.objects.get(realm=self.user_profile.realm)
@@ -1507,20 +1580,20 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(num_events=5) as events:
             self.register("test1@zulip.com", "test1")
         self.assert_length(events, 5)
-        check_realm_user_add("events[1]", events[1])
+        check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
-        check_subscription_peer_add("events[4]", events[4])
+        check_subscription_peer_add("events[3]", events[3])
 
-        check_message("events[0]", events[0])
+        check_message("events[4]", events[4])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> joined this organization',
-            events[0]["message"]["content"],
+            events[4]["message"]["content"],
         )
 
+        check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_add_members("events[3]", events[3])
 
     def test_register_events_for_restricted_users(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -1713,9 +1786,9 @@ class NormalActionsTest(BaseAction):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=self.user_profile.realm, is_system_group=True
         )
-        user_group = UserGroup.objects.create(realm=self.user_profile.realm)
-        user_group.direct_members.set([othello])
-        user_group.direct_subgroups.set([moderators_group])
+        user_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [moderators_group]
+        )
 
         with self.verify_action() as events:
             check_add_user_group(
@@ -1749,17 +1822,25 @@ class NormalActionsTest(BaseAction):
         # Test can_mention_group setting update
         with self.verify_action() as events:
             do_change_user_group_permission_setting(
-                backend, "can_mention_group", moderators_group, acting_user=None
+                backend,
+                "can_mention_group",
+                moderators_group,
+                old_setting_api_value=everyone_group.id,
+                acting_user=None,
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
         self.assertEqual(events[0]["data"]["can_mention_group"], moderators_group.id)
 
-        setting_group = UserGroup.objects.create(realm=self.user_profile.realm)
-        setting_group.direct_members.set([othello.id])
-        setting_group.direct_subgroups.set([moderators_group.id])
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [moderators_group]
+        )
         with self.verify_action() as events:
             do_change_user_group_permission_setting(
-                backend, "can_mention_group", setting_group, acting_user=None
+                backend,
+                "can_mention_group",
+                setting_group,
+                old_setting_api_value=moderators_group.id,
+                acting_user=None,
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
         self.assertEqual(
@@ -2544,7 +2625,7 @@ class NormalActionsTest(BaseAction):
     def test_realm_update_org_type(self) -> None:
         realm = self.user_profile.realm
 
-        state_data = fetch_initial_state_data(self.user_profile)
+        state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_org_type"], Realm.ORG_TYPES["business"]["id"])
 
         with self.verify_action() as events:
@@ -2553,7 +2634,7 @@ class NormalActionsTest(BaseAction):
             )
         check_realm_update("events[0]", events[0], "org_type")
 
-        state_data = fetch_initial_state_data(self.user_profile)
+        state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_org_type"], Realm.ORG_TYPES["government"]["id"])
 
     def test_realm_update_plan_type(self) -> None:
@@ -2563,7 +2644,7 @@ class NormalActionsTest(BaseAction):
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
 
-        state_data = fetch_initial_state_data(self.user_profile)
+        state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], True)
 
@@ -2573,7 +2654,7 @@ class NormalActionsTest(BaseAction):
         check_realm_update_dict("events[1]", events[1])
         check_realm_update("events[2]", events[2], "plan_type")
 
-        state_data = fetch_initial_state_data(self.user_profile)
+        state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], False)
 
@@ -2926,7 +3007,9 @@ class NormalActionsTest(BaseAction):
         # correct because were one to somehow compute page_params (as
         # this test does), but that's not actually possible.
         with self.verify_action(state_change_expected=False) as events:
-            do_deactivate_realm(realm, acting_user=None)
+            do_deactivate_realm(
+                realm, acting_user=None, deactivation_reason="owner_request", email_owners=False
+            )
         check_realm_deactivated("events[0]", events[0])
 
     def test_do_mark_onboarding_step_as_read(self) -> None:
@@ -3058,6 +3141,27 @@ class NormalActionsTest(BaseAction):
             is_legacy=True,
         )
 
+    def test_do_delete_first_message_in_stream(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "test_stream1")
+        msg_id = self.send_stream_message(hamlet, "test_stream1")
+        msg_id_2 = self.send_stream_message(hamlet, "test_stream1")
+        message = Message.objects.get(id=msg_id)
+        with self.verify_action(state_change_expected=True, num_events=2) as events:
+            do_delete_messages(self.user_profile.realm, [message])
+
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "first_message_id")
+        self.assertEqual(events[0]["value"], msg_id_2)
+
+        check_delete_message(
+            "events[1]",
+            events[1],
+            message_type="stream",
+            num_message_ids=1,
+            is_legacy=False,
+        )
+
     def test_do_delete_message_personal(self) -> None:
         msg_id = self.send_personal_message(
             self.example_user("cordelia"),
@@ -3101,7 +3205,7 @@ class NormalActionsTest(BaseAction):
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True):
             do_delete_messages(self.user_profile.realm, [message])
-        result = fetch_initial_state_data(user_profile)
+        result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
     def test_do_delete_message_with_no_messages(self) -> None:
@@ -3140,7 +3244,13 @@ class NormalActionsTest(BaseAction):
         assert url is not None
         body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + url + ")"
         with self.verify_action(num_events=2) as events:
-            self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+            self.send_stream_message(
+                self.example_user("hamlet"),
+                "Denmark",
+                body,
+                "test",
+                skip_capture_on_commit_callbacks=True,
+            )
 
         check_attachment_update("events[0]", events[0])
         self.assertEqual(events[0]["upload_space_used"], 6)
@@ -3291,8 +3401,6 @@ class RealmPropertyActionTest(BaseAction):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[1000, 2000],
-            create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
-            create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
@@ -3414,6 +3522,30 @@ class RealmPropertyActionTest(BaseAction):
             if user_group.name == default_group_name:
                 continue
 
+            if (
+                not setting_permission_configuration.allow_internet_group
+                and user_group.name == SystemGroups.EVERYONE_ON_INTERNET
+            ):
+                continue
+
+            if (
+                not setting_permission_configuration.allow_everyone_group
+                and user_group.name == SystemGroups.EVERYONE
+            ):
+                continue
+
+            if (
+                not setting_permission_configuration.allow_owners_group
+                and user_group.name == SystemGroups.OWNERS
+            ):
+                continue
+
+            if (
+                not setting_permission_configuration.allow_nobody_group
+                and user_group.name == SystemGroups.NOBODY
+            ):
+                continue
+
             now = timezone_now()
             state_change_expected = True
             num_events = 1
@@ -3447,6 +3579,151 @@ class RealmPropertyActionTest(BaseAction):
 
             old_group_id = new_group_id
 
+    def do_set_realm_permission_group_setting_to_anonymous_groups_test(
+        self, setting_name: str
+    ) -> None:
+        realm = self.user_profile.realm
+        system_user_groups_dict = get_role_based_system_groups_dict(
+            realm,
+        )
+
+        setting_permission_configuration = Realm.REALM_PERMISSION_GROUP_SETTINGS[setting_name]
+
+        default_group_name = setting_permission_configuration.default_group_name
+        default_group = system_user_groups_dict[default_group_name]
+
+        now = timezone_now()
+
+        do_change_realm_permission_group_setting(
+            realm,
+            setting_name,
+            default_group,
+            acting_user=self.user_profile,
+        )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+            ).count(),
+            1,
+        )
+
+        othello = self.example_user("othello")
+        admins_group = system_user_groups_dict[SystemGroups.ADMINISTRATORS]
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [admins_group])
+        now = timezone_now()
+
+        with self.verify_action(state_change_expected=True, num_events=1) as events:
+            do_change_realm_permission_group_setting(
+                realm,
+                setting_name,
+                setting_group,
+                acting_user=self.user_profile,
+            )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: default_group.id,
+                    RealmAuditLog.NEW_VALUE: {
+                        "direct_members": [othello.id],
+                        "direct_subgroups": [admins_group.id],
+                    },
+                    "property": setting_name,
+                },
+            ).count(),
+            1,
+        )
+        check_realm_update_dict("events[0]", events[0])
+        self.assertEqual(
+            events[0]["data"][setting_name],
+            AnonymousSettingGroupDict(
+                direct_members=[othello.id], direct_subgroups=[admins_group.id]
+            ),
+        )
+
+        old_setting_api_value = get_group_setting_value_for_api(setting_group)
+        moderators_group = system_user_groups_dict[SystemGroups.MODERATORS]
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.user_profile], [moderators_group], existing_setting_group=setting_group
+        )
+
+        # state_change_expected is False here because the initial state will
+        # also have the new setting value due to the setting group already
+        # being modified with the new members.
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_change_realm_permission_group_setting(
+                realm,
+                setting_name,
+                setting_group,
+                old_setting_api_value=old_setting_api_value,
+                acting_user=self.user_profile,
+            )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [othello.id],
+                        "direct_subgroups": [admins_group.id],
+                    },
+                    RealmAuditLog.NEW_VALUE: {
+                        "direct_members": [self.user_profile.id],
+                        "direct_subgroups": [moderators_group.id],
+                    },
+                    "property": setting_name,
+                },
+            ).count(),
+            1,
+        )
+        check_realm_update_dict("events[0]", events[0])
+        self.assertEqual(
+            events[0]["data"][setting_name],
+            AnonymousSettingGroupDict(
+                direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
+
+        with self.verify_action(state_change_expected=True, num_events=1) as events:
+            do_change_realm_permission_group_setting(
+                realm,
+                setting_name,
+                default_group,
+                acting_user=self.user_profile,
+            )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [self.user_profile.id],
+                        "direct_subgroups": [moderators_group.id],
+                    },
+                    RealmAuditLog.NEW_VALUE: default_group.id,
+                    "property": setting_name,
+                },
+            ).count(),
+            1,
+        )
+        check_realm_update_dict("events[0]", events[0])
+        self.assertEqual(events[0]["data"][setting_name], default_group.id)
+
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
@@ -3455,6 +3732,10 @@ class RealmPropertyActionTest(BaseAction):
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_permission_group_setting_test(prop)
+
+        for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+            with self.settings(SEND_DIGEST_EMAILs=True):
+                self.do_set_realm_permission_group_setting_to_anonymous_groups_test(prop)
 
     def do_set_realm_user_default_setting_test(self, name: str) -> None:
         bool_tests: List[bool] = [True, False, True]

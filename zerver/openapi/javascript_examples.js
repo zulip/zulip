@@ -104,7 +104,7 @@ const send_test_message = async (client) => {
 
 add_example("send_message", "/messages:post", 200, async (client, console) => {
     // {code_example|start}
-    // Send a stream message
+    // Send a channel message
     let params = {
         to: "social",
         type: "stream",
@@ -167,11 +167,11 @@ add_example("get_messages", "/messages:get", 200, async (client, console) => {
         num_after: 0,
         narrow: [
             {operator: "sender", operand: "iago@zulip.com"},
-            {operator: "stream", operand: "Verona"},
+            {operator: "channel", operand: "Verona"},
         ],
     };
 
-    // Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
+    // Get the 100 last messages sent by "iago@zulip.com" to the channel "Verona"
     console.log(await client.messages.retrieve(readParams));
     // {code_example|end}
 });
@@ -186,7 +186,7 @@ add_example("get_own_user", "/users/me:get", 200, async (client, console) => {
 
 add_example("get_stream_id", "/get_stream_id:get", 200, async (client, console) => {
     // {code_example|start}
-    // Get the ID of a given stream
+    // Get the ID of a given channel
     console.log(await client.streams.getStreamId("Denmark"));
     // {code_example|end}
 });
@@ -197,7 +197,7 @@ add_example(
     200,
     async (client, console) => {
         // {code_example|start}
-        // Get all the topics in stream with ID 1
+        // Get all the topics in channel with ID 1
         console.log(await client.streams.topics.retrieve({stream_id: 1}));
         // {code_example|end}
     },
@@ -205,7 +205,7 @@ add_example(
 
 add_example("get_subscriptions", "/users/me/subscriptions:get", 200, async (client, console) => {
     // {code_example|start}
-    // Get all streams that the user is subscribed to
+    // Get all channels that the user is subscribed to
     console.log(await client.streams.subscriptions.retrieve());
     // {code_example|end}
 });
@@ -260,13 +260,13 @@ add_example("set_typing_status", "/typing:post", 200, async (client, console) =>
 
 add_example("add_subscriptions", "/users/me/subscriptions:post", 200, async (client, console) => {
     // {code_example|start}
-    // Subscribe to the streams "Verona" and "Denmark"
+    // Subscribe to the channels "Verona" and "Denmark"
     const meParams = {
         subscriptions: JSON.stringify([{name: "Verona"}, {name: "Denmark"}]),
     };
     console.log(await client.users.me.subscriptions.add(meParams));
 
-    // To subscribe another user to a stream, you may pass in
+    // To subscribe another user to a channel, you may pass in
     // the `principals` parameter, like so:
     const user_id = 7;
     const anotherUserParams = {
@@ -283,14 +283,14 @@ add_example(
     200,
     async (client, console) => {
         // {code_example|start}
-        // Unsubscribe from the stream "Denmark"
+        // Unsubscribe from the channel "Denmark"
         const meParams = {
             subscriptions: JSON.stringify(["Denmark"]),
         };
         console.log(await client.users.me.subscriptions.remove(meParams));
 
         const user_id = 7;
-        // Unsubscribe Zoe from the stream "Denmark"
+        // Unsubscribe Zoe from the channel "Denmark"
         const zoeParams = {
             subscriptions: JSON.stringify(["Denmark"]),
             principals: JSON.stringify([user_id]),
@@ -369,7 +369,7 @@ add_example("get_events", "/events:get", 200, async (client, console) => {
 
 add_example("get_streams", "/streams:get", 200, async (client, console) => {
     // {code_example|start}
-    // Get all streams that the user has access to
+    // Get all channels that the user has access to
     console.log(await client.streams.retrieve());
     // {code_example|end}
 });

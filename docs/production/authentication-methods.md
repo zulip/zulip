@@ -153,7 +153,7 @@ login form.
 You may also want to configure Zulip's settings for [inviting new
 users](https://zulip.com/help/invite-new-users). If LDAP is the
 only enabled authentication method, the main use case for Zulip's
-invitation feature is selecting the initial streams for invited users
+invitation feature is selecting the initial channels for invited users
 (invited users will still need to use their LDAP password to create an
 account).
 
@@ -1169,7 +1169,7 @@ reject authentication requests e.g. based on IP address of the
 request, this is where it should happen.
 :::
 
-[django-authenticate-details]: https://docs.djangoproject.com/en/dev/topics/auth/customizing/#writing-an-authentication-backend
+[django-authenticate-details]: https://docs.djangoproject.com/en/5.0/topics/auth/customizing/#writing-an-authentication-backend
 
 ## Adding more authentication backends
 

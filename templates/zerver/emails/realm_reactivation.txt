@@ -1,7 +1,7 @@
 {% trans %}Dear former administrators of {{ realm_name }},{% endtrans %}
 
 
-{% trans %}One of your administrators requested reactivation of the previously deactivated Zulip organization hosted at {{ realm_uri }}.{% endtrans %}
+{% trans %}One of your administrators requested reactivation of the previously deactivated Zulip organization hosted at {{ realm_url }}.{% endtrans %}
 
 
 {{ _('Click the link below to reactivate your organization.') }}

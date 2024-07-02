@@ -88,6 +88,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_huddle_hash
 from zerver.models.streams import get_active_streams, get_stream
@@ -168,14 +169,13 @@ class ExportFile(ZulipTestCase):
         )
         attachment_path_id = url.replace("/user_uploads/", "")
         claim_attachment(
-            user_profile=user_profile,
             path_id=attachment_path_id,
             message=message,
             is_message_realm_public=True,
         )
 
         with get_test_image_file("img.png") as img_file:
-            upload_avatar_image(img_file, user_profile, user_profile)
+            upload_avatar_image(img_file, user_profile)
 
         user_profile.avatar_source = "U"
         user_profile.save()
@@ -388,7 +388,6 @@ class RealmImportExportTest(ExportFile):
         )
         attachment_path_id = url.replace("/user_uploads/", "")
         attachment = claim_attachment(
-            user_profile=user_profile,
             path_id=attachment_path_id,
             message=Message.objects.get(id=personal_message_id),
             is_message_realm_public=True,
@@ -763,6 +762,10 @@ class RealmImportExportTest(ExportFile):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
+        denmark_stream = get_stream("Denmark", original_realm)
+        denmark_stream.creator = hamlet
+        denmark_stream.save()
+
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
 
@@ -861,6 +864,12 @@ class RealmImportExportTest(ExportFile):
         do_update_user_presence(
             sample_user, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT
         )
+        user_presence_last_update_ids = set(
+            UserPresence.objects.filter(realm=original_realm)
+            .values_list("last_update_id", flat=True)
+            .distinct("last_update_id")
+        )
+        presence_sequence = PresenceSequence.objects.get(realm=original_realm)
 
         # Set up scheduled messages.
         ScheduledMessage.objects.filter(realm=original_realm).delete()
@@ -1012,6 +1021,12 @@ class RealmImportExportTest(ExportFile):
             f'<p><span class="user-mention" data-user-id="{imported_polonius_user.id}">@Polonius</span></p>',
         )
 
+        imported_hamlet_user = UserProfile.objects.get(
+            delivery_email=self.example_email("hamlet"), realm=imported_realm
+        )
+        imported_denmark_stream = Stream.objects.get(name="Denmark", realm=imported_realm)
+        self.assertEqual(imported_denmark_stream.creator, imported_hamlet_user)
+
         # Check recipient_id was generated correctly for the imported users and streams.
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
             self.assertEqual(
@@ -1073,9 +1088,70 @@ class RealmImportExportTest(ExportFile):
         # set to None due to being unexportable.
         self.assertEqual(realmauditlog.acting_user, None)
 
+        # Verify the PresenceSequence for the realm got imported correctly.
+        imported_presence_sequence = PresenceSequence.objects.get(realm=imported_realm)
+        self.assertEqual(
+            presence_sequence.last_update_id, imported_presence_sequence.last_update_id
+        )
+        imported_last_update_ids = set(
+            UserPresence.objects.filter(realm=imported_realm)
+            .values_list("last_update_id", flat=True)
+            .distinct("last_update_id")
+        )
+        self.assertEqual(user_presence_last_update_ids, imported_last_update_ids)
+        self.assertEqual(imported_presence_sequence.last_update_id, max(imported_last_update_ids))
+
         self.assertEqual(
             Message.objects.filter(realm=original_realm).count(),
             Message.objects.filter(realm=imported_realm).count(),
+        )
+
+    def test_import_message_edit_history(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        user_mention_message = f"@**King Hamlet|{hamlet.id}** Hello"
+
+        self.login_user(iago)
+        message_id = self.send_stream_message(
+            self.example_user("iago"), "Verona", user_mention_message
+        )
+
+        new_content = "new content"
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": new_content,
+            },
+        )
+        self.assert_json_success(result)
+
+        self.export_realm_and_create_auditlog(realm)
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        imported_message = Message.objects.filter(realm=imported_realm).latest("id")
+        imported_hamlet_id = UserProfile.objects.get(
+            delivery_email=hamlet.delivery_email, realm=imported_realm
+        ).id
+        imported_iago_id = UserProfile.objects.get(
+            delivery_email=iago.delivery_email, realm=imported_realm
+        ).id
+
+        edit_history_json = imported_message.edit_history
+        assert edit_history_json is not None
+        edit_history = orjson.loads(edit_history_json)
+        self.assert_length(edit_history, 1)
+
+        prev_version_of_message = edit_history[0]
+        # Ensure the "user_id" (of the sender) was updated correctly
+        # to the imported id in the data.
+        self.assertEqual(prev_version_of_message["user_id"], imported_iago_id)
+
+        # The mention metadata in the rendered content should be updated.
+        self.assertIn(
+            f'data-user-id="{imported_hamlet_id}"', prev_version_of_message["prev_rendered_content"]
         )
 
     def get_realm_getters(self) -> List[Callable[[Realm], object]]:

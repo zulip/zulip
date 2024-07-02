@@ -222,7 +222,7 @@ SILENCED_SYSTEM_CHECKS = [
     # `unique=True`.  For us this is `email`, and it's unique only per-realm.
     # Per Django docs, this is perfectly fine so long as our authentication
     # backends support the username not being unique; and they do.
-    # See: https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
+    # See: https://docs.djangoproject.com/en/5.0/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
     # models.E034 limits index names to 30 characters for Oracle compatibility.
     # We aren't using Oracle.
@@ -315,7 +315,7 @@ elif (
     )
 POSTGRESQL_MISSING_DICTIONARIES = get_config("postgresql", "missing_dictionaries", False)
 
-DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ########################################################################
 # RABBITMQ CONFIGURATION
@@ -441,11 +441,6 @@ ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
-
-# GCM tokens are IP-whitelisted; if we deploy to additional
-# servers you will need to explicitly add their IPs here:
-# https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
-ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
 
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
@@ -892,6 +887,11 @@ LOGGING: Dict[str, Any] = {
         "django_scim": {
             "level": "DEBUG",
             "handlers": ["scim_file", "errors_file"],
+            "propagate": False,
+        },
+        "pyvips": {
+            "level": "WARNING",
+            "handlers": ["console", "errors_file"],
             "propagate": False,
         },
         "pika": {

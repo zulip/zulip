@@ -1,4 +1,4 @@
-import {z} from "zod";
+import type {z} from "zod";
 
 import render_topic_muted from "../templates/topic_muted.hbs";
 
@@ -10,12 +10,13 @@ import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as settings_ui from "./settings_ui";
+import type {StateData, user_topic_schema} from "./state_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import {get_time_from_date_muted} from "./util";
 
-type ServerUserTopic = z.infer<typeof user_topic_schema>;
+export type ServerUserTopic = z.infer<typeof user_topic_schema>;
 
 export type UserTopic = {
     stream_id: number;
@@ -25,14 +26,6 @@ export type UserTopic = {
     date_updated_str: string;
     visibility_policy: number;
 };
-
-const user_topic_schema = z.object({
-    stream_id: z.number(),
-    topic_name: z.string(),
-    last_updated: z.number(),
-    visibility_policy: z.number(),
-    stream__name: z.string().optional(),
-});
 
 const all_user_topics = new Map<
     number,
@@ -70,7 +63,7 @@ export function update_user_topics(
     }
 }
 
-export function get_topic_visibility_policy(stream_id: number, topic: string): number | boolean {
+export function get_topic_visibility_policy(stream_id: number, topic: string): number | false {
     if (stream_id === undefined) {
         return false;
     }
@@ -123,6 +116,8 @@ export function set_user_topic_visibility_policy(
     from_hotkey?: boolean,
     from_banner?: boolean,
     $status_element?: JQuery,
+    success_cb?: () => void,
+    error_cb?: () => void,
 ): void {
     const data = {
         stream_id,
@@ -141,6 +136,10 @@ export function set_user_topic_visibility_policy(
         url: "/json/user_topics",
         data,
         success() {
+            if (success_cb) {
+                success_cb();
+            }
+
             if ($status_element) {
                 const remove_after = 1000;
                 const appear_after = 500;
@@ -191,6 +190,11 @@ export function set_user_topic_visibility_policy(
                 });
             }
         },
+        error() {
+            if (error_cb) {
+                error_cb();
+            }
+        },
     });
 }
 
@@ -223,8 +227,6 @@ export function set_user_topics(user_topics: ServerUserTopic[]): void {
     }
 }
 
-export function initialize(params: {user_topics: ServerUserTopic[]}): void {
-    const user_topics = user_topic_schema.array().parse(params.user_topics);
-
-    set_user_topics(user_topics);
+export function initialize(params: StateData["user_topics"]): void {
+    set_user_topics(params.user_topics);
 }

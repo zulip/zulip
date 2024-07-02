@@ -20,7 +20,6 @@ from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
-from zproject.config import get_config
 
 
 @dataclass
@@ -169,6 +168,7 @@ def build_page_params_for_home_page_load(
             apply_markdown=True,
             client_gravatar=True,
             slim_presence=True,
+            presence_last_update_id_fetched_by_client=-1,
             client_capabilities=client_capabilities,
             narrow=narrow,
             include_streams=False,
@@ -229,16 +229,7 @@ def build_page_params_for_home_page_load(
         # There is no event queue for spectators since
         # events support for spectators is not implemented yet.
         no_event_queue=user_profile is None,
-        server_sentry_dsn=settings.SENTRY_FRONTEND_DSN,
     )
-
-    if settings.SENTRY_FRONTEND_DSN is not None:
-        page_params["realm_sentry_key"] = realm.string_id
-        page_params["server_sentry_environment"] = get_config(
-            "machine", "deploy_type", "development"
-        )
-        page_params["server_sentry_sample_rate"] = settings.SENTRY_FRONTEND_SAMPLE_RATE
-        page_params["server_sentry_trace_rate"] = settings.SENTRY_FRONTEND_TRACE_RATE
 
     page_params["state_data"] = state_data
 

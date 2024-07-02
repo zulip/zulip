@@ -1,9 +1,10 @@
 .pill-container {
     display: inline-flex;
+    gap: var(--vertical-spacing-input-pill) var(--horizontal-spacing-input-pill);
     flex-wrap: wrap;
     min-width: 0;
 
-    padding: 2px;
+    padding: var(--outer-spacing-input-pill-container);
     border: 1px solid hsl(0deg 0% 0% / 15%);
     border-radius: 4px;
     align-items: center;
@@ -16,26 +17,24 @@
         max-width: 100%;
         min-width: 0;
 
-        height: 20px;
-        margin: 1px 2px;
+        height: var(--height-input-pill);
+        margin: 0;
 
         color: inherit;
-        border: 1px solid hsl(0deg 0% 0% / 15%);
+        border: 1px solid transparent;
 
         border-radius: 4px;
-        background-color: hsl(0deg 0% 0% / 7%);
+        background-color: var(--color-background-input-pill);
         cursor: pointer;
 
         &:focus {
-            color: hsl(0deg 0% 100%);
-            border: 1px solid hsl(176deg 78% 28%);
-            background-color: hsl(176deg 49% 42%);
+            border-color: var(--color-focus-outline-input-pill);
             outline: none;
         }
 
         .pill-image {
-            height: 20px;
-            width: 20px;
+            height: var(--length-input-pill-image);
+            width: var(--length-input-pill-image);
             border-radius: 4px 0 0 4px;
         }
 
@@ -56,14 +55,62 @@
             text-overflow: ellipsis;
         }
 
-        .exit {
-            opacity: 0.5;
-            font-size: 1.3em;
-            margin-right: 3px;
+        .pill-close-button {
+            font-size: 10px;
+            text-decoration: none;
+            /* Let the close button's box stretch,
+               but no larger than the height of the
+               banner box when the action button
+               achieves its full height (margin,
+               padding, and height), which keeps
+               the X vertically centered with it. */
+            align-self: stretch;
+            max-height: 52px;
+            /* Display as flexbox to better control
+               the X icon's position. This creates
+               an anonymous flexbox item out of the
+               ::before content where the icon sits. */
+            display: flex;
+            align-items: center;
+            /* !important overrides `.dark-theme:root a:hover` */
+            color: var(--color-input-pill-close) !important;
+            opacity: 0.7;
         }
 
-        &:hover .exit {
-            opacity: 1;
+        .exit {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            justify-content: center;
+            margin-right: 2px;
+            border-radius: 2px;
+        }
+
+        .exit:hover {
+            background: var(--color-background-input-pill-exit-hover);
+
+            .pill-close-button {
+                opacity: 1;
+            }
+        }
+
+        &.deactivated-pill {
+            background-color: var(--color-background-deactivated-user-pill);
+
+            &:focus {
+                border-color: var(--color-focus-outline-deactivated-user-pill);
+            }
+
+            .pill-close-button {
+                /* !important overrides `.dark-theme:root a:hover` */
+                color: var(--color-close-deactivated-user-pill) !important;
+            }
+
+            .exit:hover {
+                background: var(
+                    --color-background-exit-hover-deactivated-user-pill
+                );
+            }
         }
     }
 
@@ -89,23 +136,12 @@
         }
     }
 
-    &.pill-container-btn {
-        cursor: pointer;
-        padding: 0;
-
-        .pill {
-            margin: 0;
-            border: none;
-
-            .exit {
-                display: none;
-            }
-        }
-    }
-
     .input {
         display: inline-block;
-        padding: 2px 4px;
+        /* This keeps the input sized to
+           the same height as pills. */
+        line-height: var(--height-input-pill);
+        padding: 0 4px;
 
         min-width: 2px;
         word-break: break-all;
@@ -122,17 +158,12 @@
 }
 
 #compose-direct-recipient .pill-container {
-    padding: 0 2px;
     border: 1px solid hsl(0deg 0% 0% / 20%);
     background-color: hsl(0deg 0% 100%);
 
-    .input {
-        height: 20px;
-
-        &:first-child:empty::before {
-            content: attr(data-no-recipients-text);
-            opacity: 0.5;
-        }
+    .input:first-child:empty::before {
+        content: attr(data-no-recipients-text);
+        opacity: 0.5;
     }
 
     .pill + .input:empty::before {
@@ -143,13 +174,12 @@
 
 #invitee_emails_container .pill-container {
     width: 100%;
-}
-
-.deactivated-pill {
-    background-color: hsl(0deg 86% 86%) !important;
+    box-sizing: border-box;
+    background-color: var(--color-background-invitee-emails-pill-container);
 }
 
 .add_subscribers_container .pill-container,
+.add_streams_container .pill-container,
 .add_members_container .pill-container {
     width: 100%;
     background-color: hsl(0deg 0% 100%);
@@ -158,6 +188,11 @@
         opacity: 0.5;
         content: attr(data-placeholder);
     }
+}
+
+.display_only_pill {
+    /* Ensure middle alignment in table contexts. */
+    vertical-align: middle;
 }
 
 /* These pill are similar to .not-editable, but are meant to show

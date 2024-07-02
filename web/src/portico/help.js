@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import SimpleBar from "simplebar";
-import tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import copy_to_clipboard_svg from "../../templates/copy_to_clipboard_svg.hbs";
 import * as common from "../common";
@@ -46,14 +46,14 @@ function add_copy_to_clipboard_element($codehilite) {
     });
 
     // Show a tippy tooltip when the button is hovered
-    const tooltip_copy = tippy($copy_button[0], {
+    const tooltip_copy = tippy.default($copy_button[0], {
         content: "Copy code",
         trigger: "mouseenter",
         placement: "top",
     });
 
     // Show a tippy tooltip when the code is copied
-    const tooltip_copied = tippy($copy_button[0], {
+    const tooltip_copied = tippy.default($copy_button[0], {
         content: "Copied!",
         trigger: "manual",
         placement: "top",
@@ -94,7 +94,7 @@ function render_tabbed_sections() {
     });
 }
 
-new SimpleBar($(".sidebar")[0]);
+new SimpleBar($(".sidebar")[0], {tabIndex: -1});
 
 // Scroll to anchor link when clicked. Note that landing-page.js has a
 // similar function; this file and landing-page.js are never included

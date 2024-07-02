@@ -8,7 +8,6 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import upload_emoji_image
 from zerver.models import Realm, RealmAuditLog, RealmEmoji, UserProfile
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
@@ -33,10 +32,6 @@ def check_add_realm_emoji(
         raise JsonableError(_("A custom emoji with this name already exists."))
 
     emoji_file_name = get_emoji_file_name(image_file.name, realm_emoji.id)
-
-    # The only user-controlled portion of 'emoji_file_name' is an extension,
-    # which cannot contain '..' or '/' or '\', making it difficult to exploit
-    emoji_file_name = mark_sanitized(emoji_file_name)
 
     emoji_uploaded_successfully = False
     is_animated = False

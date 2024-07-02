@@ -15,7 +15,6 @@ import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
-import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as gear_menu from "./gear_menu";
@@ -77,6 +76,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
+import * as theme from "./theme";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -146,10 +146,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "onboarding_steps":
-            onboarding_steps.update_notice_to_display(event.onboarding_steps);
-            current_user.onboarding_steps = current_user.onboarding_steps
-                ? [...current_user.onboarding_steps, ...event.onboarding_steps]
-                : event.onboarding_steps;
+            onboarding_steps.update_onboarding_steps_to_display(event.onboarding_steps);
             break;
 
         case "invites_changed":
@@ -207,8 +204,6 @@ export function dispatch_normal_event(event) {
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 create_multiuse_invite_group: noop,
-                create_public_stream_policy: noop,
-                create_private_stream_policy: noop,
                 create_web_public_stream_policy: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
@@ -269,16 +264,10 @@ export function dispatch_normal_event(event) {
                             gear_menu.rerender();
                         }
 
-                        const stream_creation_settings = [
-                            "create_private_stream_policy",
-                            "create_public_stream_policy",
-                            "create_web_public_stream_policy",
-                        ];
-                        if (stream_creation_settings.includes(event.property)) {
-                            stream_settings_ui.update_stream_privacy_choices(event.property);
-                        }
-
-                        if (event.property === "enable_spectator_access") {
+                        if (
+                            event.property === "create_web_public_stream_policy" ||
+                            event.property === "enable_spectator_access"
+                        ) {
                             stream_settings_ui.update_stream_privacy_choices(
                                 "create_web_public_stream_policy",
                             );
@@ -298,6 +287,13 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
+                                }
+
+                                if (
+                                    key === "can_create_public_channel_group" ||
+                                    key === "can_create_private_channel_group"
+                                ) {
+                                    stream_settings_ui.update_stream_privacy_choices(key);
                                 }
 
                                 if (key === "edit_topic_policy") {
@@ -457,13 +453,24 @@ export function dispatch_normal_event(event) {
 
         case "realm_user":
             switch (event.op) {
-                case "add":
+                case "add": {
+                    // There may be presence data we already received from the server
+                    // before getting this event. Check if we need to redraw.
+                    const should_redraw = activity_ui.check_should_redraw_new_user(
+                        event.person.user_id,
+                    );
+
                     people.add_active_user(event.person);
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
                         settings_users.redraw_bots_list();
                     }
+
+                    if (should_redraw) {
+                        activity_ui.redraw_user(event.person.user_id);
+                    }
                     break;
+                }
                 case "update":
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
@@ -744,7 +751,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "twenty_four_hour_time") {
                 // Recalculate timestamp column width
-                message_lists.calculate_timestamp_widths();
+                information_density.calculate_timestamp_widths();
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
@@ -769,29 +776,22 @@ export function dispatch_normal_event(event) {
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less-dense-mode");
                 $("body").toggleClass("more-dense-mode");
+                information_density.set_base_typography_css_variables();
+                information_density.calculate_timestamp_widths();
             }
             if (
                 event.property === "web_font_size_px" ||
                 event.property === "web_line_height_percent"
             ) {
                 information_density.set_base_typography_css_variables();
+                information_density.calculate_timestamp_widths();
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();
             }
             if (event.property === "color_scheme") {
                 requestAnimationFrame(() => {
-                    if (event.value === settings_config.color_scheme_values.night.code) {
-                        dark_theme.enable();
-                        realm_logo.render();
-                    } else if (event.value === settings_config.color_scheme_values.day.code) {
-                        dark_theme.disable();
-                        realm_logo.render();
-                    } else {
-                        dark_theme.default_preference_checker();
-                        realm_logo.render();
-                    }
-                    message_lists.update_recipient_bar_background_color();
+                    theme.set_theme_and_update(event.value);
                 });
             }
             if (event.property === "starred_message_counts") {

@@ -1030,9 +1030,26 @@ night_logo_data = DictType(
     ]
 )
 
+group_setting_type = UnionType(
+    [
+        int,
+        DictType(
+            required_keys=[
+                ("direct_members", ListType(int)),
+                ("direct_subgroups", ListType(int)),
+            ]
+        ),
+    ]
+)
+
 group_setting_update_data_type = DictType(
     required_keys=[],
-    optional_keys=[("create_multiuse_invite_group", int), ("can_access_all_users_group", int)],
+    optional_keys=[
+        ("create_multiuse_invite_group", int),
+        ("can_access_all_users_group", int),
+        ("can_create_public_channel_group", group_setting_type),
+        ("can_create_private_channel_group", group_setting_type),
+    ],
 )
 
 update_dict_data = UnionType(
@@ -1370,6 +1387,7 @@ def check_stream_update(
         "value",
         "name",
         "stream_id",
+        "first_message_id",
     }
 
     if prop == "description":
@@ -1389,6 +1407,9 @@ def check_stream_update(
         assert extra_keys == set()
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop == "can_remove_subscribers_group":
+        assert extra_keys == set()
+        assert isinstance(value, int)
+    elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)
     else:
@@ -1782,19 +1803,6 @@ update_message_flags_remove_event = event_dict_type(
     ],
 )
 check_update_message_flags_remove = make_checker(update_message_flags_remove_event)
-
-
-group_setting_type = UnionType(
-    [
-        int,
-        DictType(
-            required_keys=[
-                ("direct_members", ListType(int)),
-                ("direct_subgroups", ListType(int)),
-            ]
-        ),
-    ]
-)
 
 group_type = DictType(
     required_keys=[

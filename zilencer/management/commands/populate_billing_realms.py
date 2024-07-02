@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 
 import stripe
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -24,6 +24,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.apps import flush_cache
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.streams import create_stream_if_needed
 from zerver.models import Realm, UserProfile
@@ -63,7 +64,7 @@ class CustomerProfile:
     remote_server_plan_start_date: str = "billing_cycle_end_date"
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = "Populate database with different types of realms that can exist."
 
     @override

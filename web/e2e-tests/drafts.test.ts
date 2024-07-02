@@ -56,7 +56,7 @@ async function test_restore_stream_message_draft_by_opening_compose_box(page: Pa
     await page.waitForSelector("#send_message_form", {visible: true});
 
     await common.check_compose_state(page, {
-        stream: "Denmark",
+        stream_name: "Denmark",
         topic: "tests",
         content: "Test stream message. ",
     });
@@ -203,8 +203,14 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
     await common.check_compose_state(page, {
         content: "Test direct message.",
     });
-    const cordelia_internal_email = await common.get_internal_email_from_name(page, "cordelia");
-    const hamlet_internal_email = await common.get_internal_email_from_name(page, "hamlet");
+    const cordelia_internal_email = await common.get_internal_email_from_name(
+        page,
+        common.fullname.cordelia,
+    );
+    const hamlet_internal_email = await common.get_internal_email_from_name(
+        page,
+        common.fullname.hamlet,
+    );
     await common.pm_recipient.expect(page, `${hamlet_internal_email},${cordelia_internal_email}`);
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
@@ -300,9 +306,7 @@ async function drafts_test(page: Page): Promise<void> {
         outside_view: true,
     });
     await create_private_message_draft(page);
-    // Narrow to the conversation so that the compose box will restore it,
-    // then close and try restoring it by opening the composebox again.
-    await page.click("#compose .narrow_to_compose_recipients");
+    // Close and try restoring it by opening the composebox again.
     await page.click("#compose_close");
     await test_restore_private_message_draft_by_opening_composebox(page);
 

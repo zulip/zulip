@@ -121,7 +121,7 @@ export function pm_with_url(reply_to: string): string {
     return "#narrow/dm/" + slug;
 }
 
-export function huddle_with_url(user_ids_string: string): string {
+export function direct_message_group_with_url(user_ids_string: string): string {
     // This method is convenient for callers
     // that have already converted emails to a comma-delimited
     // list of user_ids.  We should be careful to keep this
@@ -164,7 +164,7 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
     for (i = 1; i < hash.length; i += 2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
-        let operator = internal_url.decodeHashComponent(hash[i]);
+        let operator = internal_url.decodeHashComponent(hash[i]!);
         // Do not parse further if empty operator encountered.
         if (operator === "") {
             break;
@@ -198,7 +198,7 @@ export function channels_settings_edit_url(
 }
 
 export function channels_settings_section_url(section = "subscribed"): string {
-    const valid_section_values = new Set(["new", "subscribed", "all"]);
+    const valid_section_values = new Set(["new", "subscribed", "all", "notsubscribed"]);
     if (!valid_section_values.has(section)) {
         blueslip.warn("invalid section for channels settings: " + section);
         return "#channels/subscribed";
@@ -218,7 +218,7 @@ export function validate_channels_settings_hash(hash: string): string {
         return channels_settings_section_url();
     }
 
-    if (/\d+/.test(section)) {
+    if (section !== undefined && /\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
         const sub = sub_store.get(stream_id);
         // There are a few situations where we can't display stream settings:
@@ -235,7 +235,7 @@ export function validate_channels_settings_hash(hash: string): string {
 
         let right_side_tab = hash_components[3];
         const valid_right_side_tab_values = new Set(["general", "personal", "subscribers"]);
-        if (!valid_right_side_tab_values.has(right_side_tab)) {
+        if (right_side_tab === undefined || !valid_right_side_tab_values.has(right_side_tab)) {
             right_side_tab = "general";
         }
         return channels_settings_edit_url(sub, right_side_tab);
@@ -253,7 +253,7 @@ export function validate_group_settings_hash(hash: string): string {
         return "#groups/your";
     }
 
-    if (/\d+/.test(section)) {
+    if (section !== undefined && /\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
         const group = user_groups.maybe_get_user_group_from_id(group_id);
         if (!group) {
@@ -265,17 +265,21 @@ export function validate_group_settings_hash(hash: string): string {
         const group_name = hash_components[2];
         let right_side_tab = hash_components[3];
         const valid_right_side_tab_values = new Set(["general", "members"]);
-        if (group.name === group_name && valid_right_side_tab_values.has(right_side_tab)) {
+        if (
+            group.name === group_name &&
+            right_side_tab !== undefined &&
+            valid_right_side_tab_values.has(right_side_tab)
+        ) {
             return hash;
         }
-        if (!valid_right_side_tab_values.has(right_side_tab)) {
+        if (right_side_tab === undefined || !valid_right_side_tab_values.has(right_side_tab)) {
             right_side_tab = "general";
         }
         return group_edit_url(group, right_side_tab);
     }
 
     const valid_section_values = ["new", "your", "all"];
-    if (!valid_section_values.includes(section)) {
+    if (section === undefined || !valid_section_values.includes(section)) {
         blueslip.info("invalid section for groups: " + section);
         return "#groups/your";
     }

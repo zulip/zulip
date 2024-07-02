@@ -118,7 +118,7 @@ Use commas in whole sentences where it is required. You can use these instructio
 - Pin - **Kiinnitä**
 - Picker - **Valitsin**
 - Plan - **Tilaus**
-- PM (private messages) - **YV (yksityisviesti)** - Short version is needed in mobile.
+- DM (direct messages) - **SV (suoraviesti)** - Short version is needed in mobile.
 - Reset - **Nollata**
 - Save - **Tallenna**
 - Stream - **Kanava**
