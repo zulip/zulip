@@ -141,6 +141,10 @@ in the Zulip app to add more to your repertoire as needed.
 * **Insert link**: `[Zulip website](https://zulip.org)` or <kbd>Ctrl</kbd> +
   <kbd>Shift</kbd> + <kbd>L</kbd>
 
+* **Insert code formatting**: `` `code` `` or ```` ```code``` ```` or <kbd>Ctrl</kbd> +
+  <kbd>Shift</kbd> + <kbd>C</kbd>.
+  See [contextually appropriate code formatting](/help/code-blocks#insert-code-formatting).
+
 * **Toggle preview mode**: <kbd>Alt</kbd> + <kbd>P</kbd>
 
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
