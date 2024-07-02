@@ -138,20 +138,6 @@
     line-height: 1;
 }
 
-.user-card-popover-manage-menu-btn {
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
-}
-
-.user_popover_manage_menu {
-    .zulip-icon {
-        /* Overriding CSS margin */
-        margin-right: 0;
-    }
-}
-
 /* Used extra classes to override styles from .nav */
 .tippy-box .tippy-content .user-card-popover-content {
     padding: 5px 0;
@@ -161,33 +147,44 @@
     }
 }
 
-.user-card-popover-actions .custom_user_field {
+.custom-profile-field-value {
     display: flex;
     align-items: center;
+    gap: 5px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
 
-    .value {
+.custom-profile-field-value.rendered_markdown p {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    /* Overriding CSS from rendered_markdown.css */
+    margin: 0;
+}
+
+.custom-profile-field-link {
+    color: var(--color-text-item);
+
+    &:hover,
+    &:focus {
+        color: var(--color-text-link);
+        text-decoration: none;
+    }
+
+    .custom-profile-field-text {
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
-    }
-
-    /* Overriding CSS from rendered_markdown.css */
-    .rendered_markdown p {
-        margin: 0;
-    }
-
-    /* Overriding CSS from bootstrap > nav-list. */
-    .custom-profile-fields-link {
-        padding-top: 0;
-        padding-bottom: 0;
 
         &:hover {
-            background-color: transparent !important;
+            text-decoration: underline;
         }
+    }
 
-        &:focus {
-            background-color: transparent !important;
-        }
+    ~ i {
+        margin-left: auto;
     }
 }
 
@@ -218,14 +215,6 @@
         &:focus {
             outline: none;
         }
-    }
-}
-
-.user-card-popover-actions .user-card-popover-manage-menu-btn {
-    opacity: 0.8;
-
-    &:hover {
-        opacity: 1;
     }
 }
 
@@ -331,36 +320,11 @@ ul {
     }
 }
 
-/* Important note: The user info popover user-sidebar-popover-root
-   class is applied to user info popovers ONLY when they are opened
-   from the right sidebar; otherwise, it will have the
-   user-card-popover-root class instead. */
-.user-sidebar-popover-root {
-    /* 240px (width of avatar) + 2px (1px for each border) */
-    width: 242px;
-
-    margin: -14px;
-    padding: 0;
-
-    .user-card-popover-title {
-        padding: 0;
-        border-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    .popover_info li {
-        word-wrap: break-word;
-    }
-}
-
-.group-info-popover,
-.message-user-card-popover-root,
-.user-card-popover-root {
-    /* 240px (width of avatar) + 2px (1px for each border) */
-    width: 242px;
-    padding: 0;
-}
-
 .group-info-popover {
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
+    padding: 0;
+
     .group-info-content {
         padding: 5px 0;
     }
@@ -842,10 +806,7 @@ ul {
 
 .giphy-popover,
 .emoji-popover-root,
-.user-group-popover-root,
-.user-sidebar-popover-root,
-.message-user-card-popover-root,
-.user-card-popover-root {
+.user-group-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
            as it is not necessary for the Giphy popover. */
@@ -1074,6 +1035,89 @@ ul {
     }
 }
 
+.popover-menu-user-header {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 7px;
+    text-align: left;
+    padding: 4px;
+
+    .popover-menu-user-avatar-container {
+        position: relative;
+        flex-shrink: 0;
+        width: 64px;
+        height: 64px;
+    }
+
+    .popover-menu-user-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 4px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .popover-menu-user-presence {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        right: -1px;
+        bottom: -1px;
+        border: solid 1px var(--color-background);
+        border-radius: 50%;
+    }
+
+    .popover-menu-user-full-name {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 20px;
+        color: var(--color-text-full-name);
+        word-break: break-word;
+    }
+
+    .popover-menu-user-type {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--color-text-item);
+    }
+
+    .user_circle_empty {
+        background-color: var(--color-background-popover-menu);
+        border-color: hsl(0deg 0% 50%);
+    }
+}
+
+.unknown_user_card_popover .popover-menu-user-header {
+    padding: 10px 10px 0;
+}
+
+.user-email-field {
+    transition: all 0.4s ease;
+
+    & .user_popover_email {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    & i {
+        cursor: pointer;
+
+        &.hide_copy_icon {
+            display: none;
+        }
+
+        &:hover {
+            color: hsl(170deg 48% 54%);
+        }
+    }
+
+    &.email_copied {
+        color: hsl(170deg 48% 54%) !important;
+    }
+}
+
 .personal-menu-header {
     display: flex;
     flex-flow: row nowrap;
@@ -1251,6 +1295,8 @@ ul {
     }
 
     .status_emoji {
+        align-self: flex-start;
+        flex-shrink: 0;
         width: 16px;
         height: 16px;
     }
@@ -1284,14 +1330,26 @@ ul {
     }
 }
 
+#user_card_popover {
+    --popover-menu-max-width: 250px;
+
+    .simplebar-content {
+        min-width: var(--user-card-popover-min-width);
+    }
+}
+
 .personal-menu-clear-status {
     display: flex;
-    padding: 3px;
     align-items: center;
     margin-left: auto;
     color: hsl(0deg 0% 40%) !important;
     border-radius: 4px;
     opacity: 0.5;
+
+    &:focus {
+        /* Override bootstrap defaults */
+        outline-offset: 0;
+    }
 
     &:hover,
     &:focus {
@@ -1306,7 +1364,7 @@ ul {
 
 .personal-menu-status-wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 5px;
 }
 

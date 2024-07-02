@@ -1,0 +1,27 @@
+{{#each profile_fields}}
+    <li role="none" class="popover-menu-list-item text-item custom_user_field" data-type="{{this.type}}" data-field-id="{{this.id}}">
+        {{#if this.is_link}}
+            <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link tippy-zulip-tooltip" data-tippy-content="{{this.name}}" tabindex="0">
+                <span class="custom-profile-field-text">{{this.value}}</span>
+            </a>
+            <i class="popover-menu-icon zulip-icon zulip-icon-copy tippy-zulip-tooltip copy-custom-field-url" data-tippy-content="{{t 'Copy URL' }}"></i>
+        {{else if this.is_external_account}}
+            <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link tippy-zulip-tooltip" data-tippy-content="{{this.name}}" tabindex="0">
+                {{#if (eq this.subtype "github") }}
+                    <i class="popover-menu-icon fa fa-github" aria-hidden="true"></i>
+                {{else if (eq this.subtype "twitter") }}
+                    <i class="popover-menu-icon fa fa-twitter" aria-hidden="true"></i>
+                {{/if}}
+                <span class="custom-profile-field-text">{{this.value}}</span>
+            </a>
+        {{else if this.rendered_value}}
+            <div class="custom-profile-field-value rendered_markdown tippy-zulip-tooltip" data-tippy-content="{{this.name}}">
+                {{rendered_markdown this.rendered_value}}
+            </div>
+        {{else}}
+            <div class="custom-profile-field-value tippy-zulip-tooltip" data-tippy-content="{{this.name}}">
+                <span class="custom-profile-field-text">{{this.value}}</span>
+            </div>
+        {{/if}}
+    </li>
+{{/each}}

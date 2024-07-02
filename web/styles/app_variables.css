@@ -98,6 +98,7 @@
     --navbar-popover-menu-min-width: 230px;
     --message-actions-popover-min-width: 230px;
     --topic-actions-popover-min-width: 200px;
+    --user-card-popover-min-width: 200px;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */

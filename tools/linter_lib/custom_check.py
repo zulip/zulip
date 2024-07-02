@@ -711,7 +711,6 @@ html_rules: List["Rule"] = [
             "templates/corporate/billing/billing.html",
             "templates/corporate/billing/upgrade.html",
             # Miscellaneous violations to be cleaned up
-            "web/templates/popovers/user_card/user_card_popover_avatar.hbs",
             "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
             "templates/zerver/config_error/container.html",
