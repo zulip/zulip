@@ -180,6 +180,10 @@ h3,
     }
 }
 
+#change_email_button {
+    min-width: 0;
+}
+
 .admin-realm-description {
     height: 16em;
     width: 100%;
