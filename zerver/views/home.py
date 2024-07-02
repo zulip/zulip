@@ -198,11 +198,14 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # session alive.
     request.session.modified = True
 
+    request.session["ip_address"] = request.META["REMOTE_ADDR"]
+
     if request.user.is_authenticated:
         user_profile = request.user
         realm = user_profile.realm
     else:
         realm = get_valid_realm_from_request(request)
+        request.session["realm_id"] = realm.id
         # We load the spectator experience.  We fall through to the shared code
         # for loading the application, with user_profile=None encoding
         # that we're a spectator, not a logged-in user.

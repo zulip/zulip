@@ -1,17 +1,16 @@
 import logging
 from datetime import timedelta
 from importlib import import_module
-from typing import Any, List, Mapping, Optional, Protocol, Type, cast
+from typing import Any, Mapping, Optional, Protocol, Type, cast
 
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
 from django.contrib.sessions.backends.base import SessionBase
-from django.contrib.sessions.models import Session
+from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.models import Realm, UserProfile
-from zerver.models.users import get_user_profile_by_id
+from zerver.models import Realm, RealmSession, UserProfile
 
 
 class SessionEngine(Protocol):
@@ -31,45 +30,27 @@ def get_session_dict_user(session_dict: Mapping[str, int]) -> Optional[int]:
         return None
 
 
-def get_session_user_id(session: Session) -> Optional[int]:
-    return get_session_dict_user(session.get_decoded())
+# all .delete() on RealmSession have a post_delete signal which deletes cached sessions as well.
 
 
-def user_sessions(user_profile: UserProfile) -> List[Session]:
-    return [s for s in Session.objects.all() if get_session_user_id(s) == user_profile.id]
-
-
-def delete_session(session: Session) -> None:
+def delete_session(session: RealmSession) -> None:
     session_engine.SessionStore(session.session_key).delete()
 
 
 def delete_user_sessions(user_profile: UserProfile) -> None:
-    for session in Session.objects.all():
-        if get_session_user_id(session) == user_profile.id:
-            delete_session(session)
+    RealmSession.objects.filter(realm=user_profile.realm, user=user_profile).delete()
 
 
 def delete_realm_user_sessions(realm: Realm) -> None:
-    realm_user_ids = set(UserProfile.objects.filter(realm=realm).values_list("id", flat=True))
-    for session in Session.objects.all():
-        if get_session_user_id(session) in realm_user_ids:
-            delete_session(session)
+    RealmSession.objects.filter(realm=realm).delete()
 
 
 def delete_all_user_sessions() -> None:
-    for session in Session.objects.all():
-        delete_session(session)
+    RealmSession.objects.all().delete()
 
 
 def delete_all_deactivated_user_sessions() -> None:
-    for session in Session.objects.all():
-        user_profile_id = get_session_user_id(session)
-        if user_profile_id is None:  # nocoverage  # TODO: Investigate why we lost coverage on this
-            continue
-        user_profile = get_user_profile_by_id(user_profile_id)
-        if not user_profile.is_active or user_profile.realm.deactivated:
-            logging.info("Deactivating session for deactivated user %s", user_profile.id)
-            delete_session(session)
+    RealmSession.objects.filter(Q(user__is_active=False) | Q(realm__deactivated=True)).delete()
 
 
 def set_expirable_session_var(
