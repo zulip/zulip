@@ -1,4 +1,7 @@
+import assert from "minimalistic-assert";
+
 import {FoldDict} from "./fold_dict";
+import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as muted_users from "./muted_users";
 import * as people from "./people";
@@ -88,6 +91,32 @@ class RecentDirectMessages {
         return this.recent_private_messages
             .filter((pm) => filter_muted_pms(pm))
             .map((conversation) => conversation.user_ids_string);
+    }
+
+    has_conversation(user_ids_string: string): boolean | undefined {
+        const recipient_ids_string = people.pm_lookup_key(user_ids_string);
+        // Check if there are any previous messages in the conversation.
+        // If there are, then return `true`.
+        if (this.recent_message_ids.get(recipient_ids_string) !== undefined) {
+            return true;
+        }
+
+        // If not, then check if the current filter matches the DM view we
+        // are composing to.
+        const emails_string = message_lists.current?.data.filter.operands("dm")[0];
+        if (emails_string) {
+            const current_user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+            assert(current_user_ids_string !== undefined);
+            // If it matches the DM view, return `false` as there are no previous messages
+            // in the conversation.
+            if (recipient_ids_string === people.pm_lookup_key(current_user_ids_string)) {
+                return false;
+            }
+        }
+        // If none of the above conditions are satisfied, there may or may not be
+        // messages in the conversation since we have not narrowed to the view and
+        // there can be messages which are not fetched yet.
+        return undefined;
     }
 
     initialize(params: StateData["pm_conversations"]): void {
