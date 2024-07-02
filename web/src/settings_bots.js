@@ -22,6 +22,7 @@ import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
+import * as util from "./util";
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -198,10 +199,28 @@ export function update_bot_permissions_ui() {
 }
 
 export function add_a_new_bot() {
+    const default_integration_option = {
+        name: $t_html({defaultMessage: "Select an integration"}),
+        unique_id: "",
+    };
+    function get_options_for_integration_input_dropdown_widget() {
+        const options = [
+            default_integration_option,
+            ...realm.realm_incoming_webhook_bots
+                .sort((a, b) => util.strcmp(a.display_name, b.display_name))
+                .map((bot) => ({
+                    name: bot.display_name,
+                    unique_id: bot.name,
+                })),
+        ];
+        return options;
+    }
+
     const html_body = render_add_new_bot_form({
         bot_types: page_params.bot_types,
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
+        integration_types: get_options_for_integration_input_dropdown_widget(),
     });
 
     let create_avatar_widget;
@@ -213,12 +232,14 @@ export function add_a_new_bot() {
         const payload_url = $("#create_payload_url").val();
         const interface_type = $("#create_interface_type").val();
         const service_name = $("#select_service_name").val();
+        const integration_type = $("#create_interface_type").val();
         const formData = new FormData();
 
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("bot_type", bot_type);
         formData.append("full_name", full_name);
         formData.append("short_name", short_name);
+        formData.append("integration_type", integration_type);
 
         // If the selected bot_type is Outgoing webhook
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
