@@ -2,8 +2,8 @@
   "address": null,
   "balance": 0,
   "created": 1000000000,
-  "currency": "usd",
-  "default_currency": "usd",
+  "currency": null,
+  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
@@ -14,6 +14,7 @@
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": {
+      "allow_redisplay": "unspecified",
       "billing_details": {
         "address": {
           "city": "San Francisco",
@@ -30,13 +31,13 @@
       "card": {
         "brand": "visa",
         "checks": {
-          "address_line1_check": null,
-          "address_postal_code_check": null,
+          "address_line1_check": "pass",
+          "address_postal_code_check": "pass",
           "cvc_check": "pass"
         },
         "country": "US",
         "display_brand": "visa",
-        "exp_month": 4,
+        "exp_month": 7,
         "exp_year": 2025,
         "fingerprint": "NORMALIZED000001",
         "funding": "credit",
@@ -55,7 +56,7 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1P41nYDEQaroqDjsfdsA45cH",
+      "id": "pm_1PXi0kDEQaroqDjsTOVA8vVh",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -70,7 +71,7 @@
     "realm_str": "zulip"
   },
   "name": null,
-  "next_invoice_sequence": 2,
+  "next_invoice_sequence": 1,
   "object": "customer",
   "phone": null,
   "preferred_locales": [],

@@ -12,7 +12,8 @@
     "customer_update": {
       "allowed_updates": [
         "address",
-        "name"
+        "name",
+        "email"
       ],
       "enabled": true
     },
@@ -46,7 +47,7 @@
       "proration_behavior": "none"
     }
   },
-  "id": "bpc_1P41mnDEQaroqDjsdPjrKGWc",
+  "id": "bpc_1PXi00DEQaroqDjsR5IneriQ",
   "is_default": false,
   "livemode": false,
   "login_page": {
