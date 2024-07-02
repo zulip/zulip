@@ -441,7 +441,7 @@ def finish_desktop_flow(
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile OAuth flow, we send the API key and other
-    # necessary details in a redirect to a zulip:// URI scheme.
+    # necessary details in a redirect to a zulip:// URL scheme.
     api_key = get_api_key(user_profile)
     response = create_response_for_otp_flow(
         api_key, otp, user_profile, encrypted_key_field_name="otp_encrypted_api_key"
@@ -469,7 +469,7 @@ def create_response_for_otp_flow(
 ) -> HttpResponse:
     realm_url = user_profile.realm.url
 
-    # Check if the mobile URI is overridden in settings, if so, replace it
+    # Check if the mobile URL is overridden in settings, if so, replace it
     # This block should only apply to the mobile flow, so we if add others, this
     # needs to be conditional.
     if realm_url in settings.REALM_MOBILE_REMAP_URIS:
@@ -754,8 +754,8 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
 def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     token = result.store_data()
     realm = get_realm(result.data_dict["subdomain"])
-    subdomain_login_uri = realm.url + reverse(log_into_subdomain, args=[token])
-    return redirect(subdomain_login_uri)
+    subdomain_login_url = realm.url + reverse(log_into_subdomain, args=[token])
+    return redirect(subdomain_login_url)
 
 
 def redirect_to_misconfigured_ldap_notice(request: HttpRequest, error_type: int) -> HttpResponse:

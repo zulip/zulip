@@ -369,7 +369,7 @@ export function setup_upload(config: Config): Uppy {
 
     uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        const {uri: url} = z.object({uri: z.string().optional()}).parse(response.body);
+        const {url} = z.object({url: z.string().optional()}).parse(response.body);
         if (url === undefined) {
             return;
         }

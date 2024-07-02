@@ -84,7 +84,7 @@ def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -
         return redirect(url)
 
     # We over-escape the path, to work around it being impossible to
-    # get the _unescaped_ new internal request URI in nginx.
+    # get the _unescaped_ new internal request URL in nginx.
     parsed_url = urlsplit(url)
     assert parsed_url.hostname is not None
     assert parsed_url.path is not None
@@ -325,5 +325,8 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         )
     check_upload_within_quota(user_profile.realm, file_size)
 
-    uri = upload_message_attachment_from_request(user_file, user_profile, file_size)
-    return json_success(request, data={"uri": uri})
+    url = upload_message_attachment_from_request(user_file, user_profile, file_size)
+
+    # TODO/compatibility: uri is a deprecated alias for url that can
+    # be removed once there are no longer clients relying on it.
+    return json_success(request, data={"uri": url, "url": url})

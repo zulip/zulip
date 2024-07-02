@@ -67,7 +67,7 @@ def do_change_realm_subdomain(
     experience for clients.
     """
     old_subdomain = realm.subdomain
-    old_uri = realm.url
+    old_url = realm.url
     # If the realm had been a demo organization scheduled for
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
@@ -84,7 +84,7 @@ def do_change_realm_subdomain(
 
         # If a realm if being renamed multiple times, we should find all the placeholder
         # realms and reset their deactivated_redirect field to point to the new realm url
-        placeholder_realms = Realm.objects.filter(deactivated_redirect=old_uri, deactivated=True)
+        placeholder_realms = Realm.objects.filter(deactivated_redirect=old_url, deactivated=True)
         for placeholder_realm in placeholder_realms:
             do_add_deactivated_redirect(placeholder_realm, realm.url)
 

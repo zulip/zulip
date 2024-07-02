@@ -656,13 +656,13 @@ class ScheduledMessageTest(ZulipTestCase):
         attachment_file1 = StringIO("zulip!")
         attachment_file1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {"file": attachment_file1})
-        path_id1 = re.sub(r"/user_uploads/", "", result.json()["uri"])
+        path_id1 = re.sub(r"/user_uploads/", "", result.json()["url"])
         attachment_object1 = Attachment.objects.get(path_id=path_id1)
 
         attachment_file2 = StringIO("zulip!")
         attachment_file2.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {"file": attachment_file2})
-        path_id2 = re.sub(r"/user_uploads/", "", result.json()["uri"])
+        path_id2 = re.sub(r"/user_uploads/", "", result.json()["url"])
         attachment_object2 = Attachment.objects.get(path_id=path_id2)
 
         content = f"Test [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id1})"

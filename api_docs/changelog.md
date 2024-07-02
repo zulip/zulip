@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 267**
+
+* [`POST /user_uploads`](/api/upload-file): `uri` was renamed
+  to `url`, but remains available as a deprecated alias for
+  backwards-compatibility.
+
 **Feature level 266**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
