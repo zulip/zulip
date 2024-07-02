@@ -537,6 +537,8 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
         $other_users_appended = $element;
     });
 
+    $(".user_circle").attr("data-status-sync-user-id", alice.user_id);
+
     add_sub_and_set_as_current_narrow(rome_sub);
 
     buddy_list_add_user_matching_view(alice.user_id, $alice_stub);

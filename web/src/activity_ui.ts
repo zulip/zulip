@@ -59,6 +59,18 @@ export function clear_for_testing(): void {
     user_filter = undefined;
 }
 
+function update_status_circles(): void {
+    $(".user_circle").each(function () {
+        const user_id = Number.parseInt($(this).attr("data-status-sync-user-id") ?? "", 10);
+        if (Number.isNaN(user_id)) {
+            // This eliminates elements having more than one user-id.
+            return;
+        }
+        const user_circle_class = buddy_data.get_user_circle_class(user_id);
+        $(this).attr("class", `user_circle ${user_circle_class}`);
+    });
+}
+
 export function redraw_user(user_id: number): void {
     if (realm.realm_presence_disabled) {
         return;
@@ -76,6 +88,7 @@ export function redraw_user(user_id: number): void {
         user_id,
         item: info,
     });
+    update_status_circles();
 }
 
 export function check_should_redraw_new_user(user_id: number): boolean {
@@ -178,6 +191,7 @@ export function redraw(): void {
     assert(user_cursor !== undefined);
     user_cursor.redraw();
     pm_list.update_private_messages();
+    update_status_circles();
 }
 
 export function reset_users(): void {
