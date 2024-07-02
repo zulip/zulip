@@ -6,6 +6,7 @@ import render_compose_control_buttons_popover from "../templates/popovers/compos
 import render_mobile_message_buttons_popover from "../templates/popovers/mobile_message_buttons_popover.hbs";
 
 import * as compose_actions from "./compose_actions";
+import * as compose_validate from "./compose_validate";
 import * as giphy_state from "./giphy_state";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
@@ -64,6 +65,11 @@ export function initialize(): void {
         placement: "top",
         onShow(instance) {
             assert(instance.reference instanceof HTMLElement);
+            const compose_text_length = compose_validate.check_overflow_text();
+            let empty_compose = false;
+            if (compose_text_length > 0) {
+                empty_compose = true;
+            }
             const parent_row = rows.get_closest_row(instance.reference);
             let preview_mode_on;
             // If the popover is opened from a message edit form, we want to
@@ -78,6 +84,7 @@ export function initialize(): void {
                     render_compose_control_buttons_popover({
                         giphy_enabled: giphy_state.is_giphy_enabled(),
                         preview_mode_on,
+                        empty_compose,
                         inside_popover: true,
                     }),
                 ),
