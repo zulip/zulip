@@ -809,7 +809,7 @@ function register_click_handlers() {
         reset_emoji_showcase();
     });
 
-    $("body").on("mouseenter", ".emoji-popover-emoji", (e) => {
+    $("body").on("mousemove", ".emoji-popover-emoji", (e) => {
         const emoji_id = $(e.currentTarget).data("emoji-id");
         const emoji_coordinates = get_emoji_coordinates(emoji_id);
 
