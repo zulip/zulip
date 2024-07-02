@@ -1951,6 +1951,10 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     @extend %hide-left-sidebar;
 
     &.fluid_layout_width {
+        .column-middle {
+            margin-left: calc(var(--navbar-left-column-width) + 30px);
+        }
+
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
