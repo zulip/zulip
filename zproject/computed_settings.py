@@ -688,6 +688,7 @@ WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_unsupp
 SOFT_DEACTIVATION_LOG_PATH = zulip_path("/var/log/zulip/soft_deactivation.log")
 TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
 DELIVER_SCHEDULED_MESSAGES_LOG_PATH = zulip_path("/var/log/zulip/deliver_scheduled_messages.log")
+CLEAR_USER_STATUS_LOG_PATH = zulip_path("/var/log/zulip/clear_user_status.log")
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")

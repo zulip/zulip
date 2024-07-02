@@ -172,6 +172,7 @@ def server_processes() -> List[List[str]]:
             "--quiet",
         ],
         ["./manage.py", "deliver_scheduled_messages"],
+        ["./manage.py", "clear_user_status"],
     ]
 
     # NORMAL (but slower) operation:

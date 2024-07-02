@@ -1914,6 +1914,7 @@ user_status_event = event_dict_type(
         ("status_text", str),
         ("emoji_name", str),
         ("emoji_code", str),
+        ("scheduled_end_time", int),
         ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
     ],
 )

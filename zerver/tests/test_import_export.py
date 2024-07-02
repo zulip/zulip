@@ -895,6 +895,7 @@ class RealmImportExportTest(ExportFile):
             emoji_name="hawaii",
             emoji_code=str(realm_emoji.id),
             reaction_type=Reaction.REALM_EMOJI,
+            scheduled_end_time=None,
         )
 
         user_status = UserStatus.objects.order_by("id").last()
@@ -2098,6 +2099,7 @@ class SingleUserExportTest(ExportFile):
             emoji_name=None,
             emoji_code=None,
             reaction_type=None,
+            scheduled_end_time=None,
         )
 
         do_update_user_status(
@@ -2108,6 +2110,7 @@ class SingleUserExportTest(ExportFile):
             emoji_name=None,
             emoji_code=None,
             reaction_type=None,
+            scheduled_end_time=None,
         )
 
         @checker

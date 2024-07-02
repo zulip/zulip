@@ -26,11 +26,22 @@ export type UserStatusEvent = z.infer<typeof user_status_event_schema>;
 const user_info = new Map<number, string>();
 const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
 
+let scheduled_end_time: number | undefined;
+
+export function set_scheduled_end_time(scheduled_time: number | undefined): void {
+    scheduled_end_time = scheduled_time;
+}
+
+export function get_scheduled_end_time(): number | undefined {
+    return scheduled_end_time;
+}
+
 export function server_update_status(opts: {
     status_text: string;
     emoji_name: string;
     emoji_code: string;
     reaction_type?: string;
+    scheduled_end_time: number | undefined;
     success?: () => void;
 }): void {
     void channel.post({
@@ -40,6 +51,7 @@ export function server_update_status(opts: {
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
+            scheduled_end_time: opts.scheduled_end_time,
         },
         success() {
             if (opts.success) {
@@ -115,6 +127,8 @@ export function initialize(params: StateData["user_status"]): void {
         if (dct.status_text) {
             user_info.set(user_id, dct.status_text);
         }
+
+        set_scheduled_end_time(dct.scheduled_end_time);
 
         if (dct.emoji_name) {
             user_status_emoji_info.set(user_id, {

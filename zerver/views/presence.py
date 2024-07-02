@@ -90,11 +90,17 @@ def update_user_status_backend(
     # that requires nontrivial work on the API documentation, since it's not clear
     # that the reactions endpoint would prefer such a change.
     emoji_type: Annotated[Optional[str], ApiParamConfig("reaction_type")] = None,
+    scheduled_end_time: Optional[Json[int]] = None,
 ) -> HttpResponse:
     if status_text is not None:
         status_text = status_text.strip()
 
-    if (away is None) and (status_text is None) and (emoji_name is None):
+    if (
+        (away is None)
+        and (status_text is None)
+        and (emoji_name is None)
+        and (scheduled_end_time is None)
+    ):
         raise JsonableError(_("Client did not pass any new values."))
 
     if emoji_name == "":
@@ -139,6 +145,7 @@ def update_user_status_backend(
         emoji_name=emoji_name,
         emoji_code=emoji_code,
         reaction_type=emoji_type,
+        scheduled_end_time=scheduled_end_time,
     )
 
     return json_success(request)
