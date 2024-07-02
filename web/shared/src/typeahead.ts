@@ -327,11 +327,7 @@ export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string)
     const popular_set = new Set(popular_emojis);
 
     function is_popular(obj: EmojiSuggestion): boolean {
-        return (
-            obj.reaction_type === "unicode_emoji" &&
-            popular_set.has(obj.emoji_code) &&
-            decent_match(obj.emoji_name)
-        );
+        return popular_set.has(obj.emoji_code ?? "") && decent_match(obj.emoji_name);
     }
 
     const realm_emoji_names = new Set(
