@@ -266,6 +266,10 @@ h4.user_group_setting_subsection_title {
     padding-left: 5px;
 }
 
+.choose-subscribers-label {
+    display: inline;
+}
+
 .remove-subscriber-form {
     margin: 0;
 }
@@ -749,9 +753,14 @@ h4.user_group_setting_subsection_title {
             }
         }
 
-        .add_all_users_to_user_group,
+        .add_all_users_to_user_group {
+            margin-left: 10px;
+        }
+
         .add_all_users_to_stream {
             margin-left: 10px;
+            /* same bottom margin as h4.stream_setting_subsection_title */
+            margin-bottom: 5px;
         }
 
         .create_user_group_member_list_header,
