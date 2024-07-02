@@ -59,7 +59,7 @@ export class SettingsPanelMenu {
             values: [
                 {label: $t({defaultMessage: "Users"}), key: "active"},
                 {
-                    label: $t({defaultMessage: "Deactivated users"}),
+                    label: $t({defaultMessage: "Deactivated"}),
                     key: "deactivated",
                 },
                 {label: $t({defaultMessage: "Invitations"}), key: "invitations"},
