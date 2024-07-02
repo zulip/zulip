@@ -441,7 +441,7 @@ export function enable_or_disable_add_subscribers_elements(
         const $add_subscribers_button = $container_elem
             .find('button[name="add_subscriber"]')
             .expectOne();
-        $add_subscribers_button.prop("disabled", !enable_elem);
+        $add_subscribers_button.prop("disabled", true);
         if (enable_elem) {
             $add_subscribers_button.css("pointer-events", "");
         }
