@@ -761,8 +761,6 @@ input[type="checkbox"] {
     float: right;
 
     #show-add-default-streams-modal {
-        padding: 5px 0;
-        min-width: 100px;
         margin-top: 11px;
         margin-right: 6px;
     }
