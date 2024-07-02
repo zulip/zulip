@@ -749,13 +749,14 @@ def bulk_import_named_user_groups(data: TableData) -> None:
             group["description"],
             group["is_system_group"],
             group["can_mention_group_id"],
+            group["deactivated"],
         )
         for group in data["zerver_namedusergroup"]
     ]
 
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_mention_group_id)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_mention_group_id, deactivated)
         VALUES %s
         """
     )

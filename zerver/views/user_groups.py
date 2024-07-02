@@ -15,6 +15,7 @@ from zerver.actions.user_groups import (
     check_add_user_group,
     check_delete_user_group,
     do_change_user_group_permission_setting,
+    do_deactivate_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -29,6 +30,7 @@ from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
     access_user_group_by_id,
+    access_user_group_for_deactivation,
     access_user_group_for_setting,
     check_user_group_name,
     get_direct_memberships_of_users,
@@ -51,6 +53,7 @@ from zerver.views.streams import compose_views
 
 @require_user_group_edit_permission
 @typed_endpoint
+@transaction.atomic(durable=True)
 def add_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -94,8 +97,14 @@ def add_user_group(
 
 @require_member_or_admin
 @has_request_variables
-def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    user_groups = user_groups_in_realm_serialized(user_profile.realm)
+def get_user_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    allow_deactivated: bool = REQ(json_validator=check_bool, default=False),
+) -> HttpResponse:
+    user_groups = user_groups_in_realm_serialized(
+        user_profile.realm, allow_deactivated=allow_deactivated
+    )
     return json_success(request, data={"user_groups": user_groups})
 
 
@@ -114,7 +123,12 @@ def edit_user_group(
     if name is None and description is None and can_mention_group is None:
         raise JsonableError(_("No new data supplied"))
 
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
+    user_group = access_user_group_by_id(
+        user_group_id, user_profile, for_read=False, allow_deactivated=True
+    )
+
+    if user_group.deactivated and (description is not None or can_mention_group is not None):
+        raise JsonableError(_("You can only change name of deactivated user groups"))
 
     if name is not None and name != user_group.name:
         name = check_user_group_name(name)
@@ -175,6 +189,18 @@ def delete_user_group(
         [user_group_id], user_group_id, acting_user=user_profile
     ) as context:
         check_delete_user_group(context.supergroup, acting_user=user_profile)
+    return json_success(request)
+
+
+@require_user_group_edit_permission
+@transaction.atomic
+def deactivate_user_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int,
+) -> HttpResponse:
+    user_group = access_user_group_for_deactivation(user_group_id, user_profile)
+    do_deactivate_user_group(user_group, acting_user=user_profile)
     return json_success(request)
 
 

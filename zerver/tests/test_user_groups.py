@@ -8,11 +8,21 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
+from zerver.actions.streams import (
+    do_change_stream_group_based_setting,
+    do_deactivate_stream,
+    do_unarchive_stream,
+)
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     check_add_user_group,
     create_user_group_in_database,
+    do_change_user_group_permission_setting,
+    do_deactivate_user_group,
     promote_new_full_members,
 )
 from zerver.actions.users import do_deactivate_user
@@ -37,6 +47,8 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     GroupGroupMembership,
     NamedUserGroup,
+    Realm,
+    Stream,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -68,7 +80,7 @@ class UserGroupTestCase(ZulipTestCase):
         assert user_group is not None
         empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=None)
 
-        user_groups = user_groups_in_realm_serialized(realm)
+        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
         self.assert_length(user_groups, 10)
         self.assertEqual(user_groups[0]["id"], user_group.id)
         self.assertEqual(user_groups[0]["name"], SystemGroups.NOBODY)
@@ -76,6 +88,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[0]["members"], [])
         self.assertEqual(user_groups[0]["direct_subgroup_ids"], [])
         self.assertEqual(user_groups[0]["can_mention_group"], user_group.id)
+        self.assertFalse(user_groups[0]["deactivated"])
 
         owners_system_group = NamedUserGroup.objects.get(name=SystemGroups.OWNERS, realm=realm)
         membership = UserGroupMembership.objects.filter(user_group=owners_system_group).values_list(
@@ -87,6 +100,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(set(user_groups[1]["members"]), set(membership))
         self.assertEqual(user_groups[1]["direct_subgroup_ids"], [])
         self.assertEqual(user_groups[1]["can_mention_group"], user_group.id)
+        self.assertFalse(user_groups[0]["deactivated"])
 
         admins_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm
@@ -103,6 +117,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[9]["description"], "")
         self.assertEqual(user_groups[9]["members"], [])
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
+        self.assertFalse(user_groups[0]["deactivated"])
 
         othello = self.example_user("othello")
         setting_group = self.create_or_update_anonymous_group_for_setting(
@@ -115,7 +130,7 @@ class UserGroupTestCase(ZulipTestCase):
             group_settings_map={"can_mention_group": setting_group},
             acting_user=None,
         )
-        user_groups = user_groups_in_realm_serialized(realm)
+        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["name"], "newgroup2")
         self.assertEqual(user_groups[10]["description"], "")
@@ -127,6 +142,33 @@ class UserGroupTestCase(ZulipTestCase):
                 direct_subgroups=[admins_system_group.id],
             ),
         )
+        self.assertFalse(user_groups[0]["deactivated"])
+
+        another_new_group = check_add_user_group(
+            realm, "newgroup3", [self.example_user("hamlet")], acting_user=None
+        )
+        add_subgroups_to_user_group(
+            new_user_group, [another_new_group, owners_system_group], acting_user=None
+        )
+        do_deactivate_user_group(another_new_group, acting_user=None)
+        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=True)
+        self.assert_length(user_groups, 12)
+        self.assertEqual(user_groups[10]["id"], new_user_group.id)
+        self.assertEqual(user_groups[10]["name"], "newgroup2")
+        self.assertFalse(user_groups[10]["deactivated"])
+        self.assertCountEqual(
+            user_groups[10]["direct_subgroup_ids"], [another_new_group.id, owners_system_group.id]
+        )
+        self.assertEqual(user_groups[11]["id"], another_new_group.id)
+        self.assertEqual(user_groups[11]["name"], "newgroup3")
+        self.assertTrue(user_groups[11]["deactivated"])
+
+        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
+        self.assert_length(user_groups, 11)
+        self.assertEqual(user_groups[10]["id"], new_user_group.id)
+        self.assertEqual(user_groups[10]["name"], "newgroup2")
+        self.assertFalse(user_groups[10]["deactivated"])
+        self.assertEqual(user_groups[10]["direct_subgroup_ids"], [owners_system_group.id])
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
@@ -538,6 +580,31 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
+        # Test can_mention_group cannot be set to a deactivated group.
+        do_deactivate_user_group(leadership_group, acting_user=None)
+        params = {
+            "name": "social",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Social team",
+            "can_mention_group": orjson.dumps(leadership_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+
+        params = {
+            "name": "social",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Social team",
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [leadership_group.id],
+                }
+            ).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+
         with self.settings(ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS=False):
             params = {
                 "name": "frontend",
@@ -673,6 +740,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"name": "channel:1"}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_error(result, "User group name cannot start with 'channel:'.")
+
+        do_deactivate_user_group(user_group, acting_user=None)
+        params = {"description": "Troubleshooting and support team"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "You can only change name of deactivated user groups")
+
+        params = {"name": "Support team"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_success(result)
+        user_group = NamedUserGroup.objects.get(id=user_group.id)
+        self.assertEqual(user_group.name, "Support team")
 
     def test_update_can_mention_group_setting(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -835,6 +913,30 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
+        leadership_group = check_add_user_group(
+            hamlet.realm, "leadership", [hamlet], acting_user=None
+        )
+        do_deactivate_user_group(leadership_group, acting_user=None)
+
+        params = {
+            "can_mention_group": orjson.dumps({"new": leadership_group.id}).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+
+        params = {
+            "can_mention_group": orjson.dumps(
+                {
+                    "new": {
+                        "direct_members": [prospero.id],
+                        "direct_subgroups": [leadership_group.id],
+                    }
+                }
+            ).decode()
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+
         # Test case when ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS is False.
         with self.settings(ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS=False):
             params = {
@@ -878,6 +980,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
             self.assert_json_success(result)
             support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
             self.assertEqual(support_group.can_mention_group_id, marketing_group.id)
+
+            do_deactivate_user_group(support_group, acting_user=None)
+            params = {
+                "can_mention_group": orjson.dumps(
+                    {
+                        "new": moderators_group.id,
+                    }
+                ).decode()
+            }
+            result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+            self.assert_json_error(result, "You can only change name of deactivated user groups")
 
     def test_user_group_update_to_already_existing_name(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1086,6 +1199,235 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_delete(f"/json/user_groups/{lear_test_group.id}")
         self.assert_json_error(result, "Invalid user group")
 
+    def test_user_group_deactivation(self) -> None:
+        support_group = self.create_user_group_for_test("support")
+        leadership_group = self.create_user_group_for_test("leadership")
+        add_subgroups_to_user_group(support_group, [leadership_group], acting_user=None)
+        realm = get_realm("zulip")
+
+        do_set_realm_property(
+            realm, "user_group_edit_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        )
+        self.login("othello")
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_set_realm_property(
+            realm, "user_group_edit_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
+        )
+
+        self.login("hamlet")
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login("othello")
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertTrue(support_group.deactivated)
+
+        support_group.deactivated = False
+        support_group.save()
+
+        # Check admins can deactivate groups even if they are not members
+        # of the group.
+        self.login("iago")
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertTrue(support_group.deactivated)
+
+        support_group.deactivated = False
+        support_group.save()
+
+        # Check moderators can deactivate groups if they are allowed by
+        # user_group_edit_policy even when they are not members of the group.
+        do_set_realm_property(
+            realm, "user_group_edit_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        )
+        self.login("shiva")
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_set_realm_property(
+            realm, "user_group_edit_policy", CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
+        )
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertTrue(support_group.deactivated)
+
+        support_group.deactivated = False
+        support_group.save()
+
+        # Check that group that is subgroup of another group cannot be deactivated.
+        result = self.client_post(f"/json/user_groups/{leadership_group.id}/deactivate")
+        self.assert_json_error(
+            result, "You cannot deactivate a user group that is subgroup of any user group."
+        )
+
+        # If the supergroup is itself deactivated, then subgroup can be deactivated.
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_success(result)
+        result = self.client_post(f"/json/user_groups/{leadership_group.id}/deactivate")
+        self.assert_json_success(result)
+        leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
+        self.assertTrue(leadership_group.deactivated)
+
+        # Check that system groups cannot be deactivated at all.
+        self.login("desdemona")
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        result = self.client_post(f"/json/user_groups/{members_system_group.id}/deactivate")
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_user_group_deactivation_with_group_used_for_settings(self) -> None:
+        support_group = self.create_user_group_for_test("support")
+        realm = get_realm("zulip")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        hamlet = self.example_user("hamlet")
+        self.login("desdemona")
+
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            anonymous_setting_group = self.create_or_update_anonymous_group_for_setting(
+                [hamlet], [moderators_group, support_group]
+            )
+            do_change_realm_permission_group_setting(
+                realm, setting_name, anonymous_setting_group, acting_user=None
+            )
+
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_error(
+                result, "You cannot deactivate a user group which is used for setting."
+            )
+
+            do_change_realm_permission_group_setting(
+                realm, setting_name, support_group, acting_user=None
+            )
+
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_error(
+                result, "You cannot deactivate a user group which is used for setting."
+            )
+
+            # Reset the realm setting to one of the system group so this setting
+            # does not interfere when testing for another setting.
+            do_change_realm_permission_group_setting(
+                realm, setting_name, moderators_group, acting_user=None
+            )
+
+        stream = ensure_stream(realm, "support", acting_user=None)
+        for setting_name in Stream.stream_permission_group_settings:
+            do_change_stream_group_based_setting(
+                stream, setting_name, support_group, acting_user=None
+            )
+
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_error(
+                result, "You cannot deactivate a user group which is used for setting."
+            )
+
+            # Test the group can be deactivated, if the stream which uses
+            # this group for a setting is deactivated.
+            do_deactivate_stream(stream, acting_user=None)
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_success(result)
+            support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+            self.assertTrue(support_group.deactivated)
+
+            support_group.deactivated = False
+            support_group.save()
+
+            do_unarchive_stream(stream, "support", acting_user=None)
+
+            anonymous_setting_group = self.create_or_update_anonymous_group_for_setting(
+                [hamlet], [moderators_group, support_group]
+            )
+            do_change_stream_group_based_setting(
+                stream, setting_name, anonymous_setting_group, acting_user=None
+            )
+
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_error(
+                result, "You cannot deactivate a user group which is used for setting."
+            )
+
+            # Test the group can be deactivated, if the stream which uses
+            # this group for a setting is deactivated.
+            do_deactivate_stream(stream, acting_user=None)
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_success(result)
+            support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+            self.assertTrue(support_group.deactivated)
+
+            # Reactivate the group again for further testing.
+            support_group.deactivated = False
+            support_group.save()
+
+            # Reset the stream setting to one of the system group so this setting
+            # does not interfere when testing for another setting.
+            do_change_stream_group_based_setting(
+                stream, setting_name, moderators_group, acting_user=None
+            )
+
+        leadership_group = self.create_user_group_for_test("leadership")
+        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+            do_change_user_group_permission_setting(
+                leadership_group, setting_name, support_group, acting_user=None
+            )
+
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_error(
+                result, "You cannot deactivate a user group which is used for setting."
+            )
+
+            # Test the group can be deactivated, if the user group which uses
+            # this group for a setting is deactivated.
+            do_deactivate_user_group(leadership_group, acting_user=None)
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_success(result)
+            support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+            self.assertTrue(support_group.deactivated)
+
+            support_group.deactivated = False
+            support_group.save()
+
+            leadership_group.deactivated = False
+            leadership_group.save()
+
+            anonymous_setting_group = self.create_or_update_anonymous_group_for_setting(
+                [hamlet], [moderators_group, support_group]
+            )
+            do_change_user_group_permission_setting(
+                leadership_group, setting_name, anonymous_setting_group, acting_user=None
+            )
+
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_error(
+                result, "You cannot deactivate a user group which is used for setting."
+            )
+
+            # Test the group can be deactivated, if the user group which uses
+            # this group for a setting is deactivated.
+            do_deactivate_user_group(leadership_group, acting_user=None)
+            result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+            self.assert_json_success(result)
+            support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+            self.assertTrue(support_group.deactivated)
+
+            # Reactivate the group again for further testing.
+            support_group.deactivated = False
+            support_group.save()
+
+            # Reset the group setting to one of the system group so this setting
+            # does not interfere when testing for another setting.
+            do_change_user_group_permission_setting(
+                leadership_group, setting_name, moderators_group, acting_user=None
+            )
+
     def test_query_counts(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -1229,6 +1571,19 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info={})
         msg = 'Nothing to do. Specify at least one of "add" or "delete".'
         self.assert_json_error(result, msg)
+        self.assert_user_membership(user_group, [hamlet])
+
+        # Test adding or removing members from a deactivated group.
+        do_deactivate_user_group(user_group, acting_user=None)
+
+        params = {"delete": orjson.dumps([hamlet.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_user_membership(user_group, [hamlet])
+
+        params = {"add": orjson.dumps([iago.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
         self.assert_user_membership(user_group, [hamlet])
 
     def test_mentions(self) -> None:
@@ -1786,6 +2141,31 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info={})
         self.assert_json_error(result, 'Nothing to do. Specify at least one of "add" or "delete".')
         self.assert_subgroup_membership(support_group, [leadership_group])
+
+        # Do not have support group as subgroup of any group to follow
+        # the condition a group used as a subgroup cannot be deactivated.
+        params = {"delete": orjson.dumps([support_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{test_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(test_group, [])
+
+        # Test adding or removing subgroups from a deactivated group.
+        do_deactivate_user_group(support_group, acting_user=None)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_subgroup_membership(support_group, [leadership_group])
+
+        params = {"add": orjson.dumps([test_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_subgroup_membership(support_group, [leadership_group])
+
+        # Test that a deactivated group cannot be used as a subgroup.
+        params = {"add": orjson.dumps([support_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{test_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
 
     def test_get_is_user_group_member_status(self) -> None:
         self.login("iago")
