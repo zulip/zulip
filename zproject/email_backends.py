@@ -2,13 +2,14 @@
 import configparser
 import logging
 from email.message import Message
-from typing import MutableSequence, Sequence, Union
+from typing import Any, MutableSequence, Sequence, Union
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import EmailMessage
 from django.template import loader
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 
@@ -108,3 +109,39 @@ class EmailLogBackEnd(EmailBackend):
                 email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
                 logging.info("Emails sent in development are available at %s", email_log_url)
         return num_sent
+
+
+class PersistentSMTPEmailBackend(EmailBackend):
+    def _open(self, **kwargs: Any) -> bool | None:
+        is_opened = super().open()
+        if is_opened:
+            self.opened_at = timezone_now()
+            return True
+
+        return is_opened
+
+    @override
+    def open(self, **kwargs: Any) -> bool | None:
+        is_opened = self._open()
+
+        time_elapsed = (timezone_now() - self.opened_at).seconds / 60
+        if (
+            settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES is not None
+            and time_elapsed >= settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES
+        ):
+            status = -2
+        else:
+            # No-op to ensure that we don't return a connection that has been
+            # closed by the mail server.
+            try:
+                assert self.connection is not None
+                status = self.connection.noop()[0]
+            except Exception:
+                status = -1
+
+        if status != 250:
+            # Close and connect again.
+            self.close()
+            is_opened = self._open()
+
+        return is_opened
