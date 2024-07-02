@@ -852,7 +852,7 @@ input[type="checkbox"] {
     }
 }
 
-#org-notifications {
+#organization-settings {
     .dropdown-widget-button {
         color: hsl(0deg 0% 33%);
     }
