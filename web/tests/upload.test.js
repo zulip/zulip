@@ -225,6 +225,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         assert.equal(event, "click");
         on_click_close_button_callback = callback;
     };
+    $("textarea#compose-textarea").caret = () => 0;
     let compose_ui_insert_syntax_and_focus_called = false;
     override_rewire(compose_ui, "insert_syntax_and_focus", () => {
         compose_ui_insert_syntax_and_focus_called = true;
@@ -510,7 +511,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
             new_syntax,
-            "[copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
+            "![copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
         assert.equal($textarea, $("textarea#compose-textarea"));
     });

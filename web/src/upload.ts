@@ -23,6 +23,12 @@ import {realm} from "./state_data";
 let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy;
 const upload_objects_by_message_edit_row = new Map<number, Uppy>();
+// This list is identical to the one defined in zerver/lib/markdown/__init__.py
+const IMAGE_EXTENSIONS = new Set([".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]);
+
+function is_image(file_name: string): boolean {
+    return IMAGE_EXTENSIONS.has(file_name.slice(file_name.lastIndexOf(".")));
+}
 
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
@@ -198,13 +204,23 @@ export function upload_files(uppy: Uppy, config: Config, files: File[] | FileLis
         config.markdown_preview_hide_button().trigger("click");
     }
 
+    const multiple_images = files.length > 1 && [...files].every((file) => is_image(file.name));
+    const individual_insert_mode = multiple_images ? "inline" : "block";
+
+    if (multiple_images) {
+        // Insert an empty block into which files are inserted inline.
+        compose_ui.insert_syntax_and_focus("", config.textarea(), "block", 1);
+        // Move the cursor back by 1 character inside the block.
+        config.textarea().caret(config.textarea().caret() - 1);
+    }
+
     for (const file of files) {
         let file_id;
         try {
             compose_ui.insert_syntax_and_focus(
                 get_translated_status(file),
                 config.textarea(),
-                "block",
+                individual_insert_mode,
                 1,
             );
             compose_ui.autosize_textarea(config.textarea());
@@ -242,6 +258,11 @@ export function upload_files(uppy: Uppy, config: Config, files: File[] | FileLis
         config.upload_banner_hide_button(file_id).one("click", () => {
             hide_upload_banner(uppy, config, file_id);
         });
+    }
+
+    if (multiple_images) {
+        // Move the cursor forward by 1 character back outside the block.
+        config.textarea().caret(config.textarea().caret() + 1);
     }
 }
 
@@ -374,8 +395,11 @@ export function setup_upload(config: Config): Uppy {
             return;
         }
         const split_url = url.split("/");
-        const filename = split_url.at(-1);
-        const syntax_to_insert = "[" + filename + "](" + url + ")";
+        const filename = split_url.at(-1)!;
+        let syntax_to_insert = "[" + filename + "](" + url + ")";
+        if (is_image(filename)) {
+            syntax_to_insert = "!" + syntax_to_insert;
+        }
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
             get_translated_status(file),

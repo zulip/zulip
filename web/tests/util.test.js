@@ -327,6 +327,17 @@ run_test("clean_user_content_links", () => {
     );
 });
 
+run_test("make_inline_images_lightbox_previewable", () => {
+    assert.equal(
+        util.make_inline_images_lightbox_previewable(
+            '<img src="/user_uploads/2/ae/7BJKQei4DMm0UDL7EBxECPL0/zebra.gif" alt="zebra">\n\n' +
+                '<span class="message_inline_image"><a href="/user_uploads/test.png" title="linked"><img src="/user_uploads/test.png" alt="linked"></a></span>',
+        ),
+        '<span class="message_inline_image true_inline"><a href="/user_uploads/2/ae/7BJKQei4DMm0UDL7EBxECPL0/zebra.gif" title="zebra"><img src="/user_uploads/2/ae/7BJKQei4DMm0UDL7EBxECPL0/zebra.gif" alt="zebra"></a></span>\n\n' +
+            '<span class="message_inline_image"><a href="/user_uploads/test.png" title="linked"><img src="/user_uploads/test.png" alt="linked"></a></span>',
+    );
+});
+
 run_test("filter_by_word_prefix_match", () => {
     const strings = ["stream-hyphen_underscore/slash", "three word stream"];
     const values = [0, 1];
