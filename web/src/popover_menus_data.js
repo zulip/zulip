@@ -19,6 +19,7 @@ import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import {get_latest_message_id_in_topic} from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import {num_unread_for_topic} from "./unread";
 import {user_settings} from "./user_settings";
@@ -129,6 +130,8 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
+    const latest_msg_id = get_latest_message_id_in_topic(stream_id, topic_name);
+    url += `/with/${latest_msg_id}`;
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,

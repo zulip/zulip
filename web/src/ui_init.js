@@ -651,10 +651,15 @@ export function initialize_everything(state_data) {
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
             const sub = sub_store.get(stream_id);
+            const latest_msg_id = stream_topic_history.get_latest_message_id_in_topic(
+                stream_id,
+                topic,
+            );
             message_view.show(
                 [
                     {operator: "channel", operand: sub.name},
                     {operator: "topic", operand: topic},
+                    {operator: "with", operand: latest_msg_id, negated: false},
                 ],
                 {trigger: "sidebar"},
             );

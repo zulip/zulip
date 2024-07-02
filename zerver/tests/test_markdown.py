@@ -2940,7 +2940,7 @@ class MarkdownTest(ZulipTestCase):
             "<p>#<strong>casesens</strong></p>",
         )
 
-    def test_topic_single(self) -> None:
+    def test_topic_single_containing_no_message(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
         msg = Message(
@@ -2952,6 +2952,23 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
             f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/some.20topic">#{denmark.name} &gt; some topic</a></p>',
+        )
+
+    def test_topic_single_containing_message(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        last_msg_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "#**Denmark>some topic**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/some.20topic/with/{last_msg_id}">#{denmark.name} &gt; some topic</a></p>',
         )
 
     def test_topic_atomic_string(self) -> None:
@@ -2969,17 +2986,23 @@ class MarkdownTest(ZulipTestCase):
         )
         # Create a topic link that potentially interferes with the pattern.
         denmark = get_stream("Denmark", realm)
+        last_msg_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="#1234", content="test"
+        )
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**Denmark>#1234**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/.231234">#{denmark.name} &gt; #1234</a></p>',
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/.231234/with/{last_msg_id}">#{denmark.name} &gt; #1234</a></p>',
         )
 
     def test_topic_multiple(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         scotland = get_stream("Scotland", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
+        last_msg_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
@@ -2990,7 +3013,7 @@ class MarkdownTest(ZulipTestCase):
             render_message_markdown(msg, content).rendered_content,
             "<p>This has two links: "
             f'<a class="stream-topic" data-stream-id="{denmark.id}" '
-            f'href="/#narrow/stream/{denmark.id}-{denmark.name}/topic/some.20topic">'
+            f'href="/#narrow/stream/{denmark.id}-{denmark.name}/topic/some.20topic/with/{last_msg_id}">'
             f"#{denmark.name} &gt; some topic</a>"
             " and "
             f'<a class="stream-topic" data-stream-id="{scotland.id}" '
@@ -3203,6 +3226,93 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
             '<p><a href="http://zulip.testserver/not:relative">hello</a></p>',
+        )
+
+    def test_topic_permalink(self) -> None:
+        realm = get_realm("zulip")
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        last_msg_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
+
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+
+        # test caching of topic data for user.
+        content = "#**Denmark>some topic**"
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+        render_message_markdown(msg, content, mention_data=mention_data)
+        with self.assert_database_query_count(1, keep_cache_warm=True):
+            with self.assert_memcached_count(0):
+                self.assertEqual(
+                    render_message_markdown(
+                        msg, content, mention_data=mention_data
+                    ).rendered_content,
+                    f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/some.20topic/with/{last_msg_id}">#{denmark.name} &gt; some topic</a></p>',
+                )
+
+        # test topic linked doesn't have any message in it in case
+        # the topic mentioned doesn't have any messages.
+        content = "#**Denmark>random topic**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/random.20topic">#{denmark.name} &gt; random topic</a></p>',
+        )
+
+        # Test when trying to render a topic link of a channel with shared
+        # history, if message_sender is None, topic link is permalink.
+        content = "#**Denmark>some topic**"
+        self.assertEqual(
+            markdown_convert_wrapper(content),
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/some.20topic/with/{last_msg_id}">#{denmark.name} &gt; some topic</a></p>',
+        )
+
+        # test topic links for channel with protected history
+        core_stream = self.make_stream("core", realm, True, history_public_to_subscribers=False)
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        self.subscribe(iago, "core")
+        msg_id = self.send_stream_message(iago, "core", topic_name="testing")
+
+        msg = Message(
+            sender=iago,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**core>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/stream/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+        # Test newly subscribed user to a channel with protected history
+        # won't have accessed to this message, and hence, the topic
+        # link would not be a permalink.
+        self.subscribe(hamlet, "core")
+
+        msg = Message(
+            sender=hamlet,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**core>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/stream/{core_stream.id}-core/topic/testing">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+        # Test when trying to render a topic link of a channel with protected
+        # history, if message_sender is None, topic link is not permalink.
+        content = "#**core>testing**"
+        self.assertEqual(
+            markdown_convert_wrapper(content),
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/stream/{core_stream.id}-core/topic/testing">#{core_stream.name} &gt; testing</a></p>',
         )
 
     def test_html_entity_conversion(self) -> None:

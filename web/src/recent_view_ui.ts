@@ -618,7 +618,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const is_web_public = stream_info.is_web_public;
         // Topic info
         const topic = last_msg.topic;
-        const topic_url = hash_util.by_stream_topic_url(stream_id, topic);
+        const topic_url = hash_util.by_stream_topic_permalink(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
         // We only supply the data to the topic rows and let jquery

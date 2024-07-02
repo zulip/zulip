@@ -87,6 +87,34 @@ def messages_for_topic(
     )
 
 
+def get_last_message_for_user_in_topic(
+    realm_id: int,
+    user_profile: Optional[UserProfile],
+    recipient_id: int,
+    topic_name: str,
+    history_public_to_subscribers: bool,
+) -> Optional[int]:
+    if history_public_to_subscribers:
+        return (
+            messages_for_topic(realm_id, recipient_id, topic_name)
+            .values_list("id", flat=True)
+            .last()
+        )
+
+    elif user_profile is not None:
+        return (
+            UserMessage.objects.filter(
+                user_profile=user_profile,
+                message__recipient_id=recipient_id,
+                message__subject__iexact=topic_name,
+            )
+            .values_list("message_id", flat=True)
+            .last()
+        )
+
+    return None
+
+
 def save_message_for_edit_use_case(message: Message) -> None:
     message.save(
         update_fields=[
