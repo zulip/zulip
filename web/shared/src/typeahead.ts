@@ -315,10 +315,11 @@ export function triage<T>(
 }
 
 export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string): T[] {
-    // replace spaces with underscores for emoji matching
+    // Replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
     query = query.toLowerCase();
 
+    // Helper function to check if an emoji name partially matches the query
     function decent_match(name: string): boolean {
         const pieces = name.toLowerCase().split("_");
         return pieces.some((piece) => piece.startsWith(query));
@@ -338,31 +339,29 @@ export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string)
         objs.filter((obj) => obj.is_realm_emoji).map((obj) => obj.emoji_name),
     );
 
+    // Categorize emojis
     const perfect_emoji_matches = objs.filter((obj) => obj.emoji_name === query);
     const without_perfect_matches = objs.filter((obj) => obj.emoji_name !== query);
 
     const popular_emoji_matches = without_perfect_matches.filter((obj) => is_popular(obj));
-    const others = without_perfect_matches.filter((obj) => !is_popular(obj));
+    const realm_emoji_matches = without_perfect_matches.filter((obj) => obj.is_realm_emoji && !is_popular(obj));
+    const other_emoji_matches = without_perfect_matches.filter((obj) => !obj.is_realm_emoji && !is_popular(obj));
 
-    const triage_results = triage(query, others, (x) => x.emoji_name);
+    const triage_results = triage(query, other_emoji_matches, (x) => x.emoji_name);
 
-    function prioritise_realm_emojis(emojis: T[]): T[] {
-        return [
-            ...emojis.filter((emoji) => emoji.is_realm_emoji),
-            ...emojis.filter((emoji) => !emoji.is_realm_emoji),
-        ];
-    }
-
+    // Combine results in the desired order
     const sorted_results_with_possible_duplicates = [
         ...perfect_emoji_matches,
         ...popular_emoji_matches,
-        ...prioritise_realm_emojis(triage_results.matches),
-        ...prioritise_realm_emojis(triage_results.rest),
+        ...realm_emoji_matches,
+        ...triage_results.matches,
+        ...triage_results.rest,
     ];
-    // remove unicode emojis with same code but different names
-    // and unicode emojis overridden by realm emojis with same names
+
+    // Remove unicode emojis with the same code but different names,
+    // and unicode emojis overridden by realm emojis with the same names.
     const unicode_emoji_codes = new Set();
-    const sorted_unique_results: T[] = [];
+    const sorted_unique_results: EmojiSuggestion[] = [];
     for (const emoji of sorted_results_with_possible_duplicates) {
         if (emoji.reaction_type !== "unicode_emoji") {
             sorted_unique_results.push(emoji);
@@ -375,5 +374,5 @@ export function sort_emojis<T extends EmojiSuggestion>(objs: T[], query: string)
         }
     }
 
-    return sorted_unique_results;
+    return sorted_unique_results as T[];
 }
