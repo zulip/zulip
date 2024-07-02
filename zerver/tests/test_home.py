@@ -128,6 +128,7 @@ class HomeTest(ZulipTestCase):
         "realm_can_access_all_users_group",
         "realm_can_create_private_channel_group",
         "realm_can_create_public_channel_group",
+        "realm_can_resolve_topics_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",

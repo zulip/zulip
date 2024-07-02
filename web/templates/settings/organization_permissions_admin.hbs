@@ -209,6 +209,11 @@
                       autocomplete="off"/>
                 </div>
             </div>
+
+            {{> ../dropdown_widget_with_label
+              widget_name="realm_can_resolve_topics_group"
+              label=(t 'Who can resolve topics')
+              value_type="number"}}
         </div>
 
         <div id="org-msg-deletion" class="settings-subsection-parent">

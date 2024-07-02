@@ -4228,6 +4228,19 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can create bot users in this organization.
+                                    can_resolve_topics_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to resolve topics
+                                            of a stream.
+
+                                            This setting cannot be set to `"role:internet"` and `"role:everyone"`
+                                            system groups.
+
+                                            **Changes**: New in Zulip 9.0 (feature fevel 267). Previously, the
+                                            resolve topics permission was managed by `edit_topic_policy`.
                                     create_multiuse_invite_group:
                                       type: integer
                                       description: |
@@ -7760,6 +7773,7 @@ paths:
         linked documentation on when users are allowed to update messages are:
 
         - `allow_message_editing`
+        - `can_resolve_topics_group`
         - `edit_topic_policy`
         - `move_messages_between_streams_policy`
         - `message_content_edit_limit_seconds`
@@ -15773,6 +15787,19 @@ paths:
 
                           Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
                           allows editing the content of messages.
+                      realm_can_resolve_topics_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to resolve topics
+                              of a stream.
+
+                              This setting cannot be set to `"role:internet"` and `"role:everyone"`
+                              system groups.
+
+                              **Changes**: New in Zulip 9.0 (feature fevel 267). Previously, the resolve topics
+                              permission was managed by `edit_topic_policy`.
                       realm_edit_topic_policy:
                         type: integer
                         description: |

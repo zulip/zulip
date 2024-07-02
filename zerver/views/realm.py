@@ -127,6 +127,7 @@ def update_realm(
     ] = None,
     allow_message_editing: Optional[Json[bool]] = None,
     edit_topic_policy: Optional[Json[EditTopicPolicyEnum]] = None,
+    can_resolve_topics_group: Optional[Json[GroupSettingChangeRequest]] = None,
     mandatory_topics: Optional[Json[bool]] = None,
     message_content_edit_limit_seconds_raw: Annotated[
         Optional[Json[Union[int, str]]], ApiParamConfig("message_content_edit_limit_seconds")

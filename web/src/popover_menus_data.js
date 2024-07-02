@@ -126,6 +126,8 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
     const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
+    const can_resolve_topic =
+        stream_data.can_post_messages_in_stream(sub) && settings_data.user_can_resolve_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
@@ -138,6 +140,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         is_spectator,
         can_move_topic,
         can_rename_topic,
+        can_resolve_topic,
         is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         has_starred_messages,

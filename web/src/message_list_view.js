@@ -30,6 +30,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
+import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
@@ -167,9 +168,6 @@ function set_topic_edit_properties(group, message) {
 
     const is_topic_editable = message_edit.is_topic_editable(message);
 
-    // if a user who can edit a topic, can resolve it as well
-    group.user_can_resolve_topic = is_topic_editable;
-
     if (!is_topic_editable) {
         return;
     }
@@ -181,6 +179,10 @@ function set_topic_edit_properties(group, message) {
     } else {
         group.on_hover_topic_edit = true;
     }
+}
+
+function set_resolve_topic_properties(group) {
+    group.user_can_resolve_topic = settings_data.user_can_resolve_topic();
 }
 
 function get_users_for_recipient_row(message) {
@@ -313,6 +315,7 @@ function populate_group_from_message_container(group, message_container) {
     group.topic_links = message_container.msg.topic_links;
 
     set_topic_edit_properties(group, message_container.msg);
+    set_resolve_topic_properties(group);
     render_group_display_date(group, message_container);
 }
 

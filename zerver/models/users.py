@@ -761,6 +761,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "invite_to_stream_policy",
             "invite_to_realm_policy",
             "move_messages_between_streams_policy",
+            "can_resolve_topics_group",
             "user_group_edit_policy",
         ]:
             raise AssertionError("Invalid policy")
@@ -836,6 +837,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_move_messages_to_another_topic(self) -> bool:
         return self.has_permission("edit_topic_policy")
+
+    def can_resolve_topic(self) -> bool:
+        return self.has_permission("can_resolve_topics_group")
 
     def can_add_custom_emoji(self) -> bool:
         return self.has_permission("add_custom_emoji_policy")
