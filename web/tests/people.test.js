@@ -757,6 +757,26 @@ test_people("filtered_users", () => {
     assert.ok(filtered_people.has(noah.user_id));
 });
 
+test_people("filter_guest_emails", () => {
+    people.add_active_user(emp401);
+    people.add_active_user(emp402);
+    people.add_active_user(guest);
+    const guest2 = {
+        ...guest,
+        email: "guest2@example.com",
+    };
+    people.add_active_user(guest2);
+
+    assert.equal(emp401.user_id, 401);
+    assert.equal(emp402.user_id, 402);
+
+    const email_string =
+        "emp401@example.com,emp402@example.com,guest@example.com,guest2@example.com";
+    const guest_emails = people.filter_guest_emails(email_string);
+    assert.equal(guest_emails[0], "guest@example.com");
+    assert.equal(guest_emails[1], "guest2@example.com");
+});
+
 test_people("multi_user_methods", () => {
     people.add_active_user(emp401);
     people.add_active_user(emp402);
@@ -1442,6 +1462,49 @@ test_people("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.full_name, charles.full_name);
     assert.ok(!user.is_inaccessible_user);
     assert.equal(user.email, charles.email);
+});
+
+test_people("test_get_dm_guest_warning_text", () => {
+    const guest1 = {
+        full_name: "Guest 1",
+        user_id: 33,
+        email: "guest1@example.com",
+    };
+
+    const guest2 = {
+        full_name: "Guest 2",
+        user_id: 34,
+        email: "guest2@example.com",
+    };
+
+    const guest3 = {
+        full_name: "Guest 3",
+        user_id: 35,
+        email: "guest3@example.com",
+    };
+
+    people.add_active_user(guest1);
+    people.add_active_user(guest2);
+    people.add_active_user(guest3);
+
+    let banner_text = people.get_dm_guest_banner_text(["guest1@example.com"]);
+    assert.equal(banner_text, $t({defaultMessage: "Guest 1 is a guest in this organization."}));
+
+    banner_text = people.get_dm_guest_banner_text(["guest1@example.com", "guest2@example.com"]);
+    assert.equal(
+        banner_text,
+        $t({defaultMessage: "Guest 1 and Guest 2 are guests in this organization."}),
+    );
+
+    banner_text = people.get_dm_guest_banner_text([
+        "guest1@example.com",
+        "guest2@example.com",
+        "guest3@example.com",
+    ]);
+    assert.equal(
+        banner_text,
+        $t({defaultMessage: "Guest 1, Guest 2 and Guest 3 are guests in this organization."}),
+    );
 });
 
 // reset to native Date()

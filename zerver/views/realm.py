@@ -182,6 +182,7 @@ def update_realm(
         ApiParamConfig("move_messages_between_streams_limit_seconds"),
     ] = None,
     enable_guest_user_indicator: Optional[Json[bool]] = None,
+    enable_guest_user_dm_warning: Optional[Json[bool]] = None,
     can_access_all_users_group_id: Annotated[
         Optional[Json[int]], ApiParamConfig("can_access_all_users_group")
     ] = None,

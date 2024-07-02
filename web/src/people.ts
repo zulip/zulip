@@ -370,7 +370,7 @@ export function emails_strings_to_user_ids_string(emails_string: string): string
     return email_list_to_user_ids_string(emails);
 }
 
-export function email_list_to_user_ids_string(emails: string[]): string | undefined {
+export function email_list_to_user_ids_string(emails: string[], sort = true): string | undefined {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
@@ -383,7 +383,9 @@ export function email_list_to_user_ids_string(emails: string[]): string | undefi
         return undefined;
     }
 
-    user_ids = sort_numerically(user_ids);
+    if (sort) {
+        user_ids = sort_numerically(user_ids);
+    }
 
     return user_ids.join(",");
 }
@@ -659,6 +661,28 @@ export function pm_with_operand_ids(operand: string): number[] | undefined {
     user_ids = sort_numerically(user_ids);
 
     return user_ids;
+}
+
+export function filter_guest_emails(email_string: string): string[] | undefined {
+    const emails = email_string.split(",");
+    const guest_emails = emails.filter((email) => get_by_email(email)?.is_guest);
+    if (guest_emails.length === 0) {
+        return undefined;
+    }
+    return guest_emails;
+}
+
+export function get_dm_guest_banner_text(guest_emails: string[]): string {
+    const names = emails_to_full_names_string(guest_emails).split(", ");
+    if (names.length === 1) {
+        return $t({defaultMessage: "{name} is a guest in this organization."}, {name: names[0]});
+    }
+    const banner_names = names.slice(0, -1).join(", ");
+    const last_name = names.at(-1);
+    return $t(
+        {defaultMessage: "{names} and {name} are guests in this organization."},
+        {names: banner_names, name: last_name},
+    );
 }
 
 export function emails_to_slug(emails_string: string): string | undefined {
