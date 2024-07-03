@@ -352,7 +352,6 @@ ul {
     }
 }
 
-.group-info-popover,
 .message-user-card-popover-root,
 .user-card-popover-root {
     /* 240px (width of avatar) + 2px (1px for each border) */
@@ -360,55 +359,54 @@ ul {
     padding: 0;
 }
 
-.group-info-popover {
-    .group-info-content {
-        padding: 5px 0;
+.popover-group-menu-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 3px 10px;
+}
+
+.popover-group-menu-name-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--color-text-full-name);
+    word-break: break-word;
+}
+
+.popover-group-menu-description {
+    font-size: 15px;
+    line-height: 16px;
+}
+
+ul.popover-group-menu-member-list {
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+
+    .simplebar-content {
+        width: unset;
     }
+}
 
-    .group-info {
-        padding-left: 11px;
-        padding-right: 11px;
+.popover-group-menu-member {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+}
 
-        .group-name {
-            font-weight: bold;
+.popover-group-menu-member-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
-            .zulip-icon-triple-users {
-                position: relative;
-                top: 2px;
-                margin-right: 5px;
-            }
-        }
-    }
-
-    .manage-group {
-        a {
-            display: flex;
-            align-items: center;
-            padding-left: 11px;
-
-            .zulip-icon {
-                position: relative;
-                top: -1px;
-                margin-right: 5px;
-            }
-        }
-    }
-
-    .member-list {
-        position: relative;
-        max-height: 300px;
-        overflow-y: auto;
-        list-style: none;
-        margin-left: 0;
-
-        .bot {
-            color: hsl(180deg 5% 74%);
-            vertical-align: top;
-            width: 20px;
-            padding-top: 3.5px;
-            text-align: center;
-        }
-    }
+.popover-group-menu-description,
+.popover-group-menu-member-name {
+    color: var(--color-text-popover-menu);
 }
 
 .user_profile_presence,
@@ -842,7 +840,6 @@ ul {
 
 .giphy-popover,
 .emoji-popover-root,
-.user-group-popover-root,
 .user-sidebar-popover-root,
 .message-user-card-popover-root,
 .user-card-popover-root {
@@ -859,23 +856,6 @@ ul {
     & ul.nav {
         /* TODO: Clean this logic up after drop Bootstrap styling */
         margin: 0;
-    }
-}
-
-.user-group-popover-root {
-    .group-info-popover ul.nav {
-        /* TODO: Clean this logic up after drop Bootstrap styling */
-        margin: 0;
-
-        &.member-list {
-            padding-left: 6px;
-        }
-    }
-
-    & .tippy-box {
-        box-shadow: 0 5px 10px hsl(0deg 0% 0% / 20%);
-        /* User group popover has a bigger border-radius than our usual popovers. */
-        border-radius: 6px;
     }
 }
 
@@ -1281,6 +1261,12 @@ ul {
 #topic-actions-menu-popover {
     .simplebar-content {
         min-width: var(--topic-actions-popover-min-width);
+    }
+}
+
+.user-group-info-popover {
+    .simplebar-content {
+        min-width: var(--user-group-info-popover-min-width);
     }
 }
 

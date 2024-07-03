@@ -74,8 +74,8 @@ export function toggle_user_group_info_popover(
     popover_menus.toggle_popover_menu(
         element,
         {
+            theme: "popover-menu",
             placement: "right",
-            arrow: false,
             popperOptions: {
                 modifiers: [
                     {
@@ -92,8 +92,6 @@ export function toggle_user_group_info_popover(
                     message_lists.current.select_id(message_id);
                 }
                 user_group_popover_instance = instance;
-                const $popover = $(instance.popper);
-                $popover.addClass("user-group-popover-root");
                 const args = {
                     group_name: group.name,
                     group_description: group.description,
