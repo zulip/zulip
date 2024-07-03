@@ -711,6 +711,7 @@ li.top_left_scheduled_messages {
 
 /* New .topic-box grid definitions here. */
 #views-label-container,
+.zoom-in #hide-more-direct-messages,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
@@ -1396,29 +1397,21 @@ li.topic-list-item {
     }
 
     #hide-more-direct-messages {
-        display: block;
+        grid-template-columns: inherit;
+        grid-column: 1 / -1;
+        line-height: var(--line-height-sidebar-row);
         text-decoration: none;
         color: inherit;
         /* 12px at 14px/1em */
-        font-size: 0.8571em;
 
-        & span {
-            display: block;
-            /* TODO: Rewrite the show-more and show-less
-               buttons as grids alongside the left sidebar
-               header rewrites. The 12px left padding here
-               aligns the "back to channels" text with the
-               DIRECT MESSAGES heading above, which itself
-               is offset -3 px to the left, but reserves
-               15px for the arrow marker. 15px - 3px = 12px. */
-            padding: 2px 0 2px 12px;
+        .hide-more-direct-messages-text {
+            font-size: 0.8571em;
+            grid-area: row-content;
         }
 
         &:hover {
-            & span {
-                background-color: hsl(120deg 12.3% 71.4% / 38%);
-                border-radius: 4px;
-            }
+            background-color: hsl(120deg 12.3% 71.4% / 38%);
+            border-radius: 4px;
         }
     }
 
