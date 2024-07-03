@@ -482,32 +482,7 @@ export class Filter {
         return terms;
     }
 
-    static is_valid_search_term(
-        term: NarrowTerm,
-        allow_valid_operator_with_empty_operand = false,
-    ): boolean {
-        // `allow_valid_operator_with_empty_operand` is used for validating
-        // partial terms for search suggestions, e.g. "dm:" shows
-        // "Direct messages with" so it's valid. Note that we don't show messages
-        // in search suggestions for empty "is:" or "has:".
-        if (allow_valid_operator_with_empty_operand && term.operand === "") {
-            return [
-                "in",
-                "id",
-                "near",
-                "channel",
-                "stream",
-                "topic",
-                "sender",
-                "from",
-                "dm",
-                "pm",
-                "pm-with",
-                "dm-including",
-                "pm-including",
-                "search",
-            ].includes(term.operator);
-        }
+    static is_valid_search_term(term: NarrowTerm): boolean {
         switch (term.operator) {
             case "has":
                 return ["image", "link", "attachment", "reaction"].includes(term.operand);

@@ -1698,12 +1698,6 @@ test("is_valid_search_term", () => {
         }),
         false,
     );
-
-    // test `allow_valid_operator_with_empty_operand`
-    assert.equal(Filter.is_valid_search_term(Filter.parse("dm: ")[0]), false);
-    assert.equal(Filter.is_valid_search_term(Filter.parse("dm: ")[0], true), true);
-    // Note that this is parsed as a search operator term and therefore is valid.
-    assert.equal(Filter.is_valid_search_term(Filter.parse("foo: ")[0], true), true);
 });
 
 test("update_email", () => {
