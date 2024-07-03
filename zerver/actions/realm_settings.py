@@ -479,6 +479,21 @@ def do_set_realm_user_default_setting(
             },
         )
 
+        if name in {"web_font_size_px", "web_line_height_percent"}:
+            if (
+                realm_user_default.web_font_size_px != RealmUserDefault.WEB_FONT_SIZE_PX_LEGACY
+                or realm_user_default.web_line_height_percent
+                != RealmUserDefault.WEB_LINE_HEIGHT_PERCENT_LEGACY
+            ):
+                expected_dense_mode = False
+            else:
+                expected_dense_mode = True
+
+            if realm_user_default.dense_mode != expected_dense_mode:
+                do_set_realm_user_default_setting(
+                    realm_user_default, "dense_mode", expected_dense_mode, acting_user=acting_user
+                )
+
     event = dict(
         type="realm_user_settings_defaults",
         op="update",

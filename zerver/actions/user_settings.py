@@ -418,7 +418,7 @@ def update_scheduled_email_notifications_time(
     )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
@@ -473,6 +473,20 @@ def do_change_user_setting(
         event["language_name"] = get_language_name(setting_value)
 
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+    if setting_name in {"web_font_size_px", "web_line_height_percent"}:
+        if (
+            user_profile.web_font_size_px != UserProfile.WEB_FONT_SIZE_PX_LEGACY
+            or user_profile.web_line_height_percent != UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY
+        ):
+            expected_dense_mode = False
+        else:
+            expected_dense_mode = True
+
+        if user_profile.dense_mode != expected_dense_mode:
+            do_change_user_setting(
+                user_profile, "dense_mode", expected_dense_mode, acting_user=acting_user
+            )
 
     if setting_name in UserProfile.notification_settings_legacy:
         # This legacy event format is for backwards-compatibility with
