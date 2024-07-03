@@ -116,6 +116,23 @@ class UserBaseSettings(models.Model):
 
     web_mark_read_on_scroll_policy = models.SmallIntegerField(default=MARK_READ_ON_SCROLL_ALWAYS)
 
+    # UI setting controlling if clicking on a channel link should open
+    # the channel feed (interleaved view) or narrow to the first topic
+    # in the channel.
+
+    WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC = 1
+    WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED = 2
+
+    WEB_CHANNEL_DEFAULT_VIEW_CHOICES = [
+        WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
+        WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED,
+    ]
+
+    web_channel_default_view = models.SmallIntegerField(
+        default=WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
+        db_default=WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
+    )
+
     # Emoji sets
     GOOGLE_EMOJISET = "google"
     GOOGLE_BLOB_EMOJISET = "google-blob"
@@ -329,6 +346,7 @@ class UserBaseSettings(models.Model):
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
         web_mark_read_on_scroll_policy=int,
+        web_channel_default_view=int,
         user_list_style=int,
         web_stream_unreads_count_display_policy=int,
         web_font_size_px=int,

@@ -350,6 +350,7 @@ class ChangeSettingsTest(ZulipTestCase):
             timezone="America/Denver",
             demote_inactive_streams=2,
             web_mark_read_on_scroll_policy=2,
+            web_channel_default_view=2,
             user_list_style=2,
             web_stream_unreads_count_display_policy=2,
             web_font_size_px=14,
@@ -375,6 +376,7 @@ class ChangeSettingsTest(ZulipTestCase):
             "user_list_style",
             "color_scheme",
             "web_mark_read_on_scroll_policy",
+            "web_channel_default_view",
             "web_stream_unreads_count_display_policy",
         ]:
             data = {setting_name: test_value}
@@ -403,6 +405,7 @@ class ChangeSettingsTest(ZulipTestCase):
             timezone="invalid_US/Mountain",
             demote_inactive_streams=10,
             web_mark_read_on_scroll_policy=10,
+            web_channel_default_view=10,
             user_list_style=10,
             web_stream_unreads_count_display_policy=10,
             color_scheme=10,

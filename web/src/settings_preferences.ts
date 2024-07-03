@@ -209,6 +209,9 @@ export function set_up(settings_panel: SettingsPanel): void {
         .find(".setting_web_mark_read_on_scroll_policy")
         .val(settings_object.web_mark_read_on_scroll_policy);
     $container
+        .find(".setting_web_channel_default_view")
+        .val(settings_object.web_channel_default_view);
+    $container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
     $container

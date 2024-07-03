@@ -57,6 +57,17 @@ export const web_mark_read_on_scroll_policy_values = {
     },
 };
 
+export const web_channel_default_view_values = {
+    top_topic_in_channel: {
+        code: 1,
+        description: $t({defaultMessage: "Top topic in the channel"}),
+    },
+    channel_feed: {
+        code: 2,
+        description: $t({defaultMessage: "Channel feed"}),
+    },
+};
+
 export const user_list_style_values = {
     compact: {
         code: 1,
