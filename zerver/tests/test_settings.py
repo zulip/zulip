@@ -501,6 +501,32 @@ class ChangeSettingsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.enable_stream_desktop_notifications, True)
 
+    def test_changing_information_density_settings(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.dense_mode, True)
+        self.login("hamlet")
+
+        data = {"web_font_size_px": 16}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_font_size_px, 16)
+        self.assertEqual(hamlet.dense_mode, False)
+
+        data = {"web_font_size_px": 14}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_font_size_px, 14)
+        self.assertEqual(hamlet.dense_mode, True)
+
+        data = {"web_line_height_percent": 140}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_line_height_percent, 140)
+        self.assertEqual(hamlet.dense_mode, False)
+
 
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:
