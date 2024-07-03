@@ -757,6 +757,47 @@ test_people("filtered_users", () => {
     assert.ok(filtered_people.has(noah.user_id));
 });
 
+test_people("dm_matches_search_string", () => {
+    people.add_active_user(charles);
+    people.add_active_user(maria);
+    people.add_active_user(ashton);
+    people.add_active_user(linus);
+    people.add_active_user(noah);
+    people.add_active_user(plain_noah);
+
+    let result = people.dm_matches_search_string([ashton], "a");
+    assert.ok(result);
+    // Maria's email starts with `a`.
+    result = people.dm_matches_search_string([maria], "a");
+    assert.ok(result);
+    // Neither Charles' full name or email start with `a`.
+    result = people.dm_matches_search_string([charles], "a");
+    assert.ok(!result);
+
+    // Empty search terms should always return true
+    result = people.dm_matches_search_string([charles], "");
+    assert.ok(result);
+    result = people.dm_matches_search_string([charles, maria, noah], "");
+    assert.ok(result);
+
+    // Match with email.
+    result = people.dm_matches_search_string([linus], "ltorv");
+    assert.ok(result);
+
+    // Test filtering of names with diacritics. This should match
+    // Nöôáàh by ignoring diacritics, and also match Nooaah.
+    result = people.dm_matches_search_string([noah], "noOa");
+    assert.ok(result);
+    result = people.dm_matches_search_string([plain_noah], "noOa");
+    assert.ok(result);
+
+    // This should match ëmerson, but not emerson.
+    result = people.dm_matches_search_string([noah], "ëm");
+    assert.ok(result);
+    result = people.dm_matches_search_string([plain_noah], "ëm");
+    assert.ok(!result);
+});
+
 test_people("multi_user_methods", () => {
     people.add_active_user(emp401);
     people.add_active_user(emp402);
