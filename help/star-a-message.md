@@ -7,7 +7,8 @@ tasks you need to go back to or documents you reference often.
 
 {start_tabs}
 
-{tab|desktop}
+{tab|desktop-web}
+
 {!message-actions.md!}
 
 1. Click the **star** (<i class="zulip-icon zulip-icon-star"></i>) icon.
@@ -39,6 +40,21 @@ tasks you need to go back to or documents you reference often.
 ## View your starred messages
 
 {!view-starred-messages.md!}
+
+## Unstar all messages in a topic
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!topic-actions.md!}
+
+1. Click **Unstar all messages in topic**. If you don't see this option,
+   then you have no starred messages in the selected topic.
+
+1. Approve by clicking **Confirm**.
+
+{end_tabs}
 
 ## Toggle starred messages counter
 
