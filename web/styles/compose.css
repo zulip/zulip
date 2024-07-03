@@ -292,10 +292,10 @@
     &:has(.new_message_textarea.over_limit),
     &:has(.new_message_textarea.over_limit:focus) {
         box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+    }
 
-        &.flash {
-            animation: message-limit-flash 0.5s ease-in-out infinite;
-        }
+    &:has(.new_message_textarea.over_limit.flash) {
+        animation: message-limit-flash 0.5s ease-in-out 3;
     }
 
     &:has(.new_message_textarea.invalid),
