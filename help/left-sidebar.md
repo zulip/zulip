@@ -9,22 +9,74 @@ conversations. It has three main sections:
 - The **channels** section shows the [channels](/help/introduction-to-channels)
   you are subscribed to.
 
-You can adjust the left sidebar to focus on the information you need right now
-by:
-
-- Expanding or collapsing the **Views** section.
-- Expanding or collapsing the **Direct messages** section.
-- Showing all topics in a channel.
-- [Configuring unread message counters](/help/configure-unread-message-counters).
-- Hiding the left sidebar altogether.
-
-You can also customize how channels are organized within the **channels**
+You can customize how channels are organized within the **channels**
 section by:
 
 - [Pinning channels](/help/pin-a-channel) so that they appear in the top section.
 - [Changing channel colors](/help/change-the-color-of-a-channel).
 - [Configuring](/help/manage-inactive-channels) whether inactive channels are
   sorted at the bottom.
+
+## Adjust what information is shown
+
+There are many ways you can adjust the left sidebar to help you focus on the
+information you need in the moment.
+
+### Expand or collapse the views section
+
+{start_tabs}
+
+1. Click the triangle to the left of **VIEWS** in the left sidebar.
+
+{end_tabs}
+
+### Expand or collapse the direct messages section
+
+{start_tabs}
+
+1. Click the triangle to the left of **DIRECT MESSAGES** in the left sidebar.
+
+{end_tabs}
+
+### Show all direct message conversations
+
+{start_tabs}
+
+1. If the **DIRECT MESSAGES** section in the left sidebar is collapsed, click the triangle to the
+   left of **DIRECT MESSAGES** to expand it.
+
+1. Click **more conversations** at the bottom of the list of recent DM conversations.
+
+!!! tip ""
+
+    To return to the channel list in the left sidebar, click **back to channels**.
+
+{end_tabs}
+
+
+### Show all topics in a channel
+
+{start_tabs}
+
+1. Click on a channel in the left sidebar.
+
+1. Click **show all topics** at the bottom of the list of recent topics in the
+   selected channel.
+
+!!! tip ""
+
+     To return to the channel list in the left sidebar, click **BACK TO
+     CHANNELS**.
+
+{end_tabs}
+
+### Hide or show the left sidebar
+
+{start_tabs}
+
+1. Above the left sidebar, click the <i class="fa fa-reorder"></i> icon.
+
+{end_tabs}
 
 ## Related articles
 * [Reading strategies](/help/reading-strategies)
