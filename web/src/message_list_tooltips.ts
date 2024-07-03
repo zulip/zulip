@@ -278,7 +278,7 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".recipient_bar_icon", {
+    message_list_tooltip("#message_feed_container .recipient_bar_icon", {
         delay: LONG_HOVER_DELAY,
         onHidden(instance) {
             instance.destroy();
