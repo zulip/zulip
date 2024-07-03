@@ -9,6 +9,12 @@ import * as dialog_widget from "./dialog_widget";
 import * as emojisets from "./emojisets";
 import * as hash_parser from "./hash_parser";
 import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
+import {
+    LEGACY_FONT_SIZE_PX,
+    LEGACY_LINE_HEIGHT_PERCENT,
+    NON_COMPACT_MODE_FONT_SIZE_PX,
+    NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
+} from "./information_density";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -236,7 +242,18 @@ export function set_up(settings_panel: SettingsPanel): void {
             const setting = $input_elem.attr("name");
             assert(setting !== undefined);
             const data: Record<string, string | boolean | number> = {};
-            data[setting] = settings_components.get_input_element_value(this)!;
+            const setting_value = settings_components.get_input_element_value(this)!;
+            data[setting] = setting_value;
+
+            if (setting === "dense_mode") {
+                data.web_font_size_px = setting_value
+                    ? LEGACY_FONT_SIZE_PX
+                    : NON_COMPACT_MODE_FONT_SIZE_PX;
+                data.web_line_height_percent = setting_value
+                    ? LEGACY_LINE_HEIGHT_PERCENT
+                    : NON_COMPACT_MODE_LINE_HEIGHT_PERCENT;
+            }
+
             const $status_element = $input_elem
                 .closest(".subsection-parent")
                 .find(".alert-notification");
