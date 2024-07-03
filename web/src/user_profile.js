@@ -350,12 +350,16 @@ export function get_custom_profile_field_data(user, field, field_types) {
             profile_field.value = field_value.value;
             profile_field.rendered_value = field_value.rendered_value;
             break;
-        case field_types.EXTERNAL_ACCOUNT.id:
+        case field_types.EXTERNAL_ACCOUNT.id: {
+            const field_data = JSON.parse(field.field_data);
             profile_field.value = field_value.value;
-            profile_field.field_data = JSON.parse(field.field_data);
-            profile_field.subtype = profile_field.field_data.subtype;
-            profile_field.link = settings_profile_fields.get_external_account_link(profile_field);
+            profile_field.subtype = field_data.subtype;
+            profile_field.link = settings_profile_fields.get_external_account_link(
+                field_data,
+                field_value.value,
+            );
             break;
+        }
         default:
             profile_field.value = field_value.value;
     }
