@@ -530,6 +530,9 @@ export class Filter {
             case "channel":
             case "stream":
                 return stream_data.get_sub(term.operand) !== undefined;
+            case "channels":
+            case "streams":
+                return term.operand === "public";
             case "topic":
                 return true;
             case "sender":

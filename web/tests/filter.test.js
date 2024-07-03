@@ -1675,6 +1675,8 @@ test("is_valid_search_term", () => {
         ["near: home", false],
         ["channel: Denmark", true],
         ["channel: GhostTown", false],
+        ["channels: public", true],
+        ["channels: private", false],
         ["topic: GhostTown", true],
         ["dm-including: alice@example.com", true],
         ["sender: ghost@zulip.com", false],
