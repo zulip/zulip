@@ -347,6 +347,10 @@ export function initialize({
                 return;
             }
 
+            if ($(e.target).hasClass("visibility-policy-icon")) {
+                return;
+            }
+
             const $stream_row = $(e.target).parents(".narrow-filter");
             const stream_id_string = $stream_row.attr("data-stream-id");
             assert(stream_id_string !== undefined);
