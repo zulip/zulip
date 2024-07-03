@@ -353,6 +353,10 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     store.onPillRemove(pill, trigger);
                 }
             }
+            // This is needed to run the "change" event handler registered in
+            // compose_recipient.js, which calls the `update_on_recipient_change` to update
+            // the compose_fade state.
+            store.$input.trigger("change");
         },
 
         removeAllPills(trigger: RemovePillTrigger, quiet?: boolean) {
