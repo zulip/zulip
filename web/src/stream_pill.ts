@@ -7,8 +7,7 @@ import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 
 export type StreamPill = {
     type: "stream";
-    stream_id: number;
-    stream_name: string;
+    stream: StreamSubscription;
 };
 
 export type StreamPillWidget = InputPillContainer<StreamPill>;
@@ -18,7 +17,7 @@ export type StreamPillData = StreamSubscription & {type: "stream"};
 function format_stream_name_and_subscriber_count(sub: StreamSubscription): string {
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
     return $t(
-        {defaultMessage: "#{stream_name}: {sub_count} users"},
+        {defaultMessage: "{stream_name}: {sub_count} users"},
         {stream_name: sub.name, sub_count},
     );
 }
@@ -48,11 +47,15 @@ export function create_item_from_stream_name(
         return undefined;
     }
 
-    if (current_items.some((item) => item.type === "stream" && item.stream_id === sub.stream_id)) {
+    if (
+        current_items.some(
+            (item) => item.type === "stream" && item.stream.stream_id === sub.stream_id,
+        )
+    ) {
         return undefined;
     }
 
-    let display_value = "#" + sub.name;
+    let display_value = sub.name;
     if (show_subscriber_count) {
         display_value = format_stream_name_and_subscriber_count(sub);
     }
@@ -60,20 +63,19 @@ export function create_item_from_stream_name(
     return {
         type: "stream",
         display_value,
-        stream_id: sub.stream_id,
-        stream_name: sub.name,
+        stream: sub,
     };
 }
 
 export function get_stream_name_from_item(item: InputPillItem<StreamPill>): string {
-    return item.stream_name;
+    return item.stream.name;
 }
 
 export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContainer): number[] {
     let user_ids = pill_widget
         .items()
         .flatMap((item) =>
-            item.type === "stream" ? peer_data.get_subscribers(item.stream_id) : [],
+            item.type === "stream" ? peer_data.get_subscribers(item.stream.stream_id) : [],
         );
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
@@ -85,22 +87,21 @@ export function append_stream(
     pill_widget: StreamPillWidget | CombinedPillContainer,
     show_subscriber_count = true,
 ): void {
-    let display_value = "#" + stream.name;
+    let display_value = stream.name;
     if (show_subscriber_count) {
         display_value = format_stream_name_and_subscriber_count(stream);
     }
     pill_widget.appendValidatedData({
         type: "stream",
         display_value,
-        stream_id: stream.stream_id,
-        stream_name: stream.name,
+        stream,
     });
     pill_widget.clear_text();
 }
 
 export function get_stream_ids(pill_widget: StreamPillWidget | CombinedPillContainer): number[] {
     const items = pill_widget.items();
-    return items.flatMap((item) => (item.type === "stream" ? item.stream_id : []));
+    return items.flatMap((item) => (item.type === "stream" ? item.stream.stream_id : []));
 }
 
 export function filter_taken_streams(

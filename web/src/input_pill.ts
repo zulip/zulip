@@ -10,6 +10,7 @@ import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
 import type {SearchUserPill} from "./search_pill";
+import type {StreamSubscription} from "./sub_store";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
@@ -25,6 +26,7 @@ export type InputPillItem<T> = {
     group_id?: number;
     // Used for search pills
     operator?: string;
+    stream?: StreamSubscription;
 } & T;
 
 export type InputPillConfig = {
@@ -75,6 +77,8 @@ type InputPillRenderingDetails = {
     should_add_guest_user_indicator: boolean | undefined;
     user_id?: number | undefined;
     group_id?: number | undefined;
+    has_stream?: boolean;
+    stream?: StreamSubscription;
 };
 
 // These are the functions that are exposed to other modules.
@@ -201,6 +205,11 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
                 if (has_image) {
                     opts.img_src = item.img_src;
+                }
+
+                if (item.type === "stream" && item.stream) {
+                    opts.has_stream = true;
+                    opts.stream = item.stream;
                 }
 
                 if (store.pill_config?.show_user_status_emoji === true) {

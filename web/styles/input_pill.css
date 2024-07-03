@@ -39,6 +39,10 @@
             border-radius: 4px 0 0 4px;
         }
 
+        .zulip-icon {
+            padding-right: 2px;
+        }
+
         .pill-label {
             /* Treat as flex container to better position status
                emoji and control ellipsis on the pill value. */
