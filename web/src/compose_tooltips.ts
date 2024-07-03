@@ -240,7 +240,8 @@ export function initialize(): void {
         // TODO: Might need to target just the Send button itself
         // in the new design
         target: ".disabled-message-send-controls",
-        maxWidth: 350,
+        // 350px at 14px/1em
+        maxWidth: "25em",
         content: () =>
             compose_recipient.get_posting_policy_error_message() ||
             compose_validate.get_disabled_send_tooltip(),
