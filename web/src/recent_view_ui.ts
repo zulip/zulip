@@ -806,7 +806,12 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
         const msgs = message_util.get_messages_in_topic(stream_id, topic);
         msgs_to_process.push(...msgs);
     }
-    process_messages(msgs_to_process);
+
+    if (msgs_to_process.length > 0) {
+        process_messages(msgs_to_process);
+    } else {
+        complete_rerender();
+    }
 }
 
 export function filters_should_hide_row(topic_data: ConversationData): boolean {
