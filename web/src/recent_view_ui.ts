@@ -151,7 +151,8 @@ export function is_in_focus(): boolean {
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
         !modals.any_active() &&
-        !$(".home-page-input").is(":focus")
+        !$(".home-page-input").is(":focus") &&
+        !$("#search_query").is(":focus")
     );
 }
 
