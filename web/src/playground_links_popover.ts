@@ -122,6 +122,10 @@ function register_click_handlers(): void {
                     url_template.expand({code: extracted_code}),
                 );
             } else {
+                // Remove the href attribute that was set when there was only
+                // one playground link, so that it doesn't interfere with the
+                // popover toggle when multiple playground links exist.
+                $view_in_playground_button.removeAttr("href");
                 const playground_store = new Map<number, RealmPlaygroundWithURL>();
                 for (const playground of playground_info) {
                     const url_template = url_template_lib.parse(playground.url_template);
