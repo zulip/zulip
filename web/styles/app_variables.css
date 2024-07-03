@@ -267,9 +267,7 @@
     /* .settings-sticky-footer */
     --subscriptions-overlay-sticky-footer-height: 60px;
     /* Informational overlay */
-    /* Because zoom breaks at 525px perhaps due to rounding errors, we add a
-       trivial amount of width so the overlay doesn't break. */
-    --informational-overlay-max-width: 550px;
+    --informational-overlay-max-width: 43.75em;
 
     /*
     Maximum height of the compose box when it is not in maximised state. This

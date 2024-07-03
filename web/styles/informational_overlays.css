@@ -125,3 +125,8 @@
         }
     }
 }
+
+#message-formatting-first-header,
+#search-operators-first-header {
+    width: 40%;
+}
