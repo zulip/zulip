@@ -53,7 +53,8 @@ export const EXTRA_LONG_HOVER_DELAY: [number, number] = [1500, 20];
 // documentation for default properties.
 tippy.default.setDefaultProps({
     // Tooltips shouldn't take more space than mobile widths.
-    maxWidth: 300,
+    // 300px at 14px/1em
+    maxWidth: "21.4286em",
     delay: INSTANT_HOVER_DELAY,
     placement: "top",
     // Disable animations to make the tooltips feel snappy.
