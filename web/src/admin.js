@@ -188,6 +188,7 @@ export function build_page() {
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
             settings_config.web_mark_read_on_scroll_policy_values,
+        web_channel_default_view_values: settings_config.web_channel_default_view_values,
         user_list_style_values: settings_config.user_list_style_values,
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,

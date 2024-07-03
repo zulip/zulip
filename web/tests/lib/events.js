@@ -1022,6 +1022,13 @@ exports.fixtures = {
         value: 2,
     },
 
+    user_settings__web_channel_default_view: {
+        type: "user_settings",
+        op: "update",
+        property: "web_channel_default_view",
+        value: 1,
+    },
+
     user_settings__web_escape_navigates_to_home_view: {
         type: "user_settings",
         op: "update",

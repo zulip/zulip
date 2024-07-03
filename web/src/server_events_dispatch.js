@@ -704,6 +704,7 @@ export function dispatch_normal_event(event) {
                 "demote_inactive_streams",
                 "dense_mode",
                 "web_mark_read_on_scroll_policy",
+                "web_channel_default_view",
                 "emojiset",
                 "web_escape_navigates_to_home_view",
                 "fluid_layout_width",

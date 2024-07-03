@@ -71,6 +71,7 @@ export const user_settings_schema = stream_notification_settings_schema
         translate_emoticons: z.boolean(),
         twenty_four_hour_time: z.boolean(),
         user_list_style: z.number(),
+        web_channel_default_view: z.number(),
         web_escape_navigates_to_home_view: z.boolean(),
         web_font_size_px: z.number(),
         web_home_view: z.enum(["inbox", "recent_topics", "all_messages"]),

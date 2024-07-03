@@ -945,6 +945,11 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_mark_read_on_scroll_policy, 1);
 
+    event = event_fixtures.user_settings__web_channel_default_view;
+    user_settings.web_channel_default_view = 2;
+    dispatch(event);
+    assert_same(user_settings.web_channel_default_view, 1);
+
     event = event_fixtures.user_settings__dense_mode;
     user_settings.dense_mode = false;
     override(information_density, "set_base_typography_css_variables", noop);

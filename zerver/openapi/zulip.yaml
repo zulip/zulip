@@ -11140,6 +11140,21 @@ paths:
                     - 2
                     - 3
                   example: 1
+                web_channel_default_view:
+                  description: |
+                    Web/desktop app setting controlling the default navigation
+                    behavior when clicking on a channel link.
+
+                    - 1 - Top topic in the channel
+                    - 2 - Channel feed
+
+                    **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                    was not configurable, and every user had the "Channel feed" behavior.
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
                 web_font_size_px:
                   description: |
                     User-configured primary `font-size` for the web application, in pixels.
@@ -11573,6 +11588,8 @@ paths:
               high_contrast_mode:
                 contentType: application/json
               web_mark_read_on_scroll_policy:
+                contentType: application/json
+              web_channel_default_view:
                 contentType: application/json
               web_font_size_px:
                 contentType: application/json
@@ -14093,6 +14110,17 @@ paths:
                               **Changes**: New in Zulip 7.0 (feature level 175). Previously, there was no
                               way for the user to configure this behavior on the web, and the Zulip web and
                               desktop apps behaved like the "Always" setting when marking messages as read.
+                          web_channel_default_view:
+                            type: integer
+                            description: |
+                              Web/desktop app setting controlling the default navigation
+                              behavior when clicking on a channel link.
+
+                              - 1 - Top topic in the channel
+                              - 2 - Channel feed
+
+                              **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                              was not configurable, and every user had the "Channel feed" behavior.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -16489,6 +16517,17 @@ paths:
                               **Changes**: New in Zulip 7.0 (feature level 175). Previously, there was no
                               way for the user to configure this behavior on the web, and the Zulip web and
                               desktop apps behaved like the "Always" setting when marking messages as read.
+                          web_channel_default_view:
+                            type: integer
+                            description: |
+                              Web/desktop app setting controlling the default navigation
+                              behavior when clicking on a channel link.
+
+                              - 1 - Top topic in the channel
+                              - 2 - Channel feed
+
+                              **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                              was not configurable, and every user had the "Channel feed" behavior.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -17599,6 +17638,21 @@ paths:
                     - 2
                     - 3
                   example: 1
+                web_channel_default_view:
+                  description: |
+                    Web/desktop app setting controlling the default navigation
+                    behavior when clicking on a channel link.
+
+                    - 1 - Top topic in the channel
+                    - 2 - Channel feed
+
+                    **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                    was not configurable, and every user had the "Channel feed" behavior.
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
                 starred_message_counts:
                   description: |
                     Whether clients should display the [number of starred
@@ -18182,6 +18236,8 @@ paths:
               dense_mode:
                 contentType: application/json
               web_mark_read_on_scroll_policy:
+                contentType: application/json
+              web_channel_default_view:
                 contentType: application/json
               starred_message_counts:
                 contentType: application/json
