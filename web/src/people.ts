@@ -1209,6 +1209,12 @@ export function filter_people_by_search_terms(users: User[], search_string: stri
     return filtered_users;
 }
 
+export function dm_matches_search_string(users: User[], search_string: string): boolean {
+    const matcher = build_person_matcher(search_string);
+
+    return users.some((user) => matcher(user));
+}
+
 export const is_valid_full_name_and_user_id = (full_name: string, user_id: number): boolean => {
     /*
         This function is currently only used for checking
