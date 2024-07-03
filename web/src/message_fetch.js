@@ -116,7 +116,7 @@ function process_result(data, opts) {
         }
 
         if (opts.num_before > 0 && !has_found_oldest) {
-            maybe_load_older_messages({msg_list: opts.msg_list});
+            maybe_load_older_messages({msg_list: opts.msg_list, msg_list_data: opts.msg_list.data});
         }
         if (opts.num_after > 0 && !has_found_newest) {
             maybe_load_newer_messages({msg_list: opts.msg_list});
@@ -131,7 +131,7 @@ function process_result(data, opts) {
 function get_messages_success(data, opts) {
     const update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
-    const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+    const msg_list_data = opts.msg_list_data;
     const has_found_newest = msg_list_data.fetch_status.has_found_newest();
     const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
 
@@ -243,7 +243,7 @@ export function load_messages(opts, attempt = 1) {
         opts.anchor = opts.anchor.toFixed(0);
     }
     let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
-    const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+    const msg_list_data = opts.msg_list_data;
 
     if (msg_list_data === undefined) {
         blueslip.error("Message list data is undefined!");
@@ -400,6 +400,7 @@ export function load_messages_for_narrow(opts) {
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: opts.msg_list,
+        msg_list_data: opts.msg_list.data,
         cont: opts.cont,
         validate_filter_topic_post_fetch: opts.validate_filter_topic_post_fetch,
     });
@@ -451,7 +452,7 @@ export function maybe_load_older_messages(opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
     // than what the browsers originally fetched.
-    const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+    const msg_list_data = opts.msg_list_data;
     if (!msg_list_data.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
         // got the oldest one.
@@ -499,7 +500,7 @@ export function maybe_load_older_messages(opts) {
 }
 
 export function do_backfill(opts) {
-    const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
+    const msg_list_data = opts.msg_list_data;
     const anchor = get_backfill_anchor(msg_list_data);
 
     // `load_messages` behaves differently for `msg_list` and `msg_list_data` as
@@ -510,7 +511,7 @@ export function do_backfill(opts) {
         num_before: opts.num_before,
         num_after: 0,
         msg_list: opts.msg_list,
-        msg_list_data: opts.msg_list_data,
+        msg_list_data,
         cont() {
             if (opts.cont) {
                 opts.cont();
@@ -548,6 +549,7 @@ export function maybe_load_newer_messages(opts) {
         num_before: 0,
         num_after: consts.narrowed_view_forward_batch_size,
         msg_list,
+        msg_list_data: opts.msg_list.data,
         cont: load_more,
     });
 }
