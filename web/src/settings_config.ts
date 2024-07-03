@@ -552,7 +552,7 @@ export const user_role_map = new Map(user_role_array.map((role) => [role.code, r
 
 export const preferences_settings_labels = {
     default_language_settings_label: $t({defaultMessage: "Language"}),
-    dense_mode: $t({defaultMessage: "Dense mode"}),
+    dense_mode: $t({defaultMessage: "Compact mode"}),
     display_emoji_reaction_users: new Handlebars.SafeString(
         $t_html({
             defaultMessage:
