@@ -27,6 +27,9 @@
             font-size: 1em;
             /* 20px at 14px/1em */
             line-height: 1.4286em;
+            /* Don't inherit font-weight when
+               a Tippy attaches to a parent */
+            font-weight: normal;
             color: hsl(0deg 0% 100%);
         }
 
