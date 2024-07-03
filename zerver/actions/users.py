@@ -7,10 +7,12 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.message_delete import delete_deactivated_user_messages
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
+from zerver.actions.user_settings import check_change_full_name
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
@@ -318,7 +320,12 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
 
 
 def do_deactivate_user(
-    user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile,
+    _cascade: bool = True,
+    spammer: Optional[bool] = None,
+    message_delete_action: Optional[int] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     if not user_profile.is_active:
         return
@@ -346,6 +353,12 @@ def do_deactivate_user(
 
         clear_scheduled_emails(user_profile.id)
         revoke_invites_generated_by_user(user_profile)
+
+        if spammer and not user_profile.full_name.endswith(" (spammer)"):
+            check_change_full_name(user_profile, user_profile.full_name + " (spammer)", acting_user)
+
+        if message_delete_action is not None:
+            delete_deactivated_user_messages(user_profile, message_delete_action)
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(

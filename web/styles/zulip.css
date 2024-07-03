@@ -1958,6 +1958,14 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
+.deactivate-modal-info-group {
+    margin-top: 5px;
+
+    select {
+        width: max-content;
+    }
+}
+
 body:not(.hide-left-sidebar) {
     /* User can clearly see the unread count in the left sidebar. So,
        we don't need an indicator here as it will only serve as a disctraction. */

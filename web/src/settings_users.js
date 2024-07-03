@@ -487,7 +487,12 @@ function handle_deactivation($tbody) {
 
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            let data = {};
+            const is_spammer = JSON.stringify($("#mark_as_spammer").prop("checked"));
+            const delete_action = $("#message_delete_action")[0].value;
+            let data = {
+                spammer: is_spammer,
+                message_delete_action: delete_action,
+            };
             if ($(".send_email").is(":checked")) {
                 data = {
                     deactivation_notification_comment: $(".email_field_textarea").val(),

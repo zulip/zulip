@@ -380,6 +380,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     API_KEY_LENGTH = 32
     NAME_INVALID_CHARS = ["*", "`", "\\", ">", '"', "@"]
 
+    NO_DELETE_ACTION = 0
+    DELETE_PUBLIC_STREAM_MESSAGE = 1
+    DELETE_ALL_MESSAGE = 2
+
+    DEACTIVATED_USER_MESSAGE_DELETE_ACTION = [
+        NO_DELETE_ACTION,
+        DELETE_PUBLIC_STREAM_MESSAGE,
+        DELETE_ALL_MESSAGE,
+    ]
+
     DEFAULT_BOT = 1
     """
     Incoming webhook bots are limited to only sending messages via webhooks.

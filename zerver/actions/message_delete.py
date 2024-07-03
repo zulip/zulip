@@ -1,9 +1,9 @@
-from typing import Iterable, List, TypedDict
+from typing import Any, Dict, Iterable, List, TypedDict
 
 from zerver.lib import retention
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
-from zerver.models import Message, Realm, Stream, UserMessage, UserProfile
+from zerver.models import Message, Realm, Recipient, Stream, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -98,3 +98,29 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
+
+
+def classify_message(messages: Iterable[Message]) -> Dict[str, Dict[int, Any]]:
+    # This function sorts the messages into a format that can be
+    # used by delete_deactivated_user_messages function to delete
+    # messages from a topic together in bulk and messages from a
+    # a private message individually.
+
+    message_dict: Dict[str, Dict[int, Any]] = {"stream": {}, "private": {}}
+    messages = list(messages)
+    stream_messages = [
+        message for message in messages if message.recipient.type == Recipient.STREAM
+    ]
+    private_messages = [
+        message for message in messages if message.recipient.type != Recipient.STREAM
+    ]
+
+    for message in stream_messages:
+        recipient_id = message.recipient.id
+        topic_name = message.topic_name()
+
+        if recipient_id in message_dict["stream"]:
+            if topic_name in message_dict["stream"][recipient_id]:
+                message_dict["stream"][recipient_id][topic_name].append(message)
+            else:
+                message_dict["stream"][recipient_id][topic_name] = [message]

@@ -1046,3 +1046,18 @@ export const stream_post_policy_values = {
 } as const;
 
 export type {Settings as GenericUserSettings};
+
+export const deactivate_message_delete_action = {
+    delete_private_messages: {
+        code: 0,
+        description: $t({defaultMessage: "Delete all private messages"}),
+    },
+    delete_public_stream_messages: {
+        code: 1,
+        description: $t({defaultMessage: "Delete all public stream messages"}),
+    },
+    delete_private_stream_messages: {
+        code: 2,
+        description: $t({defaultMessage: "Delete all private stream messages"}),
+    },
+};

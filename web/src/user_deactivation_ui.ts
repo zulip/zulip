@@ -6,6 +6,8 @@ import render_settings_deactivation_user_modal from "../templates/confirm_dialog
 import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 
+import {deactivate_message_delete_action} from "/home/pedro/zulip/web/src/settings_config";
+
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
@@ -43,11 +45,13 @@ export function confirm_deactivation(
             const opts = {
                 username: user.full_name,
                 email: user.delivery_email,
+                message_delete_action: deactivate_message_delete_action,
                 bots_owned_by_user,
                 number_of_invites_by_user,
                 admin_email: people.my_current_email(),
                 realm_url,
                 realm_name,
+                deactivate_message_delete_action,
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 

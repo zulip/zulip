@@ -129,6 +129,13 @@ def deactivate_user_backend(
         raise JsonableError(_("Cannot deactivate the only organization owner"))
     if deactivation_notification_comment is not None:
         deactivation_notification_comment = deactivation_notification_comment.strip()
+    spammer: Optional[bool] = (REQ(default=None, json_validator=check_bool),)
+    message_delete_action: Optional[int] = (
+        REQ(
+            default=None,
+            json_validator=check_int_in(UserProfile.DEACTIVATED_USER_MESSAGE_DELETE_ACTION),
+        ),
+    )
     return _deactivate_user_profile_backend(
         request,
         user_profile,
@@ -160,10 +167,17 @@ def _deactivate_user_profile_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     target: UserProfile,
+    spammer: Optional[bool] = None,
+    message_delete_action: Optional[int] = None,
     *,
     deactivation_notification_comment: Optional[str],
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    do_deactivate_user(
+        target,
+        acting_user=user_profile,
+        spammer=spammer,
+        message_delete_action=message_delete_action,
+    )
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.
