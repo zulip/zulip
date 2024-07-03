@@ -779,7 +779,8 @@ strong {
 .buddy_list_tooltip_content {
     text-align: left;
     word-wrap: break-word;
-    max-width: 280px;
+    /* 280px at 14px/1em */
+    max-width: 20em;
 }
 
 #change_visibility_policy_button_tooltip {
