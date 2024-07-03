@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
+import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
@@ -76,6 +77,23 @@ tippy.default.setDefaultProps({
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
     content: get_tooltip_content,
 });
+
+export const topic_visibility_policy_tooltip_props = {
+    delay: LONG_HOVER_DELAY,
+    appendTo: () => document.body,
+    onShow(instance: tippy.Instance) {
+        const $elem = $(instance.reference);
+        const current_visibility_policy_str = $elem.attr("data-tippy-content");
+        instance.setContent(
+            ui_util.parse_html(
+                render_change_visibility_policy_button_tooltip({current_visibility_policy_str}),
+            ),
+        );
+    },
+    onHidden(instance: tippy.Instance) {
+        instance.destroy();
+    },
+};
 
 export function initialize(): void {
     $("#tooltip-templates-container").html(render_tooltip_templates());
@@ -657,6 +675,11 @@ export function initialize(): void {
                 ),
             );
         },
+    });
+
+    tippy.delegate("body", {
+        target: ["#recent_view .recipient_bar_icon", "#inbox-view .recipient_bar_icon"].join(","),
+        ...topic_visibility_policy_tooltip_props,
     });
 
     tippy.delegate("body", {
