@@ -1071,6 +1071,13 @@ exports.fixtures = {
         value: 1,
     },
 
+    user_settings__web_navigate_to_sent_message: {
+        type: "user_settings",
+        op: "update",
+        property: "web_navigate_to_sent_message",
+        value: false,
+    },
+
     user_settings__web_stream_unreads_count_display_policy: {
         type: "user_settings",
         op: "update",

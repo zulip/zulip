@@ -139,6 +139,12 @@
           label=settings_label.web_escape_navigates_to_home_view
           prefix=prefix}}
 
+        {{> settings_checkbox
+          setting_name="web_navigate_to_sent_message"
+          is_checked=settings_object.web_navigate_to_sent_message
+          label=settings_label.web_navigate_to_sent_message
+          prefix=prefix}}
+
         <div class="input-group">
             <label for="demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
                 {{> ../help_link_widget link="/help/manage-inactive-channels" }}

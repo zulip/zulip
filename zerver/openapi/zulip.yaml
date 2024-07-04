@@ -11552,6 +11552,15 @@ paths:
                     - 4
                     - 5
                   example: 1
+                web_navigate_to_sent_message:
+                  description: |
+                    Web/desktop app setting for whether the user's view should
+                    automatically go to the conversation where they sent a message.
+
+                    **Changes**: New in Zulip 9.0 (feature level 268). Previously,
+                    this behavior was not configurable.
+                  type: boolean
+                  example: true
             encoding:
               dense_mode:
                 contentType: application/json
@@ -11648,6 +11657,8 @@ paths:
               send_read_receipts:
                 contentType: application/json
               email_address_visibility:
+                contentType: application/json
+              web_navigate_to_sent_message:
                 contentType: application/json
       responses:
         "200":
@@ -14473,6 +14484,14 @@ paths:
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           email_address_visibility:
                             $ref: "#/components/schemas/EmailAddressVisibility"
+                          web_navigate_to_sent_message:
+                            type: boolean
+                            description: |
+                              Web/desktop app setting for whether the user's view should
+                              automatically go to the conversation where they sent a message.
+
+                              **Changes**: New in Zulip 9.0 (feature level 268). Previously,
+                              this behavior was not configurable.
                       user_topics:
                         type: array
                         description: |
@@ -16853,6 +16872,14 @@ paths:
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           email_address_visibility:
                             $ref: "#/components/schemas/EmailAddressVisibility"
+                          web_navigate_to_sent_message:
+                            type: boolean
+                            description: |
+                              Web/desktop app setting for whether the user's view should
+                              automatically go to the conversation where they sent a message.
+
+                              **Changes**: New in Zulip 9.0 (feature level 268). Previously,
+                              this behavior was not configurable.
                       realm_users:
                         type: array
                         description: |
@@ -18140,6 +18167,15 @@ paths:
                     - 4
                     - 5
                   example: 1
+                web_navigate_to_sent_message:
+                  description: |
+                    Web/desktop app setting for whether the user's view should
+                    automatically go to the conversation where they sent a message.
+
+                    **Changes**: New in Zulip 9.0 (feature level 268). Previously,
+                    this behavior was not configurable.
+                  type: boolean
+                  example: true
             encoding:
               twenty_four_hour_time:
                 contentType: application/json
@@ -18240,6 +18276,8 @@ paths:
               send_read_receipts:
                 contentType: application/json
               email_address_visibility:
+                contentType: application/json
+              web_navigate_to_sent_message:
                 contentType: application/json
       responses:
         "200":
