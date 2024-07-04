@@ -235,6 +235,7 @@ function setup_dropdown(sub, slim_sub) {
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
+            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
         },
     });
     settings_components.set_dropdown_setting_widget(

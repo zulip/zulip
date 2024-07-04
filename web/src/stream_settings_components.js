@@ -108,6 +108,7 @@ export function dropdown_setup() {
         },
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
+            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
         },
         default_text: $t({defaultMessage: "No user groups"}),
         default_id: user_groups.get_user_group_from_name("role:administrators").id,
