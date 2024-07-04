@@ -57,7 +57,7 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
     typed_endpoint_without_parameters,
 )
-from zerver.lib.typed_endpoint_validators import check_int_in, check_url
+from zerver.lib.typed_endpoint_validators import check_int_in_validator, check_url
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
@@ -98,11 +98,8 @@ from zproject.backends import check_password_strength
 
 RoleParamType: TypeAlias = Annotated[
     int,
-    AfterValidator(
-        lambda x: check_int_in(
-            x,
-            UserProfile.ROLE_TYPES,
-        )
+    check_int_in_validator(
+        UserProfile.ROLE_TYPES,
     ),
 ]
 

@@ -688,6 +688,26 @@ class UnmutedTopicsTests(ZulipTestCase):
         self.assert_json_error(result, "Invalid channel ID")
 
 
+class UserTopicsTests(ZulipTestCase):
+    def test_invalid_visibility_policy(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream = get_stream("Verona", user.realm)
+
+        url = "/api/v1/user_topics"
+        data = {
+            "stream_id": stream.id,
+            "topic": "Verona3",
+            "visibility_policy": 999,
+        }
+
+        result = self.api_post(user, url, data)
+        self.assert_json_error(
+            result, "Invalid visibility_policy: Value error, Not in the list of possible values"
+        )
+
+
 class AutomaticallyFollowTopicsTests(ZulipTestCase):
     def test_automatically_follow_topic_on_initiation(self) -> None:
         hamlet = self.example_user("hamlet")
