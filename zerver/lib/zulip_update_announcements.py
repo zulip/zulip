@@ -11,7 +11,7 @@ from django.utils.translation import override as override_language
 
 from zerver.actions.message_send import (
     do_send_messages,
-    internal_prep_huddle_message,
+    internal_prep_group_direct_message,
     internal_prep_stream_message,
 )
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
@@ -174,7 +174,7 @@ configuration change), or [turn this feature off]({organization_settings_url}) a
             organization_settings_url="/#organization/organization-settings",
             move_content_another_stream_help_url="/help/move-content-to-another-channel",
         )
-    return internal_prep_huddle_message(
+    return internal_prep_group_direct_message(
         realm, sender, remove_single_newlines(content), recipient_users=administrators
     )
 

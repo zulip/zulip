@@ -706,15 +706,13 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> List[int]:
 
     active_non_guest_user_ids_in_realm = active_non_guest_user_ids(realm.id)
 
-    users_in_subscribed_streams_or_huddles_dict = get_subscribers_of_target_user_subscriptions(
-        [target_user]
-    )
+    users_sharing_any_subscription = get_subscribers_of_target_user_subscriptions([target_user])
     users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([target_user], realm)
 
     user_ids_who_can_access_target_user = (
         {target_user.id}
         | set(active_non_guest_user_ids_in_realm)
-        | users_in_subscribed_streams_or_huddles_dict[target_user.id]
+        | users_sharing_any_subscription[target_user.id]
         | users_involved_in_dms_dict[target_user.id]
     )
     return list(user_ids_who_can_access_target_user)

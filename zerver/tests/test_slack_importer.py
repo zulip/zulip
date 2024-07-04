@@ -314,7 +314,7 @@ class SlackImporter(ZulipTestCase):
             [  # Private channels ("groups")
                 {"name": "private", "members": ["U061A1R2R", "U11111111"]},
             ],
-            [  # Huddles ("mpims")
+            [  # Direct message groups ("mpims")
                 {
                     "name": "mpdm-foo--bar--baz-1",
                     "members": ["U061A1R2R", "U061A5N1G", "U22222222"],

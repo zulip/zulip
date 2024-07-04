@@ -20,7 +20,7 @@ from zerver.actions.message_send import (
     extract_stream_indicator,
     internal_prep_private_message,
     internal_prep_stream_message_by_name,
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
     internal_send_stream_message_by_name,
@@ -61,7 +61,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import PrivateMessagePolicyEnum, WildcardMentionPolicyEnum, get_realm
-from zerver.models.recipients import get_or_create_huddle
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
 from zerver.views.message_send import InvalidMirrorInputError
@@ -713,14 +713,14 @@ class MessagePOSTTest(ZulipTestCase):
 
             msg = self.get_last_message()
             self.assertEqual("Test message", msg.content)
-            huddle = get_or_create_huddle(
+            direct_message_group = get_or_create_direct_message_group(
                 [
                     self.example_user("hamlet").id,
                     self.example_user("othello").id,
                     self.example_user("cordelia").id,
                 ]
             )
-            self.assertEqual(msg.recipient_id, huddle.recipient_id)
+            self.assertEqual(msg.recipient_id, direct_message_group.recipient_id)
 
     def test_personal_message_copying_self(self) -> None:
         """
@@ -967,9 +967,9 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Message must have recipients")
 
-    def test_mirrored_huddle(self) -> None:
+    def test_mirrored_direct_message_group(self) -> None:
         """
-        Sending a mirrored huddle message works
+        Sending a mirrored group direct message works
         """
         result = self.api_post(
             self.mit_user("starnine"),
@@ -1042,9 +1042,9 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "User not authorized for this query")
 
-    def test_duplicated_mirrored_huddle(self) -> None:
+    def test_duplicated_mirrored_direct_message_group(self) -> None:
         """
-        Sending two mirrored huddles in the row return the same ID
+        Sending two mirrored direct message groups in the row return the same ID
         """
         msg = {
             "type": "direct",
@@ -2325,7 +2325,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         self.assert_stream_message(non_ascii_stream_name, topic_name="hümbüǵ", content="hümbüǵ")
 
-    def test_get_raw_unread_data_for_huddle_messages(self) -> None:
+    def test_get_raw_unread_data_for_group_direct_messages(self) -> None:
         users = [
             self.example_user("hamlet"),
             self.example_user("cordelia"),
@@ -2334,8 +2334,8 @@ class StreamMessagesTest(ZulipTestCase):
             self.example_user("othello"),
         ]
 
-        message1_id = self.send_huddle_message(users[0], users, "test content 1")
-        message2_id = self.send_huddle_message(users[0], users, "test content 2")
+        message1_id = self.send_group_direct_message(users[0], users, "test content 1")
+        message2_id = self.send_group_direct_message(users[0], users, "test content 2")
 
         msg_data = get_raw_unread_data(users[1])
 
@@ -2580,7 +2580,7 @@ class InternalPrepTest(ZulipTestCase):
         )
 
         with self.assertLogs(level="ERROR") as m:
-            internal_send_huddle_message(
+            internal_send_group_direct_message(
                 realm=realm,
                 sender=cordelia,
                 emails=[hamlet.email, othello.email],
@@ -2840,23 +2840,24 @@ class TestCrossRealmPMs(ZulipTestCase):
         # (We don't particularly need this feature, but since users can
         # already individually send direct messages to cross-realm bots,
         # we shouldn't prevent them from sending multiple bots at once.
-        # We may revisit this if it's a nuisance for huddles.)
-        self.send_huddle_message(user1, [notification_bot, support_bot])
+        # We may revisit this if it's a nuisance for direct message
+        # groups.)
+        self.send_group_direct_message(user1, [notification_bot, support_bot])
         assert_message_received(notification_bot, user1)
         assert_message_received(support_bot, user1)
 
         # Prevent old loophole where I could send direct messages to other
         # users as long as I copied a cross-realm bot from the same realm.
         with assert_invalid_user():
-            self.send_huddle_message(user1, [user3, support_bot])
+            self.send_group_direct_message(user1, [user3, support_bot])
 
         # Users on three different realms can't send direct messages to
         # each other, even if one of the users is a cross-realm bot.
         with assert_invalid_user():
-            self.send_huddle_message(user1, [user2, notification_bot])
+            self.send_group_direct_message(user1, [user2, notification_bot])
 
         with assert_invalid_user():
-            self.send_huddle_message(notification_bot, [user1, user2])
+            self.send_group_direct_message(notification_bot, [user1, user2])
 
         # Users on the different realms cannot send direct messages to
         # each other.
@@ -2871,7 +2872,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Users on three different realms cannot send direct messages
         # to each other.
         with assert_invalid_user():
-            self.send_huddle_message(user1, [user2, user3])
+            self.send_group_direct_message(user1, [user2, user3])
 
 
 class TestAddressee(ZulipTestCase):

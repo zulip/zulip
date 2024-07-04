@@ -33,7 +33,7 @@ from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
-    huddle_narrow_url,
+    direct_message_group_narrow_url,
     personal_narrow_url,
     stream_narrow_url,
     topic_narrow_url,
@@ -262,7 +262,7 @@ def build_message_list(
         elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
-            narrow_link = huddle_narrow_url(
+            narrow_link = direct_message_group_narrow_url(
                 user=user,
                 display_recipient=display_recipient,
             )
@@ -385,8 +385,8 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     The email will have its reply to address set to a limited used email
     address that will send a Zulip message to the correct recipient. This
-    allows the user to respond to missed direct messages, huddles, and
-    @-mentions directly from the email.
+    allows the user to respond to missed direct messages, direct message
+    groups, and @-mentions directly from the email.
 
     `user_profile` is the user to send the reminder to
     `missed_messages` is a list of dictionaries to Message objects and other data
@@ -474,7 +474,7 @@ def do_send_missedmessage_events_reply_in_zulip(
     senders = list({m["message"].sender for m in missed_messages})
     if missed_messages[0]["message"].recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(missed_messages[0]["message"].recipient)
-        narrow_url = huddle_narrow_url(
+        narrow_url = direct_message_group_narrow_url(
             user=user_profile,
             display_recipient=display_recipient,
         )
@@ -482,18 +482,18 @@ def do_send_missedmessage_events_reply_in_zulip(
         other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user_profile.id]
         context.update(group_pm=True)
         if len(other_recipients) == 2:
-            huddle_display_name = " and ".join(other_recipients)
-            context.update(huddle_display_name=huddle_display_name)
+            direct_message_group_display_name = " and ".join(other_recipients)
+            context.update(huddle_display_name=direct_message_group_display_name)
         elif len(other_recipients) == 3:
-            huddle_display_name = (
+            direct_message_group_display_name = (
                 f"{other_recipients[0]}, {other_recipients[1]}, and {other_recipients[2]}"
             )
-            context.update(huddle_display_name=huddle_display_name)
+            context.update(huddle_display_name=direct_message_group_display_name)
         else:
-            huddle_display_name = "{}, and {} others".format(
+            direct_message_group_display_name = "{}, and {} others".format(
                 ", ".join(other_recipients[:2]), len(other_recipients) - 2
             )
-            context.update(huddle_display_name=huddle_display_name)
+            context.update(huddle_display_name=direct_message_group_display_name)
     elif missed_messages[0]["message"].recipient.type == Recipient.PERSONAL:
         narrow_url = personal_narrow_url(
             realm=user_profile.realm,

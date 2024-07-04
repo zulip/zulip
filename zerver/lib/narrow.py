@@ -648,7 +648,7 @@ class NarrowBuilder:
         )
         return query.where(maybe_negate(cond))
 
-    def _get_huddle_recipients(self, other_user: UserProfile) -> Set[int]:
+    def _get_direct_message_group_recipients(self, other_user: UserProfile) -> Set[int]:
         self_recipient_ids = [
             recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
@@ -693,7 +693,9 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
 
         # all direct messages including another person (group and 1:1)
-        huddle_recipient_ids = self._get_huddle_recipients(narrow_user_profile)
+        direct_message_group_recipient_ids = self._get_direct_message_group_recipients(
+            narrow_user_profile
+        )
 
         self_recipient_id = self.user_profile.recipient_id
         # See note above in `by_dm` about needing bidirectional messages
@@ -711,7 +713,7 @@ class NarrowBuilder:
                     column("recipient_id", Integer) == narrow_user_profile.recipient_id,
                 ),
                 and_(
-                    column("recipient_id", Integer).in_(huddle_recipient_ids),
+                    column("recipient_id", Integer).in_(direct_message_group_recipient_ids),
                 ),
             ),
         )
@@ -734,7 +736,7 @@ class NarrowBuilder:
         except UserProfile.DoesNotExist:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
-        recipient_ids = self._get_huddle_recipients(narrow_profile)
+        recipient_ids = self._get_direct_message_group_recipients(narrow_profile)
         cond = and_(
             column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
             column("realm_id", Integer) == self.realm.id,

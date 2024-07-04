@@ -2,7 +2,7 @@ import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Huddle
-from zerver.models.recipients import get_huddle_hash
+from zerver.models.recipients import get_direct_message_group_hash
 
 
 class TypingValidateOperatorTest(ZulipTestCase):
@@ -202,8 +202,8 @@ class TypingHappyPathTestDirectMessages(ZulipTestCase):
         expected_recipient_emails = {user.email for user in expected_recipients}
         expected_recipient_ids = {user.id for user in expected_recipients}
 
-        huddle_hash = get_huddle_hash(list(expected_recipient_ids))
-        self.assertFalse(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
+        direct_message_group_hash = get_direct_message_group_hash(list(expected_recipient_ids))
+        self.assertFalse(Huddle.objects.filter(huddle_hash=direct_message_group_hash).exists())
 
         params = dict(
             to=orjson.dumps([user.id for user in recipient_users]).decode(),
@@ -216,10 +216,10 @@ class TypingHappyPathTestDirectMessages(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_length(events, 1)
 
-        # We should not be adding new Huddles just because
-        # a user started typing in the compose box.  Let's
-        # wait till they send an actual message.
-        self.assertFalse(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
+        # We should not be adding new Direct Message groups
+        # just because a user started typing in the compose
+        # box.  Let's wait till they send an actual message.
+        self.assertFalse(Huddle.objects.filter(huddle_hash=direct_message_group_hash).exists())
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}

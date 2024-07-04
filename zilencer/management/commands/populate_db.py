@@ -70,7 +70,7 @@ from zerver.models import (
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
 from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
-from zerver.models.recipients import get_or_create_huddle
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 from zilencer.models import RemoteRealm, RemoteZulipServer, RemoteZulipServerAuditLog
@@ -929,7 +929,9 @@ class Command(ZulipBaseCommand):
 
         # Create several initial huddles
         for i in range(options["num_huddles"]):
-            get_or_create_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
+            get_or_create_direct_message_group(
+                random.sample(user_profiles_ids, random.randint(3, 4))
+            )
 
         # Create several initial pairs for personals
         personals_pairs = [

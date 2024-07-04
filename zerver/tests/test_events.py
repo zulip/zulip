@@ -598,14 +598,17 @@ class NormalActionsTest(BaseAction):
             is_embedded_update_only=False,
         )
 
-    def test_huddle_send_message_events(self) -> None:
-        huddle = [
+    def test_direct_message_group_send_message_events(self) -> None:
+        direct_message_group = [
             self.example_user("hamlet"),
             self.example_user("othello"),
         ]
         with self.verify_action():
-            self.send_huddle_message(
-                self.example_user("cordelia"), huddle, "hola", skip_capture_on_commit_callbacks=True
+            self.send_group_direct_message(
+                self.example_user("cordelia"),
+                direct_message_group,
+                "hola",
+                skip_capture_on_commit_callbacks=True,
             )
 
     def test_user_creation_events_on_sending_messages(self) -> None:
@@ -634,7 +637,7 @@ class NormalActionsTest(BaseAction):
         desdemona = self.example_user("desdemona")
 
         with self.verify_action(num_events=3) as events:
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 othello, [polonius, desdemona, bot], "hola", skip_capture_on_commit_callbacks=True
             )
         check_realm_user_add("events[0]", events[0])
@@ -1068,17 +1071,17 @@ class NormalActionsTest(BaseAction):
                 do_update_message_flags(user_profile, "remove", "read", [personal_message])
             check_update_message_flags_remove("events[0]", events[0])
 
-            huddle_message = self.send_huddle_message(
+            group_direct_message = self.send_group_direct_message(
                 from_user=self.example_user("cordelia"),
                 to_users=[user_profile, self.example_user("othello")],
                 content=content,
             )
 
             with self.verify_action(state_change_expected=True):
-                do_update_message_flags(user_profile, "add", "read", [huddle_message])
+                do_update_message_flags(user_profile, "add", "read", [group_direct_message])
 
             with self.verify_action(state_change_expected=True) as events:
-                do_update_message_flags(user_profile, "remove", "read", [huddle_message])
+                do_update_message_flags(user_profile, "remove", "read", [group_direct_message])
             check_update_message_flags_remove("events[0]", events[0])
 
     def test_send_message_to_existing_recipient(self) -> None:

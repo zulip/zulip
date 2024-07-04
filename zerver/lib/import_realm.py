@@ -83,7 +83,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_huddle_hash
+from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import AUTH_BACKEND_NAME_MAP
 
@@ -277,19 +277,21 @@ def fix_service_tokens(data: TableData, table: TableName) -> None:
         item["token"] = generate_api_key()
 
 
-def process_huddle_hash(data: TableData, table: TableName) -> None:
+def process_direct_message_group_hash(data: TableData, table: TableName) -> None:
     """
-    Build new huddle hashes with the updated ids of the users
+    Build new direct message group hashes with the updated ids of the users
     """
-    for huddle in data[table]:
-        user_id_list = id_map_to_list["huddle_to_user_list"][huddle["id"]]
-        huddle["huddle_hash"] = get_huddle_hash(user_id_list)
+    for direct_message_group in data[table]:
+        user_id_list = id_map_to_list["huddle_to_user_list"][direct_message_group["id"]]
+        direct_message_group["huddle_hash"] = get_direct_message_group_hash(user_id_list)
 
 
-def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
+def get_direct_message_groups_from_subscription(data: TableData, table: TableName) -> None:
     """
-    Extract the IDs of the user_profiles involved in a huddle from the subscription object
-    This helps to generate a unique huddle hash from the updated user_profile ids
+    Extract the IDs of the user_profiles involved in a direct message group from
+    the subscription object
+    This helps to generate a unique direct message group hash from the updated
+    user_profile ids
     """
     id_map_to_list["huddle_to_user_list"] = {
         value: [] for value in ID_MAP["recipient_to_huddle_map"].values()
@@ -297,8 +299,10 @@ def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
 
     for subscription in data[table]:
         if subscription["recipient"] in ID_MAP["recipient_to_huddle_map"]:
-            huddle_id = ID_MAP["recipient_to_huddle_map"][subscription["recipient"]]
-            id_map_to_list["huddle_to_user_list"][huddle_id].append(subscription["user_profile_id"])
+            direct_message_group_id = ID_MAP["recipient_to_huddle_map"][subscription["recipient"]]
+            id_map_to_list["huddle_to_user_list"][direct_message_group_id].append(
+                subscription["user_profile_id"]
+            )
 
 
 def fix_customprofilefield(data: TableData) -> None:
@@ -550,10 +554,10 @@ def re_map_foreign_keys_internal(
             elif related_table == "user_profile" and item["type"] == 1:
                 pass
             elif related_table == "huddle" and item["type"] == 3:
-                # save the recipient id with the huddle id, so that we can extract
-                # the user_profile ids involved in a huddle with the help of the
-                # subscription object
-                # check function 'get_huddles_from_subscription'
+                # save the recipient id with the direct message group id, so that
+                # we can extract the user_profile ids involved in a direct message
+                # group with the help of the subscription object
+                # check function 'get_direct_message_groups_from_subscription'
                 ID_MAP["recipient_to_huddle_map"][item["id"]] = lookup_table[old_id]
             else:
                 continue
@@ -672,9 +676,9 @@ def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
         if "recipient" in user_profile_dict:
             del user_profile_dict["recipient"]
 
-    for huddle_dict in data["zerver_huddle"]:
-        if "recipient" in huddle_dict:
-            del huddle_dict["recipient"]
+    for direct_message_group_dict in data["zerver_huddle"]:
+        if "recipient" in direct_message_group_dict:
+            del direct_message_group_dict["recipient"]
 
 
 def get_db_table(model_class: Any) -> str:
@@ -1226,10 +1230,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     if "zerver_huddle" in data:
         update_model_ids(Huddle, data, "huddle")
         # We don't import Huddle yet, since we don't have the data to
-        # compute huddle hashes until we've imported some of the
-        # tables below.
-        # We can't get huddle hashes without processing subscriptions
-        # first, during which get_huddles_from_subscription is called.
+        # compute direct message group hashes until we've imported some
+        # of the tables below.
+        # We can't get direct message group hashes without processing
+        # subscriptions first, during which
+        # get_direct_message_groups_from_subscription is called.
 
     re_map_foreign_keys(
         data,
@@ -1261,7 +1266,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     bulk_set_users_or_streams_recipient_fields(UserProfile, UserProfile.objects.filter(realm=realm))
 
     re_map_foreign_keys(data, "zerver_subscription", "user_profile", related_table="user_profile")
-    get_huddles_from_subscription(data, "zerver_subscription")
+    get_direct_message_groups_from_subscription(data, "zerver_subscription")
     re_map_foreign_keys(data, "zerver_subscription", "recipient", related_table="recipient")
     update_model_ids(Subscription, data, "subscription")
     fix_subscriptions_is_user_active_column(data, user_profiles, crossrealm_user_ids)
@@ -1307,14 +1312,14 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         )
 
     if "zerver_huddle" in data:
-        process_huddle_hash(data, "zerver_huddle")
+        process_direct_message_group_hash(data, "zerver_huddle")
         bulk_import_model(data, Huddle)
-        for huddle in Huddle.objects.filter(recipient=None):
+        for direct_message_group in Huddle.objects.filter(recipient=None):
             recipient = Recipient.objects.get(
-                type=Recipient.DIRECT_MESSAGE_GROUP, type_id=huddle.id
+                type=Recipient.DIRECT_MESSAGE_GROUP, type_id=direct_message_group.id
             )
-            huddle.recipient = recipient
-            huddle.save(update_fields=["recipient"])
+            direct_message_group.recipient = recipient
+            direct_message_group.save(update_fields=["recipient"])
 
     if "zerver_alertword" in data:
         re_map_foreign_keys(data, "zerver_alertword", "user_profile", related_table="user_profile")

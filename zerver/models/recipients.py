@@ -73,7 +73,7 @@ class Recipient(models.Model):
         return self._type_names[self.type]
 
 
-def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", int]:
+def get_direct_message_group_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", int]:
     from zerver.models import Subscription
 
     assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
@@ -87,7 +87,7 @@ def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", 
     )
 
 
-def bulk_get_huddle_user_ids(recipient_ids: List[int]) -> Dict[int, Set[int]]:
+def bulk_get_direct_message_group_user_ids(recipient_ids: List[int]) -> Dict[int, Set[int]]:
     """
     Takes a list of huddle-type recipient_ids, returns a dict
     mapping recipient id to list of user ids in the huddle.
@@ -133,13 +133,13 @@ class Huddle(models.Model):
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
 
-def get_huddle_hash(id_list: List[int]) -> str:
+def get_direct_message_group_hash(id_list: List[int]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
     return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
-def get_or_create_huddle(id_list: List[int]) -> Huddle:
+def get_or_create_direct_message_group(id_list: List[int]) -> Huddle:
     """
     Takes a list of user IDs and returns the Huddle object for the
     group consisting of these users. If the Huddle object does not
@@ -147,15 +147,17 @@ def get_or_create_huddle(id_list: List[int]) -> Huddle:
     """
     from zerver.models import Subscription, UserProfile
 
-    huddle_hash = get_huddle_hash(id_list)
+    direct_message_group_hash = get_direct_message_group_hash(id_list)
     with transaction.atomic():
-        (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
+        (direct_message_group, created) = Huddle.objects.get_or_create(
+            huddle_hash=direct_message_group_hash
+        )
         if created:
             recipient = Recipient.objects.create(
-                type_id=huddle.id, type=Recipient.DIRECT_MESSAGE_GROUP
+                type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP
             )
-            huddle.recipient = recipient
-            huddle.save(update_fields=["recipient"])
+            direct_message_group.recipient = recipient
+            direct_message_group.save(update_fields=["recipient"])
             subs_to_create = [
                 Subscription(
                     recipient=recipient,
@@ -167,4 +169,4 @@ def get_or_create_huddle(id_list: List[int]) -> Huddle:
                 .values_list("id", "is_active")
             ]
             Subscription.objects.bulk_create(subs_to_create)
-        return huddle
+        return direct_message_group

@@ -1039,7 +1039,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.type_id, user_profile.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
-    def test_receive_missed_huddle_message_email_messages(self) -> None:
+    def test_receive_missed_group_direct_message_email_messages(self) -> None:
         # Build dummy messages for message notification email reply.
         # Have Othello send Iago and Cordelia a group direct message.
         # Cordelia will reply via email Iago and Othello will receive
@@ -1065,9 +1065,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedHuddleMessageEmailMessages body")
+        incoming_valid_message.set_content("TestMissedGroupDirectMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedHuddleMessageEmailMessages subject"
+        incoming_valid_message["Subject"] = "TestMissedGroupDirectMessageEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("cordelia")
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("cordelia")
@@ -1079,7 +1079,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         user_profile = self.example_user("iago")
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages body")
+        self.assertEqual(message.content, "TestMissedGroupDirectMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
@@ -1087,7 +1087,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         user_profile = self.example_user("othello")
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages body")
+        self.assertEqual(message.content, "TestMissedGroupDirectMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
