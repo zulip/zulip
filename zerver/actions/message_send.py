@@ -105,7 +105,7 @@ from zerver.models import (
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import PrivateMessagePolicyEnum
-from zerver.models.recipients import get_huddle_user_ids
+from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
@@ -374,7 +374,7 @@ def get_recipient_info(
             )
 
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        message_to_user_id_set = set(get_huddle_user_ids(recipient))
+        message_to_user_id_set = set(get_direct_message_group_user_ids(recipient))
 
     else:
         raise ValueError("Bad recipient type")
@@ -547,7 +547,7 @@ def get_service_bot_events(
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
             trigger = "mention"
-        # Direct message triggers for personal and huddle messages
+        # Direct message triggers for personal and group direct messages
         elif not is_stream and user_profile_id in active_user_ids:
             trigger = NotificationTriggers.DIRECT_MESSAGE
         else:
@@ -1222,9 +1222,9 @@ def do_send_messages(
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
     if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        # For huddle messages, we use a 10-second window because the
-        # timestamps aren't guaranteed to actually match between two
-        # copies of the same message.
+        # For group direct messages, we use a 10-second window because
+        # the timestamps aren't guaranteed to actually match between
+        # two copies of the same message.
         time_window = timedelta(seconds=10)
     else:
         time_window = timedelta(seconds=0)
@@ -1989,7 +1989,7 @@ def internal_send_stream_message_by_name(
     return sent_message_result.message_id
 
 
-def internal_prep_huddle_message(
+def internal_prep_group_direct_message(
     realm: Realm,
     sender: UserProfile,
     content: str,
@@ -2011,7 +2011,7 @@ def internal_prep_huddle_message(
     )
 
 
-def internal_send_huddle_message(
+def internal_send_group_direct_message(
     realm: Realm,
     sender: UserProfile,
     content: str,
@@ -2019,7 +2019,7 @@ def internal_send_huddle_message(
     emails: Optional[List[str]] = None,
     recipient_users: Optional[List[UserProfile]] = None,
 ) -> Optional[int]:
-    message = internal_prep_huddle_message(
+    message = internal_prep_group_direct_message(
         realm, sender, content, emails=emails, recipient_users=recipient_users
     )
 

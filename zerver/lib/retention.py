@@ -216,7 +216,7 @@ def move_expired_messages_to_archive_by_recipient(
     )
 
 
-def move_expired_personal_and_huddle_messages_to_archive(
+def move_expired_direct_messages_to_archive(
     realm: Realm,
     chunk_size: int = MESSAGE_BATCH_SIZE,
 ) -> int:
@@ -226,7 +226,7 @@ def move_expired_personal_and_huddle_messages_to_archive(
 
     recipient_types = (Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP)
 
-    # Archive expired personal and huddle Messages in the realm, including cross-realm messages.
+    # Archive expired direct Messages in the realm, including cross-realm messages.
     # Uses index: zerver_message_realm_recipient_date_sent
     query = SQL(
         """
@@ -356,11 +356,9 @@ def archive_messages_by_recipient(
     )
 
 
-def archive_personal_and_huddle_messages(
-    realm: Realm, chunk_size: int = MESSAGE_BATCH_SIZE
-) -> None:
-    logger.info("Archiving personal and huddle messages for realm %s", realm.string_id)
-    message_count = move_expired_personal_and_huddle_messages_to_archive(realm, chunk_size)
+def archive_direct_messages(realm: Realm, chunk_size: int = MESSAGE_BATCH_SIZE) -> None:
+    logger.info("Archiving personal and group direct messages for realm %s", realm.string_id)
+    message_count = move_expired_direct_messages_to_archive(realm, chunk_size)
     logger.info("Done. Archived %s messages", message_count)
 
 
@@ -400,7 +398,7 @@ def archive_messages(chunk_size: int = MESSAGE_BATCH_SIZE) -> None:
     for realm, streams in get_realms_and_streams_for_archiving():
         archive_stream_messages(realm, streams, chunk_size=STREAM_MESSAGE_BATCH_SIZE)
         if realm.message_retention_days != -1:
-            archive_personal_and_huddle_messages(realm, chunk_size)
+            archive_direct_messages(realm, chunk_size)
 
         # Messages have been archived for the realm, now we can clean up attachments:
         delete_expired_attachments(realm)

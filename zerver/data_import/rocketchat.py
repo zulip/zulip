@@ -14,8 +14,8 @@ from zerver.data_import.import_util import (
     SubscriberHandler,
     ZerverFieldsT,
     build_attachment,
-    build_huddle,
-    build_huddle_subscriptions,
+    build_direct_message_group,
+    build_direct_message_group_subscriptions,
     build_message,
     build_personal_subscriptions,
     build_realm,
@@ -238,29 +238,29 @@ def convert_stream_subscription_data(
         subscriber_handler.set_info(users=users, stream_id=stream["id"])
 
 
-def convert_huddle_data(
+def convert_direct_message_group_data(
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
     huddle_id_mapper: IdMapper,
     user_id_mapper: IdMapper,
     subscriber_handler: SubscriberHandler,
 ) -> List[ZerverFieldsT]:
-    zerver_huddle: List[ZerverFieldsT] = []
+    zerver_direct_message_group: List[ZerverFieldsT] = []
 
     for rc_huddle_id in huddle_id_to_huddle_map:
-        huddle_id = huddle_id_mapper.get(rc_huddle_id)
-        huddle = build_huddle(huddle_id)
-        zerver_huddle.append(huddle)
+        direct_message_group_id = huddle_id_mapper.get(rc_huddle_id)
+        direct_message_group = build_direct_message_group(direct_message_group_id)
+        zerver_direct_message_group.append(direct_message_group)
 
-        huddle_dict = huddle_id_to_huddle_map[rc_huddle_id]
-        huddle_user_ids = set()
-        for rc_user_id in huddle_dict["uids"]:
-            huddle_user_ids.add(user_id_mapper.get(rc_user_id))
+        direct_message_group_dict = huddle_id_to_huddle_map[rc_huddle_id]
+        direct_message_group_user_ids = set()
+        for rc_user_id in direct_message_group_dict["uids"]:
+            direct_message_group_user_ids.add(user_id_mapper.get(rc_user_id))
         subscriber_handler.set_info(
-            users=huddle_user_ids,
-            huddle_id=huddle_id,
+            users=direct_message_group_user_ids,
+            direct_message_group_id=direct_message_group_id,
         )
 
-    return zerver_huddle
+    return zerver_direct_message_group
 
 
 def build_custom_emoji(
@@ -679,8 +679,8 @@ def process_messages(
             # Message is in a 1:1 or group direct message.
             rc_channel_id = message["rid"]
             if rc_channel_id in huddle_id_to_huddle_map:
-                huddle_id = huddle_id_mapper.get(rc_channel_id)
-                message_dict["recipient_id"] = huddle_id_to_recipient_id[huddle_id]
+                direct_message_group_id = huddle_id_mapper.get(rc_channel_id)
+                message_dict["recipient_id"] = huddle_id_to_recipient_id[direct_message_group_id]
             else:
                 rc_member_ids = direct_id_to_direct_map[rc_channel_id]["uids"]
 
@@ -876,7 +876,7 @@ def map_receiver_id_to_recipient_id(
     huddle_id_to_recipient_id: Dict[int, int],
     user_id_to_recipient_id: Dict[int, int],
 ) -> None:
-    # receiver_id represents stream_id/huddle_id/user_id
+    # receiver_id represents stream_id/direct_message_group_id/user_id
     for recipient in zerver_recipient:
         if recipient["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
@@ -886,16 +886,18 @@ def map_receiver_id_to_recipient_id(
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
-# This is inspired by get_huddle_hash from zerver/models/recipients.py. It
-# expects strings identifying Rocket.Chat users, like
-# `LdBZ7kPxtKESyHPEe`, not integer IDs.
+# This is inspired by get_direct_message_group_hash
+# from zerver/models/recipients.py. It expects strings
+# identifying Rocket.Chat users, like `LdBZ7kPxtKESyHPEe`,
+# not integer IDs.
 #
 # Its purpose is to be a stable map usable for deduplication/merging
 # of Rocket.Chat threads involving the same set of people. Thus, its
 # only important property is that if two sets of users S and T are
-# equal and thus will have the same actual huddle hash once imported,
-# that get_string_huddle_hash(S) = get_string_huddle_hash(T).
-def get_string_huddle_hash(id_list: List[str]) -> str:
+# equal and thus will have the same actual direct message group hash
+# once imported, that get_string_direct_message_group_hash(S) =
+# get_string_direct_message_group_hash(T).
+def get_string_direct_message_group_hash(id_list: List[str]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
     return hashlib.sha1(hash_key.encode()).hexdigest()
@@ -910,15 +912,17 @@ def categorize_channels_and_map_with_id(
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
     livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
 ) -> None:
-    huddle_hashed_channels: Dict[str, Any] = {}
+    direct_message_group_hashed_channels: Dict[str, Any] = {}
     for channel in channel_data:
         if channel.get("prid"):
             dsc_id_to_dsc_map[channel["_id"]] = channel
         elif channel["t"] == "d":
             if len(channel["uids"]) > 2:
-                huddle_hash = get_string_huddle_hash(channel["uids"])
+                direct_message_group_hash = get_string_direct_message_group_hash(channel["uids"])
                 logging.info(
-                    "Huddle channel found. UIDs: %s -> hash %s", channel["uids"], huddle_hash
+                    "Huddle channel found. UIDs: %s -> hash %s",
+                    channel["uids"],
+                    direct_message_group_hash,
                 )
 
                 if channel["msgs"] == 0:  # nocoverage
@@ -926,25 +930,29 @@ def categorize_channels_and_map_with_id(
                     # contain duplicates of real huddles, with no
                     # messages in the duplicate.  We ignore these
                     # minor database corruptions in the Rocket.Chat
-                    # export. Doing so is safe, because a huddle with no
-                    # message history has no value in Zulip's data
-                    # model.
-                    logging.debug("Skipping huddle with 0 messages: %s", channel)
-                elif huddle_hash in huddle_hashed_channels:  # nocoverage
+                    # export. Doing so is safe, because a direct
+                    # message group with no message history has no
+                    # value in Zulip's data model.
+                    logging.debug("Skipping direct message group with 0 messages: %s", channel)
+                elif (
+                    direct_message_group_hash in direct_message_group_hashed_channels
+                ):  # nocoverage
                     logging.info(
-                        "Mapping huddle hash %s to existing channel: %s",
-                        huddle_hash,
-                        huddle_hashed_channels[huddle_hash],
+                        "Mapping direct message group hash %s to existing channel: %s",
+                        direct_message_group_hash,
+                        direct_message_group_hashed_channels[direct_message_group_hash],
                     )
-                    huddle_id_to_huddle_map[channel["_id"]] = huddle_hashed_channels[huddle_hash]
+                    huddle_id_to_huddle_map[channel["_id"]] = direct_message_group_hashed_channels[
+                        direct_message_group_hash
+                    ]
 
-                    # Ideally, we'd merge the duplicate huddles. Doing
-                    # so correctly requires special handling in
-                    # convert_huddle_data() and on the message import
-                    # side as well, since those appear to be mapped
-                    # via rocketchat channel IDs and not all of that
-                    # information is resolved via the
-                    # huddle_id_to_huddle_map.
+                    # Ideally, we'd merge the duplicate direct message
+                    # groups. Doing so correctly requires special
+                    # handling in convert_direct_message_group_data()
+                    # and on the message import side as well, since
+                    # those appear to be mapped via rocketchat channel
+                    # IDs and not all of that information is resolved
+                    # via the huddle_id_to_huddle_map.
                     #
                     # For now, just throw an exception here rather
                     # than during the import process.
@@ -953,7 +961,7 @@ def categorize_channels_and_map_with_id(
                     )
                 else:
                     huddle_id_to_huddle_map[channel["_id"]] = channel
-                    huddle_hashed_channels[huddle_hash] = channel
+                    direct_message_group_hashed_channels[direct_message_group_hash] = channel
             else:
                 direct_id_to_direct_map[channel["_id"]] = channel
         elif channel["t"] == "l":
@@ -1114,20 +1122,20 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         subscriber_handler=subscriber_handler,
     )
 
-    zerver_huddle = convert_huddle_data(
+    zerver_direct_message_group = convert_direct_message_group_data(
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         huddle_id_mapper=huddle_id_mapper,
         user_id_mapper=user_id_mapper,
         subscriber_handler=subscriber_handler,
     )
-    realm["zerver_huddle"] = zerver_huddle
+    realm["zerver_huddle"] = zerver_direct_message_group
 
     all_users = user_handler.get_all_users()
 
     zerver_recipient = build_recipients(
         zerver_userprofile=all_users,
         zerver_stream=zerver_stream,
-        zerver_huddle=zerver_huddle,
+        zerver_direct_message_group=zerver_direct_message_group,
     )
     realm["zerver_recipient"] = zerver_recipient
 
@@ -1137,17 +1145,19 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         zerver_stream=zerver_stream,
     )
 
-    huddle_subscriptions = build_huddle_subscriptions(
+    direct_message_group_subscriptions = build_direct_message_group_subscriptions(
         get_users=subscriber_handler.get_users,
         zerver_recipient=zerver_recipient,
-        zerver_huddle=zerver_huddle,
+        zerver_direct_message_group=zerver_direct_message_group,
     )
 
     personal_subscriptions = build_personal_subscriptions(
         zerver_recipient=zerver_recipient,
     )
 
-    zerver_subscription = personal_subscriptions + stream_subscriptions + huddle_subscriptions
+    zerver_subscription = (
+        personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
+    )
     realm["zerver_subscription"] = zerver_subscription
 
     zerver_realmemoji = build_custom_emoji(

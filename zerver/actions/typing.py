@@ -47,15 +47,15 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
 
     # If any of the user_ids being sent in are invalid, we will
     # just reject the whole request, since a partial list of user_ids
-    # can create confusion related to huddles.  Plus it's a good
-    # sign that a client is confused (or possibly even malicious) if
-    # we get bad user_ids.
+    # can create confusion related to direct message groups. Plus it's
+    # a good sign that a client is confused (or possibly even malicious)
+    # if we get bad user_ids.
     user_profiles = []
     for user_id in user_ids:
         try:
             # We include cross-bot realms as possible recipients,
-            # so that clients can know which huddle conversation
-            # is relevant here.
+            # so that clients can know which direct message group
+            # conversation is relevant here.
             user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, sender.realm)
         except UserProfile.DoesNotExist:
             raise JsonableError(_("Invalid user ID {user_id}").format(user_id=user_id))

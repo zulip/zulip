@@ -135,7 +135,7 @@ def bulk_fetch_user_display_recipients(
     """
 
     from zerver.models import Recipient
-    from zerver.models.recipients import bulk_get_huddle_user_ids
+    from zerver.models.recipients import bulk_get_direct_message_group_user_ids
 
     if len(recipient_tuples) == 0:
         return {}
@@ -144,12 +144,16 @@ def bulk_fetch_user_display_recipients(
     get_type = lambda tup: tup[1]
 
     personal_tuples = [tup for tup in recipient_tuples if get_type(tup) == Recipient.PERSONAL]
-    huddle_tuples = [
+    direct_message_group_tuples = [
         tup for tup in recipient_tuples if get_type(tup) == Recipient.DIRECT_MESSAGE_GROUP
     ]
 
-    huddle_recipient_ids = [get_recipient_id(tup) for tup in huddle_tuples]
-    huddle_recipient_id_to_user_ids = bulk_get_huddle_user_ids(huddle_recipient_ids)
+    direct_message_group_recipient_ids = [
+        get_recipient_id(tup) for tup in direct_message_group_tuples
+    ]
+    huddle_recipient_id_to_user_ids = bulk_get_direct_message_group_user_ids(
+        direct_message_group_recipient_ids
+    )
 
     # Find all user ids whose UserProfiles we will need to fetch:
     user_ids_to_fetch: Set[int] = set()
@@ -157,9 +161,9 @@ def bulk_fetch_user_display_recipients(
     for ignore_recipient_id, ignore_recipient_type, user_id in personal_tuples:
         user_ids_to_fetch.add(user_id)
 
-    for recipient_id in huddle_recipient_ids:
-        huddle_user_ids = huddle_recipient_id_to_user_ids[recipient_id]
-        user_ids_to_fetch |= huddle_user_ids
+    for recipient_id in direct_message_group_recipient_ids:
+        direct_message_group_user_ids = huddle_recipient_id_to_user_ids[recipient_id]
+        user_ids_to_fetch |= direct_message_group_user_ids
 
     # Fetch the needed user dictionaries.
     user_display_recipients = bulk_fetch_single_user_display_recipients(list(user_ids_to_fetch))
@@ -170,7 +174,7 @@ def bulk_fetch_user_display_recipients(
         display_recipients = [user_display_recipients[user_id]]
         result[recipient_id] = display_recipients
 
-    for recipient_id in huddle_recipient_ids:
+    for recipient_id in direct_message_group_recipient_ids:
         user_ids = sorted(huddle_recipient_id_to_user_ids[recipient_id])
         display_recipients = [user_display_recipients[user_id] for user_id in user_ids]
         result[recipient_id] = display_recipients
@@ -191,15 +195,15 @@ def bulk_fetch_display_recipients(
     stream_recipients = {
         recipient for recipient in recipient_tuples if recipient[1] == Recipient.STREAM
     }
-    personal_and_huddle_recipients = recipient_tuples - stream_recipients
+    direct_message_recipients = recipient_tuples - stream_recipients
 
     stream_display_recipients = bulk_fetch_stream_names(stream_recipients)
-    personal_and_huddle_display_recipients = bulk_fetch_user_display_recipients(
-        personal_and_huddle_recipients
+    direct_message_display_recipients = bulk_fetch_user_display_recipients(
+        direct_message_recipients
     )
 
     # Glue the dicts together and return:
-    return {**stream_display_recipients, **personal_and_huddle_display_recipients}
+    return {**stream_display_recipients, **direct_message_display_recipients}
 
 
 @return_same_value_during_entire_request

@@ -886,7 +886,7 @@ def get_realm_config() -> Config:
             "zerver_huddle",
         ],
         virtual_parent=user_profile_config,
-        custom_fetch=custom_fetch_huddle_objects,
+        custom_fetch=custom_fetch_direct_message_groups,
     )
 
     # Now build permanent tables from our temp tables.
@@ -1118,7 +1118,7 @@ def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
     response["zerver_reaction"] = make_raw(list(query))
 
 
-def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
+def custom_fetch_direct_message_groups(response: TableData, context: Context) -> None:
     realm = context["realm"]
     user_profile_ids = {
         r["id"] for r in response["zerver_userprofile"] + response["zerver_userprofile_mirrordummy"]

@@ -179,7 +179,7 @@ class TutorialTests(ZulipTestCase):
         bot = get_system_bot(settings.WELCOME_BOT, user1.realm_id)
         content = "whatever"
         self.login_user(user1)
-        self.send_huddle_message(user1, [bot, user2], content)
+        self.send_group_direct_message(user1, [bot, user2], content)
         user1_messages = message_stream_count(user1)
         self.assertEqual(most_recent_message(user1).content, content)
         # Welcome bot should still respond to initial direct message

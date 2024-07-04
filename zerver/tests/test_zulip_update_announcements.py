@@ -19,7 +19,7 @@ from zerver.lib.zulip_update_announcements import (
 )
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
-from zerver.models.recipients import Recipient, get_huddle_user_ids
+from zerver.models.recipients import Recipient, get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 
@@ -77,7 +77,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             self.assertEqual(group_direct_message.sender, notification_bot)
             self.assertEqual(group_direct_message.date_sent, now)
             self.assertEqual(
-                set(get_huddle_user_ids(group_direct_message.recipient)),
+                set(get_direct_message_group_user_ids(group_direct_message.recipient)),
                 expected_group_direct_message_user_ids,
             )
             self.assertEqual(realm.zulip_update_announcements_level, 0)
@@ -270,7 +270,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
         self.assertEqual(group_direct_message.sender, notification_bot)
         self.assertEqual(group_direct_message.date_sent, now)
         self.assertEqual(
-            set(get_huddle_user_ids(group_direct_message.recipient)),
+            set(get_direct_message_group_user_ids(group_direct_message.recipient)),
             expected_group_direct_message_user_ids,
         )
         self.assertEqual(realm.zulip_update_announcements_level, 0)

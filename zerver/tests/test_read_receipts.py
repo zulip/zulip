@@ -55,12 +55,12 @@ class TestReadReceipts(ZulipTestCase):
         self.assertTrue(hamlet.id in result.json()["user_ids"])
         self.assertTrue(sender.id not in result.json()["user_ids"])
 
-    def test_huddle_message(self) -> None:
+    def test_group_direct_message(self) -> None:
         hamlet = self.example_user("hamlet")
         sender = self.example_user("othello")
         cordelia = self.example_user("cordelia")
 
-        message_id = self.send_huddle_message(sender, [hamlet, cordelia])
+        message_id = self.send_group_direct_message(sender, [hamlet, cordelia])
         self.login("hamlet")
 
         result = self.client_get(f"/json/messages/{message_id}/read_receipts")

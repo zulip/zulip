@@ -581,14 +581,14 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         self.assertEqual(messages[0]["display_recipient"], "Verona")
         self.assertEqual(messages[1]["display_recipient"], "Denmark")
 
-    def test_display_recipient_huddle(self) -> None:
+    def test_display_recipient_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         iago = self.example_user("iago")
         message_ids = [
-            self.send_huddle_message(hamlet, [cordelia, othello], "test"),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], "test"),
+            self.send_group_direct_message(hamlet, [cordelia, othello], "test"),
+            self.send_group_direct_message(cordelia, [hamlet, othello, iago], "test"),
         ]
 
         messages = messages_for_ids(
@@ -619,11 +619,11 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         self.subscribe(hamlet, "Scotland")
 
         message_ids = [
-            self.send_huddle_message(hamlet, [cordelia, othello], "test"),
+            self.send_group_direct_message(hamlet, [cordelia, othello], "test"),
             self.send_stream_message(cordelia, "Verona", content="test"),
             self.send_personal_message(hamlet, cordelia, "test"),
             self.send_stream_message(cordelia, "Denmark", content="test"),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], "test"),
+            self.send_group_direct_message(cordelia, [hamlet, othello, iago], "test"),
             self.send_personal_message(cordelia, othello, "test"),
         ]
 

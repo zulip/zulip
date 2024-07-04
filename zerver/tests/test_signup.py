@@ -78,7 +78,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_huddle_user_ids
+from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
@@ -2899,7 +2899,7 @@ class UserSignUpTest(ZulipTestCase):
                 last_message.content,
             )
             self.assertEqual(
-                set(get_huddle_user_ids(last_message.recipient)),
+                set(get_direct_message_group_user_ids(last_message.recipient)),
                 expected_group_direct_message_user_ids,
             )
 

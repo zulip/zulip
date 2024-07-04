@@ -81,14 +81,14 @@ class RawUnreadDirectMessageDict(TypedDict):
     other_user_id: int
 
 
-class RawUnreadHuddleDict(TypedDict):
+class RawUnreadDirectMessageGroupDict(TypedDict):
     user_ids_string: str
 
 
 class RawUnreadMessagesResult(TypedDict):
     pm_dict: Dict[int, RawUnreadDirectMessageDict]
     stream_dict: Dict[int, RawUnreadStreamDict]
-    huddle_dict: Dict[int, RawUnreadHuddleDict]
+    huddle_dict: Dict[int, RawUnreadDirectMessageGroupDict]
     mentions: Set[int]
     muted_stream_ids: Set[int]
     unmuted_stream_msgs: Set[int]
@@ -108,7 +108,7 @@ class UnreadDirectMessageInfo(TypedDict):
     unread_message_ids: List[int]
 
 
-class UnreadHuddleInfo(TypedDict):
+class UnreadDirectMessageGroupInfo(TypedDict):
     user_ids_string: str
     unread_message_ids: List[int]
 
@@ -116,7 +116,7 @@ class UnreadHuddleInfo(TypedDict):
 class UnreadMessagesResult(TypedDict):
     pms: List[UnreadDirectMessageInfo]
     streams: List[UnreadStreamInfo]
-    huddles: List[UnreadHuddleInfo]
+    huddles: List[UnreadDirectMessageGroupInfo]
     mentions: List[int]
     count: int
     old_unreads_missing: bool
@@ -519,7 +519,7 @@ def get_messages_with_usermessage_rows_for_user(
     ).values_list("message_id", flat=True)
 
 
-def huddle_users(recipient_id: int) -> str:
+def direct_message_group_users(recipient_id: int) -> str:
     display_recipient: List[UserDisplayRecipient] = get_display_recipient_by_id(
         recipient_id,
         Recipient.DIRECT_MESSAGE_GROUP,
@@ -624,7 +624,7 @@ def extract_unread_data_from_um_rows(
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
     muted_stream_ids: Set[int] = set()
     unmuted_stream_msgs: Set[int] = set()
-    huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
+    direct_message_group_dict: Dict[int, RawUnreadDirectMessageGroupDict] = {}
     mentions: Set[int] = set()
     total_unreads = 0
 
@@ -633,7 +633,7 @@ def extract_unread_data_from_um_rows(
         stream_dict=stream_dict,
         muted_stream_ids=muted_stream_ids,
         unmuted_stream_msgs=unmuted_stream_msgs,
-        huddle_dict=huddle_dict,
+        huddle_dict=direct_message_group_dict,
         mentions=mentions,
         old_unreads_missing=False,
     )
@@ -668,14 +668,14 @@ def extract_unread_data_from_um_rows(
 
         return False
 
-    huddle_cache: Dict[int, str] = {}
+    direct_message_group_cache: Dict[int, str] = {}
 
-    def get_huddle_users(recipient_id: int) -> str:
-        if recipient_id in huddle_cache:
-            return huddle_cache[recipient_id]
+    def get_direct_message_group_users(recipient_id: int) -> str:
+        if recipient_id in direct_message_group_cache:
+            return direct_message_group_cache[recipient_id]
 
-        user_ids_string = huddle_users(recipient_id)
-        huddle_cache[recipient_id] = user_ids_string
+        user_ids_string = direct_message_group_users(recipient_id)
+        direct_message_group_cache[recipient_id] = user_ids_string
         return user_ids_string
 
     for row in rows:
@@ -706,8 +706,8 @@ def extract_unread_data_from_um_rows(
             )
 
         elif msg_type == Recipient.DIRECT_MESSAGE_GROUP:
-            user_ids_string = get_huddle_users(recipient_id)
-            huddle_dict[message_id] = dict(
+            user_ids_string = get_direct_message_group_users(recipient_id)
+            direct_message_group_dict[message_id] = dict(
                 user_ids_string=user_ids_string,
             )
 
@@ -791,12 +791,14 @@ def aggregate_pms(
     return [lookup_dict[k] for k in sorted_keys]
 
 
-def aggregate_huddles(*, input_dict: Dict[int, RawUnreadHuddleDict]) -> List[UnreadHuddleInfo]:
-    lookup_dict: Dict[str, UnreadHuddleInfo] = {}
+def aggregate_direct_message_groups(
+    *, input_dict: Dict[int, RawUnreadDirectMessageGroupDict]
+) -> List[UnreadDirectMessageGroupInfo]:
+    lookup_dict: Dict[str, UnreadDirectMessageGroupInfo] = {}
     for message_id, attribute_dict in input_dict.items():
         user_ids_string = attribute_dict["user_ids_string"]
         if user_ids_string not in lookup_dict:
-            obj = UnreadHuddleInfo(
+            obj = UnreadDirectMessageGroupInfo(
                 user_ids_string=user_ids_string,
                 unread_message_ids=[],
             )
@@ -817,19 +819,19 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
     pm_dict = raw_data["pm_dict"]
     stream_dict = raw_data["stream_dict"]
     unmuted_stream_msgs = raw_data["unmuted_stream_msgs"]
-    huddle_dict = raw_data["huddle_dict"]
+    direct_message_group_dict = raw_data["huddle_dict"]
     mentions = list(raw_data["mentions"])
 
-    count = len(pm_dict) + len(unmuted_stream_msgs) + len(huddle_dict)
+    count = len(pm_dict) + len(unmuted_stream_msgs) + len(direct_message_group_dict)
 
     pm_objects = aggregate_pms(input_dict=pm_dict)
     stream_objects = aggregate_streams(input_dict=stream_dict)
-    huddle_objects = aggregate_huddles(input_dict=huddle_dict)
+    direct_message_groups = aggregate_direct_message_groups(input_dict=direct_message_group_dict)
 
     result: UnreadMessagesResult = dict(
         pms=pm_objects,
         streams=stream_objects,
-        huddles=huddle_objects,
+        huddles=direct_message_groups,
         mentions=mentions,
         count=count,
         old_unreads_missing=raw_data["old_unreads_missing"],
@@ -892,7 +894,7 @@ def apply_unread_message_event(
         user_ids = sorted(user_ids)
         user_ids_string = ",".join(str(uid) for uid in user_ids)
 
-        state["huddle_dict"][message_id] = RawUnreadHuddleDict(
+        state["huddle_dict"][message_id] = RawUnreadDirectMessageGroupDict(
             user_ids_string=user_ids_string,
         )
 
@@ -993,7 +995,7 @@ def add_message_to_unread_msgs(
         else:
             user_ids.append(my_user_id)
             user_ids_string = ",".join(str(user_id) for user_id in sorted(user_ids))
-            state["huddle_dict"][message_id] = RawUnreadHuddleDict(
+            state["huddle_dict"][message_id] = RawUnreadDirectMessageGroupDict(
                 user_ids_string=user_ids_string,
             )
     elif message_details["type"] == "stream":

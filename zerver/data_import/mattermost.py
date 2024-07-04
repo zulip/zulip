@@ -21,8 +21,8 @@ from zerver.data_import.import_util import (
     SubscriberHandler,
     ZerverFieldsT,
     build_attachment,
-    build_huddle,
-    build_huddle_subscriptions,
+    build_direct_message_group,
+    build_direct_message_group_subscriptions,
     build_message,
     build_personal_subscriptions,
     build_realm,
@@ -232,17 +232,18 @@ def convert_channel_data(
     return streams
 
 
-def generate_huddle_name(huddle_members: List[str]) -> str:
+def generate_direct_message_group_name(direct_message_group_members: List[str]) -> str:
     # Simple hash function to generate a unique hash key for the
-    # members of a huddle.  Needs to be consistent only within the
-    # lifetime of export tool run, as it doesn't appear in the output.
+    # members of a direct_message_group.  Needs to be consistent
+    # only within the lifetime of export tool run, as it doesn't
+    # appear in the output.
     import hashlib
 
-    return hashlib.md5("".join(sorted(huddle_members)).encode()).hexdigest()
+    return hashlib.md5("".join(sorted(direct_message_group_members)).encode()).hexdigest()
 
 
-def convert_huddle_data(
-    huddle_data: List[ZerverFieldsT],
+def convert_direct_message_group_data(
+    direct_message_group_data: List[ZerverFieldsT],
     user_data_map: Dict[str, Dict[str, Any]],
     subscriber_handler: SubscriberHandler,
     huddle_id_mapper: IdMapper,
@@ -250,21 +251,23 @@ def convert_huddle_data(
     realm_id: int,
     team_name: str,
 ) -> List[ZerverFieldsT]:
-    zerver_huddle = []
-    for huddle in huddle_data:
-        if len(huddle["members"]) > 2:
-            huddle_name = generate_huddle_name(huddle["members"])
-            huddle_id = huddle_id_mapper.get(huddle_name)
-            huddle_dict = build_huddle(huddle_id)
-            huddle_user_ids = set()
-            for username in huddle["members"]:
-                huddle_user_ids.add(user_id_mapper.get(username))
-            subscriber_handler.set_info(
-                users=huddle_user_ids,
-                huddle_id=huddle_id,
+    zerver_direct_message_group = []
+    for direct_message_group in direct_message_group_data:
+        if len(direct_message_group["members"]) > 2:
+            direct_message_group_name = generate_direct_message_group_name(
+                direct_message_group["members"]
             )
-            zerver_huddle.append(huddle_dict)
-    return zerver_huddle
+            direct_message_group_id = huddle_id_mapper.get(direct_message_group_name)
+            direct_message_group_dict = build_direct_message_group(direct_message_group_id)
+            direct_message_group_user_ids = set()
+            for username in direct_message_group["members"]:
+                direct_message_group_user_ids.add(user_id_mapper.get(username))
+            subscriber_handler.set_info(
+                users=direct_message_group_user_ids,
+                direct_message_group_id=direct_message_group_id,
+            )
+            zerver_direct_message_group.append(direct_message_group_dict)
+    return zerver_direct_message_group
 
 
 def build_reactions(
@@ -591,12 +594,12 @@ def process_posts(
         if "channel" in post_dict:
             message_dict["channel_name"] = post_dict["channel"]
         elif "channel_members" in post_dict:
-            # This case is for handling posts from direct messages and huddles,
-            # not channels. Direct messages and huddles are known as direct_channels
-            # in Slack and hence the name channel_members.
+            # This case is for handling posts from direct messages and direct message,
+            # groups not channels. Direct messages and direct message groups are known
+            # as direct_channels in Slack and hence the name channel_members.
             channel_members = post_dict["channel_members"]
             if len(channel_members) > 2:
-                message_dict["huddle_name"] = generate_huddle_name(channel_members)
+                message_dict["huddle_name"] = generate_direct_message_group_name(channel_members)
             elif len(channel_members) == 2:
                 message_dict["pm_members"] = channel_members
         else:
@@ -697,7 +700,7 @@ def write_message_data(
     else:
         post_types = ["channel_post"]
         logging.warning(
-            "Skipping importing huddles and DMs since there are multiple teams in the export"
+            "Skipping importing direct message groups and DMs since there are multiple teams in the export"
         )
 
     for post_type in post_types:
@@ -924,10 +927,10 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         )
         realm["zerver_stream"] = zerver_stream
 
-        zerver_huddle: List[ZerverFieldsT] = []
+        zerver_direct_message_group: List[ZerverFieldsT] = []
         if len(mattermost_data["team"]) == 1:
-            zerver_huddle = convert_huddle_data(
-                huddle_data=mattermost_data["direct_channel"],
+            zerver_direct_message_group = convert_direct_message_group_data(
+                direct_message_group_data=mattermost_data["direct_channel"],
                 user_data_map=username_to_user,
                 subscriber_handler=subscriber_handler,
                 huddle_id_mapper=huddle_id_mapper,
@@ -935,14 +938,14 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
                 realm_id=realm_id,
                 team_name=team_name,
             )
-            realm["zerver_huddle"] = zerver_huddle
+            realm["zerver_huddle"] = zerver_direct_message_group
 
         all_users = user_handler.get_all_users()
 
         zerver_recipient = build_recipients(
             zerver_userprofile=all_users,
             zerver_stream=zerver_stream,
-            zerver_huddle=zerver_huddle,
+            zerver_direct_message_group=zerver_direct_message_group,
         )
         realm["zerver_recipient"] = zerver_recipient
 
@@ -952,10 +955,10 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             zerver_stream=zerver_stream,
         )
 
-        huddle_subscriptions = build_huddle_subscriptions(
+        direct_message_group_subscriptions = build_direct_message_group_subscriptions(
             get_users=subscriber_handler.get_users,
             zerver_recipient=zerver_recipient,
-            zerver_huddle=zerver_huddle,
+            zerver_direct_message_group=zerver_direct_message_group,
         )
 
         personal_subscriptions = build_personal_subscriptions(
@@ -963,8 +966,10 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         )
 
         # Mattermost currently supports only exporting messages from channels.
-        # Personal messages and huddles are not exported.
-        zerver_subscription = personal_subscriptions + stream_subscriptions + huddle_subscriptions
+        # Personal and Group Direct messages are not exported.
+        zerver_subscription = (
+            personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
+        )
         realm["zerver_subscription"] = zerver_subscription
 
         zerver_realmemoji = write_emoticon_data(

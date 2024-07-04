@@ -231,18 +231,20 @@ class MutedUsersTests(ZulipTestCase):
 
         # Have Cordelia send messages to Hamlet and Othello.
         stream_message = self.send_stream_message(cordelia, "general", "Spam in stream")
-        huddle_message = self.send_huddle_message(cordelia, [hamlet, othello], "Spam in huddle")
+        group_direct_message = self.send_group_direct_message(
+            cordelia, [hamlet, othello], "Spam in direct message group"
+        )
         pm_to_hamlet = self.send_personal_message(cordelia, hamlet, "Spam in direct message")
         pm_to_othello = self.send_personal_message(cordelia, othello, "Spam in direct message")
 
         # These should be marked as read for Hamlet, since he has muted Cordelia.
         self.assert_usermessage_read_flag(hamlet, stream_message, True)
-        self.assert_usermessage_read_flag(hamlet, huddle_message, True)
+        self.assert_usermessage_read_flag(hamlet, group_direct_message, True)
         self.assert_usermessage_read_flag(hamlet, pm_to_hamlet, True)
 
         # These messages should be unreads for Othello, since he hasn't muted Cordelia.
         self.assert_usermessage_read_flag(othello, stream_message, False)
-        self.assert_usermessage_read_flag(othello, huddle_message, False)
+        self.assert_usermessage_read_flag(othello, group_direct_message, False)
         self.assert_usermessage_read_flag(othello, pm_to_othello, False)
 
     def test_existing_messages_from_muted_user_marked_as_read(self) -> None:
@@ -258,17 +260,19 @@ class MutedUsersTests(ZulipTestCase):
 
         # Have Cordelia send messages to Hamlet and Othello.
         stream_message = self.send_stream_message(cordelia, "general", "Spam in stream")
-        huddle_message = self.send_huddle_message(cordelia, [hamlet, othello], "Spam in huddle")
+        group_direct_message = self.send_group_direct_message(
+            cordelia, [hamlet, othello], "Spam in direct message group"
+        )
         pm_to_hamlet = self.send_personal_message(cordelia, hamlet, "Spam in direct message")
         pm_to_othello = self.send_personal_message(cordelia, othello, "Spam in direct message")
 
         # These messages are unreads for both Hamlet and Othello right now.
         self.assert_usermessage_read_flag(hamlet, stream_message, False)
-        self.assert_usermessage_read_flag(hamlet, huddle_message, False)
+        self.assert_usermessage_read_flag(hamlet, group_direct_message, False)
         self.assert_usermessage_read_flag(hamlet, pm_to_hamlet, False)
 
         self.assert_usermessage_read_flag(othello, stream_message, False)
-        self.assert_usermessage_read_flag(othello, huddle_message, False)
+        self.assert_usermessage_read_flag(othello, group_direct_message, False)
         self.assert_usermessage_read_flag(othello, pm_to_othello, False)
 
         # Hamlet mutes Cordelia.
@@ -278,12 +282,12 @@ class MutedUsersTests(ZulipTestCase):
 
         # The messages sent earlier should be marked as read for Hamlet.
         self.assert_usermessage_read_flag(hamlet, stream_message, True)
-        self.assert_usermessage_read_flag(hamlet, huddle_message, True)
+        self.assert_usermessage_read_flag(hamlet, group_direct_message, True)
         self.assert_usermessage_read_flag(hamlet, pm_to_hamlet, True)
 
         # These messages are still unreads for Othello, since he did not mute Cordelia.
         self.assert_usermessage_read_flag(othello, stream_message, False)
-        self.assert_usermessage_read_flag(othello, huddle_message, False)
+        self.assert_usermessage_read_flag(othello, group_direct_message, False)
         self.assert_usermessage_read_flag(othello, pm_to_othello, False)
 
     def test_muted_message_send_notifications_not_enqueued(self) -> None:

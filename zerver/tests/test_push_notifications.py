@@ -4005,11 +4005,11 @@ class TestGetAPNsPayload(PushNotificationTest):
         self.assertDictEqual(payload, expected)
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
-    def test_get_message_payload_apns_huddle_message(
+    def test_get_message_payload_apns_group_direct_message(
         self, mock_push_notifications: mock.MagicMock
     ) -> None:
         user_profile = self.example_user("othello")
-        message_id = self.send_huddle_message(
+        message_id = self.send_group_direct_message(
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
         message = Message.objects.get(id=message_id)
@@ -4225,7 +4225,7 @@ class TestGetAPNsPayload(PushNotificationTest):
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
     def test_get_message_payload_apns_redacted_content(self) -> None:
         user_profile = self.example_user("othello")
-        message_id = self.send_huddle_message(
+        message_id = self.send_group_direct_message(
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
         message = Message.objects.get(id=message_id)

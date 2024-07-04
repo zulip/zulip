@@ -18,7 +18,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import (
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
 )
@@ -2220,7 +2220,7 @@ class ScrubRealmTest(ZulipTestCase):
             notification_bot, get_stream("Scotland", zulip), "test", "test"
         )
         internal_send_private_message(notification_bot, othello, "test")
-        internal_send_huddle_message(
+        internal_send_group_direct_message(
             zulip, notification_bot, "test", emails=[othello.email, iago.email]
         )
 
@@ -2228,7 +2228,7 @@ class ScrubRealmTest(ZulipTestCase):
             notification_bot, get_stream("Shakespeare", lear), "test", "test"
         )
         internal_send_private_message(notification_bot, king, "test")
-        internal_send_huddle_message(
+        internal_send_group_direct_message(
             lear, notification_bot, "test", emails=[cordelia.email, king.email]
         )
 

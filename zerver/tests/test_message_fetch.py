@@ -63,7 +63,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_or_create_huddle
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.views.message_fetch import get_messages_backend
 
@@ -385,15 +385,17 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_huddle(self) -> None:
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group(
+        self,
+    ) -> None:
         # If the group doesn't exist, it's a flat false
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the huddle first
-        get_or_create_huddle(
+        # Make the direct message group first
+        get_or_create_direct_message_group(
             [
                 self.example_user("hamlet").id,
                 self.example_user("cordelia").id,
@@ -416,7 +418,7 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_huddle_and_negated(
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group_and_negated(
         self,
     ) -> None:  # NEGATED
         # If the group doesn't exist, it's a flat true
@@ -427,8 +429,8 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
-        # Make the huddle first
-        get_or_create_huddle(
+        # Make the direct message group first
+        get_or_create_direct_message_group(
             [
                 self.example_user("hamlet").id,
                 self.example_user("cordelia").id,
@@ -464,7 +466,7 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
         # Test with at least one such group direct messages existing
-        self.send_huddle_message(
+        self.send_group_direct_message(
             self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
         )
 
@@ -2218,7 +2220,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.send_personal_message(me, self.example_user("iago"))
 
-        self.send_huddle_message(
+        self.send_group_direct_message(
             me,
             [self.example_user("iago"), self.example_user("cordelia")],
         )
@@ -2227,7 +2229,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Then deactivate Aaron to test "dm" narrow includes messages
         # from deactivated users also.
         self.send_personal_message(me, self.example_user("aaron"))
-        self.send_huddle_message(
+        self.send_group_direct_message(
             me,
             [self.example_user("iago"), self.example_user("aaron")],
         )
@@ -2257,18 +2259,20 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_get_messages_with_nonexistent_group_dm(self) -> None:
         me = self.example_user("hamlet")
-        # Huddle which doesn't match anything gets no results
-        non_existent_huddle = [
+        # Direct message group which doesn't match anything gets no results
+        non_existent_direct_message_group = [
             me.id,
             self.example_user("iago").id,
             self.example_user("othello").id,
         ]
         self.login_user(me)
-        narrow: List[Dict[str, Any]] = [dict(operator="dm", operand=non_existent_huddle)]
+        narrow: List[Dict[str, Any]] = [
+            dict(operator="dm", operand=non_existent_direct_message_group)
+        ]
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertEqual(result["messages"], [])
 
-        narrow = [dict(operator="dm", operand=non_existent_huddle, negated=True)]
+        narrow = [dict(operator="dm", operand=non_existent_direct_message_group, negated=True)]
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertEqual([m["id"] for m in result["messages"]], [1, 3])
 
@@ -2295,17 +2299,17 @@ class GetOldMessagesTest(ZulipTestCase):
 
         matching_message_ids = [
             # group direct message, sent by current user
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [iago, cordelia, othello],
             ),
             # group direct message, sent by searched user
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 cordelia,
                 [me, othello],
             ),
             # group direct message, sent by another user
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 othello,
                 [me, cordelia],
             ),
@@ -2323,12 +2327,12 @@ class GetOldMessagesTest(ZulipTestCase):
             # direct 1:1 message, current user to self
             self.send_personal_message(me, me),
             # group direct message, sent by current user
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [iago, othello],
             ),
             # group direct message, sent by searched user
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 cordelia,
                 [iago, othello],
             ),
@@ -2352,17 +2356,17 @@ class GetOldMessagesTest(ZulipTestCase):
         othello = self.example_user("othello")
 
         message_ids = [
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [iago, cordelia, othello],
             ),
             self.send_personal_message(me, cordelia),
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 cordelia,
                 [me, othello],
             ),
             self.send_personal_message(cordelia, me),
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 iago,
                 [cordelia, me],
             ),
@@ -2383,11 +2387,11 @@ class GetOldMessagesTest(ZulipTestCase):
         othello = self.example_user("othello")
 
         matching_message_ids = [
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [iago, cordelia, othello],
             ),
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [cordelia, othello],
             ),
@@ -2395,11 +2399,11 @@ class GetOldMessagesTest(ZulipTestCase):
 
         non_matching_message_ids = [
             self.send_personal_message(me, cordelia),
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [iago, othello],
             ),
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 self.example_user("cordelia"),
                 [iago, othello],
             ),
@@ -2423,15 +2427,15 @@ class GetOldMessagesTest(ZulipTestCase):
         othello = self.example_user("othello")
 
         message_ids = [
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [iago, cordelia, othello],
             ),
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [cordelia, othello],
             ),
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 me,
                 [cordelia, iago],
             ),

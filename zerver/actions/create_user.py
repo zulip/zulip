@@ -10,7 +10,7 @@ from django.utils.translation import override as override_language
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import (
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
 )
@@ -87,7 +87,7 @@ def send_message_to_signup_notification_stream(
 
 def send_group_direct_message_to_admins(sender: UserProfile, realm: Realm, content: str) -> None:
     administrators = list(realm.get_human_admin_users())
-    internal_send_huddle_message(
+    internal_send_group_direct_message(
         realm,
         sender,
         content,

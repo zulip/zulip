@@ -10,7 +10,7 @@ from zerver.data_import.rocketchat import (
     build_reactions,
     categorize_channels_and_map_with_id,
     convert_channel_data,
-    convert_huddle_data,
+    convert_direct_message_group_data,
     convert_stream_subscription_data,
     do_convert_data,
     map_receiver_id_to_recipient_id,
@@ -227,9 +227,11 @@ class RocketChatImporter(ZulipTestCase):
         self.assertIn(direct_id, direct_id_to_direct_map)
         self.assertEqual(direct_id_to_direct_map[direct_id], rocketchat_data["room"][4])
 
-        huddle_id = rocketchat_data["room"][12]["_id"]
-        self.assertIn(huddle_id, huddle_id_to_huddle_map)
-        self.assertEqual(huddle_id_to_huddle_map[huddle_id], rocketchat_data["room"][12])
+        direct_message_group_id = rocketchat_data["room"][12]["_id"]
+        self.assertIn(direct_message_group_id, huddle_id_to_huddle_map)
+        self.assertEqual(
+            huddle_id_to_huddle_map[direct_message_group_id], rocketchat_data["room"][12]
+        )
 
         livechat_id = rocketchat_data["room"][14]["_id"]
         self.assertIn(livechat_id, livechat_id_to_livechat_map)
@@ -412,7 +414,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(subscriber_handler.get_users(stream_id=zerver_stream[6]["id"]), 0)
         self.assertTrue(zerver_stream[6]["deactivated"])
 
-    def test_convert_huddle_data(self) -> None:
+    def test_convert_direct_message_group_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
 
@@ -452,20 +454,22 @@ class RocketChatImporter(ZulipTestCase):
                 livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             )
 
-        zerver_huddle = convert_huddle_data(
+        zerver_direct_message_group = convert_direct_message_group_data(
             huddle_id_to_huddle_map=huddle_id_to_huddle_map,
             huddle_id_mapper=huddle_id_mapper,
             user_id_mapper=user_id_mapper,
             subscriber_handler=subscriber_handler,
         )
 
-        self.assert_length(zerver_huddle, 1)
+        self.assert_length(zerver_direct_message_group, 1)
 
         rc_huddle_id = rocketchat_data["room"][12]["_id"]
         self.assertTrue(huddle_id_mapper.has(rc_huddle_id))
 
-        huddle_id = huddle_id_mapper.get(rc_huddle_id)
-        self.assertEqual(subscriber_handler.get_users(huddle_id=huddle_id), {3, 4, 5})
+        direct_message_group_id = huddle_id_mapper.get(rc_huddle_id)
+        self.assertEqual(
+            subscriber_handler.get_users(direct_message_group_id=direct_message_group_id), {3, 4, 5}
+        )
 
     def test_write_emoticon_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -560,7 +564,7 @@ class RocketChatImporter(ZulipTestCase):
             realm_id=realm_id,
         )
 
-        zerver_huddle = convert_huddle_data(
+        zerver_direct_message_group = convert_direct_message_group_data(
             huddle_id_to_huddle_map=huddle_id_to_huddle_map,
             huddle_id_mapper=huddle_id_mapper,
             user_id_mapper=user_id_mapper,
@@ -572,7 +576,7 @@ class RocketChatImporter(ZulipTestCase):
         zerver_recipient = build_recipients(
             zerver_userprofile=all_users,
             zerver_stream=zerver_stream,
-            zerver_huddle=zerver_huddle,
+            zerver_direct_message_group=zerver_direct_message_group,
         )
 
         stream_id_to_recipient_id: Dict[int, int] = {}
@@ -659,7 +663,7 @@ class RocketChatImporter(ZulipTestCase):
 
         self.assertIn(rocketchat_data["message"][11], private_messages)
         self.assertIn(rocketchat_data["message"][12], private_messages)
-        self.assertIn(rocketchat_data["message"][50], private_messages)  # Huddle message
+        self.assertIn(rocketchat_data["message"][50], private_messages)  # Group direct message
 
         self.assertIn(rocketchat_data["message"][79], livechat_messages)
         self.assertIn(rocketchat_data["message"][83], livechat_messages)
@@ -1021,23 +1025,23 @@ class RocketChatImporter(ZulipTestCase):
         self.assertTrue(stream_messages[23].has_image)
         self.assertTrue(stream_messages[23].has_link)
 
-        huddle_messages = messages.filter(recipient__type=Recipient.DIRECT_MESSAGE_GROUP).order_by(
-            "date_sent"
-        )
-        huddle_recipients = huddle_messages.values_list("recipient", flat=True)
-        self.assert_length(huddle_messages, 5)
-        self.assert_length(set(huddle_recipients), 2)
-        self.assertEqual(huddle_messages[0].sender.email, "hermionegranger@email.com")
-        self.assertEqual(huddle_messages[0].content, "Hey people!")
+        group_direct_messages = messages.filter(
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP
+        ).order_by("date_sent")
+        direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
+        self.assert_length(group_direct_messages, 5)
+        self.assert_length(set(direct_message_group_recipients), 2)
+        self.assertEqual(group_direct_messages[0].sender.email, "hermionegranger@email.com")
+        self.assertEqual(group_direct_messages[0].content, "Hey people!")
 
-        self.assertEqual(huddle_messages[2].sender.email, "harrypotter@email.com")
+        self.assertEqual(group_direct_messages[2].sender.email, "harrypotter@email.com")
         self.assertRegex(
-            huddle_messages[2].content,
+            group_direct_messages[2].content,
             "This year's curriculum is out.\n\n\\[Hogwarts Curriculum.pdf\\]\\(.*\\)",
         )
-        self.assertTrue(huddle_messages[2].has_attachment)
-        self.assertFalse(huddle_messages[2].has_image)
-        self.assertTrue(huddle_messages[2].has_link)
+        self.assertTrue(group_direct_messages[2].has_attachment)
+        self.assertFalse(group_direct_messages[2].has_image)
+        self.assertTrue(group_direct_messages[2].has_link)
 
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
             "date_sent"

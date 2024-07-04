@@ -11,7 +11,7 @@ from typing_extensions import override
 
 from zerver.actions.message_send import (
     check_send_message,
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
 )
@@ -458,7 +458,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
-        internal_send_huddle_message(user_profile.realm, user_profile, body, emails=emails)
+        internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
     else:
         raise AssertionError("Invalid recipient type!")
 
