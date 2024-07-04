@@ -223,6 +223,7 @@ def get_recipient_info(
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
@@ -388,26 +389,44 @@ def get_recipient_info(
     user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
     if user_ids:
-        query: ValuesQuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
-            is_active=True
-        ).values(
-            "id",
-            "enable_online_push_notifications",
-            "enable_offline_email_notifications",
-            "enable_offline_push_notifications",
-            "is_bot",
-            "bot_type",
-            "long_term_idle",
-        )
+        user_ids_list = sorted(user_ids)
+        rows: List[ActiveUserDict] = []
 
-        # query_for_ids is fast highly optimized for large queries, and we
-        # need this codepath to be fast (it's part of sending messages)
-        query = query_for_ids(
-            query=query,
-            user_ids=sorted(user_ids),
-            field="id",
-        )
-        rows = list(query)
+        if user_profile_cache:
+            for id in user_ids_list:
+                user = user_profile_cache[id]
+                rows.append(
+                    ActiveUserDict(
+                        id=id,
+                        enable_online_push_notifications=user.enable_online_push_notifications,
+                        enable_offline_email_notifications=user.enable_offline_email_notifications,
+                        enable_offline_push_notifications=user.enable_offline_push_notifications,
+                        long_term_idle=user.long_term_idle,
+                        is_bot=user.is_bot,
+                        bot_type=user.bot_type,
+                    )
+                )
+        else:
+            query: ValuesQuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
+                is_active=True
+            ).values(
+                "id",
+                "enable_online_push_notifications",
+                "enable_offline_email_notifications",
+                "enable_offline_push_notifications",
+                "is_bot",
+                "bot_type",
+                "long_term_idle",
+            )
+
+            # query_for_ids is fast highly optimized for large queries, and we
+            # need this codepath to be fast (it's part of sending messages)
+            query = query_for_ids(
+                query=query,
+                user_ids=user_ids_list,
+                field="id",
+            )
+            rows = list(query)
     else:
         # TODO: We should always have at least one user_id as a recipient
         #       of any message we send.  Right now the exception to this
@@ -580,6 +599,7 @@ def build_message_send_dict(
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
     recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -613,6 +633,7 @@ def build_message_send_dict(
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
+        user_profile_cache=user_profile_cache,
     )
 
     # Render our message_dicts.
@@ -796,7 +817,9 @@ def create_user_messages(
     return user_messages
 
 
-def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
+def filter_presence_idle_user_ids(
+    user_ids: Set[int], active_user_id_cache: Optional[Set[int]] = None
+) -> List[int]:
     # Given a set of user IDs (the recipients of a message), accesses
     # the UserPresence table to determine which of these users are
     # currently idle and should potentially get email notifications
@@ -806,12 +829,16 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     if not user_ids:
         return []
 
-    recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
-    rows = UserPresence.objects.filter(
-        user_profile_id__in=user_ids,
-        last_active_time__gte=recent,
-    ).values("user_profile_id")
-    active_user_ids = {row["user_profile_id"] for row in rows}
+    if active_user_id_cache is not None:
+        active_user_ids = active_user_id_cache
+    else:
+        recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
+        rows = UserPresence.objects.filter(
+            user_profile_id__in=user_ids,
+            last_active_time__gte=recent,
+        ).values("user_profile_id")
+        active_user_ids = {row["user_profile_id"] for row in rows}
+
     idle_user_ids = user_ids - active_user_ids
     return sorted(idle_user_ids)
 
@@ -820,6 +847,7 @@ def get_active_presence_idle_user_ids(
     realm: Realm,
     sender_id: int,
     user_notifications_data_list: List[UserMessageNotificationsData],
+    active_user_id_cache: Optional[Set[int]] = None,
 ) -> List[int]:
     """
     Given a list of active_user_ids, we build up a subset
@@ -841,7 +869,7 @@ def get_active_presence_idle_user_ids(
         if user_notifications_data.is_notifiable(sender_id, idle=True):
             user_ids.add(user_notifications_data.user_id)
 
-    return filter_presence_idle_user_ids(user_ids)
+    return filter_presence_idle_user_ids(user_ids, active_user_id_cache=active_user_id_cache)
 
 
 @transaction.atomic(savepoint=False)
@@ -849,6 +877,8 @@ def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
     mark_as_read: Sequence[int] = [],
+    is_channel_unsubscription_notification: bool = False,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> List[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -927,6 +957,16 @@ def do_send_messages(
     # * Updating the `first_message_id` field for streams without any message history.
     # * Implementing the Welcome Bot reply hack
     # * Adding links to the embed_links queue for open graph processing.
+
+    active_user_ids = None
+    if user_profile_cache is not None:
+        recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
+        rows = UserPresence.objects.filter(
+            user_profile_id__in=user_profile_cache.keys(),
+            last_active_time__gte=recent,
+        ).values("user_profile_id")
+        active_user_ids = {row["user_profile_id"] for row in rows}
+
     for send_request in send_message_requests:
         realm_id: Optional[int] = None
         if send_request.message.is_stream_message():
@@ -1014,7 +1054,12 @@ def do_send_messages(
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
+        wide_message_dict = MessageDict.wide_dict(
+            send_request.message,
+            realm_id,
+            is_channel_unsubscription_notification=is_channel_unsubscription_notification,
+            user_profile_cache=user_profile_cache,
+        )
 
         user_flags = user_message_flags.get(send_request.message.id, {})
 
@@ -1094,6 +1139,7 @@ def do_send_messages(
             realm=send_request.realm,
             sender_id=sender.id,
             user_notifications_data_list=user_notifications_data_list,
+            active_user_id_cache=active_user_ids,
         )
 
         if send_request.recipients_for_user_creation_events is not None:
@@ -1624,6 +1670,7 @@ def check_message(
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1764,6 +1811,7 @@ def check_message(
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        user_profile_cache=user_profile_cache,
     )
 
     if (
@@ -1801,6 +1849,7 @@ def _internal_prep_message(
     disable_external_notifications: bool = False,
     forged: bool = False,
     forged_timestamp: Optional[float] = None,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -1832,6 +1881,7 @@ def _internal_prep_message(
             disable_external_notifications=disable_external_notifications,
             forged=forged,
             forged_timestamp=forged_timestamp,
+            user_profile_cache=user_profile_cache,
         )
     except JsonableError as e:
         logging.exception(
@@ -1902,6 +1952,7 @@ def internal_prep_private_message(
     *,
     mention_backend: Optional[MentionBackend] = None,
     disable_external_notifications: bool = False,
+    user_profile_cache: Optional[Dict[int, UserProfile]] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -1919,6 +1970,7 @@ def internal_prep_private_message(
         content=content,
         mention_backend=mention_backend,
         disable_external_notifications=disable_external_notifications,
+        user_profile_cache=user_profile_cache,
     )
 
 

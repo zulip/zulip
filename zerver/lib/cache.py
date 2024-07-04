@@ -679,7 +679,11 @@ def to_dict_cache_key_id(message_id: int) -> str:
     return f"message_dict:{message_id}"
 
 
-def to_dict_cache_key(message: "Message", realm_id: Optional[int] = None) -> str:
+def to_dict_cache_key(
+    message: "Message",
+    realm_id: Optional[int] = None,
+    is_channel_unsubscription_notification: bool = False,
+) -> str:
     return to_dict_cache_key_id(message.id)
 
 
