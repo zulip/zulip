@@ -17,8 +17,8 @@
      * **Name**: Zulip
      * **Authentication Method**: Basic Auth
      * **URL**: `{{ api_url }}/v1/external/deskdotcom`
-     * **User name**: *your bot's user name, e.g.* `desk-bot@yourdomain.com`
-     * **Password**: *your bot's API key*
+     * **User name**: your bot's user name, e.g., `desk-bot@yourdomain.com`
+     * **Password**: your bot's API key
 
     ![](/static/images/integrations/desk/002.png)
 
@@ -26,7 +26,7 @@
     **Add Action** to add a new action. You'll do this for every action
     you want a notification on Zulip for. (To add another action later,
     look for your custom action on the **Apps** page under
-    **Installed Apps.**
+    **Installed Apps**.)
 
     ![](/static/images/integrations/desk/003.png)
 
