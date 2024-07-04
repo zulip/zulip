@@ -856,7 +856,8 @@ input[type="checkbox"] {
 
 #organization-permissions {
     .dropdown-widget-button {
-        width: 325px;
+        min-width: 325px;
+        width: auto;
         color: hsl(0deg 0% 33%);
 
         &:disabled {

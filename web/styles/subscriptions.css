@@ -1061,6 +1061,7 @@ div.settings-radio-input-parent {
         margin-bottom: 20px;
         min-width: 325px;
         max-width: 100%;
+        width: auto;
         height: 30px;
     }
 
