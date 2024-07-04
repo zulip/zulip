@@ -99,7 +99,7 @@ on hardware requirements for larger organizations.
   features](https://zulip.com/help/allow-image-link-previews).
 - Outgoing SMTP access (usually port 587) to your [SMTP
   server](email.md) so that Zulip can send emails.
-- A domain name (e.g. `zulip.example.com`) that your users will use to
+- A domain name (e.g., `zulip.example.com`) that your users will use to
   access the Zulip server. In order to generate valid SSL
   certificates [with Certbot][doc-certbot], and to enable other
   services such as Google authentication, public DNS name is simpler,
@@ -143,7 +143,7 @@ certificate documentation](ssl-certificates.md).
 #### Outgoing email
 
 - Outgoing email (SMTP) credentials that Zulip can use to send
-  outgoing emails to users (e.g. email address confirmation emails
+  outgoing emails to users (e.g., email address confirmation emails
   during the signup process, message notification emails, password
   reset, etc.). If you don't have an existing outgoing SMTP solution,
   read about
@@ -158,7 +158,7 @@ This section details some basic guidelines for running a Zulip server
 for larger organizations (especially >1000 users or 500+ daily active
 users). Zulip's resource needs depend mainly on 3 parameters:
 
-- daily active users (e.g. number of employees if everyone's an
+- daily active users (e.g., number of employees if everyone's an
   employee)
 - total user accounts (can be much larger)
 - message volume.

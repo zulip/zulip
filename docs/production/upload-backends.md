@@ -33,17 +33,17 @@ backend. To enable this backend, you need to do the following:
 
 1. Set the `S3_AUTH_UPLOADS_BUCKET` and `S3_AVATAR_BUCKET` settings in
    `/etc/zulip/settings.py` to be the names of the S3 buckets you
-   created (e.g. `"exampleinc-zulip-uploads"`).
+   created (e.g., `"exampleinc-zulip-uploads"`).
 
 1. Comment out the `LOCAL_UPLOADS_DIR` setting in
    `/etc/zulip/settings.py` (add a `#` at the start of the line).
 
 1. If you are using a non-AWS block storage provider,
    you need to set the `S3_ENDPOINT_URL` setting to your
-   endpoint url (e.g. `"https://s3.eu-central-1.amazonaws.com"`).
+   endpoint url (e.g., `"https://s3.eu-central-1.amazonaws.com"`).
 
    For certain AWS regions, you may need to set the `S3_REGION`
-   setting to your default AWS region's code (e.g. `"eu-central-1"`).
+   setting to your default AWS region's code (e.g., `"eu-central-1"`).
 
 1. Finally, restart the Zulip server so that your settings changes
    take effect

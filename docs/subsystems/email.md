@@ -3,7 +3,7 @@
 This page has developer documentation on the Zulip email system. If you're
 trying to configure your server to send email, you might be looking for our
 guide to [sending outgoing email](../production/email.md). If you're trying to
-configure an email integration to receive incoming email (e.g. so that users
+configure an email integration to receive incoming email (e.g., so that users
 can reply to message notification emails via email), you might be interested in
 our instructions for
 [setting up an email integration](https://zulip.com/integrations/doc/email).
@@ -33,7 +33,7 @@ with only a few things you need to know to get started.
 One slightly complicated decision you may have to make when adding an email
 is figuring out how to schedule it. There are 3 ways to schedule email.
 
-- Send it immediately, in the current Django process, e.g. by calling
+- Send it immediately, in the current Django process, e.g., by calling
   `send_email` directly. An example of this is the `confirm_registration`
   email.
 - Add it to a queue. An example is the `invitation` email.
@@ -56,7 +56,7 @@ custom backend, `EmailLogBackEnd`. It does the following:
 
 - Logs any sent emails to `var/log/email_content.log`. This log is
   displayed by the `/emails` endpoint
-  (e.g. http://zulip.zulipdev.com:9991/emails).
+  (e.g., http://zulip.zulipdev.com:9991/emails).
 - Print a friendly message on console advertising `/emails` to make
   this nice and discoverable.
 
@@ -157,7 +157,7 @@ are multiple copies or they contain CSS colors, you did it wrong.
 A final note for translating emails is that strings that are sent to
 user accounts (where we know the user's language) are higher-priority
 to translate than things sent to an email address (where we don't).
-E.g. for password reset emails, it makes sense for the code path for
+E.g., for password reset emails, it makes sense for the code path for
 people with an actual account can be tagged for translation, while the
 code path for the "you don't have an account email" might not be,
 since we might not know what language to use in the second case.

@@ -124,7 +124,7 @@ strength allowed is controlled by two settings in
   already been sent. As a general philosophy, our policies provide
   hard limits on the ways in which message content can be changed or
   undone. In contrast, our policies around message topics favor
-  usefulness (e.g. for conversational organization) over faithfulness
+  usefulness (e.g., for conversational organization) over faithfulness
   to the original. In all configurations:
 
   - Message content can only ever be modified by the original author.
@@ -158,7 +158,7 @@ strength allowed is controlled by two settings in
   - Administrators can change the ownership of a bot. If a bot is subscribed
     to a private channel, then an administrator can indirectly get access to
     channel messages by taking control of the bot, though the access will be
-    limited to what the bot can do. (E.g. incoming webhook bots cannot read
+    limited to what the bot can do. (e.g., incoming webhook bots cannot read
     messages.)
 
 - Every Zulip user has an API key, available on the settings page.
@@ -187,7 +187,7 @@ strength allowed is controlled by two settings in
 
   - Incoming webhook bots can only send messages into Zulip.
   - Outgoing webhook bots and Generic bots can essentially do anything a
-    non-administrator user can, with a few exceptions (e.g. a bot cannot
+    non-administrator user can, with a few exceptions (e.g., a bot cannot
     log in to the web application, register for mobile push
     notifications, or create other bots).
   - Bots with the `can_forge_sender` permission can send messages that appear to have been sent by
@@ -203,7 +203,7 @@ strength allowed is controlled by two settings in
 
 - Zulip supports user-uploaded files. Ideally they should be hosted
   from a separate domain from the main Zulip server to protect against
-  various same-domain attacks (e.g. zulip-user-content.example.com).
+  various same-domain attacks (e.g., zulip-user-content.example.com).
 
   We support two ways of hosting them: the basic `LOCAL_UPLOADS_DIR`
   file storage backend, where they are stored in a directory on the
@@ -221,7 +221,7 @@ strength allowed is controlled by two settings in
   instead of the URL, so this is arguably pretty good protection.)
 
   However, to help protect against accidental sharing of URLs to
-  restricted files (e.g. by forwarding a missed-message email or leaks
+  restricted files (e.g., by forwarding a missed-message email or leaks
   involving the Referer header), every access to an uploaded file has
   access control verified (confirming that the browser is logged into
   a Zulip account that has received the uploaded file in question).

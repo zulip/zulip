@@ -1,6 +1,6 @@
 # How to have an amazing experience
 
-If you are joining Zulip as part of an outreach program (e.g.
+If you are joining Zulip as part of an outreach program (e.g.,
 [GSoC](https://summerofcode.withgoogle.com/) or
 [Outreachy](https://www.outreachy.org/)), welcome! Please make sure you read
 this page carefully early on, and we encourage you to come back to it over the
@@ -125,7 +125,7 @@ You can find many examples in the
     working on, not just issue/PR numbers.
 
   - For projects where you are waiting on feedback, what **type of feedback** is
-    needed (e.g. product review, next round of code review after initial
+    needed (e.g., product review, next round of code review after initial
     feedback has been addressed, answer to some question, etc.). Use [silent
     mentions](https://zulip.com/help/mention-a-user-or-group#silently-mention-a-user)
     to indicate whose feedback is required, if you think you know who it should
@@ -183,7 +183,7 @@ time, start by quickly sharing your initial thoughts or feedback on the general
 direction, and let the PR author know when you expect to provide a more detailed
 review.
 
-Make sure the GitHub comments on the PR are always clear on the status -- e.g.
+Make sure the GitHub comments on the PR are always clear on the status -- e.g.,
 buddy code review has been requested, feedback is being discussed, code buddy
 has approved the PR, etc. This will help project maintainers know when it's time
 to move on to the next step of the review process.
