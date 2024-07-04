@@ -479,6 +479,15 @@ def is_user_in_group(
     return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
 
 
+def is_any_user_in_group(
+    user_group: UserGroup, user_ids: Iterable[int], *, direct_member_only: bool = False
+) -> bool:
+    if direct_member_only:
+        return get_user_group_direct_members(user_group=user_group).filter(id__in=user_ids).exists()
+
+    return get_recursive_group_members(user_group=user_group).filter(id__in=user_ids).exists()
+
+
 def get_user_group_member_ids(
     user_group: UserGroup, *, direct_member_only: bool = False
 ) -> List[int]:
