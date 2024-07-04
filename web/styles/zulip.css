@@ -805,6 +805,8 @@ strong {
             padding: 3px 10px;
             gap: 5px;
             font-weight: normal;
+            /* We want to keep this `max-width` less than 320px. */
+            max-width: 292px;
             line-height: 20px;
             color: var(--color-dropdown-item);
             white-space: nowrap;
@@ -838,6 +840,9 @@ strong {
 
             .typeahead-text-container {
                 align-self: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
 
                 & > * {
                     margin-right: 3px;
@@ -1358,8 +1363,6 @@ div.focused-message-list {
             display: block;
             float: right;
             margin-top: 5px;
-            margin-right: -12px;
-            font-size: 0.8em;
             color: hsl(96deg 7% 73%);
         }
     }

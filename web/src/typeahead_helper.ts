@@ -85,6 +85,7 @@ type StreamData = {
     color: string;
     name: string;
     description: string;
+    rendered_description: string;
     subscribed: boolean;
 };
 
@@ -94,6 +95,7 @@ export function render_typeahead_item(args: {
     img_src?: string;
     status_emoji_info?: UserStatusEmojiInfo | undefined;
     secondary?: string | null;
+    secondary_html?: string | undefined;
     pronouns?: string | undefined;
     is_user_group?: boolean;
     stream?: StreamData;
@@ -103,12 +105,14 @@ export function render_typeahead_item(args: {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
     const has_secondary = args.secondary !== undefined;
+    const has_secondary_html = args.secondary_html !== undefined;
     const has_pronouns = args.pronouns !== undefined;
     return render_typeahead_list_item({
         ...args,
         has_image,
         has_status,
         has_secondary,
+        has_secondary_html,
         has_pronouns,
     });
 }
@@ -166,15 +170,8 @@ export function render_person_or_user_group(
 }
 
 export function render_stream(stream: StreamData): string {
-    let desc = stream.description;
-    const short_desc = desc.slice(0, 35);
-
-    if (desc !== short_desc) {
-        desc = short_desc + "...";
-    }
-
     return render_typeahead_item({
-        secondary: desc,
+        secondary_html: stream.rendered_description,
         stream,
         is_unsubscribed: !stream.subscribed,
     });
