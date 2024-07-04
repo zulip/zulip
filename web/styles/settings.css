@@ -971,7 +971,6 @@ input[type="checkbox"] {
         position: relative;
         display: inline-block;
         width: calc(50% - 10px);
-        max-height: 220px;
         margin: 5px;
 
         border-radius: 4px;
@@ -1868,7 +1867,6 @@ $option_title_width: 180px;
        information box */
     .bots_list .bot-information-box {
         width: calc(100% - 10px);
-        max-height: unset;
     }
 }
 
