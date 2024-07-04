@@ -14,7 +14,7 @@ reading.
 
 Zulip's approach for supporting multiple organizations on a single
 Zulip server is for each organization to be hosted on its own
-subdomain. E.g. you'd have `org1.zulip.example.com` and
+subdomain. E.g., you'd have `org1.zulip.example.com` and
 `org2.zulip.example.com`.
 
 Web security standards mean that one subdomain per organization is
@@ -81,12 +81,12 @@ into the database.
 ### The root domain
 
 Most Zulip servers host a single Zulip organization on the root domain
-(e.g. `zulip.example.com`). The way this is implemented internally
+(e.g., `zulip.example.com`). The way this is implemented internally
 involves the organization having the empty string (`''`) as its
 "subdomain".
 
 You can mix having an organization on the root domain and some others
-on subdomains (e.g. `subdivision.zulip.example.com`), but this only
+on subdomains (e.g., `subdivision.zulip.example.com`), but this only
 works well if there are no users in common between the two
 organizations, because the auth cookies for the root domain are
 visible to the subdomain (so it's not possible for a single
@@ -111,7 +111,7 @@ provider with a whitelist of callback URLs to your Zulip server (or
 even a single URL). For those vendors that support a whitelist, you
 can provide the callback URLs for each of your Zulip organizations.
 
-The cleaner solution is to register a special subdomain, e.g.
+The cleaner solution is to register a special subdomain, e.g.,
 `auth.zulip.example.com` with the third-party provider, and then set
 `SOCIAL_AUTH_SUBDOMAIN = 'auth'` in `/etc/zulip/settings.py`, so that
 Zulip knows to use that subdomain for these authentication callbacks.

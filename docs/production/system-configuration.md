@@ -142,7 +142,7 @@ processes to use][supervisor-minfds]; defaults to 40000. If your Zulip deploymen
 is very large (hundreds of thousands of concurrent users), your Django processes
 hit this limit and refuse connections to clients. Raising it above this default
 may require changing system-level limits, particularly if you are using a
-virtualized environment (e.g. Docker, or Proxmox LXC).
+virtualized environment (e.g., Docker, or Proxmox LXC).
 
 [supervisor-minfds]: http://supervisord.org/configuration.html?highlight=minfds#supervisord-section-values
 

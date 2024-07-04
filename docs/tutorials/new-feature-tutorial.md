@@ -117,7 +117,7 @@ includes both views that serve HTML (new pages on Zulip) as well as new
 API endpoints that serve JSON-formatted data.
 
 **Testing:** At the very least, add a test of your event data flowing
-through the system in `test_events.py` and an API test (e.g. for a
+through the system in `test_events.py` and an API test (e.g., for a
 Realm setting, in `test_realm.py`).
 
 ### Frontend changes
@@ -506,7 +506,7 @@ framework is `do_set_realm_property_test`, and in `test_realm.py`, it is
 `do_test_realm_update_api`.
 
 One still needs to add a test for whether the setting actually
-controls the feature it is supposed to control, however (e.g. for this
+controls the feature it is supposed to control, however (e.g., for this
 example feature, whether sending a message without a topic fails with
 the setting enabled).
 

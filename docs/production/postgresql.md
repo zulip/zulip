@@ -19,13 +19,13 @@ primary application server. There are two possible flavors of this -- using a
 managed PostgreSQL instance from a cloud provider, or separating the PostgreSQL
 server onto a separate (but still Zulip-managed) server for scaling purposes.
 
-### Cloud-provider-managed PostgreSQL (e.g. Amazon RDS)
+### Cloud-provider-managed PostgreSQL (e.g., Amazon RDS)
 
 You can use a database-as-a-service like Amazon RDS for the Zulip database. The
 experience is slightly degraded, in that most providers don't include useful
 dictionary files in their installations, and don't provide a way to provide them
 yourself, resulting in a degraded [full-text search][fts] experience around
-issues dictionary files are relevant (e.g. stemming).
+issues dictionary files are relevant (e.g., stemming).
 
 [fts]: ../subsystems/full-text-search.md
 

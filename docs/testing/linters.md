@@ -172,7 +172,7 @@ is the extent of our checking.
 Finally, we're checking line length in Python code (and hope to extend
 this to other parts of the codebase soon). You can use
 `#ignorelinelength` for special cases where a very long line makes
-sense (e.g. a link in a comment to an extremely long URL).
+sense (e.g., a link in a comment to an extremely long URL).
 
 #### Python code
 

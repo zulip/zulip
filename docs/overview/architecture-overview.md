@@ -90,7 +90,7 @@ requests to those services, but the Django-based database libraries we
 use in most of our codebase don't support that, and in any case,
 our architecture doesn't require Tornado to do that).
 
-The parts that are activated relatively rarely (e.g. when people type or
+The parts that are activated relatively rarely (e.g., when people type or
 click on something) are processed by the Django application server.
 
 There is detailed documentation on the
@@ -209,7 +209,7 @@ RabbitMQ is a queueing system. Its config files live in
 `zulip/puppet/zulip/files/rabbitmq`. Initial configuration happens in
 `zulip/scripts/setup/configure-rabbitmq`.
 
-We use RabbitMQ for queuing expensive work (e.g. sending emails
+We use RabbitMQ for queuing expensive work (e.g., sending emails
 triggered by a message, push notifications, some analytics, etc.) that
 require reliable delivery but which we don't want to do on the main
 thread. It's also used for communication between the application server
@@ -256,7 +256,7 @@ administrator, e.g., in case of outages.
 This component is intended to install Nagios plugins intended to be run
 on a Nagios server; most of the Zulip Nagios plugins are intended to be
 run on the Zulip servers themselves, and are included with the relevant
-component of the Zulip server (e.g.
+component of the Zulip server (e.g.,
 `puppet/zulip/manifests/postgresql_backups.pp` installs a few under
 `/usr/lib/nagios/plugins/zulip_backups`).
 
