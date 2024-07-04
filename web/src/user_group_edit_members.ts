@@ -147,8 +147,8 @@ function show_user_group_membership_request_result({
     message: string;
     add_class: string;
     remove_class: string;
-    already_added_users?: User[] | undefined;
-    ignored_deactivated_users?: User[] | undefined;
+    already_added_users?: User[];
+    ignored_deactivated_users?: User[];
 }): void {
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
@@ -224,8 +224,8 @@ function add_new_members({pill_user_ids}: {pill_user_ids: number[]}): void {
         user_id_set.delete(current_user.user_id);
     }
 
-    let ignored_deactivated_users: User[] | undefined;
-    let ignored_already_added_users: User[] | undefined;
+    let ignored_deactivated_users: User[] = [];
+    let ignored_already_added_users: User[] = [];
     if (deactivated_users.size > 0) {
         const ignored_deactivated_users_ids = [...deactivated_users];
         ignored_deactivated_users = ignored_deactivated_users_ids.map((user_id) =>
