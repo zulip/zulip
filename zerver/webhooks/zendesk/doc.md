@@ -21,8 +21,8 @@
     * **URL**: the URL we created above
     * **Method**: POST
     * **Attribute Name**: message
-    * **Username**: *your bot's user name, e.g.* `zendesk-bot@yourdomain.com`
-    * **Password**: *your bot's API key*
+    * **Username**: your bot's user name, e.g., `zendesk-bot@yourdomain.com`
+    * **Password**: your bot's API key
 
     ![](/static/images/integrations/zendesk/003.png)
 

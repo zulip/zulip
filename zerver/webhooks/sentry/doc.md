@@ -37,7 +37,7 @@ us](/help/contact-support) if a platform you care about is missing.
 1. Once you've saved the internal integration, go to **Alerts** and click
     on the **Create Alert** button to create a new alert rule. Select the
     project for which you want to receive notifications. Set the conditions
-    to be whatever you want (e.g. the events you want to be notified for),
+    to be whatever you want (e.g., the events you want to be notified for),
     and under **PERFORM THESE ACTIONS**, select **Add an action...** &gt;
     **Send a notification via an integration**, and set it to the internal
     integration you created in the previous step.
