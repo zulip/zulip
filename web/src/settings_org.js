@@ -803,6 +803,7 @@ function set_up_dropdown_widget(
         on_mount_callback(dropdown) {
             if (setting_type === "group") {
                 $(dropdown.popper).css("min-width", "300px");
+                $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
             }
         },
     });
