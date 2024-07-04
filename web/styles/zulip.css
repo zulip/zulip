@@ -1360,7 +1360,7 @@ div.focused-message-list {
 
     .active {
         .unsubscribed_icon {
-            display: block;
+            visibility: visible;
             float: right;
             margin-top: 5px;
             color: hsl(96deg 7% 73%);
@@ -1368,7 +1368,8 @@ div.focused-message-list {
     }
 
     .unsubscribed_icon {
-        display: none;
+        visibility: hidden;
+        font-size: 0.8em;
     }
 }
 
