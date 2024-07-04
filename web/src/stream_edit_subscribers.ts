@@ -77,7 +77,7 @@ function show_stream_subscription_request_result({
     remove_class: string;
     subscribed_users?: User[];
     already_subscribed_users?: User[];
-    ignored_deactivated_users?: User[] | undefined;
+    ignored_deactivated_users?: User[];
 }): void {
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
@@ -204,7 +204,7 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         // case occurs when creating user pills from a stream.
         user_id_set.delete(current_user.user_id);
     }
-    let ignored_deactivated_users: User[] | undefined;
+    let ignored_deactivated_users: User[] = [];
     if (deactivated_users.size > 0) {
         const ignored_deactivated_user_ids = [...deactivated_users];
         ignored_deactivated_users = ignored_deactivated_user_ids.map((user_id) =>
