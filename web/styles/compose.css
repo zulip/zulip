@@ -1143,18 +1143,6 @@ textarea.new_message_textarea {
             opacity: 1;
             display: none;
         }
-
-        /* The media query below handles the hiding and showing of the
-        vdot menu icon, so that it is hidden when all compose buttons fit
-        in the main row below the compose box. So, this is the same as
-        the media query for .show_popover_buttons. */
-        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
-            display: block;
-
-            .compose_control_menu {
-                display: flex;
-            }
-        }
     }
 
     .divider {
@@ -1187,15 +1175,6 @@ textarea.new_message_textarea {
         align-items: center;
         padding: 0;
         margin: 0;
-
-        /* We use this class for the div containing those compose buttons, which
-        we hide and show in a popover instead when they no longer fit in a
-        single row. The media query below handles the hiding and showing of the
-        buttons from the main row of compose buttons below the compose box. */
-
-        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
-            display: none;
-        }
     }
 
     .show_popover_buttons_2 {
@@ -1203,24 +1182,86 @@ textarea.new_message_textarea {
         align-items: center;
         padding: 0;
         margin: 0;
-
-        /* This is similar to show_popover_buttons, but it's only for those
-        compose buttons that we hide, and show in the popover only when the
-        screen gets extremely narrow. */
-
-        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
-            display: none;
-        }
     }
 
     &.show_in_popover {
         display: none;
+    }
+}
 
-        /* This is to show the popover 2 buttons in the popover, only when
-        they are hidden in the main row below the compose box. */
+.less-dense-mode {
+    .compose-control-buttons-container {
+        .compose_control_menu_wrapper {
+            /* The media query below handles the hiding and showing of the
+            vdot menu icon, so that it is hidden when all compose buttons fit
+            in the main row below the compose box. So, this is the same as
+            the media query for .show_popover_buttons. */
+            @media (((width < 1398px) and (width >= $xl_min)) or (width < 1158px)) {
+                display: block;
 
-        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
-            display: flex;
+                .compose_control_menu {
+                    display: flex;
+                }
+            }
+        }
+
+        .show_popover_buttons {
+            /* We use this class for the div containing those compose buttons, which
+            we hide and show in a popover instead when they no longer fit in a
+            single row. The media query below handles the hiding and showing of the
+            buttons from the main row of compose buttons below the compose box. */
+            @media (((width < 1398px) and (width >= $xl_min)) or (width < 1158px)) {
+                display: none;
+            }
+        }
+
+        .show_popover_buttons_2 {
+            /* This is similar to show_popover_buttons, but it's only for those
+            compose buttons that we hide, and show in the popover only when the
+            screen gets extremely narrow. */
+            @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
+                display: none;
+            }
+        }
+
+        &.show_in_popover {
+            /* This is to show the popover 2 buttons in the popover, only when
+            they are hidden in the main row below the compose box. */
+            @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
+                display: flex;
+            }
+        }
+    }
+}
+
+.more-dense-mode {
+    .compose-control-buttons-container {
+        .compose_control_menu_wrapper {
+            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+                display: block;
+
+                .compose_control_menu {
+                    display: flex;
+                }
+            }
+        }
+
+        .show_popover_buttons {
+            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+                display: none;
+            }
+        }
+
+        .show_popover_buttons_2 {
+            @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+                display: none;
+            }
+        }
+
+        &.show_in_popover {
+            @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+                display: flex;
+            }
         }
     }
 }
