@@ -203,7 +203,7 @@ li.show-more-topics {
        in the DM section. */
     margin-right: 12px;
 
-    #direct-messages-section-header {
+    &#direct-messages-section-header {
         grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
         grid-template-rows: var(--line-height-sidebar-row-prominent);
         /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
