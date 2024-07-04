@@ -2301,7 +2301,7 @@ No changes; feature level used for Zulip 3.0 release.
   deprecating and replacing the `is_announcement_only` boolean.
 * [`GET /user_uploads/{realm_id_str}/{filename}`](/api/get-file-temporary-url):
   New endpoint added for requesting a temporary URL for an uploaded
-  file that does not require authentication to access (e.g. for passing
+  file that does not require authentication to access (e.g., for passing
   from a Zulip desktop, mobile, or terminal app to the user's default
   browser).
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
