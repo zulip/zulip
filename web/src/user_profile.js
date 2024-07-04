@@ -244,7 +244,7 @@ function format_user_group_list_item_html(group) {
     return render_user_group_list_item({
         group_id: group.id,
         name: group.name,
-        group_edit_url: hash_util.group_edit_url(group),
+        group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
     });
 }
