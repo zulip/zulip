@@ -153,6 +153,10 @@ class UserBaseSettings(models.Model):
         default=WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS
     )
 
+    # Setting to control whether to automatically go to the
+    # conversation where message was sent.
+    web_navigate_to_sent_message = models.BooleanField(default=True)
+
     ### Notifications settings. ###
 
     email_notifications_batching_period_seconds = models.IntegerField(default=120)
@@ -329,6 +333,7 @@ class UserBaseSettings(models.Model):
         web_stream_unreads_count_display_policy=int,
         web_font_size_px=int,
         web_line_height_percent=int,
+        web_navigate_to_sent_message=bool,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(

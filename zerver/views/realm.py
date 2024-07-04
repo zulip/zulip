@@ -653,6 +653,7 @@ def update_realm_user_settings_defaults(
     email_address_visibility: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
+    web_navigate_to_sent_message: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

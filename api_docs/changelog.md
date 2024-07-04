@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 268**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added a new `web_navigate_to_sent_message` setting to allow users to decide
+  whether to automatically go to conversation where they sent a message.
+
 **Feature level 267**
 
 * [`GET /invites`](/api/get-invites),[`POST /invites`](/api/send-invites): Added

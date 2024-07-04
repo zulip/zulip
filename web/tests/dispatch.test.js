@@ -1121,6 +1121,11 @@ run_test("user_settings", ({override}) => {
     user_settings.email_address_visibility = 3;
     dispatch(event);
     assert_same(user_settings.email_address_visibility, 5);
+
+    event = event_fixtures.user_settings__web_navigate_to_sent_message;
+    user_settings.web_navigate_to_sent_message = true;
+    dispatch(event);
+    assert_same(user_settings.web_navigate_to_sent_message, false);
 });
 
 run_test("update_message (read)", ({override}) => {
