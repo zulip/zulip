@@ -208,7 +208,7 @@ Use <kbd>Enter</kbd> to engage with elements.
 
 * **Delete selected draft**: <kbd>Backspace</kbd>
 
-Keyboard navigation (e.g. arrow keys) works as expected.
+Keyboard navigation (e.g., arrow keys) works as expected.
 
 ## Menus
 

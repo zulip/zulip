@@ -13,7 +13,7 @@ A few settings to highlight:
 
 * If your organization uses code repositories, [set up
   linkifiers](/help/add-a-custom-linkifier) to make it easy to link to
-  issues (e.g. just by typing #1234 for issue 1234).
+  issues (e.g., just by typing #1234 for issue 1234).
 
 * [Add custom emoji](/help/custom-emoji), including your organization's logo.
 

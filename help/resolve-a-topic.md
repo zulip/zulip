@@ -8,7 +8,7 @@ investigation, or notification.
 
 Marking a topic as resolved:
 
-* Puts a ✔ at the beginning of the topic name, e.g. `example topic`
+* Puts a ✔ at the beginning of the topic name, e.g., `example topic`
   becomes `✔ example topic`.
 * Triggers an automated notice from the [notification
   bot](/help/configure-automated-notices) indicating that
