@@ -24,6 +24,7 @@ const MESSAGE_SENT_CLASSNAMES = {
     message_scheduled_success_compose_banner: "message_scheduled_success_compose_banner",
     automatic_new_visibility_policy: "automatic_new_visibility_policy",
     jump_to_sent_message_conversation: "jump_to_sent_message_conversation",
+    narrow_to_recipient: "narrow_to_recipient",
 };
 // Technically, unmute_topic_notification is a message sent banner, but
 // it has distinct behavior / look - it has an associated action button,
