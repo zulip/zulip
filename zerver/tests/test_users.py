@@ -461,6 +461,14 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
+    def test_invalid_role(self) -> None:
+        self.login("iago")
+        req = dict(role=1000)
+        result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
+        self.assert_json_error(
+            result, "Invalid role: Value error, Not in the list of possible values"
+        )
+
     def test_admin_cannot_set_full_name_with_invalid_characters(self) -> None:
         new_name = "Opheli*"
         self.login("iago")
