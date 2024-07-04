@@ -43,9 +43,9 @@ export function build_highlight_regex(query: string): RegExp {
 }
 
 export function highlight_with_escaping_and_regex(regex: RegExp, item: string): string {
-    // if regex is empty return entire item highlighted and escaped
+    // if regex is empty return entire item escaped
     if (regex.source === "()") {
-        return "<strong>" + Handlebars.Utils.escapeExpression(item) + "</strong>";
+        return Handlebars.Utils.escapeExpression(item);
     }
 
     // We need to assemble this manually (as opposed to doing 'join') because we need to
