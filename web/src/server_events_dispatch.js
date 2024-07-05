@@ -553,10 +553,6 @@ export function dispatch_normal_event(event) {
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
-                        if (is_narrowed_to_stream) {
-                            assert(message_lists.current !== undefined);
-                            message_lists.current.update_trailing_bookend(true);
-                        }
                         stream_data.delete_sub(stream.stream_id);
                         stream_settings_ui.remove_stream(stream.stream_id);
                         if (was_subscribed) {
@@ -581,6 +577,10 @@ export function dispatch_normal_event(event) {
                             settings_org.sync_realm_settings(
                                 "zulip_update_announcements_stream_id",
                             );
+                        }
+                        if (is_narrowed_to_stream) {
+                            assert(message_lists.current !== undefined);
+                            message_lists.current.update_trailing_bookend(true);
                         }
                     }
                     stream_list.update_subscribe_to_more_streams_link();
