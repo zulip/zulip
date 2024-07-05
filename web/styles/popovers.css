@@ -5,6 +5,8 @@
 */
 .tippy-box[data-theme="light-border"] {
     background-color: var(--color-background-popover);
+    /* Basic Tippy popovers scale with the base font-size. */
+    font-size: var(--base-font-size-px);
 
     .sp-input {
         /* Override incorrect color for text in dark theme. */
@@ -12,7 +14,10 @@
     }
 
     .tippy-content {
-        font-size: 14px;
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 14px at 14px/1em */
+        font-size: 1em;
     }
 
     /* TODO: Clean this logic up after drop Bootstrap styling */
@@ -73,9 +78,14 @@
         0 7px 13px hsl(0deg 0% 0% / 15%),
         0 5px 8px hsl(0deg 0% 0% / 12%),
         0 2px 4px hsl(0deg 0% 0% / 10%);
+    /* Tippy dropdown widgets scale with the base font-size. */
+    font-size: var(--base-font-size-px);
 
     .tippy-content {
-        font-size: 14px;
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 14px at 14px/1em */
+        font-size: 1em;
         color: hsl(0deg 0% 75%);
         padding: 0;
     }
@@ -86,10 +96,16 @@
     border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
     box-shadow: var(--box-shadow-popover-menu);
+    /* Popover menus should scale no smaller than 15px,
+       but scale up with the base font-size. */
+    font-size: max(15px, var(--base-font-size-px));
 
     > .tippy-content {
         padding: 0;
-        font-size: 14px;
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 15 at 15px/1em */
+        font-size: 1em;
     }
 
     > .tippy-arrow {
