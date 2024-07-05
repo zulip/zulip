@@ -56,6 +56,29 @@ tasks you need to go back to or documents you reference often.
 
 {end_tabs}
 
+## Unstar all messages
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Hover over <i class="zulip-icon zulip-icon-star-filled"></i> **Starred messages**
+   in the **views** section of the left sidebar.
+
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
+
+1. Click **Unstar all messages**. If you don't see this option,
+   then you have no starred messages.
+
+1. Approve by clicking **Confirm**.
+
+!!! tip ""
+
+    If the **views** section in the left sidebar is collapsed, click the
+    triangle to the left of **VIEWS** to uncollapse it.
+
+{end_tabs}
+
 ## Toggle starred messages counter
 
 By default, Zulip displays the number of starred messages in the left
