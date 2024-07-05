@@ -555,7 +555,7 @@ export function dispatch_normal_event(event) {
                         );
                         if (is_narrowed_to_stream) {
                             assert(message_lists.current !== undefined);
-                            message_lists.current.update_trailing_bookend();
+                            message_lists.current.update_trailing_bookend(true);
                         }
                         stream_data.delete_sub(stream.stream_id);
                         stream_settings_ui.remove_stream(stream.stream_id);
