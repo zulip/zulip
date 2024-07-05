@@ -20,7 +20,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
+import {$t_html} from "./i18n";
 import * as message_lists from "./message_lists";
 import {user_can_send_direct_message} from "./message_util";
 import * as message_view from "./message_view";
@@ -353,25 +353,6 @@ function show_user_card_popover(
     );
 }
 
-function copy_email_handler(e) {
-    const $email_el = $(e.trigger.parentElement);
-    const $email_label = $email_el.find(".user_popover_email");
-    const $copy_icon = $email_el.find("i");
-
-    // only change the parent element's text back to email
-    // and not overwrite the tooltip.
-    $email_el.addClass("email_copied");
-    $copy_icon.addClass("hide_copy_icon");
-    $email_label.text($t({defaultMessage: "Email copied"}));
-
-    setTimeout(() => {
-        $email_el.removeClass("email_copied");
-        $copy_icon.removeClass("hide_copy_icon");
-        $email_label.text($copy_icon.attr("data-clipboard-text"));
-    }, 1500);
-    e.clearSelection();
-}
-
 function init_email_clipboard() {
     /*
         This shows (and enables) the copy-text icon for folks
@@ -392,7 +373,9 @@ function init_email_clipboard() {
             if ($copy_email_icon[0]) {
                 $copy_email_icon.removeClass("hide_copy_icon");
                 const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
-                copy_email_clipboard.on("success", copy_email_handler);
+                copy_email_clipboard.on("success", (e) => {
+                    show_copied_confirmation(e.trigger);
+                });
             }
         }
     });
@@ -408,9 +391,7 @@ function init_email_tooltip(user) {
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
             tippy.default(this, {
-                placement: "bottom",
                 content: people.get_visible_email(user),
-                interactive: true,
                 appendTo: () => document.body,
             });
         }

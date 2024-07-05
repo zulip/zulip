@@ -1070,8 +1070,6 @@ ul.popover-group-menu-member-list {
 }
 
 .user-email-field {
-    transition: all 0.4s ease;
-
     & .user_popover_email {
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -1088,10 +1086,6 @@ ul.popover-group-menu-member-list {
         &:hover {
             color: hsl(170deg 48% 54%);
         }
-    }
-
-    &.email_copied {
-        color: hsl(170deg 48% 54%) !important;
     }
 }
 
