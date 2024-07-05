@@ -810,7 +810,8 @@ h4.user_group_setting_subsection_title {
         .tab-container {
             .ind-tab {
                 padding: 3px 4px;
-                width: 80px;
+                min-width: 80px;
+                width: auto;
             }
         }
 
@@ -1249,7 +1250,8 @@ div.settings-radio-input-parent {
 
             .tab-container {
                 .ind-tab {
-                    width: 85px;
+                    min-width: 85px;
+                    width: auto;
                 }
             }
         }
