@@ -62,8 +62,8 @@ from zerver.models import (
     BotStorageData,
     CustomProfileField,
     CustomProfileFieldValue,
+    DirectMessageGroup,
     GroupGroupMembership,
-    Huddle,
     Message,
     MutedUser,
     NamedUserGroup,
@@ -584,12 +584,12 @@ class RealmImportExportTest(ExportFile):
         self.send_group_direct_message(
             self.example_user("iago"), [self.example_user("cordelia"), self.example_user("AARON")]
         )
-        direct_message_group_a = Huddle.objects.last()
+        direct_message_group_a = DirectMessageGroup.objects.last()
         self.send_group_direct_message(
             self.example_user("ZOE"),
             [self.example_user("hamlet"), self.example_user("AARON"), self.example_user("othello")],
         )
-        direct_message_group_b = Huddle.objects.last()
+        direct_message_group_b = DirectMessageGroup.objects.last()
 
         direct_message_group_c_message_id = self.send_group_direct_message(
             self.example_user("AARON"),
@@ -1043,8 +1043,9 @@ class RealmImportExportTest(ExportFile):
                 Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id).id,
             )
 
-        for dm_group in Huddle.objects.all():
-            # Huddles don't have a realm column, so we just test all Huddles for simplicity.
+        for dm_group in DirectMessageGroup.objects.all():
+            # Direct Message groups don't have a realm column, so we just test all
+            # Direct Message groups for simplicity.
             self.assertEqual(
                 dm_group.recipient_id,
                 Recipient.objects.get(type=Recipient.DIRECT_MESSAGE_GROUP, type_id=dm_group.id).id,
@@ -1272,7 +1273,9 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_group_direct_message(r: Realm) -> str:
             direct_message_group_hash = get_direct_message_group_hashes(r)
-            direct_message_group_id = Huddle.objects.get(huddle_hash=direct_message_group_hash).id
+            direct_message_group_id = DirectMessageGroup.objects.get(
+                huddle_hash=direct_message_group_hash
+            ).id
             direct_message_group_recipient = Recipient.objects.get(
                 type_id=direct_message_group_id, type=3
             )

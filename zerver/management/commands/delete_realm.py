@@ -59,9 +59,9 @@ realms used for testing; consider using deactivate_realm instead."""
         # storage; failing to do this leaves dangling files
         do_delete_all_realm_attachments(realm)
 
-        # TODO: This approach leaks Recipient and Huddle objects,
-        # because those don't have a foreign key to the Realm or any
-        # other model it cascades to (Realm/Stream/UserProfile/etc.).
+        # TODO: This approach leaks Recipient and DirectMessageGroup
+        # objects, because those don't have a foreign key to the Realm
+        # or any other model it cascades to (Realm/Stream/UserProfile/etc.).
         realm.delete()
 
         print("Realm has been successfully permanently deleted.")

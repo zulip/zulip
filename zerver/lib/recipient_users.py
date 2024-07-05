@@ -3,7 +3,7 @@ from typing import Dict, Optional, Sequence
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
-from zerver.models import Huddle, Recipient, UserProfile
+from zerver.models import DirectMessageGroup, Recipient, UserProfile
 from zerver.models.recipients import (
     get_direct_message_group_hash,
     get_or_create_direct_message_group,
@@ -56,10 +56,10 @@ def get_recipient_from_user_profiles(
     if create:
         direct_message_group = get_or_create_direct_message_group(user_ids)
     else:
-        # We intentionally let the Huddle.DoesNotExist escape, in the
-        # case that there is no such direct message group, and the user
-        # passed create=False
-        direct_message_group = Huddle.objects.get(
+        # We intentionally let the DirectMessageGroup.DoesNotExist escape,
+        # in the case that there is no such direct message group, and the
+        # user passed create=False
+        direct_message_group = DirectMessageGroup.objects.get(
             huddle_hash=get_direct_message_group_hash(user_ids)
         )
     return Recipient(

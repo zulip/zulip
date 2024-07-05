@@ -21,18 +21,20 @@ class Recipient(models.Model):
     of audiences Zulip supports for a message.
 
     Recipient has just two attributes: The enum type, and a type_id,
-    which is the ID of the UserProfile/Stream/Huddle object containing
-    all the metadata for the audience. There are 3 recipient types:
+    which is the ID of the UserProfile/Stream/DirectMessageGroup object
+    containing all the metadata for the audience. There are 3 recipient
+    types:
 
     1. 1:1 direct message: The type_id is the ID of the UserProfile
        who will receive any message to this Recipient. The sender
        of such a message is represented separately.
     2. Stream message: The type_id is the ID of the associated Stream.
     3. Group direct message: In Zulip, group direct messages are
-       represented by Huddle objects, which encode the set of users
-       in the conversation. The type_id is the ID of the associated Huddle
-       object; the set of users is usually retrieved via the Subscription
-       table. See the Huddle model for details.
+       represented by DirectMessageGroup objects, which encode the set of
+       users in the conversation. The type_id is the ID of the associated
+       DirectMessageGroup object; the set of users is usually retrieved
+       via the Subscription table. See the DirectMessageGroup model for
+       details.
 
     See also the Subscription model, which stores which UserProfile
     objects are subscribed to which Recipient objects.
@@ -112,25 +114,32 @@ def bulk_get_direct_message_group_user_ids(recipient_ids: List[int]) -> Dict[int
     return result_dict
 
 
-class Huddle(models.Model):
+class DirectMessageGroup(models.Model):
     """
     Represents a group of individuals who may have a
     group direct message conversation together.
 
-    The membership of the Huddle is stored in the Subscription table just like with
-    Streams - for each user in the Huddle, there is a Subscription object
-    tied to the UserProfile and the Huddle's recipient object.
+    The membership of the DirectMessageGroup is stored in the Subscription
+    table just like with Streams - for each user in the DirectMessageGroup,
+    there is a Subscription object tied to the UserProfile and the
+    DirectMessageGroup's recipient object.
 
     A hash of the list of user IDs is stored in the huddle_hash field
     below, to support efficiently mapping from a set of users to the
-    corresponding Huddle object.
+    corresponding DirectMessageGroup object.
     """
 
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
     huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)
-    # Foreign key to the Recipient object for this Huddle.
+    # Foreign key to the Recipient object for this DirectMessageGroup.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+
+    # TODO: The model still uses the old "zerver_huddle" database table.
+    # As a part of the migration of "Huddle" to "DirectMessageGroup"
+    # it needs to be renamed to "zerver_directmessagegroup".
+    class Meta:
+        db_table = "zerver_huddle"
 
 
 def get_direct_message_group_hash(id_list: List[int]) -> str:
@@ -139,17 +148,18 @@ def get_direct_message_group_hash(id_list: List[int]) -> str:
     return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
-def get_or_create_direct_message_group(id_list: List[int]) -> Huddle:
+def get_or_create_direct_message_group(id_list: List[int]) -> DirectMessageGroup:
     """
-    Takes a list of user IDs and returns the Huddle object for the
-    group consisting of these users. If the Huddle object does not
-    yet exist, it will be transparently created.
+    Takes a list of user IDs and returns the DirectMessageGroup
+    object for the group consisting of these users. If the
+    DirectMessageGroup object does not yet exist, it will be
+    transparently created.
     """
     from zerver.models import Subscription, UserProfile
 
     direct_message_group_hash = get_direct_message_group_hash(id_list)
     with transaction.atomic():
-        (direct_message_group, created) = Huddle.objects.get_or_create(
+        (direct_message_group, created) = DirectMessageGroup.objects.get_or_create(
             huddle_hash=direct_message_group_hash
         )
         if created:

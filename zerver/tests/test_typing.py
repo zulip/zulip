@@ -1,7 +1,7 @@
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Huddle
+from zerver.models import DirectMessageGroup
 from zerver.models.recipients import get_direct_message_group_hash
 
 
@@ -203,7 +203,9 @@ class TypingHappyPathTestDirectMessages(ZulipTestCase):
         expected_recipient_ids = {user.id for user in expected_recipients}
 
         direct_message_group_hash = get_direct_message_group_hash(list(expected_recipient_ids))
-        self.assertFalse(Huddle.objects.filter(huddle_hash=direct_message_group_hash).exists())
+        self.assertFalse(
+            DirectMessageGroup.objects.filter(huddle_hash=direct_message_group_hash).exists()
+        )
 
         params = dict(
             to=orjson.dumps([user.id for user in recipient_users]).decode(),
@@ -219,7 +221,9 @@ class TypingHappyPathTestDirectMessages(ZulipTestCase):
         # We should not be adding new Direct Message groups
         # just because a user started typing in the compose
         # box.  Let's wait till they send an actual message.
-        self.assertFalse(Huddle.objects.filter(huddle_hash=direct_message_group_hash).exists())
+        self.assertFalse(
+            DirectMessageGroup.objects.filter(huddle_hash=direct_message_group_hash).exists()
+        )
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}

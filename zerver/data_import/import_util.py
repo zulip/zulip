@@ -32,7 +32,7 @@ from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
-    Huddle,
+    DirectMessageGroup,
     Message,
     Realm,
     RealmEmoji,
@@ -486,7 +486,7 @@ def build_stream(
 
 
 def build_direct_message_group(direct_message_group_id: int) -> ZerverFieldsT:
-    direct_message_group = Huddle(
+    direct_message_group = DirectMessageGroup(
         id=direct_message_group_id,
     )
     return model_to_dict(direct_message_group)

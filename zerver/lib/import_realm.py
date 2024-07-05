@@ -50,8 +50,8 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     DefaultStream,
+    DirectMessageGroup,
     GroupGroupMembership,
-    Huddle,
     Message,
     MutedUser,
     NamedUserGroup,
@@ -999,7 +999,7 @@ def disable_restricted_authentication_methods(data: TableData) -> None:
 # * Realm's announcements_streams and group_permissions
 # * UserProfile, in order by ID to avoid bot loop issues
 # * Now can do all realm_tables
-# * Huddle
+# * DirectMessageGroup
 # * Recipient
 # * Subscription
 # * Message
@@ -1232,10 +1232,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             realm_emoji.save(update_fields=["author_id"])
 
     if "zerver_huddle" in data:
-        update_model_ids(Huddle, data, "huddle")
-        # We don't import Huddle yet, since we don't have the data to
-        # compute direct message group hashes until we've imported some
-        # of the tables below.
+        update_model_ids(DirectMessageGroup, data, "huddle")
+        # We don't import DirectMessageGroup yet, since we don't have
+        # the data to compute direct message group hashes until we've
+        # imported some of the tables below.
         # We can't get direct message group hashes without processing
         # subscriptions first, during which
         # get_direct_message_groups_from_subscription is called.
@@ -1317,8 +1317,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     if "zerver_huddle" in data:
         process_direct_message_group_hash(data, "zerver_huddle")
-        bulk_import_model(data, Huddle)
-        for direct_message_group in Huddle.objects.filter(recipient=None):
+        bulk_import_model(data, DirectMessageGroup)
+        for direct_message_group in DirectMessageGroup.objects.filter(recipient=None):
             recipient = Recipient.objects.get(
                 type=Recipient.DIRECT_MESSAGE_GROUP, type_id=direct_message_group.id
             )

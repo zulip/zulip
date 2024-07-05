@@ -72,7 +72,7 @@ from zerver.lib.validator import (
     check_string_or_int_list,
 )
 from zerver.models import (
-    Huddle,
+    DirectMessageGroup,
     Message,
     Realm,
     Recipient,
@@ -597,7 +597,7 @@ class NarrowBuilder:
             )
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
-        except Huddle.DoesNotExist:
+        except DirectMessageGroup.DoesNotExist:
             # Group DM where huddle doesn't exist
             return query.where(maybe_negate(false()))
 

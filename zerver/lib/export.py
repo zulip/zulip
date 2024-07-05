@@ -41,8 +41,8 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     DefaultStream,
+    DirectMessageGroup,
     GroupGroupMembership,
-    Huddle,
     Message,
     MutedUser,
     NamedUserGroup,
@@ -1131,7 +1131,7 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
     )
     realm_huddle_recipient_ids = {sub.recipient_id for sub in realm_huddle_subs}
 
-    # Mark all Huddles whose recipient ID contains a cross-realm user.
+    # Mark all Direct Message groups whose recipient ID contains a cross-realm user.
     unsafe_huddle_recipient_ids = set()
     for sub in Subscription.objects.select_related("user_profile").filter(
         recipient__in=realm_huddle_recipient_ids
@@ -1157,7 +1157,7 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
 
     response["_huddle_recipient"] = huddle_recipients
     response["_huddle_subscription"] = huddle_subscription_dicts
-    response["zerver_huddle"] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
+    response["zerver_huddle"] = make_raw(DirectMessageGroup.objects.filter(id__in=huddle_ids))
 
 
 def custom_fetch_scheduled_messages(response: TableData, context: Context) -> None:

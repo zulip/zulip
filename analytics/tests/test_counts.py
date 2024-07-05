@@ -63,7 +63,7 @@ from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Client,
-    Huddle,
+    DirectMessageGroup,
     Message,
     NamedUserGroup,
     PreregistrationUser,
@@ -174,12 +174,12 @@ class AnalyticsTestCase(ZulipTestCase):
         stream.save(update_fields=["recipient"])
         return stream, recipient
 
-    def create_huddle_with_recipient(self, **kwargs: Any) -> Tuple[Huddle, Recipient]:
+    def create_huddle_with_recipient(self, **kwargs: Any) -> Tuple[DirectMessageGroup, Recipient]:
         self.name_counter += 1
         defaults = {"huddle_hash": f"hash{self.name_counter}"}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        huddle = Huddle.objects.create(**kwargs)
+        huddle = DirectMessageGroup.objects.create(**kwargs)
         recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.DIRECT_MESSAGE_GROUP)
         huddle.recipient = recipient
         huddle.save(update_fields=["recipient"])
