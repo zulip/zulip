@@ -266,6 +266,8 @@
         margin-right: 10px;
 
         .sp-container {
+            /* The base-font size for the color container is 12px,
+               inherited from the upstream spectrum.css file. */
             background-color: hsl(0deg 0% 100%);
             cursor: pointer;
             border: none;
@@ -287,7 +289,8 @@
                 border: 1px solid hsl(0deg 0% 80%);
                 border-radius: 4px;
                 color: hsl(0deg 0% 25%);
-                font-size: 12px;
+                /* 12px at 12px/1em */
+                font-size: 1em;
                 padding: 6px;
                 text-transform: capitalize;
                 text-align: center;
@@ -317,7 +320,8 @@ ul {
         text-align: center;
 
         &:not(.popover_action_icon, .guest-indicator) {
-            width: 14px;
+            /* 14px at 14px/1em */
+            width: 1em;
         }
 
         &:not(.popover_action_icon, .custom_user_field i) {
@@ -327,7 +331,8 @@ ul {
         &.zulip-icon {
             /* These icons are different from font awesome icons,
                 so they need to be aligned separately. */
-            line-height: 14px;
+            /* 14px at 14px/1em */
+            line-height: 1em;
             position: relative;
 
             &:not(.zulip-icon-bot) {
@@ -335,7 +340,8 @@ ul {
             }
 
             &.popover_action_icon {
-                font-size: 17px;
+                /* 17px at 14px/1em */
+                font-size: 1.2142em;
                 line-height: 1;
                 top: 1px;
             }
@@ -420,7 +426,8 @@ ul {
         .bot {
             color: hsl(180deg 5% 74%);
             vertical-align: top;
-            width: 20px;
+            /* 20px at 14px/1em */
+            width: 1.4286em;
             padding-top: 3.5px;
             text-align: center;
         }
@@ -524,7 +531,8 @@ ul {
     }
 
     #exit-sign {
-        font-size: 1.5rem;
+        /* 24px at 14px/1em */
+        font-size: 1.7143em;
         line-height: 1;
     }
 
@@ -564,11 +572,13 @@ ul {
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button {
         text-decoration: none;
-        font-size: 15px;
+        /* 15px at 14px/1em */
+        font-size: 1.0714em;
     }
 
     .user-profile-manage-own-copy-link-button {
-        font-size: 19px;
+        /* 19px at 14px/1em */
+        font-size: 1.3571em;
         text-decoration: none;
     }
 
@@ -638,7 +648,8 @@ ul {
         margin: 0;
         display: inline-block;
         font-weight: inherit;
-        font-size: 21px;
+        /* 21px at 14px/1em */
+        font-size: 1.5em;
     }
 
     #user-profile-streams-tab {
@@ -962,8 +973,9 @@ ul {
     opacity: 0.8;
 
     .status-emoji {
-        height: 18px;
-        width: 18px;
+        /* 18px at 14px/1em */
+        height: 1.2857em;
+        width: 1.2857em;
         /* Override the default 3px left margin for status emoji, which is
            intended for their presentation elsewhere to the left of a
            user's name. */
@@ -984,6 +996,7 @@ ul {
 }
 
 #move_topic_modal {
+    /* Modals have a 16px/1em base font-size. */
     & form {
         margin: 0;
     }
@@ -994,7 +1007,8 @@ ul {
 
         .dropdown-widget-button {
             outline: none;
-            line-height: 24px;
+            /* 24px at 16px/1em */
+            line-height: 1.5em;
             width: auto;
             max-width: 206px;
         }
@@ -1006,9 +1020,11 @@ ul {
             color: var(--color-text-default);
 
             .stream-privacy-type-icon {
-                font-size: 13px;
-                width: 13px;
-                height: 13px;
+                /* 13px at 16px/1em */
+                font-size: 0.8125em;
+                /* 13px at 13px/1em */
+                width: 1em;
+                height: 1em;
                 position: relative;
                 top: 2px;
             }
@@ -1082,7 +1098,8 @@ ul {
 
 .recipient-bar-topic-visibility-switcher {
     .tab-option-content {
-        font-size: 15px;
+        /* 15px at 14px/1em */
+        font-size: 1.0714em;
         color: var(--color-text-popover-menu);
         gap: 10px;
         justify-content: flex-start;
@@ -1138,18 +1155,20 @@ ul {
     }
 
     .full-name {
-        font-size: 18px;
+        /* 18px at 14px/1em */
+        font-size: 1.2857;
         font-weight: 600;
-        line-height: 20px;
+        /* 20px at 18px/1em */
+        line-height: 1.1111em;
         color: var(--color-text-full-name) !important;
         max-width: 150px;
         word-break: break-word;
     }
 
     .user-type {
-        font-size: 14px;
         font-weight: 400;
-        line-height: 16px;
+        /* 16px at 14px/1em */
+        line-height: 1.1429em;
         color: var(--color-text-item) !important;
     }
 }
@@ -1196,14 +1215,18 @@ ul {
         align-items: flex-start;
         gap: 5px;
         padding: 3px 10px;
-        font-size: 15px;
-        line-height: 16px;
+        /* 15px at 15px/1em */
+        font-size: 1em;
+        /* 16px at 15px/1em */
+        line-height: 1.0667em;
         min-height: 26px;
 
         .popover-menu-icon {
-            width: 16px;
-            height: 16px;
-            font-size: 16px;
+            /* 16px at 15px/1em */
+            font-size: 1.0667em;
+            /* 16px at 16px/1em */
+            width: 1em;
+            height: 1em;
             text-align: center;
         }
     }
@@ -1267,8 +1290,9 @@ ul {
     }
 
     .status_emoji {
-        width: 16px;
-        height: 16px;
+        /* 16px at 15px/1em */
+        width: 1.0667em;
+        height: 1.0667em;
     }
 
     .zulip-icon {
@@ -1342,10 +1366,12 @@ ul {
         .org-info {
             display: flex;
             justify-content: flex-start;
-            font-size: 15px;
+            /* 15px at 14px/1em */
+            font-size: 1.0714em;
             font-style: normal;
             font-weight: 400;
-            line-height: 16px; /* 114.286% */
+            /* 16px at 15px/1em */
+            line-height: 1.0667em;
             letter-spacing: 0.28px;
 
             &:focus-within {
@@ -1386,14 +1412,17 @@ ul {
         }
 
         .org-name {
-            font-size: 17px;
+            /* 17px at 15px/1em */
+            font-size: 1.1333em;
             font-weight: 600;
-            line-height: 22px;
+            /* 22px at 17px/1em */
+            line-height: 1.2941em;
             padding: 0 10px;
         }
 
         .org-upgrade {
-            font-size: 14px;
+            /* 14px at 15px/1em */
+            font-size: 0.9333em;
         }
 
         .org-upgrade,
@@ -1429,10 +1458,12 @@ ul.popover-menu-list {
         box-sizing: border-box;
         color: var(--color-popover-hotkey-hint);
         text-align: center;
-        font-size: 14px;
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
         font-style: normal;
         font-weight: 500;
-        line-height: 14px;
+        /* 14px at 14px/1em */
+        line-height: 1em;
         min-width: 1.25rem;
         padding: 2px 4px;
         border-radius: 3px;
