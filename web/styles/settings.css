@@ -891,6 +891,11 @@ input[type="checkbox"] {
     .config-download-text {
         margin-left: 5px;
     }
+
+    .ind-tab {
+        width: auto;
+        min-width: 90px;
+    }
 }
 
 .bots_list {
