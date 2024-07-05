@@ -929,11 +929,17 @@ td.pointer {
                values ensure a 26px x 25px clickable area for the icon. */
             padding: 2.5px 3px;
 
-            &:active {
+            &::before {
+                /* We specify block display so the
+                   scaling transform below works as
+                   expected. */
+                display: block;
+            }
+
+            &:active::before {
                 transform: scale(0.92);
                 transform-origin: center;
                 outline: 0;
-                transition: unset;
             }
 
             &:focus {
