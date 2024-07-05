@@ -388,7 +388,13 @@ export class MessageList {
         // If user narrows to a stream, don't update
         // trailing bookend if user is subscribed.
         const sub = stream_data.get_sub(stream_name);
-        if (sub && sub.subscribed && !page_params.is_spectator && !force_render) {
+        if (
+            sub &&
+            sub.subscribed &&
+            !this.last_message_historical &&
+            !page_params.is_spectator &&
+            !force_render
+        ) {
             return;
         }
 
