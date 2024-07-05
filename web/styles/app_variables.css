@@ -85,7 +85,11 @@
     --left-sidebar-header-icon-width: 15px;
     /* Space between section in the left sidebar. */
     --left-sidebar-sections-vertical-gutter: 8px;
-    --left-sidebar-bottom-scrolling-buffer: 25px;
+    /* The legacy value here is 25px; that's the unitless legacy line-height
+       of 20px, plus 5px at 14px/1em */
+    --left-sidebar-bottom-scrolling-buffer: calc(
+        (var(--legacy-body-line-height-unitless) * 1em) + 0.3571em
+    );
 
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
