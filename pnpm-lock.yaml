@@ -14,6 +14,9 @@ patchedDependencies:
   source-sans@3.46.0:
     hash: 4n7ij66tzyhzaqnxsenbilrxr4
     path: patches/source-sans@3.46.0.patch
+  tippy.js@6.3.7:
+    hash: mlbmk5pq4q6iuwarqu6solgeeq
+    path: patches/tippy.js@6.3.7.patch
 
 importers:
 
@@ -243,7 +246,7 @@ importers:
         version: 4.1.1
       tippy.js:
         specifier: ^6.3.7
-        version: 6.3.7
+        version: 6.3.7(patch_hash=mlbmk5pq4q6iuwarqu6solgeeq)
       turndown:
         specifier: ^7.0.0
         version: 7.2.0
@@ -15105,7 +15108,7 @@ snapshots:
 
   tinyqueue@2.0.3: {}
 
-  tippy.js@6.3.7:
+  tippy.js@6.3.7(patch_hash=mlbmk5pq4q6iuwarqu6solgeeq):
     dependencies:
       '@popperjs/core': 2.11.8
 

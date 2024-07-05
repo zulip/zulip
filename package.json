@@ -158,7 +158,8 @@
     },
     "patchedDependencies": {
       "@uppy/core@3.13.0": "patches/@uppy__core@3.10.1.patch",
-      "source-sans@3.46.0": "patches/source-sans@3.46.0.patch"
+      "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
+      "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
     }
   },
   "nyc": {
