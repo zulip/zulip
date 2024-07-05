@@ -126,12 +126,8 @@
     & input[type="text"] {
         /* Reset from zulip.css */
         height: unset;
-
         border: 1px solid hsl(0deg 0% 80%);
         box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-        transition:
-            border-color linear 0.2s,
-            box-shadow linear 0.2s;
         border-radius: 4px;
         color: hsl(0deg 0% 33%);
 
@@ -140,6 +136,9 @@
             outline: 0;
             box-shadow: none;
             background-color: var(--color-background-widget-input);
+            transition:
+                border-color linear 0.2s,
+                box-shadow linear 0.2s;
         }
     }
 }
@@ -218,19 +217,20 @@ button {
         padding: 4px;
         padding-left: 14px;
         padding-right: 14px;
-        transition: none 0.2s ease;
         transition-property: background-color, border-color, color;
 
         &:hover,
         &:focus {
             outline: 0;
             border-color: hsl(156deg 30% 50%);
+            transition: none 0.2s ease;
         }
 
         &:active {
             border-color: hsl(156deg 30% 40%);
             color: hsl(156deg 44% 43%);
             background-color: hsl(154deg 33% 96%);
+            transition: none 0.2s ease;
         }
     }
 }
