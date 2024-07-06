@@ -440,6 +440,9 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             const $next = $pill.next();
 
             funcs.removePill($pill[0]!);
+            // Since removing a pill moves the $input, typeahead needs to refresh
+            // to appear at the correct position.
+            store.$input.trigger(new $.Event("typeahead.refreshPosition"));
             $next.trigger("focus");
         });
 
