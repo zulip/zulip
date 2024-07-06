@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0541_alter_realmauditlog_options"),
+        ("zerver", "0542_onboardingusermessage"),
     ]
 
     operations = [
