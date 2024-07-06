@@ -505,7 +505,8 @@ export class Typeahead<ItemType extends string | object> {
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
             .on("click", this.element_click.bind(this))
-            .on("keydown", this.keydown.bind(this));
+            .on("keydown", this.keydown.bind(this))
+            .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
 
         this.$menu
             .on("click", "li", this.click.bind(this))
@@ -735,6 +736,14 @@ export class Typeahead<ItemType extends string | object> {
         }
         this.$menu.find(".active").removeClass("active");
         $(e.currentTarget).addClass("active");
+    }
+
+    refreshPosition(e: JQuery.Event): void {
+        e.stopPropagation();
+        // Refresh the typeahead menu to account for any changes in the
+        // input position by asking popper to recompute your tooltip's position.
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.instance?.popperInstance?.update();
     }
 }
 
