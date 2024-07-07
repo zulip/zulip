@@ -72,44 +72,6 @@ from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_
 from zerver.tornado.django_api import send_event_on_commit
 
 
-def send_user_remove_events_on_stream_deactivation(
-    stream: Stream, subscribed_users: list[UserProfile]
-) -> None:
-    guest_subscribed_users = [user for user in subscribed_users if user.is_guest]
-
-    if len(guest_subscribed_users) == 0:  # nocoverage
-        # Save a few database queries in the case that the stream
-        # didn't contain any guest users.
-        return
-
-    other_subscriptions_of_subscribed_users = get_subscribers_of_target_user_subscriptions(
-        guest_subscribed_users
-    )
-    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
-        guest_subscribed_users, stream.realm
-    )
-
-    subscriber_ids = {user.id for user in subscribed_users}
-    inaccessible_user_dict: dict[int, set[int]] = defaultdict(set)
-    for guest_user in guest_subscribed_users:
-        users_accessible_by_guest = (
-            {guest_user.id}
-            | other_subscriptions_of_subscribed_users[guest_user.id]
-            | users_involved_in_dms_dict[guest_user.id]
-        )
-        users_inaccessible_to_guest = subscriber_ids - users_accessible_by_guest
-        for user_id in users_inaccessible_to_guest:
-            inaccessible_user_dict[user_id].add(guest_user.id)
-
-    for user_id, notify_user_ids in inaccessible_user_dict.items():
-        event_remove_user = dict(
-            type="realm_user",
-            op="remove",
-            person=dict(user_id=user_id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)),
-        )
-        send_event_on_commit(stream.realm, event_remove_user, list(notify_user_ids))
-
-
 @transaction.atomic(savepoint=False)
 def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> None:
     # If the stream is already deactivated, this is a no-op
@@ -130,13 +92,6 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
 
-    stream_subscribers = get_active_subscriptions_for_stream_id(
-        stream.id, include_deactivated_users=True
-    ).select_related("user_profile")
-    subscribed_users = [sub.user_profile for sub in stream_subscribers]
-    stream_subscribers.update(active=False)
-
-    was_invite_only = stream.invite_only
     was_public = stream.is_public()
     was_web_public = stream.is_web_public
 
@@ -145,7 +100,6 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     # changing stream privacy. And due to this we also need to duplicate
     # the code to unset is_web_public field on attachments below.
     stream.deactivated = True
-    stream.invite_only = True
     # Preserve as much as possible the original stream name while giving it a
     # special prefix that both indicates that the stream is deactivated and
     # frees up the original name for reuse.
@@ -159,13 +113,13 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     new_name = (hashed_stream_id + "!DEACTIVATED:" + old_name)[: Stream.MAX_NAME_LENGTH]
 
     stream.name = new_name[: Stream.MAX_NAME_LENGTH]
-    stream.save(update_fields=["name", "deactivated", "invite_only"])
+    stream.save(update_fields=["name", "deactivated"])
 
     assert stream.recipient_id is not None
     if was_web_public:
         assert was_public
         # Unset the is_web_public and is_realm_public cache on attachments,
-        # since the stream is now private.
+        # since the stream is now archived.
         Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
             is_web_public=None, is_realm_public=None
         )
@@ -173,7 +127,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
             is_web_public=None, is_realm_public=None
         )
     elif was_public:
-        # Unset the is_realm_public cache on attachments, since the stream is now private.
+        # Unset the is_realm_public cache on attachments, since the stream is now archived.
         Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
             is_realm_public=None
         )
@@ -191,12 +145,9 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
 
     stream_dict = stream_to_dict(stream)
-    stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
+    stream_dict.update(dict(name=old_name))
     event = dict(type="stream", op="delete", streams=[stream_dict])
     send_event_on_commit(stream.realm, event, affected_user_ids)
-
-    if stream.realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
-        send_user_remove_events_on_stream_deactivation(stream, subscribed_users)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -235,32 +186,27 @@ def deactivated_streams_by_old_name(realm: Realm, stream_name: str) -> QuerySet[
 @transaction.atomic(savepoint=False)
 def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfile | None) -> None:
     realm = stream.realm
+    stream_subscribers = get_active_subscriptions_for_stream_id(
+        stream.id, include_deactivated_users=True
+    ).select_related("user_profile")
+
     if not stream.deactivated:
         raise JsonableError(_("Channel is not currently deactivated"))
     if Stream.objects.filter(realm=realm, name=new_name).exists():
         raise JsonableError(
             _("Channel named {channel_name} already exists").format(channel_name=new_name)
         )
+    if stream.invite_only and not stream_subscribers:
+        raise JsonableError(_("Channel is private and have no subscribers"))
     assert stream.recipient_id is not None
 
     stream.deactivated = False
     stream.name = new_name
 
-    # We only set invite_only=True during deactivation, which can lead
-    # to the invalid state of to invite-only but also web-public
-    # streams.  Explicitly reset the access; we do not use
-    # do_change_stream_permission because no users need be notified,
-    # and it cannot handle the broken state that may currently exist.
-    stream.is_web_public = False
-    stream.invite_only = True
-    stream.history_public_to_subscribers = True
     stream.save(
         update_fields=[
             "name",
             "deactivated",
-            "is_web_public",
-            "invite_only",
-            "history_public_to_subscribers",
         ]
     )
 
@@ -292,17 +238,12 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
 
     recent_traffic = get_streams_traffic({stream.id}, realm)
 
-    # All admins always get to know about private streams' existence,
-    # but we only subscribe the realm owners.
-    send_stream_creation_event(
-        realm, stream, [user.id for user in realm.get_admin_users_and_bots()], recent_traffic
-    )
-    bulk_add_subscriptions(
-        realm=realm,
-        streams=[stream],
-        users=realm.get_human_owner_users(),
-        acting_user=acting_user,
-    )
+    subscribed_users = {sub.user_profile for sub in stream_subscribers}
+    admin_users_and_bots = set(realm.get_admin_users_and_bots())
+
+    notify_users = admin_users_and_bots | subscribed_users
+
+    send_stream_creation_event(realm, stream, [user.id for user in notify_users], recent_traffic)
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
