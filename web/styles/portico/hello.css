@@ -112,6 +112,21 @@ ul {
         z-index: 5;
     }
 
+    .h1-subheader {
+        font-family: var(--font-ops);
+        font-style: normal;
+        font-weight: 350;
+        font-size: 24px;
+        line-height: 142%;
+        text-align: center;
+        font-feature-settings:
+            "pnum" on,
+            "lnum" on;
+        color: hsl(0deg 0% 100%);
+        margin: 0 10px;
+        z-index: 5;
+    }
+
     .appshot-1 {
         display: inline-block;
         margin-top: 20px;
