@@ -324,6 +324,17 @@ export function try_deliver_locally(
         return undefined;
     }
 
+    if (message_request.type === "stream") {
+        const stream = stream_data.get_sub_by_id(message_request.stream_id);
+        if (
+            stream &&
+            stream_data.is_support_stream(stream) &&
+            !stream_data.can_access_topics_in_stream(stream)
+        ) {
+            return undefined;
+        }
+    }
+
     const local_id_float = local_message.get_next_id_float();
 
     if (!local_id_float) {

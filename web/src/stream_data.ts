@@ -493,6 +493,15 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     );
 }
 
+export function is_support_stream(sub: StreamSubscription): boolean {
+    const can_access_stream_topics_group_id = sub.can_access_stream_topics_group;
+    const can_access_stream_topics_group = user_groups.get_user_group_from_id(
+        can_access_stream_topics_group_id,
+    );
+
+    return can_access_stream_topics_group.name !== "role:everyone";
+}
+
 export function can_access_stream_email(sub: StreamSubscription): boolean {
     return (
         (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
@@ -612,6 +621,18 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return false;
     }
     return true;
+}
+
+export function can_access_topics_in_stream(stream: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    const group_allowed_to_access_topics = stream.can_access_stream_topics_group;
+    return user_groups.is_user_in_group(
+        group_allowed_to_access_topics,
+        people.my_current_user_id(),
+    );
 }
 
 export function is_subscribed(stream_id: number): boolean {
