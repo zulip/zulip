@@ -32,6 +32,8 @@ let original_file: File;
 // This ID is used to remove file from Uppy dashboard.
 // In order to removed the form that is created each time an image is uploaded.
 let fileID: string;
+let edited = true;
+let reset_scale = false;
 
 export function get_edited_file(): File {
     return edited_file;
@@ -52,24 +54,6 @@ export type CropperOptions = {
     aspectRatio: number;
     cropSquare: boolean;
 };
-
-function upload_direct_widget(
-    file: File,
-    upload_function: UploadFunction,
-    $upload_button: JQuery,
-): void {
-    const $realm_logo_section = $upload_button.closest(".image_upload_widget");
-    if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
-        upload_function({files: [file]}, true, false);
-    } else if ($realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
-        upload_function({files: [file]}, false, false);
-    } else {
-        upload_function({files: [file]}, null, true);
-    }
-    if (any_active()) {
-        dialog_widget.close();
-    }
-}
 
 function is_image_format(file: File): boolean {
     const type = file.type;
@@ -240,6 +224,53 @@ async function scale_image(file: File): Promise<File> {
     });
 }
 
+async function handle_file_input(
+    files: FileList | null,
+    $input_error: JQuery,
+    max_file_upload_size: number,
+    cropper_options: CropperOptions,
+    clear: () => void,
+    accept: (file: File, scalable: boolean) => void,
+): Promise<boolean> {
+    let scalable = false;
+    if (files?.[0] === undefined) {
+        $input_error.hide();
+    } else if (files?.length === 1) {
+        const file = files[0];
+        if (file) {
+            if (file.size > max_file_upload_size * 1024 * 1024) {
+                $input_error.text(
+                    $t(
+                        {defaultMessage: "File size must be at most {max_file_size} MiB."},
+                        {max_file_size: max_file_upload_size},
+                    ),
+                );
+                $input_error.show();
+                clear();
+            } else if (!is_image_format(file)) {
+                $input_error.text($t({defaultMessage: "File type is not supported."}));
+                $input_error.show();
+                clear();
+            } else {
+                reset_scale = false;
+                original_file = file;
+                if (image_editor_options.cropperOptions && image_editor_options.actions) {
+                    image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
+                    image_editor_options.actions.cropSquare = cropper_options.cropSquare;
+                }
+                scalable = await is_image_scalable(file);
+                if (scalable) {
+                    edited_file = await scale_image(original_file);
+                }
+                accept(original_file, scalable);
+            }
+        }
+    } else {
+        $input_error.text($t({defaultMessage: "Please just upload one file."}));
+    }
+    return scalable;
+}
+
 export function build_widget(
     // function returns a jQuery file input object
     get_file_input: () => JQuery<HTMLInputElement>,
@@ -260,20 +291,7 @@ export function build_widget(
     $other_elements_to_hide?: JQuery,
     max_file_upload_size = default_max_file_size,
 ): UploadWidget {
-    let first = true;
-    let reset_scale = false;
-    let edited = false;
-    let alternate_button = false;
-    let scalable = true;
-    async function accept(file: File): Promise<void> {
-        if (image_editor_options.cropperOptions && image_editor_options.actions) {
-            image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
-            image_editor_options.actions.cropSquare = cropper_options.cropSquare;
-        }
-        if (first) {
-            scalable = await is_image_scalable(file);
-            first = false;
-        }
+    function accept(file: File, scalable: boolean): void {
         $file_name_field.text(file.name);
         if ($preview_text && $preview_image) {
             $preview_image.addClass("upload_widget_image_preview");
@@ -292,7 +310,7 @@ export function build_widget(
                 $preview_text.show();
                 $save_button.show();
                 if (scalable) {
-                    if (!alternate_button) {
+                    if (!reset_scale) {
                         $scale_to_fit_button.show();
                         $reset_scale_to_fit_button.hide();
                     } else {
@@ -320,17 +338,16 @@ export function build_widget(
                         if (file) {
                             fileID = file.id;
                             if (edited) {
-                                edited = false;
-                                alternate_button = !alternate_button;
                                 uppy.removeFile(fileID);
                                 uppy.close();
-                                if (reset_scale) {
-                                    void accept(original_file);
-                                } else {
-                                    void accept(edited_file);
-                                }
                                 reset_scale = !reset_scale;
+                                if (!reset_scale) {
+                                    accept(original_file, scalable);
+                                } else {
+                                    accept(edited_file, scalable);
+                                }
                             } else {
+                                edited = true;
                                 edited_file = new File([file.data], file.name);
                                 const image_blob = URL.createObjectURL(edited_file);
                                 $preview_image.attr("src", image_blob);
@@ -375,7 +392,6 @@ export function build_widget(
         $other_elements_to_hide?.show();
         $clear_button.hide();
         $upload_button.show();
-        first = true;
     }
 
     $clear_button.on("click", (e) => {
@@ -384,18 +400,17 @@ export function build_widget(
     });
 
     $save_button.on("click", (e) => {
+        edited = false;
         $(".uppy-DashboardContent-save").trigger("click");
         e.preventDefault();
     });
 
     $scale_to_fit_button.on("click", (e) => {
-        edited = true;
         $(".uppy-DashboardContent-save").trigger("click");
         e.preventDefault();
     });
 
     $reset_scale_to_fit_button.on("click", (e) => {
-        edited = true;
         $(".uppy-DashboardContent-save").trigger("click");
         e.preventDefault();
     });
@@ -415,37 +430,17 @@ export function build_widget(
 
     get_file_input().attr("accept", supported_types.toString());
     get_file_input().on("change", (e) => {
-        if (e.target.files?.[0] === undefined) {
-            $input_error.hide();
-        } else if (e.target.files?.length === 1) {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > max_file_upload_size * 1024 * 1024) {
-                    $input_error.text(
-                        $t(
-                            {defaultMessage: "File size must be at most {max_file_size} MiB."},
-                            {max_file_size: max_file_upload_size},
-                        ),
-                    );
-                    $input_error.show();
-                    clear();
-                } else if (!is_image_format(file)) {
-                    $input_error.text($t({defaultMessage: "File type is not supported."}));
-                    $input_error.show();
-                    clear();
-                } else {
-                    reset_scale = false;
-                    alternate_button = false;
-                    original_file = file;
-                    void scale_image(original_file).then((scaled_file) => {
-                        edited_file = scaled_file;
-                    });
-                    void accept(original_file);
-                }
-            }
-        } else {
-            $input_error.text($t({defaultMessage: "Please just upload one file."}));
-        }
+        const handle = async (): Promise<void> => {
+            await handle_file_input(
+                e.target.files,
+                $input_error,
+                max_file_upload_size,
+                cropper_options,
+                clear,
+                accept,
+            );
+        };
+        void handle();
     });
 
     $upload_button.on("click", (e) => {
@@ -488,10 +483,8 @@ export function build_direct_upload_widget(
     cropper_options: CropperOptions,
 ): void {
     let first = true;
-    let reset_scale = false;
-    let edited = false;
-    let scalable = true;
     function submit(): void {
+        edited = false;
         $(".uppy-DashboardContent-save").trigger("click");
     }
 
@@ -504,7 +497,7 @@ export function build_direct_upload_widget(
         first = true;
     }
 
-    async function accept(file: File): Promise<void> {
+    function accept(file: File, scalable: boolean): void {
         $input_error.hide();
         if (first) {
             first = false;
@@ -522,7 +515,6 @@ export function build_direct_upload_widget(
             const $resetButton = $("#reset_scale_to_fit");
 
             $scaleButton.on("click", (e) => {
-                edited = true;
                 $(".uppy-DashboardContent-save").trigger("click");
                 $scaleButton.hide();
                 $resetButton.show();
@@ -530,19 +522,12 @@ export function build_direct_upload_widget(
             });
 
             $resetButton.on("click", (e) => {
-                edited = true;
                 $(".uppy-DashboardContent-save").trigger("click");
                 $scaleButton.show();
                 $resetButton.hide();
                 e.preventDefault();
             });
 
-            if (image_editor_options.cropperOptions && image_editor_options.actions) {
-                image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
-                image_editor_options.actions.cropSquare = cropper_options.cropSquare;
-            }
-
-            scalable = await is_image_scalable(file);
             if (scalable) {
                 $scaleButton.show();
             }
@@ -566,21 +551,30 @@ export function build_direct_upload_widget(
                 if (file) {
                     fileID = file.id;
                     if (edited) {
-                        edited = false;
                         uppy.removeFile(fileID);
                         uppy.close();
                         if (reset_scale) {
-                            void accept(original_file);
+                            accept(original_file, scalable);
                         } else {
-                            void accept(edited_file);
+                            accept(edited_file, scalable);
                         }
                         reset_scale = !reset_scale;
                     } else {
-                        upload_direct_widget(
-                            new File([file.data], file.name),
-                            upload_function,
-                            $upload_button,
-                        );
+                        edited = true;
+                        const new_file = new File([file.data], file.name);
+                        const $realm_logo_section = $upload_button.closest(".image_upload_widget");
+                        if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
+                            upload_function({files: [new_file]}, true, false);
+                        } else if (
+                            $realm_logo_section.attr("id") === "realm-day-logo-upload-widget"
+                        ) {
+                            upload_function({files: [new_file]}, false, false);
+                        } else {
+                            upload_function({files: [new_file]}, null, true);
+                        }
+                        if (any_active()) {
+                            dialog_widget.close();
+                        }
                     }
                 } else {
                     clear();
@@ -612,36 +606,17 @@ export function build_direct_upload_widget(
 
     get_file_input().attr("accept", supported_types.toString());
     get_file_input().on("change", (e) => {
-        if (e.target.files?.length === 0) {
-            $input_error.hide();
-        } else if (e.target.files?.length === 1) {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > max_file_upload_size * 1024 * 1024) {
-                    $input_error.text(
-                        $t(
-                            {defaultMessage: "File size must be at most {max_file_size} MiB."},
-                            {max_file_size: max_file_upload_size},
-                        ),
-                    );
-                    $input_error.show();
-                    clear();
-                } else if (!is_image_format(file)) {
-                    $input_error.text($t({defaultMessage: "File type is not supported."}));
-                    $input_error.show();
-                    clear();
-                } else {
-                    reset_scale = false;
-                    original_file = file;
-                    void scale_image(original_file).then((scaled_file) => {
-                        edited_file = scaled_file;
-                    });
-                    void accept(original_file);
-                }
-            }
-        } else {
-            $input_error.text($t({defaultMessage: "Please just upload one file."}));
-        }
+        const handle = async (): Promise<void> => {
+            await handle_file_input(
+                e.target.files,
+                $input_error,
+                max_file_upload_size,
+                cropper_options,
+                clear,
+                accept,
+            );
+        };
+        void handle();
     });
 
     $upload_button.on("click", (e) => {
