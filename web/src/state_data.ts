@@ -217,19 +217,23 @@ const current_user_schema = z.object({
     user_id: z.number(),
 });
 
+const custom_profile_field_types_schema = z.object({
+    SHORT_TEXT: z.object({id: z.number(), name: z.string()}),
+    LONG_TEXT: z.object({id: z.number(), name: z.string()}),
+    DATE: z.object({id: z.number(), name: z.string()}),
+    SELECT: z.object({id: z.number(), name: z.string()}),
+    URL: z.object({id: z.number(), name: z.string()}),
+    EXTERNAL_ACCOUNT: z.object({id: z.number(), name: z.string()}),
+    USER: z.object({id: z.number(), name: z.string()}),
+    PRONOUNS: z.object({id: z.number(), name: z.string()}),
+});
+
+export type CustomProfileFieldTypes = z.infer<typeof custom_profile_field_types_schema>;
+
 // Sync this with zerver.lib.events.do_events_register.
 const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
-    custom_profile_field_types: z.object({
-        SHORT_TEXT: z.object({id: z.number(), name: z.string()}),
-        LONG_TEXT: z.object({id: z.number(), name: z.string()}),
-        DATE: z.object({id: z.number(), name: z.string()}),
-        SELECT: z.object({id: z.number(), name: z.string()}),
-        URL: z.object({id: z.number(), name: z.string()}),
-        EXTERNAL_ACCOUNT: z.object({id: z.number(), name: z.string()}),
-        USER: z.object({id: z.number(), name: z.string()}),
-        PRONOUNS: z.object({id: z.number(), name: z.string()}),
-    }),
+    custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
     giphy_api_key: z.string(),
     giphy_rating_options: z
