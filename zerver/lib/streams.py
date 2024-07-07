@@ -263,7 +263,10 @@ def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream:
 
 
 def access_stream_for_send_message(
-    sender: UserProfile, stream: Stream, forwarder_user_profile: UserProfile | None
+    sender: UserProfile,
+    stream: Stream,
+    forwarder_user_profile: UserProfile | None,
+    archived_channel_notice: bool = False,
 ) -> None:
     # Our caller is responsible for making sure that `stream` actually
     # matches the realm of the sender.
@@ -286,6 +289,9 @@ def access_stream_for_send_message(
             return
         else:
             raise JsonableError(_("User not authorized for this query"))
+
+    if archived_channel_notice:
+        return
 
     if is_cross_realm_bot_email(sender.delivery_email):
         return

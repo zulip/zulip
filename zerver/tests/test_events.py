@@ -3391,8 +3391,6 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
         check_stream_delete("events[0]", events[0])
-        check_realm_user_remove("events[1]", events[1])
-        self.assertEqual(events[1]["person"]["user_id"], hamlet.id)
 
         # Test that if the subscribers of deactivated stream are involved in
         # DMs with guest, then the guest does not get "remove" event for them.
@@ -3407,8 +3405,6 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
         check_stream_delete("events[0]", events[0])
-        check_realm_user_remove("events[1]", events[1])
-        self.assertEqual(events[1]["person"]["user_id"], iago.id)
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):

@@ -126,7 +126,7 @@ def add_emoji_to_message() -> dict[str, object]:
 
     # The message ID here is hardcoded based on the corresponding value
     # for the example message IDs we use in zulip.yaml.
-    message_id = 47
+    message_id = 48
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"
