@@ -23,6 +23,7 @@ import type {
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store.ts";
+import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -697,6 +698,15 @@ export function user_can_set_delete_message_policy(sub?: StreamSubscription): bo
     return user_can_set_delete_message_policy && can_administer_channel(sub);
 }
 
+export function is_support_stream(sub: StreamSubscription): boolean {
+    const can_access_stream_topics_group = sub.can_access_stream_topics_group;
+    if (typeof can_access_stream_topics_group !== "number") {
+        return true;
+    }
+    const group = user_groups.get_user_group_from_id(can_access_stream_topics_group);
+    return group.name !== "role:everyone";
+}
+
 export function user_can_set_topics_policy(sub?: StreamSubscription): boolean {
     if (current_user.is_admin) {
         return true;
@@ -1026,6 +1036,18 @@ export function user_can_move_messages_within_channel(stream: StreamSubscription
             "can_move_messages_within_channel_group",
             "stream",
         )
+    );
+}
+
+export function can_access_topics_in_stream(stream: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    return settings_data.user_has_permission_for_group_setting(
+        stream.can_access_stream_topics_group,
+        "can_access_stream_topics_group",
+        "stream",
     );
 }
 
