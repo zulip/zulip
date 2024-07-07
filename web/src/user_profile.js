@@ -315,10 +315,10 @@ export function get_custom_profile_field_data(user, field, field_types) {
     const profile_field = {};
 
     if (!field_value) {
-        return profile_field;
+        return undefined;
     }
     if (!field_value.value) {
-        return profile_field;
+        return undefined;
     }
     profile_field.id = field.id;
     profile_field.name = field.name;
@@ -378,7 +378,7 @@ export function update_user_custom_profile_fields(user) {
     const field_types = realm.custom_profile_field_types;
 
     const profile_fields = realm.custom_profile_fields
-        .map((f) => get_custom_profile_field_data(user, f, field_types))
+        .flatMap((f) => get_custom_profile_field_data(user, f, field_types) ?? [])
         .filter((f) => f.name !== undefined);
 
     const profile_data = {profile_fields};
@@ -440,7 +440,7 @@ export function show_user_profile_access_error_modal() {
 export function show_user_profile(user, default_tab_key = "profile-tab") {
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
-        .map((f) => get_custom_profile_field_data(user, f, field_types))
+        .flatMap((f) => get_custom_profile_field_data(user, f, field_types) ?? [])
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
     // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
