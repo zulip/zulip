@@ -285,7 +285,7 @@ EXEMPT_FILES = make_set(
         "web/src/user_group_ui_updates.js",
         "web/src/user_groups.ts",
         "web/src/user_pill.ts",
-        "web/src/user_profile.js",
+        "web/src/user_profile.ts",
         "web/src/user_settings.ts",
         "web/src/user_sort.ts",
         "web/src/user_status.ts",
