@@ -1423,7 +1423,7 @@ class StreamAdminTest(ZulipTestCase):
             )
             .exists()
         )
-        self.assertFalse(subscription_exists)
+        self.assertTrue(subscription_exists)
 
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
@@ -1511,6 +1511,12 @@ class StreamAdminTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Channel named existing already exists"):
             do_unarchive_stream(stream, new_name="existing", acting_user=None)
 
+    def test_unarchive_stream_private_with_no_subscribers(self) -> None:
+        stream = self.make_stream("private", invite_only=True)
+        do_deactivate_stream(stream, acting_user=None)
+        with self.assertRaisesRegex(JsonableError, "Channel is private and have no subscribers"):
+            do_unarchive_stream(stream, new_name="private", acting_user=None)
+
     def test_unarchive_stream(self) -> None:
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
@@ -1518,49 +1524,30 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         stream = self.make_stream("new_stream", is_web_public=True)
+        was_invite_only = stream.invite_only
+        was_web_public = stream.is_web_public
+        was_history_public = stream.history_public_to_subscribers
+
         self.subscribe(hamlet, stream.name)
         self.subscribe(cordelia, stream.name)
         do_deactivate_stream(stream, acting_user=None)
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
 
-        # Tell all admins and owners that the stream exists
+        # Tell all subscribers and admins and owners that the stream exists
         self.assertEqual(events[0]["event"]["op"], "create")
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "new_stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
-        self.assertEqual(set(events[0]["users"]), {iago.id, desdemona.id})
-
-        # Tell the owners that they're subscribed to it
-        self.assertEqual(events[1]["event"]["op"], "add")
-        self.assertEqual(events[1]["event"]["subscriptions"][0]["name"], "new_stream")
-        self.assertEqual(events[1]["event"]["subscriptions"][0]["stream_id"], stream.id)
-        self.assertEqual(events[1]["users"], [desdemona.id])
-
-        # iago (as an admin) gets to know that desdemona (the owner) is now subscribed.
-        self.assertEqual(
-            events[2],
-            {
-                "event": {
-                    "op": "peer_add",
-                    "stream_ids": [stream.id],
-                    "type": "subscription",
-                    "user_ids": [desdemona.id],
-                },
-                "users": [iago.id],
-            },
-        )
-
-        # Send a message there logging the reactivation
-        self.assertEqual(events[3]["event"]["type"], "message")
+        self.assertEqual(set(events[0]["users"]), {hamlet.id, cordelia.id, iago.id, desdemona.id})
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.deactivated)
-        self.assertTrue(stream.invite_only)
-        self.assertFalse(stream.is_web_public)
-        self.assertTrue(stream.history_public_to_subscribers)
+        self.assertEqual(stream.invite_only, was_invite_only)
+        self.assertEqual(stream.is_web_public, was_web_public)
+        self.assertEqual(stream.history_public_to_subscribers, was_history_public)
 
         self.assertEqual(
-            [desdemona.id],
+            [hamlet.id, cordelia.id],
             [
                 sub.user_profile_id
                 for sub in get_active_subscriptions_for_stream_id(
@@ -2506,10 +2493,7 @@ class StreamAdminTest(ZulipTestCase):
         deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
         deactivated_stream = get_stream(deactivated_stream_name, realm)
         self.assertTrue(deactivated_stream.deactivated)
-        self.assertTrue(deactivated_stream.invite_only)
         self.assertEqual(deactivated_stream.name, deactivated_stream_name)
-        subscribers = self.users_subscribed_to_stream(deactivated_stream_name, realm)
-        self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
         result = self.client_get("/json/streams", {"include_subscribed": "false"})
