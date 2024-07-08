@@ -1078,13 +1078,21 @@ ul.popover-group-menu-member-list {
 
     & i {
         cursor: pointer;
+        padding: 2px;
+        border-radius: 4px;
 
         &.hide_copy_icon {
             display: none;
         }
 
         &:hover {
-            color: hsl(170deg 48% 54%);
+            color: var(--color-copy-btn-hover);
+            background-color: var(--color-copy-btn-bg-hover);
+        }
+
+        &:active {
+            color: var(--color-copy-btn-active);
+            background-color: var(--color-copy-btn-bg-active);
         }
     }
 }
