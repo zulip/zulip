@@ -329,22 +329,6 @@ function show_user_card_popover(
                 }
                 init_email_clipboard();
                 init_email_tooltip(user);
-
-                const $popover = $(instance.popper);
-                const $user_name_element = $popover.find(".user_full_name");
-                const $bot_owner_element = $popover.find(".bot_owner");
-
-                if (
-                    $user_name_element.prop("clientWidth") < $user_name_element.prop("scrollWidth")
-                ) {
-                    $user_name_element.addClass("tippy-zulip-tooltip");
-                }
-                if (
-                    args.bot_owner &&
-                    $bot_owner_element.prop("clientWidth") < $bot_owner_element.prop("scrollWidth")
-                ) {
-                    $bot_owner_element.addClass("tippy-zulip-tooltip");
-                }
             },
         },
         {
