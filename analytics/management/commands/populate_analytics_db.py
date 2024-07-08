@@ -259,21 +259,21 @@ class Command(ZulipBaseCommand):
         user_data = {
             "public_stream": self.generate_fixture_data(stat, 1.5, 1, 3, 0.6, 8),
             "private_message": self.generate_fixture_data(stat, 0.5, 0.3, 1, 0.6, 8),
-            "huddle_message": self.generate_fixture_data(stat, 0.2, 0.2, 2, 0.6, 8),
+            "group_direct_message": self.generate_fixture_data(stat, 0.2, 0.2, 2, 0.6, 8),
         }
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {
             "public_stream": self.generate_fixture_data(stat, 30, 8, 5, 0.6, 4),
             "private_stream": self.generate_fixture_data(stat, 7, 7, 5, 0.6, 4),
             "private_message": self.generate_fixture_data(stat, 13, 5, 5, 0.6, 4),
-            "huddle_message": self.generate_fixture_data(stat, 6, 3, 3, 0.6, 4),
+            "group_direct_message": self.generate_fixture_data(stat, 6, 3, 3, 0.6, 4),
         }
         insert_fixture_data(stat, realm_data, RealmCount)
         installation_data = {
             "public_stream": self.generate_fixture_data(stat, 300, 80, 5, 0.6, 4),
             "private_stream": self.generate_fixture_data(stat, 70, 70, 5, 0.6, 4),
             "private_message": self.generate_fixture_data(stat, 130, 50, 5, 0.6, 4),
-            "huddle_message": self.generate_fixture_data(stat, 60, 30, 3, 0.6, 4),
+            "group_direct_message": self.generate_fixture_data(stat, 60, 30, 3, 0.6, 4),
         }
         insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(
