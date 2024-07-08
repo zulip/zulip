@@ -17,7 +17,8 @@ export type UserGroupPillData = UserGroup & {
 };
 
 function display_pill(group: UserGroup): string {
-    return `${group.name}: ${group.members.size} users`;
+    const group_members = user_groups.get_recursive_group_members(group);
+    return `${group.name}: ${group_members.size} users`;
 }
 
 export function create_item_from_group_name(
@@ -47,13 +48,15 @@ export function get_group_name_from_item(item: InputPillItem<UserGroupPill>): st
 }
 
 export function get_user_ids(pill_widget: UserGroupPillWidget | CombinedPillContainer): number[] {
-    let user_ids = pill_widget
-        .items()
-        .flatMap((item) =>
-            item.type === "user_group"
-                ? [...user_groups.get_user_group_from_id(item.group_id).members]
-                : [],
-        );
+    let user_ids: number[] = [];
+    for (const user_group_item of pill_widget.items()) {
+        if (user_group_item.type === "user_group") {
+            const user_group = user_groups.get_user_group_from_id(user_group_item.group_id);
+            const group_members = user_groups.get_recursive_group_members(user_group);
+            user_ids.push(...group_members);
+        }
+    }
+
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
 
