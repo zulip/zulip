@@ -31,8 +31,6 @@ permission to invite users.
 
 {!invite-users.md!}
 
-1. Click **Send an email**.
-
 1. Enter a list of email addresses.
 
 1. Select when the invitation will expire.
@@ -62,7 +60,7 @@ permission to invite users.
 
 {!invite-users.md!}
 
-1. Click **Generate invite link**.
+1. Select **Create invite link**.
 
 1. Select when the invitation will expire.
 
