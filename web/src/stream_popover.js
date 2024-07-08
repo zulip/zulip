@@ -606,6 +606,7 @@ export async function build_move_topic_to_stream_popover(
         html_body: render_move_topic_to_stream(args),
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "move_topic_modal",
+        form_id: "move_topic_form",
         on_click: move_topic,
         loading_spinner: true,
         on_shown: focus_on_move_modal_render,
