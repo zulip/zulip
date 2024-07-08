@@ -30,11 +30,7 @@ Bitbucket Cloud (SAAS service) click [here](./bitbucket2).
 
 ![](/static/images/integrations/bitbucket/004.png)
 
-{% if all_event_types is defined %}
-
 {!event-filtering-additional-feature.md!}
-
-{% endif %}
 
 ### Configuration options
 

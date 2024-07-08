@@ -30,11 +30,7 @@ Bitbucket Server click [here](./bitbucket3).
 
 ![](/static/images/integrations/bitbucket/003.png)
 
-{% if all_event_types is defined %}
-
 {!event-filtering-additional-feature.md!}
-
-{% endif %}
 
 ### Configuration options
 

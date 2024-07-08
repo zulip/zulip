@@ -23,11 +23,7 @@ Get Zulip notifications for your Clubhouse Stories and Epics!
 
 ![](/static/images/integrations/clubhouse/001.png)
 
-{% if all_event_types is defined %}
-
 {!event-filtering-additional-feature.md!}
-
-{% endif %}
 
 ### Related documentation
 
