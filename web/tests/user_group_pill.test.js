@@ -20,6 +20,13 @@ const testers = {
     id: 102,
     members: [20, 50, 30, 40],
 };
+const everyone = {
+    name: "role:everyone",
+    description: "Everyone",
+    id: 103,
+    members: [],
+    direct_subgroup_ids: [101, 102],
+};
 
 const admins_pill = {
     group_id: admins.id,
@@ -33,8 +40,17 @@ const testers_pill = {
     type: "user_group",
     display_value: testers.name + ": " + testers.members.length + " users",
 };
+const everyone_pill = {
+    group_id: everyone.id,
+    group_name: everyone.name,
+    type: "user_group",
+    // While we can programmatically set the user count below,
+    // calculating it would almost mimic the entire display function
+    // here, reducing the usefulness of the test.
+    display_value: everyone.name + ": 5 users",
+};
 
-const groups = [admins, testers];
+const groups = [admins, testers, everyone];
 for (const group of groups) {
     user_groups.add(group);
 }
@@ -49,6 +65,7 @@ run_test("create_item", () => {
     test_create_item("admins", [testers_pill], admins_pill);
     test_create_item("admins", [admins_pill], undefined);
     test_create_item("unknown", [], undefined);
+    test_create_item("role:everyone", [], everyone_pill);
 });
 
 run_test("get_stream_id", () => {
@@ -56,19 +73,25 @@ run_test("get_stream_id", () => {
 });
 
 run_test("get_user_ids", () => {
-    const items = [admins_pill, testers_pill];
+    let items = [admins_pill, testers_pill];
     const widget = {items: () => items};
 
-    const user_ids = user_group_pill.get_user_ids(widget);
+    let user_ids = user_group_pill.get_user_ids(widget);
+    assert.deepEqual(user_ids, [10, 20, 30, 40, 50]);
+
+    // Test whether subgroup members are included or not.
+    items = [everyone_pill];
+    user_ids = user_group_pill.get_user_ids(widget);
     assert.deepEqual(user_ids, [10, 20, 30, 40, 50]);
 });
 
 run_test("get_group_ids", () => {
-    const items = [admins_pill, testers_pill];
+    const items = [admins_pill, everyone_pill];
     const widget = {items: () => items};
 
+    // Subgroups should not be part of the results, we use `everyone_pill` to test that.
     const group_ids = user_group_pill.get_group_ids(widget);
-    assert.deepEqual(group_ids, [101, 102]);
+    assert.deepEqual(group_ids, [101, 103]);
 });
 
 run_test("append_user_group", () => {
