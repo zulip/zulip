@@ -238,19 +238,21 @@ def convert_stream_subscription_data(
 
 
 def convert_direct_message_group_data(
-    huddle_id_to_huddle_map: dict[str, dict[str, Any]],
-    huddle_id_mapper: IdMapper[str],
+    direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]],
+    direct_message_group_id_mapper: IdMapper[str],
     user_id_mapper: IdMapper[str],
     subscriber_handler: SubscriberHandler,
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group: list[ZerverFieldsT] = []
 
-    for rc_huddle_id in huddle_id_to_huddle_map:
-        direct_message_group_id = huddle_id_mapper.get(rc_huddle_id)
+    for rc_direct_message_group_id in direct_message_group_id_to_direct_message_group_map:
+        direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
         direct_message_group = build_direct_message_group(direct_message_group_id)
         zerver_direct_message_group.append(direct_message_group)
 
-        direct_message_group_dict = huddle_id_to_huddle_map[rc_huddle_id]
+        direct_message_group_dict = direct_message_group_id_to_direct_message_group_map[
+            rc_direct_message_group_id
+        ]
         direct_message_group_user_ids = {
             user_id_mapper.get(rc_user_id) for rc_user_id in direct_message_group_dict["uids"]
         }
@@ -613,13 +615,13 @@ def process_messages(
     user_id_to_recipient_id: dict[int, int],
     stream_id_mapper: IdMapper[str],
     stream_id_to_recipient_id: dict[int, int],
-    huddle_id_mapper: IdMapper[str],
-    huddle_id_to_recipient_id: dict[int, int],
+    direct_message_group_id_mapper: IdMapper[str],
+    direct_message_group_id_to_recipient_id: dict[int, int],
     thread_id_mapper: IdMapper[str],
     room_id_to_room_map: dict[str, dict[str, Any]],
     dsc_id_to_dsc_map: dict[str, dict[str, Any]],
     direct_id_to_direct_map: dict[str, dict[str, Any]],
-    huddle_id_to_huddle_map: dict[str, dict[str, Any]],
+    direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]],
     zerver_realmemoji: list[ZerverFieldsT],
     total_reactions: list[ZerverFieldsT],
     uploads_list: list[ZerverFieldsT],
@@ -677,9 +679,11 @@ def process_messages(
         if is_pm_data:
             # Message is in a 1:1 or group direct message.
             rc_channel_id = message["rid"]
-            if rc_channel_id in huddle_id_to_huddle_map:
-                direct_message_group_id = huddle_id_mapper.get(rc_channel_id)
-                message_dict["recipient_id"] = huddle_id_to_recipient_id[direct_message_group_id]
+            if rc_channel_id in direct_message_group_id_to_direct_message_group_map:
+                direct_message_group_id = direct_message_group_id_mapper.get(rc_channel_id)
+                message_dict["recipient_id"] = direct_message_group_id_to_recipient_id[
+                    direct_message_group_id
+                ]
             else:
                 rc_member_ids = direct_id_to_direct_map[rc_channel_id]["uids"]
 
@@ -748,7 +752,7 @@ def process_messages(
                 parent_channel_id = dsc_channel["prid"]
                 if (
                     parent_channel_id in direct_id_to_direct_map
-                    or parent_channel_id in huddle_id_to_huddle_map
+                    or parent_channel_id in direct_message_group_id_to_direct_message_group_map
                 ):
                     # Discussion belongs to a direct channel and thus, should not be
                     # linked.
@@ -842,13 +846,16 @@ def separate_channel_private_and_livechat_messages(
     messages: list[dict[str, Any]],
     dsc_id_to_dsc_map: dict[str, dict[str, Any]],
     direct_id_to_direct_map: dict[str, dict[str, Any]],
-    huddle_id_to_huddle_map: dict[str, dict[str, Any]],
+    direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]],
     livechat_id_to_livechat_map: dict[str, dict[str, Any]],
     channel_messages: list[dict[str, Any]],
     private_messages: list[dict[str, Any]],
     livechat_messages: list[dict[str, Any]],
 ) -> None:
-    private_channels_list = [*direct_id_to_direct_map, *huddle_id_to_huddle_map]
+    private_channels_list = [
+        *direct_id_to_direct_map,
+        *direct_message_group_id_to_direct_message_group_map,
+    ]
     for message in messages:
         if not message.get("rid"):
             # Message does not belong to any channel (might be
@@ -872,7 +879,7 @@ def separate_channel_private_and_livechat_messages(
 def map_receiver_id_to_recipient_id(
     zerver_recipient: list[ZerverFieldsT],
     stream_id_to_recipient_id: dict[int, int],
-    huddle_id_to_recipient_id: dict[int, int],
+    direct_message_group_id_to_recipient_id: dict[int, int],
     user_id_to_recipient_id: dict[int, int],
 ) -> None:
     # receiver_id represents stream_id/direct_message_group_id/user_id
@@ -880,7 +887,7 @@ def map_receiver_id_to_recipient_id(
         if recipient["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
         elif recipient["type"] == Recipient.DIRECT_MESSAGE_GROUP:
-            huddle_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
+            direct_message_group_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
         elif recipient["type"] == Recipient.PERSONAL:
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
@@ -891,7 +898,7 @@ def categorize_channels_and_map_with_id(
     team_id_to_team_map: dict[str, dict[str, Any]],
     dsc_id_to_dsc_map: dict[str, dict[str, Any]],
     direct_id_to_direct_map: dict[str, dict[str, Any]],
-    huddle_id_to_huddle_map: dict[str, dict[str, Any]],
+    direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]],
     livechat_id_to_livechat_map: dict[str, dict[str, Any]],
 ) -> None:
     direct_message_group_hashed_channels: dict[frozenset[str], Any] = {}
@@ -901,16 +908,16 @@ def categorize_channels_and_map_with_id(
         elif channel["t"] == "d":
             if len(channel["uids"]) > 2:
                 direct_message_group_members = frozenset(channel["uids"])
-                logging.info("Huddle channel found. UIDs: %r", channel["uids"])
+                logging.info("Direct message group channel found. UIDs: %r", channel["uids"])
 
                 if channel["msgs"] == 0:  # nocoverage
                     # Rocket.Chat exports in the wild sometimes
-                    # contain duplicates of real huddles, with no
-                    # messages in the duplicate.  We ignore these
-                    # minor database corruptions in the Rocket.Chat
-                    # export. Doing so is safe, because a direct
-                    # message group with no message history has no
-                    # value in Zulip's data model.
+                    # contain duplicates of real direct message
+                    # groups, with no messages in the duplicate.
+                    # We ignore these minor database corruptions
+                    # in the Rocket.Chat export. Doing so is safe,
+                    # because a direct message group with no message
+                    # history has no value in Zulip's data model.
                     logging.debug("Skipping direct message group with 0 messages: %s", channel)
                 elif (
                     direct_message_group_members in direct_message_group_hashed_channels
@@ -920,9 +927,9 @@ def categorize_channels_and_map_with_id(
                         direct_message_group_members,
                         direct_message_group_hashed_channels[direct_message_group_members],
                     )
-                    huddle_id_to_huddle_map[channel["_id"]] = direct_message_group_hashed_channels[
-                        direct_message_group_members
-                    ]
+                    direct_message_group_id_to_direct_message_group_map[channel["_id"]] = (
+                        direct_message_group_hashed_channels[direct_message_group_members]
+                    )
 
                     # Ideally, we'd merge the duplicate direct message
                     # groups. Doing so correctly requires special
@@ -930,15 +937,15 @@ def categorize_channels_and_map_with_id(
                     # and on the message import side as well, since
                     # those appear to be mapped via rocketchat channel
                     # IDs and not all of that information is resolved
-                    # via the huddle_id_to_huddle_map.
+                    # via the direct_message_group_id_to_direct_message_group_map.
                     #
                     # For now, just throw an exception here rather
                     # than during the import process.
                     raise NotImplementedError(
-                        "Mapping multiple huddles with messages to one is not fully implemented yet"
+                        "Mapping multiple direct message groups with messages to one is not fully implemented yet"
                     )
                 else:
-                    huddle_id_to_huddle_map[channel["_id"]] = channel
+                    direct_message_group_id_to_direct_message_group_map[channel["_id"]] = channel
                     direct_message_group_hashed_channels[direct_message_group_members] = channel
             else:
                 direct_id_to_direct_map[channel["_id"]] = channel
@@ -1054,7 +1061,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     subscriber_handler = SubscriberHandler()
     user_id_mapper = IdMapper[str]()
     stream_id_mapper = IdMapper[str]()
-    huddle_id_mapper = IdMapper[str]()
+    direct_message_group_id_mapper = IdMapper[str]()
     thread_id_mapper = IdMapper[str]()
 
     process_users(
@@ -1069,7 +1076,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     team_id_to_team_map: dict[str, dict[str, Any]] = {}
     dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
     direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-    huddle_id_to_huddle_map: dict[str, dict[str, Any]] = {}
+    direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
     livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
     categorize_channels_and_map_with_id(
@@ -1078,7 +1085,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         team_id_to_team_map=team_id_to_team_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
-        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
         livechat_id_to_livechat_map=livechat_id_to_livechat_map,
     )
 
@@ -1101,8 +1108,8 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     )
 
     zerver_direct_message_group = convert_direct_message_group_data(
-        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-        huddle_id_mapper=huddle_id_mapper,
+        direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
+        direct_message_group_id_mapper=direct_message_group_id_mapper,
         user_id_mapper=user_id_mapper,
         subscriber_handler=subscriber_handler,
     )
@@ -1150,13 +1157,13 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     )
 
     stream_id_to_recipient_id: dict[int, int] = {}
-    huddle_id_to_recipient_id: dict[int, int] = {}
+    direct_message_group_id_to_recipient_id: dict[int, int] = {}
     user_id_to_recipient_id: dict[int, int] = {}
 
     map_receiver_id_to_recipient_id(
         zerver_recipient=zerver_recipient,
         stream_id_to_recipient_id=stream_id_to_recipient_id,
-        huddle_id_to_recipient_id=huddle_id_to_recipient_id,
+        direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
         user_id_to_recipient_id=user_id_to_recipient_id,
     )
 
@@ -1168,7 +1175,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         messages=rocketchat_data["message"],
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
-        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
         livechat_id_to_livechat_map=livechat_id_to_livechat_map,
         channel_messages=channel_messages,
         private_messages=private_messages,
@@ -1193,13 +1200,13 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_to_recipient_id=user_id_to_recipient_id,
         stream_id_mapper=stream_id_mapper,
         stream_id_to_recipient_id=stream_id_to_recipient_id,
-        huddle_id_mapper=huddle_id_mapper,
-        huddle_id_to_recipient_id=huddle_id_to_recipient_id,
+        direct_message_group_id_mapper=direct_message_group_id_mapper,
+        direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
         thread_id_mapper=thread_id_mapper,
         room_id_to_room_map=room_id_to_room_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
-        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
         zerver_realmemoji=zerver_realmemoji,
         total_reactions=total_reactions,
         uploads_list=uploads_list,
@@ -1219,13 +1226,13 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_to_recipient_id=user_id_to_recipient_id,
         stream_id_mapper=stream_id_mapper,
         stream_id_to_recipient_id=stream_id_to_recipient_id,
-        huddle_id_mapper=huddle_id_mapper,
-        huddle_id_to_recipient_id=huddle_id_to_recipient_id,
+        direct_message_group_id_mapper=direct_message_group_id_mapper,
+        direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
         thread_id_mapper=thread_id_mapper,
         room_id_to_room_map=room_id_to_room_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
-        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
         zerver_realmemoji=zerver_realmemoji,
         total_reactions=total_reactions,
         uploads_list=uploads_list,

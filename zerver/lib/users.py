@@ -720,7 +720,7 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 
 
 def get_subscribers_of_target_user_subscriptions(
-    target_users: list[UserProfile], include_deactivated_users_for_huddles: bool = False
+    target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
 ) -> dict[int, set[int]]:
     target_user_ids = [user.id for user in target_users]
     target_user_subscriptions = (
@@ -748,7 +748,7 @@ def get_subscribers_of_target_user_subscriptions(
         active=True,
     )
 
-    if include_deactivated_users_for_huddles:
+    if include_deactivated_users_for_dm_groups:
         subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
             Q(recipient__type=Recipient.STREAM, is_user_active=True)
             | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
@@ -917,7 +917,7 @@ def get_accessible_user_ids(
     realm: Realm, user_profile: UserProfile, include_deactivated_users: bool = False
 ) -> list[int]:
     subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
-        [user_profile], include_deactivated_users_for_huddles=include_deactivated_users
+        [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
     )
     users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
         [user_profile], realm, include_deactivated_users=include_deactivated_users
