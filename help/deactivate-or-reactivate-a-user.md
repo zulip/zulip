@@ -82,8 +82,6 @@ bots will be deactivated until the user manually
 
 {settings_tab|deactivated}
 
-1. Select the **Deactivated** tab.
-
 1. Click the **Reactivate** button to the right of the user that you
    want to reactivate.
 

@@ -65,7 +65,7 @@ link_mapping = {
     ],
     "deactivated": [
         "Organization settings",
-        "Users",
+        "Deactivated",
         "/#organization/users/deactivated",
     ],
     "bot-list-admin": [
@@ -120,7 +120,7 @@ def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) ->
         relative_link = f"[{setting_name}]({setting_link})"
         # The "Bots" label appears in both Personal and Organization settings
         # in the user interface so we need special text for this setting.
-        if setting_name in ["Bots", "Users", "Invitations"]:
+        if setting_name in ["Bots", "Users", "Invitations", "Deactivated"]:
             return f"1. Navigate to the {relative_link} \
                     tab of the **{setting_type_name}** menu."
         return f"1. Go to {relative_link}."
