@@ -25,6 +25,7 @@ import {csrf_token} from "./csrf";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
+import {get_current_hash_category} from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
@@ -395,7 +396,14 @@ export function hide_user_profile() {
 function on_user_profile_hide() {
     user_streams_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
-    browser_history.exit_overlay();
+    const base = get_current_hash_category();
+    // After closing the user profile, if the hash consists of `#user`
+    // it means that it acts as an overlay rather than a modal (when
+    // no other overlay is in the background). Hence, we also need to
+    // update the hash when we close it.
+    if (base === "user") {
+        browser_history.exit_overlay();
+    }
 }
 
 function show_manage_user_tab(target) {

@@ -21,6 +21,7 @@ import * as compose_ui from "./compose_ui";
 import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
+import {is_overlay_hash} from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -762,7 +763,15 @@ function register_click_handlers() {
 
     $("body").on("click", ".user-card-popover-actions .view_full_user_profile", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        browser_history.go_to_location(`user/${user_id}`);
+        const current_hash = window.location.hash;
+        // If any overlay is already open, we want the user profile to behave
+        // as a modal rather than an overlay.
+        if (is_overlay_hash(current_hash)) {
+            const user = people.get_by_user_id(user_id);
+            user_profile.show_user_profile(user);
+        } else {
+            browser_history.go_to_location(`user/${user_id}`);
+        }
         e.stopPropagation();
         e.preventDefault();
     });
