@@ -805,8 +805,6 @@ strong {
             padding: 3px 10px;
             gap: 5px;
             font-weight: normal;
-            /* We want to keep this `max-width` less than 320px. */
-            max-width: 292px;
             line-height: 20px;
             color: var(--color-dropdown-item);
             white-space: nowrap;
@@ -843,6 +841,11 @@ strong {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+                /* This will make the overall width of the typeahead to be 292px. */
+                max-width: 270px;
+                /* This prevents the increase in height of the list item when there is a heading
+                tag in the description due to markdown rendering. */
+                max-height: 22px;
 
                 & > * {
                     margin-right: 3px;

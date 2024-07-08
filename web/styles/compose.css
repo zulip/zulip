@@ -152,8 +152,21 @@
     opacity: 0.8;
     font-size: 85%;
 
-    & code {
-        display: inline-block;
+    & > a,
+    code,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    ol,
+    ul {
+        display: inline-block !important;
+    }
+
+    & > a {
+        padding: 0 !important;
     }
 }
 
