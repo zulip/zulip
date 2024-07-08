@@ -62,7 +62,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
 
     do_deactivate_user(user_profile, acting_user=acting_user)
 
-    subscribed_huddle_recipient_ids = set(
+    to_resubscribe_recipient_ids = set(
         Subscription.objects.filter(
             user_profile=user_profile, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         ).values_list("recipient_id", flat=True)
@@ -97,7 +97,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
                 recipient=recipient,
                 is_user_active=replacement_user.is_active,
             )
-            for recipient in Recipient.objects.filter(id__in=subscribed_huddle_recipient_ids)
+            for recipient in Recipient.objects.filter(id__in=to_resubscribe_recipient_ids)
         ]
         Subscription.objects.bulk_create(subs_to_recreate)
 
@@ -271,8 +271,8 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
 
     # This code path is parallel to
     # get_subscribers_of_target_user_subscriptions, but can't reuse it
-    # because we need to process stream and huddle subscriptions
-    # separately.
+    # because we need to process stream and direct_message_group
+    # subscriptions separately.
     deactivated_user_subs = Subscription.objects.filter(
         user_profile=user_profile,
         recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
@@ -285,18 +285,18 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         active=True,
     ).values_list("recipient__type", "user_profile_id")
 
-    subscribers_in_deactivated_user_streams = set()
-    subscribers_in_deactivated_user_huddles = set()
+    peer_stream_subscribers = set()
+    peer_direct_message_group_subscribers = set()
     for recipient_type, user_id in subscribers_in_deactivated_user_subs:
         if recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
-            subscribers_in_deactivated_user_huddles.add(user_id)
+            peer_direct_message_group_subscribers.add(user_id)
         else:
-            subscribers_in_deactivated_user_streams.add(user_id)
+            peer_stream_subscribers.add(user_id)
 
     users_with_access_to_deactivated_user = (
         set(non_guest_user_ids)
         | users_involved_in_dms_dict[user_profile.id]
-        | subscribers_in_deactivated_user_huddles
+        | peer_direct_message_group_subscribers
     )
     if users_with_access_to_deactivated_user:
         send_event_on_commit(
@@ -304,7 +304,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         )
 
     users_losing_access_to_deactivated_user = (
-        subscribers_in_deactivated_user_streams - users_with_access_to_deactivated_user
+        peer_stream_subscribers - users_with_access_to_deactivated_user
     )
     if users_losing_access_to_deactivated_user:
         event_remove_user = dict(

@@ -175,16 +175,20 @@ class AnalyticsTestCase(ZulipTestCase):
         stream.save(update_fields=["recipient"])
         return stream, recipient
 
-    def create_huddle_with_recipient(self, **kwargs: Any) -> tuple[DirectMessageGroup, Recipient]:
+    def create_direct_message_group_with_recipient(
+        self, **kwargs: Any
+    ) -> tuple[DirectMessageGroup, Recipient]:
         self.name_counter += 1
         defaults = {"huddle_hash": f"hash{self.name_counter}"}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        huddle = DirectMessageGroup.objects.create(**kwargs)
-        recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.DIRECT_MESSAGE_GROUP)
-        huddle.recipient = recipient
-        huddle.save(update_fields=["recipient"])
-        return huddle, recipient
+        direct_message_group = DirectMessageGroup.objects.create(**kwargs)
+        recipient = Recipient.objects.create(
+            type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP
+        )
+        direct_message_group.recipient = recipient
+        direct_message_group.save(update_fields=["recipient"])
+        return direct_message_group, recipient
 
     def create_message(self, sender: UserProfile, recipient: Recipient, **kwargs: Any) -> Message:
         defaults = {
@@ -547,8 +551,8 @@ class TestCountStats(AnalyticsTestCase):
 
         self.create_user(realm=self.no_message_realm)
         self.create_stream_with_recipient(realm=self.no_message_realm)
-        # This huddle should not show up anywhere
-        self.create_huddle_with_recipient()
+        # This direct_message_group should not show up anywhere
+        self.create_direct_message_group_with_recipient()
 
     def test_upload_quota_used_bytes(self) -> None:
         stat = COUNT_STATS["upload_quota_used_bytes::day"]
@@ -595,11 +599,11 @@ class TestCountStats(AnalyticsTestCase):
         recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
 
         recipient_stream = self.create_stream_with_recipient()[1]
-        recipient_huddle = self.create_huddle_with_recipient()[1]
+        recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         self.create_message(bot, recipient_human1)
         self.create_message(bot, recipient_stream)
-        self.create_message(bot, recipient_huddle)
+        self.create_message(bot, recipient_direct_message_group)
         self.create_message(human1, recipient_human1)
         self.create_message(human2, recipient_human1)
 
@@ -636,19 +640,19 @@ class TestCountStats(AnalyticsTestCase):
         recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
 
         recipient_stream = self.create_stream_with_recipient()[1]
-        recipient_huddle = self.create_huddle_with_recipient()[1]
+        recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         # To be included
         self.create_message(bot, recipient_human1)
         self.create_message(bot, recipient_stream)
-        self.create_message(bot, recipient_huddle)
+        self.create_message(bot, recipient_direct_message_group)
         self.create_message(human1, recipient_human1)
         self.create_message(human2, recipient_human1)
 
         # To be excluded
         self.create_message(self.hourly_user, recipient_human1)
         self.create_message(self.hourly_user, recipient_stream)
-        self.create_message(self.hourly_user, recipient_huddle)
+        self.create_message(self.hourly_user, recipient_direct_message_group)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
 
@@ -692,11 +696,11 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(user1, recipient_stream4)
         self.create_message(user2, recipient_stream3)
 
-        # huddles
-        recipient_huddle1 = self.create_huddle_with_recipient()[1]
-        recipient_huddle2 = self.create_huddle_with_recipient()[1]
-        self.create_message(user1, recipient_huddle1)
-        self.create_message(user2, recipient_huddle2)
+        # direct message groups
+        recipient_direct_message_group1 = self.create_direct_message_group_with_recipient()[1]
+        recipient_direct_message_group2 = self.create_direct_message_group_with_recipient()[1]
+        self.create_message(user1, recipient_direct_message_group1)
+        self.create_message(user2, recipient_direct_message_group2)
 
         # direct messages
         recipient_user1 = Recipient.objects.get(type_id=user1.id, type=Recipient.PERSONAL)
@@ -759,13 +763,13 @@ class TestCountStats(AnalyticsTestCase):
         user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
         private_stream_recipient = self.create_stream_with_recipient(invite_only=True)[1]
         stream_recipient = self.create_stream_with_recipient()[1]
-        huddle_recipient = self.create_huddle_with_recipient()[1]
+        direct_message_group_recipient = self.create_direct_message_group_with_recipient()[1]
 
         # To be included
         self.create_message(user, user_recipient)
         self.create_message(user, private_stream_recipient)
         self.create_message(user, stream_recipient)
-        self.create_message(user, huddle_recipient)
+        self.create_message(user, direct_message_group_recipient)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
 
@@ -773,7 +777,7 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(self.hourly_user, user_recipient)
         self.create_message(self.hourly_user, private_stream_recipient)
         self.create_message(self.hourly_user, stream_recipient)
-        self.create_message(self.hourly_user, huddle_recipient)
+        self.create_message(self.hourly_user, direct_message_group_recipient)
 
         self.assertTableState(
             UserCount,
@@ -806,11 +810,11 @@ class TestCountStats(AnalyticsTestCase):
         user = self.create_user(id=1000)
         user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
         stream_recipient = self.create_stream_with_recipient(id=1000)[1]
-        huddle_recipient = self.create_huddle_with_recipient(id=1000)[1]
+        direct_message_group_recipient = self.create_direct_message_group_with_recipient(id=1000)[1]
 
         self.create_message(user, user_recipient)
         self.create_message(user, stream_recipient)
-        self.create_message(user, huddle_recipient)
+        self.create_message(user, direct_message_group_recipient)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
@@ -827,13 +831,13 @@ class TestCountStats(AnalyticsTestCase):
         recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
 
         recipient_stream = self.create_stream_with_recipient()[1]
-        recipient_huddle = self.create_huddle_with_recipient()[1]
+        recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         client2 = Client.objects.create(name="client2")
 
         self.create_message(user1, recipient_user2, sending_client=client2)
         self.create_message(user1, recipient_stream)
-        self.create_message(user1, recipient_huddle)
+        self.create_message(user1, recipient_direct_message_group)
         self.create_message(user2, recipient_user2, sending_client=client2)
         self.create_message(user2, recipient_user2, sending_client=client2)
 
@@ -923,8 +927,8 @@ class TestCountStats(AnalyticsTestCase):
         # To be excluded
         self.create_message(human2, recipient_human1)
         self.create_message(bot, recipient_human1)
-        recipient_huddle = self.create_huddle_with_recipient()[1]
-        self.create_message(human1, recipient_huddle)
+        recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
+        self.create_message(human1, recipient_direct_message_group)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
