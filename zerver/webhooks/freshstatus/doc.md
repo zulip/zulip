@@ -86,11 +86,7 @@ Receive Freshstatus notifications in Zulip!
 
 ![](/static/images/integrations/freshstatus/001.png)
 
-{% if all_event_types is defined %}
-
 {!event-filtering-additional-feature.md!}
-
-{% endif %}
 
 ### Related documentation
 
