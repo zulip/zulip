@@ -548,7 +548,6 @@ export function initialize_everything(state_data) {
                 ],
                 {trigger},
             );
-            activity_ui.build_user_sidebar();
         },
     });
     stream_list_sort.initialize();
