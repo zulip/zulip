@@ -271,6 +271,30 @@ async function handle_file_input(
     return scalable;
 }
 
+function initialize_uppy(dashboard_target: string, max_file_upload_size: number, file: File): Uppy {
+    const uppy = new Uppy({
+        restrictions: {
+            allowedFileTypes: supported_types,
+            maxNumberOfFiles: 1,
+            maxFileSize: max_file_upload_size * 1024 * 1024,
+        },
+    })
+        .use(Dashboard, {
+            ...dashboard_options,
+            target: dashboard_target,
+            theme: settings_data.using_dark_theme() ? "dark" : "light",
+        })
+        .use(ImageEditor, image_editor_options);
+
+    uppy.addFile({
+        source: "file_input",
+        name: file.name,
+        type: file.type,
+        data: file,
+    });
+
+    return uppy;
+}
 export function build_widget(
     // function returns a jQuery file input object
     get_file_input: () => JQuery<HTMLInputElement>,
@@ -320,59 +344,39 @@ export function build_widget(
                 }
                 $clear_button.show();
 
-                uppy = new Uppy({
-                    restrictions: {
-                        allowedFileTypes: supported_types,
-                        maxNumberOfFiles: 1,
-                        maxFileSize: max_file_upload_size * 1024 * 1024,
-                    },
-                })
-                    .use(Dashboard, {
-                        ...dashboard_options,
-                        target: "#" + $preview_text.attr("id"),
-                        theme: settings_data.using_dark_theme() ? "dark" : "light",
-                    })
-                    .use(ImageEditor, image_editor_options)
-                    .on("file-editor:complete", () => {
-                        const file = uppy.getFiles()[0];
-                        if (file) {
-                            fileID = file.id;
-                            if (edited) {
-                                uppy.removeFile(fileID);
-                                uppy.close();
-                                reset_scale = !reset_scale;
-                                if (!reset_scale) {
-                                    accept(original_file, scalable);
-                                } else {
-                                    accept(edited_file, scalable);
-                                }
+                uppy = initialize_uppy("#" + $preview_text.attr("id"), max_file_upload_size, file);
+                uppy.on("file-editor:complete", () => {
+                    const file = uppy.getFiles()[0];
+                    if (file) {
+                        fileID = file.id;
+                        if (edited) {
+                            uppy.removeFile(fileID);
+                            uppy.close();
+                            reset_scale = !reset_scale;
+                            if (!reset_scale) {
+                                accept(original_file, scalable);
                             } else {
-                                edited = true;
-                                edited_file = new File([file.data], file.name);
-                                const image_blob = URL.createObjectURL(edited_file);
-                                $preview_image.attr("src", image_blob);
-                                uppy.close();
-                                $input_error.hide();
-                                $save_button.hide();
-                                $scale_to_fit_button.hide();
-                                $reset_scale_to_fit_button.hide();
-                                $preview_image?.show();
-                                $file_name_field.show();
-                                $other_elements_to_hide?.show();
-                                if (!$file_name_field.closest("#emoji-file-name").length) {
-                                    $clear_button.hide();
-                                }
+                                accept(edited_file, scalable);
+                            }
+                        } else {
+                            edited = true;
+                            edited_file = new File([file.data], file.name);
+                            const image_blob = URL.createObjectURL(edited_file);
+                            $preview_image.attr("src", image_blob);
+                            uppy.close();
+                            $input_error.hide();
+                            $save_button.hide();
+                            $scale_to_fit_button.hide();
+                            $reset_scale_to_fit_button.hide();
+                            $preview_image?.show();
+                            $file_name_field.show();
+                            $other_elements_to_hide?.show();
+                            if (!$file_name_field.closest("#emoji-file-name").length) {
+                                $clear_button.hide();
                             }
                         }
-                    });
-
-                uppy.addFile({
-                    source: "file input",
-                    name: file.name,
-                    type: file.type,
-                    data: file,
+                    }
                 });
-
                 display_dashboard_after_timeout(true);
             }
         }
@@ -532,62 +536,40 @@ export function build_direct_upload_widget(
                 $scaleButton.show();
             }
         }
-
-        uppy = new Uppy({
-            restrictions: {
-                allowedFileTypes: supported_types,
-                maxNumberOfFiles: 1,
-                maxFileSize: max_file_upload_size * 1024 * 1024,
-            },
-        })
-            .use(Dashboard, {
-                ...dashboard_options,
-                target: "#ImageEditorDiv",
-                theme: settings_data.using_dark_theme() ? "dark" : "light",
-            })
-            .use(ImageEditor, image_editor_options)
-            .on("file-editor:complete", () => {
-                const file = uppy.getFiles()[0];
-                if (file) {
-                    fileID = file.id;
-                    if (edited) {
-                        uppy.removeFile(fileID);
-                        uppy.close();
-                        if (reset_scale) {
-                            accept(original_file, scalable);
-                        } else {
-                            accept(edited_file, scalable);
-                        }
-                        reset_scale = !reset_scale;
+        uppy = initialize_uppy("#ImageEditorDiv", max_file_upload_size, file);
+        uppy.on("file-editor:complete", () => {
+            const file = uppy.getFiles()[0];
+            if (file) {
+                fileID = file.id;
+                if (edited) {
+                    uppy.removeFile(fileID);
+                    uppy.close();
+                    if (reset_scale) {
+                        accept(original_file, scalable);
                     } else {
-                        edited = true;
-                        const new_file = new File([file.data], file.name);
-                        const $realm_logo_section = $upload_button.closest(".image_upload_widget");
-                        if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
-                            upload_function({files: [new_file]}, true, false);
-                        } else if (
-                            $realm_logo_section.attr("id") === "realm-day-logo-upload-widget"
-                        ) {
-                            upload_function({files: [new_file]}, false, false);
-                        } else {
-                            upload_function({files: [new_file]}, null, true);
-                        }
-                        if (any_active()) {
-                            dialog_widget.close();
-                        }
+                        accept(edited_file, scalable);
                     }
+                    reset_scale = !reset_scale;
                 } else {
-                    clear();
-                    $input_error.hide();
+                    edited = true;
+                    const new_file = new File([file.data], file.name);
+                    const $realm_logo_section = $upload_button.closest(".image_upload_widget");
+                    if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
+                        upload_function({files: [new_file]}, true, false);
+                    } else if ($realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
+                        upload_function({files: [new_file]}, false, false);
+                    } else {
+                        upload_function({files: [new_file]}, null, true);
+                    }
+                    if (any_active()) {
+                        dialog_widget.close();
+                    }
                 }
-            });
-
-        uppy.addFile({
-            name: file.name,
-            type: file.type,
-            data: file,
+            } else {
+                clear();
+                $input_error.hide();
+            }
         });
-
         display_dashboard_after_timeout(false);
     }
 
