@@ -1046,6 +1046,7 @@ ul.popover-group-menu-member-list {
 
     .popover-menu-user-info {
         width: max-content;
+        align-self: center;
     }
 
     .popover-menu-user-full-name {
