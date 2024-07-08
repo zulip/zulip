@@ -321,3 +321,15 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 
     return [...system_user_groups, ...user_groups_excluding_system_groups];
 }
+
+// Group name for user-facing display. For settings, we already use
+// description strings for system groups. But those description strings
+// might not be suitable for every case, e.g. we want the name for
+// `role:everyone` to be `Everyone` instead of
+// `Admins, moderators, members and guests` from `settings_config`.
+// Right now, we only change the name for `role:everyone`, that's why
+// we don't store the values in a structured way like
+// `settings_config` yet.
+export function get_display_group_name(user_group: UserGroup): string {
+    return user_group.name === "role:everyone" ? $t({defaultMessage: "Everyone"}) : user_group.name;
+}
