@@ -409,11 +409,17 @@ def is_forwarded(subject: str) -> bool:
 
 def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = message.get("Subject", "")
-    subject = strip_from_subject(subject_header) or "(no topic)"
 
+    subject = strip_from_subject(subject_header)
     # We don't want to reject email messages with disallowed characters in the Subject,
     # so we just remove them to make it a valid Zulip topic name.
-    subject = "".join([char for char in subject if is_character_printable(char)]) or "(no topic)"
+    subject = "".join([char for char in subject if is_character_printable(char)])
+
+    # If the subject gets stripped to the empty string, we need to set some
+    # default value for the message topic. We can't use the usual
+    # "(no topic)" as that value is not permitted if the realm enforces
+    # that all messages must have a topic.
+    subject = subject or _("Email with no subject")
 
     stream, options = decode_stream_email_address(to)
     # Don't remove quotations if message is forwarded, unless otherwise specified:

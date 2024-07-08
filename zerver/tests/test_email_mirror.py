@@ -326,7 +326,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assert_message_stream_name(message, stream.name)
-        self.assertEqual(message.topic_name(), "(no topic)")
+        self.assertEqual(message.topic_name(), "Email with no subject")
 
     def test_receive_stream_email_messages_subject_with_nonprintable_chars(
         self,
@@ -358,7 +358,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.topic_name(), "(no topic)")
+        self.assertEqual(message.topic_name(), "Email with no subject")
 
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1617,12 +1617,12 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual("Test", message.topic_name())
 
-        # If after stripping we get an empty subject, it should get set to (no topic)
+        # If after stripping we get an empty subject, it should get set to Email with no subject
         del incoming_valid_message["Subject"]
         incoming_valid_message["Subject"] = "Re: Fwd: Re: "
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
-        self.assertEqual("(no topic)", message.topic_name())
+        self.assertEqual("Email with no subject", message.topic_name())
 
     def test_strip_from_subject(self) -> None:
         subject_list = orjson.loads(self.fixture_data("subjects.json", type="email"))
