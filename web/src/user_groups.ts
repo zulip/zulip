@@ -1,3 +1,4 @@
+import assert from "minimalistic-assert";
 import type {z} from "zod";
 
 import * as blueslip from "./blueslip";
@@ -201,6 +202,24 @@ export function get_recursive_subgroups(target_user_group: UserGroup): Set<numbe
         }
     }
     return subgroup_ids;
+}
+
+export function get_recursive_group_members(target_user_group: UserGroup): Set<number> {
+    const members = new Set(target_user_group.members);
+    const subgroup_ids = get_recursive_subgroups(target_user_group);
+
+    if (subgroup_ids === undefined) {
+        return members;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        assert(subgroup !== undefined);
+        for (const member of subgroup.members) {
+            members.add(member);
+        }
+    }
+    return members;
 }
 
 export function is_user_in_group(user_group_id: number, user_id: number): boolean {
