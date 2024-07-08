@@ -33,7 +33,10 @@ permission to invite users.
 
 1. Enter a list of email addresses.
 
-1. Select when the invitation will expire.
+1. Toggle **Send me a direct message when my invitation is accepted**,
+   to receive a notification when an invitation is accepted.
+
+1. Select when the invitations will expire.
 
 1. Select what [role](/help/roles-and-permissions) the users will join as.
 
@@ -42,9 +45,10 @@ permission to invite users.
 1. Click **Invite**.
 
 !!! warn ""
-    **Note**: As an anti-spam measure, the number of email invites you can send in a day is
-    limited on the Zulip Cloud Free plan. [Contact support](/help/contact-support)
-    if you hit the limit and want to invite more users.
+    **Note**: As an anti-spam measure, the number of email invitations
+    you can send in a day is limited on the Zulip Cloud Free plan.
+    [Contact support](/help/contact-support) if you hit the limit and
+    want to invite more users.
 
 {end_tabs}
 
