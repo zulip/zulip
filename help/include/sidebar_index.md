@@ -97,6 +97,7 @@
 * [Inbox](/help/inbox)
 * [Recent conversations](/help/recent-conversations)
 * [Combined feed](/help/combined-feed)
+* [Channel feed](/help/channel-feed)
 * [Left sidebar](/help/left-sidebar)
 * [Message actions](/help/message-actions)
 * [Marking messages as read](/help/marking-messages-as-read)
