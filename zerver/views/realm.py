@@ -62,7 +62,6 @@ from zerver.models.realms import (
     InviteToRealmPolicyEnum,
     MoveMessagesBetweenStreamsPolicyEnum,
     OrgTypeEnum,
-    PrivateMessagePolicyEnum,
     WildcardMentionPolicyEnum,
 )
 from zerver.views.user_settings import check_settings_values
@@ -157,7 +156,6 @@ def update_realm(
         Json[MoveMessagesBetweenStreamsPolicyEnum]
     ] = None,
     user_group_edit_policy: Optional[Json[CommonPolicyEnum]] = None,
-    private_message_policy: Optional[Json[PrivateMessagePolicyEnum]] = None,
     wildcard_mention_policy: Optional[Json[WildcardMentionPolicyEnum]] = None,
     video_chat_provider: Optional[Json[int]] = None,
     jitsi_server_url_raw: Annotated[

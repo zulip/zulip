@@ -31,6 +31,9 @@ format used by the Zulip server that they are interacting with.
   [group-setting value](/api/group-setting-values) describing the
   set of users of which at least one member must be included as sender
   or recipient in all personal and group direct messages.
+  Removed `private_message_policy` property, as the permission to send
+  direct messages is now controlled by `direct_message_initiator_group`
+  and `direct_message_permission_group` settings.
 
 **Feature level 269**
 

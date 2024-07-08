@@ -4605,17 +4605,6 @@ paths:
                                       description: |
                                         Whether online presence of other users is shown in this
                                         organization.
-                                    private_message_policy:
-                                      type: integer
-                                      description: |
-                                        [Policy](/api/roles-and-permissions#permission-levels)
-                                        for [who can send direct messages](/help/restrict-direct-messages)
-                                        in this organization.
-
-                                        - 1 = Everyone
-                                        - 2 = Nobody
-
-                                        **Changes**: New in Zulip 3.0 (feature level 1).
                                     require_unique_names:
                                       type: boolean
                                       description: |
@@ -15782,19 +15771,6 @@ paths:
 
                           The day of the week when the organization will send
                           its weekly digest email to inactive users.
-                      realm_private_message_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          [Policy](/api/roles-and-permissions#permission-levels)
-                          for [who can send direct messages](/help/restrict-direct-messages)
-                          in this organization.
-
-                          - 1 = Everyone
-                          - 2 = Nobody
-
-                          **Changes**: New in Zulip 3.0 (feature level 1).
                       realm_direct_message_initiator_group:
                         allOf:
                           - description: |
