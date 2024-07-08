@@ -29,9 +29,11 @@ permission to invite users.
 
 {start_tabs}
 
-{!invite-users.md!}
+{settings_tab|invitations}
 
-1. Click **Send an email**.
+1. Click on **Invite users to organization.**
+
+1. Select the **Send invite email** tab.
 
 1. Enter a list of email addresses.
 
@@ -60,9 +62,11 @@ permission to invite users.
 
 {start_tabs}
 
-{!invite-users.md!}
+{settings_tab|invitations}
 
-1. Click **Generate invite link**.
+1. Click on **Invite users to organization.**
+
+1. Select the **Create invite link** tab.
 
 1. Select when the invitation will expire.
 
