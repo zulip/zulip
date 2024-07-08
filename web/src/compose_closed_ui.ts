@@ -4,6 +4,7 @@ import * as compose_actions from "./compose_actions";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import * as message_util from "./message_util";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
@@ -132,7 +133,7 @@ export function update_buttons_for_private(): void {
 
     let disable_reply;
 
-    if (!pm_ids_string || people.user_can_direct_message(pm_ids_string)) {
+    if (!pm_ids_string || message_util.user_can_send_direct_message(pm_ids_string)) {
         disable_reply = false;
     } else {
         // disable the [Message X] button when in a private narrow

@@ -780,6 +780,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "create_multiuse_invite_group",
             "create_web_public_stream_policy",
             "delete_own_message_policy",
+            "direct_message_initiator_group",
+            "direct_message_permission_group",
             "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
@@ -913,6 +915,10 @@ def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
+        "realm__direct_message_initiator_group",
+        "realm__direct_message_initiator_group__named_user_group",
+        "realm__direct_message_permission_group",
+        "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
     ).get(id=user_profile_id)
 
@@ -963,6 +969,10 @@ def get_user_by_delivery_email(email: str, realm: "Realm") -> UserProfile:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
+        "realm__direct_message_initiator_group",
+        "realm__direct_message_initiator_group__named_user_group",
+        "realm__direct_message_permission_group",
+        "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
     ).get(delivery_email__iexact=email.strip(), realm=realm)
 
@@ -1003,6 +1013,10 @@ def get_user(email: str, realm: "Realm") -> UserProfile:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
+        "realm__direct_message_initiator_group",
+        "realm__direct_message_initiator_group__named_user_group",
+        "realm__direct_message_permission_group",
+        "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
     ).get(email__iexact=email.strip(), realm=realm)
 

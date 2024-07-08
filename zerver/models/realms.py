@@ -332,6 +332,18 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup of which at least one member must be included as sender
+    # or recipient in all personal and group direct messages.
+    direct_message_initiator_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
+    # UserGroup whose members must be included as sender or recipient in all
+    # direct messages.
+    direct_message_permission_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # on_delete field here is set to RESTRICT because we don't want to allow
     # deleting a user group in case it is referenced by this setting.
     # We are not using PROTECT since we want to allow deletion of user groups
@@ -724,11 +736,31 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.MEMBERS,
             id_field_name="can_create_private_channel_group_id",
         ),
+        direct_message_initiator_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="direct_message_initiator_group_id",
+        ),
+        direct_message_permission_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="direct_message_permission_group_id",
+        ),
     )
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
         "can_create_private_channel_group",
         "can_create_public_channel_group",
+        "direct_message_initiator_group",
+        "direct_message_permission_group",
     ]
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -1092,6 +1124,10 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_create_public_channel_group__named_user_group",
         "can_create_private_channel_group",
         "can_create_private_channel_group__named_user_group",
+        "direct_message_initiator_group",
+        "direct_message_initiator_group__named_user_group",
+        "direct_message_permission_group",
+        "direct_message_permission_group__named_user_group",
     ).get(id=realm_id)
 
 

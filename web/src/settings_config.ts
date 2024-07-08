@@ -256,19 +256,6 @@ export const email_invite_to_realm_policy_values = {
     },
 };
 
-export const private_message_policy_values = {
-    by_anyone: {
-        order: 1,
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
-    },
-    disabled: {
-        order: 2,
-        code: 2,
-        description: $t({defaultMessage: "Direct messages disabled"}),
-    },
-};
-
 export const wildcard_mention_policy_values = {
     by_everyone: {
         order: 1,

@@ -15,6 +15,7 @@ import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
+import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -22,9 +23,7 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
-import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
-import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 
 // Opts sent to `compose_actions.start`.
@@ -530,26 +529,21 @@ export function on_narrow(opts: NarrowActivateOpts): void {
             }
             return;
         }
-        // Do not open compose box if organization has disabled sending
-        // direct messages and recipient is not a bot.
+        // Do not open compose box if sender is not allowed to send direct message.
+        const recipient_ids_string = people.emails_strings_to_user_ids_string(
+            opts.private_message_recipient,
+        );
+
         if (
-            realm.realm_private_message_policy ===
-                settings_config.private_message_policy_values.disabled.code &&
-            opts.private_message_recipient
+            recipient_ids_string &&
+            !message_util.user_can_send_direct_message(recipient_ids_string)
         ) {
-            const emails = opts.private_message_recipient.split(",");
-            if (
-                emails.length !== 1 ||
-                emails[0] === undefined ||
-                !people.get_by_email(emails[0])!.is_bot
-            ) {
-                // If we are navigating between direct message conversations,
-                // we want the compose box to close for non-bot users.
-                if (compose_state.composing()) {
-                    cancel();
-                }
-                return;
+            // If we are navigating between direct message conversation,
+            // we want the compose box to close for non-bot users.
+            if (compose_state.composing()) {
+                cancel();
             }
+            return;
         }
 
         // Open the compose box, passing the option to skip attempting
