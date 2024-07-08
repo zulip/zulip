@@ -235,7 +235,7 @@ def convert_direct_message_group_data(
     direct_message_group_data: list[ZerverFieldsT],
     user_data_map: dict[str, dict[str, Any]],
     subscriber_handler: SubscriberHandler,
-    huddle_id_mapper: IdMapper[frozenset[str]],
+    direct_message_group_id_mapper: IdMapper[frozenset[str]],
     user_id_mapper: IdMapper[str],
     realm_id: int,
     team_name: str,
@@ -244,7 +244,9 @@ def convert_direct_message_group_data(
     for direct_message_group in direct_message_group_data:
         if len(direct_message_group["members"]) > 2:
             direct_message_group_members = frozenset(direct_message_group["members"])
-            direct_message_group_id = huddle_id_mapper.get(direct_message_group_members)
+            direct_message_group_id = direct_message_group_id_mapper.get(
+                direct_message_group_members
+            )
             direct_message_group_dict = build_direct_message_group(direct_message_group_id)
             direct_message_group_user_ids = {
                 user_id_mapper.get(username) for username in direct_message_group["members"]
@@ -653,7 +655,7 @@ def write_message_data(
     output_dir: str,
     masking_content: bool,
     stream_id_mapper: IdMapper[str],
-    huddle_id_mapper: IdMapper[frozenset[str]],
+    direct_message_group_id_mapper: IdMapper[frozenset[str]],
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
@@ -663,14 +665,14 @@ def write_message_data(
     mattermost_data_dir: str,
 ) -> None:
     stream_id_to_recipient_id = {}
-    huddle_id_to_recipient_id = {}
+    direct_message_group_id_to_recipient_id = {}
     user_id_to_recipient_id = {}
 
     for d in zerver_recipient:
         if d["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[d["type_id"]] = d["id"]
         elif d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
-            huddle_id_to_recipient_id[d["type_id"]] = d["id"]
+            direct_message_group_id_to_recipient_id[d["type_id"]] = d["id"]
         if d["type"] == Recipient.PERSONAL:
             user_id_to_recipient_id[d["type_id"]] = d["id"]
 
@@ -681,8 +683,8 @@ def write_message_data(
     def get_recipient_id_from_direct_message_group_members(
         direct_message_group_members: frozenset[str],
     ) -> int:
-        receiver_id = huddle_id_mapper.get(direct_message_group_members)
-        return huddle_id_to_recipient_id[receiver_id]
+        receiver_id = direct_message_group_id_mapper.get(direct_message_group_members)
+        return direct_message_group_id_to_recipient_id[receiver_id]
 
     def get_recipient_id_from_username(username: str) -> int:
         receiver_id = user_id_mapper.get(username)
@@ -892,7 +894,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         subscriber_handler = SubscriberHandler()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
-        huddle_id_mapper = IdMapper[frozenset[str]]()
+        direct_message_group_id_mapper = IdMapper[frozenset[str]]()
 
         print("Generating data for", team_name)
         realm = make_realm(realm_id, team)
@@ -928,7 +930,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
                 direct_message_group_data=mattermost_data["direct_channel"],
                 user_data_map=username_to_user,
                 subscriber_handler=subscriber_handler,
-                huddle_id_mapper=huddle_id_mapper,
+                direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
                 realm_id=realm_id,
                 team_name=team_name,
@@ -993,7 +995,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             output_dir=realm_output_dir,
             masking_content=masking_content,
             stream_id_mapper=stream_id_mapper,
-            huddle_id_mapper=huddle_id_mapper,
+            direct_message_group_id_mapper=direct_message_group_id_mapper,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
             zerver_realmemoji=zerver_realmemoji,
