@@ -18,7 +18,7 @@ export type UserGroupPillData = UserGroup & {
 
 function display_pill(group: UserGroup): string {
     const group_members = user_groups.get_recursive_group_members(group);
-    return `${group.name}: ${group_members.size} users`;
+    return `${user_groups.get_display_group_name(group)}: ${group_members.size} users`;
 }
 
 export function create_item_from_group_name(

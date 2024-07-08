@@ -47,7 +47,7 @@ const everyone_pill = {
     // While we can programmatically set the user count below,
     // calculating it would almost mimic the entire display function
     // here, reducing the usefulness of the test.
-    display_value: everyone.name + ": 5 users",
+    display_value: "translated: Everyone: 5 users",
 };
 
 const groups = [admins, testers, everyone];

@@ -470,3 +470,24 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         },
     );
 });
+
+run_test("get_display_group_name", () => {
+    const admins = {
+        name: "Admins",
+        description: "foo",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4]),
+    };
+    const all = {
+        name: "role:everyone",
+        id: 2,
+        members: new Set([2, 3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+    };
+
+    assert.equal(user_groups.get_display_group_name(admins), "Admins");
+    assert.equal(user_groups.get_display_group_name(all), "translated: Everyone");
+});
