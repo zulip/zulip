@@ -68,6 +68,11 @@ link_mapping = {
         "Users",
         "/#organization/users/deactivated",
     ],
+    "invitations": [
+        "Organization settings",
+        "Users",
+        "/#organization/users/invitations",
+    ],
     "bot-list-admin": [
         "Organization settings",
         "Bots",
@@ -92,11 +97,6 @@ link_mapping = {
         "Organization settings",
         "Custom profile fields",
         "/#organization/profile-field-settings",
-    ],
-    "invitations": [
-        "Organization settings",
-        "Invitations",
-        "/#organization/users/invitations",
     ],
     "data-exports-admin": [
         "Organization settings",
