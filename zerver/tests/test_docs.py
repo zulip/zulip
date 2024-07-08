@@ -406,6 +406,26 @@ class HelpTest(ZulipTestCase):
         self.assertIn("<strong>Preferences</strong>", str(result.content))
         self.assertNotIn("/#settings", str(result.content))
 
+    def test_help_users_tab_links(self) -> None:
+        result = self.client_get("/help/invite-new-users")
+        self.assertEqual(result.status_code, 200)
+        # The full sentence hasn't been tested since there's a bunch of
+        # whitespace in the HTML after the invitations link and we
+        # don't want that whitespace to be part of the test since it
+        # might change in the future.
+        self.assertIn(
+            'Navigate to the <a href="/#organization/users/invitations">Invitations</a>',
+            str(result.content),
+        )
+        # Check that the sidebar was rendered properly.
+        self.assertIn("Getting started with Zulip", str(result.content))
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get("/help/invite-new-users", subdomain="")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn("Select the <strong>Invitations</strong> tab.", str(result.content))
+        self.assertNotIn("/#settings", str(result.content))
+
     def test_help_relative_links_for_gear(self) -> None:
         result = self.client_get("/help/analytics")
         self.assertIn(
