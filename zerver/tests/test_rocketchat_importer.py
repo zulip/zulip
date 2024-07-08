@@ -188,7 +188,7 @@ class RocketChatImporter(ZulipTestCase):
         team_id_to_team_map: dict[str, dict[str, Any]] = {}
         dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
         direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        huddle_id_to_huddle_map: dict[str, dict[str, Any]] = {}
+        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
         livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
         with self.assertLogs(level="INFO"):
@@ -198,7 +198,7 @@ class RocketChatImporter(ZulipTestCase):
                 team_id_to_team_map=team_id_to_team_map,
                 dsc_id_to_dsc_map=dsc_id_to_dsc_map,
                 direct_id_to_direct_map=direct_id_to_direct_map,
-                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
                 livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             )
 
@@ -208,7 +208,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(team_id_to_team_map, 1)
         self.assert_length(dsc_id_to_dsc_map, 5)
         self.assert_length(direct_id_to_direct_map, 2)
-        self.assert_length(huddle_id_to_huddle_map, 1)
+        self.assert_length(direct_message_group_id_to_direct_message_group_map, 1)
         self.assert_length(livechat_id_to_livechat_map, 2)
 
         room_id = rocketchat_data["room"][0]["_id"]
@@ -228,9 +228,10 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(direct_id_to_direct_map[direct_id], rocketchat_data["room"][4])
 
         direct_message_group_id = rocketchat_data["room"][12]["_id"]
-        self.assertIn(direct_message_group_id, huddle_id_to_huddle_map)
+        self.assertIn(direct_message_group_id, direct_message_group_id_to_direct_message_group_map)
         self.assertEqual(
-            huddle_id_to_huddle_map[direct_message_group_id], rocketchat_data["room"][12]
+            direct_message_group_id_to_direct_message_group_map[direct_message_group_id],
+            rocketchat_data["room"][12],
         )
 
         livechat_id = rocketchat_data["room"][14]["_id"]
@@ -248,7 +249,7 @@ class RocketChatImporter(ZulipTestCase):
         team_id_to_team_map: dict[str, dict[str, Any]] = {}
         dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
         direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        huddle_id_to_huddle_map: dict[str, dict[str, Any]] = {}
+        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
         livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
         with self.assertLogs(level="INFO"):
@@ -258,7 +259,7 @@ class RocketChatImporter(ZulipTestCase):
                 team_id_to_team_map=team_id_to_team_map,
                 dsc_id_to_dsc_map=dsc_id_to_dsc_map,
                 direct_id_to_direct_map=direct_id_to_direct_map,
-                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
                 livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             )
 
@@ -333,7 +334,7 @@ class RocketChatImporter(ZulipTestCase):
         team_id_to_team_map: dict[str, dict[str, Any]] = {}
         dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
         direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        huddle_id_to_huddle_map: dict[str, dict[str, Any]] = {}
+        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
         livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
         with self.assertLogs(level="INFO"):
@@ -343,7 +344,7 @@ class RocketChatImporter(ZulipTestCase):
                 team_id_to_team_map=team_id_to_team_map,
                 dsc_id_to_dsc_map=dsc_id_to_dsc_map,
                 direct_id_to_direct_map=direct_id_to_direct_map,
-                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
                 livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             )
 
@@ -424,7 +425,7 @@ class RocketChatImporter(ZulipTestCase):
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
         user_id_mapper = IdMapper[str]()
-        huddle_id_mapper = IdMapper[str]()
+        direct_message_group_id_mapper = IdMapper[str]()
 
         user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
 
@@ -440,7 +441,7 @@ class RocketChatImporter(ZulipTestCase):
         team_id_to_team_map: dict[str, dict[str, Any]] = {}
         dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
         direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        huddle_id_to_huddle_map: dict[str, dict[str, Any]] = {}
+        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
         livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
         with self.assertLogs(level="INFO"):
@@ -450,23 +451,23 @@ class RocketChatImporter(ZulipTestCase):
                 team_id_to_team_map=team_id_to_team_map,
                 dsc_id_to_dsc_map=dsc_id_to_dsc_map,
                 direct_id_to_direct_map=direct_id_to_direct_map,
-                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
                 livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             )
 
         zerver_direct_message_group = convert_direct_message_group_data(
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-            huddle_id_mapper=huddle_id_mapper,
+            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
+            direct_message_group_id_mapper=direct_message_group_id_mapper,
             user_id_mapper=user_id_mapper,
             subscriber_handler=subscriber_handler,
         )
 
         self.assert_length(zerver_direct_message_group, 1)
 
-        rc_huddle_id = rocketchat_data["room"][12]["_id"]
-        self.assertTrue(huddle_id_mapper.has(rc_huddle_id))
+        rc_direct_message_group_id = rocketchat_data["room"][12]["_id"]
+        self.assertTrue(direct_message_group_id_mapper.has(rc_direct_message_group_id))
 
-        direct_message_group_id = huddle_id_mapper.get(rc_huddle_id)
+        direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
         self.assertEqual(
             subscriber_handler.get_users(direct_message_group_id=direct_message_group_id), {3, 4, 5}
         )
@@ -527,7 +528,7 @@ class RocketChatImporter(ZulipTestCase):
         subscriber_handler = SubscriberHandler()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
-        huddle_id_mapper = IdMapper[str]()
+        direct_message_group_id_mapper = IdMapper[str]()
 
         user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
 
@@ -543,7 +544,7 @@ class RocketChatImporter(ZulipTestCase):
         team_id_to_team_map: dict[str, dict[str, Any]] = {}
         dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
         direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        huddle_id_to_huddle_map: dict[str, dict[str, Any]] = {}
+        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
         livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
         with self.assertLogs(level="INFO"):
@@ -553,7 +554,7 @@ class RocketChatImporter(ZulipTestCase):
                 team_id_to_team_map=team_id_to_team_map,
                 dsc_id_to_dsc_map=dsc_id_to_dsc_map,
                 direct_id_to_direct_map=direct_id_to_direct_map,
-                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
                 livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             )
 
@@ -565,8 +566,8 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         zerver_direct_message_group = convert_direct_message_group_data(
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-            huddle_id_mapper=huddle_id_mapper,
+            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
+            direct_message_group_id_mapper=direct_message_group_id_mapper,
             user_id_mapper=user_id_mapper,
             subscriber_handler=subscriber_handler,
         )
@@ -581,20 +582,20 @@ class RocketChatImporter(ZulipTestCase):
 
         stream_id_to_recipient_id: dict[int, int] = {}
         user_id_to_recipient_id: dict[int, int] = {}
-        huddle_id_to_recipient_id: dict[int, int] = {}
+        direct_message_group_id_to_recipient_id: dict[int, int] = {}
 
         map_receiver_id_to_recipient_id(
             zerver_recipient=zerver_recipient,
             stream_id_to_recipient_id=stream_id_to_recipient_id,
             user_id_to_recipient_id=user_id_to_recipient_id,
-            huddle_id_to_recipient_id=huddle_id_to_recipient_id,
+            direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
         )
 
         # 6 for streams and 6 for users.
         self.assert_length(zerver_recipient, 13)
         self.assert_length(stream_id_to_recipient_id, 6)
         self.assert_length(user_id_to_recipient_id, 6)
-        self.assert_length(huddle_id_to_recipient_id, 1)
+        self.assert_length(direct_message_group_id_to_recipient_id, 1)
 
         # First user recipients are built, followed by stream recipients in `build_recipients`.
         self.assertEqual(
@@ -612,7 +613,8 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         self.assertEqual(
-            huddle_id_to_recipient_id[zerver_recipient[12]["type_id"]], zerver_recipient[12]["id"]
+            direct_message_group_id_to_recipient_id[zerver_recipient[12]["type_id"]],
+            zerver_recipient[12]["id"],
         )
 
     def test_separate_channel_private_and_livechat_messages(self) -> None:
@@ -623,7 +625,7 @@ class RocketChatImporter(ZulipTestCase):
         team_id_to_team_map: dict[str, dict[str, Any]] = {}
         dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
         direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        huddle_id_to_huddle_map: dict[str, dict[str, Any]] = {}
+        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
         livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
         with self.assertLogs(level="INFO"):
@@ -633,7 +635,7 @@ class RocketChatImporter(ZulipTestCase):
                 team_id_to_team_map=team_id_to_team_map,
                 dsc_id_to_dsc_map=dsc_id_to_dsc_map,
                 direct_id_to_direct_map=direct_id_to_direct_map,
-                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
                 livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             )
 
@@ -645,7 +647,7 @@ class RocketChatImporter(ZulipTestCase):
             messages=rocketchat_data["message"],
             dsc_id_to_dsc_map=dsc_id_to_dsc_map,
             direct_id_to_direct_map=direct_id_to_direct_map,
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
             livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             channel_messages=channel_messages,
             private_messages=private_messages,
@@ -705,7 +707,7 @@ class RocketChatImporter(ZulipTestCase):
             messages=rocketchat_data["message"],
             dsc_id_to_dsc_map=dsc_id_to_dsc_map,
             direct_id_to_direct_map=direct_id_to_direct_map,
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
             livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             channel_messages=channel_messages,
             private_messages=private_messages,
@@ -890,7 +892,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             info_log.output,
             [
-                "INFO:root:Huddle channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
+                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
                 "INFO:root:Starting to process custom emoji",
                 "INFO:root:Done processing emoji",
                 "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",

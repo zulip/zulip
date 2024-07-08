@@ -605,7 +605,7 @@ class NarrowBuilder:
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
         except DirectMessageGroup.DoesNotExist:
-            # Group DM where huddle doesn't exist
+            # Group DM where direct message group doesn't exist
             return query.where(maybe_negate(false()))
 
         # Group direct message
