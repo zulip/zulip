@@ -4306,6 +4306,37 @@ paths:
                                       description: |
                                         The day of the week when the organization will send
                                         its weekly digest email to inactive users.
+                                    direct_message_initiator_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to start a new direct message conversation
+                                            involving other non-bot users. Users who are outside this group and attempt
+                                            to send the first direct message to a given collection of recipient users
+                                            will receive an error, unless all other recipients are bots or the sender.
+
+                                            **Changes**: New in Zulip 9.0 (feature level 270).
+
+                                            Previously, access to send direct messages was controlled by the
+                                            `private_message_policy` realm setting, which supported values of
+                                            1 (enabled) and 2 (disabled).
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                    direct_message_permission_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to fully use direct messages. Users outside
+                                            this group can only send direct messages to conversations where all the
+                                            recipients are in this group, are bots, or are the sender, ensuring that
+                                            every direct message conversation will be visible to at least one user in
+                                            this group.
+
+                                            **Changes**: New in Zulip 9.0 (feature level 270).
+
+                                            Previously, access to send direct messages was controlled by the
+                                            `private_message_policy` realm setting, which supported values of
+                                            1 (enabled) and 2 (disabled).
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     disallow_disposable_email_addresses:
                                       type: boolean
                                       description: |
@@ -15764,6 +15795,37 @@ paths:
                           - 2 = Nobody
 
                           **Changes**: New in Zulip 3.0 (feature level 1).
+                      realm_direct_message_initiator_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to start a new direct message conversation
+                              involving other non-bot users. Users who are outside this group and attempt
+                              to send the first direct message to a given collection of recipient users
+                              will receive an error, unless all other recipients are bots or the sender.
+
+                              **Changes**: New in Zulip 9.0 (feature level 270).
+
+                              Previously, access to send direct messages was controlled by the
+                              `private_message_policy` realm setting, which supported values of
+                              1 (enabled) and 2 (disabled).
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_direct_message_permission_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to fully use direct messages. Users outside
+                              this group can only send direct messages to conversations where all the
+                              recipients are in this group, are bots, or are the sender, ensuring that
+                              every direct message conversation will be visible to at least one user in
+                              this group.
+
+                              **Changes**: New in Zulip 9.0 (feature level 270).
+
+                              Previously, access to send direct messages was controlled by the
+                              `private_message_policy` realm setting, which supported values of
+                              1 (enabled) and 2 (disabled).
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_user_group_edit_policy:
                         type: integer
                         description: |

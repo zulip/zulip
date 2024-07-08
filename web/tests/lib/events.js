@@ -374,6 +374,7 @@ exports.fixtures = {
                 Google: {enabled: true, available: true},
             },
             can_create_public_channel_group: 3,
+            direct_message_permission_group: 3,
         },
     },
 

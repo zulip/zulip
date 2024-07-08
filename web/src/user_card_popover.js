@@ -24,6 +24,7 @@ import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
+import {user_can_send_direct_message} from "./message_util";
 import * as message_view from "./message_view";
 import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
@@ -32,7 +33,6 @@ import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import {hide_all} from "./popovers";
 import * as rows from "./rows";
-import * as settings_config from "./settings_config";
 import * as sidebar_ui from "./sidebar_ui";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
@@ -263,13 +263,13 @@ function get_user_card_popover_data(
         .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types))
         .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
+    const user_id_string = user.user_id.toString();
+    const can_send_private_message =
+        user_can_send_direct_message(user_id_string) && is_active && !is_me;
+
     const args = {
         invisible_mode,
-        can_send_private_message:
-            is_active &&
-            !is_me &&
-            realm.realm_private_message_policy !==
-                settings_config.private_message_policy_values.disabled.code,
+        can_send_private_message,
         display_profile_fields,
         has_message_context,
         is_active,
