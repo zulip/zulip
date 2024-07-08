@@ -114,6 +114,17 @@ settings_markdown = """
 1. On the left, click {setting_reference}.
 """
 
+users_tab_markdown = """
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in the upper
+   right corner of the web or desktop app.
+
+1. Select **{setting_type_name}**.
+
+1. On the left, click **Users**.
+
+1. Select the {setting_reference} tab.
+"""
+
 
 def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) -> str:
     if relative_settings_links:
@@ -124,6 +135,11 @@ def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) ->
             return f"1. Navigate to the {relative_link} \
                     tab of the **{setting_type_name}** menu."
         return f"1. Go to {relative_link}."
+    if setting_name in ["Users", "Deactivated", "Invitations"]:
+        return users_tab_markdown.format(
+            setting_type_name=setting_type_name,
+            setting_reference=f"**{setting_name}**",
+        )
     return settings_markdown.format(
         setting_type_name=setting_type_name,
         setting_reference=f"**{setting_name}**",
