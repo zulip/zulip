@@ -157,11 +157,6 @@ class MoveMessagesBetweenStreamsPolicyEnum(IntEnum):
     NOBODY = 6
 
 
-class PrivateMessagePolicyEnum(IntEnum):
-    UNLIMITED = 1
-    DISABLED = 2
-
-
 class WildcardMentionPolicyEnum(IntEnum):
     EVERYONE = 1
     MEMBERS = 2
@@ -363,11 +358,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     user_group_edit_policy = models.PositiveSmallIntegerField(default=CommonPolicyEnum.MEMBERS_ONLY)
-
-    private_message_policy = models.PositiveSmallIntegerField(
-        default=PrivateMessagePolicyEnum.UNLIMITED
-    )
-    PRIVATE_MESSAGE_POLICY_TYPES = [field.value for field in PrivateMessagePolicyEnum]
 
     # Global policy for who is allowed to use wildcard mentions in
     # streams with a large number of subscribers.  Anyone can use
@@ -687,7 +677,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         move_messages_between_streams_policy=int,
         name=str,
         name_changes_disabled=bool,
-        private_message_policy=int,
         push_notifications_enabled=bool,
         require_unique_names=bool,
         send_welcome_emails=bool,
