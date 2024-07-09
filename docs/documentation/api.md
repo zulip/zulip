@@ -393,7 +393,7 @@ documentation for the REST API endpoint for uploading a file,
 There are no parameters for this endpoint, and only one return value
 specific to this endpoint, `uri`, which is the URL of the uploaded file.
 If we comment out that return value and example from the existing API
-documentation in `zerver/openapi/zulip.yaml`, e.g.,:
+documentation in `zerver/openapi/zulip.yaml`, for example:
 
 ```yaml
   /user_uploads:

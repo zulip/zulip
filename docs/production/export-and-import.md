@@ -468,7 +468,7 @@ If you're hosting multiple organizations and would like to remove
 uploads from a single organization, you'll need to access `realm.id`
 in the management shell before deleting the organization from the
 database (this will be `2` for the first organization created on a
-Zulip server, shown in the example below), e.g.,:
+Zulip server, shown in the example below), for example:
 
 ```bash
 rm -rf /home/zulip/uploads/*/2/
