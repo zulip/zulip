@@ -229,7 +229,6 @@ h3,
 
 #uploaded_files_table > tr > td:nth-of-type(1),
 .upload-file-name {
-    width: 43%;
     word-break: break-all;
 }
 
@@ -398,10 +397,6 @@ select.settings_select {
     .table tr:first-of-type td {
         border-top: none;
     }
-}
-
-.user_role {
-    min-width: 95px;
 }
 
 .button,
@@ -1619,10 +1614,6 @@ $option_title_width: 180px;
     & tbody {
         border-bottom: none;
     }
-}
-
-#admin-active-users-list .last_active {
-    width: 100px;
 }
 
 #payload_url_inputbox {

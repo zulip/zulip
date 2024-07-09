@@ -735,10 +735,6 @@ div.overlay {
         }
     }
 
-    & thead th:not(.actions) {
-        min-width: 100px;
-    }
-
     & thead th {
         color: inherit;
         background-color: hsl(0deg 0% 100%);
