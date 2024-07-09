@@ -346,7 +346,7 @@ function init_email_clipboard() {
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
             const $email_el = $(this).parent();
-            const $copy_email_icon = $email_el.find("i");
+            const $copy_email_icon = $email_el.find("#popover-menu-copy-email");
 
             /*
                 For deactivated users, the copy-email icon will
