@@ -993,10 +993,12 @@ ul.popover-group-menu-member-list {
         overflow: hidden;
     }
 
-    & i {
-        cursor: pointer;
-        padding: 2px;
+    #popover-menu-copy-email {
+        display: flex;
+        padding: 3px 2px 1px;
         border-radius: 4px;
+        color: var(--color-text-item);
+        text-decoration: none;
 
         &.hide_copy_icon {
             display: none;
@@ -1010,6 +1012,10 @@ ul.popover-group-menu-member-list {
         &:active {
             color: var(--color-copy-btn-active);
             background-color: var(--color-copy-btn-bg-active);
+        }
+
+        &:focus-visible {
+            outline-offset: 0;
         }
     }
 }

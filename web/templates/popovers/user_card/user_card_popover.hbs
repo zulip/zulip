@@ -127,7 +127,9 @@
             {{#if user_email}}
                 <li role="none" class="popover-menu-list-item text-item user-email-field hidden-for-spectators">
                     <span class="user_popover_email">{{ user_email }}</span>
-                    <i class="popover-menu-icon zulip-icon zulip-icon-copy hide_copy_icon tippy-zulip-tooltip" data-tippy-content="{{t 'Copy email' }}" data-clipboard-text="{{ user_email }}"></i>
+                    <a role="menuitem" tabindex="0" id="popover-menu-copy-email" class="popover-menu-link tippy-zulip-tooltip hide_copy_icon" aria-label="{{t 'Copy email'}}" data-tippy-content="{{t 'Copy email' }}" data-clipboard-text="{{ user_email }}">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-copy hide" aria-hidden="true"></i>
+                    </a>
                 </li>
             {{/if}}
         {{/if}}
