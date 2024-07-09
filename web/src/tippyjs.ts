@@ -602,6 +602,12 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".personal-menu-clear-status",
+        placement: "top",
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
         /*
             The tooltip for new user group button (+) icon button on #groups
             overlay was not mounted correctly as its sibling element (search bar)
