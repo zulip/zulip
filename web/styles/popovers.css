@@ -159,10 +159,6 @@
             text-decoration: underline;
         }
     }
-
-    ~ i {
-        margin-left: auto;
-    }
 }
 
 .custom-user-url-field {
@@ -992,31 +988,34 @@ ul.popover-group-menu-member-list {
         white-space: nowrap;
         overflow: hidden;
     }
+}
 
-    #popover-menu-copy-email {
-        display: flex;
-        padding: 3px 2px 1px;
-        border-radius: 4px;
-        color: var(--color-text-item);
-        text-decoration: none;
+#popover-menu-copy-email,
+.copy-custom-profile-field-link {
+    display: flex;
+    padding: 3px 2px 1px;
+    border-radius: 4px;
+    color: var(--color-text-item);
+    text-decoration: none !important;
+    margin-left: auto;
 
-        &.hide_copy_icon {
-            display: none;
-        }
+    &.hide_copy_icon {
+        display: none;
+    }
 
-        &:hover {
-            color: var(--color-copy-btn-hover);
-            background-color: var(--color-copy-btn-bg-hover);
-        }
+    &:hover {
+        color: var(--color-copy-btn-hover) !important;
+        background-color: var(--color-copy-btn-bg-hover);
+    }
 
-        &:active {
-            color: var(--color-copy-btn-active);
-            background-color: var(--color-copy-btn-bg-active);
-        }
+    &:active {
+        color: var(--color-copy-btn-active) !important;
+        background-color: var(--color-copy-btn-bg-active);
+    }
 
-        &:focus-visible {
-            outline-offset: 0;
-        }
+    &:focus-visible {
+        outline-offset: 0;
+        color: unset;
     }
 }
 

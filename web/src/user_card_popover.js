@@ -754,7 +754,7 @@ function register_click_handlers() {
         user_profile.show_user_profile(user, "manage-profile-tab");
     });
 
-    new ClipboardJS(".copy-custom-field-url", {
+    new ClipboardJS(".copy-custom-profile-field-link", {
         text(trigger) {
             return $(trigger).parent().find(".custom-profile-field-link").attr("href");
         },
