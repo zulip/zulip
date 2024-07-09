@@ -24,7 +24,7 @@
                 {{/each}}
             </ul>
         </li>
-        {{#unless is_guest}}
+        {{#unless (or is_guest is_system_group)}}
             <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
             <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
                 <a href="{{group_edit_url}}" role="menuitem" class="navigate-link-on-enter popover-menu-link" tabindex="0">
