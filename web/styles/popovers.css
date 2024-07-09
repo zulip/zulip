@@ -144,10 +144,16 @@
 .custom-profile-field-link {
     color: var(--color-text-item);
 
-    &:hover,
-    &:focus {
+    &:hover {
         color: var(--color-text-link);
         text-decoration: none;
+    }
+
+    &:focus-visible {
+        color: var(--color-text-url-hover);
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: 2px;
+        border-radius: 2px;
     }
 
     .custom-profile-field-text {
@@ -1014,8 +1020,10 @@ ul.popover-group-menu-member-list {
     }
 
     &:focus-visible {
+        outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: 0;
-        color: unset;
+        color: var(--color-copy-btn-hover) !important;
+        background-color: var(--color-copy-btn-bg-hover);
     }
 }
 
@@ -1255,6 +1263,7 @@ ul.popover-group-menu-member-list {
 
     &:focus {
         /* Override bootstrap defaults */
+        outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: 0;
     }
 
