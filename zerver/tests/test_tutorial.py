@@ -78,10 +78,10 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "Go to [Preferences](#settings/preferences) "
-                "to [switch between the light and dark themes](/help/dark-theme), "
-                "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
-                "[change your language](/help/change-your-language), and make other tweaks to your Zulip experience."
+                "You can switch between [light and dark theme](/help/dark-theme), "
+                "[pick your favorite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), "
+                "[change your language](/help/change-your-language), and otherwise customize "
+                "your Zulip experience in your [Preferences](#settings/preferences)."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
@@ -93,7 +93,8 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "In Zulip, channels [determine who gets a message](/help/introduction-to-channels).\n\n"
+                "Channels organize conversations based on who needs to see them. "
+                "For example, it's common to have a channel for each team in an organization.\n\n"
                 "[Browse and subscribe to channels](#channels/all)."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
@@ -106,10 +107,12 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "In Zulip, topics [tell you what a message is about](/help/introduction-to-topics). "
-                "They are light-weight subjects, very similar to the subject line of an email.\n\n"
-                "Check out [Recent conversations](#recent) to see what's happening! "
-                'You can return to this conversation by clicking "Direct messages" in the upper left.'
+                "[Topics](/help/introduction-to-topics) summarize what each conversation in Zulip "
+                "is about. You can read Zulip one topic at a time, seeing each message in context, "
+                "no matter how many other conversations are going on.\n\n"
+                "When you start a conversation, label it with a new topic. For a good topic name, "
+                "think about finishing the sentence: “Hey, can we chat about…?”\n\n"
+                "Check out [Recent conversations](#recent) for a list of topics that are being discussed."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
@@ -135,11 +138,10 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "Zulip uses [Markdown](/help/format-your-message-using-markdown), "
-                "an intuitive format for **bold**, *italics*, bulleted lists, and more. "
-                "Click [here](#message-formatting) for a cheat sheet.\n\n"
-                "Check out our [messaging tips](/help/messaging-tips) to learn about emoji reactions, "
-                "code blocks and much more!"
+                "You can **format** *your* `message` using the handy formatting "
+                "buttons, or by typing your formatting with Markdown.\n\n"
+                "Check out the [cheat sheet](#message-formatting) to learn about "
+                "spoilers, global times, and more."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
