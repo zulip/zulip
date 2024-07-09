@@ -1154,6 +1154,12 @@ textarea.new_message_textarea {
            --compose-formatting-buttons-row-height */
         /* 28px at 20px/1em */
         height: 1.4em;
+
+        @media (width < 400px) {
+            /* Remove at mobile widths to make more space
+               for compose buttons */
+            display: none;
+        }
     }
 
     .compose_draft_button {
@@ -1229,6 +1235,14 @@ textarea.new_message_textarea {
             they are hidden in the main row below the compose box. */
             @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
                 display: flex;
+            }
+        }
+
+        .compose_control_button {
+            /* Slightly reduce width so that buttons don't overflow the available
+            space at mobile widths */
+            @media (width < 400px) {
+                width: 1.28em;
             }
         }
     }
