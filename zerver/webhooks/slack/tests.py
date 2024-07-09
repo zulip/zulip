@@ -225,6 +225,46 @@ class SlackWebhookTests(WebhookTestCase):
             expect_noop=True,
         )
 
+    def test_message_with_code_block(self) -> None:
+        message_body = """```def is_bot_message(payload: WildValue) -&gt; bool:\n    app_api_id = payload.get(\"api_app_id\").tame(check_none_or(check_string))\n    bot_app_id = (\n        payload.get(\"event\", {})\n        .get(\"bot_profile\", {})\n        .get(\"app_id\")\n        .tame(check_none_or(check_string))\n    )\n    return bot_app_id is not None and app_api_id == bot_app_id```"""
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
+        self.check_webhook(
+            "message_with_code_block",
+            EXPECTED_TOPIC,
+            expected_message,
+            content_type="application/json",
+        )
+
+    def test_message_with_complex_formatted_texts(self) -> None:
+        message_body = "this is text messages with overlapping formatting\n_**bold with italic**_\n~**bold with strike through**~\n~*italic with strike through*~\n~***all three***~"
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
+        self.check_webhook(
+            "message_with_complex_formatted_texts",
+            EXPECTED_TOPIC,
+            expected_message,
+            content_type="application/json",
+        )
+
+    def test_message_with_complex_formatted_mentions(self) -> None:
+        message_body = "~~***<@U074VRHQ11T>***~~ **#general** ~~***@**all*****~"
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
+        self.check_webhook(
+            "message_with_complex_formatted_mentions",
+            EXPECTED_TOPIC,
+            expected_message,
+            content_type="application/json",
+        )
+
+    def test_message_with_quote_block(self) -> None:
+        message_body = "&gt; This is a quote"
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
+        self.check_webhook(
+            "message_with_quote_block",
+            EXPECTED_TOPIC,
+            expected_message,
+            content_type="application/json",
+        )
+
 
 class SlackLegacyWebhookTests(WebhookTestCase):
     CHANNEL_NAME = "slack"
