@@ -15,10 +15,10 @@
 }
 
 .typeahead.dropdown-menu .typeahead-menu {
-    & li {
+    & > li {
         word-break: break-word;
 
-        & a {
+        & > a {
             display: flex;
             padding: 3px 10px;
             gap: 5px;
