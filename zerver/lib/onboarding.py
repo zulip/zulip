@@ -307,13 +307,16 @@ For a good topic name, think about finishing the sentence: “Hey, can we chat a
 ```spoiler Want to see some examples?
 
 ````python
+
 print("code blocks")
+
 ````
 
 - bulleted
 - lists
 
 Link to a conversation: #**{zulip_discussion_channel_name}>{topic_name}**
+
 ```
 """)
     ).format(
