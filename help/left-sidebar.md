@@ -41,7 +41,7 @@ information you need in the moment.
 
 {end_tabs}
 
-### Show all direct message conversations
+### Show more direct message conversations
 
 {start_tabs}
 
