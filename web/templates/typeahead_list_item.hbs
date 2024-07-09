@@ -35,11 +35,11 @@
     {{> status_emoji status_emoji_info}}
     {{~/if}}
     {{~#if has_secondary_html}}
-    <small class="autocomplete_secondary rendered_markdown">{{{secondary_html}}}</small>
+    <span class="autocomplete_secondary rendered_markdown single-line-rendered-markdown">{{rendered_markdown secondary_html}}</span>
     {{~else if has_secondary}}
-    <small class="autocomplete_secondary">
+    <span class="autocomplete_secondary">
         {{~ secondary ~}}
-    </small>
+    </span>
     {{~/if}}
 </div>
 {{#if is_unsubscribed}}
