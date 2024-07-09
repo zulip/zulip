@@ -26,12 +26,12 @@ export const invite_schema = z.intersection(
         expiry_date: z.number().nullable(),
         id: z.number(),
         invited_as: z.number(),
-        notify_referrer_on_join: z.boolean(),
     }),
     z.discriminatedUnion("is_multiuse", [
         z.object({
             is_multiuse: z.literal(false),
             email: z.string(),
+            notify_referrer_on_join: z.boolean(),
         }),
         z.object({
             is_multiuse: z.literal(true),
