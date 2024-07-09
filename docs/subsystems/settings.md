@@ -29,7 +29,7 @@ Zulip uses the [Django settings
 system](https://docs.djangoproject.com/en/5.0/topics/settings/), which
 means that the settings files are Python programs that set a lot of
 variables with all-capital names like `EMAIL_GATEWAY_PATTERN`. You can
-access these anywhere in the Zulip Django code using e.g.,:
+access these anywhere in the Zulip Django code using, for example:
 
 ```python
 from django.conf import settings
@@ -37,7 +37,8 @@ print(settings.EMAIL_GATEWAY_PATTERN)
 ```
 
 Additionally, if you need to access a Django setting in a shell
-script (or just on the command line for debugging), you can use e.g.,:
+script (or just on the command line for debugging), you can use, for
+example:
 
 ```console
 $ ./scripts/get-django-setting EMAIL_GATEWAY_PATTERN

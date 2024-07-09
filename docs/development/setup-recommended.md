@@ -132,7 +132,7 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    $ sudo apt install rabbitmq-server memcached redis-server postgresql
    ```
 
-1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.,:
+1. Open `/etc/rabbitmq/rabbitmq-env.conf` using, for example:
 
    ```console
    $ sudo nano /etc/rabbitmq/rabbitmq-env.conf
@@ -1094,7 +1094,7 @@ NO_PROXY localhost,127.0.0.1,.example.com,.zulipdev.com
 ```
 
 For proxies that require authentication, the config will be a bit more
-complex, e.g.,:
+complex, for example:
 
 ```text
 HTTP_PROXY http://userName:userPassword@192.168.1.1:8080

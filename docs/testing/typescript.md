@@ -82,7 +82,7 @@ those that:
 
 When migrating a module, we want to be especially thoughtful about
 putting together a commit structure that makes mistakes unlikely and
-the changes easy to verify. E.g.,:
+the changes easy to verify. For example:
 
 - First a commit that just converts the language to TypeScript adding
   types. The result may potentially have some violations of the

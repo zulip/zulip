@@ -172,7 +172,7 @@ from django.utils.translation import gettext as _
 Zulip expects all the error messages to be translatable as well. To
 ensure this, the error message passed to `JsonableError`
 should always be a literal string enclosed by `_()`
-function, e.g.,:
+function, for example:
 
 ```python
 JsonableError(_('English text'))
@@ -180,7 +180,7 @@ JsonableError(_('English text'))
 
 If you're declaring a user-facing string at top level or in a class, you need to
 use `gettext_lazy` instead, to ensure that the translation happens at
-request-processing time when Django knows what language to use, e.g.,:
+request-processing time when Django knows what language to use, for example:
 
 ```python
 from zproject.backends import check_password_strength, email_belongs_to_ldap
