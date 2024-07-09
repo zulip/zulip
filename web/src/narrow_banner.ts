@@ -34,7 +34,7 @@ const MENTIONS_VIEW_EMPTY_BANNER = {
     html: $t_html(
         {
             defaultMessage:
-                "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a stream. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
+                "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
         },
         {
             "z-link": (content_html) =>
