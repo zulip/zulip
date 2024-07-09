@@ -8,7 +8,8 @@
                 {{#if is_bot}}
                 <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                 {{else}}
-                <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"
+                  data-presence-indicator-user-id="{{user_id}}"></span>
                 {{/if}}
             {{/if}}
             {{#if show_manage_menu }}
