@@ -143,24 +143,29 @@ and edit your [profile information](/help/edit-your-profile).
 """)
     elif human_response_lower == "theme":
         return _("""
-Go to [Preferences](#settings/preferences) to [switch between the light and dark themes](/help/dark-theme),
-[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set),
-[change your language](/help/change-your-language), and make other tweaks
-to your Zulip experience.
+You can switch between [light and dark theme](/help/dark-theme), [pick your
+favorite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), [change
+your language](/help/change-your-language), and otherwise customize your Zulip
+experience in your [Preferences](#settings/preferences).
 """)
     elif human_response_lower in ["stream", "streams", "channel", "channels"]:
         return _("""
-In Zulip, channels [determine who gets a message]({help_link}).
+Channels organize conversations based on who needs to see them. For example,
+it's common to have a channel for each team in an organization.
 
 [Browse and subscribe to channels]({settings_link}).
 """).format(help_link="/help/introduction-to-channels", settings_link="#channels/all")
     elif human_response_lower in ["topic", "topics"]:
         return _("""
-In Zulip, topics [tell you what a message is about](/help/introduction-to-topics).
-They are light-weight subjects, very similar to the subject line of an email.
+[Topics](/help/introduction-to-topics) summarize what each conversation in Zulip
+is about. You can read Zulip one topic at a time, seeing each message in
+context, no matter how many other conversations are going on.
 
-Check out [Recent conversations](#recent) to see what's happening!
-You can return to this conversation by clicking "Direct messages" in the upper left.
+When you start a conversation, label it with a new topic. For a good topic name,
+think about finishing the sentence: “Hey, can we chat about…?”
+
+Check out [Recent conversations](#recent) for a list of topics that are being
+discussed.
 """)
     elif human_response_lower in ["keyboard", "shortcuts", "keyboard shortcuts"]:
         return _("""
@@ -171,12 +176,11 @@ Press `?` any time to see a [cheat sheet](#keyboard-shortcuts).
 """)
     elif human_response_lower in ["formatting", "message formatting"]:
         return _("""
-Zulip uses [Markdown](/help/format-your-message-using-markdown),
-an intuitive format for **bold**, *italics*, bulleted lists, and more.
-Click [here](#message-formatting) for a cheat sheet.
+You can **format** *your* `message` using the handy formatting buttons, or by
+typing your formatting with Markdown.
 
-Check out our [messaging tips](/help/messaging-tips) to learn
-about emoji reactions, code blocks and much more!
+Check out the [cheat sheet](#message-formatting) to learn about spoilers, global
+times, and more.
 """)
     elif human_response_lower in ["help", "?"]:
         return _("""
