@@ -861,12 +861,6 @@ strong {
     }
 }
 
-td.pointer {
-    vertical-align: top;
-    padding-top: 10px;
-    background-color: hsl(0deg 0% 100%);
-}
-
 .new_messages {
     background-color: hsl(194deg 53% 79%);
 }
