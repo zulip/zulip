@@ -152,7 +152,7 @@ want those settings.
 
 ### Testing non-default settings
 
-You can write tests for settings using e.g.,
+You can write tests for settings using, for example,
 `with self.settings(TERMS_OF_SERVICE=None)`. However, this only works
 for settings which are checked at runtime, not settings which are only
 accessed in initialization of Django (or Zulip) internals

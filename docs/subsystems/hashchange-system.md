@@ -32,9 +32,9 @@ different flows:
   will be visited).
 - The user clicking some in-app click handler (e.g., "Channel settings"
   for an individual channel), that potentially does
-  several UI-manipulating things including e.g., loading the channels
-  overlay, and needs to update the hash without re-triggering the open
-  animation (etc.).
+  several UI-manipulating things including, for example, loading the
+  channels overlay, and needs to update the hash without re-triggering
+  the open animation (etc.).
 - Within an overlay like the channels overlay, the user clicks to
   another part of the overlay, which should update the hash but not
   re-trigger loading the overlay (which would result in a confusing

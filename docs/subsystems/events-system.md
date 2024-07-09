@@ -72,9 +72,9 @@ Usually, this list of users is one of 3 things:
   or the people on a direct message thread.
 
 It is the responsibility of the caller of `send_event` to choose the
-list of user IDs correctly. There can be security problems if e.g., an
-event containing direct message content is sent to the entire
-organization. However, if an event isn't sent to enough clients,
+list of user IDs correctly. There can be security problems if, for
+example, an event containing direct message content is sent to the
+entire organization. However, if an event isn't sent to enough clients,
 there will likely be user-visible real-time sync bugs.
 
 Most of the hard work in event generation is about defining consistent
