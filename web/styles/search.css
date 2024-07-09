@@ -144,6 +144,10 @@
             background-image: none;
             color: var(--color-text-search-hover);
         }
+
+        .typeahead-menu > li > a {
+            max-width: none;
+        }
     }
 
     .input-append {
