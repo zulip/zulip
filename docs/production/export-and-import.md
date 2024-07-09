@@ -433,7 +433,8 @@ recommend starting with sending one to yourself for testing:
 ./manage.py send_password_reset_email -u username@example.com
 ```
 
-and then once you're ready, you can email them to everyone using e.g.,
+and then once you're ready, you can email them to everyone using,
+for example:
 
 ```bash
 ./manage.py send_password_reset_email -r '' --all-users

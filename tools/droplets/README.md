@@ -130,7 +130,7 @@ so they are notified.
    - Check "Monitoring", "IPv6", and "User data"
    - Paste the contents of `tools/droplets/new-droplet-image` into the
      text box which says `Enter user data here...`
-   - Name it e.g., `base-ubuntu-22-04.zulipdev.org`
+   - Name it (e.g., `base-ubuntu-22-04.zulipdev.org`)
 1. Wait for the host to boot.
 1. Wait for the host to complete provisioning and shut down; this will take
    about 15 minutes.

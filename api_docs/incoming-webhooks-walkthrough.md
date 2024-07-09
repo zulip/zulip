@@ -69,10 +69,10 @@ integration uses.
 ## Step 1: Initialize your webhook python package
 
 In the `zerver/webhooks/` directory, create new subdirectory that will
-contain all of the corresponding code.  In our example it will be
+contain all of the corresponding code. In our example, it will be
 `helloworld`. The new directory will be a python package, so you have
-to create an empty `__init__.py` file in that directory via e.g.,
-`touch zerver/webhooks/helloworld/__init__.py`.
+to create an empty `__init__.py` file in that directory via, for
+example, `touch zerver/webhooks/helloworld/__init__.py`.
 
 ## Step 2: Create main webhook code
 

@@ -50,7 +50,3 @@ about that data structure:
 - The `status_from_timestamp` function in `web/src/presence.js` is
   useful sample code; the `OFFLINE_THRESHOLD_SECS` check is critical
   to correct output.
-- We provide the data for e.g., whether the user was online on their
-  desktop or the mobile app, but for a basic client, you will likely
-  only want to parse the "aggregated" key, which shows the summary
-  answer for "is this user online".

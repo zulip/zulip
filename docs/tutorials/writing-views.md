@@ -193,7 +193,7 @@ REQ also helps us with request variable validation. For example:
   not automatically marshall the input from JSON).
 
 - Since there is no need to JSON-encode strings, usually simply
-  `my_string=REQ()` is correct. One can pass e.g.,
+  `my_string=REQ()` is correct. One can pass, for example,
   `str_validator=check_string_in(...)` where one wants to run a
   validator on the value of a string.
 

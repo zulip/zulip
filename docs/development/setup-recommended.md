@@ -955,7 +955,7 @@ The `vagrant up` command basically does the following:
 
 To debug such errors, you can log in to the Vagrant guest machine by
 running `vagrant ssh`, which should present you with a standard shell
-prompt. You can debug interactively by using e.g.,
+prompt. You can debug interactively by using, for example,
 `cd zulip && ./tools/provision`, and then running the individual
 subcommands that failed. Once you've resolved the problem, you can
 rerun `tools/provision` to proceed; the provisioning system is

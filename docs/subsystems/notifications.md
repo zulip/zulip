@@ -72,8 +72,8 @@ as follows:
     `receiver_is_off_zulip` returns `True`, which checks whether the user has any
     current events system clients registered to receive `message`
     events. This check is done immediately (handling soft disconnects,
-    where e.g., the user closes their last Zulip tab and we get the
-    `DELETE /events/{queue_id}` request).
+    for example, where the user closes their last Zulip tab and we get
+    the `DELETE /events/{queue_id}` request).
   - The `receiver_is_off_zulip` check is effectively repeated when
     event queues are garbage-collected (in `missedmessage_hook`) by
     looking for whether the queue being garbage-collected was the only

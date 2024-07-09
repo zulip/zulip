@@ -63,7 +63,7 @@ migrations.
 - **Atomicity**. By default, each Django migration is run atomically
   inside a transaction. This can be problematic if one wants to do
   something in a migration that touches a lot of data and would best
-  be done in batches of e.g., 1000 objects (e.g., a `Message` or
+  be done in batches of, for example, 1000 objects (e.g., a `Message` or
   `UserMessage` table change). There is a [useful Django
   feature][migrations-non-atomic] that makes it possible to add
   `atomic=False` at the top of a `Migration` class and thus not have
