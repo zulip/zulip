@@ -859,6 +859,19 @@ strong {
             background-color: var(--background-color-active-typeahead-item);
         }
     }
+
+    .autocomplete_secondary {
+        opacity: 0.8;
+        font-size: 85%;
+
+        & code {
+            display: inline-block;
+        }
+    }
+
+    .active .autocomplete_secondary {
+        opacity: 1;
+    }
 }
 
 .new_messages {
