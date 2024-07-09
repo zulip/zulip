@@ -57,7 +57,6 @@ export function get_user_ids(pill_widget: UserGroupPillWidget | CombinedPillCont
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
 
-    user_ids = user_ids.filter(Boolean);
     return user_ids;
 }
 
