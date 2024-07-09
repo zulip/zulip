@@ -1,0 +1,99 @@
+{
+  "token": "CqCsBJmXoNSHaNCt3wGWYSEe",
+  "team_id": "T06NRA6HM3P",
+  "context_team_id": "T06NRA6HM3P",
+  "context_enterprise_id": null,
+  "api_app_id": "A0757RM31HN",
+  "event": {
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1719211546.331399",
+    "client_msg_id": "b763525d-9211-4333-936c-b1c02ff0105e",
+    "text": "~_*<@U074VRHQ11T>*_~ ~_*<#C06P6T3QGD7|general>*_~ ~_*<!channel>*_~ ",
+    "team": "T06NRA6HM3P",
+    "blocks": [
+      {
+        "type": "rich_text",
+        "block_id": "yorkC",
+        "elements": [
+          {
+            "type": "rich_text_section",
+            "elements": [
+              {
+                "type": "user",
+                "user_id": "U074VRHQ11T",
+                "style": {
+                  "bold": true,
+                  "italic": true,
+                  "strike": true
+                }
+              },
+              {
+                "type": "text",
+                "text": " ",
+                "style": {
+                  "bold": true,
+                  "italic": true,
+                  "strike": true
+                }
+              },
+              {
+                "type": "channel",
+                "channel_id": "C06P6T3QGD7",
+                "style": {
+                  "bold": true,
+                  "italic": true,
+                  "strike": true
+                }
+              },
+              {
+                "type": "text",
+                "text": " ",
+                "style": {
+                  "bold": true,
+                  "italic": true,
+                  "strike": true
+                }
+              },
+              {
+                "type": "broadcast",
+                "range": "channel",
+                "style": {
+                  "bold": true,
+                  "italic": true,
+                  "strike": true
+                }
+              },
+              {
+                "type": "text",
+                "text": " ",
+                "style": {
+                  "bold": true,
+                  "italic": true,
+                  "strike": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "channel": "C06NRA6JLER",
+    "event_ts": "1719211546.331399",
+    "channel_type": "channel"
+  },
+  "type": "event_callback",
+  "event_id": "Ev079E3ZLGNP",
+  "event_time": 1719211546,
+  "authorizations": [
+    {
+      "enterprise_id": null,
+      "team_id": "T06NRA6HM3P",
+      "user_id": "U074G5E1ANR",
+      "is_bot": true,
+      "is_enterprise_install": false
+    }
+  ],
+  "is_ext_shared_channel": false,
+  "event_context": "4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDZOUkE2SE0zUCIsImFpZCI6IkEwNzU3Uk0zMUhOIiwiY2lkIjoiQzA2TlJBNkpMRVIifQ"
+}
