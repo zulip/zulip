@@ -12,7 +12,7 @@
         {{/unless}}
     </div>
 </template>
-<span class="narrow_description rendered_markdown">
+<span class="narrow_description rendered_markdown single-line-rendered-markdown">
     {{#if rendered_narrow_description}}
     {{rendered_markdown rendered_narrow_description}}
     {{else}}
@@ -28,7 +28,7 @@
     {{> navbar_icon_and_title }}
 </span>
 {{#if description}}
-    <span class="narrow_description rendered_markdown">{{description}}
+    <span class="narrow_description rendered_markdown single-line-rendered-markdown">{{description}}
         {{#if link}}
         <a class="help_link_widget" href="{{link}}" target="_blank" rel="noopener noreferrer">
             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
