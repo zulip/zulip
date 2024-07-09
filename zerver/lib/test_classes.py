@@ -12,7 +12,6 @@ from typing import (
     Callable,
     Collection,
     Dict,
-    Iterable,
     Iterator,
     List,
     Mapping,
@@ -1439,15 +1438,22 @@ Output:
     def common_subscribe_to_streams(
         self,
         user: UserProfile,
-        streams: Iterable[str],
+        subscriptions_raw: List[str] | List[Dict[str, str]],
         extra_post_data: Mapping[str, Any] = {},
         invite_only: bool = False,
         is_web_public: bool = False,
         allow_fail: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
+        subscriptions: List[Dict[str, str]] = []
+        for entry in subscriptions_raw:
+            if isinstance(entry, str):
+                subscriptions.append({"name": entry})
+            else:
+                subscriptions.append(entry)
+
         post_data = {
-            "subscriptions": orjson.dumps([{"name": stream} for stream in streams]).decode(),
+            "subscriptions": orjson.dumps(subscriptions).decode(),
             "is_web_public": orjson.dumps(is_web_public).decode(),
             "invite_only": orjson.dumps(invite_only).decode(),
         }
