@@ -57,14 +57,12 @@
             }
 
             .typeahead-text-container {
+                display: flex;
                 align-self: center;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-
-                & > * {
-                    margin-right: 3px;
-                }
+                gap: 3px;
             }
         }
     }
@@ -81,10 +79,9 @@
     .autocomplete_secondary {
         opacity: 0.8;
         font-size: 85%;
-
-        & code {
-            display: inline-block;
-        }
+        flex: 1 1 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .active .autocomplete_secondary {

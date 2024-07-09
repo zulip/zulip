@@ -1137,7 +1137,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     `    <span class="user_circle_empty user_circle"></span>\n` +
                     `    <img class="typeahead-image" src="http://zulip.zulipdev.com/avatar/${othello.user_id}?s&#x3D;50" />\n` +
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>    <small class="autocomplete_secondary">othello@zulip.com</small>' +
+                    '    <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);
                 // Reset the email such that this does not affect further tests.
@@ -1149,7 +1149,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value =
                     '    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>\n' +
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <small class="autocomplete_secondary">Characters of Hamlet</small>' +
+                    '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);
 
