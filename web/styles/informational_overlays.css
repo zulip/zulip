@@ -62,7 +62,7 @@
         width: calc(50% - 11px);
         text-align: right;
 
-        .emoji { 
+        .emoji {
             margin-bottom: 6px;
         }
     }
