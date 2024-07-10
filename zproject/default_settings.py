@@ -642,7 +642,7 @@ CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Any]] = None
 # groups as described in api_docs/group-setting-values.md. Set to
 # False in production, as we can only handle named user groups in the
 # web app settings UI.
-ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = False
+ALLOW_GROUP_VALUED_SETTINGS = False
 
 # Grace period during which we don't send a resolve/unresolve
 # notification to a stream and also delete the previous counter

@@ -571,7 +571,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
-        with self.settings(ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS=False):
+        with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
             params = {
                 "name": "frontend",
                 "members": orjson.dumps([hamlet.id]).decode(),
@@ -584,9 +584,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 ).decode(),
             }
             result = self.client_post("/json/user_groups/create", info=params)
-            self.assert_json_error(
-                result, "can_mention_group can only be set to a single named user group."
-            )
+            self.assert_json_error(result, "'can_mention_group' must be a system user group.")
 
             params = {
                 "name": "frontend",
@@ -608,12 +606,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 "name": "devops",
                 "members": orjson.dumps([hamlet.id]).decode(),
                 "description": "Devops team",
-                "can_mention_group": orjson.dumps(moderators_group.id).decode(),
+                "can_mention_group": orjson.dumps(leadership_group.id).decode(),
             }
             result = self.client_post("/json/user_groups/create", info=params)
             self.assert_json_success(result)
             devops_group = NamedUserGroup.objects.get(name="devops", realm=hamlet.realm)
-            self.assertEqual(devops_group.can_mention_group_id, moderators_group.id)
+            self.assertEqual(devops_group.can_mention_group_id, leadership_group.id)
 
     def test_user_group_get(self) -> None:
         # Test success
@@ -868,8 +866,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
-        # Test case when ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS is False.
-        with self.settings(ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS=False):
+        # Test case when ALLOW_GROUP_VALUED_SETTINGS is False.
+        with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
             params = {
                 "can_mention_group": orjson.dumps(
                     {
@@ -881,9 +879,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 ).decode()
             }
             result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
-            self.assert_json_error(
-                result, "can_mention_group can only be set to a single named user group."
-            )
+            self.assert_json_error(result, "'can_mention_group' must be a system user group.")
 
             params = {
                 "can_mention_group": orjson.dumps(
