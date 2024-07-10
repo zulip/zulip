@@ -223,7 +223,7 @@
                 var(--search-box-height),
                 auto
             )
-            / auto minmax(0, 1fr) auto;
+            / auto minmax(0, 1fr) 28px;
         align-items: start;
         cursor: pointer;
 
@@ -244,7 +244,6 @@
         }
 
         .user-pill-container {
-            min-width: fit-content;
             gap: 5px;
 
             > .pill-label {
@@ -259,12 +258,19 @@
                 height: var(--height-input-pill);
                 border: none;
                 border-radius: 3px;
+                max-width: none;
+                display: grid;
+                grid-template-columns: auto 1fr auto;
 
                 &:not(.deactivated-pill) {
                     background-color: var(--color-background-user-pill);
                 }
             }
         }
+    }
+
+    .pill-label {
+        min-width: 30px;
     }
 
     @media (width >= $md_min) {
