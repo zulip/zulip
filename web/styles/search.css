@@ -331,12 +331,17 @@
         /* Override white-space: nowrap from zulip.css */
         white-space: normal;
 
+        .search_list_item {
+            max-width: 100%;
+        }
+
         .search_list_item .pill-container {
             margin-left: 5px;
             /* This contains only one pill, which handles its own border */
             border: none;
             cursor: pointer;
             padding: 0;
+            max-width: 100%;
         }
 
         .pill {
