@@ -187,14 +187,18 @@ class ExportFile(ZulipTestCase):
         realm = user_profile.realm
 
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.upload_realm_icon_image(img_file, user_profile)
+            upload.upload_backend.upload_realm_icon_image(img_file, user_profile, "image/png")
             do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=False)
+            upload.upload_backend.upload_realm_logo_image(
+                img_file, user_profile, night=False, content_type="image/png"
+            )
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, False, acting_user=user_profile)
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
+            upload.upload_backend.upload_realm_logo_image(
+                img_file, user_profile, night=True, content_type="image/png"
+            )
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
 
     def verify_attachment_json(self, user: UserProfile) -> None:
