@@ -296,7 +296,7 @@ export function notify_messages_outside_current_search(messages: Message[]): voi
             {message_recipient: get_message_header(message)},
         );
         notify_above_composebox(
-            $t({defaultMessage: "Sent! Your recent message is outside the current search."}),
+            $t({defaultMessage: "Sent! Your message is outside your current view."}),
             compose_banner.CLASSNAMES.narrow_to_recipient,
             above_composebox_narrow_url,
             message.id,
