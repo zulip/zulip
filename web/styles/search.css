@@ -320,7 +320,7 @@
         }
     }
 
-    .typeahead-menu li a {
+    .typeahead-menu > li > a {
         padding: 3px 30px;
         /* Override white-space: nowrap from zulip.css */
         white-space: normal;
