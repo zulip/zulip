@@ -75,7 +75,7 @@
         0 2px 4px hsl(0deg 0% 0% / 10%);
 
     .tippy-content {
-        font-size: 14px;
+        font-size: var(--base-font-size-px);
         color: hsl(0deg 0% 75%);
         padding: 0;
     }
