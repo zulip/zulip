@@ -399,6 +399,12 @@ select.settings_select {
     }
 }
 
+.user_role,
+.profile_field_type,
+.bot_type {
+    word-break: normal;
+}
+
 .button,
 .input-group {
     margin: 0 0 20px;
