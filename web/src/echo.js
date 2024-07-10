@@ -198,7 +198,7 @@ export function insert_local_message(message_request, local_id_float, insert_new
 
     message.display_recipient = build_display_recipient(message);
 
-    [message] = insert_new_messages([message], true);
+    [message] = insert_new_messages([message], true, true);
 
     waiting_for_id.set(message.local_id, message);
     waiting_for_ack.set(message.local_id, message);
@@ -432,6 +432,10 @@ export function process_from_server(messages) {
     if (msgs_to_rerender_or_add_to_narrow.length > 0) {
         for (const msg_list of message_lists.all_rendered_message_lists()) {
             if (!msg_list.data.filter.can_apply_locally()) {
+                // If this message list is a search filter that we
+                // cannot apply locally, we will not have locally
+                // echoed echoed the message at all originally, and
+                // must the server now whether to add it to the view.
                 message_events_util.maybe_add_narrowed_messages(
                     msgs_to_rerender_or_add_to_narrow,
                     msg_list,

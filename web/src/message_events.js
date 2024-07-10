@@ -34,7 +34,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-export function insert_new_messages(messages, sent_by_this_client) {
+export function insert_new_messages(messages, sent_by_this_client, deliver_locally) {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
@@ -52,6 +52,17 @@ export function insert_new_messages(messages, sent_by_this_client) {
             // new messages match the narrow, and use that to
             // determine which new messages to add to the current
             // message list (or display a notification).
+
+            if (deliver_locally) {
+                // However, this is a local echo attempt, we can't ask
+                // the server about the match, since we don't have a
+                // final message ID. In that situation, we do nothing
+                // and echo.process_from_server will call
+                // message_events_util.maybe_add_narrowed_messages
+                // once the message is fully delivered.
+                continue;
+            }
+
             message_events_util.maybe_add_narrowed_messages(
                 messages,
                 list,
