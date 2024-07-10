@@ -946,6 +946,16 @@ div.overlay {
     margin-top: -0.2188em !important;
 }
 
+.dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles
+    .zulip-icon-lock {
+    /* We do not need to pull up lock icons in dropdowns
+       so we reset their margin-top to the original value
+       for a dropdown's .zulip-icon */
+    margin-top: 2px !important;
+}
+
 /* This includes css needed to display messages in an overlay. */
 .overlay-messages-container {
     position: relative;
