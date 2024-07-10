@@ -587,7 +587,7 @@ def process_avatars(
     3. realm_id: Realm ID.
 
     We use this for Slack conversions, where avatars need to be
-    downloaded.  For simpler conversions see write_avatar_png.
+    downloaded.
     """
 
     logging.info("######### GETTING AVATARS #########\n")
