@@ -774,13 +774,14 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!$(e.target).hasClass("direct-messages-list-filter")) {
-            // Avoiding having clicks on the filter input.
-            //
-            // TODO: Refactor to use more precise selectors for this
-            // click handler in general; this is a fragile pattern.
-            window.location.hash = "narrow/is/dm";
-        }
+        window.location.hash = "narrow/is/dm";
+    });
+
+    $("body").on("click", ".direct-messages-list-filter", (e) => {
+        // We don't want clicking on the filter to trigger the DM
+        // narrow defined on click for
+        // `#direct-messages-section-header.zoom-in`.
+        e.stopPropagation();
     });
 
     // disable the draggability for left-sidebar components
