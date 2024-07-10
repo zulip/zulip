@@ -53,6 +53,7 @@ class ErrorCode(Enum):
     REMOTE_REALM_SERVER_MISMATCH_ERROR = auto()
     PUSH_NOTIFICATIONS_DISALLOWED = auto()
     EXPECTATION_MISMATCH = auto()
+    SYSTEM_GROUP_REQUIRED = auto()
 
 
 class JsonableError(Exception):
@@ -688,3 +689,16 @@ class PreviousSettingValueMismatchedError(JsonableError):
     @override
     def msg_format() -> str:
         return _("'old' value does not match the expected value.")
+
+
+class SystemGroupRequiredError(JsonableError):
+    code = ErrorCode.SYSTEM_GROUP_REQUIRED
+    data_fields = ["setting_name"]
+
+    def __init__(self, setting_name: str) -> None:
+        self.setting_name = setting_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("'{setting_name}' must be a system user group.")

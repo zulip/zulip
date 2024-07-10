@@ -209,7 +209,7 @@ DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = True
 PUSH_NOTIFICATION_BOUNCER_URL = f"http://push.{EXTERNAL_HOST}"
 
 # Breaks the UI if used, but enabled for development environment testing.
-ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = True
+ALLOW_GROUP_VALUED_SETTINGS = True
 
 # This value needs to be lower in development than usual to allow
 # for quicker testing of the feature.

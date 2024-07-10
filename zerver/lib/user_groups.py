@@ -11,7 +11,11 @@ from django_cte import With
 from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL, Literal
 
-from zerver.lib.exceptions import JsonableError, PreviousSettingValueMismatchedError
+from zerver.lib.exceptions import (
+    JsonableError,
+    PreviousSettingValueMismatchedError,
+    SystemGroupRequiredError,
+)
 from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
 from zerver.models import (
     GroupGroupMembership,
@@ -187,10 +191,13 @@ def check_setting_configuration_for_system_groups(
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
 ) -> None:
+    if setting_name != "can_mention_group" and (
+        not settings.ALLOW_GROUP_VALUED_SETTINGS and not setting_group.is_system_group
+    ):
+        raise SystemGroupRequiredError(setting_name)
+
     if permission_configuration.require_system_group and not setting_group.is_system_group:
-        raise JsonableError(
-            _("'{setting_name}' must be a system user group.").format(setting_name=setting_name)
-        )
+        raise SystemGroupRequiredError(setting_name)
 
     if (
         not permission_configuration.allow_internet_group
@@ -730,12 +737,8 @@ def parse_group_setting_value(
     if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
         return setting_value.direct_subgroups[0]
 
-    if not settings.ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS:
-        raise JsonableError(
-            _("{setting_name} can only be set to a single named user group.").format(
-                setting_name=setting_name
-            )
-        )
+    if not settings.ALLOW_GROUP_VALUED_SETTINGS:
+        raise SystemGroupRequiredError(setting_name)
 
     return setting_value
 
