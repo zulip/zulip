@@ -301,7 +301,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
     """
     if user_profile.is_realm_admin:
         prereg_users = filter_to_valid_prereg_users(
-            PreregistrationUser.objects.filter(referred_by__realm=user_profile.realm)
+            PreregistrationUser.objects.filter(realm=user_profile.realm, referred_by__isnull=False)
         )
     else:
         prereg_users = filter_to_valid_prereg_users(
