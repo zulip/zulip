@@ -1960,7 +1960,7 @@ $option_title_width: 180px;
 }
 
 #admin_users_table .deactivated_user,
-#admin_deactivated_users_table .reactivated_user {
+#admin_deactivated_users_table .active-user {
     color: hsl(0deg 0% 64%);
 
     & a {
