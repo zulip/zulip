@@ -190,6 +190,10 @@
     }
 }
 
+.add_streams_container .input {
+    flex-grow: 1;
+}
+
 .display_only_pill {
     /* Ensure middle alignment in table contexts. */
     vertical-align: middle;
