@@ -219,8 +219,11 @@
         /* Override style for .pill-container that isn't relevant for search. */
         border: none;
         grid-template:
-            "search-icon search-pills search-close" var(--search-box-height)
-            ". search-pills ." auto / auto minmax(0, 1fr) auto;
+            "search-icon search-pills search-close" minmax(
+                var(--search-box-height),
+                auto
+            )
+            / auto minmax(0, 1fr) auto;
         align-items: start;
         cursor: pointer;
 
