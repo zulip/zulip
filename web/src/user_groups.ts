@@ -4,6 +4,7 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
 import {$t} from "./i18n";
+import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import type {StateData, user_group_schema} from "./state_data";
 import {current_user} from "./state_data";
@@ -291,7 +292,10 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             };
         });
 
-    if (require_system_group) {
+    if (
+        (setting_name !== "can_mention_group" && !page_params.development_environment) ||
+        require_system_group
+    ) {
         return system_user_groups;
     }
 
