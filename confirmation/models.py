@@ -231,6 +231,9 @@ class Confirmation(models.Model):
 
     class Meta:
         unique_together = ("type", "confirmation_key")
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+        ]
 
     @override
     def __str__(self) -> str:
