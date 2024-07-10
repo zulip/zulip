@@ -1,13 +1,16 @@
+import assert from "minimalistic-assert";
+
 import {$t} from "./i18n";
-import type {InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillContainer} from "./input_pill";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
-import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 
 export type StreamPill = {
     type: "stream";
     stream: StreamSubscription;
+    show_subscriber_count: boolean;
 };
 
 export type StreamPillWidget = InputPillContainer<StreamPill>;
@@ -24,11 +27,11 @@ function format_stream_name_and_subscriber_count(sub: StreamSubscription): strin
 
 export function create_item_from_stream_name(
     stream_name: string,
-    current_items: CombinedPillItem[],
+    current_items: CombinedPill[],
     stream_prefix_required = true,
     get_allowed_streams: () => StreamSubscription[] = stream_data.get_unsorted_subs,
     show_subscriber_count = true,
-): InputPillItem<StreamPill> | undefined {
+): StreamPill | undefined {
     stream_name = stream_name.trim();
     if (stream_prefix_required) {
         if (!stream_name.startsWith("#")) {
@@ -55,19 +58,14 @@ export function create_item_from_stream_name(
         return undefined;
     }
 
-    let display_value = sub.name;
-    if (show_subscriber_count) {
-        display_value = format_stream_name_and_subscriber_count(sub);
-    }
-
     return {
         type: "stream",
-        display_value,
+        show_subscriber_count,
         stream: sub,
     };
 }
 
-export function get_stream_name_from_item(item: InputPillItem<StreamPill>): string {
+export function get_stream_name_from_item(item: StreamPill): string {
     return item.stream.name;
 }
 
@@ -82,18 +80,23 @@ export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContain
     return user_ids;
 }
 
+export function get_display_string_from_item(item: StreamPill): string {
+    const stream = stream_data.get_sub_by_id(item.stream.stream_id);
+    assert(stream !== undefined);
+    if (item.show_subscriber_count) {
+        return format_stream_name_and_subscriber_count(stream);
+    }
+    return "#" + stream.name;
+}
+
 export function append_stream(
     stream: StreamSubscription,
     pill_widget: StreamPillWidget | CombinedPillContainer,
     show_subscriber_count = true,
 ): void {
-    let display_value = stream.name;
-    if (show_subscriber_count) {
-        display_value = format_stream_name_and_subscriber_count(stream);
-    }
     pill_widget.appendValidatedData({
         type: "stream",
-        display_value,
+        show_subscriber_count,
         stream,
     });
     pill_widget.clear_text();

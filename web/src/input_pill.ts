@@ -4,112 +4,89 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
-import render_search_user_pill from "../templates/search_user_pill.hbs";
 
 import * as blueslip from "./blueslip";
-import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
 import type {SearchUserPill} from "./search_pill";
-import type {StreamSubscription} from "./sub_store";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
-export type InputPillItem<T> = {
-    display_value: string;
-    type: string;
-    img_src?: string;
-    deactivated?: boolean;
-    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
-    should_add_guest_user_indicator?: boolean;
-    user_id?: number;
-    group_id?: number;
-    // Used for search pills
-    operator?: string;
-    stream?: StreamSubscription;
-} & T;
-
 export type InputPillConfig = {
-    show_user_status_emoji?: boolean;
+    // TODO: Put this in user-specific code instead of here.
     exclude_inaccessible_users?: boolean;
 };
 
-type InputPillCreateOptions<T> = {
+type InputPillCreateOptions<ItemType> = {
     $container: JQuery;
     pill_config?: InputPillConfig | undefined;
     split_text_on_comma?: boolean;
     convert_to_pill_on_enter?: boolean;
     create_item_from_text: (
         text: string,
-        existing_items: InputPillItem<T>[],
+        existing_items: ItemType[],
         pill_config?: InputPillConfig | undefined,
-    ) => InputPillItem<T> | undefined;
-    get_text_from_item: (item: InputPillItem<T>) => string;
+    ) => ItemType | undefined;
+    get_text_from_item: (item: ItemType) => string;
+    get_display_value_from_item: (item: ItemType) => string;
+    generate_pill_html?: (item: ItemType) => string;
 };
 
-type InputPill<T> = {
-    item: InputPillItem<T>;
+type InputPill<ItemType> = {
+    item: ItemType;
     $element: JQuery;
 };
 
-type InputPillStore<T> = {
+type InputPillStore<ItemType> = {
     onTextInputHook?: () => void;
-    pills: InputPill<T>[];
-    pill_config: InputPillCreateOptions<T>["pill_config"];
+    pills: InputPill<ItemType>[];
+    pill_config: InputPillCreateOptions<ItemType>["pill_config"];
     $parent: JQuery;
     $input: JQuery;
-    create_item_from_text: InputPillCreateOptions<T>["create_item_from_text"];
-    get_text_from_item: InputPillCreateOptions<T>["get_text_from_item"];
+    create_item_from_text: InputPillCreateOptions<ItemType>["create_item_from_text"];
+    get_text_from_item: InputPillCreateOptions<ItemType>["get_text_from_item"];
+    get_display_value_from_item: InputPillCreateOptions<ItemType>["get_display_value_from_item"];
+    generate_pill_html: InputPillCreateOptions<ItemType>["generate_pill_html"];
     onPillCreate?: () => void;
-    onPillRemove?: (pill: InputPill<T>) => void;
+    onPillRemove?: (pill: InputPill<ItemType>) => void;
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
 };
 
-type InputPillRenderingDetails = {
-    display_value: string;
-    has_image: boolean;
-    img_src?: string | undefined;
-    deactivated: boolean | undefined;
-    has_status?: boolean;
-    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined;
-    should_add_guest_user_indicator: boolean | undefined;
-    user_id?: number | undefined;
-    group_id?: number | undefined;
-    has_stream?: boolean;
-    stream?: StreamSubscription;
-};
-
 // These are the functions that are exposed to other modules.
-export type InputPillContainer<T> = {
+export type InputPillContainer<ItemType> = {
     appendValue: (text: string) => void;
-    appendValidatedData: (item: InputPillItem<T>) => void;
-    getByElement: (element: HTMLElement) => InputPill<T> | undefined;
-    items: () => InputPillItem<T>[];
+    appendValidatedData: (item: ItemType) => void;
+    getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
+    items: () => ItemType[];
     onPillCreate: (callback: () => void) => void;
-    onPillRemove: (callback: (pill: InputPill<T>) => void) => void;
+    onPillRemove: (callback: (pill: InputPill<ItemType>) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
     clear: (quiet?: boolean) => void;
     clear_text: () => void;
     getCurrentText: () => string | null;
     is_pending: () => boolean;
-    _get_pills_for_testing: () => InputPill<T>[];
+    _get_pills_for_testing: () => InputPill<ItemType>[];
 };
 
-export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> {
+export function create<ItemType extends {type: string}>(
+    opts: InputPillCreateOptions<ItemType>,
+): InputPillContainer<ItemType> {
     // a stateful object of this `pill_container` instance.
     // all unique instance information is stored in here.
-    const store: InputPillStore<T> = {
+    const store: InputPillStore<ItemType> = {
         pills: [],
         pill_config: opts.pill_config,
         $parent: opts.$container,
         $input: opts.$container.find(".input").expectOne(),
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
+        get_display_value_from_item: opts.get_display_value_from_item,
         split_text_on_comma: opts.split_text_on_comma ?? true,
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
+        generate_pill_html: opts.generate_pill_html,
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -146,7 +123,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
 
-            if (!item?.display_value) {
+            if (!item) {
                 store.$input.addClass("shake");
                 return undefined;
             }
@@ -156,72 +133,21 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData(item: InputPillItem<T>) {
-            if (!item.display_value) {
-                blueslip.error("no display_value returned");
+        appendValidatedData(item: ItemType) {
+            if (!item) {
+                blueslip.error("no value returned");
                 return;
             }
 
-            if (!item.type) {
-                blueslip.error("no type defined for the item");
-                return;
-            }
             let pill_html;
-            if (item.type === "search_user") {
-                pill_html = render_search_user_pill(item);
+            if (store.generate_pill_html !== undefined) {
+                pill_html = store.generate_pill_html(item);
             } else {
-                const has_image = item.img_src !== undefined;
-
-                let display_value = item.display_value;
-                // For search pills, we don't need to use + instead
-                // of spaces in the pill, since there is visual separation
-                // of pills. We also chose to add a space after the colon
-                // after the search operator.
-                //
-                // TODO: Ideally this code would live in search files, when
-                // we generate `item.display_value`, but we currently use
-                // `display_value` not only for visual representation but
-                // also for parsing the value a pill represents.
-                // In the future we should change all input pills to have
-                // a `value` as well as a `display_value`.
-                if (item.type === "search") {
-                    display_value = display_value.replaceAll("+", " ");
-                    display_value = display_value.replace(":", ": ");
-                }
-
-                const opts: InputPillRenderingDetails = {
-                    display_value,
-                    has_image,
-                    deactivated: item.deactivated,
-                    should_add_guest_user_indicator: item.should_add_guest_user_indicator,
-                };
-
-                if (item.user_id) {
-                    opts.user_id = item.user_id;
-                }
-                if (item.group_id) {
-                    opts.group_id = item.group_id;
-                }
-
-                if (has_image) {
-                    opts.img_src = item.img_src;
-                }
-
-                if (item.type === "stream" && item.stream) {
-                    opts.has_stream = true;
-                    opts.stream = item.stream;
-                }
-
-                if (store.pill_config?.show_user_status_emoji === true) {
-                    const has_status = item.status_emoji_info !== undefined;
-                    if (has_status) {
-                        opts.status_emoji_info = item.status_emoji_info;
-                    }
-                    opts.has_status = has_status;
-                }
-                pill_html = render_input_pill(opts);
+                pill_html = render_input_pill({
+                    display_value: store.get_display_value_from_item(item),
+                });
             }
-            const payload: InputPill<T> = {
+            const payload: InputPill<ItemType> = {
                 item,
                 $element: $(pill_html),
             };
@@ -298,7 +224,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             // TODO: Figure out how to get this typed correctly.
             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
             const user_pill_container = store.pills[container_idx]!
-                .item as unknown as InputPillItem<SearchUserPill>;
+                .item as unknown as SearchUserPill;
 
             // If there's only one user in this pill, delete the whole pill.
             if (user_pill_container.users.length === 1) {
@@ -316,13 +242,6 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             }
             assert(user_idx !== undefined);
             user_pill_container.users.splice(user_idx, 1);
-            const sign = user_pill_container.negated ? "-" : "";
-            const search_string =
-                sign +
-                user_pill_container.operator +
-                ":" +
-                user_pill_container.users.map((user) => user.email).join(",");
-            user_pill_container.display_value = search_string;
 
             // Remove the user pill from the DOM.
             const $user_pill = $(store.pills[container_idx]!.$element.children(".pill")[user_idx]!);
@@ -566,7 +485,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
     }
 
     // the external, user-accessible prototype.
-    const prototype: InputPillContainer<T> = {
+    const prototype: InputPillContainer<ItemType> = {
         appendValue: funcs.appendPill.bind(funcs),
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 

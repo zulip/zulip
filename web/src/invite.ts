@@ -346,6 +346,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $container: $pill_container,
             create_item_from_text: email_pill.create_item_from_email,
             get_text_from_item: email_pill.get_email_from_item,
+            get_display_value_from_item: email_pill.get_email_from_item,
         });
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);

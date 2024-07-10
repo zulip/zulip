@@ -50,6 +50,7 @@ const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
+const user_pill = zrequire("user_pill");
 const stream_data = zrequire("stream_data");
 const stream_list_sort = zrequire("stream_list_sort");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -846,7 +847,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         onPillCreate() {},
         onPillRemove() {},
         appendValidatedData(item) {
-            appended_names.push(item.display_value);
+            appended_names.push(user_pill.get_display_value_from_item(item));
         },
     }));
     compose_pm_pill.initialize({

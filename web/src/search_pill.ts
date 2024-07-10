@@ -1,4 +1,7 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+
+import render_search_user_pill from "../templates/search_user_pill.hbs";
 
 import {Filter} from "./filter";
 import * as input_pill from "./input_pill";
@@ -12,11 +15,6 @@ import type {UserStatusEmojiInfo} from "./user_status";
 export type SearchUserPill = {
     type: "search_user";
     operator: string;
-    // TODO: It would be nice if we just call this `search_string` instead of
-    // `display_value`, because we don't actually display this value for user
-    // pills, but `display_value` is needed to hook into the generic input pill
-    // logic and it would be a decent amount of work to change that.
-    display_value: string;
     negated: boolean;
     users: {
         display_value: string;
@@ -32,7 +30,6 @@ export type SearchUserPill = {
 type SearchPill =
     | {
           type: "search";
-          display_value: string;
           description_html: string;
       }
     | SearchUserPill;
@@ -47,14 +44,23 @@ export function create_item_from_search_string(search_string: string): SearchPil
     }
     const description_html = Filter.search_description_as_html(search_terms);
     return {
-        display_value: search_string,
         type: "search",
         description_html,
     };
 }
 
 export function get_search_string_from_item(item: SearchPill): string {
-    return item.display_value;
+    // For search pills, we don't need to use + instead
+    // of spaces in the pill, since there is visual separation
+    // of pills. We also chose to add a space after the colon
+    // after the search operator.
+    if (item.type === "search") {
+        return item.description_html.replaceAll("+", " ").replace(":", ": ");
+    }
+    assert(item.type === "search_user");
+    const sign = item.negated ? "-" : "";
+    const user_emails = item.users.map((user) => user.email).join(",");
+    return `${sign}${item.operator}:${user_emails}`;
 }
 
 export function create_pills($pill_container: JQuery): SearchPillWidget {
@@ -62,8 +68,10 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         $container: $pill_container,
         create_item_from_text: create_item_from_search_string,
         get_text_from_item: get_search_string_from_item,
+        get_display_value_from_item: get_search_string_from_item,
         split_text_on_comma: false,
         convert_to_pill_on_enter: false,
+        generate_pill_html: render_search_user_pill,
     });
     // We don't automatically create pills on paste. When the user
     // presses enter, we validate the input then.
@@ -77,12 +85,9 @@ function append_user_pill(
     operator: string,
     negated: boolean,
 ): void {
-    const sign = negated ? "-" : "";
-    const search_string = sign + operator + ":" + users.map((user) => user.email).join(",");
     const pill_data: SearchUserPill = {
         type: "search_user",
         operator,
-        display_value: search_string,
         negated,
         users: users.map((user) => ({
             display_value: user.full_name,
@@ -158,6 +163,6 @@ export function set_search_bar_contents(
 
 export function get_current_search_string_for_widget(pill_widget: SearchPillWidget): string {
     const items = pill_widget.items();
-    const search_strings = items.map((item) => item.display_value);
+    const search_strings = items.map((item) => get_search_string_from_item(item));
     return search_strings.join(" ");
 }
