@@ -152,7 +152,7 @@ topic to a different channel](/help/move-content-to-another-channel).
   [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend),
   [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation),
   and app-specific channels
-  ([#mobile](https://chat.zulip.org/#narrow/channel/48-mobile), etc.)
+  ([#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team), etc.)
   are the right place for general conversations about work in those
   areas (including design discussions, questions, updates on a
   project, or anything else).
