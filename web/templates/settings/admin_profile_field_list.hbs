@@ -1,13 +1,13 @@
 {{#with profile_field}}
 <tr class="profile-field-row movable-row" data-profile-field-id="{{id}}">
-    <td>
+    <td class="profile_field_name">
         {{#if ../can_modify}}
         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         {{/if}}
         <span class="profile_field_name">{{name}}</span>
     </td>
-    <td>
+    <td class="profile_field_hint">
         <span class="profile_field_hint">{{hint}}</span>
     </td>
     <td>

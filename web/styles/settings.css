@@ -1825,6 +1825,36 @@ $option_title_width: 180px;
     }
 }
 
+@media (width < 830px) and (width > $md_min) {
+    .upload-file-name {
+        min-width: 10em;
+    }
+
+    #user_topics_table {
+        .user-topic-stream {
+            min-width: 6em;
+        }
+
+        .user-topic {
+            min-width: 10em;
+        }
+    }
+
+    .user_row {
+        .user_name,
+        .email {
+            min-width: 8em;
+        }
+    }
+
+    .admin_profile_fields_table {
+        .profile_field_name,
+        .profile_field_hint {
+            min-width: 8em;
+        }
+    }
+}
+
 @media (width < $sm_min) {
     .user_row,
     .settings-section {
@@ -1859,6 +1889,34 @@ $option_title_width: 180px;
     #change_password_modal,
     #change_email_modal {
         width: 400px;
+    }
+
+    .upload-file-name {
+        min-width: 10em;
+    }
+
+    #user_topics_table {
+        .user-topic {
+            min-width: 10em;
+        }
+
+        .user-topic-stream {
+            min-width: 6em;
+        }
+    }
+
+    .user_row {
+        .user_name,
+        .email {
+            min-width: 8em;
+        }
+    }
+
+    .admin_profile_fields_table {
+        .profile_field_name,
+        .profile_field_hint {
+            min-width: 8em;
+        }
     }
 }
 
