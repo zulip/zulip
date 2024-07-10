@@ -2156,7 +2156,8 @@ body:not(.hide-left-sidebar) {
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
-        min-width: 200px;
+        /* 200px/14px */
+        min-width: 14.285em;
 
         .dropdown-list {
             list-style: none;
@@ -2189,13 +2190,13 @@ body:not(.hide-left-sidebar) {
     padding: 3px 10px 3px 8px;
     gap: 4px;
     font-weight: 400;
-    line-height: 20px;
+    line-height: var(--base-line-height-unitless);
     white-space: normal;
 
     .stream-privacy-type-icon {
-        font-size: 13px;
-        width: 13px;
-        height: 13px;
+        font-size: 0.93em;
+        width: 0.93em;
+        height: 0.93em;
         padding-right: 2px;
     }
 
