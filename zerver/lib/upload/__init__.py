@@ -310,12 +310,14 @@ def delete_avatar_image(user_profile: UserProfile, avatar_version: int) -> None:
 # Realm icon and logo uploads
 
 
-def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile) -> None:
-    upload_backend.upload_realm_icon_image(user_file, user_profile)
+def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile, content_type: str) -> None:
+    upload_backend.upload_realm_icon_image(user_file, user_profile, content_type)
 
 
-def upload_logo_image(user_file: IO[bytes], user_profile: UserProfile, night: bool) -> None:
-    upload_backend.upload_realm_logo_image(user_file, user_profile, night)
+def upload_logo_image(
+    user_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
+) -> None:
+    upload_backend.upload_realm_logo_image(user_file, user_profile, night, content_type)
 
 
 # Realm emoji uploads

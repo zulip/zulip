@@ -12,7 +12,6 @@ from django.conf import settings
 from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import override
 
-from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
@@ -87,7 +86,7 @@ def upload_image_to_s3(
         metadata.update(extra_metadata)
 
     extras = {}
-    if content_type is None:
+    if content_type is None:  # nocoverage
         content_type = ""
     if content_type not in INLINE_MIME_TYPES:
         extras["ContentDisposition"] = "attachment"
@@ -297,8 +296,9 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url + f"?version={version}"
 
     @override
-    def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
-        content_type = guess_type(icon_file.name)[0]
+    def upload_realm_icon_image(
+        self, icon_file: IO[bytes], user_profile: UserProfile, content_type: str
+    ) -> None:
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
 
         image_data = icon_file.read()
@@ -332,9 +332,8 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def upload_realm_logo_image(
-        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
+        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
-        content_type = guess_type(logo_file.name)[0]
         if night:
             basename = "night_logo"
         else:

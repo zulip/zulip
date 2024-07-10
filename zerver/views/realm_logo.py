@@ -10,7 +10,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.upload import upload_logo_image
+from zerver.lib.upload import get_file_info, upload_logo_image
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
@@ -34,7 +34,8 @@ def upload_logo(
                 max_size=settings.MAX_LOGO_FILE_SIZE_MIB,
             )
         )
-    upload_logo_image(logo_file, user_profile, night)
+    _filename, content_type = get_file_info(logo_file)
+    upload_logo_image(logo_file, user_profile, night, content_type=content_type)
     do_change_logo_source(
         user_profile.realm, user_profile.realm.LOGO_UPLOADED, night, acting_user=user_profile
     )
