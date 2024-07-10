@@ -610,9 +610,11 @@ def process_avatars(
         # don't have it until we've downloaded the files anyway.
         avatar["path"] = image_path
         avatar["s3_path"] = image_path
+        avatar["content_type"] = "image/png"
 
         avatar_original["path"] = original_image_path
         avatar_original["s3_path"] = original_image_path
+        avatar_original["content_type"] = "image/png"
         avatar_original_list.append(avatar_original)
 
     # Run downloads in parallel
