@@ -87,7 +87,7 @@ that your Zulip server sits at `https://10.10.10.10:443`; see
 
 1. Configure the root `nginx.conf` file. We recommend using
    `/etc/nginx/nginx.conf` from your Zulip server for our recommended
-   settings. E.g. if you don't set `client_max_body_size`, it won't be
+   settings. E.g., if you don't set `client_max_body_size`, it won't be
    possible to upload large files to your Zulip server.
 
 1. Configure the `nginx` site-specific configuration (in
@@ -149,7 +149,7 @@ Apache requires you use the hostname, not the IP address; see
 
 1. Create an Apache2 virtual host configuration file, similar to the
    following. Place it the appropriate path for your Apache2
-   installation and enable it (E.g. if you use Debian or Ubuntu, then
+   installation and enable it (e.g., if you use Debian or Ubuntu, then
    place it in `/etc/apache2/sites-available/zulip.example.com.conf`
    and then run
    `a2ensite zulip.example.com && systemctl reload apache2`):
@@ -268,7 +268,7 @@ things you need to be careful about when configuring it:
    addresses for a given hostname. This can result in mysterious errors
    that can be quite difficult to debug. Be sure to declare your
    `upstreams` equivalent in a way that won't do load-balancing
-   unexpectedly (e.g. pointing to a DNS name that you haven't configured
+   unexpectedly (e.g., pointing to a DNS name that you haven't configured
    with multiple IPs for your Zulip machine; sometimes this happens with
    IPv6 configuration).
 

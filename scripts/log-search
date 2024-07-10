@@ -147,7 +147,7 @@ NGINX_LOG_LINE_RE = re.compile(
       (?P<hostname> \S+ ) \s+
       (?P<duration> \S+ )
     """,
-    re.X,
+    re.VERBOSE,
 )
 
 PYTHON_LOG_LINE_RE = re.compile(
@@ -178,7 +178,7 @@ PYTHON_LOG_LINE_RE = re.compile(
         ) \s+ via \s+ (?P<user_agent> .* )
       \)
     """,
-    re.X,
+    re.VERBOSE,
 )
 
 

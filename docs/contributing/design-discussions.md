@@ -11,7 +11,7 @@ perspectives, respectfully shared.
 
 Most design discussions take place in the [#design][design channel] channel in the
 development community. Discussions about mobile app design happen in
-[#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team), and
+[#mobile](https://chat.zulip.org/#narrow/channel/48-mobile), and
 design of the terminal app is discussed in
 [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal).
 
@@ -182,7 +182,7 @@ it's seen by the appropriate audience.
   sometimes blur (and that’s OK), but we should aim to move (parts of) the
   thread if there is an extensive conversation that belongs in the other channel.
 
-- We use [#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team)
+- We use [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile)
   for discussions of mobile app design, and
   [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal) for
   terminal app design.

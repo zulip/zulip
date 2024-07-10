@@ -171,7 +171,7 @@ actual flows for LDAP configuration.
 - To disable fakeldap, set `FAKE_LDAP_MODE` back to `None`.
 
 - In all fakeldap configurations, users' fake LDAP passwords are equal
-  to their usernames (e.g. for `ldapuser1@zulip.com`, the password is
+  to their usernames (e.g., for `ldapuser1@zulip.com`, the password is
   `ldapuser1`).
 
 - `FAKE_LDAP_NUM_USERS` in `zproject/dev_settings.py` can be used to

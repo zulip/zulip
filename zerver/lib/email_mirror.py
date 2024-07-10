@@ -11,7 +11,7 @@ from typing_extensions import override
 
 from zerver.actions.message_send import (
     check_send_message,
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
 )
@@ -113,8 +113,14 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
         mm_address = MissedMessageEmailAddress.objects.select_related(
             "user_profile",
             "user_profile__realm",
+            # Fetch group settings that are needed to determine whether a user
+            # can send a direct message to a given recipient.
             "user_profile__realm__can_access_all_users_group",
             "user_profile__realm__can_access_all_users_group__named_user_group",
+            "user_profile__realm__direct_message_initiator_group",
+            "user_profile__realm__direct_message_initiator_group__named_user_group",
+            "user_profile__realm__direct_message_permission_group",
+            "user_profile__realm__direct_message_permission_group__named_user_group",
             "message",
             "message__sender",
             "message__recipient",
@@ -327,7 +333,6 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
             if isinstance(attachment, bytes):
                 upload_url = upload_message_attachment(
                     filename,
-                    len(attachment),
                     content_type,
                     attachment,
                     sender,
@@ -458,7 +463,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
-        internal_send_huddle_message(user_profile.realm, user_profile, body, emails=emails)
+        internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
     else:
         raise AssertionError("Invalid recipient type!")
 

@@ -30,7 +30,7 @@ def fix_stream_names(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -
     if len(realm_ids) == 0:
         return
 
-    print("")
+    print()
     for realm_id in realm_ids:
         print(f"Processing realm {realm_id}")
         realm_stream_dicts = Stream.objects.filter(realm_id=realm_id).values("id", "name")

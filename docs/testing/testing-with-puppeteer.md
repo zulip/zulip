@@ -3,8 +3,8 @@
 While our [node test suite](testing-with-node.md) is the
 preferred way to test most frontend code because they are easy to
 write and maintain, some code is best tested in a real browser, either
-because of navigation (E.g. login) or because we want to verify the
-interaction between Zulip logic and browser behavior (E.g. copy/paste,
+because of navigation (e.g., login) or because we want to verify the
+interaction between Zulip logic and browser behavior (e.g., copy/paste,
 keyboard shortcuts, etc.).
 
 ## Running tests
@@ -74,7 +74,7 @@ integration](continuous-integration.md):
   affects any of the selectors used in the tests? If so, the test may
   just need to be updated for your changes.
 - Does the test fail deterministically when you run it locally using
-  E.g. `./tools/test-js-with-puppeteer compose.ts`? If so, you can
+  e.g., `./tools/test-js-with-puppeteer compose.ts`? If so, you can
   iteratively debug to see the failure.
 - Does the test fail nondeterministically? If so, the problem is
   likely that a `waitForSelector` statement is either missing or not
@@ -141,7 +141,7 @@ notes above:
   `main`.
 - With black-box browser tests like these, it's very important to write your code
   to wait for browser's UI to update before taking any action that
-  assumes the last step was processed by the browser (E.g. after you
+  assumes the last step was processed by the browser (e.g., after you
   click on a user's avatar, you need an explicit wait for the profile
   popover to appear before you can try to click on a menu item in that
   popover). This means that before essentially every action in your

@@ -373,20 +373,34 @@ export class MessageList {
     // Maintains a trailing bookend element explaining any changes in
     // your subscribed/unsubscribed status at the bottom of the
     // message list.
-    update_trailing_bookend() {
+    update_trailing_bookend(force_render = false) {
         this.view.clear_trailing_bookend();
         if (this.is_combined_feed_view) {
             return;
         }
+
         const stream_name = narrow_state.stream_name();
         if (stream_name === undefined) {
+            // Trailing bookends are only for channel views.
+            return;
+        }
+
+        // If user narrows to a stream, don't update
+        // trailing bookend if user is subscribed.
+        const sub = stream_data.get_sub(stream_name);
+        if (
+            sub &&
+            sub.subscribed &&
+            !this.last_message_historical &&
+            !page_params.is_spectator &&
+            !force_render
+        ) {
             return;
         }
 
         let deactivated = false;
         let just_unsubscribed = false;
         const subscribed = stream_data.is_subscribed_by_name(stream_name);
-        const sub = stream_data.get_sub(stream_name);
         const invite_only = sub && sub.invite_only;
         const is_web_public = sub && sub.is_web_public;
         const can_toggle_subscription =

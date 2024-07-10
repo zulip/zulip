@@ -151,7 +151,8 @@ export function is_in_focus(): boolean {
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
         !modals.any_active() &&
-        !$(".home-page-input").is(":focus")
+        !$(".home-page-input").is(":focus") &&
+        !$("#search_query").is(":focus")
     );
 }
 
@@ -800,11 +801,17 @@ export function topic_in_search_results(
 
 export function update_topics_of_deleted_message_ids(message_ids: number[]): void {
     const topics_to_rerender = message_util.get_topics_for_message_ids(message_ids);
-
+    const msgs_to_process = [];
     for (const [stream_id, topic] of topics_to_rerender.values()) {
         recent_view_data.conversations.delete(recent_view_util.get_topic_key(stream_id, topic));
         const msgs = message_util.get_messages_in_topic(stream_id, topic);
-        process_messages(msgs);
+        msgs_to_process.push(...msgs);
+    }
+
+    if (msgs_to_process.length > 0) {
+        process_messages(msgs_to_process);
+    } else {
+        complete_rerender();
     }
 }
 

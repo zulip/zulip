@@ -147,18 +147,21 @@ def maybe_send_resolve_topic_notifications(
     old_topic_name: str,
     new_topic_name: str,
     changed_messages: QuerySet[Message],
+    pre_truncation_new_topic_name: str,
 ) -> Tuple[Optional[int], bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
-    #
-    # This logic is designed to treat removing a weird "✔ ✔✔ "
-    # prefix as unresolving the topic.
-    topic_resolved: bool = new_topic_name.startswith(
-        RESOLVED_TOPIC_PREFIX
-    ) and not old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
-    topic_unresolved: bool = old_topic_name.startswith(
-        RESOLVED_TOPIC_PREFIX
-    ) and not new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+    resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
+    topic_resolved: bool = (
+        new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+        and not old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+        and pre_truncation_new_topic_name[resolved_prefix_len:] == old_topic_name
+    )
+    topic_unresolved: bool = (
+        old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+        and not new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+        and old_topic_name.lstrip(RESOLVED_TOPIC_PREFIX) == new_topic_name
+    )
 
     if not topic_resolved and not topic_unresolved:
         # If there's some other weird topic that does not toggle the
@@ -171,7 +174,7 @@ def maybe_send_resolve_topic_notifications(
         # notifications in a row: one can send new messages to the
         # pre-resolve topic and then resolve the topic created that
         # way to get multiple in the resolved topic. And then an
-        # administrator can the messages in between. We consider this
+        # administrator can delete the messages in between. We consider this
         # to be a fundamental risk of irresponsible message deletion,
         # not a bug with the "resolve topics" feature.
         return None, False
@@ -1039,23 +1042,17 @@ def do_update_message(
 
     resolved_topic_message_id = None
     resolved_topic_message_deleted = False
-    if topic_name is not None and content is None:
-        # When stream is changed and topic is marked as resolved or unresolved
-        # in the same API request, resolved or unresolved notification should
-        # be sent to "new_stream".
-        # In general, it is sent to "stream_being_edited".
-        stream_to_send_resolve_topic_notification = stream_being_edited
-        if new_stream is not None:
-            stream_to_send_resolve_topic_notification = new_stream
-
-        assert stream_to_send_resolve_topic_notification is not None
+    if topic_name is not None and content is None and new_stream is None:
+        assert stream_being_edited is not None
+        assert pre_truncation_topic_name is not None
         resolved_topic_message_id, resolved_topic_message_deleted = (
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
-                stream=stream_to_send_resolve_topic_notification,
+                stream=stream_being_edited,
                 old_topic_name=orig_topic_name,
                 new_topic_name=topic_name,
                 changed_messages=changed_messages,
+                pre_truncation_new_topic_name=pre_truncation_topic_name,
             )
         )
 

@@ -22,7 +22,7 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -39,6 +39,8 @@ from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import (
+    DirectMessageInitiationError,
+    DirectMessagePermissionError,
     JsonableError,
     MarkdownRenderingError,
     StreamDoesNotExistError,
@@ -80,6 +82,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
+from zerver.lib.user_groups import is_any_user_in_group, is_user_in_group
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
     check_can_access_user,
@@ -104,8 +107,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import PrivateMessagePolicyEnum
-from zerver.models.recipients import get_huddle_user_ids
+from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
@@ -374,7 +376,7 @@ def get_recipient_info(
             )
 
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        message_to_user_id_set = set(get_huddle_user_ids(recipient))
+        message_to_user_id_set = set(get_direct_message_group_user_ids(recipient))
 
     else:
         raise ValueError("Bad recipient type")
@@ -547,7 +549,7 @@ def get_service_bot_events(
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
             trigger = "mention"
-        # Direct message triggers for personal and huddle messages
+        # Direct message triggers for personal and group direct messages
         elif not is_stream and user_profile_id in active_user_ids:
             trigger = NotificationTriggers.DIRECT_MESSAGE
         else:
@@ -1222,9 +1224,9 @@ def do_send_messages(
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
     if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        # For huddle messages, we use a 10-second window because the
-        # timestamps aren't guaranteed to actually match between two
-        # copies of the same message.
+        # For group direct messages, we use a 10-second window because
+        # the timestamps aren't guaranteed to actually match between
+        # two copies of the same message.
         time_window = timedelta(seconds=10)
     else:
         time_window = timedelta(seconds=0)
@@ -1525,19 +1527,61 @@ def validate_stream_id_with_pm_notification(
     return stream
 
 
-def check_private_message_policy(
-    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
+def check_can_send_direct_message(
+    realm: Realm, sender: UserProfile, recipient_users: Sequence[UserProfile], recipient: Recipient
 ) -> None:
-    if realm.private_message_policy == PrivateMessagePolicyEnum.DISABLED:
-        if sender.is_bot or (
-            len(user_profiles) == 1 and (user_profiles[0].is_bot or user_profiles[0] == sender)
-        ):
-            # We allow direct messages only between users and bots or to oneself,
-            # to avoid breaking the tutorial as well as automated
-            # notifications from system bots to users.
+    if sender.is_bot:
+        return
+
+    if all(user_profile.is_bot or user_profile.id == sender.id for user_profile in recipient_users):
+        return
+
+    direct_message_permission_group = realm.direct_message_permission_group
+
+    if (
+        not hasattr(direct_message_permission_group, "named_user_group")
+        or direct_message_permission_group.named_user_group.name != SystemGroups.EVERYONE
+    ):
+        user_ids = [recipient_user.id for recipient_user in recipient_users] + [sender.id]
+        if not is_any_user_in_group(direct_message_permission_group, user_ids):
+            is_nobody_group = (
+                direct_message_permission_group.named_user_group.name == SystemGroups.NOBODY
+            )
+            raise DirectMessagePermissionError(is_nobody_group)
+
+    direct_message_initiator_group = realm.direct_message_initiator_group
+    if (
+        not hasattr(direct_message_initiator_group, "named_user_group")
+        or direct_message_initiator_group.named_user_group.name != SystemGroups.EVERYONE
+    ):
+        if is_user_in_group(direct_message_initiator_group, sender):
             return
 
-        raise JsonableError(_("Direct messages are disabled in this organization."))
+        # TODO: This check is inefficient; we should in the future be able to cache
+        # on the Huddle object whether the conversation already exists, likely in the
+        # form of a `first_message_id` field, and be able to save doing this check in the
+        # common case that this is not the first message in a conversation.
+        if recipient.type == Recipient.PERSONAL:
+            recipient_user_profile = recipient_users[0]
+            previous_messages_exist = (
+                Message.objects.filter(
+                    realm=realm,
+                    recipient__type=Recipient.PERSONAL,
+                )
+                .filter(
+                    Q(sender=sender, recipient=recipient)
+                    | Q(sender=recipient_user_profile, recipient_id=sender.recipient_id)
+                )
+                .exists()
+            )
+        else:
+            assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+            previous_messages_exist = Message.objects.filter(
+                realm=realm,
+                recipient=recipient,
+            ).exists()
+        if not previous_messages_exist:
+            raise DirectMessageInitiationError
 
 
 def check_sender_can_access_recipients(
@@ -1692,8 +1736,6 @@ def check_message(
 
         check_sender_can_access_recipients(realm, sender, user_profiles)
 
-        check_private_message_policy(realm, sender, user_profiles)
-
         recipients_for_user_creation_events = get_recipients_for_user_creation_events(
             realm, sender, user_profiles
         )
@@ -1709,6 +1751,8 @@ def check_message(
         except ValidationError as e:
             assert isinstance(e.messages[0], str)
             raise JsonableError(e.messages[0])
+
+        check_can_send_direct_message(realm, sender, user_profiles, recipient)
     else:
         # This is defensive code--Addressee already validates
         # the message type.
@@ -1989,7 +2033,7 @@ def internal_send_stream_message_by_name(
     return sent_message_result.message_id
 
 
-def internal_prep_huddle_message(
+def internal_prep_group_direct_message(
     realm: Realm,
     sender: UserProfile,
     content: str,
@@ -2011,7 +2055,7 @@ def internal_prep_huddle_message(
     )
 
 
-def internal_send_huddle_message(
+def internal_send_group_direct_message(
     realm: Realm,
     sender: UserProfile,
     content: str,
@@ -2019,7 +2063,7 @@ def internal_send_huddle_message(
     emails: Optional[List[str]] = None,
     recipient_users: Optional[List[UserProfile]] = None,
 ) -> Optional[int]:
-    message = internal_prep_huddle_message(
+    message = internal_prep_group_direct_message(
         realm, sender, content, emails=emails, recipient_users=recipient_users
     )
 

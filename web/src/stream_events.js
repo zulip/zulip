@@ -148,7 +148,7 @@ export function mark_subscribed(sub, subscribers, color) {
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         assert(message_lists.current !== undefined);
-        message_lists.current.update_trailing_bookend();
+        message_lists.current.update_trailing_bookend(true);
         activity_ui.build_user_sidebar();
     }
 
@@ -181,7 +181,7 @@ export function mark_unsubscribed(sub) {
         // Update UI components if we just unsubscribed from the
         // currently viewed stream.
         assert(message_lists.current !== undefined);
-        message_lists.current.update_trailing_bookend();
+        message_lists.current.update_trailing_bookend(true);
 
         // This update would likely be better implemented by having it
         // disappear whenever no unread messages remain.

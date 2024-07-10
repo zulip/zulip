@@ -37,7 +37,7 @@ create_zulip_test
 
 ./manage.py dumpdata \
     zerver.UserProfile zerver.Stream zerver.Recipient \
-    zerver.Subscription zerver.Message zerver.Huddle zerver.Realm \
+    zerver.Subscription zerver.Message zerver.DirectMessageGroup zerver.Realm \
     zerver.UserMessage zerver.Client \
     zerver.DefaultStream >zerver/tests/fixtures/messages.json
 

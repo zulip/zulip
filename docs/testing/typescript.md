@@ -71,7 +71,7 @@ Our plan is to order which modules we migrate carefully, starting with
 those that:
 
 - Appear frequently as reverse dependencies of other modules
-  (e.g. `people.js`). These are most valuable to do first because
+  (e.g., `people.js`). These are most valuable to do first because
   then we have types on the data being interacted with by other
   modules when we migrate those.
 - Don't have large open pull requests (to avoid merge conflicts); one
@@ -82,11 +82,11 @@ those that:
 
 When migrating a module, we want to be especially thoughtful about
 putting together a commit structure that makes mistakes unlikely and
-the changes easy to verify. E.g.:
+the changes easy to verify. For example:
 
 - First a commit that just converts the language to TypeScript adding
   types. The result may potentially have some violations of the
-  long-term style we want (e.g. not using `const`). Depending on how
+  long-term style we want (e.g., not using `const`). Depending on how
   we're handling linting, we set some override eslint rules at the top
   of the module at this stage so CI still passes.
 - Then a commit just migrating use of `var` to `const/let` without

@@ -4,13 +4,14 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import (
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
 )
@@ -43,6 +44,7 @@ from zerver.models import (
     Message,
     NamedUserGroup,
     OnboardingStep,
+    OnboardingUserMessage,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -62,14 +64,14 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
 
 
-MAX_NUM_ONBOARDING_MESSAGES = 1000
-MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
+MAX_NUM_RECENT_MESSAGES = 1000
+MAX_NUM_RECENT_UNREAD_MESSAGES = 20
 
 # We don't want to mark years-old messages as unread, since that might
 # feel like Zulip is buggy, but in low-traffic or bursty-traffic
 # organizations, it's reasonable for the most recent 20 messages to be
 # several weeks old and still be a good place to start.
-ONBOARDING_RECENT_TIMEDELTA = timedelta(weeks=12)
+RECENT_MESSAGES_TIMEDELTA = timedelta(weeks=12)
 
 
 def send_message_to_signup_notification_stream(
@@ -87,7 +89,7 @@ def send_message_to_signup_notification_stream(
 
 def send_group_direct_message_to_admins(sender: UserProfile, realm: Realm, content: str) -> None:
     administrators = list(realm.get_human_admin_users())
-    internal_send_huddle_message(
+    internal_send_group_direct_message(
         realm,
         sender,
         content,
@@ -126,6 +128,7 @@ def set_up_streams_for_new_human_user(
     prereg_user: Optional[PreregistrationUser] = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     add_initial_stream_subscriptions: bool = True,
+    realm_creation: bool = False,
 ) -> None:
     realm = user_profile.realm
 
@@ -165,17 +168,25 @@ def set_up_streams_for_new_human_user(
         acting_user=acting_user,
     )
 
-    add_new_user_history(user_profile, streams)
+    add_new_user_history(user_profile, streams, realm_creation=realm_creation)
 
 
-def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
+def add_new_user_history(
+    user_profile: UserProfile,
+    streams: Iterable[Stream],
+    *,
+    realm_creation: bool = False,
+) -> None:
     """
-    Give the user some messages in their feed, so that they can learn how to
-    use the home view in a realistic way after finishing the tutorial.
+    Give the user some messages in their feed, so that they can learn
+    how to use the home view in a realistic way.
 
-    Mark the very most recent messages as unread.
+    For realms having older onboarding messages, mark the very
+    most recent messages as unread. Otherwise, ONLY mark the
+    messages tracked in 'OnboardingUserMessage' as unread.
     """
 
+    realm = user_profile.realm
     # Find recipient ids for the user's streams, limiting to just
     # those where we can access the streams' full history.
     #
@@ -186,21 +197,33 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     ]
 
     # Start by finding recent messages matching those recipients.
-    cutoff_date = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
+    cutoff_date = timezone_now() - RECENT_MESSAGES_TIMEDELTA
     recent_message_ids = set(
         Message.objects.filter(
             # Uses index: zerver_message_realm_recipient_id
-            realm_id=user_profile.realm_id,
+            realm_id=realm.id,
             recipient_id__in=recipient_ids,
             date_sent__gt=cutoff_date,
         )
         .order_by("-id")
-        .values_list("id", flat=True)[0:MAX_NUM_ONBOARDING_MESSAGES]
+        .values_list("id", flat=True)[0:MAX_NUM_RECENT_MESSAGES]
     )
 
-    if len(recent_message_ids) > 0:
+    tracked_onboarding_message_ids = set()
+    message_id_to_onboarding_user_message = {}
+    onboarding_user_messages_queryset = OnboardingUserMessage.objects.filter(realm_id=realm.id)
+    for onboarding_user_message in onboarding_user_messages_queryset:
+        tracked_onboarding_message_ids.add(onboarding_user_message.message_id)
+        message_id_to_onboarding_user_message[onboarding_user_message.message_id] = (
+            onboarding_user_message
+        )
+    tracked_onboarding_messages_exist = len(tracked_onboarding_message_ids) > 0
+
+    message_history_ids = recent_message_ids.union(tracked_onboarding_message_ids)
+
+    if len(message_history_ids) > 0:
         # Handle the race condition where a message arrives between
-        # bulk_add_subscriptions above and the Message query just above
+        # bulk_add_subscriptions above and the recent message query just above
         already_used_ids = set(
             UserMessage.objects.filter(
                 message_id__in=recent_message_ids, user_profile=user_profile
@@ -208,18 +231,29 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
         )
 
         # Exclude the already-used ids and sort them.
-        backfill_message_ids = sorted(recent_message_ids - already_used_ids)
+        backfill_message_ids = sorted(message_history_ids - already_used_ids)
 
         # Find which message ids we should mark as read.
         # (We don't want too many unread messages.)
-        older_message_ids = set(backfill_message_ids[:-MAX_NUM_ONBOARDING_UNREAD_MESSAGES])
+        older_message_ids = set()
+        if not tracked_onboarding_messages_exist:
+            older_message_ids = set(backfill_message_ids[:-MAX_NUM_RECENT_UNREAD_MESSAGES])
 
         # Create UserMessage rows for the backfill.
         ums_to_create = []
         for message_id in backfill_message_ids:
             um = UserMessage(user_profile=user_profile, message_id=message_id)
-            if message_id in older_message_ids:
-                um.flags = UserMessage.flags.read
+            # Only onboarding messages are available for realm creator.
+            # They are not marked as historical.
+            if not realm_creation:
+                um.flags = UserMessage.flags.historical
+            if tracked_onboarding_messages_exist:
+                if message_id not in tracked_onboarding_message_ids:
+                    um.flags |= UserMessage.flags.read
+                elif message_id_to_onboarding_user_message[message_id].flags.starred.is_set:
+                    um.flags |= UserMessage.flags.starred
+            elif message_id in older_message_ids:
+                um.flags |= UserMessage.flags.read
             ums_to_create.append(um)
 
         UserMessage.objects.bulk_create(ums_to_create)
@@ -245,6 +279,7 @@ def process_new_human_user(
         prereg_user=prereg_user,
         default_stream_groups=default_stream_groups,
         add_initial_stream_subscriptions=add_initial_stream_subscriptions,
+        realm_creation=realm_creation,
     )
 
     realm = user_profile.realm
@@ -256,6 +291,7 @@ def process_new_human_user(
         and prereg_user is not None
         and prereg_user.referred_by is not None
         and prereg_user.referred_by.is_active
+        and prereg_user.notify_referrer_on_join
     ):
         # This is a cross-realm direct message.
         with override_language(prereg_user.referred_by.default_language):
@@ -305,7 +341,10 @@ def process_new_human_user(
     # to keep all the onboarding code in zerver/lib/onboarding.py.
     from zerver.lib.onboarding import send_initial_direct_message
 
-    send_initial_direct_message(user_profile)
+    message_id = send_initial_direct_message(user_profile)
+    UserMessage.objects.filter(user_profile=user_profile, message_id=message_id).update(
+        flags=F("flags").bitor(UserMessage.flags.starred)
+    )
 
     # The 'visibility_policy_banner' is only displayed to existing users.
     # Mark it as read for a new user.
@@ -566,6 +605,12 @@ def do_create_user(
         prereg_realm.created_user = user_profile
         prereg_realm.save(update_fields=["created_user"])
 
+    if realm_creation:
+        from zerver.lib.onboarding import send_initial_realm_messages
+
+        with override_language(realm.default_language):
+            send_initial_realm_messages(realm)
+
     if bot_type is None:
         process_new_human_user(
             user_profile,
@@ -574,12 +619,6 @@ def do_create_user(
             realm_creation=realm_creation,
             add_initial_stream_subscriptions=add_initial_stream_subscriptions,
         )
-
-    if realm_creation:
-        from zerver.lib.onboarding import send_initial_realm_messages
-
-        with override_language(realm.default_language):
-            send_initial_realm_messages(realm)
 
     return user_profile
 

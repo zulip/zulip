@@ -114,6 +114,7 @@ select = [
     "EXE", # shebang
     "F", # flakes
     "FLY", # string formatting
+    "FURB", # refurbishing
     "G", # logging format
     "I", # import sorting
     "INT", # gettext

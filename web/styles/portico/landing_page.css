@@ -2265,7 +2265,8 @@ button {
         }
     }
 
-    .feature-image {
+    .feature-image,
+    .message-screenshot {
         & img,
         div.quote {
             width: 400px;
@@ -2281,6 +2282,34 @@ button {
             & div.quote {
                 width: auto;
             }
+        }
+    }
+
+    .message-screenshot {
+        position: relative;
+
+        img {
+            display: block;
+            mask-image: linear-gradient(
+                to right,
+                hsl(0deg 0% 0%) 75%,
+                transparent 100%
+            );
+        }
+        margin-bottom: 10px;
+    }
+
+    /* message-starred is used when the message screenshot captured using
+    the script "generate-user-message-screenshot" contains starred message.
+    This is done to reduce the fading effect on the image caused by
+    ".message-screenshot" class so that the star is visible. */
+    .message-starred {
+        img {
+            mask-image: linear-gradient(
+                to right,
+                hsl(0deg 0% 0%) 95%,
+                transparent 100%
+            );
         }
     }
 

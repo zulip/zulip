@@ -178,7 +178,7 @@ running it manually.
 
 {start_tabs}
 
-1.  Install *supervisord* via your package manager; e.g. on Debian/Ubuntu:
+1.  Install *supervisord* via your package manager; e.g., on Debian/Ubuntu:
 
      ```
      sudo apt-get install supervisor

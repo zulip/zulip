@@ -62,6 +62,17 @@ currently composing to.
 
 {end_tabs}
 
+### Automatically go to conversation where you sent a message
+
+{start_tabs}
+
+{settings_tab|preferences}
+
+1. Under **Advanced**, toggle **Automatically go to conversation
+where you sent a message**, as desired.
+
+{end_tabs}
+
 ## Toggle between <kbd>Ctrl</kbd> + <kbd>Enter</kbd> and <kbd>Enter</kbd> to send a message
 
 By default, the <kbd>Enter</kbd> key adds a new line to your message,

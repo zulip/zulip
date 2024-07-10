@@ -46,7 +46,7 @@ priority.
   [LDAP/Active Directory][ldap-name]).
 - Zulip provides many options for
   [managing who can join the organization](/help/invite-new-users),
-  supporting everything from open to the public (e.g. for open source
+  supporting everything from open to the public (e.g., for open source
   projects), to requiring an invitation to join, to having an email from a
   list of domains, to being a member of a specific organization in
   LDAP/Active Directory.
@@ -102,7 +102,7 @@ priority.
 - Zulip’s server logging has configurable log rotation policies and can be
   used for an end-to-end history of system usage.
 - Zulip stores in its database a permanent long-term audit log containing
-  the history of important actions (e.g. changes to passwords, email
+  the history of important actions (e.g., changes to passwords, email
   addresses, and channel subscriptions).
 - Zulip’s powerful data exports
   ([on-premise](https://zulip.readthedocs.io/en/latest/production/export-and-import.html),
@@ -142,7 +142,7 @@ the industry:
   to sensitive customer data.
 - Our error handling systems have been designed from the beginning to
   avoid including user message content in error reports, even in cases where
-  this makes debugging quite difficult (e.g. bugs in the message rendering
+  this makes debugging quite difficult (e.g., bugs in the message rendering
   codebase).
 - Zulip has a carefully designed API surface area of only about 100 API
   endpoints. For comparison, products of similar scope typically have

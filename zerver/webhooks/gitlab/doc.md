@@ -14,7 +14,7 @@ Receive GitLab notifications in Zulip!
    sidebar.  Click on **Integrations**.
 
 1. Set **URL** to the URL you generated. Select the
-   [events](#filtering-incoming-events) you you would like to receive
+   [events](#filtering-incoming-events) you would like to receive
    notifications for, and click **Add Webhook**.
 
 !!! warn ""
@@ -32,11 +32,7 @@ Receive GitLab notifications in Zulip!
 
 ![](/static/images/integrations/gitlab/001.png)
 
-{% if all_event_types is defined %}
-
 {!event-filtering-additional-feature.md!}
-
-{% endif %}
 
 ### Configuration options
 

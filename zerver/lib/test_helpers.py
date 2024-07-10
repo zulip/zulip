@@ -246,7 +246,7 @@ def avatar_disk_path(
     avatar_disk_path = os.path.join(
         settings.LOCAL_AVATARS_DIR,
         avatar_url_path.split("/")[-2],
-        avatar_url_path.split("/")[-1].split("?")[0],
+        avatar_url_path.split("/")[-1],
     )
     if original:
         return avatar_disk_path.replace(".png", ".original")
@@ -601,7 +601,7 @@ def use_db_models(
         DefaultStream = apps.get_model("zerver", "DefaultStream")
         DefaultStreamGroup = apps.get_model("zerver", "DefaultStreamGroup")
         EmailChangeStatus = apps.get_model("zerver", "EmailChangeStatus")
-        Huddle = apps.get_model("zerver", "Huddle")
+        DirectMessageGroup = apps.get_model("zerver", "DirectMessageGroup")
         Message = apps.get_model("zerver", "Message")
         MultiuseInvite = apps.get_model("zerver", "MultiuseInvite")
         OnboardingStep = apps.get_model("zerver", "OnboardingStep")
@@ -645,7 +645,7 @@ def use_db_models(
             DefaultStream=DefaultStream,
             DefaultStreamGroup=DefaultStreamGroup,
             EmailChangeStatus=EmailChangeStatus,
-            Huddle=Huddle,
+            DirectMessageGroup=DirectMessageGroup,
             Message=Message,
             MultiuseInvite=MultiuseInvite,
             UserTopic=UserTopic,

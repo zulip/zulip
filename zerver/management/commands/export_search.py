@@ -17,7 +17,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
 from zerver.models import AbstractUserMessage, Attachment, Message, Recipient, Stream, UserProfile
-from zerver.models.recipients import get_or_create_huddle
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.users import get_user_by_delivery_email
 
 
@@ -176,8 +176,10 @@ This is most often used for legal compliance.
                     recipient=user_b.recipient, sender=user_a
                 )
             else:
-                huddle = get_or_create_huddle([user.id for user in user_profiles])
-                limits &= Q(recipient=huddle.recipient)
+                direct_message_group = get_or_create_direct_message_group(
+                    [user.id for user in user_profiles]
+                )
+                limits &= Q(recipient=direct_message_group.recipient)
 
         attachments_written: Set[str] = set()
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")

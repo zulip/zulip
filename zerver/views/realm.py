@@ -62,7 +62,6 @@ from zerver.models.realms import (
     InviteToRealmPolicyEnum,
     MoveMessagesBetweenStreamsPolicyEnum,
     OrgTypeEnum,
-    PrivateMessagePolicyEnum,
     WildcardMentionPolicyEnum,
 )
 from zerver.views.user_settings import check_settings_values
@@ -149,13 +148,14 @@ def update_realm(
     bot_creation_policy: Optional[Json[BotCreationPolicyEnum]] = None,
     can_create_public_channel_group: Optional[Json[GroupSettingChangeRequest]] = None,
     can_create_private_channel_group: Optional[Json[GroupSettingChangeRequest]] = None,
+    direct_message_initiator_group: Optional[Json[GroupSettingChangeRequest]] = None,
+    direct_message_permission_group: Optional[Json[GroupSettingChangeRequest]] = None,
     create_web_public_stream_policy: Optional[Json[CreateWebPublicStreamPolicyEnum]] = None,
     invite_to_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
     move_messages_between_streams_policy: Optional[
         Json[MoveMessagesBetweenStreamsPolicyEnum]
     ] = None,
     user_group_edit_policy: Optional[Json[CommonPolicyEnum]] = None,
-    private_message_policy: Optional[Json[PrivateMessagePolicyEnum]] = None,
     wildcard_mention_policy: Optional[Json[WildcardMentionPolicyEnum]] = None,
     video_chat_provider: Optional[Json[int]] = None,
     jitsi_server_url_raw: Annotated[
@@ -540,6 +540,10 @@ def update_realm_user_settings_defaults(
         json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
         default=None,
     ),
+    web_channel_default_view: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES),
+        default=None,
+    ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     receives_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     web_stream_unreads_count_display_policy: Optional[int] = REQ(
@@ -653,6 +657,7 @@ def update_realm_user_settings_defaults(
     email_address_visibility: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
+    web_navigate_to_sent_message: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

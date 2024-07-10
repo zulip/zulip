@@ -39,7 +39,8 @@
 
 li.show-more-topics {
     & a {
-        font-size: 12px;
+        /* 12px at 14px/1em */
+        font-size: 0.8571em;
     }
 }
 
@@ -68,21 +69,15 @@ li.show-more-topics {
     padding: 0;
     font-weight: normal;
 
-    .input-append.topic_search_section {
-        padding: 2px 0 2px
-            calc(
-                var(--left-sidebar-topic-indent) -
-                    var(--left-sidebar-topic-resolve-width)
-            );
-        margin-bottom: 3px;
-        margin-left: 3px;
-
-        & input {
-            width: calc(100% - 50px);
-        }
+    .topic_search_section {
+        margin: 3px 0;
 
         .clear_search_button {
-            margin-left: -1px;
+            grid-area: row-content;
+            justify-self: self-end;
+            /* Override app-component positioning. */
+            position: static;
+            padding-right: 4px;
         }
     }
 
@@ -208,7 +203,7 @@ li.show-more-topics {
        in the DM section. */
     margin-right: 12px;
 
-    #direct-messages-section-header {
+    &#direct-messages-section-header {
         grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
         grid-template-rows: var(--line-height-sidebar-row-prominent);
         /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
@@ -279,7 +274,8 @@ li.show-more-topics {
             align-items: baseline;
 
             & a {
-                font-size: 12px;
+                /* 12px at 14px/1em */
+                font-size: 0.8571em;
             }
 
             .unread_count {
@@ -317,7 +313,7 @@ li.show-more-topics {
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 
-    #direct-messages-section {
+    #direct-messages-section-header {
         border-radius: 4px 4px 0 0;
     }
 
@@ -425,6 +421,11 @@ ul.filters {
 
     .zulip-icon-follow {
         opacity: 0.6;
+
+        &:hover {
+            opacity: 1;
+            color: var(--color-left-sidebar-follow-icon-hover);
+        }
     }
 
     & li.muted_topic,
@@ -591,9 +592,19 @@ li.active-sub-filter {
     display: grid;
     grid-template-areas: "selected-home-view";
     line-height: var(--line-height-sidebar-row);
+    /* Explicitly ensure parity with the line-height
+       for the sake of low-resolution screens, whose
+       font-rendering and rounding may cause icons
+       to appear out of alignment. This grid feature should
+       only apply in the expanded-navigation view. */
+    grid-auto-rows: var(--line-height-sidebar-row);
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
+            /* Again, for the sake of low-resolution screens,
+               we'll let the actual label take 1 as a line-height
+               value, and allow grid to handle the alignment. */
+            line-height: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -645,17 +656,6 @@ li.top_left_scheduled_messages {
         /* Use display: grid to preserve the grid
            layout when visible. */
         display: grid;
-    }
-}
-
-.top_left_row {
-    /* The row grid for the outer .top_left_row
-       is chiefly for lefthand spacing and placing
-       the inner row content and vdots. */
-    grid-template-columns: 7px 0 minmax(0, 1fr) 0 30px 0;
-
-    .sidebar-menu-icon {
-        grid-area: ending-anchor-element;
     }
 }
 
@@ -711,12 +711,14 @@ li.top_left_scheduled_messages {
 
 /* New .topic-box grid definitions here. */
 #views-label-container,
+.zoom-in #hide-more-direct-messages,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
 .subscription_block,
 .topic-box,
-.searching-for-more-topics {
+.searching-for-more-topics,
+.topic_search_section {
     display: grid;
     align-items: center;
     /* This general pattern of elements applies to every single row in the left
@@ -732,6 +734,21 @@ li.top_left_scheduled_messages {
        (which alters the box size) or `margin` (which notoriously bleeds outside
        of the element it's defined on). */
     grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+}
+
+.top_left_row {
+    /* We stretch the items on the overall
+       nav row, so there's no unclickable
+       gaps between nav rows. */
+    align-items: stretch;
+    /* The row grid for the outer .top_left_row
+       is chiefly for lefthand spacing and placing
+       the inner row content and vdots. */
+    grid-template-columns: 7px 0 minmax(0, 1fr) 0 30px 0;
+
+    .sidebar-menu-icon {
+        grid-area: ending-anchor-element;
+    }
 }
 
 #direct-messages-section-header,
@@ -781,6 +798,10 @@ li.top_left_scheduled_messages {
        filter rows as needed, based on the narrow. */
     &.showing-condensed-navigation {
         + #left-sidebar-navigation-list {
+            /* In the condensed state, we don't want to generate
+               auto rows, or there will be a footprint where the
+               expanded nav sits. */
+            grid-auto-rows: unset;
             /* When the navigation area is condensed, hide all
                the rows in the full navigation list... */
             & .top_left_row {
@@ -790,6 +811,9 @@ li.top_left_scheduled_messages {
                that row should still be shown. */
             & .top_left_row.active-filter {
                 display: grid;
+                /* In the absence of auto rows in the condensed state,
+                   we set an explicit height on the active filter. */
+                height: var(--line-height-sidebar-row);
             }
         }
     }
@@ -875,10 +899,14 @@ li.top_left_scheduled_messages {
 .topic-box,
 .searching-for-more-topics {
     grid-template-columns:
-        25px var(--left-sidebar-topic-resolve-width) minmax(0, 1fr) minmax(
-            0,
-            max-content
-        )
+        var(--left-sidebar-topic-indent) var(--left-sidebar-topic-resolve-width)
+        minmax(0, 1fr) minmax(0, max-content)
+        30px 0;
+}
+
+.topic_search_section {
+    grid-template-columns:
+        var(--left-sidebar-topic-indent) 0 minmax(0, 1fr) minmax(0, max-content)
         30px 0;
 }
 
@@ -909,6 +937,10 @@ li.top_left_scheduled_messages {
     }
 }
 
+.topic-list-filter {
+    grid-area: row-content;
+}
+
 .searching-for-more-topics img {
     height: 16px;
     grid-area: row-content;
@@ -916,7 +948,8 @@ li.top_left_scheduled_messages {
 
 .sidebar-topic-check {
     grid-area: starting-anchor-element;
-    font-size: 15px;
+    /* 15px at 14px/1em */
+    font-size: 1.0714em;
 }
 
 .stream-markers-and-controls,
@@ -968,6 +1001,11 @@ li.top_left_scheduled_messages {
        so it remains hidden otherwise. */
     justify-content: center;
     text-align: center;
+    /* Ensure icons are vertically aligned, in
+       case they appear in a grid definition,
+       like the nav rows, that use a different
+       centering regime for the row. */
+    align-self: center;
     /* Set the icon size, which will be inherited
        by .zulip-icon */
     font-size: 17px;
@@ -1092,6 +1130,13 @@ li.topic-list-item {
     }
 }
 
+/* Since direct-messages-sticky-header also has the `input-append`
+   class accompanying it. The display property of that class will
+   overwrite display: none if we don't have a more specific CSS
+   rule. It will also overwrite `display: none` even if `.zoom-out`
+   properties are declared after the `.input-append` properties since
+   the latter is more specific. */
+#direct-messages-sticky-header.zoom-out,
 .zoom-out {
     #topics_header {
         display: none;
@@ -1179,7 +1224,7 @@ li.topic-list-item {
         width: var(--left-sidebar-header-icon-width);
     }
 
-    .input-append {
+    .stream_search_section {
         grid-area: filter-box;
         display: flex;
         justify-content: stretch;
@@ -1187,53 +1232,6 @@ li.topic-list-item {
            vertical centering. */
         line-height: 20px;
         white-space: nowrap;
-
-        & input {
-            /* Use the border-box model so flex
-               can do its thing despite whatever
-               padding and border we specify. */
-            box-sizing: border-box;
-            flex: 1 0 100%;
-            /* Match the input height exactly
-               with the row height for a perfect
-               fit and better vertical alignment. */
-            height: 28px;
-            /* Pad the entire clear-button area,
-               so that input text does not bleed
-               into there. */
-            padding-right: 30px;
-        }
-
-        .clear_search_button {
-            /* Use the border-box model so flex
-               can do its thing despite whatever
-               padding and border we specify. */
-            box-sizing: border-box;
-            /* Clear inherited positioning. */
-            position: static;
-            /* We're going to use flexbox, not
-               positioning, to get the clear button
-               over top of the input. This -30px
-               margin accomplishes that, in tandem
-               with the 30px width of this element,
-               which is shared with the ending
-               anchor element in left sidebar header
-               rows. */
-            width: 30px;
-            margin-left: -30px;
-            /* Flexbox respects z-index; this just
-               ensures the button remains over top
-               of the input. */
-            z-index: 1;
-            /* Make the button itself a flex container,
-               so we can perfectly center the X icon. */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* Flexbox will pull the element open
-               to make a generous clickable area. */
-            padding: 0;
-        }
     }
 
     &.hide_unread_counts {
@@ -1266,6 +1264,57 @@ li.topic-list-item {
                 display: none;
             }
         }
+    }
+}
+
+.stream_search_section,
+.direct-messages-search-section {
+    .stream-list-filter,
+    .direct-messages-list-filter {
+        /* Use the border-box model so flex
+           can do its thing despite whatever
+           padding and border we specify. */
+        box-sizing: border-box;
+        flex: 1 0 100%;
+        /* Match the input height exactly
+           with the row height for a perfect
+           fit and better vertical alignment. */
+        height: 28px;
+        /* Pad the entire clear-button area,
+           so that input text does not bleed
+           into there. */
+        padding-right: 30px;
+    }
+
+    .clear_search_button {
+        /* Use the border-box model so flex
+           can do its thing despite whatever
+           padding and border we specify. */
+        box-sizing: border-box;
+        /* Clear inherited positioning. */
+        position: static;
+        /* We're going to use flexbox, not
+           positioning, to get the clear button
+           over top of the input. This -30px
+           margin accomplishes that, in tandem
+           with the 30px width of this element,
+           which is shared with the ending
+           anchor element in left sidebar header
+           rows. */
+        width: 30px;
+        margin-left: -30px;
+        /* Flexbox respects z-index; this just
+           ensures the button remains over top
+           of the input. */
+        z-index: 1;
+        /* Make the button itself a flex container,
+           so we can perfectly center the X icon. */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Flexbox will pull the element open
+           to make a generous clickable area. */
+        padding: 0;
     }
 }
 
@@ -1331,14 +1380,6 @@ li.topic-list-item {
     overflow: hidden;
 }
 
-.topic-list-filter {
-    /* Input width = 100% - 30px right-margin - 6px right-padding */
-    /* To keep the right edge of input along with its borders inline with other
-       topic items we consider to subtract the space given for right margin of
-       other items, and right padding of input element.  */
-    width: calc(100% - 36px);
-}
-
 .zero_count {
     visibility: hidden;
 }
@@ -1367,29 +1408,29 @@ li.topic-list-item {
     }
 
     #hide-more-direct-messages {
-        display: block;
+        grid-template-columns: inherit;
+        grid-column: 1 / -1;
+        line-height: var(--line-height-sidebar-row);
         text-decoration: none;
         color: inherit;
-        font-size: 12px;
+        /* 12px at 14px/1em */
 
-        & span {
-            display: block;
-            /* TODO: Rewrite the show-more and show-less
-               buttons as grids alongside the left sidebar
-               header rewrites. The 12px left padding here
-               aligns the "back to channels" text with the
-               DIRECT MESSAGES heading above, which itself
-               is offset -3 px to the left, but reserves
-               15px for the arrow marker. 15px - 3px = 12px. */
-            padding: 2px 0 2px 12px;
+        .hide-more-direct-messages-text {
+            font-size: 0.8571em;
+            grid-area: row-content;
         }
 
         &:hover {
-            & span {
-                background-color: hsl(120deg 12.3% 71.4% / 38%);
-                border-radius: 4px;
-            }
+            background-color: hsl(120deg 12.3% 71.4% / 38%);
+            border-radius: 4px;
         }
+    }
+
+    .direct-messages-search-section {
+        display: flex;
+        grid-column: row-content / markers-and-controls;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
 
     .zoom-in-hide {

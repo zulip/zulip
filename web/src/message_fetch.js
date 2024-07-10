@@ -3,6 +3,8 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_recipient from "./compose_recipient";
 import * as direct_message_group_data from "./direct_message_group_data";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
@@ -106,6 +108,8 @@ function process_result(data, opts) {
             // Even after loading more messages, we have
             // no messages to display in this narrow.
             narrow_banner.show_empty_narrow_message();
+            compose_closed_ui.update_buttons_for_private();
+            compose_recipient.check_posting_policy_for_compose_box();
         }
 
         if (opts.num_before > 0 && !has_found_oldest) {

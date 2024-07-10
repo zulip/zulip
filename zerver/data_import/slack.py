@@ -24,7 +24,7 @@ from zerver.data_import.import_util import (
     build_attachment,
     build_avatar,
     build_defaultstream,
-    build_huddle,
+    build_direct_message_group,
     build_message,
     build_realm,
     build_recipient,
@@ -160,7 +160,7 @@ def slack_workspace_to_realm(
     3. slack_recipient_name_to_zulip_recipient_id, which is a dictionary to map from Slack recipient
        name(channel names, mpim names, usernames, etc) to Zulip recipient id
     4. added_channels, which is a dictionary to map from channel name to channel id, Zulip stream_id
-    5. added_mpims, which is a dictionary to map from MPIM name to MPIM id, Zulip huddle_id
+    5. added_mpims, which is a dictionary to map from MPIM name to MPIM id, Zulip direct_message_group_id
     6. dm_members, which is a dictionary to map from DM id to tuple of DM participants.
     7. avatars, which is list to map avatars to Zulip avatar records.json
     8. emoji_url_map, which is maps emoji name to its Slack URL
@@ -507,7 +507,8 @@ def channels_to_zerver_stream(
     Returns:
     1. realm, converted realm data
     2. added_channels, which is a dictionary to map from channel name to channel id, Zulip stream_id
-    3. added_mpims, which is a dictionary to map from MPIM(multiparty IM) name to MPIM id, Zulip huddle_id
+    3. added_mpims, which is a dictionary to map from MPIM(multiparty IM) name to MPIM id, Zulip
+       direct_message_group_id
     4. dm_members, which is a dictionary to map from DM id to tuple of DM participants.
     5. slack_recipient_name_to_zulip_recipient_id, which is a dictionary to map from Slack recipient
        name(channel names, mpim names, usernames etc) to Zulip recipient_id
@@ -527,7 +528,7 @@ def channels_to_zerver_stream(
 
     subscription_id_count = recipient_id_count = 0
     stream_id_count = defaultstream_id = 0
-    huddle_id_count = 0
+    direct_message_group_id_count = 0
 
     def process_channels(channels: List[Dict[str, Any]], invite_only: bool = False) -> None:
         nonlocal stream_id_count
@@ -600,20 +601,20 @@ def channels_to_zerver_stream(
         private_channels = []
     process_channels(private_channels, True)
 
-    # mpim is the Slack equivalent of huddle.
+    # mpim is the Slack equivalent of direct message group.
     def process_mpims(mpims: List[Dict[str, Any]]) -> None:
-        nonlocal huddle_id_count
+        nonlocal direct_message_group_id_count
         nonlocal recipient_id_count
         nonlocal subscription_id_count
 
         for mpim in mpims:
-            huddle = build_huddle(huddle_id_count)
-            realm["zerver_huddle"].append(huddle)
+            direct_message_group = build_direct_message_group(direct_message_group_id_count)
+            realm["zerver_huddle"].append(direct_message_group)
 
-            added_mpims[mpim["name"]] = (mpim["id"], huddle_id_count)
+            added_mpims[mpim["name"]] = (mpim["id"], direct_message_group_id_count)
 
             recipient = build_recipient(
-                huddle_id_count, recipient_id_count, Recipient.DIRECT_MESSAGE_GROUP
+                direct_message_group_id_count, recipient_id_count, Recipient.DIRECT_MESSAGE_GROUP
             )
             realm["zerver_recipient"].append(recipient)
             slack_recipient_name_to_zulip_recipient_id[mpim["name"]] = recipient_id_count
@@ -626,7 +627,7 @@ def channels_to_zerver_stream(
                 subscription_id_count,
             )
 
-            huddle_id_count += 1
+            direct_message_group_id_count += 1
             recipient_id_count += 1
             logging.info("%s -> created", mpim["name"])
 
@@ -1267,10 +1268,10 @@ def fetch_shared_channel_users(
     except FileNotFoundError:
         private_channels = []
     try:
-        huddles = get_data_file(slack_data_dir + "/mpims.json")
+        direct_message_groups = get_data_file(slack_data_dir + "/mpims.json")
     except FileNotFoundError:
-        huddles = []
-    for channel in public_channels + private_channels + huddles:
+        direct_message_groups = []
+    for channel in public_channels + private_channels + direct_message_groups:
         added_channels[channel["name"]] = True
         for user_id in channel["members"]:
             if user_id not in normal_user_ids:

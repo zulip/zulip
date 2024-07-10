@@ -125,12 +125,12 @@ below are for a webhook named `MyWebHook`.
 ## General advice
 
 * Consider using our Zulip markup to make the output from your
-  integration especially attractive or useful (e.g. emoji, Markdown
+  integration especially attractive or useful (e.g., emoji, Markdown
   emphasis, or @-mentions).
 
 * Use topics effectively to ensure sequential messages about the same
   thing are threaded together; this makes for much better consumption
-  by users.  E.g. for a bug tracker integration, put the bug number in
+  by users.  E.g., for a bug tracker integration, put the bug number in
   the topic for all messages; for an integration like Nagios, put the
   service in the topic.
 

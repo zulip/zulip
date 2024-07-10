@@ -62,7 +62,7 @@ A few more details:
 
 * **Generic**: A generic bot is like a normal Zulip user account that
   cannot log in via a browser.  Note that if you truly want to
-  impersonate yourself (e.g. write messages that come from your Zulip
+  impersonate yourself (e.g., write messages that come from your Zulip
   account), you'll need to use your **personal API key**.
 
 * **Outgoing webhook**: The bot can read direct messages where the bot is a

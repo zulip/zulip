@@ -397,8 +397,9 @@ def do_change_avatar_fields(
 
 
 def do_delete_avatar_image(user: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
+    old_version = user.avatar_version
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
-    delete_avatar_image(user)
+    delete_avatar_image(user, old_version)
 
 
 def update_scheduled_email_notifications_time(

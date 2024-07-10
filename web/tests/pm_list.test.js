@@ -12,9 +12,7 @@ run_test("update_dom_with_unread_counts", () => {
     let counts;
 
     const $total_count = $.create("total-count-stub");
-    const $private_li = $(
-        ".direct-messages-container #direct-messages-section #direct-messages-section-header",
-    );
+    const $private_li = $("#direct-messages-section-header");
     $private_li.set_find_results(".unread_count", $total_count);
 
     counts = {

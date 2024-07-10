@@ -10,11 +10,11 @@ from zerver.data_import.mattermost import (
     build_reactions,
     check_user_in_team,
     convert_channel_data,
-    convert_huddle_data,
+    convert_direct_message_group_data,
     convert_user_data,
     create_username_to_user_mapping,
     do_convert_data,
-    generate_huddle_name,
+    generate_direct_message_group_name,
     get_mentioned_user_ids,
     label_mirror_dummy_users,
     mattermost_data_file_to_dict,
@@ -336,7 +336,7 @@ class MatterMostImporter(ZulipTestCase):
             {malfoy_id, pansy_id},
         )
 
-    def test_convert_huddle_data(self) -> None:
+    def test_convert_direct_message_group_data(self) -> None:
         fixture_file_name = self.fixture_file_name(
             "export.json", "mattermost_fixtures/direct_channel"
         )
@@ -358,8 +358,8 @@ class MatterMostImporter(ZulipTestCase):
             team_name=team_name,
         )
 
-        zerver_huddle = convert_huddle_data(
-            huddle_data=mattermost_data["direct_channel"],
+        zerver_huddle = convert_direct_message_group_data(
+            direct_message_group_data=mattermost_data["direct_channel"],
             user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,
             huddle_id_mapper=huddle_id_mapper,
@@ -369,12 +369,15 @@ class MatterMostImporter(ZulipTestCase):
         )
 
         self.assert_length(zerver_huddle, 1)
-        huddle_members = mattermost_data["direct_channel"][1]["members"]
-        huddle_name = generate_huddle_name(huddle_members)
+        direct_message_group_members = mattermost_data["direct_channel"][1]["members"]
+        direct_message_group_name = generate_direct_message_group_name(direct_message_group_members)
 
-        self.assertTrue(huddle_id_mapper.has(huddle_name))
+        self.assertTrue(huddle_id_mapper.has(direct_message_group_name))
         self.assertEqual(
-            subscriber_handler.get_users(huddle_id=huddle_id_mapper.get(huddle_name)), {1, 2, 3}
+            subscriber_handler.get_users(
+                direct_message_group_id=huddle_id_mapper.get(direct_message_group_name)
+            ),
+            {1, 2, 3},
         )
 
     def test_write_emoticon_data(self) -> None:
@@ -669,8 +672,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
 
@@ -871,14 +874,16 @@ class MatterMostImporter(ZulipTestCase):
         self.assertFalse(stream_messages[3].has_image)
         self.assertTrue(stream_messages[3].has_link)
 
-        huddle_messages = messages.filter(recipient__type=Recipient.DIRECT_MESSAGE_GROUP).order_by(
-            "date_sent"
+        group_direct_messages = messages.filter(
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP
+        ).order_by("date_sent")
+        direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
+        self.assert_length(group_direct_messages, 3)
+        self.assert_length(set(direct_message_group_recipients), 1)
+        self.assertEqual(group_direct_messages[0].sender.email, "ginny@zulip.com")
+        self.assertEqual(
+            group_direct_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n"
         )
-        huddle_recipients = huddle_messages.values_list("recipient", flat=True)
-        self.assert_length(huddle_messages, 3)
-        self.assert_length(set(huddle_recipients), 1)
-        self.assertEqual(huddle_messages[0].sender.email, "ginny@zulip.com")
-        self.assertEqual(huddle_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n")
 
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
             "date_sent"
@@ -909,8 +914,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
 
@@ -936,8 +941,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
 

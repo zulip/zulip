@@ -57,9 +57,9 @@ the reader and remember to capitalize _Du_.
 
 **Prefer imperative over constructions with auxiliary verbs.**
 
-For instructions, try to use the imperative (e.g. _"Gehe auf die Seite"_ -
+For instructions, try to use the imperative (e.g., _"Gehe auf die Seite"_ -
 _"Go to the page"_) instead of constructions with auxiliary verbs
-(e.g. _"Du musst auf die Seite ... gehen"_ - _"You have to go the page ..."_).
+(e.g., _"Du musst auf die Seite ... gehen"_ - _"You have to go the page ..."_).
 This keeps the phrases short, less stiff and avoids unnecessary addressing
 of the reader.
 
@@ -69,14 +69,14 @@ of the reader.
 
 To be consistent with other online platforms, use continuous labels for buttons,
 item titles, etc. with verbs in infinitive form,
-e.g. _Manage streams_ - _Kanäle verwalten_ instead of _Verwalte Kanäle_.
+e.g., _Manage streams_ - _Kanäle verwalten_ instead of _Verwalte Kanäle_.
 
 ### Concatenation of words
 
 **Try to avoid it.**
 
 German is famous for its concatenations of nouns
-(e.g. _Heizölrückstoßdämpfung_, which means _fuel oil recoil attenuation_).
+(e.g., _Heizölrückstoßdämpfung_, which means _fuel oil recoil attenuation_).
 For the sake of correct rendering and simplicity, you should try to avoid such
 concatenations whenever possible, since they can break the layout of the Zulip
 frontend. Try to stick to a maximum length of 20 characters and follow your
@@ -99,7 +99,7 @@ so you should not be afraid of using them if they provide an advantage over
 the German equivalent. Take the following two examples as a reference:
 
 - Translating _Bot_: Use _Bot_, as a completely accurate German
-  equivalent **doesn't** exist (e.g. _Roboter_) and the term _Bot_ is not
+  equivalent **doesn't** exist (e.g., _Roboter_) and the term _Bot_ is not
   unknown to German speakers.
 
 ### Special characters
@@ -133,7 +133,7 @@ Make sure to not walk into such a trap.
 
 - Balance common verbs and nouns with specific IT-related translations
   of English terms - this can be tricky, try to check how other resources
-  were translated (e.g. Gmail, Microsoft websites, Facebook) to decide
+  were translated (e.g., Gmail, Microsoft websites, Facebook) to decide
   what wouldn't sound awkward / rude in German.
 
 - For additional translation information, feel free to check out
@@ -152,7 +152,7 @@ _"Nachricht" (Facebook, WhatsApp, Transifex)_
 - Direct Message (DM), Direct Messages (DMs) - **Direktnachricht (DM), Direktnachrichten (DMs)**
 
 While we try to avoid concatenating words whenever possible, "Direktnachricht" is used
-by many other platforms (e.g. X/Twitter, Slack, Discord).
+by many other platforms (e.g., X/Twitter, Slack, Discord).
 Use _DM_ with its plural form _DMs_ rather than DN/DNs in line with other services.
 
 _"Direktnachricht" (X/Twitter, Slack)_
@@ -272,7 +272,7 @@ _"Deabonnieren" (YouTube, Transifex)_
 Transifex has two different translations for "Narrow to" -
 "Schränke auf ... ein." and "Begrenze auf ... ." Both sound a bit strange to a
 German speaker, since they would expect grammatically correct sentences when
-using the imperative (e.g. "Schränke diesen Stream ein auf ... .") Since this
+using the imperative (e.g., "Schränke diesen Stream ein auf ... .") Since this
 would be too long for many labels, the infinitive "begrenzen auf" is preferable.
 "einschränken auf" sounds equally good, but Transifex shows more use cases for
 "begrenzen auf".
@@ -282,7 +282,7 @@ _"Schränke auf ... ein." (Transifex) "Begrenze auf ... ." (Transifex)_
 - Filter - **Filtern**
 
 A direct translation is fine here. Watch out to to use the infinitive instead
-of the imperative, e.g. "Nachrichten filtern" instead of "Filtere Nachrichten".
+of the imperative, e.g., "Nachrichten filtern" instead of "Filtere Nachrichten".
 
 _"Filtern" (Thunderbird, LinkedIn)_
 

@@ -2,7 +2,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
@@ -13,7 +12,11 @@ import * as reactions from "./reactions";
 import * as rows from "./rows";
 import {realm} from "./state_data";
 import * as timerender from "./timerender";
-import {INTERACTIVE_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
+import {
+    INTERACTIVE_HOVER_DELAY,
+    LONG_HOVER_DELAY,
+    topic_visibility_policy_tooltip_props,
+} from "./tippyjs";
 import {parse_html} from "./ui_util";
 
 type Config = {
@@ -262,23 +265,11 @@ export function initialize(): void {
 
     message_list_tooltip(".code_external_link");
 
-    message_list_tooltip(".change_visibility_policy > i", {
-        delay: LONG_HOVER_DELAY,
-        onShow(instance) {
-            const $elem = $(instance.reference);
-            const current_visibility_policy_str = $elem.attr("data-tippy-content");
-            instance.setContent(
-                parse_html(
-                    render_change_visibility_policy_button_tooltip({current_visibility_policy_str}),
-                ),
-            );
-        },
-        onHidden(instance) {
-            instance.destroy();
-        },
+    message_list_tooltip("#message_feed_container .change_visibility_policy > i", {
+        ...topic_visibility_policy_tooltip_props,
     });
 
-    message_list_tooltip(".recipient_bar_icon", {
+    message_list_tooltip("#message_feed_container .recipient_bar_icon", {
         delay: LONG_HOVER_DELAY,
         onHidden(instance) {
             instance.destroy();

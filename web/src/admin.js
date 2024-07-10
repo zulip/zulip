@@ -142,6 +142,8 @@ export function build_page() {
         language_list,
         realm_default_language_name: get_language_name(realm.realm_default_language),
         realm_default_language_code: realm.realm_default_language,
+        realm_direct_message_initiator_group_id: realm.realm_direct_message_initiator_group,
+        realm_direct_message_permission_group_id: realm.realm_direct_message_permission_group,
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
         realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
@@ -188,6 +190,7 @@ export function build_page() {
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
             settings_config.web_mark_read_on_scroll_policy_values,
+        web_channel_default_view_values: settings_config.web_channel_default_view_values,
         user_list_style_values: settings_config.user_list_style_values,
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
@@ -275,6 +278,10 @@ export function build_page() {
 
         tippy.default($("#realm_can_access_all_users_group_widget_container")[0], opts);
     }
+
+    settings_org.check_disable_direct_message_initiator_group_dropdown(
+        realm.realm_direct_message_permission_group,
+    );
 }
 
 export function launch(section, user_settings_tab) {

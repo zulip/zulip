@@ -47,6 +47,7 @@ async function test_restore_stream_message_draft_by_opening_compose_box(page: Pa
     await page.click(".search_icon");
     await page.waitForSelector("#search_query", {visible: true});
     await common.clear_and_type(page, "#search_query", "stream:Denmark topic:tests");
+    await page.keyboard.press("Enter");
     // Wait for narrow to complete.
     const wait_for_change = true;
     await common.get_current_msg_list_id(page, wait_for_change);

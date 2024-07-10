@@ -69,6 +69,7 @@ class PreregistrationUser(models.Model):
     full_name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
     full_name_validated = models.BooleanField(default=False)
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)
+    notify_referrer_on_join = models.BooleanField(default=True)
     streams = models.ManyToManyField("zerver.Stream")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)

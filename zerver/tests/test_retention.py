@@ -180,17 +180,18 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
     def _send_messages_with_attachments(self) -> Dict[str, int]:
         user_profile = self.example_user("hamlet")
-        sample_size = 10
         host = user_profile.realm.host
         realm_id = get_realm("zulip").id
         dummy_files = [
-            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt", sample_size),
-            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py", sample_size),
-            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py", sample_size),
+            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt"),
+            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py"),
+            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"),
         ]
 
-        for file_name, path_id, size in dummy_files:
-            create_attachment(file_name, path_id, user_profile, user_profile.realm, size)
+        for file_name, path_id in dummy_files:
+            create_attachment(
+                file_name, path_id, "text/plain", b"1234567890", user_profile, user_profile.realm
+            )
 
         self.subscribe(user_profile, "Denmark")
         body = (
@@ -592,18 +593,19 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
         self.recipient = self.example_user("cordelia")
 
     def _create_attachments(self) -> None:
-        sample_size = 10
         realm_id = get_realm("zulip").id
         dummy_files = [
-            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt", sample_size),
-            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py", sample_size),
-            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py", sample_size),
-            ("hello.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt", sample_size),
-            ("new.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py", sample_size),
+            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt"),
+            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py"),
+            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"),
+            ("hello.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt"),
+            ("new.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py"),
         ]
         user_profile = self.example_user("hamlet")
-        for file_name, path_id, size in dummy_files:
-            create_attachment(file_name, path_id, user_profile, user_profile.realm, size)
+        for file_name, path_id in dummy_files:
+            create_attachment(
+                file_name, path_id, "text/plain", b"1234567890", user_profile, user_profile.realm
+            )
 
     def _assert_archive_empty(self) -> None:
         self.assertFalse(ArchivedUserMessage.objects.exists())
@@ -1143,7 +1145,7 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(22):
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 

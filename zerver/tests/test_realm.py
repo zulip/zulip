@@ -18,7 +18,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import (
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
 )
@@ -844,7 +844,6 @@ class RealmTest(ZulipTestCase):
             waiting_period_threshold=-10,
             digest_weekday=10,
             user_group_edit_policy=10,
-            private_message_policy=10,
             message_content_delete_limit_seconds=-10,
             wildcard_mention_policy=10,
             invite_to_realm_policy=10,
@@ -1556,7 +1555,6 @@ class RealmAPITest(ZulipTestCase):
             waiting_period_threshold=[10, 20],
             create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
-            private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
@@ -1945,6 +1943,7 @@ class RealmAPITest(ZulipTestCase):
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
+            web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES,
@@ -2162,9 +2161,7 @@ class ScrubRealmTest(ZulipTestCase):
         path_ids = []
         for n in range(1, 4):
             content = f"content{n}".encode()
-            url = upload_message_attachment(
-                f"dummy{n}.txt", len(content), "text/plain", content, hamlet
-            )
+            url = upload_message_attachment(f"dummy{n}.txt", "text/plain", content, hamlet)
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
             path_id = re.sub(r"/user_uploads/", "", url)
@@ -2220,7 +2217,7 @@ class ScrubRealmTest(ZulipTestCase):
             notification_bot, get_stream("Scotland", zulip), "test", "test"
         )
         internal_send_private_message(notification_bot, othello, "test")
-        internal_send_huddle_message(
+        internal_send_group_direct_message(
             zulip, notification_bot, "test", emails=[othello.email, iago.email]
         )
 
@@ -2228,7 +2225,7 @@ class ScrubRealmTest(ZulipTestCase):
             notification_bot, get_stream("Shakespeare", lear), "test", "test"
         )
         internal_send_private_message(notification_bot, king, "test")
-        internal_send_huddle_message(
+        internal_send_group_direct_message(
             lear, notification_bot, "test", emails=[cordelia.email, king.email]
         )
 
@@ -2239,9 +2236,7 @@ class ScrubRealmTest(ZulipTestCase):
         file_paths = []
         for n, owner in enumerate([iago, othello, hamlet, cordelia, king]):
             content = f"content{n}".encode()
-            url = upload_message_attachment(
-                f"dummy{n}.txt", len(content), "text/plain", content, owner
-            )
+            url = upload_message_attachment(f"dummy{n}.txt", "text/plain", content, owner)
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
             file_path = os.path.join(settings.LOCAL_FILES_DIR, re.sub(r"/user_uploads/", "", url))

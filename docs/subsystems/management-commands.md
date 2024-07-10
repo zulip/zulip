@@ -13,22 +13,22 @@ While Zulip takes advantage of built-in Django management commands for
 things like managing Django migrations, we also have dozens that we've
 written for a range of purposes:
 
-- Cron jobs to do regular updates, e.g. `update_analytics_counts.py`,
+- Cron jobs to do regular updates, e.g., `update_analytics_counts.py`,
   `sync_ldap_user_data`, etc.
 - Useful parts of provisioning or upgrading a Zulip development
-  environment or server, e.g. `makemessages`, `compilemessages`,
+  environment or server, e.g., `makemessages`, `compilemessages`,
   `populate_db`, `fill_memcached_caches`, etc.
 - The actual scripts run by supervisord to run the persistent
-  processes in a Zulip server, e.g. `runtornado` and `process_queue`.
+  processes in a Zulip server, e.g., `runtornado` and `process_queue`.
 - For a sysadmin to verify a Zulip server's configuration during
-  installation, e.g. `checkconfig`, `send_test_email`.
+  installation, e.g., `checkconfig`, `send_test_email`.
 - As the interface for doing those rare operations that don't have a
-  UI yet, e.g. `deactivate_realm`, `reactivate_realm`,
+  UI yet, e.g., `deactivate_realm`, `reactivate_realm`,
   `change_user_email` (for the case where the user doesn't control the
   old email address).
 - For a sysadmin to easily interact with and script common possible
   changes they might want to make to the database on a Zulip server.
-  E.g. `send_password_reset_email`, `export`, `purge_queue`.
+  E.g., `send_password_reset_email`, `export`, `purge_queue`.
 
 ## Writing management commands
 

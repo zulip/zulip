@@ -26,18 +26,18 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
 
     if command == "ping":
         return {}
-    elif command == "night":
-        if user_profile.color_scheme == UserProfile.COLOR_SCHEME_NIGHT:
+    elif command == "dark":
+        if user_profile.color_scheme == UserProfile.COLOR_SCHEME_DARK:
             return dict(msg="You are still in dark theme.")
         return dict(
             msg=change_mode_setting(
                 setting_name="dark theme",
                 switch_command="light",
                 setting="color_scheme",
-                setting_value=UserProfile.COLOR_SCHEME_NIGHT,
+                setting_value=UserProfile.COLOR_SCHEME_DARK,
             )
         )
-    elif command == "day":
+    elif command == "light":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:
             return dict(msg="You are still in light theme.")
         return dict(

@@ -29,7 +29,7 @@ Zulip uses the [Django settings
 system](https://docs.djangoproject.com/en/5.0/topics/settings/), which
 means that the settings files are Python programs that set a lot of
 variables with all-capital names like `EMAIL_GATEWAY_PATTERN`. You can
-access these anywhere in the Zulip Django code using e.g.:
+access these anywhere in the Zulip Django code using, for example:
 
 ```python
 from django.conf import settings
@@ -37,7 +37,8 @@ print(settings.EMAIL_GATEWAY_PATTERN)
 ```
 
 Additionally, if you need to access a Django setting in a shell
-script (or just on the command line for debugging), you can use e.g.:
+script (or just on the command line for debugging), you can use, for
+example:
 
 ```console
 $ ./scripts/get-django-setting EMAIL_GATEWAY_PATTERN
@@ -55,7 +56,7 @@ In a production environment, we have:
   administrator-facing settings file for Zulip. It contains all the
   server-specific settings, such as how to send outgoing email, the
   hostname of the PostgreSQL database, etc., but does not contain any
-  secrets (e.g. passwords, secret API keys, cryptographic keys, etc.).
+  secrets (e.g., passwords, secret API keys, cryptographic keys, etc.).
   The way we generally do settings that can be controlled with shell
   access to a Zulip server is to put a default in
   `zproject/default_settings.py`, and then override it here. As this
@@ -91,7 +92,7 @@ In a production environment, we have:
 
 - `zproject/computed_settings.py` contains all the settings that are
   constant for all Zulip installations or computed as a function of
-  `zproject/configured_settings.py` (e.g. configuration for logging,
+  `zproject/configured_settings.py` (e.g., configuration for logging,
   static assets, middleware, etc.).
 
 In a development environment, we have `zproject/settings.py`, and
@@ -106,7 +107,7 @@ additionally:
   features like [authentication
   options](../development/authentication.md) that require secrets to
   work. It is also used to set certain settings that in production
-  belong in `/etc/zulip/settings.py`, e.g. `SOCIAL_AUTH_GITHUB_KEY`.
+  belong in `/etc/zulip/settings.py`, e.g., `SOCIAL_AUTH_GITHUB_KEY`.
   You can see a full list with `git grep development_only=True`, or
   add additional settings of this form if needed.
 
@@ -152,11 +153,11 @@ want those settings.
 
 ### Testing non-default settings
 
-You can write tests for settings using e.g.
+You can write tests for settings using, for example,
 `with self.settings(TERMS_OF_SERVICE=None)`. However, this only works
 for settings which are checked at runtime, not settings which are only
 accessed in initialization of Django (or Zulip) internals
-(e.g. `DATABASES`). See the [Django docs on overriding settings in
+(e.g., `DATABASES`). See the [Django docs on overriding settings in
 tests][django-test-settings] for more details.
 
 [django-test-settings]: https://docs.djangoproject.com/en/5.0/topics/testing/tools/#overriding-settings

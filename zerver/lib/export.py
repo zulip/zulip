@@ -29,7 +29,7 @@ from typing_extensions import TypeAlias
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload.s3 import get_bucket
 from zerver.models import (
@@ -41,8 +41,8 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     DefaultStream,
+    DirectMessageGroup,
     GroupGroupMembership,
-    Huddle,
     Message,
     MutedUser,
     NamedUserGroup,
@@ -141,6 +141,7 @@ ALL_ZULIP_TABLES = {
     "zerver_multiuseinvite_streams",
     "zerver_namedusergroup",
     "zerver_onboardingstep",
+    "zerver_onboardingusermessage",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
@@ -886,7 +887,7 @@ def get_realm_config() -> Config:
             "zerver_huddle",
         ],
         virtual_parent=user_profile_config,
-        custom_fetch=custom_fetch_huddle_objects,
+        custom_fetch=custom_fetch_direct_message_groups,
     )
 
     # Now build permanent tables from our temp tables.
@@ -1118,7 +1119,7 @@ def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
     response["zerver_reaction"] = make_raw(list(query))
 
 
-def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
+def custom_fetch_direct_message_groups(response: TableData, context: Context) -> None:
     realm = context["realm"]
     user_profile_ids = {
         r["id"] for r in response["zerver_userprofile"] + response["zerver_userprofile_mirrordummy"]
@@ -1130,7 +1131,7 @@ def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
     )
     realm_huddle_recipient_ids = {sub.recipient_id for sub in realm_huddle_subs}
 
-    # Mark all Huddles whose recipient ID contains a cross-realm user.
+    # Mark all Direct Message groups whose recipient ID contains a cross-realm user.
     unsafe_huddle_recipient_ids = set()
     for sub in Subscription.objects.select_related("user_profile").filter(
         recipient__in=realm_huddle_recipient_ids
@@ -1156,7 +1157,7 @@ def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
 
     response["_huddle_recipient"] = huddle_recipients
     response["_huddle_subscription"] = huddle_subscription_dicts
-    response["zerver_huddle"] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
+    response["zerver_huddle"] = make_raw(DirectMessageGroup.objects.filter(id__in=huddle_ids))
 
 
 def custom_fetch_scheduled_messages(response: TableData, context: Context) -> None:
@@ -1542,8 +1543,10 @@ def export_uploads_and_avatars(
         )
 
         avatar_hash_values = set()
-        for user_id in user_ids:
-            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
+        for avatar_user in users:
+            avatar_path = user_avatar_base_path_from_ids(
+                avatar_user.id, avatar_user.avatar_version, realm.id
+            )
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
 
@@ -1622,6 +1625,9 @@ def _get_exported_s3_record(
         record["realm_id"] = int(record["realm_id"])
     else:
         raise Exception("Missing realm_id")
+
+    if "avatar_version" in record:
+        record["avatar_version"] = int(record["avatar_version"])
 
     return record
 
@@ -1781,7 +1787,7 @@ def export_avatars_from_local(
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
 
-        avatar_path = user_avatar_path_from_ids(user.id, realm.id)
+        avatar_path = user_avatar_base_path_from_ids(user.id, user.avatar_version, realm.id)
         wildcard = os.path.join(local_dir, avatar_path + ".*")
 
         for local_path in glob.glob(wildcard):
@@ -1799,6 +1805,7 @@ def export_avatars_from_local(
                 realm_id=realm.id,
                 user_profile_id=user.id,
                 user_profile_email=user.email,
+                avatar_version=user.avatar_version,
                 s3_path=fn,
                 path=fn,
                 size=stat.st_size,

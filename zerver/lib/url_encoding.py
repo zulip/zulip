@@ -28,7 +28,9 @@ def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
     return base_url + pm_slug
 
 
-def huddle_narrow_url(*, user: UserProfile, display_recipient: List[UserDisplayRecipient]) -> str:
+def direct_message_group_narrow_url(
+    *, user: UserProfile, display_recipient: List[UserDisplayRecipient]
+) -> str:
     realm = user.realm
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
     pm_slug = ",".join(str(user_id) for user_id in sorted(other_user_ids)) + "-group"

@@ -1,11 +1,15 @@
+import _ from "lodash";
+
 import * as people from "./people";
 import type {User} from "./people";
 import {current_user} from "./state_data";
 
 let user_id_set: Set<number>;
+let soft_remove_user_id_set: Set<number>;
 
 export function initialize_with_current_user(): void {
     user_id_set = new Set([current_user.user_id]);
+    soft_remove_user_id_set = new Set();
 }
 
 export function sorted_user_ids(): number[] {
@@ -24,7 +28,7 @@ export function get_all_user_ids(): number[] {
 
 export function get_principals(): number[] {
     // Return list of user ids which were selected by user.
-    return [...user_id_set];
+    return _.difference([...user_id_set], [...soft_remove_user_id_set]);
 }
 
 export function get_potential_subscribers(): User[] {
@@ -42,6 +46,9 @@ export function add_user_ids(user_ids: number[]): void {
             const user = people.maybe_get_user_by_id(user_id);
             if (user) {
                 user_id_set.add(user_id);
+                // Re-adding a user explicitly will not undo the soft remove on their row.
+                // e.g If `Iago` was added as part of a group and crossed out.
+                // Now, adding another group with Iago as part of it should not undo the soft remove.
             }
         }
     }
@@ -50,5 +57,28 @@ export function add_user_ids(user_ids: number[]): void {
 export function remove_user_ids(user_ids: number[]): void {
     for (const user_id of user_ids) {
         user_id_set.delete(user_id);
+        undo_soft_remove_user_id(user_id);
     }
+}
+
+export function sync_user_ids(user_ids: number[]): void {
+    // Current user does not have their pill in their input
+    // box, so we need to make sure that we don't delete
+    // it unnecessarily while syncing.
+    if (user_id_set.has(current_user.user_id)) {
+        user_ids.push(current_user.user_id);
+    }
+    user_id_set = new Set(user_ids);
+}
+
+export function soft_remove_user_id(user_id: number): void {
+    soft_remove_user_id_set.add(user_id);
+}
+
+export function undo_soft_remove_user_id(user_id: number): void {
+    soft_remove_user_id_set.delete(user_id);
+}
+
+export function user_id_in_soft_remove_list(user_id: number): boolean {
+    return soft_remove_user_id_set.has(user_id);
 }

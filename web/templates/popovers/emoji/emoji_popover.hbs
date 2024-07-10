@@ -1,8 +1,7 @@
 <div class="emoji-picker-popover" data-emoji-destination="{{#if message_id }}reaction{{else if is_status_emoji_popover}}status{{else}}composition{{/if}}">
     <div class="emoji-popover">
-        <div class="emoji-popover-top">
-            <input class="emoji-popover-filter filter_text_input" type="text" placeholder="{{t 'Search' }}" />
-            <i class="fa fa-search" aria-hidden="true"></i>
+        <div class="popover-filter-input-wrapper">
+            <input id="emoji-popover-filter" class="popover-filter-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter' }}" autofocus/>
         </div>
         <div class="emoji-popover-category-tabs">
             {{#each emoji_categories}}

@@ -554,7 +554,7 @@ def add_bot_backend(
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
-        upload_avatar_image(user_file, bot_profile)
+        upload_avatar_image(user_file, bot_profile, future=False)
 
     if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
         assert isinstance(service_name, str)

@@ -548,7 +548,6 @@ export function initialize_everything(state_data) {
                 ],
                 {trigger},
             );
-            activity_ui.build_user_sidebar();
         },
     });
     stream_list_sort.initialize();
@@ -569,7 +568,10 @@ export function initialize_everything(state_data) {
     user_status.initialize(state_data.user_status);
     compose_recipient.initialize();
     compose_pm_pill.initialize({
-        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        on_pill_create_or_remove() {
+            compose_recipient.update_placeholder_text();
+            compose_recipient.check_posting_policy_for_compose_box();
+        },
     });
     compose_closed_ui.initialize();
     compose_reply.initialize();
