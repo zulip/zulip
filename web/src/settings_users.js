@@ -97,7 +97,7 @@ export function update_view_on_deactivate(user_id) {
     $button.addClass("btn-warning reactivate");
     $button.removeClass("deactivate btn-danger");
     $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
-    $row.removeClass("reactivated_user");
+    $row.removeClass("active-user");
     $row.addClass("deactivated_user");
 
     should_redraw_active_users_list = true;
@@ -116,7 +116,7 @@ export function update_view_on_reactivate(user_id) {
     $button.removeClass("btn-warning reactivate");
     $button.empty().append($("<i>").addClass(["fa", "fa-user-times"]).attr("aria-hidden", "true"));
     $row.removeClass("deactivated_user");
-    $row.addClass("reactivated_user");
+    $row.addClass("active-user");
 
     should_redraw_active_users_list = true;
     should_redraw_deactivated_users_list = true;
