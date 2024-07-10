@@ -243,6 +243,11 @@
             }
         }
 
+        &.focused .user-pill-container {
+            flex-flow: row wrap;
+            height: unset;
+        }
+
         .user-pill-container {
             gap: 5px;
 
