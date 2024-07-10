@@ -952,3 +952,13 @@
 .highlight {
     background-color: hsl(51deg 100% 79%);
 }
+
+/* For elements where we want to show as much markdown content we can
+   in a single line and then hide the overflowing part. */
+.single-line-rendered-markdown {
+    /* Any element which can `wrap` in the above defined elements. */
+    code,
+    .stream-topic {
+        white-space: nowrap;
+    }
+}

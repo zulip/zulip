@@ -12,6 +12,7 @@ import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
+import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
@@ -212,6 +213,8 @@ export function dispatch_normal_event(event) {
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,
+                direct_message_initiator_group: noop,
+                direct_message_permission_group: noop,
                 email_changes_disabled: settings_account.update_email_change_display,
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
@@ -229,7 +232,6 @@ export function dispatch_normal_event(event) {
                 name_changes_disabled: settings_account.update_name_change_display,
                 new_stream_announcements_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
-                private_message_policy: compose_recipient.check_posting_policy_for_compose_box,
                 push_notifications_enabled: noop,
                 require_unique_names: noop,
                 send_welcome_emails: noop,
@@ -294,6 +296,17 @@ export function dispatch_normal_event(event) {
                                     key === "can_create_private_channel_group"
                                 ) {
                                     stream_settings_ui.update_stream_privacy_choices(key);
+                                }
+
+                                if (
+                                    key === "direct_message_initiator_group" ||
+                                    key === "direct_message_permission_group"
+                                ) {
+                                    settings_org.check_disable_direct_message_initiator_group_dropdown(
+                                        realm.realm_direct_message_permission_group,
+                                    );
+                                    compose_closed_ui.update_buttons_for_private();
+                                    compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
                                 if (key === "edit_topic_policy") {
@@ -553,10 +566,6 @@ export function dispatch_normal_event(event) {
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
-                        if (is_narrowed_to_stream) {
-                            assert(message_lists.current !== undefined);
-                            message_lists.current.update_trailing_bookend();
-                        }
                         stream_data.delete_sub(stream.stream_id);
                         stream_settings_ui.remove_stream(stream.stream_id);
                         if (was_subscribed) {
@@ -581,6 +590,10 @@ export function dispatch_normal_event(event) {
                             settings_org.sync_realm_settings(
                                 "zulip_update_announcements_stream_id",
                             );
+                        }
+                        if (is_narrowed_to_stream) {
+                            assert(message_lists.current !== undefined);
+                            message_lists.current.update_trailing_bookend(true);
                         }
                     }
                     stream_list.update_subscribe_to_more_streams_link();
@@ -704,6 +717,7 @@ export function dispatch_normal_event(event) {
                 "demote_inactive_streams",
                 "dense_mode",
                 "web_mark_read_on_scroll_policy",
+                "web_channel_default_view",
                 "emojiset",
                 "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
@@ -719,6 +733,7 @@ export function dispatch_normal_event(event) {
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
                 "send_read_receipts",
+                "web_navigate_to_sent_message",
             ];
 
             const original_home_view = user_settings.web_home_view;

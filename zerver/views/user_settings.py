@@ -207,6 +207,10 @@ def json_change_settings(
         json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
         default=None,
     ),
+    web_channel_default_view: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES),
+        default=None,
+    ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     receives_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -315,6 +319,7 @@ def json_change_settings(
     email_address_visibility: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
+    web_navigate_to_sent_message: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if (
         default_language is not None

@@ -3,7 +3,7 @@
 - Use _आप_ as the second-person pronoun. Don't use तुम or तू.
   (See [chat thread](https://chat.zulip.org/#narrow/channel/58-translation/topic/Hindi.20Translation/near/1762384).)
 
-- Imperative, active, and continuous verbs, e.g. _manage streams_ -
+- Imperative, active, and continuous verbs, e.g., _manage streams_ -
   _चैनल प्रबंधित करें_, not _चैनल प्रबंधन_.
 
 - Warm and friendly phrasing whenever appropriate.
@@ -12,7 +12,7 @@
 
 - Balance common verbs and nouns with specific IT-related translations
   of English terms - this can be tricky, try to check how other
-  resources were translated (e.g. Gmail, Microsoft websites, Facebook)
+  resources were translated (e.g., Gmail, Microsoft websites, Facebook)
   to decide what wouldn't sound awkward / rude in Hindi.
 
 Some terms are very tricky to translate, so be sure to communicate

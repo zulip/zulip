@@ -1049,15 +1049,7 @@ export class MessageListView {
                 last_message_group.message_containers.at(-1).msg.historical;
         }
 
-        const stream_name = narrow_state.stream_name();
-        if (stream_name !== undefined) {
-            // If user narrows to a stream, doesn't update
-            // trailing bookend if user is subscribed.
-            const sub = stream_data.get_sub(stream_name);
-            if (sub === undefined || !sub.subscribed || page_params.is_spectator) {
-                list.update_trailing_bookend();
-            }
-        }
+        list.update_trailing_bookend();
 
         if (list === message_lists.current) {
             // Update the fade.

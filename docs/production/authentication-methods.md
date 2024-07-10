@@ -367,7 +367,7 @@ Other fields you may want to sync from LDAP include:
   group last, if you'd like a user who is in both groups to be a realm
   owner rather than a guest).
 
-- String fields like `default_language` (e.g. `en`) or `timezone`, if
+- String fields like `default_language` (e.g., `en`) or `timezone`, if
   you have that data in the right format in your LDAP database.
 
 You can look at the [full list of fields][models-py] in the Zulip user
@@ -544,7 +544,7 @@ it as follows:
      metadata and enter them on the right-hand side of this
      Python dictionary:
      1. Set the outer `idp_name` key to be an identifier for your IdP,
-        e.g. `testshib` or `okta`. This field appears in URLs for
+        e.g., `testshib` or `okta`. This field appears in URLs for
         parts of your Zulip server's SAML authentication flow.
      2. The IdP should provide the `url` and `entity_id` values.
      3. Save the `x509cert` value to a file; you'll use it in the
@@ -1165,8 +1165,8 @@ If you need to use this feature in combination with those backends,
 you should make your logic be applied when processing the
 `ZulipDummyBackend` - which is the final layer of the authentication
 checks for whether authentication should succeed. If you want to
-reject authentication requests e.g. based on IP address of the
-request, this is where it should happen.
+reject authentication requests (e.g., based on IP address of the
+request), this is where it should happen.
 :::
 
 [django-authenticate-details]: https://docs.djangoproject.com/en/5.0/topics/auth/customizing/#writing-an-authentication-backend

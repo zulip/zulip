@@ -1657,6 +1657,49 @@ test("first_valid_id_from", ({override}) => {
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
 });
 
+test("is_valid_search_term", () => {
+    const denmark = {
+        stream_id: 100,
+        name: "Denmark",
+    };
+    stream_data.add_sub(denmark);
+
+    const test_data = [
+        ["has: image", true],
+        ["has: nonsense", false],
+        ["is: unread", true],
+        ["is: nonsense", false],
+        ["in: home", true],
+        ["in: nowhere", false],
+        ["id: 4", true],
+        ["near: home", false],
+        ["channel: Denmark", true],
+        ["channel: GhostTown", false],
+        ["channels: public", true],
+        ["channels: private", false],
+        ["topic: GhostTown", true],
+        ["dm-including: alice@example.com", true],
+        ["sender: ghost@zulip.com", false],
+        ["dm: alice@example.com,ghost@example.com", false],
+        ["dm: alice@example.com,joe@example.com", true],
+    ];
+    for (const [search_term_string, expected_is_valid] of test_data) {
+        assert.equal(
+            Filter.is_valid_search_term(Filter.parse(search_term_string)[0]),
+            expected_is_valid,
+        );
+    }
+
+    blueslip.expect("error", "Unexpected search term operator: foo");
+    assert.equal(
+        Filter.is_valid_search_term({
+            operator: "foo",
+            operand: "bar",
+        }),
+        false,
+    );
+});
+
 test("update_email", () => {
     const terms = [
         {operator: "dm", operand: "steve@foo.com"},
@@ -2203,4 +2246,60 @@ run_test("equals", () => {
             ["near"],
         ),
     );
+});
+
+run_test("adjusted_terms_if_moved", () => {
+    // should return null for non-stream messages
+    let raw_terms = [{operator: "channel", operand: "Foo"}];
+    let message = {type: "private"};
+    let result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.strictEqual(result, null);
+
+    // should return null if no terms are changed
+    raw_terms = [{operator: "channel", operand: "general"}];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.strictEqual(result, null);
+
+    // should adjust channel term to match message's display_recipient
+    raw_terms = [{operator: "channel", operand: "random"}];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    let expected = [{operator: "channel", operand: "general"}];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepStrictEqual(result, expected);
+
+    // should adjust topic term to match message's topic
+    raw_terms = [{operator: "topic", operand: "random"}];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    expected = [{operator: "topic", operand: "discussion"}];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepStrictEqual(result, expected);
+
+    // should adjust both channel and topic terms when both are different
+    raw_terms = [
+        {operator: "channel", operand: "random"},
+        {operator: "topic", operand: "random"},
+    ];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    expected = [
+        {operator: "channel", operand: "general"},
+        {operator: "topic", operand: "discussion"},
+    ];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepStrictEqual(result, expected);
+
+    // should not adjust terms that are not channel or topic
+    raw_terms = [
+        {operator: "channel", operand: "random"},
+        {operator: "topic", operand: "random"},
+        {operator: "sender", operand: "alice"},
+    ];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    expected = [
+        {operator: "channel", operand: "general"},
+        {operator: "topic", operand: "discussion"},
+        {operator: "sender", operand: "alice"},
+    ];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepStrictEqual(result, expected);
 });

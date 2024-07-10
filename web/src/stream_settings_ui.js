@@ -23,6 +23,7 @@ import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
+import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
@@ -150,7 +151,10 @@ export function update_stream_privacy(slim_sub, values) {
 
     // Update UI elements
     update_left_panel_row(sub);
-    message_lists.current?.update_trailing_bookend();
+    if (narrow_state.stream_sub().stream_id === sub.stream_id) {
+        // Rerender message list if we are narrowed to the stream.
+        message_lists.current?.rerender();
+    }
     stream_ui_updates.update_setting_element(sub, "stream_privacy");
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     stream_ui_updates.update_stream_privacy_icon_in_settings(sub);

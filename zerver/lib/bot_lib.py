@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from zulip_bots.lib import BotIdentity, RateLimit
 
 from zerver.actions.message_send import (
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message_by_name,
 )
@@ -109,7 +109,7 @@ class EmbeddedBotHandler:
                 self.user_profile, recipient_user, message["content"]
             )
         else:
-            message_id = internal_send_huddle_message(
+            message_id = internal_send_group_direct_message(
                 self.user_profile.realm, self.user_profile, message["content"], emails=recipients
             )
         return {"id": message_id}

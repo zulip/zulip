@@ -1,3 +1,4 @@
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as favicon from "./favicon";
@@ -57,6 +58,13 @@ export function compute_narrow_title(filter?: Filter): string {
             return $t({defaultMessage: "Invalid users"});
         }
         return $t({defaultMessage: "Invalid user"});
+    }
+
+    if (
+        _.isEqual(filter._sorted_term_types, ["sender", "has-reaction"]) &&
+        filter.operands("sender")[0] === people.my_current_email()
+    ) {
+        return $t({defaultMessage: "Reactions"});
     }
 
     if (filter.has_operator("sender")) {

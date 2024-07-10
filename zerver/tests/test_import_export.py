@@ -62,8 +62,8 @@ from zerver.models import (
     BotStorageData,
     CustomProfileField,
     CustomProfileFieldValue,
+    DirectMessageGroup,
     GroupGroupMembership,
-    Huddle,
     Message,
     MutedUser,
     NamedUserGroup,
@@ -90,7 +90,7 @@ from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_huddle_hash
+from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.streams import get_active_streams, get_stream
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
@@ -127,7 +127,7 @@ def get_user_id(r: Realm, full_name: str) -> int:
     return UserProfile.objects.get(realm=r, full_name=full_name).id
 
 
-def get_huddle_hashes(r: Realm) -> str:
+def get_direct_message_group_hashes(r: Realm) -> str:
     cordelia_full_name = "Cordelia, Lear's daughter"
     hamlet_full_name = "King Hamlet"
     othello_full_name = "Othello, the Moor of Venice"
@@ -138,8 +138,8 @@ def get_huddle_hashes(r: Realm) -> str:
         get_user_id(r, othello_full_name),
     ]
 
-    huddle_hash = get_huddle_hash(user_id_list)
-    return huddle_hash
+    direct_message_group_hash = get_direct_message_group_hash(user_id_list)
+    return direct_message_group_hash
 
 
 class ExportFile(ZulipTestCase):
@@ -164,9 +164,7 @@ class ExportFile(ZulipTestCase):
         self, user_profile: UserProfile, *, emoji_name: str = "whatever"
     ) -> None:
         message = most_recent_message(user_profile)
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
         attachment_path_id = url.replace("/user_uploads/", "")
         claim_attachment(
             path_id=attachment_path_id,
@@ -175,7 +173,7 @@ class ExportFile(ZulipTestCase):
         )
 
         with get_test_image_file("img.png") as img_file:
-            upload_avatar_image(img_file, user_profile)
+            upload_avatar_image(img_file, user_profile, future=False)
 
         user_profile.avatar_source = "U"
         user_profile.save()
@@ -383,9 +381,7 @@ class RealmImportExportTest(ExportFile):
         # We create an attachment tied to a personal message. That means it shouldn't be
         # included in a public export, as it's private data.
         personal_message_id = self.send_personal_message(user_profile, self.example_user("othello"))
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
         attachment_path_id = url.replace("/user_uploads/", "")
         attachment = claim_attachment(
             path_id=attachment_path_id,
@@ -584,18 +580,18 @@ class RealmImportExportTest(ExportFile):
         self.subscribe(self.example_user("hamlet"), "Private D")
         self.send_stream_message(self.example_user("prospero"), "Private D", "Hello again stream D")
 
-        # Create huddles
-        self.send_huddle_message(
+        # Create direct message groups
+        self.send_group_direct_message(
             self.example_user("iago"), [self.example_user("cordelia"), self.example_user("AARON")]
         )
-        huddle_a = Huddle.objects.last()
-        self.send_huddle_message(
+        direct_message_group_a = DirectMessageGroup.objects.last()
+        self.send_group_direct_message(
             self.example_user("ZOE"),
             [self.example_user("hamlet"), self.example_user("AARON"), self.example_user("othello")],
         )
-        huddle_b = Huddle.objects.last()
+        direct_message_group_b = DirectMessageGroup.objects.last()
 
-        huddle_c_message_id = self.send_huddle_message(
+        direct_message_group_c_message_id = self.send_group_direct_message(
             self.example_user("AARON"),
             [self.example_user("cordelia"), self.example_user("ZOE"), self.example_user("othello")],
         )
@@ -720,13 +716,17 @@ class RealmImportExportTest(ExportFile):
             .values_list("id", flat=True)
         )
 
-        # Third huddle is not exported since none of the members gave consent
-        assert huddle_a is not None and huddle_b is not None
-        huddle_recipients = Recipient.objects.filter(
-            type_id__in=[huddle_a.id, huddle_b.id], type=Recipient.DIRECT_MESSAGE_GROUP
+        # Third direct message group is not exported since none of
+        # the members gave consent
+        assert direct_message_group_a is not None and direct_message_group_b is not None
+        direct_message_group_recipients = Recipient.objects.filter(
+            type_id__in=[direct_message_group_a.id, direct_message_group_b.id],
+            type=Recipient.DIRECT_MESSAGE_GROUP,
         )
-        pm_query = Q(recipient__in=huddle_recipients) | Q(sender__in=consented_user_ids)
-        exported_huddle_ids = (
+        pm_query = Q(recipient__in=direct_message_group_recipients) | Q(
+            sender__in=consented_user_ids
+        )
+        exported_direct_message_group_ids = (
             Message.objects.filter(pm_query, realm=realm.id)
             .values_list("id", flat=True)
             .values_list("id", flat=True)
@@ -737,14 +737,14 @@ class RealmImportExportTest(ExportFile):
             *private_stream_message_ids,
             stream_b_second_message_id,
             *exported_pm_ids,
-            *exported_huddle_ids,
+            *exported_direct_message_group_ids,
         }
         self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
 
         self.assertNotIn(stream_b_first_message_id, exported_msg_ids)
 
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
-        self.assertNotIn(huddle_c_message_id, exported_msg_ids)
+        self.assertNotIn(direct_message_group_c_message_id, exported_msg_ids)
 
         self.assertNotIn(pm_a_msg_id, exported_msg_ids)
         self.assertIn(pm_b_msg_id, exported_msg_ids)
@@ -801,15 +801,15 @@ class RealmImportExportTest(ExportFile):
             modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
         ).update(acting_user_id=cross_realm_bot.id)
 
-        # data to test import of huddles
-        huddle = [
+        # data to test import of direct message groups
+        direct_message_group = [
             self.example_user("hamlet"),
             self.example_user("othello"),
         ]
-        self.send_huddle_message(
+        self.send_group_direct_message(
             self.example_user("cordelia"),
-            huddle,
-            "test huddle message",
+            direct_message_group,
+            "test group direct message",
         )
 
         user_mention_message = "@**King Hamlet** Hello"
@@ -991,8 +991,12 @@ class RealmImportExportTest(ExportFile):
 
         self.verify_emoji_code_foreign_keys()
 
-        # Our huddle hashes change, because hashes use ids that change.
-        self.assertNotEqual(get_huddle_hashes(original_realm), get_huddle_hashes(imported_realm))
+        # Our direct message group hashes change, because hashes
+        # use ids that change.
+        self.assertNotEqual(
+            get_direct_message_group_hashes(original_realm),
+            get_direct_message_group_hashes(imported_realm),
+        )
 
         # test to highlight that bs4 which we use to do data-**id
         # replacements modifies the HTML sometimes. eg replacing <br>
@@ -1039,13 +1043,12 @@ class RealmImportExportTest(ExportFile):
                 Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id).id,
             )
 
-        for huddle_object in Huddle.objects.all():
-            # Huddles don't have a realm column, so we just test all Huddles for simplicity.
+        for dm_group in DirectMessageGroup.objects.all():
+            # Direct Message groups don't have a realm column, so we just test all
+            # Direct Message groups for simplicity.
             self.assertEqual(
-                huddle_object.recipient_id,
-                Recipient.objects.get(
-                    type=Recipient.DIRECT_MESSAGE_GROUP, type_id=huddle_object.id
-                ).id,
+                dm_group.recipient_id,
+                Recipient.objects.get(type=Recipient.DIRECT_MESSAGE_GROUP, type_id=dm_group.id).id,
             )
 
         self.assertEqual(ScheduledMessage.objects.filter(realm=imported_realm).count(), 1)
@@ -1268,13 +1271,17 @@ class RealmImportExportTest(ExportFile):
             return realmauditlog_event_type
 
         @getter
-        def get_huddle_message(r: Realm) -> str:
-            huddle_hash = get_huddle_hashes(r)
-            huddle_id = Huddle.objects.get(huddle_hash=huddle_hash).id
-            huddle_recipient = Recipient.objects.get(type_id=huddle_id, type=3)
-            huddle_message = Message.objects.get(recipient=huddle_recipient)
-            self.assertEqual(huddle_message.content, "test huddle message")
-            return huddle_message.content
+        def get_group_direct_message(r: Realm) -> str:
+            direct_message_group_hash = get_direct_message_group_hashes(r)
+            direct_message_group_id = DirectMessageGroup.objects.get(
+                huddle_hash=direct_message_group_hash
+            ).id
+            direct_message_group_recipient = Recipient.objects.get(
+                type_id=direct_message_group_id, type=3
+            )
+            group_direct_message = Message.objects.get(recipient=direct_message_group_recipient)
+            self.assertEqual(group_direct_message.content, "test group direct message")
+            return group_direct_message.content
 
         @getter
         def get_alertwords(r: Realm) -> Set[str]:
@@ -1883,12 +1890,16 @@ class SingleUserExportTest(ExportFile):
 
         # Try to fool the export again
         self.send_personal_message(othello, hamlet)
-        self.send_huddle_message(othello, [hamlet, polonius])
+        self.send_group_direct_message(othello, [hamlet, polonius])
 
         hi_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "hi hamlet")
 
-        hi_peeps_message_id = self.send_huddle_message(cordelia, [hamlet, othello], "hi peeps")
-        bye_peeps_message_id = self.send_huddle_message(othello, [cordelia, hamlet], "bye peeps")
+        hi_peeps_message_id = self.send_group_direct_message(
+            cordelia, [hamlet, othello], "hi peeps"
+        )
+        bye_peeps_message_id = self.send_group_direct_message(
+            othello, [cordelia, hamlet], "bye peeps"
+        )
 
         bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
 
@@ -1903,7 +1914,9 @@ class SingleUserExportTest(ExportFile):
 
         messages = read_json("messages-000001.json")
 
-        huddle_name = "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice"
+        direct_message_group_name = (
+            "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice"
+        )
 
         excerpt = [
             (rec["id"], rec["content"], rec["recipient_name"])
@@ -1915,8 +1928,8 @@ class SingleUserExportTest(ExportFile):
                 (smile_message_id, "SMILE!", "Denmark"),
                 (hi_stream_message_id, "hi stream", "Denmark"),
                 (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
-                (hi_peeps_message_id, "hi peeps", huddle_name),
-                (bye_peeps_message_id, "bye peeps", huddle_name),
+                (hi_peeps_message_id, "hi peeps", direct_message_group_name),
+                (bye_peeps_message_id, "bye peeps", direct_message_group_name),
                 (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
                 (hi_myself_message_id, "hi myself", cordelia.full_name),
                 (bye_stream_message_id, "bye stream", "Denmark"),

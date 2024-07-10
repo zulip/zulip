@@ -26,6 +26,13 @@
             </div>
         </div>
     </div>
+    <div class="input-group new-style" id="receive-invite-acceptance-notification-container">
+        <label class="checkbox display-block">
+            <input type="checkbox" id="receive-invite-acceptance-notification" checked/>
+            <span></span>
+            {{t "Send me a direct message when my invitation is accepted" }}
+        </label>
+    </div>
     <div class="input-group">
         <label for="expires_in" class="modal-field-label">{{t "Invitation expires after" }}</label>
         <select id="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
@@ -77,7 +84,7 @@
             <div id="invite_streams_container" class="add_streams_container">
                 <div class="pill-container stream_picker">
                     <div class="input" contenteditable="true"
-                      data-placeholder="{{t 'Streams' }}">
+                      data-placeholder="{{t 'Channels' }}">
                         {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
                     </div>
                 </div>

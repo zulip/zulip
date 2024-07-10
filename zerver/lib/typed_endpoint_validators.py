@@ -21,6 +21,12 @@ def check_string_fixed_length(string: str, length: int) -> Optional[str]:
     return string
 
 
+def check_string_in(val: str, possible_values: List[str]) -> str:
+    if val not in possible_values:
+        raise ValueError(_("Not in the list of possible values"))
+    return val
+
+
 def check_int_in(val: int, possible_values: List[int]) -> int:
     if val not in possible_values:
         raise ValueError(_("Not in the list of possible values"))

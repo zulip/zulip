@@ -19,12 +19,11 @@ import * as dropdown_widget from "./dropdown_widget";
 import type {Option} from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import * as settings_config from "./settings_config";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 type MessageType = "stream" | "private";
@@ -116,12 +115,7 @@ export function update_on_recipient_change(): void {
 export function get_posting_policy_error_message(): string {
     if (compose_state.selected_recipient_id === "direct") {
         const recipients = compose_pm_pill.get_user_ids_string();
-        if (!people.user_can_direct_message(recipients)) {
-            return $t({
-                defaultMessage: "You are not allowed to send direct messages in this organization.",
-            });
-        }
-        return "";
+        return compose_validate.check_dm_permissions_and_get_error_string(recipients);
     }
 
     if (!isNumber(compose_state.selected_recipient_id)) {
@@ -146,11 +140,13 @@ export function check_posting_policy_for_compose_box(): void {
     }
 
     let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (compose_state.selected_recipient_id === "direct") {
-        banner_classname = compose_banner.CLASSNAMES.private_messages_disabled;
-    }
     compose_validate.set_recipient_disallowed(true);
-    compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
+    if (compose_state.selected_recipient_id === "direct") {
+        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
+        compose_banner.cannot_send_direct_message_error(banner_text);
+    } else {
+        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
+    }
 }
 
 function switch_message_type(message_type: MessageType): void {
@@ -263,10 +259,8 @@ function get_options_for_recipient_widget(): Option[] {
         name: $t({defaultMessage: "Direct message"}),
     };
 
-    if (
-        realm.realm_private_message_policy ===
-        settings_config.private_message_policy_values.by_anyone.code
-    ) {
+    const {name} = user_groups.get_user_group_from_id(realm.realm_direct_message_permission_group);
+    if (name !== "role:nobody") {
         options.unshift(direct_messages_option);
     } else {
         options.push(direct_messages_option);

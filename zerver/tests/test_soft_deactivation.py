@@ -58,7 +58,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         # We are sending this message to ensure that users have at least
         # one UserMessage row.
-        self.send_huddle_message(users[0], users)
+        self.send_group_direct_message(users[0], users)
 
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_users(users)
@@ -112,7 +112,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user("iago"),
             self.example_user("cordelia"),
         ]
-        self.send_huddle_message(users[0], users)
+        self.send_group_direct_message(users[0], users)
 
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_users(users)

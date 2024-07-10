@@ -908,7 +908,7 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(81):
+        with self.assert_database_query_count(84):
             with self.assert_memcached_count(19):
                 with self.capture_send_event_calls(expected_num_events=10) as events:
                     fred = do_create_user(
@@ -1298,7 +1298,7 @@ class UserProfileTest(ZulipTestCase):
         do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
         do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
         do_change_user_setting(
-            cordelia, "color_scheme", UserProfile.COLOR_SCHEME_NIGHT, acting_user=None
+            cordelia, "color_scheme", UserProfile.COLOR_SCHEME_DARK, acting_user=None
         )
         do_change_user_setting(
             cordelia, "enable_offline_email_notifications", False, acting_user=None
@@ -1310,7 +1310,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Upload cordelia's avatar
         with get_test_image_file("img.png") as image_file:
-            upload_avatar_image(image_file, cordelia)
+            upload_avatar_image(image_file, cordelia, future=False)
 
         OnboardingStep.objects.filter(user=cordelia).delete()
         OnboardingStep.objects.filter(user=iago).delete()
@@ -1342,8 +1342,8 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.timezone, "America/Phoenix")
         self.assertEqual(hamlet.timezone, "")
 
-        self.assertEqual(iago.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
-        self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
+        self.assertEqual(iago.color_scheme, UserProfile.COLOR_SCHEME_DARK)
+        self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_DARK)
         self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_AUTOMATIC)
 
         self.assertEqual(iago.enable_offline_email_notifications, False)
@@ -2782,19 +2782,19 @@ class DeleteUserTest(ZulipTestCase):
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
 
-        huddle_message_ids_from_cordelia = [
-            self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
+        group_direct_message_ids_from_cordelia = [
+            self.send_group_direct_message(cordelia, [hamlet, othello]) for i in range(3)
         ]
-        huddle_message_ids_from_hamlet = [
-            self.send_huddle_message(hamlet, [cordelia, othello]) for i in range(3)
+        group_direct_message_ids_from_hamlet = [
+            self.send_group_direct_message(hamlet, [cordelia, othello]) for i in range(3)
         ]
 
-        huddle_with_hamlet_recipient_ids = list(
+        direct_message_group_with_hamlet_recipient_ids = list(
             Subscription.objects.filter(
                 user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
             ).values_list("recipient_id", flat=True)
         )
-        self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
+        self.assertGreater(len(direct_message_group_with_hamlet_recipient_ids), 0)
 
         do_delete_user(hamlet, acting_user=None)
 
@@ -2808,18 +2808,22 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
 
         self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
-        # Huddle messages from hamlet should have been deleted, but messages of other participants should
-        # be kept.
-        self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_hamlet).count(), 0)
-        self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(), 3)
+        # Group direct messages from hamlet should have been deleted, but messages of other
+        # participants should be kept.
+        self.assertEqual(
+            Message.objects.filter(id__in=group_direct_message_ids_from_hamlet).count(), 0
+        )
+        self.assertEqual(
+            Message.objects.filter(id__in=group_direct_message_ids_from_cordelia).count(), 3
+        )
 
         self.assertEqual(
             Message.objects.filter(realm_id=realm.id, sender_id=hamlet_user_id).count(), 0
         )
 
-        # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
-        # in a correct state.
-        for recipient_id in huddle_with_hamlet_recipient_ids:
+        # Verify that the dummy user is subscribed to the deleted user's direct message groups,
+        #  to keep direct message group's data in a correct state.
+        for recipient_id in direct_message_group_with_hamlet_recipient_ids:
             self.assertTrue(
                 Subscription.objects.filter(
                     user_profile=replacement_dummy_user, recipient_id=recipient_id
@@ -2849,19 +2853,19 @@ class DeleteUserTest(ZulipTestCase):
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
 
-        huddle_message_ids_from_cordelia = [
-            self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
+        group_direct_message_ids_from_cordelia = [
+            self.send_group_direct_message(cordelia, [hamlet, othello]) for i in range(3)
         ]
-        huddle_message_ids_from_hamlet = [
-            self.send_huddle_message(hamlet, [cordelia, othello]) for i in range(3)
+        group_direct_message_ids_from_hamlet = [
+            self.send_group_direct_message(hamlet, [cordelia, othello]) for i in range(3)
         ]
 
-        huddle_with_hamlet_recipient_ids = list(
+        direct_message_group_with_hamlet_recipient_ids = list(
             Subscription.objects.filter(
                 user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
             ).values_list("recipient_id", flat=True)
         )
-        self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
+        self.assertGreater(len(direct_message_group_with_hamlet_recipient_ids), 0)
 
         original_messages_from_hamlet_count = Message.objects.filter(
             realm_id=realm.id, sender_id=hamlet_user_id
@@ -2885,12 +2889,12 @@ class DeleteUserTest(ZulipTestCase):
             len(personal_message_ids_to_hamlet),
         )
         self.assertEqual(
-            Message.objects.filter(id__in=huddle_message_ids_from_hamlet).count(),
-            len(huddle_message_ids_from_hamlet),
+            Message.objects.filter(id__in=group_direct_message_ids_from_hamlet).count(),
+            len(group_direct_message_ids_from_hamlet),
         )
         self.assertEqual(
-            Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(),
-            len(huddle_message_ids_from_cordelia),
+            Message.objects.filter(id__in=group_direct_message_ids_from_cordelia).count(),
+            len(group_direct_message_ids_from_cordelia),
         )
 
         self.assertEqual(
@@ -2898,9 +2902,9 @@ class DeleteUserTest(ZulipTestCase):
             original_messages_from_hamlet_count,
         )
 
-        # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
-        # in a correct state.
-        for recipient_id in huddle_with_hamlet_recipient_ids:
+        # Verify that the dummy user is subscribed to the deleted user's direct message groups,
+        # to keep direct message group's data in a correct state.
+        for recipient_id in direct_message_group_with_hamlet_recipient_ids:
             self.assertTrue(
                 Subscription.objects.filter(
                     user_profile=replacement_dummy_user, recipient_id=recipient_id

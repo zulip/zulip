@@ -133,6 +133,30 @@
  *
  * 15. To position typeaheads, we use Tippyjs except for typeaheads that are
  *    appended to a `non_tippy_parent_element`.
+ *
+ * 16. Add `requireHighlight` and `shouldHighlightFirstResult` options:
+ *
+ *   Allow none of the typeahead options to be highlighted, which lets
+ *   the user remove highlight by going navigating (with the keyboard)
+ *   past the last item or before the first item.
+ *
+ *   Why? A main way to initiate a search is to press enter from the
+ *   search box, but if an item is highlighted then the enter key selects
+ *   that item to add it as a pill to the search box.
+ *
+ *   `shouldHighlightFirstResult` relatedly lets us decide whether
+ *   the first result should be highlighted when the typeahead opens.
+ *
+ * 17. Add `updateElementContent` option.
+ *
+ *   This is useful for complicated typeaheads that have custom logic
+ *   for setting their element's contents after an item is selected.
+ *
+ * 18. Add `hideAfterSelect` option, default true.
+ *
+ *   This is useful for custom situations where we want to trigger the
+ *   typeahead to do a lookup after selecting an option, when the user
+ *   is making multiple related selections in a row.
  * ============================================================ */
 
 import $ from "jquery";
@@ -228,12 +252,20 @@ export class Typeahead<ItemType extends string | object> {
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
-    naturalSearch: boolean;
     stopAdvance: boolean;
     advanceKeyCodes: number[];
     non_tippy_parent_element: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
     instance: tippy.Instance | undefined;
+    requireHighlight: boolean;
+    shouldHighlightFirstResult: () => boolean;
+    // Used for contenteditble divs. If this is set to false, we
+    // don't set the html content of the div from this module, and
+    // it's handled from the caller (or updater function) instead.
+    updateElementContent: boolean;
+    // Used for custom situations where we want to hide the typeahead
+    // after selecting an option, instead of the default call to lookup().
+    hideAfterSelect: () => boolean;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -268,26 +300,35 @@ export class Typeahead<ItemType extends string | object> {
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
-        this.naturalSearch = options.naturalSearch ?? false;
         this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
+        this.requireHighlight = options.requireHighlight ?? true;
+        this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
+        this.updateElementContent = options.updateElementContent ?? true;
+        this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
 
-        // The naturalSearch option causes arrow keys to immediately
-        // update the search box with the underlying values from the
-        // search suggestions.
         this.listen();
     }
 
     select(e?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): this {
         const val = this.values.get(this.$menu.find(".active")[0]!);
+        // It's possible that we got here from pressing enter with nothing highlighted.
+        if (!this.requireHighlight && val === undefined) {
+            return this.hide();
+        }
         assert(val !== undefined);
         if (this.input_element.type === "contenteditable") {
-            this.input_element.$element
-                .text(this.updater(val, this.query, this.input_element, e) ?? "")
-                .trigger("change");
-            // Empty text after the change event handler
-            // converts the input text to html elements.
-            this.input_element.$element.text("");
+            if (this.updateElementContent) {
+                this.input_element.$element
+                    .text(this.updater(val, this.query, this.input_element, e) ?? "")
+                    .trigger("change");
+                // Empty text after the change event handler
+                // converts the input text to html elements.
+                this.input_element.$element.text("");
+            } else {
+                this.updater(val, this.query, this.input_element, e);
+                this.input_element.$element.trigger("change");
+            }
         } else {
             const after_text = this.updater(val, this.query, this.input_element, e) ?? "";
             const element_val = this.input_element.$element.val();
@@ -300,7 +341,10 @@ export class Typeahead<ItemType extends string | object> {
             this.input_element.$element.trigger("change");
         }
 
-        return this.hide();
+        if (this.hideAfterSelect()) {
+            return this.hide();
+        }
+        return this.lookup(true);
     }
 
     set_value(): void {
@@ -464,7 +508,9 @@ export class Typeahead<ItemType extends string | object> {
             return $i;
         });
 
-        $items[0]!.addClass("active");
+        if (this.requireHighlight || this.shouldHighlightFirstResult()) {
+            $items[0]!.addClass("active");
+        }
         this.$menu.empty().append($items);
         return this;
     }
@@ -473,30 +519,36 @@ export class Typeahead<ItemType extends string | object> {
         const $active = this.$menu.find(".active").removeClass("active");
         let $next = $active.next();
 
+        // This lets there be a way to not have any item highlighted,
+        // which can be important for e.g. letting the user press enter on
+        // whatever's already in the search box.
+        if (!this.requireHighlight && $active.length && !$next.length) {
+            return;
+        }
+
         if (!$next.length) {
             $next = this.$menu.find("li").first();
         }
 
         $next.addClass("active");
-
-        if (this.naturalSearch) {
-            this.set_value();
-        }
     }
 
     prev(): void {
         const $active = this.$menu.find(".active").removeClass("active");
         let $prev = $active.prev();
 
+        // This lets there be a way to not have any item highlighted,
+        // which can be important for e.g. letting the user press enter on
+        // whatever's already in the search box.
+        if (!this.requireHighlight && $active.length && !$prev.length) {
+            return;
+        }
+
         if (!$prev.length) {
             $prev = this.$menu.find("li").last();
         }
 
         $prev.addClass("active");
-
-        if (this.naturalSearch) {
-            this.set_value();
-        }
     }
 
     listen(): void {
@@ -505,7 +557,8 @@ export class Typeahead<ItemType extends string | object> {
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
             .on("click", this.element_click.bind(this))
-            .on("keydown", this.keydown.bind(this));
+            .on("keydown", this.keydown.bind(this))
+            .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
 
         this.$menu
             .on("click", "li", this.click.bind(this))
@@ -736,6 +789,14 @@ export class Typeahead<ItemType extends string | object> {
         this.$menu.find(".active").removeClass("active");
         $(e.currentTarget).addClass("active");
     }
+
+    refreshPosition(e: JQuery.Event): void {
+        e.stopPropagation();
+        // Refresh the typeahead menu to account for any changes in the
+        // input position by asking popper to recompute your tooltip's position.
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.instance?.popperInstance?.update();
+    }
 }
 
 /* TYPEAHEAD PLUGIN DEFINITION
@@ -753,7 +814,6 @@ type TypeaheadOptions<ItemType> = {
     header_html?: () => string | false;
     helpOnEmptyStrings?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;
-    naturalSearch?: boolean;
     on_escape?: () => void;
     openInputFieldOnKeyUp?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
@@ -768,4 +828,8 @@ type TypeaheadOptions<ItemType> = {
         input_element: TypeaheadInputElement,
         event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
     ) => string | undefined;
+    requireHighlight?: boolean;
+    shouldHighlightFirstResult?: () => boolean;
+    updateElementContent?: boolean;
+    hideAfterSelect?: () => boolean;
 };

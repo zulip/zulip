@@ -20,6 +20,43 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 270**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added two new realm settings,
+  `direct_message_initiator_group`, which is a
+  [group-setting value](/api/group-setting-values) describing the
+  set of users with permission to initiate direct message thread, and
+  `direct_message_permission_group`, which is a
+  [group-setting value](/api/group-setting-values) describing the
+  set of users of which at least one member must be included as sender
+  or recipient in all personal and group direct messages.
+  Removed `private_message_policy` property, as the permission to send
+  direct messages is now controlled by `direct_message_initiator_group`
+  and `direct_message_permission_group` settings.
+
+**Feature level 269**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new user setting `web_channel_default_view`, controlling the
+  behavior of clicking a channel link in the web/desktop apps.
+
+**Feature level 268**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added a new `web_navigate_to_sent_message` setting to allow users to decide
+  whether to automatically go to conversation where they sent a message.
+
+**Feature level 267**
+
+* [`GET /invites`](/api/get-invites),[`POST /invites`](/api/send-invites): Added
+  `notify_referrer_on_join` parameter, indicating whether the referrer has opted
+  to receive a direct message from the notification bot whenever a user joins
+  via this invitation.
+
 **Feature level 266**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
@@ -2301,7 +2338,7 @@ No changes; feature level used for Zulip 3.0 release.
   deprecating and replacing the `is_announcement_only` boolean.
 * [`GET /user_uploads/{realm_id_str}/{filename}`](/api/get-file-temporary-url):
   New endpoint added for requesting a temporary URL for an uploaded
-  file that does not require authentication to access (e.g. for passing
+  file that does not require authentication to access (e.g., for passing
   from a Zulip desktop, mobile, or terminal app to the user's default
   browser).
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

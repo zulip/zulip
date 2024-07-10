@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_search_description from "../templates/search_description.hbs";
 
+import * as blueslip from "./blueslip";
 import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
@@ -481,6 +482,52 @@ export class Filter {
         return terms;
     }
 
+    static is_valid_search_term(term: NarrowTerm): boolean {
+        switch (term.operator) {
+            case "has":
+                return ["image", "link", "attachment", "reaction"].includes(term.operand);
+            case "is":
+                return [
+                    "dm",
+                    "private",
+                    "starred",
+                    "mentioned",
+                    "alerted",
+                    "unread",
+                    "resolved",
+                    "followed",
+                ].includes(term.operand);
+            case "in":
+                return ["home", "all"].includes(term.operand);
+            case "id":
+            case "near":
+                return Number.isInteger(Number(term.operand));
+            case "channel":
+            case "stream":
+                return stream_data.get_sub(term.operand) !== undefined;
+            case "channels":
+            case "streams":
+                return term.operand === "public";
+            case "topic":
+                return true;
+            case "sender":
+            case "from":
+            case "dm":
+            case "pm":
+            case "pm-with":
+            case "dm-including":
+            case "pm-including":
+                return term.operand
+                    .split(",")
+                    .every((email) => people.get_by_email(email) !== undefined);
+            case "search":
+                return true;
+            default:
+                blueslip.error("Unexpected search term operator: " + term.operator);
+                return false;
+        }
+    }
+
     /* Convert a list of search terms to a string.
    Each operator is a key-value pair like
 
@@ -724,6 +771,45 @@ export class Filter {
             }
         }
         return true;
+    }
+
+    static adjusted_terms_if_moved(raw_terms: NarrowTerm[], message: Message): NarrowTerm[] | null {
+        if (message.type !== "stream") {
+            return null;
+        }
+
+        assert(typeof message.display_recipient === "string");
+        assert(typeof message.topic === "string");
+
+        const adjusted_terms = [];
+        let terms_changed = false;
+
+        for (const term of raw_terms) {
+            const adjusted_term = {...term};
+            if (
+                Filter.canonicalize_operator(term.operator) === "channel" &&
+                !util.lower_same(term.operand, message.display_recipient)
+            ) {
+                adjusted_term.operand = message.display_recipient;
+                terms_changed = true;
+            }
+
+            if (
+                Filter.canonicalize_operator(term.operator) === "topic" &&
+                !util.lower_same(term.operand, message.topic)
+            ) {
+                adjusted_term.operand = message.topic;
+                terms_changed = true;
+            }
+
+            adjusted_terms.push(adjusted_term);
+        }
+
+        if (!terms_changed) {
+            return null;
+        }
+
+        return adjusted_terms;
     }
 
     equals(filter: Filter, excluded_operators?: string[]): boolean {

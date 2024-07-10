@@ -536,7 +536,7 @@ export function get_time_limit_setting_in_appropriate_unit(
 
 export function should_display_profile_incomplete_alert(timestamp: number): boolean {
     const today = new Date(Date.now());
-    const time = new Date(timestamp);
+    const time = new Date(timestamp * 1000);
     const days_old = difference_in_calendar_days(today, time, display_time_zone);
 
     if (days_old >= 15) {

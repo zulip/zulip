@@ -5,12 +5,12 @@ preparing a new release.
 
 ### A week before the release
 
-- _Major releases only (e.g. 4.0):_
+- _Major releases only (e.g., 4.0):_
   - Upgrade all Python dependencies in
     `requirements` to latest upstream versions so they can burn in (use
     `pip list --outdated`).
   - Upgrade all puppet dependencies in `puppet/deps.yaml`
-  - Upgrade all puppet-installed dependencies (e.g. Smokescreen, go,
+  - Upgrade all puppet-installed dependencies (e.g., Smokescreen, go,
     etc) in `puppet/zulip/manifests/common.pp`
   - [Upload strings to
     Transifex](../translating/internationalization.md#translation-process)
@@ -49,7 +49,7 @@ preparing a new release.
   - If the draft post should remain secret until release, avoid using
     a guessable Git branch name for the pull request (the deployment
     preview URL is based on the branch name).
-- _Major releases only (e.g. 4.0):_ Schedule team members to provide
+- _Major releases only (e.g., 4.0):_ Schedule team members to provide
   extra responsive #production help support following the release.
 
 ### Executing the release
@@ -94,12 +94,12 @@ preparing a new release.
   once it is built, and how to test it. Verify it, then publish it to
   DigitalOcean marketplace.
 - _Major releases only:_
-  - Create a release branch (e.g. `4.x`).
+  - Create a release branch (e.g., `4.x`).
   - On the release branch, update `ZULIP_VERSION` in `version.py` to
-    the present release with a `+git` suffix, e.g. `4.0+git`.
+    the present release with a `+git` suffix, e.g., `4.0+git`.
   - On `main`, update `ZULIP_VERSION` to the future major release with
-    a `-dev+git` suffix, e.g. `5.0-dev+git`. Make a Git tag for this
-    update commit with a `-dev` suffix, e.g. `5.0-dev`. Push the tag
+    a `-dev+git` suffix, e.g., `5.0-dev+git`. Make a Git tag for this
+    update commit with a `-dev` suffix, e.g., `5.0-dev`. Push the tag
     to both zulip.git and zulip-internal.git to get a correct version
     number for future Cloud deployments.
   - Add the new release to `.github/ISSUE_TEMPLATE/2_bug_report.md`.
@@ -113,16 +113,16 @@ preparing a new release.
     - Add a new line to the `production_upgrade` matrix in
       `.github/workflows/production-suite.yml`.
   - Update /history page in `templates/corporate/history.md`.
-- _Minor releases only (e.g. 3.2):_
+- _Minor releases only (e.g., 3.2):_
   - On the release branch, update `ZULIP_VERSION` to the present
-    release with a `+git` suffix, e.g. `3.2+git`.
+    release with a `+git` suffix, e.g., `3.2+git`.
   - On main, update `LATEST_RELEASE_VERSION` with the released
     version, as well as the changelog changes from the release branch.
-- _Prereleases only (e.g. 7.0-beta3):_
-  - Atop the prerelease commit (e.g. `7.0-beta3`), make a commit
+- _Prereleases only (e.g., 7.0-beta3):_
+  - Atop the prerelease commit (e.g., `7.0-beta3`), make a commit
     updating `ZULIP_VERSION` to the prerelease version with a `+git`
-    suffix, e.g. `7.0-beta3+git`. Push this to `main`. (If `main` has
+    suffix, e.g., `7.0-beta3+git`. Push this to `main`. (If `main` has
     already diverged from the prerelease, a merge commit will be
     needed here.)
-  - Delete the prerelease branch (e.g. `7.0-beta3-branch`); it's now
+  - Delete the prerelease branch (e.g., `7.0-beta3-branch`); it's now
     an ancestor of `main` and thus unnecessary.

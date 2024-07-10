@@ -1010,22 +1010,22 @@ class GetUnreadMsgsTest(ZulipTestCase):
             ),
         )
 
-    def test_raw_unread_huddle(self) -> None:
+    def test_raw_unread_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         prospero = self.example_user("prospero")
 
-        huddle1_message_ids = [
-            self.send_huddle_message(
+        direct_message_group1_message_ids = [
+            self.send_group_direct_message(
                 cordelia,
                 [hamlet, othello],
             )
             for i in range(3)
         ]
 
-        huddle2_message_ids = [
-            self.send_huddle_message(
+        direct_message_group2_message_ids = [
+            self.send_group_direct_message(
                 cordelia,
                 [hamlet, prospero],
             )
@@ -1036,18 +1036,20 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile=hamlet,
         )
 
-        huddle_dict = raw_unread_data["huddle_dict"]
+        direct_message_group_dict = raw_unread_data["huddle_dict"]
 
         self.assertEqual(
-            set(huddle_dict.keys()),
-            set(huddle1_message_ids) | set(huddle2_message_ids),
+            set(direct_message_group_dict.keys()),
+            set(direct_message_group1_message_ids) | set(direct_message_group2_message_ids),
         )
 
-        huddle_string = ",".join(str(uid) for uid in sorted([cordelia.id, hamlet.id, othello.id]))
+        direct_message_group_string = ",".join(
+            str(uid) for uid in sorted([cordelia.id, hamlet.id, othello.id])
+        )
 
         self.assertEqual(
-            huddle_dict[huddle1_message_ids[0]],
-            dict(user_ids_string=huddle_string),
+            direct_message_group_dict[direct_message_group1_message_ids[0]],
+            dict(user_ids_string=direct_message_group_string),
         )
 
     def test_raw_unread_personal(self) -> None:
@@ -1205,7 +1207,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             content="hello",
         )
 
-        huddle_message_id = self.send_huddle_message(
+        group_direct_message_id = self.send_group_direct_message(
             sender,
             [user_profile, othello],
             "hello3",
@@ -1260,13 +1262,17 @@ class GetUnreadMsgsTest(ZulipTestCase):
             unread_stream["unread_message_ids"], [unmuted_topic_muted_stream_message_id]
         )
 
-        huddle_string = ",".join(
+        direct_message_group_string = ",".join(
             str(uid) for uid in sorted([sender_id, user_profile.id, othello.id])
         )
 
-        unread_huddle = result["huddles"][0]
-        self.assertEqual(unread_huddle["user_ids_string"], huddle_string)
-        self.assertEqual(unread_huddle["unread_message_ids"], [huddle_message_id])
+        unread_direct_message_group = result["huddles"][0]
+        self.assertEqual(
+            unread_direct_message_group["user_ids_string"], direct_message_group_string
+        )
+        self.assertEqual(
+            unread_direct_message_group["unread_message_ids"], [group_direct_message_id]
+        )
 
         self.assertEqual(result["mentions"], [])
 
@@ -2497,13 +2503,13 @@ class MarkUnreadTest(ZulipTestCase):
             )
             self.assertTrue(um.flags.read)
 
-    def test_huddle_messages_unread(self) -> None:
+    def test_group_direct_messages_unread(self) -> None:
         sender = self.example_user("cordelia")
         receiver = self.example_user("hamlet")
         user1 = self.example_user("othello")
         message_ids = [
-            # self.send_huddle_message(sender, receiver, content="Hello") for i in range(4)
-            self.send_huddle_message(sender, [receiver, user1])
+            # self.send_group_direct_message(sender, receiver, content="Hello") for i in range(4)
+            self.send_group_direct_message(sender, [receiver, user1])
             for i in range(4)
         ]
         self.login("hamlet")
@@ -2558,13 +2564,13 @@ class MarkUnreadTest(ZulipTestCase):
             )
             self.assertTrue(um.flags.read)
 
-    def test_huddle_messages_unread_mention(self) -> None:
+    def test_group_direct_messages_unread_mention(self) -> None:
         sender = self.example_user("cordelia")
         receiver = self.example_user("hamlet")
         user1 = self.example_user("othello")
         message_ids = [
-            # self.send_huddle_message(sender, receiver, content="Hello") for i in range(4)
-            self.send_huddle_message(
+            # self.send_group_direct_message(sender, receiver, content="Hello") for i in range(4)
+            self.send_group_direct_message(
                 from_user=sender, to_users=[receiver, user1], content="@**King Hamlet**"
             )
             for i in range(4)

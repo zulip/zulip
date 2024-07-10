@@ -12,7 +12,7 @@ import * as ui_util from "./ui_util";
 
 type RealmPlaygroundWithURL = RealmPlayground & {playground_url: string};
 
-let playground_links_popover_instance: tippy.Instance;
+let playground_links_popover_instance: tippy.Instance | null = null;
 
 // Playground_store contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
@@ -26,6 +26,7 @@ function toggle_playground_links_popover(
     }
 
     popover_menus.toggle_popover_menu(element, {
+        theme: "popover-menu",
         placement: "bottom",
         popperOptions: {
             modifiers: [
@@ -62,16 +63,19 @@ export function is_open(): boolean {
 }
 
 export function hide(): void {
-    if (is_open()) {
-        $(playground_links_popover_instance.reference)
-            .parent()
-            .removeClass("active-playground-links-reference");
-        playground_links_popover_instance.destroy();
+    if (!playground_links_popover_instance) {
+        return;
     }
+
+    $(playground_links_popover_instance.reference)
+        .parent()
+        .removeClass("active-playground-links-reference");
+    playground_links_popover_instance.destroy();
+    playground_links_popover_instance = null;
 }
 
 function get_playground_links_popover_items(): JQuery | undefined {
-    if (!is_open()) {
+    if (!playground_links_popover_instance) {
         blueslip.error("Trying to get menu items when playground links popover is closed.");
         return undefined;
     }
@@ -118,6 +122,10 @@ function register_click_handlers(): void {
                     url_template.expand({code: extracted_code}),
                 );
             } else {
+                // Remove the href attribute that was set when there was only
+                // one playground link, so that it doesn't interfere with the
+                // popover toggle when multiple playground links exist.
+                $view_in_playground_button.removeAttr("href");
                 const playground_store = new Map<number, RealmPlaygroundWithURL>();
                 for (const playground of playground_info) {
                     const url_template = url_template_lib.parse(playground.url_template);

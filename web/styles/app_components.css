@@ -385,6 +385,11 @@ div.overlay {
     margin: 0;
 }
 
+/* TODO: Once all layouts using this button
+   are modernized, the Font Awesome icon
+   should be replaced with a Zulip icon,
+   and its formatting should have no extra
+   space around its viewbox in SVG. */
 .clear_search_button {
     &:hover {
         color: hsl(0deg 0% 0%);
@@ -933,6 +938,14 @@ div.overlay {
     }
 }
 
+.zulip-icon-lock {
+    /* The lock icon is bottom heavy, so to make it
+       appear better aligned, we pull it up by a
+       uniform margin throughout the UI. */
+    /* 3.5px at 16px/1em */
+    margin-top: -0.2188em !important;
+}
+
 /* This includes css needed to display messages in an overlay. */
 .overlay-messages-container {
     position: relative;
@@ -1104,6 +1117,7 @@ div.overlay {
     &:disabled {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
+        opacity: 0.7;
     }
 }
 

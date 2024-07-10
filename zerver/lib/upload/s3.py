@@ -2,7 +2,7 @@ import logging
 import os
 import secrets
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, List, Literal, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Dict, Iterator, List, Literal, Optional, Tuple
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import boto3
@@ -66,6 +66,7 @@ def upload_image_to_s3(
     content_type: Optional[str],
     user_profile: UserProfile,
     contents: bytes,
+    *,
     storage_class: Literal[
         "GLACIER_IR",
         "INTELLIGENT_TIERING",
@@ -74,25 +75,31 @@ def upload_image_to_s3(
         "STANDARD",
         "STANDARD_IA",
     ] = "STANDARD",
+    cache_control: Optional[str] = None,
+    extra_metadata: Optional[Dict[str, str]] = None,
 ) -> None:
     key = bucket.Object(file_name)
     metadata = {
         "user_profile_id": str(user_profile.id),
         "realm_id": str(user_profile.realm_id),
     }
+    if extra_metadata is not None:
+        metadata.update(extra_metadata)
 
-    content_disposition = ""
+    extras = {}
     if content_type is None:
         content_type = ""
     if content_type not in INLINE_MIME_TYPES:
-        content_disposition = "attachment"
+        extras["ContentDisposition"] = "attachment"
+    if cache_control is not None:
+        extras["CacheControl"] = cache_control
 
     key.put(
         Body=contents,
         Metadata=metadata,
         ContentType=content_type,
-        ContentDisposition=content_disposition,
         StorageClass=storage_class,
+        **extras,  # type: ignore[arg-type] # The dynamic kwargs here confuse mypy.
     )
 
 
@@ -204,11 +211,9 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_message_attachment(
         self,
         path_id: str,
-        uploaded_file_size: int,
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Realm,
     ) -> None:
         upload_image_to_s3(
             self.uploads_bucket,
@@ -216,7 +221,7 @@ class S3UploadBackend(ZulipUploadBackend):
             content_type,
             user_profile,
             file_data,
-            settings.S3_UPLOADS_STORAGE_CLASS,
+            storage_class=settings.S3_UPLOADS_STORAGE_CLASS,
         )
 
     @override
@@ -249,15 +254,6 @@ class S3UploadBackend(ZulipUploadBackend):
                     )
 
     @override
-    def get_avatar_path(self, hash_key: str, medium: bool = False) -> str:
-        # BUG: The else case should be f"{hash_key}.png".
-        # See #12852 for details on this bug and how to migrate it.
-        if medium:
-            return f"{hash_key}-medium.png"
-        else:
-            return hash_key
-
-    @override
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         return self.get_public_upload_url(self.get_avatar_path(hash_key, medium))
 
@@ -276,13 +272,17 @@ class S3UploadBackend(ZulipUploadBackend):
         user_profile: UserProfile,
         image_data: bytes,
         content_type: Optional[str],
+        future: bool = True,
     ) -> None:
+        extra_metadata = {"avatar_version": str(user_profile.avatar_version + (1 if future else 0))}
         upload_image_to_s3(
             self.avatar_bucket,
             file_path,
             content_type,
             user_profile,
             image_data,
+            extra_metadata=extra_metadata,
+            cache_control="public, max-age=31536000, immutable",
         )
 
     @override

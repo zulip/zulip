@@ -118,6 +118,13 @@ Here are a few common macros used to document Zulip's integrations:
   For an example rendering, see the end of
   [the docs for Zulip's GitHub integration][github-integration].
 
+- `{!event-filtering-additional-feature.md!}` macro - If a webhook integration
+  supports event filtering, then this adds a section with the specific
+  events that can be filtered for the integration. Should be included in
+  the documentation if `all_event_types` is set in the webhook integration
+  view. For an example see, the **Filtering incoming events** section in
+  [Zulip's GitLab integration][gitlab].
+
 - `{!download-python-bindings.md!}` macro - Links to Zulip's
   [API page](https://zulip.com/api/) to download and install Zulip's
   API bindings. This macro is usually used in non-webhook integration docs under
@@ -151,17 +158,13 @@ Here are a few common macros used to document Zulip's integrations:
   For an example rendering, see
   [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
 
-- `{!event-filtering-instructions}` macro - Instructs user to use the event
-  filtering feature and shows a list of event types that the integration supports.
-  For an example rendering, see the last 4 paragraphs of **Step 2** in
-  [the docs for Zulip's Front integration][front].
-
 [github-integration]: https://zulip.com/integrations/doc/github
 [zendesk]: https://zulip.com/integrations/doc/zendesk
 [matrix]: https://zulip.com/integrations/doc/matrix#configure-the-bridge
 [codebase]: https://zulip.com/integrations/doc/codebase
 [beanstalk]: https://zulip.com/integrations/doc/beanstalk
 [front]: https://zulip.com/integrations/doc/front
+[gitlab]: https://zulip.com/integrations/doc/gitlab
 [integrations-file]: https://github.com/zulip/zulip/blob/main/zerver/lib/integrations.py
 
 ## Writing guidelines

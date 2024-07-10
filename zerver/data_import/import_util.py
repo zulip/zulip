@@ -27,12 +27,12 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
-    Huddle,
+    DirectMessageGroup,
     Message,
     Realm,
     RealmEmoji,
@@ -50,30 +50,30 @@ ZerverFieldsT: TypeAlias = Dict[str, Any]
 class SubscriberHandler:
     def __init__(self) -> None:
         self.stream_info: Dict[int, Set[int]] = {}
-        self.huddle_info: Dict[int, Set[int]] = {}
+        self.direct_message_group_info: Dict[int, Set[int]] = {}
 
     def set_info(
         self,
         users: Set[int],
         stream_id: Optional[int] = None,
-        huddle_id: Optional[int] = None,
+        direct_message_group_id: Optional[int] = None,
     ) -> None:
         if stream_id is not None:
             self.stream_info[stream_id] = users
-        elif huddle_id is not None:
-            self.huddle_info[huddle_id] = users
+        elif direct_message_group_id is not None:
+            self.direct_message_group_info[direct_message_group_id] = users
         else:
-            raise AssertionError("stream_id or huddle_id is required")
+            raise AssertionError("stream_id or direct_message_group_id is required")
 
     def get_users(
-        self, stream_id: Optional[int] = None, huddle_id: Optional[int] = None
+        self, stream_id: Optional[int] = None, direct_message_group_id: Optional[int] = None
     ) -> Set[int]:
         if stream_id is not None:
             return self.stream_info[stream_id]
-        elif huddle_id is not None:
-            return self.huddle_info[huddle_id]
+        elif direct_message_group_id is not None:
+            return self.direct_message_group_info[direct_message_group_id]
         else:
-            raise AssertionError("stream_id or huddle_id is required")
+            raise AssertionError("stream_id or direct_message_group_id is required")
 
 
 def build_zerver_realm(
@@ -148,6 +148,7 @@ def build_avatar(
         path=avatar_url,  # Save original avatar URL here, which is downloaded later
         realm_id=realm_id,
         content_type=None,
+        avatar_version=1,
         user_profile_id=zulip_user_id,
         last_modified=timestamp,
         user_profile_email=email,
@@ -214,7 +215,7 @@ def build_subscription(recipient_id: int, user_id: int, subscription_id: int) ->
 
 
 class GetUsers(Protocol):
-    def __call__(self, stream_id: int = ..., huddle_id: int = ...) -> Set[int]: ...
+    def __call__(self, stream_id: int = ..., direct_message_group_id: int = ...) -> Set[int]: ...
 
 
 def build_stream_subscriptions(
@@ -245,24 +246,26 @@ def build_stream_subscriptions(
     return subscriptions
 
 
-def build_huddle_subscriptions(
+def build_direct_message_group_subscriptions(
     get_users: GetUsers,
     zerver_recipient: List[ZerverFieldsT],
-    zerver_huddle: List[ZerverFieldsT],
+    zerver_direct_message_group: List[ZerverFieldsT],
 ) -> List[ZerverFieldsT]:
     subscriptions: List[ZerverFieldsT] = []
 
-    huddle_ids = {huddle["id"] for huddle in zerver_huddle}
+    direct_message_group_ids = {
+        direct_message_group["id"] for direct_message_group in zerver_direct_message_group
+    }
 
     recipient_map = {
         recipient["id"]: recipient["type_id"]  # recipient_id -> stream_id
         for recipient in zerver_recipient
         if recipient["type"] == Recipient.DIRECT_MESSAGE_GROUP
-        and recipient["type_id"] in huddle_ids
+        and recipient["type_id"] in direct_message_group_ids
     }
 
-    for recipient_id, huddle_id in recipient_map.items():
-        user_ids = get_users(huddle_id=huddle_id)
+    for recipient_id, direct_message_group_id in recipient_map.items():
+        user_ids = get_users(direct_message_group_id=direct_message_group_id)
         for user_id in user_ids:
             subscription = build_subscription(
                 recipient_id=recipient_id,
@@ -307,7 +310,7 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
 def build_recipients(
     zerver_userprofile: Iterable[ZerverFieldsT],
     zerver_stream: Iterable[ZerverFieldsT],
-    zerver_huddle: Iterable[ZerverFieldsT] = [],
+    zerver_direct_message_group: Iterable[ZerverFieldsT] = [],
 ) -> List[ZerverFieldsT]:
     """
     This function was only used HipChat import, this function may be
@@ -339,8 +342,8 @@ def build_recipients(
         recipient_dict = model_to_dict(recipient)
         recipients.append(recipient_dict)
 
-    for huddle in zerver_huddle:
-        type_id = huddle["id"]
+    for direct_message_group in zerver_direct_message_group:
+        type_id = direct_message_group["id"]
         type = Recipient.DIRECT_MESSAGE_GROUP
         recipient = Recipient(
             type_id=type_id,
@@ -482,11 +485,11 @@ def build_stream(
     return stream_dict
 
 
-def build_huddle(huddle_id: int) -> ZerverFieldsT:
-    huddle = Huddle(
-        id=huddle_id,
+def build_direct_message_group(direct_message_group_id: int) -> ZerverFieldsT:
+    direct_message_group = DirectMessageGroup(
+        id=direct_message_group_id,
     )
-    return model_to_dict(huddle)
+    return model_to_dict(direct_message_group)
 
 
 def build_message(
@@ -592,7 +595,9 @@ def process_avatars(
     avatar_original_list = []
     avatar_upload_list = []
     for avatar in avatar_list:
-        avatar_hash = user_avatar_path_from_ids(avatar["user_profile_id"], realm_id)
+        avatar_hash = user_avatar_base_path_from_ids(
+            avatar["user_profile_id"], avatar["avatar_version"], realm_id
+        )
         avatar_url = avatar["path"]
         avatar_original = dict(avatar)
 

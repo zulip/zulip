@@ -1095,7 +1095,7 @@ Output:
         )
         return sent_message_result.message_id
 
-    def send_huddle_message(
+    def send_group_direct_message(
         self,
         from_user: UserProfile,
         to_users: List[UserProfile],
@@ -1980,7 +1980,7 @@ Output:
 
         self.send_personal_message(polonius, prospero)
         self.send_personal_message(shiva, polonius)
-        self.send_huddle_message(aaron, [polonius, zoe])
+        self.send_group_direct_message(aaron, [polonius, zoe])
 
         members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
         do_change_realm_permission_group_setting(
@@ -2069,7 +2069,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         return message_id
 
     @override
-    def send_huddle_message(
+    def send_group_direct_message(
         self,
         from_user: UserProfile,
         to_users: List[UserProfile],
@@ -2078,7 +2078,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         read_by_sender: bool = True,
         skip_capture_on_commit_callbacks: bool = False,
     ) -> int:
-        """This function is a wrapper on 'send_huddle_message',
+        """This function is a wrapper on 'send_group_direct_message',
         defined in 'ZulipTestCaseMixin' with an extra parameter
         'skip_capture_on_commit_callbacks'.
 
@@ -2087,12 +2087,12 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         because they already have 'self.captureOnCommitCallbacks'
         (See the comment in 'capture_send_event_calls').
 
-        For all other cases, we should call 'send_huddle_message' with
+        For all other cases, we should call 'send_group_direct_message' with
         'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
         'queue_event_on_commit' to work.
         """
         if skip_capture_on_commit_callbacks:
-            message_id = super().send_huddle_message(
+            message_id = super().send_group_direct_message(
                 from_user,
                 to_users,
                 content,
@@ -2100,7 +2100,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
             )
         else:
             with self.captureOnCommitCallbacks(execute=True):
-                message_id = super().send_huddle_message(
+                message_id = super().send_group_direct_message(
                     from_user,
                     to_users,
                     content,

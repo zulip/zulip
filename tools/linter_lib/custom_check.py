@@ -879,6 +879,10 @@ markdown_rules = RuleList(
             "include_only": {"docs/"},
             "description": "Don't link directly to line numbers",
         },
+        {
+            "pattern": r"[eE]\.g\.[^,]",
+            "description": "Likely missing comma after 'e.g.'",
+        },
     ],
 )
 

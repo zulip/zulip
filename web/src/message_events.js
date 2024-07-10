@@ -56,10 +56,14 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             }
 
             let new_messages = [];
+            const elsewhere_messages = [];
+
             for (const elem of messages) {
                 if (Object.hasOwn(data.messages, elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
+                } else {
+                    elsewhere_messages.push(elem);
                 }
             }
 
@@ -77,6 +81,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
+            compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error(xhr) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
@@ -288,6 +293,7 @@ export function update_messages(events) {
                 }
             }
             // The event.message_ids received from the server are not in sorted order.
+            // Sorts in ascending order.
             event_messages.sort((a, b) => a.id - b.id);
 
             if (
@@ -305,6 +311,18 @@ export function update_messages(events) {
 
             if (going_forward_change) {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
+            }
+
+            // Remove the stream_topic_entry for the old topics;
+            // must be called before we call set message topic.
+            const num_messages = event_messages.length;
+            if (num_messages > 0) {
+                stream_topic_history.remove_messages({
+                    stream_id: old_stream_id,
+                    topic_name: orig_topic,
+                    num_messages,
+                    max_removed_msg_id: event_messages[num_messages - 1].id,
+                });
             }
 
             for (const moved_message of event_messages) {
@@ -334,23 +352,6 @@ export function update_messages(events) {
                     ];
                 }
                 moved_message.last_edit_timestamp = event.edit_timestamp;
-
-                // Remove the Recent Conversations entry for the old topics;
-                // must be called before we call set_message_topic.
-                //
-                // TODO: Use a single bulk request to do this removal.
-                // Note that we need to be careful to only remove IDs
-                // that were present in stream_topic_history data.
-                // This may not be possible to do correctly without extra
-                // complexity; the present loop assumes stream_topic_history has
-                // only messages in message_store, but that's been false
-                // since we added the server_history feature.
-                stream_topic_history.remove_messages({
-                    stream_id: moved_message.stream_id,
-                    topic_name: moved_message.topic,
-                    num_messages: 1,
-                    max_removed_msg_id: moved_message.id,
-                });
 
                 // Update the unread counts; again, this must be called
                 // before we modify the topic field on the message.

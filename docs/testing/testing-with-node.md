@@ -274,7 +274,7 @@ These instructions assume you're using the Vagrant development environment.
       1. In the `Configure Node.js Remote Interpreter`, window select `Vagrant`
       1. Wait for WebStorm to connect to Vagrant. This will be displayed
          by the `Vagrant Host URL` section updating to contain the Vagrant
-         SSH URL, e.g. `ssh://vagrant@127.0.0.1:2222`.
+         SSH URL, e.g., `ssh://vagrant@127.0.0.1:2222`.
       1. **Set the `Node.js interpreter path` to `/usr/local/bin/node`**
       1. Hit `OK` 2 times to get back to the `Run/Debug Configurations` window.
    1. Under `Working Directory` select the root `zulip` directory.
@@ -288,7 +288,7 @@ Congratulations! You've now set up the integration.
 To use Webstorm to debug a given node test file, do the following:
 
 1. Under `Application parameters` choose the node test file that you
-   are trying to test (e.g. `web/tests/message_store.test.js`).
+   are trying to test (e.g., `web/tests/message_store.test.js`).
 1. Under `Path Mappings`, set `Project Root` to `/srv/zulip`
    (i.e. where the `zulip` Git repository is mounted in the Vagrant guest).
 1. Use the WebStorm debugger; see [this overview][webstorm-debugging]

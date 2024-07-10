@@ -120,7 +120,7 @@ HEAD is now at 5a1e982 tools: Update clean-branches to clean review branches.
 `tools/push-to-pull-request` is primarily useful for maintainers who
 are merging other users' commits into a Zulip repository. After doing
 `reset-to-pull-request` or `fetch-pull-request` and making some
-changes, you can push a branch back to a pull request with e.g.
+changes, you can push a branch back to a pull request with, for example,
 `tools/push-to-pull-request 1234`. This is useful for a few things:
 
 - Getting CI to run and enabling you to use the GitHub "Merge" buttons

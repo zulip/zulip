@@ -198,7 +198,7 @@ _Released 2024-03-19_
 - Fixed the “Topics are required for this organization” pop-up incorrectly
   closing on some keypresses.
 - Fixed the analytics cron job leaking its lock if unexpectedly interrupted
-  (e.g. by a reboot).
+  (e.g., by a reboot).
 - Fixed sorting by expiration date in the “Invites” settings panel.
 - Fixed the gear menu staying open after clicking on “plan management”.
 - Fixed a small visual issue with bot icons in the left sidebar DM section.
@@ -1697,7 +1697,7 @@ _Released 2021-07-22_
 - Fixed a performance/scalability issue for installations using the S3
   file uploads backend.
 - Fixed a bug where users could turn other users’ messages they could
-  read into widgets (e.g. polls).
+  read into widgets (e.g., polls).
 - Fixed a bug where emoji and avatar image requests were sent through
   Camo; doing so does not add any security benefit, and broke custom
   emoji that had been imported from Slack in Zulip 1.8.1 or earlier.
@@ -1813,7 +1813,7 @@ _Released 2021-05-13_
   `zulip::foo` to `zulip::profile::foo`. Configuration referencing
   these `/etc/zulip/zulip.conf` will be automatically updated during
   the upgrade process, but if you have a complex deployment or you
-  maintain `zulip.conf` is another system (E.g. with the [manual
+  maintain `zulip.conf` is another system (e.g., with the [manual
   configuration][docker-zulip-manual] option for
   [docker-zulip][docker-zulip]), you'll want to manually update the
   `puppet_classes` variable.
@@ -1895,7 +1895,7 @@ _Released 2021-05-13_
   unsubscribe links.
 - Password forms now have a "Show password" widget.
 - Fixed performance issues when creating hundreds of new users in
-  quick succession (E.g. at the start of a conference or event).
+  quick succession (e.g., at the start of a conference or event).
 - Fixed performance issues in organizations with thousands of online users.
 - Fixed numerous rare exceptions when running Zulip at scale.
 - Fixed several subtle installer bugs.
@@ -3439,7 +3439,7 @@ _Released 2017-10-25_
 - Switched from npm to yarn for downloading JS packages.
 - Switched the function of the 'q' and 'w' search hotkeys.
 - Simplified the settings for configuring senders for our emails.
-- Emoji can now be typed with spaces, e.g. entering "robot face" in
+- Emoji can now be typed with spaces, e.g., entering "robot face" in
   the typeahead as well as "robot_face".
 - Improved title and alt text for Unicode emoji.
 - Added development tools to make iterating on emails and error pages easy.
@@ -3657,7 +3657,7 @@ _Released 2017-02-06_
   notifications.
 - Added buttons to download .zuliprc files.
 - Added italics and strikethrough support in Markdown implementation.
-- Added errors for common installations mistakes (e.g. too little RAM).
+- Added errors for common installations mistakes (e.g., too little RAM).
 - Added a new /authors page showing the contributors to the current
   Zulip version.
 - Added illustrations to the 404 and 500 pages.
@@ -3678,7 +3678,7 @@ _Released 2017-02-06_
 - Fixed Zulip Tornado service not working with http_proxy set in environment.
 - Fixed text overflow in stream subscriptions.
 - Fixed CSS issues with message topic editing.
-- Fixed several transactionality bugs (e.g. in Huddle creation).
+- Fixed several transactionality bugs (e.g., in Huddle creation).
 - Fixed missed-message email configuration error handling.
 - Fixed annoying @-mentions in Jira integration.
 - Fixed various mismatches between frontend and backend Markdown
@@ -3892,7 +3892,7 @@ _Released 2016-05-02_
 - Added options for configuring PostgreSQL, RabbitMQ, Redis, and memcached
   in settings.py.
 - Added documentation on using Hubot to integrate with useful services
-  not yet integrated with Zulip directly (e.g. Google Hangouts).
+  not yet integrated with Zulip directly (e.g., Google Hangouts).
 - Added new management command to test sending email from Zulip.
 - Added Codeship, Pingdom, Taiga, TeamCity, and Yo integrations.
 - Added Nagios plugins to the main distribution.

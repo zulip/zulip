@@ -27,7 +27,7 @@ class ZcommandTest(ZulipTestCase):
         user.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
         user.save()
 
-        payload = dict(command="/night")
+        payload = dict(command="/dark")
         result = self.client_post("/json/zcommand", payload)
         response_dict = self.assert_json_success(result)
         self.assertIn("Changed to dark theme", response_dict["msg"])
@@ -39,10 +39,10 @@ class ZcommandTest(ZulipTestCase):
     def test_day_zcommand(self) -> None:
         self.login("hamlet")
         user = self.example_user("hamlet")
-        user.color_scheme = UserProfile.COLOR_SCHEME_NIGHT
+        user.color_scheme = UserProfile.COLOR_SCHEME_DARK
         user.save()
 
-        payload = dict(command="/day")
+        payload = dict(command="/light")
         result = self.client_post("/json/zcommand", payload)
         response_dict = self.assert_json_success(result)
         self.assertIn("Changed to light theme", response_dict["msg"])

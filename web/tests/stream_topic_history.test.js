@@ -214,15 +214,23 @@ test("server_history", () => {
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["hist2", "hist1"]);
 
-    // We can try to remove a historical message, but it should
-    // have no effect.
+    // Removing message from a topic fetched from server history, will send
+    // query to the server to get the latest message id in the topic.
+    let update_topic_called = false;
+    stream_topic_history.set_update_topic_last_message_id((stream_id, topic_name) => {
+        assert.equal(stream_id, 66);
+        assert.equal(topic_name, "hist2");
+        update_topic_called = true;
+    });
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "hist2",
         num_messages: 1,
     });
+    assert.equal(update_topic_called, true);
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["hist2", "hist1"]);
+    assert.deepEqual(history, ["hist1"]);
+    stream_topic_history.set_update_topic_last_message_id(noop);
 
     // If we call back to the server for history, the
     // effect is always additive.  We may decide to prune old

@@ -136,7 +136,7 @@ highlighting. The system is largely managed by the code in
   versions in a `requirements.txt` file to declare what we're using.
   Since we have a few different installation targets, we maintain
   several `requirements.txt` format files in the `requirements/`
-  directory (e.g. `dev.in` for development, `prod.in` for
+  directory (e.g., `dev.in` for development, `prod.in` for
   production, `docs.in` for ReadTheDocs, `common.in` for the vast
   majority of packages common to prod and development, etc.). We use
   `pip install --no-deps` to ensure we only install the packages we

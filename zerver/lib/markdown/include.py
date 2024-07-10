@@ -27,7 +27,7 @@ class IncludeExtension(Extension):
 
 
 class IncludeBlockProcessor(BlockProcessor):
-    RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.M)
+    RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
 
     def __init__(self, parser: BlockParser, base_path: str) -> None:
         super().__init__(parser)

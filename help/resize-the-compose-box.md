@@ -4,34 +4,20 @@ When composing a long message, it can be helpful to expand the compose
 box to display more text and avoid distractions. Note that the compose
 box also stretches automatically when you type a long message.
 
-## Expand the compose box
-
 {start_tabs}
 
 {!start-composing.md!}
 
-1. Click on the **<i class="zulip-icon zulip-icon-expand-diagonal"></i> icon** in the top
-   right corner of the compose box, which is visible on hovering over the compose box.
+1. Move your mouse to the compose box area.
 
-{end_tabs}
+1. Click the <i class="zulip-icon zulip-icon-expand-diagonal"></i>, <i
+   class="zulip-icon zulip-icon-maximize-diagonal"></i>, or <i class="zulip-icon
+   zulip-icon-collapse-diagonal"></i> button in the top right corner of the text
+   box.
 
-## Collapse the compose box
+!!! tip ""
 
-{start_tabs}
-
-1. With the compose box in the expanded state, click on the **<i class="zulip-icon
-   zulip-icon-collapse-diagonal"></i> icon** in the top right corner of the compose box,
-   which is visible on hovering over the compose box.
-
-{end_tabs}
-
-## Stretch the compose box
-
-{start_tabs}
-
-{!start-composing.md!}
-
-1. Click and drag the bottom right corner of the compose box.
+    Which button you see depends on the current size of the compose box.
 
 {end_tabs}
 

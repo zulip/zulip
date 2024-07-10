@@ -57,6 +57,17 @@ export const web_mark_read_on_scroll_policy_values = {
     },
 };
 
+export const web_channel_default_view_values = {
+    top_topic_in_channel: {
+        code: 1,
+        description: $t({defaultMessage: "Top topic in the channel"}),
+    },
+    channel_feed: {
+        code: 2,
+        description: $t({defaultMessage: "Channel feed"}),
+    },
+};
+
 export const user_list_style_values = {
     compact: {
         code: 1,
@@ -242,19 +253,6 @@ export const email_invite_to_realm_policy_values = {
         order: 5,
         code: 1,
         description: $t({defaultMessage: "Admins, moderators and members"}),
-    },
-};
-
-export const private_message_policy_values = {
-    by_anyone: {
-        order: 1,
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
-    },
-    disabled: {
-        order: 2,
-        code: 2,
-        description: $t({defaultMessage: "Direct messages disabled"}),
     },
 };
 
@@ -575,6 +573,9 @@ export const preferences_settings_labels = {
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
     web_font_size_px: $t({defaultMessage: "Message-area font size (px)"}),
     web_line_height_percent: $t({defaultMessage: "Message-area line height (%)"}),
+    web_navigate_to_sent_message: $t({
+        defaultMessage: "Automatically go to conversation where you sent a message",
+    }),
 };
 
 export const notification_settings_labels = {

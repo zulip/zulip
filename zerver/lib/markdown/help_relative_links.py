@@ -165,13 +165,6 @@ starred_instructions = """
    sidebar, or by [searching](/help/search-for-messages) for `is:starred`.
 """
 
-direct_instructions = """
-1. In the left sidebar, click the **Direct message feed**
-   (<i class="fa fa-align-right"></i>) icon to the right of the
-   **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
-   keyboard shortcut.
-"""
-
 inbox_instructions = """
 1. Click on <i class="zulip-icon zulip-icon-inbox"></i> **Inbox** in the left
    sidebar, or use the <kbd>Shift</kbd> + <kbd>I</kbd> keyboard shortcut.
@@ -183,7 +176,6 @@ message_info = {
     "recent": ["Recent conversations", "/#recent", recent_instructions],
     "all": ["Combined feed", "/#feed", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
-    "direct": ["Direct message feed", "/#narrow/is/dm", direct_instructions],
     "inbox": ["Inbox", "/#inbox", inbox_instructions],
 }
 

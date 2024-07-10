@@ -174,6 +174,7 @@ def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
     streams: Collection[Stream],
+    notify_referrer_on_join: bool = True,
     *,
     invite_expires_in_minutes: Optional[int],
     include_realm_default_subscriptions: bool,
@@ -264,6 +265,7 @@ def do_invite_users(
             invited_as=invite_as,
             realm=realm,
             include_realm_default_subscriptions=include_realm_default_subscriptions,
+            notify_referrer_on_join=notify_referrer_on_join,
         )
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
@@ -318,6 +320,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
                 id=invitee.id,
                 invited_as=invitee.invited_as,
                 is_multiuse=False,
+                notify_referrer_on_join=invitee.notify_referrer_on_join,
             )
         )
 

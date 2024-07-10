@@ -92,7 +92,7 @@ Django context (i.e. with database access).
 
 - `zerver/management/commands/`
   [Management commands](../subsystems/management-commands.md) one might run at a
-  production deployment site (e.g. scripts to change a value or
+  production deployment site (e.g., scripts to change a value or
   deactivate a user properly).
 
 - `zilencer/management/commands/` includes some dev-specific
@@ -115,7 +115,7 @@ Django context (i.e. with database access).
 - `tools/` Scripts used only in a Zulip development environment.
   These are not included in production release tarballs for Zulip, so
   that we can include scripts here one wouldn't want someone to run in
-  production accidentally (e.g. things that delete the Zulip database
+  production accidentally (e.g., things that delete the Zulip database
   without prompting).
 
 - `tools/setup/` Subdirectory of `tools/` for things only used during

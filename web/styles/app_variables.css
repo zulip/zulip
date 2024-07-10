@@ -60,13 +60,21 @@
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
     --left-sidebar-privacy-icon-column-size: 19px;
-    /* The full topic indentation includes 4px of indent in addition to
-       the above (and another 5px of padding not measured here) */
+    /* 13px at 14px/1em */
+    --left-sidebar-topic-resolve-width: 0.9286em;
+    /* At legacy sizes, the full indentation to the
+       left of the topic name was 25px of gutter,
+       plus 13px for the topic-resolution checkmark.
+       That works out to 38px (25px + 13px), which
+       we here express as pixels, as that is always
+       the amount of space to the left of the topic
+       name. However, CSS subtracts the em-unit width
+       of the topic-resolution checkmark to prevent
+       the the topic name from being shifted to the
+       right. */
     --left-sidebar-topic-indent: calc(
-        var(--left-sidebar-far-left-gutter-size) +
-            var(--left-sidebar-privacy-icon-column-size) + 4px
+        38px - var(--left-sidebar-topic-resolve-width)
     );
-    --left-sidebar-topic-resolve-width: 13px;
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
@@ -77,7 +85,11 @@
     --left-sidebar-header-icon-width: 15px;
     /* Space between section in the left sidebar. */
     --left-sidebar-sections-vertical-gutter: 8px;
-    --left-sidebar-bottom-scrolling-buffer: 25px;
+    /* The legacy value here is 25px; that's the unitless legacy line-height
+       of 20px, plus 5px at 14px/1em */
+    --left-sidebar-bottom-scrolling-buffer: calc(
+        (var(--legacy-body-line-height-unitless) * 1em) + 0.3571em
+    );
 
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
@@ -139,21 +151,36 @@
     /*
     Message box elements and values.
     */
-    --message-box-avatar-width: 35px;
+    /* 35px at 14px/1em */
+    --message-box-avatar-width: 2.5em;
     --message-box-avatar-height: var(--message-box-avatar-width);
-    --message-box-avatar-column-width: 46px;
-    /* 6px appears to provide 5px of space between the avatar
-       and the selected-message outline, which is offset by -1px. */
-    --message-box-vertical-margin: 6px;
+    /* 46px at 14px/1em */
+    --message-box-avatar-column-width: 3.2857em;
+    /* Increase the margin here to account for the
+       focus ring, which is is offset by -1px, as well
+       as the vertical height between the hover icons
+       and focus ring. */
+    --message-box-vertical-margin: calc(
+        var(--markdown-interelement-space-px) * 1.4
+    );
     --message-box-markdown-aligned-vertical-space: var(
         --markdown-interelement-space-px
     );
-    --message-box-icon-width: 26px;
+    /* 22px matches to the width of the padded icon. */
+    --message-box-icon-width: 22px;
     --message-box-icon-height: 25px;
+    --message-box-height-senderless-single-line-message: calc(
+        var(--base-line-height-unitless) * var(--base-font-size-px) +
+            calc(var(--markdown-interelement-space-px) * 2)
+    );
     /* The line-height on the sender line should coordinate with the
-       height of the hover icons. The sender line never wraps, so this
-       just keeps the two in line with the grid definition. */
-    --message-box-sender-line-height: var(--message-box-icon-height);
+       height of a single-line, senderless message, but never be smaller
+       than the height of the hover icons. The sender line never wraps,
+       so this just keeps everything in line with the grid definition. */
+    --message-box-sender-line-height: max(
+        var(--message-box-icon-height),
+        var(--message-box-height-senderless-single-line-message)
+    );
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
@@ -175,7 +202,14 @@
     flex item. 2.1786em is 30.5px at 14px/1em.
     */
     --compose-recipient-box-min-height: 2.1786em;
-    --compose-formatting-buttons-row-height: 28px;
+    /* 28px at 14px/1em */
+    /* Note that this variable can only be used in contexts where
+       the font-size doesn't deviate from the base font-size;
+       that excludes contexts like .compose_control_button, which
+       uses font-sizing to adjust the size of the icon. Related
+       values have been noted in comments with this variable name,
+       to make their coordination a little less painful. */
+    --compose-formatting-buttons-row-height: 2em;
 
     /*
     Width of the area where the compose box buttons are placed, "inside"
@@ -245,9 +279,7 @@
     /* .settings-sticky-footer */
     --subscriptions-overlay-sticky-footer-height: 60px;
     /* Informational overlay */
-    /* Because zoom breaks at 525px perhaps due to rounding errors, we add a
-       trivial amount of width so the overlay doesn't break. */
-    --informational-overlay-max-width: 550px;
+    --informational-overlay-max-width: 43.75em;
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
@@ -392,6 +424,9 @@
     --color-compose-embedded-button-background-hover: hsl(
         231deg 100% 90% / 50%
     );
+    --color-compose-embedded-button-background-interactive: hsl(
+        231deg 100% 90% / 90%
+    );
     --color-compose-chevron-arrow: hsl(0deg 0% 58%);
     --color-limit-indicator: hsl(38deg 100% 36%);
     --color-limit-indicator-over-limit: hsl(3deg 80% 40%);
@@ -409,6 +444,7 @@
     --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
+    --color-compose-focus-ring: var(--color-outline-focus);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -443,6 +479,7 @@
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 87%);
     --color-border-table-bordered: hsl(0deg 0% 87%);
+    --color-border-table-subscriber-list: hsl(0deg 0% 87%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -463,6 +500,7 @@
     --color-message-action-visible: hsl(216deg 43% 20% / 50%);
     --color-message-action-interactive: hsl(216deg 43% 20% / 100%);
     --color-message-star-action: hsl(41deg 100% 47% / 100%);
+    --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 0%);
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
     --color-left-sidebar-navigation-icon: hsl(0deg 0% 20% / 70%);
@@ -529,6 +567,7 @@
     --color-background-exit-hover-deactivated-user-pill: hsl(
         4deg 75% 53% / 15%
     );
+    --color-background-user-pill: hsla(0deg 0% 100% / 85%);
 
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
@@ -684,7 +723,6 @@
     --color-background-modal: hsl(212deg 28% 18%);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 0% / 20%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
-    --color-outline-focus: hsl(0deg 0% 67%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
     --color-background-search: hsl(0deg 0% 20%);
     --color-background-search-option-hover: hsl(0deg 0% 30%);
@@ -766,6 +804,9 @@
     --color-compose-embedded-button-background-hover: hsl(
         235deg 100% 70% / 11%
     );
+    --color-compose-embedded-button-background-interactive: hsl(
+        235deg 100% 70% / 20%
+    );
     --color-background-popover: hsl(212deg 32% 14%);
     --color-limit-indicator: hsl(38deg 100% 70%);
     --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
@@ -782,6 +823,7 @@
     --color-message-content-container-border: hsl(0deg 0% 0% / 80%);
     --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
+    --color-compose-focus-ring: hsl(0deg 0% 67%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -826,6 +868,7 @@
     --color-border-table-striped: hsl(0deg 0% 0% / 20%);
     --color-border-table-bordered: hsl(0deg 0% 0% / 20%);
     --color-background-notification-table-thead: hsl(0deg 0% 0% / 20%);
+    --color-border-table-subscriber-list: hsl(0deg 0% 0% / 20%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
@@ -845,6 +888,7 @@
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
     --color-message-action-visible: hsl(217deg 41% 90% / 50%);
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
+    --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 100%);
     --color-left-sidebar-navigation-icon: hsl(0deg 0% 100% / 56%);
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
@@ -906,6 +950,7 @@
     --color-focus-outline-deactivated-user-pill: hsl(0deg 0% 100% / 70%);
     --color-close-deactivated-user-pill: hsl(7deg 100% 74%);
     --color-background-exit-hover-deactivated-user-pill: hsl(0deg 0% 100% / 7%);
+    --color-background-user-pill: hsl(0deg 0% 0% / 40%);
 
     /* Inbox view */
     --color-background-inbox: var(--color-background);

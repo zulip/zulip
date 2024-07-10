@@ -1101,3 +1101,38 @@ class OpenAPIRequestValidatorTest(ZulipTestCase):
         validate_request(
             "/dev_fetch_api_key", "post", {}, {}, False, "200", intentionally_undocumented=True
         )
+
+
+class APIDocsSidebarTest(ZulipTestCase):
+    def test_link_in_sidebar(self) -> None:
+        """
+        Test to make sure that links of API documentation pages exist
+        in the sidebar and have the same label as the summary of the endpoint.
+        """
+        # These endpoints are in zulip.yaml, but not the actual docs.
+        exempted_docs = {
+            # (No /api/v1/ or /json prefix).
+            "get-file-temporary-url",
+            # This one is not used by any clients and is likely to get
+            # deprecated.
+            "update-subscriptions",
+            # This is rendered on the "Outgoing webhooks" page and hence is not
+            # linked in the sidebar.
+            "zulip-outgoing-webhooks",
+        }
+        sidebar_path = "api_docs/sidebar_index.md"
+        rest_endpoints_path = "api_docs/include/rest-endpoints.md"
+        with open(sidebar_path) as fp:
+            sidebar_content = fp.readlines()
+        with open(rest_endpoints_path) as fp:
+            sidebar_content += fp.readlines()
+
+        sidebar_content_set = set(sidebar_content)
+        paths = openapi_spec.openapi()["paths"]
+        for endpoint in paths:
+            for method in paths[endpoint]:
+                operationId = paths[endpoint][method].get("operationId")
+                summary = paths[endpoint][method].get("summary")
+                if operationId and operationId not in exempted_docs:
+                    link = f"* [{summary}](/api/{operationId})\n"
+                    assert link in sidebar_content_set

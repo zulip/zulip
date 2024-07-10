@@ -73,9 +73,9 @@ class UserBaseSettings(models.Model):
     twenty_four_hour_time = models.BooleanField(default=False)
     starred_message_counts = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
-    COLOR_SCHEME_NIGHT = 2
+    COLOR_SCHEME_DARK = 2
     COLOR_SCHEME_LIGHT = 3
-    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
+    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_DARK, COLOR_SCHEME_LIGHT]
     color_scheme = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
 
     # Information density is established through
@@ -116,6 +116,23 @@ class UserBaseSettings(models.Model):
 
     web_mark_read_on_scroll_policy = models.SmallIntegerField(default=MARK_READ_ON_SCROLL_ALWAYS)
 
+    # UI setting controlling if clicking on a channel link should open
+    # the channel feed (interleaved view) or narrow to the first topic
+    # in the channel.
+
+    WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC = 1
+    WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED = 2
+
+    WEB_CHANNEL_DEFAULT_VIEW_CHOICES = [
+        WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
+        WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED,
+    ]
+
+    web_channel_default_view = models.SmallIntegerField(
+        default=WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
+        db_default=WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
+    )
+
     # Emoji sets
     GOOGLE_EMOJISET = "google"
     GOOGLE_BLOB_EMOJISET = "google-blob"
@@ -152,6 +169,10 @@ class UserBaseSettings(models.Model):
     web_stream_unreads_count_display_policy = models.PositiveSmallIntegerField(
         default=WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS
     )
+
+    # Setting to control whether to automatically go to the
+    # conversation where message was sent.
+    web_navigate_to_sent_message = models.BooleanField(default=True)
 
     ### Notifications settings. ###
 
@@ -325,10 +346,12 @@ class UserBaseSettings(models.Model):
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
         web_mark_read_on_scroll_policy=int,
+        web_channel_default_view=int,
         user_list_style=int,
         web_stream_unreads_count_display_policy=int,
         web_font_size_px=int,
         web_line_height_percent=int,
+        web_navigate_to_sent_message=bool,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(
@@ -757,6 +780,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "create_multiuse_invite_group",
             "create_web_public_stream_policy",
             "delete_own_message_policy",
+            "direct_message_initiator_group",
+            "direct_message_permission_group",
             "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
@@ -890,6 +915,10 @@ def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
+        "realm__direct_message_initiator_group",
+        "realm__direct_message_initiator_group__named_user_group",
+        "realm__direct_message_permission_group",
+        "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
     ).get(id=user_profile_id)
 
@@ -940,6 +969,10 @@ def get_user_by_delivery_email(email: str, realm: "Realm") -> UserProfile:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
+        "realm__direct_message_initiator_group",
+        "realm__direct_message_initiator_group__named_user_group",
+        "realm__direct_message_permission_group",
+        "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
     ).get(delivery_email__iexact=email.strip(), realm=realm)
 
@@ -980,6 +1013,10 @@ def get_user(email: str, realm: "Realm") -> UserProfile:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
+        "realm__direct_message_initiator_group",
+        "realm__direct_message_initiator_group__named_user_group",
+        "realm__direct_message_permission_group",
+        "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
     ).get(email__iexact=email.strip(), realm=realm)
 

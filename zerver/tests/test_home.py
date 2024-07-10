@@ -142,6 +142,8 @@ class HomeTest(ZulipTestCase):
         "realm_description",
         "realm_digest_emails_enabled",
         "realm_digest_weekday",
+        "realm_direct_message_initiator_group",
+        "realm_direct_message_permission_group",
         "realm_disallow_disposable_email_addresses",
         "realm_domains",
         "realm_edit_topic_policy",
@@ -187,7 +189,6 @@ class HomeTest(ZulipTestCase):
         "realm_plan_type",
         "realm_playgrounds",
         "realm_presence_disabled",
-        "realm_private_message_policy",
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
         "realm_require_unique_names",
@@ -668,7 +669,7 @@ class HomeTest(ZulipTestCase):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
-            self.assert_in_response("Zulip lets us move faster, connect with each", result)
+            self.assert_in_response("remote and flexible work", result)
 
     def test_accept_terms_of_service(self) -> None:
         self.login("hamlet")
@@ -1231,7 +1232,7 @@ class HomeTest(ZulipTestCase):
             with patch("zerver.views.home.get_subdomain", return_value=""):
                 result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response("Zulip lets us move faster, connect with each", result)
+            self.assert_in_response("remote and flexible work", result)
 
             with patch("zerver.views.home.get_subdomain", return_value="subdomain"):
                 result = self._get_home_page()

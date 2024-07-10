@@ -15,8 +15,10 @@ import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
+import * as message_view from "./message_view";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
+import {web_channel_default_view_values} from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
@@ -27,6 +29,7 @@ import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
@@ -96,8 +99,12 @@ function build_stream_popover(opts) {
         return;
     }
 
+    const show_go_to_channel_feed =
+        user_settings.web_channel_default_view !==
+        web_channel_default_view_values.channel_feed.code;
     const content = render_left_sidebar_stream_actions_popover({
         stream: sub_store.get(stream_id),
+        show_go_to_channel_feed,
     });
 
     popover_menus.toggle_popover_menu(elt, {
@@ -115,6 +122,23 @@ function build_stream_popover(opts) {
         onMount(instance) {
             const $popper = $(instance.popper);
             ui_util.show_left_sidebar_menu_icon(elt);
+
+            // Go to channel feed instead of first topic.
+            $popper.on("click", ".stream-popover-go-to-channel-feed", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const sub = stream_popover_sub(e);
+                hide_stream_popover();
+                message_view.show(
+                    [
+                        {
+                            operator: "stream",
+                            operand: sub.name,
+                        },
+                    ],
+                    {trigger: "stream-popover"},
+                );
+            });
 
             // Stream settings
             $popper.on("click", ".open_stream_settings", (e) => {

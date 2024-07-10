@@ -122,7 +122,7 @@ An organization is considered to be a new customer if:
 
 1. *(optional)* Update the billing details included on receipts so that
    they are different from the information entered for the payment method,
-   e.g. in case you would prefer that the company's name be on receipts
+   e.g., in case you would prefer that the company's name be on receipts
    instead of the card holder's name.
 
 1. Click **Start 30-day trial** to start your free trial.

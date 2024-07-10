@@ -47,7 +47,7 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message_and_usermessage, huddle_users
+from zerver.lib.message import access_message_and_usermessage, direct_message_group_users
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.remote_server import (
     record_push_notifications_recently_working,
@@ -1006,7 +1006,7 @@ def get_message_payload(
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         data["recipient_type"] = "private"
-        data["pm_users"] = huddle_users(message.recipient.id)
+        data["pm_users"] = direct_message_group_users(message.recipient.id)
     else:  # Recipient.PERSONAL
         data["recipient_type"] = "private"
 

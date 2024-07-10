@@ -170,7 +170,7 @@ def render_javascript_code_example(
 ) -> List[str]:
     pattern = rf'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
     with open("zerver/openapi/javascript_examples.js") as f:
-        m = re.search(pattern, f.read(), re.M | re.S)
+        m = re.search(pattern, f.read(), re.MULTILINE | re.DOTALL)
     if m is None:
         return []
     function_source_lines = dedent(m.group(1)).splitlines()

@@ -616,14 +616,14 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event_user_ids, {iago.id, hamlet.id})
 
         # Group direct message; event should go to all participants.
-        huddle_message_id = self.send_huddle_message(
+        group_direct_message_id = self.send_group_direct_message(
             hamlet,
             [polonius, iago],
             "hello message to multiple receiver",
         )
         with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
-                polonius, f"/api/v1/messages/{huddle_message_id}/reactions", reaction_info
+                polonius, f"/api/v1/messages/{group_direct_message_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
         event = events[0]["event"]

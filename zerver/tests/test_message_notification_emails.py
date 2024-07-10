@@ -544,10 +544,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
-    def _extra_context_in_missed_huddle_messages_two_others(
+    def _extra_context_in_missed_group_direct_messages_two_others(
         self, show_message_content: bool = True
     ) -> None:
-        msg_id = self.send_huddle_message(
+        msg_id = self.send_group_direct_message(
             self.example_user("othello"),
             [
                 self.example_user("hamlet"),
@@ -585,8 +585,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
             verify_body_does_not_include=verify_body_does_not_include,
         )
 
-    def _extra_context_in_missed_huddle_messages_three_others(self) -> None:
-        msg_id = self.send_huddle_message(
+    def _extra_context_in_missed_group_direct_messages_three_others(self) -> None:
+        msg_id = self.send_group_direct_message(
             self.example_user("othello"),
             [
                 self.example_user("hamlet"),
@@ -602,8 +602,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self._test_cases(msg_id, verify_body_include, email_subject)
 
-    def _extra_context_in_missed_huddle_messages_many_others(self) -> None:
-        msg_id = self.send_huddle_message(
+    def _extra_context_in_missed_group_direct_messages_many_others(self) -> None:
+        msg_id = self.send_group_direct_message(
             self.example_user("othello"),
             [
                 self.example_user("hamlet"),
@@ -648,8 +648,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self.assert_length(mail.outbox, 0)
 
-    def _deleted_message_in_missed_huddle_messages(self) -> None:
-        msg_id = self.send_huddle_message(
+    def _deleted_message_in_missed_group_direct_messages(self) -> None:
+        msg_id = self.send_group_direct_message(
             self.example_user("othello"),
             [
                 self.example_user("hamlet"),
@@ -1042,7 +1042,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             show_message_content=False, message_content_disabled_by_user=True
         )
         mail.outbox = []
-        self._extra_context_in_missed_huddle_messages_two_others(show_message_content=False)
+        self._extra_context_in_missed_group_direct_messages_two_others(show_message_content=False)
 
     def test_extra_context_in_missed_stream_messages(self) -> None:
         self._extra_context_in_missed_stream_messages_mention()
@@ -1100,14 +1100,14 @@ class TestMessageNotificationEmails(ZulipTestCase):
     def test_extra_context_in_missed_personal_messages(self) -> None:
         self._extra_context_in_missed_personal_messages()
 
-    def test_extra_context_in_missed_huddle_messages_two_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_two_others()
+    def test_extra_context_in_missed_group_direct_messages_two_others(self) -> None:
+        self._extra_context_in_missed_group_direct_messages_two_others()
 
-    def test_extra_context_in_missed_huddle_messages_three_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_three_others()
+    def test_extra_context_in_missed_group_direct_messages_three_others(self) -> None:
+        self._extra_context_in_missed_group_direct_messages_three_others()
 
-    def test_extra_context_in_missed_huddle_messages_many_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_many_others()
+    def test_extra_context_in_missed_group_direct_messages_many_others(self) -> None:
+        self._extra_context_in_missed_group_direct_messages_many_others()
 
     def test_deleted_message_in_missed_stream_messages(self) -> None:
         self._deleted_message_in_missed_stream_messages()
@@ -1115,8 +1115,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
     def test_deleted_message_in_missed_personal_messages(self) -> None:
         self._deleted_message_in_missed_personal_messages()
 
-    def test_deleted_message_in_missed_huddle_messages(self) -> None:
-        self._deleted_message_in_missed_huddle_messages()
+    def test_deleted_message_in_missed_group_direct_messages(self) -> None:
+        self._deleted_message_in_missed_group_direct_messages()
 
     def test_realm_message_content_allowed_in_email_notifications(self) -> None:
         user = self.example_user("hamlet")

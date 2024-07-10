@@ -100,7 +100,7 @@ discount instead.
 
 
 Non-profit educational pricing applies to online purchases with no additional
-legal agreements, for use at registered non-profit institutions (e.g. colleges
+legal agreements, for use at registered non-profit institutions (e.g., colleges
 and universities).
 
 To arrange discounted pricing for your organization, please [apply for
@@ -198,7 +198,7 @@ tool.
 
 ## Temporary users and guests
 
-### How will I be charged for temporary users (e.g. limited-time clients)?
+### How will I be charged for temporary users (e.g., limited-time clients)?
 
 Users [can be deactivated](/help/deactivate-or-reactivate-a-user) any time.
 Deactivating a user frees up their license for reuse.

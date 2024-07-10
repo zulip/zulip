@@ -160,7 +160,7 @@ So, to summarize our approach to integration vs. unit testing:
   HTTP response and the internal state of the server following the request
   are both correct.
 - Following the end-to-end principle in system design, where possible
-  we write tests that execute a complete flow (e.g. registering a new
+  we write tests that execute a complete flow (e.g., registering a new
   Zulip account) rather than testing the implementations of individual
   functions.
 - We invest in the performance of Zulip in part to give users a great
@@ -214,7 +214,7 @@ test conditions.
 The benefit of this strategy is that you guarantee that the test setup
 only differs as intended: Done well, it helps avoid the otherwise
 extremely common failure mode where a `test_foo_failure` test passes
-for the wrong reason. (E.g. the action fails not because of the
+for the wrong reason. (e.g., the action fails not because of the
 permission check, but because a required HTTP parameter was only added
 to an adjacent `test_foo_success`).
 

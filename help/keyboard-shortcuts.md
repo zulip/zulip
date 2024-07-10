@@ -94,7 +94,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to topic or DM conversation**: <kbd>S</kbd>
 
-* **Go to channel from topic view**: <kbd>S</kbd>
+* **Go to channel feed from topic view**: <kbd>S</kbd>
 
 * **Go to your direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
@@ -208,7 +208,7 @@ Use <kbd>Enter</kbd> to engage with elements.
 
 * **Delete selected draft**: <kbd>Backspace</kbd>
 
-Keyboard navigation (e.g. arrow keys) works as expected.
+Keyboard navigation (e.g., arrow keys) works as expected.
 
 ## Menus
 

@@ -598,14 +598,17 @@ class NormalActionsTest(BaseAction):
             is_embedded_update_only=False,
         )
 
-    def test_huddle_send_message_events(self) -> None:
-        huddle = [
+    def test_direct_message_group_send_message_events(self) -> None:
+        direct_message_group = [
             self.example_user("hamlet"),
             self.example_user("othello"),
         ]
         with self.verify_action():
-            self.send_huddle_message(
-                self.example_user("cordelia"), huddle, "hola", skip_capture_on_commit_callbacks=True
+            self.send_group_direct_message(
+                self.example_user("cordelia"),
+                direct_message_group,
+                "hola",
+                skip_capture_on_commit_callbacks=True,
             )
 
     def test_user_creation_events_on_sending_messages(self) -> None:
@@ -634,7 +637,7 @@ class NormalActionsTest(BaseAction):
         desdemona = self.example_user("desdemona")
 
         with self.verify_action(num_events=3) as events:
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 othello, [polonius, desdemona, bot], "hola", skip_capture_on_commit_callbacks=True
             )
         check_realm_user_add("events[0]", events[0])
@@ -1068,17 +1071,17 @@ class NormalActionsTest(BaseAction):
                 do_update_message_flags(user_profile, "remove", "read", [personal_message])
             check_update_message_flags_remove("events[0]", events[0])
 
-            huddle_message = self.send_huddle_message(
+            group_direct_message = self.send_group_direct_message(
                 from_user=self.example_user("cordelia"),
                 to_users=[user_profile, self.example_user("othello")],
                 content=content,
             )
 
             with self.verify_action(state_change_expected=True):
-                do_update_message_flags(user_profile, "add", "read", [huddle_message])
+                do_update_message_flags(user_profile, "add", "read", [group_direct_message])
 
             with self.verify_action(state_change_expected=True) as events:
-                do_update_message_flags(user_profile, "remove", "read", [huddle_message])
+                do_update_message_flags(user_profile, "remove", "read", [group_direct_message])
             check_update_message_flags_remove("events[0]", events[0])
 
     def test_send_message_to_existing_recipient(self) -> None:
@@ -3403,7 +3406,6 @@ class RealmPropertyActionTest(BaseAction):
             waiting_period_threshold=[1000, 2000],
             create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
-            private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
@@ -3747,6 +3749,7 @@ class RealmPropertyActionTest(BaseAction):
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
+            web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES,
@@ -3875,6 +3878,7 @@ class UserDisplayActionTest(BaseAction):
             web_home_view=["all_messages", "inbox", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
+            web_channel_default_view=[2, 1],
             user_list_style=[1, 2, 3],
             web_stream_unreads_count_display_policy=[1, 2, 3],
             web_font_size_px=[12, 16, 18],

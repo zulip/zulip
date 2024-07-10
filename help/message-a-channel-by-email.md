@@ -58,7 +58,7 @@ Zulip message.
   text (like signatures). With this option enabled, Zulip will include all footers.
 
 * **Quoted original email**: In many email clients, when you reply to a message
-  (e.g. a message notification email), a copy of the original message is
+  (e.g., a message notification email), a copy of the original message is
   automatically added to the bottom of your reply. By default, Zulip tries
   to remove that copied message. With this option enabled, Zulip will include it.
 

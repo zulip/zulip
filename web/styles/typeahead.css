@@ -1,0 +1,90 @@
+/* CSS for Bootstrap typeahead */
+
+.dropdown-menu {
+    display: none;
+    min-width: 160px;
+    list-style: none;
+}
+
+.open > .dropdown-menu {
+    display: block;
+}
+
+.typeahead {
+    z-index: 1051;
+}
+
+.typeahead.dropdown-menu .typeahead-menu {
+    & > li {
+        word-break: break-word;
+
+        & > a {
+            display: flex;
+            padding: 3px 10px;
+            gap: 5px;
+            font-weight: normal;
+            /* We want to keep this `max-width` less than 320px. */
+            max-width: 292px;
+            line-height: 20px;
+            color: var(--color-dropdown-item);
+            white-space: nowrap;
+
+            /* hidden text just to maintain line height for a blank option */
+            strong:empty {
+                &::after {
+                    content: ".";
+                    visibility: hidden;
+                }
+            }
+
+            &:hover,
+            &:focus {
+                text-decoration: none;
+                outline: 0;
+            }
+
+            /* styles defined for user_circle here only deal with positioning of user_presence_circle
+            in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
+            Most of the style rules related to color, gradient etc. which are generally common throughout
+            the app are defined in user_circles.css and are not overridden here. */
+            .user_circle {
+                width: var(--length-user-status-circle);
+                height: var(--length-user-status-circle);
+                position: relative;
+                left: -2px;
+                flex-shrink: 0;
+                align-self: center;
+            }
+
+            .typeahead-text-container {
+                display: flex;
+                align-self: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                gap: 3px;
+            }
+        }
+    }
+
+    .active > a {
+        &,
+        &:hover,
+        &:focus {
+            color: var(--color-active-dropdown-item);
+            background-color: var(--background-color-active-typeahead-item);
+        }
+    }
+
+    .autocomplete_secondary {
+        opacity: 0.8;
+        font-size: 85%;
+        flex: 1 1 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .active .autocomplete_secondary {
+        opacity: 1;
+    }
+}

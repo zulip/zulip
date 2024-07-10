@@ -519,6 +519,25 @@ class InvitationError(JsonableError):
         self.daily_limit_reached: bool = daily_limit_reached
 
 
+class DirectMessageInitiationError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to initiate direct message conversations.")
+
+
+class DirectMessagePermissionError(JsonableError):
+    def __init__(self, is_nobody_group: bool) -> None:
+        if is_nobody_group:
+            msg = _("Direct messages are disabled in this organization.")
+        else:
+            msg = _("You do not have permission to send direct messages to this recipient.")
+        super().__init__(msg)
+
+
 class AccessDeniedError(JsonableError):
     http_status_code = 403
 

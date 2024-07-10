@@ -3,26 +3,28 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.actions.submessage import do_add_submessage, verify_submessage_sender
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_int, validate_poll_data, validate_todo_data
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.validator import validate_poll_data, validate_todo_data
 from zerver.lib.widget import get_widget_type
 from zerver.models import UserProfile
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message.
 @transaction.atomic
-@has_request_variables
+@typed_endpoint
 def process_submessage(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_id: int = REQ(json_validator=check_int),
-    msg_type: str = REQ(),
-    content: str = REQ(),
+    *,
+    message_id: Json[int],
+    msg_type: str,
+    content: str,
 ) -> HttpResponse:
     message = access_message(user_profile, message_id, lock_message=True)
 

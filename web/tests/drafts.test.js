@@ -56,6 +56,7 @@ mock_esm("tippy.js", {
             },
         ];
     },
+    delegate: noop,
 });
 user_settings.twenty_four_hour_time = false;
 
