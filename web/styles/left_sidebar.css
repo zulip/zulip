@@ -198,50 +198,50 @@ li.show-more-topics {
     }
 }
 
+#direct-messages-section-header {
+    grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
+    /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
+       value and the styles dependent on it so that this kind of
+       1990s layout shenanigans is made unnecessary. */
+    margin-left: -3px;
+    cursor: pointer;
+    white-space: nowrap;
+
+    #toggle-direct-messages-section-icon {
+        grid-area: starting-anchor-element;
+    }
+
+    .left-sidebar-title {
+        grid-area: row-content;
+    }
+
+    .heading-markers-and-controls {
+        grid-area: markers-and-controls;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+
+    #show-all-direct-messages {
+        width: var(--left-sidebar-header-icon-width);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        text-decoration: none;
+        color: inherit;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
 .direct-messages-container {
     /* Properly offset all the grid rows
        in the DM section. */
     margin-right: 12px;
-
-    &#direct-messages-section-header {
-        grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
-        grid-template-rows: var(--line-height-sidebar-row-prominent);
-        /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
-           value and the styles dependent on it so that this kind of
-           1990s layout shenanigans is made unnecessary. */
-        margin-left: -3px;
-        cursor: pointer;
-        white-space: nowrap;
-
-        #toggle-direct-messages-section-icon {
-            grid-area: starting-anchor-element;
-        }
-
-        .left-sidebar-title {
-            grid-area: row-content;
-        }
-
-        .heading-markers-and-controls {
-            grid-area: markers-and-controls;
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-
-        #show-all-direct-messages {
-            width: var(--left-sidebar-header-icon-width);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.7;
-            text-decoration: none;
-            color: inherit;
-
-            &:hover {
-                opacity: 1;
-            }
-        }
-    }
 
     & ul.dm-list {
         list-style-type: none;
