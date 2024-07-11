@@ -845,7 +845,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
     )
     occupied_streams = (
         Stream.objects.filter(realm=realm, deactivated=False)
-        .annotate(occupied=exists_expression)
+        .alias(occupied=exists_expression)
         .filter(occupied=True)
     )
     return occupied_streams
@@ -1002,7 +1002,7 @@ def get_subscribed_private_streams_for_user(user_profile: UserProfile) -> QueryS
     )
     subscribed_private_streams = (
         Stream.objects.filter(realm=user_profile.realm, invite_only=True, deactivated=False)
-        .annotate(subscribed=exists_expression)
+        .alias(subscribed=exists_expression)
         .filter(subscribed=True)
     )
     return subscribed_private_streams

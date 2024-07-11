@@ -176,7 +176,7 @@ def get_old_unclaimed_attachments(
 
     # The Attachment vs ArchivedAttachment queries are asymmetric because only
     # Attachment has the scheduled_messages relation.
-    old_attachments = Attachment.objects.annotate(
+    old_attachments = Attachment.objects.alias(
         has_other_messages=Exists(
             ArchivedAttachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
         )
@@ -186,7 +186,7 @@ def get_old_unclaimed_attachments(
         create_time__lt=delta_weeks_ago,
         has_other_messages=False,
     )
-    old_archived_attachments = ArchivedAttachment.objects.annotate(
+    old_archived_attachments = ArchivedAttachment.objects.alias(
         has_other_messages=Exists(
             Attachment.objects.filter(id=OuterRef("id")).exclude(
                 messages=None, scheduled_messages=None
