@@ -67,6 +67,11 @@ def thumbnail_s3_avatars(users: QuerySet[Any]) -> None:
         if total_processed % 100 == 0:
             print(f"Processing {total_processed}/{len(users)} user avatars")
 
+        with contextlib.suppress(Exception):
+            # Check if we've already uploaded this one; if so, continue.
+            avatar_bucket.Object(new_base + ".original").load()
+            continue
+
         try:
             old_data = avatar_bucket.Object(old_base + ".original").get()
             metadata = old_data["Metadata"]
