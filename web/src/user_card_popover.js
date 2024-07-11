@@ -409,7 +409,6 @@ function toggle_user_card_popover_for_message(element, user, message, on_mount) 
             "respond_personal_button",
             "message_user_card",
             "right",
-            undefined,
             on_mount,
         );
     }
@@ -491,7 +490,6 @@ function toggle_sidebar_user_card_popover($target) {
         "compose_private_message",
         "user_sidebar",
         "left",
-        undefined,
         (instance) => {
             /* See comment in get_props_for_popover_centering for explanation of this. */
             $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
