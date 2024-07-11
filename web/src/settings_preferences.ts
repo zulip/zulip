@@ -193,8 +193,6 @@ export function set_up(settings_panel: SettingsPanel): void {
     const settings_object = settings_panel.settings_object;
     const for_realm_settings = settings_panel.for_realm_settings;
 
-    $container.find(".advanced-settings-status").hide();
-
     // Select current values for enum/select type fields. For boolean
     // fields, the current value is set automatically in the template.
     $container
