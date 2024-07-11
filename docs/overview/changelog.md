@@ -21,67 +21,94 @@ log][commit-log] for an up-to-date list of all changes.
   exactly the same, and bots do not need to be updated.
 - The All messages view has been renamed to Combined feed, and
   its internals have been reworked, fixing many subtle bugs.
+- The main message feed search feature has been redesigned with
+  user-friendly pills for search operators.
 - When you paste content into the compose box, Zulip will now do its
   best to preserve the formatting, including links, bulleted lists,
   bold, italics, and more. Pasting as plain text remains an
   alternative option.
+- Clicking a channel in the left sidebar now, by default, navigates
+  you to the most recent topic in the channel, rather than the
+  interleaved channel feed view. This behavior is controlled by a new
+  setting.
 - To quote and reply to part of a message, you can now select the part
   that you want to quote.
 - The right sidebar has been redesigned to highlight users in the
   current channel or direct message conversation. You can also now
-  hide the user list in the right sidebar to reduce distraction.
+  hide the channel/user lists in the sidebars to reduce distraction.
 - When you start composing, the most recently edited draft for the
   conversation you are composing to now automatically appears in the
   compose box. You can always save a draft and start a new message
   using the send options menu next to the Send button.
+- Added a new top-level view to show reactions to your messages, as
+  well as new search operators to search followed topics or messages
+  with emoji reactions.
 - If you'd prefer not to see notifications when others type, you can
   now disable them.
 - Topics and messages now load much faster when you open the web or
   desktop app.
 - Zulip's new-user and new-organization onboarding experiences have
   been completely reworked.
-- Redesigned most popovers with a more modern visual style and
-  improved accessibility for screen readers.
+- Redesigned all popovers with a more modern visual style and improved
+  accessibility for screen readers.
 
 #### Full feature changelog
 
 - The back button now preserves scroll position in previous views,
-  as well as whether a stream's full topic list is expanded.
+  as well as whether a channel's full topic list is expanded.
+- Sending a message to a different conversation now, by default,
+  navigates to that conversation; a new setting controls this behavior.
 - Added new `Alt+P` keyboard shortcut to toggle the Markdown preview
   in the compose box.
 - Added new `Shift+V` keyboard shortcut to view read receipts.
 - The `Shift+M` keyboard shortcut for muting now works in the recent
   conversations and inbox views.
-- Redesigned the users panel in organization settings, with a new role filter.
-- Redesigned the invite users modal.
+- Redesigned the users panel in organization settings, subsuming the
+  invitation and deactivated user panels and adding a new role filter.
+- Redesigned the invite users modal to be much easier to use. Users
+  can now decide whether to receive a DM when an invited user joins
+  the organization.
 - Redesigned the message edit history view as a modal.
 - Redesigned the TODO widget.
 - Improved compose typeahead sorting algorithms significantly.
 - Improved compose box design, including how overly long messages are
-  indicated, how drafts are displayed, etc.
+  indicated, how drafts are displayed, a cleaner way to expand the
+  compose area, etc.
 - Added mark-as-unread option to topic popover menus.
 - Added warnings for several dangerous actions, like merging topics.
+- Added a filter widget to the left sidebar direct messages section,
+  similar to the more conversations filtering widget for topics.
 - Added support for directly linking to a user's profile.
 - Added descriptions in message view header area for global views, and
-  stream views now prompt administrators to add a description.
+  channel views now prompt administrators to add a description.
 - Added a tooltip to let you see the name of a status emoji.
 - Added new option to disable seeing typing notifications, distinct
   from the existing options to disable sending typing notifications.
+- Added flexible permissions settings for limiting access to direct
+  messages without disabling them entirely.
 - Added support for requiring unique names in an organization.
 - Added support for marking a custom profile field as required.
 - Added controls whether users should be subscribed to the
-  organization's default streams in invitations and the SCIM
+  organization's default channels in invitations and the SCIM
   integration.
 - Added a confirmation notice when moving a single message, linking to
   its new location.
-- Creating a stream now immediately navigates you to the new stream.
+- Redesigned the channel creation interface to be more intuitive.
+  Creating a channel to which you've subscribed yourself now
+  immediately navigates you to the new channel.
+- Toggling whether a topic is resolved twice in quick succession now
+  deletes the automated notice, rather than sending a second one.
 - Renamed "Full name" input fields to "Name".
 - Renamed the "more topics" widget to "show all topics" to better hint
   what it does.
-- Improved stream settings overlay to show additional metadata, like
-  the stream creator and creation date.
-- Improved navigation in the stream and group settings overlays.
-- Improved how desktop notifications display quoted content.
+- Clicking on quote-and-reply links within the current conversation no
+  longer causes a visible rerender of the view.
+- Improved channel settings overlay to show additional metadata, like
+  the channel creator and creation date.
+- Improved how followed/muted topics are managed in several views.
+- Improved navigation in the channel and group settings overlays.
+- Improved how desktop and mobile push notifications display quoted
+  content to focus on the reply over the quoted content.
 - Improved filtering options for the GitHub integration.
 - Improved dozens of Help Center articles.
 - Improved wording in various automated notices.
@@ -95,28 +122,42 @@ log][commit-log] for an up-to-date list of all changes.
   contains no messages.
 - Improved performance/scalability of the Zulip server, including more
   efficient algorithms for fetching message history and presence.
-- New incoming webhooks for Patreon and GitHub Sponsors.
+- New incoming webhook integrations for Patreon and GitHub Sponsors,
+  and reimplemented the Grafana integration.
 - Simplified the process for configuring integrations with custom
-  filtering of events.
+  filtering of events, and rewrote the documentation for most
+  integrations for readability and simplicity.
 - Added a great deal of API documentation, covering more common
   concepts as well as several previously undocumented API endpoints,
-  like setting a user's status.
+  such as setting a user's status. New navigation makes browsing the
+  real-time events documentation much more convenient.
 - Added new API endpoint to fetch an individual user's status.
 - Added support for showing the beta Flutter app in statistics.
 - Greatly improved the experience restarting a Zulip server under heavy load.
 - Fixed timeout/slowness issues rendering messages with dozens of
   LaTeX blocks.
 - Fixed several subtle bugs involving message feed scroll position.
+- Fixed the Home/End keyboard shortcuts not behaving correctly in very
+  long views.
 - Fixed several subtle scrolling, flickering, and live-update bugs in
   the recent conversations view.
 - Fixed several bugs involving uploading files while editing messages.
-- Fixed several subtle layout bugs in the web app.
+- Fixed dozens of subtle layout bugs in the web app.
+- Fixed several live-update bugs when moving messages.
+- Fixed several bugs impacting the public access experience.
 - Fixed several bugs involving the compose box, its banners, and tooltips.
 - Fixed several race condition bugs affecting the server and web app.
 - Fixed local echo of message editing.
+- Fixed missing internationalization of some desktop notification text.
 - Removed the Gitter data import tool, since Gitter removed the data
   export API that enabled it.
 - Removed multiple queue workers, reducing memory usage.
+- Reimplemented image processing (avatars, logos, etc.) using libvips.
+- Major API/internals changes towards supporting granting permissions
+  to custom groups, not just the built-in roles. User-facing
+  functionality is coming soon in a future release.
+- ID fields on most database tables were converted from 32-bit to
+  64-bit integers to future-proof the project.
 - Upgraded dependencies, including Django 5.0.
 - The great majority of the Zulip web application has been converted
   to TypeScript, fixing many subtle bugs.
@@ -125,11 +166,11 @@ log][commit-log] for an up-to-date list of all changes.
 
 - This release introduces a new [Zulip updates](https://zulip.com/help/configure-automated-notices#zulip-update-announcements) feature, which
   announces significant product changes and new features via automated
-  messages to a configurable stream. Generally, these announcements will
+  messages to a configurable channel. Generally, these announcements will
   be sent automatically when upgrading to the new release. However, when
   you first upgrade to the 9.x series, they will be sent with a delay
   (explained in an automated direct message to organization administrators)
-  to give time to potentially reconfigure which stream to use. You can
+  to give time to potentially reconfigure which channel to use. You can
   override the delay by running `./manage.py send_zulip_update_announcements --skip-delay`
   once you've done any necessary configuration updates.
 - Advertise LaTeX option.
