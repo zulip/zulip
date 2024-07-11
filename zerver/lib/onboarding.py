@@ -25,7 +25,7 @@ def missing_any_realm_internal_bots() -> bool:
         for bot in settings.REALM_INTERNAL_BOTS
     ]
     realm_count = Realm.objects.count()
-    return UserProfile.objects.filter(email__in=bot_emails).values("email").annotate(
+    return UserProfile.objects.filter(email__in=bot_emails).values("email").alias(
         count=Count("id")
     ).filter(count=realm_count).count() != len(bot_emails)
 

@@ -491,13 +491,13 @@ def bulk_access_stream_messages_query(
     ).exists():
         return Message.objects.none()
     if not stream.is_history_public_to_subscribers():
-        messages = messages.annotate(
+        messages = messages.alias(
             has_usermessage=Exists(
                 UserMessage.objects.filter(
                     user_profile_id=user_profile.id, message_id=OuterRef("id")
                 )
             )
-        ).filter(has_usermessage=1)
+        ).filter(has_usermessage=True)
     return messages
 
 

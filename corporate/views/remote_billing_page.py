@@ -662,7 +662,7 @@ def has_live_plan_for_any_remote_realm_on_server(server: RemoteZulipServer) -> b
 
     return (
         RemoteRealm.objects.filter(server=server)
-        .annotate(has_plan=Exists(has_plan_with_status_lt_live_threshold))
+        .alias(has_plan=Exists(has_plan_with_status_lt_live_threshold))
         .filter(has_plan=True)
         .exists()
     )

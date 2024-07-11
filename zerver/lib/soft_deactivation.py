@@ -203,7 +203,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         recipient_ids.append(sub["recipient_id"])
 
     new_stream_msgs = (
-        Message.objects.annotate(
+        Message.objects.alias(
             has_user_message=Exists(
                 UserMessage.objects.filter(
                     user_profile_id=user_profile,
@@ -213,7 +213,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         )
         .filter(
             # Uses index: zerver_message_realm_recipient_id
-            has_user_message=0,
+            has_user_message=False,
             realm_id=user_profile.realm_id,
             recipient_id__in=recipient_ids,
             id__gt=user_profile.last_active_message_id,

@@ -1359,7 +1359,7 @@ def export_partial_message_files(
                     user_profile_id__in=consented_user_ids, message_id=OuterRef("id")
                 )
             )
-            messages_we_received_in_protected_history_streams = Message.objects.annotate(
+            messages_we_received_in_protected_history_streams = Message.objects.alias(
                 has_usermessage=has_usermessage_expression
             ).filter(
                 # Uses index: zerver_message_realm_sender_recipient
