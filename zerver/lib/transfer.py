@@ -3,17 +3,19 @@ import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import bmemcached
+import magic
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
-from zerver.lib.upload import upload_avatar_image, upload_emoji_image
+from zerver.lib.upload import upload_emoji_image, write_avatar_images
 from zerver.lib.upload.s3 import S3UploadBackend, upload_image_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
 s3backend = S3UploadBackend()
+mime_magic = magic.Magic(mime=True)
 
 
 def transfer_uploads_to_s3(processes: int) -> None:
@@ -30,7 +32,18 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
     file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path)
     try:
         with open(file_path + ".original", "rb") as f:
-            upload_avatar_image(f, user, backend=s3backend, future=False)
+            # We call write_avatar_images directly to walk around the
+            # content-type checking in upload_avatar_image.  We don't
+            # know the original file format, and we don't need to know
+            # it because we never serve them directly.
+            write_avatar_images(
+                user_avatar_path(user, future=False),
+                user,
+                f.read(),
+                content_type="application/octet-stream",
+                backend=s3backend,
+                future=False,
+            )
             logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
     except FileNotFoundError:
         pass

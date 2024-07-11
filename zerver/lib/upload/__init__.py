@@ -18,6 +18,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.thumbnail import (
     MAX_EMOJI_GIF_FILE_SIZE_BYTES,
     MEDIUM_AVATAR_SIZE,
+    THUMBNAIL_ACCEPT_IMAGE_TYPES,
     BadImageError,
     resize_avatar,
     resize_emoji,
@@ -250,6 +251,8 @@ def upload_avatar_image(
 ) -> None:
     if content_type is None:
         content_type = guess_type(user_file.name)[0]
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        raise BadImageError(_("Invalid image format"))
     file_path = user_avatar_path(user_profile, future=future)
 
     image_data = user_file.read()
@@ -311,12 +314,16 @@ def delete_avatar_image(user_profile: UserProfile, avatar_version: int) -> None:
 
 
 def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile, content_type: str) -> None:
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        raise BadImageError(_("Invalid image format"))
     upload_backend.upload_realm_icon_image(user_file, user_profile, content_type)
 
 
 def upload_logo_image(
     user_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
 ) -> None:
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        raise BadImageError(_("Invalid image format"))
     upload_backend.upload_realm_logo_image(user_file, user_profile, night, content_type)
 
 

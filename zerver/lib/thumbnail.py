@@ -22,6 +22,27 @@ IMAGE_BOMB_TOTAL_PIXELS = 90000000
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
 
 
+# These are the image content-types which the server supports parsing
+# and thumbnailing; these do not need to supported on all browsers,
+# since we will the serving thumbnailed versions of them.  Note that
+# this does not provide any *security*, since the content-type is
+# provided by the browser, and may not match the bytes they uploaded.
+#
+# This should be kept synced with the client-side image-picker in
+# web/upload_widget.ts.
+THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
+    [
+        "image/avif",
+        "image/gif",
+        "image/heic",
+        "image/jpeg",
+        "image/png",
+        "image/tiff",
+        "image/webp",
+    ]
+)
+
+
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
 
