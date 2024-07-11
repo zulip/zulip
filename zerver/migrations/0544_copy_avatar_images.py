@@ -60,9 +60,12 @@ def thumbnail_s3_avatars(users: QuerySet[Any]) -> None:
             s3={"addressing_style": settings.S3_ADDRESSING_STYLE},
         ),
     ).Bucket(settings.S3_AVATAR_BUCKET)
-    for user in users:
+    for total_processed, user in enumerate(users):
         old_base = os.path.join(str(user.realm_id), old_hash(user))
         new_base = os.path.join(str(user.realm_id), new_hash(user))
+
+        if total_processed % 100 == 0:
+            print(f"Processing {total_processed}/{len(users)} user avatars")
 
         try:
             old_data = avatar_bucket.Object(old_base + ".original").get()
@@ -108,9 +111,12 @@ def thumbnail_s3_avatars(users: QuerySet[Any]) -> None:
 def thumbnail_local_avatars(users: QuerySet[Any]) -> None:
     total_processed = 0
     assert settings.LOCAL_AVATARS_DIR is not None
-    for user in users:
+    for total_processed, user in enumerate(users):
         old_base = os.path.join(settings.LOCAL_AVATARS_DIR, str(user.realm_id), old_hash(user))
         new_base = os.path.join(settings.LOCAL_AVATARS_DIR, str(user.realm_id), new_hash(user))
+
+        if total_processed % 100 == 0:
+            print(f"Processing {total_processed}/{len(users)} user avatars")
 
         if os.path.exists(new_base + "-medium.png"):
             # This user's avatar has already been migrated.
@@ -142,10 +148,6 @@ def thumbnail_local_avatars(users: QuerySet[Any]) -> None:
             continue
         with open(new_base + "-medium.png", "wb") as f:
             f.write(medium)
-
-        total_processed += 1
-        if total_processed % 100 == 0:
-            print(f"Processed {total_processed}/{len(users)} user avatars")
 
 
 def thumbnail_avatars(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
