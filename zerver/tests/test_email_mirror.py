@@ -1371,6 +1371,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         self.assertFalse(is_forwarded("subject"))
         self.assertFalse(is_forwarded("RE: FWD: hi"))
+        self.assertFalse(is_forwarded("AW: FWD: hi"))
 
     def test_reply_is_extracted_from_plain(self) -> None:
         # build dummy messages for stream
@@ -1606,7 +1607,7 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestStreamEmailMessages body")
-        incoming_valid_message["Subject"] = "Re: Fwd: Re: Test"
+        incoming_valid_message["Subject"] = "Re: Fwd: Re: AW: Test"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
