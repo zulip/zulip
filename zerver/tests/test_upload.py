@@ -10,6 +10,8 @@ import orjson
 import pyvips
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from pyvips import at_least_libvips
+from pyvips import version as libvips_version
 from typing_extensions import override
 from urllib3 import encode_multipart_formdata
 from urllib3.fields import RequestField
@@ -1343,11 +1345,16 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         corrupt_files = [
             ("text.txt", False),
             ("unsupported.bmp", False),
+            ("actually-a-bmp.png", True),
             ("corrupt.png", True),
             ("corrupt.gif", True),
         ]
         for fname, is_valid_image_format in corrupt_files:
             with self.subTest(fname=fname):
+                if not at_least_libvips(8, 13) and "actually-a-" in fname:  # nocoverage
+                    self.skipTest(
+                        f"libvips is only version {libvips_version(0)}.{libvips_version(1)}"
+                    )
                 self.login("hamlet")
                 with get_test_image_file(fname) as fp:
                     result = self.client_post("/json/users/me/avatar", {"file": fp})

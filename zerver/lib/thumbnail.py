@@ -29,7 +29,8 @@ MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
 # provided by the browser, and may not match the bytes they uploaded.
 #
 # This should be kept synced with the client-side image-picker in
-# web/upload_widget.ts.
+# web/upload_widget.ts.  Any additions below must be accompanied by
+# changes to the pyvips block below as well.
 THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
     [
         "image/avif",
@@ -41,6 +42,23 @@ THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
         "image/webp",
     ]
 )
+
+# This is what enforces security limitations on which formats are
+# parsed; we disable all loaders, then re-enable the ones we support
+# -- then explicitly disable any "untrusted" ones, in case libvips for
+# some reason marks one of the above formats as such (because they are
+# no longer fuzzed, for instance).
+#
+# Note that only libvips >= 8.13 (Uubntu 24.04 or later, Debian 12 or
+# later) supports this!  These are no-ops on earlier versions of libvips.
+pyvips.operation_block_set("VipsForeignLoad", True)
+pyvips.operation_block_set("VipsForeignLoadHeif", False)  # image/avif, image/heic
+pyvips.operation_block_set("VipsForeignLoadNsgif", False)  # image/gif
+pyvips.operation_block_set("VipsForeignLoadJpeg", False)  # image/jpeg
+pyvips.operation_block_set("VipsForeignLoadPng", False)  # image/png
+pyvips.operation_block_set("VipsForeignLoadTiff", False)  # image/tiff
+pyvips.operation_block_set("VipsForeignLoadWebp", False)  # image/webp
+pyvips.block_untrusted_set(True)
 
 
 class BadImageError(JsonableError):
