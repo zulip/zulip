@@ -2535,7 +2535,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             self.send_personal_message(user_profile, cordelia)
         self.assertEqual(
             str(direct_message_permission_error.exception),
-            "You do not have permission to send direct messages to this recipient.",
+            "This conversation does not include any users who can authorize it.",
         )
 
         # We can send to this direct message group as it has administrator as one of the
