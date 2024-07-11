@@ -11,6 +11,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const {make_stream} = require("./lib/test_stream");
 
 // We will use our special zrequire helper to import the
 // Zulip code. We use zrequire instead of require,
@@ -52,12 +53,14 @@ assert.ok(people.is_known_user_id(isaac.user_id));
 // some data at module scope. (You could also declare this inside
 // the test, if you prefer.)
 
-const denmark_stream = {
-    color: "blue",
+// We use make_stream to create a complete stream object with select
+// fields explicitly specified, and all other fields populated with
+// reasonable defaults.
+const denmark_stream = make_stream({
+    color: "a1a1a1",
     name: "Denmark",
-    stream_id: 101,
     subscribed: false,
-};
+});
 
 // We introduce the run_test helper, which mostly just causes
 // a line of output to go to the console. It does a little more than
@@ -68,6 +71,6 @@ run_test("verify stream_data persists stream color", () => {
     assert.equal(stream_data.get_sub_by_name("Denmark"), undefined);
     stream_data.add_sub(denmark_stream);
     const sub = stream_data.get_sub_by_name("Denmark");
-    assert.equal(sub.color, "blue");
+    assert.equal(sub.color, "a1a1a1");
 });
 // See example2.test.js in this directory.
