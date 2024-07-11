@@ -6,6 +6,7 @@ from typing import Any, Optional, Union
 import boto3
 import pyvips
 from botocore.client import Config
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
@@ -80,7 +81,7 @@ def thumbnail_s3_avatars(users: QuerySet[Any]) -> None:
         if total_processed % 100 == 0:
             print(f"Processing {total_processed}/{len(users)} user avatars")
 
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(ClientError):
             # Check if we've already uploaded this one; if so, continue.
             avatar_bucket.Object(new_base + ".original").load()
             continue
@@ -90,7 +91,7 @@ def thumbnail_s3_avatars(users: QuerySet[Any]) -> None:
             metadata = old_data["Metadata"]
             metadata["avatar_version"] = str(user.avatar_version)
             original_bytes = old_data["Body"].read()
-        except Exception:
+        except ClientError:
             print(f"Failed to fetch {old_base}")
             continue
 
@@ -147,7 +148,7 @@ def thumbnail_local_avatars(users: QuerySet[Any]) -> None:
             # This user's avatar has already been migrated.
             continue
 
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(FileNotFoundError):
             # Remove the hard link, if present from a previous failed run.
             os.remove(new_base + ".original")
 
@@ -156,7 +157,7 @@ def thumbnail_local_avatars(users: QuerySet[Any]) -> None:
             os.link(old_base + ".original", new_base + ".original")
             with open(old_base + ".original", "rb") as f:
                 original_bytes = f.read()
-        except Exception:
+        except OSError:
             print(f"Failed to read {old_base}.original")
             raise
 
