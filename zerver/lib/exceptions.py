@@ -534,7 +534,7 @@ class DirectMessagePermissionError(JsonableError):
         if is_nobody_group:
             msg = _("Direct messages are disabled in this organization.")
         else:
-            msg = _("You do not have permission to send direct messages to this recipient.")
+            msg = _("This conversation does not include any users who can authorize it.")
         super().__init__(msg)
 
 
