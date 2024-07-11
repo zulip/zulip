@@ -92,7 +92,7 @@ run_test("tr_tag", ({mock_template}) => {
         information_density_settings: {
             settings: {},
         },
-        display_settings: {
+        information_section_checkbox_group: {
             settings: {},
         },
         notification_settings: {},

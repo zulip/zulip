@@ -148,7 +148,7 @@ export type DisplaySettings = {
 };
 
 /* istanbul ignore next */
-export const get_all_preferences = (): DisplaySettings => ({
+export const information_section_checkbox_group: DisplaySettings = {
     settings: {
         user_display_settings: [
             "starred_message_counts",
@@ -156,7 +156,7 @@ export const get_all_preferences = (): DisplaySettings => ({
             "fluid_layout_width",
         ],
     },
-});
+};
 
 /* istanbul ignore next */
 export const get_information_density_preferences = (): DisplaySettings => ({
