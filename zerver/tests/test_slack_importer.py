@@ -1317,6 +1317,7 @@ class SlackImporter(ZulipTestCase):
             team_info_fixture["team"],
         ]
         mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
+        mock_requests_get.return_value.headers = {"Content-Type": "image/png"}
 
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer

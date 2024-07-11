@@ -1339,6 +1339,7 @@ def fetch_team_icons(
             "realm_id": realm_id,
             "path": os.path.join(str(realm_id), "icon.original"),
             "s3_path": os.path.join(str(realm_id), "icon.original"),
+            "content_type": response.headers["Content-Type"],
         }
     )
 
@@ -1352,6 +1353,7 @@ def fetch_team_icons(
             "realm_id": realm_id,
             "path": os.path.join(str(realm_id), "icon.png"),
             "s3_path": os.path.join(str(realm_id), "icon.png"),
+            "content_type": "image/png",
         }
     )
 
