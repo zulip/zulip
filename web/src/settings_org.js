@@ -370,7 +370,7 @@ function set_create_web_public_stream_dropdown_visibility() {
 }
 
 export function check_disable_direct_message_initiator_group_dropdown(current_value) {
-    if (current_value === user_groups.get_user_group_from_name("role:nobody").id) {
+    if (user_groups.is_empty_group(current_value)) {
         $("#realm_direct_message_initiator_group_widget").prop("disabled", true);
     } else {
         $("#realm_direct_message_initiator_group_widget").prop("disabled", false);
