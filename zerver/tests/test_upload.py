@@ -1058,7 +1058,6 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         ("img.tif", "tif_resized.png"),
         ("cmyk.jpg", None),
     ]
-    corrupt_files = ["text.txt", "corrupt.png", "corrupt.gif"]
 
     def test_get_gravatar_avatar(self) -> None:
         self.login("hamlet")
@@ -1341,15 +1340,24 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         """
         A PUT request to /json/users/me/avatar with an invalid file should fail.
         """
-        for fname in self.corrupt_files:
+        corrupt_files = [
+            ("text.txt", False),
+            ("unsupported.bmp", False),
+            ("corrupt.png", True),
+            ("corrupt.gif", True),
+        ]
+        for fname, is_valid_image_format in corrupt_files:
             with self.subTest(fname=fname):
                 self.login("hamlet")
                 with get_test_image_file(fname) as fp:
                     result = self.client_post("/json/users/me/avatar", {"file": fp})
 
-                self.assert_json_error(
-                    result, "Could not decode image; did you upload an image file?"
-                )
+                if is_valid_image_format:
+                    self.assert_json_error(
+                        result, "Could not decode image; did you upload an image file?"
+                    )
+                else:
+                    self.assert_json_error(result, "Invalid image format")
                 user_profile = self.example_user("hamlet")
                 self.assertEqual(user_profile.avatar_version, 1)
 
@@ -1490,7 +1498,6 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         ("img.tif", "tif_resized.png"),
         ("cmyk.jpg", None),
     ]
-    corrupt_files = ["text.txt", "corrupt.png", "corrupt.gif"]
 
     def test_no_admin_user_upload(self) -> None:
         self.login("hamlet")
@@ -1558,15 +1565,24 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         A PUT request to /json/realm/icon with an invalid file should fail.
         """
-        for fname in self.corrupt_files:
+        corrupt_files = [
+            ("text.txt", False),
+            ("unsupported.bmp", False),
+            ("corrupt.png", True),
+            ("corrupt.gif", True),
+        ]
+        for fname, is_valid_image_format in corrupt_files:
             with self.subTest(fname=fname):
                 self.login("iago")
                 with get_test_image_file(fname) as fp:
                     result = self.client_post("/json/realm/icon", {"file": fp})
 
-                self.assert_json_error(
-                    result, "Could not decode image; did you upload an image file?"
-                )
+                if is_valid_image_format:
+                    self.assert_json_error(
+                        result, "Could not decode image; did you upload an image file?"
+                    )
+                else:
+                    self.assert_json_error(result, "Invalid image format")
 
     def test_delete_icon(self) -> None:
         """
@@ -1634,7 +1650,6 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         ("img.tif", "tif_resized.png"),
         ("cmyk.jpg", None),
     ]
-    corrupt_files = ["text.txt", "corrupt.png", "corrupt.gif"]
 
     def test_no_admin_user_upload(self) -> None:
         self.login("hamlet")
@@ -1744,7 +1759,13 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         """
         A PUT request to /json/realm/logo with an invalid file should fail.
         """
-        for fname in self.corrupt_files:
+        corrupt_files = [
+            ("text.txt", False),
+            ("unsupported.bmp", False),
+            ("corrupt.png", True),
+            ("corrupt.gif", True),
+        ]
+        for fname, is_valid_image_format in corrupt_files:
             with self.subTest(fname=fname):
                 self.login("iago")
                 with get_test_image_file(fname) as fp:
@@ -1752,9 +1773,12 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
                         "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
                     )
 
-                self.assert_json_error(
-                    result, "Could not decode image; did you upload an image file?"
-                )
+                if is_valid_image_format:
+                    self.assert_json_error(
+                        result, "Could not decode image; did you upload an image file?"
+                    )
+                else:
+                    self.assert_json_error(result, "Invalid image format")
 
     def test_delete_logo(self) -> None:
         """
