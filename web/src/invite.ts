@@ -240,9 +240,7 @@ function generate_multiuse_invite(): void {
             ui_report.error("", xhr, $invite_status);
         },
         complete() {
-            $("#invite-user-modal .dialog_submit_button").text(
-                $t({defaultMessage: "Generate invite link"}),
-            );
+            $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Create link"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
             $invite_status[0]!.scrollIntoView();
@@ -387,10 +385,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             );
             if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
-                $button.attr("data-loading-text", $t({defaultMessage: "Inviting..."}));
+                $button.attr("data-loading-text", $t({defaultMessage: "Inviting…"}));
             } else {
-                $button.text($t({defaultMessage: "Generate invite link"}));
-                $button.attr("data-loading-text", $t({defaultMessage: "Generating link..."}));
+                $button.text($t({defaultMessage: "Create link"}));
+                $button.attr("data-loading-text", $t({defaultMessage: "Creating link…"}));
             }
         }
 
@@ -455,8 +453,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             selected: 0,
             child_wants_focus: true,
             values: [
-                {label: $t({defaultMessage: "Send invite email"}), key: "invite-email-tab"},
-                {label: $t({defaultMessage: "Create invite link"}), key: "invite-link-tab"},
+                {label: $t({defaultMessage: "Email invitation"}), key: "invite-email-tab"},
+                {label: $t({defaultMessage: "Invitation link"}), key: "invite-link-tab"},
             ],
             callback(_name, key) {
                 switch (key) {
