@@ -334,11 +334,12 @@ def upload_emoji_image(
     emoji_file: IO[bytes],
     emoji_file_name: str,
     user_profile: UserProfile,
+    content_type: str,
     backend: Optional[ZulipUploadBackend] = None,
 ) -> bool:
     if backend is None:
         backend = upload_backend
-    content_type = guess_type(emoji_file_name)[0]
+
     emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
         realm_id=user_profile.realm_id,
         emoji_file_name=emoji_file_name,
@@ -368,21 +369,21 @@ def upload_emoji_image(
 
 def get_emoji_file_content(
     session: OutgoingSession, emoji_url: str, emoji_id: int, logger: logging.Logger
-) -> bytes:  # nocoverage
+) -> Tuple[bytes, str]:  # nocoverage
     original_emoji_url = emoji_url + ".original"
 
     logger.info("Downloading %s", original_emoji_url)
     response = session.get(original_emoji_url)
     if response.status_code == 200:
         assert isinstance(response.content, bytes)
-        return response.content
+        return response.content, response.headers["Content-Type"]
 
     logger.info("Error fetching emoji from URL %s", original_emoji_url)
     logger.info("Trying %s instead", emoji_url)
     response = session.get(emoji_url)
     if response.status_code == 200:
         assert isinstance(response.content, bytes)
-        return response.content
+        return response.content, response.headers["Content-Type"]
     logger.info("Error fetching emoji from URL %s", emoji_url)
     logger.error("Could not fetch emoji %s", emoji_id)
     raise AssertionError(f"Could not fetch emoji {emoji_id}")
@@ -403,7 +404,9 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
         if emoji_url.startswith("/"):
             emoji_url = urljoin(realm_emoji.realm.url, emoji_url)
 
-        emoji_file_content = get_emoji_file_content(session, emoji_url, realm_emoji.id, logger)
+        emoji_file_content, content_type = get_emoji_file_content(
+            session, emoji_url, realm_emoji.id, logger
+        )
 
         emoji_bytes_io = io.BytesIO(emoji_file_content)
 
@@ -412,7 +415,9 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
         assert user_profile is not None
 
         logger.info("Reuploading emoji %s", realm_emoji.id)
-        realm_emoji.is_animated = upload_emoji_image(emoji_bytes_io, emoji_filename, user_profile)
+        realm_emoji.is_animated = upload_emoji_image(
+            emoji_bytes_io, emoji_filename, user_profile, content_type
+        )
         realm_emoji.save(update_fields=["is_animated"])
 
 

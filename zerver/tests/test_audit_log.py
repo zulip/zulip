@@ -1029,7 +1029,11 @@ class TestRealmAuditLog(ZulipTestCase):
             # check in upload_emoji, we need to make this request via
             # that helper rather than via the API.
             realm_emoji = check_add_realm_emoji(
-                realm=user.realm, name="test_emoji", author=user, image_file=img_file
+                realm=user.realm,
+                name="test_emoji",
+                author=user,
+                image_file=img_file,
+                content_type="image/png",
             )
 
         added_emoji = EmojiInfo(
