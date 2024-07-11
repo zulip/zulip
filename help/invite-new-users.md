@@ -64,7 +64,7 @@ permission to invite users.
 
 {!invite-users.md!}
 
-1. Select **Create invite link**.
+1. Select **Invitation link**.
 
 1. Select when the invitation will expire.
 
@@ -72,7 +72,7 @@ permission to invite users.
 
 1. Configure which channels they will be added to.
 
-1. Click **Generate invite link**.
+1. Click **Create link**.
 
 1. Copy the link, and send it to anyone you'd like to invite.
 
