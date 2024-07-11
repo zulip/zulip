@@ -60,7 +60,7 @@ def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
         yield source_image
     except pyvips.Error as e:  # nocoverage
         logging.exception(e)
-        raise BadImageError(_("Bad image!"))
+        raise BadImageError(_("Image is corrupted or truncated"))
 
 
 def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
