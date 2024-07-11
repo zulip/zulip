@@ -99,11 +99,32 @@
           prefix=prefix}}
     </div>
 
-    <div class="advanced-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="navigation-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
         <div class="subsection-header">
-            <h3 class="light">{{t "Advanced" }}</h3>
-            {{> settings_save_discard_widget section_name="advanced-settings" show_only_indicator=(not for_realm_settings) }}
+            <h3 class="light">{{t "Navigation" }}</h3>
+            {{> settings_save_discard_widget section_name="navigation-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
+
+        <div class="input-group thinner setting-next-is-related">
+            <label for="web_home_view" class="settings-field-label">{{t "Home view" }}
+                {{> ../help_link_widget link="/help/configure-home-view" }}
+            </label>
+            <select name="web_home_view" class="setting_web_home_view prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_home_view" data-setting-widget-type="string">
+                {{> dropdown_options_widget option_values=web_home_view_values}}
+            </select>
+        </div>
+
+        {{> settings_checkbox
+          setting_name="web_escape_navigates_to_home_view"
+          is_checked=settings_object.web_escape_navigates_to_home_view
+          label=settings_label.web_escape_navigates_to_home_view
+          prefix=prefix}}
+
+        {{> settings_checkbox
+          setting_name="web_navigate_to_sent_message"
+          is_checked=settings_object.web_navigate_to_sent_message
+          label=settings_label.web_navigate_to_sent_message
+          prefix=prefix}}
 
         <div class="input-group">
             <label for="web_mark_read_on_scroll_policy" class="settings-field-label">{{t "Automatically mark messages as read" }}
@@ -112,6 +133,20 @@
             <select name="web_mark_read_on_scroll_policy" class="setting_web_mark_read_on_scroll_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_mark_read_on_scroll_policy"  data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=web_mark_read_on_scroll_policy_values}}
             </select>
+        </div>
+
+        <div class="input-group">
+            <label for="web_channel_default_view" class="settings-field-label">{{t "Channel links in the left sidebar go to" }}</label>
+            <select name="web_channel_default_view" class="setting_web_channel_default_view prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_channel_default_view"  data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=web_channel_default_view_values}}
+            </select>
+        </div>
+    </div>
+
+    <div class="information-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header">
+            <h3 class="light">{{t "Information" }}</h3>
+            {{> settings_save_discard_widget section_name="information-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
         <div class="input-group">
@@ -145,43 +180,6 @@
             </div>
         </div>
 
-        <div class="input-group thinner setting-next-is-related">
-            <label for="web_home_view" class="settings-field-label">{{t "Home view" }}
-                {{> ../help_link_widget link="/help/configure-home-view" }}
-            </label>
-            <select name="web_home_view" class="setting_web_home_view prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_home_view" data-setting-widget-type="string">
-                {{> dropdown_options_widget option_values=web_home_view_values}}
-            </select>
-        </div>
-
-        {{> settings_checkbox
-          setting_name="web_escape_navigates_to_home_view"
-          is_checked=settings_object.web_escape_navigates_to_home_view
-          label=settings_label.web_escape_navigates_to_home_view
-          prefix=prefix}}
-
-        {{> settings_checkbox
-          setting_name="web_navigate_to_sent_message"
-          is_checked=settings_object.web_navigate_to_sent_message
-          label=settings_label.web_navigate_to_sent_message
-          prefix=prefix}}
-
-        <div class="input-group">
-            <label for="web_channel_default_view" class="settings-field-label">{{t "Channel links in the left sidebar go to" }}</label>
-            <select name="web_channel_default_view" class="setting_web_channel_default_view prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_channel_default_view"  data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=web_channel_default_view_values}}
-            </select>
-        </div>
-
-        <div class="input-group">
-            <label for="demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
-                {{> ../help_link_widget link="/help/manage-inactive-channels" }}
-            </label>
-            <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element settings_select bootstrap-focus-style" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
-            </select>
-        </div>
-
         <div class="input-group">
             <label for="web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
             <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
@@ -198,12 +196,20 @@
               prefix=../prefix}}
         {{/each}}
 
+        <div class="input-group">
+            <label for="demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
+                {{> ../help_link_widget link="/help/manage-inactive-channels" }}
+            </label>
+            <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element settings_select bootstrap-focus-style" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
+            </select>
+        </div>
+
         {{> settings_checkbox
           setting_name="high_contrast_mode"
           is_checked=settings_object.high_contrast_mode
           label=settings_label.high_contrast_mode
           render_only=settings_render_only.high_contrast_mode
           prefix=prefix}}
-
     </div>
 </form>
