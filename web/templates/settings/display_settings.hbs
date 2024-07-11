@@ -28,6 +28,13 @@
                 {{> dropdown_options_widget option_values=color_scheme_values}}
             </select>
         </div>
+
+        {{> settings_checkbox
+          setting_name="dense_mode"
+          is_checked=settings_object.dense_mode
+          label=settings_label.dense_mode
+          render_only=settings_render_only.dense_mode
+          prefix=prefix}}
     </div>
 
     <div class="emoji-preferences {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">

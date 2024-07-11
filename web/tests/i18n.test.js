@@ -109,11 +109,15 @@ run_test("tr_tag", ({mock_template}) => {
             realm_name_in_email_notifications_policy:
                 "Include organization name in subject of message notification emails",
             twenty_four_hour_time: "Time format",
+            dense_mode: "Dense mode",
             automatically_follow_topics_policy: "Automatically follow topics",
             automatically_unmute_topics_in_muted_streams_policy:
                 "Automatically unmute topics in muted channels",
             automatically_follow_topics_where_mentioned:
                 "Automatically follow topics where I'm mentioned",
+        },
+        settings_render_only: {
+            dense_mode: true,
         },
         show_push_notifications_tooltip: false,
         user_role_text: "Member",
