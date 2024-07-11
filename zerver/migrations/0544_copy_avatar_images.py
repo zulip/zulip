@@ -90,8 +90,7 @@ def thumbnail_s3_avatars(users: QuerySet[Any]) -> None:
             continue
         avatar_bucket.Object(new_base + ".png").put(
             Metadata=metadata,
-            ContentDisposition=old_data["ContentDisposition"],
-            ContentType=old_data["ContentType"],
+            ContentType="image/png",
             CacheControl="public, max-age=31536000, immutable",
             Body=small,
         )
@@ -101,8 +100,7 @@ def thumbnail_s3_avatars(users: QuerySet[Any]) -> None:
             continue
         avatar_bucket.Object(new_base + "-medium.png").put(
             Metadata=metadata,
-            ContentDisposition=old_data["ContentDisposition"],
-            ContentType=old_data["ContentType"],
+            ContentType="image/png",
             CacheControl="public, max-age=31536000, immutable",
             Body=medium,
         )
