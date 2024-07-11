@@ -462,7 +462,7 @@ function get_user_card_popover_for_message_items() {
         return undefined;
     }
 
-    return $("li:not(.divider):visible a", $popover);
+    return $("li:not(.divider):visible a:not(.hide_copy_icon)", $popover);
 }
 
 // Functions related to the user card popover in the user sidebar.
