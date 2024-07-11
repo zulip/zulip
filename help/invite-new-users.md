@@ -46,9 +46,11 @@ permission to invite users.
 
 !!! warn ""
     **Note**: As an anti-spam measure, the number of email invitations
-    you can send in a day is limited on the Zulip Cloud Free plan.
-    [Contact support](/help/contact-support) if you hit the limit and
-    want to invite more users.
+    you can send in a day is limited on the Zulip Cloud Free plan. If
+    you hit the limit and need to invite more users, consider creating an
+    [invitation link](#create-a-reusable-invitation-link) and sharing it
+    with your users directly, or [contact support](/help/contact-support)
+    to ask for a higher limit.
 
 {end_tabs}
 
