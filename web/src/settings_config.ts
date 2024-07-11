@@ -151,7 +151,6 @@ export type DisplaySettings = {
 export const get_all_preferences = (): DisplaySettings => ({
     settings: {
         user_display_settings: [
-            "high_contrast_mode",
             "starred_message_counts",
             "receives_typing_notifications",
             "fluid_layout_width",

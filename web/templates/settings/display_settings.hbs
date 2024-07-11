@@ -198,5 +198,12 @@
               prefix=../prefix}}
         {{/each}}
 
+        {{> settings_checkbox
+          setting_name="high_contrast_mode"
+          is_checked=settings_object.high_contrast_mode
+          label=settings_label.high_contrast_mode
+          render_only=settings_render_only.high_contrast_mode
+          prefix=prefix}}
+
     </div>
 </form>
