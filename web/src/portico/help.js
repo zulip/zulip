@@ -122,7 +122,6 @@ $(".markdown").on("click", () => {
 render_tabbed_sections();
 
 if ($(window).width() > 800) {
-    $(".highlighted")[0]?.scrollIntoView({block: "center"});
     $(".highlighted").eq(0).trigger("focus");
     $(".highlighted")
         .eq(0)
