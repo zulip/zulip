@@ -21,7 +21,7 @@ def notify_realm_emoji(realm: Realm, realm_emoji: Dict[str, EmojiInfo]) -> None:
 
 
 def check_add_realm_emoji(
-    realm: Realm, name: str, author: UserProfile, image_file: IO[bytes]
+    realm: Realm, name: str, author: UserProfile, image_file: IO[bytes], content_type: str
 ) -> RealmEmoji:
     try:
         realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
@@ -36,7 +36,7 @@ def check_add_realm_emoji(
     emoji_uploaded_successfully = False
     is_animated = False
     try:
-        is_animated = upload_emoji_image(image_file, emoji_file_name, author)
+        is_animated = upload_emoji_image(image_file, emoji_file_name, author, content_type)
         emoji_uploaded_successfully = True
     finally:
         if not emoji_uploaded_successfully:

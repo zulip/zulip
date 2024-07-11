@@ -181,7 +181,7 @@ class ExportFile(ZulipTestCase):
         realm = user_profile.realm
 
         with get_test_image_file("img.png") as img_file:
-            check_add_realm_emoji(realm, emoji_name, user_profile, img_file)
+            check_add_realm_emoji(realm, emoji_name, user_profile, img_file, "image/png")
 
     def upload_files_for_realm(self, user_profile: UserProfile) -> None:
         realm = user_profile.realm
@@ -775,7 +775,11 @@ class RealmImportExportTest(ExportFile):
 
         with get_test_image_file("img.png") as img_file:
             realm_emoji = check_add_realm_emoji(
-                realm=hamlet.realm, name="hawaii", author=hamlet, image_file=img_file
+                realm=hamlet.realm,
+                name="hawaii",
+                author=hamlet,
+                image_file=img_file,
+                content_type="image/png",
             )
             self.assertEqual(realm_emoji.name, "hawaii")
 
@@ -931,7 +935,11 @@ class RealmImportExportTest(ExportFile):
         # to test that upon import that gets fixed.
         with get_test_image_file("img.png") as img_file:
             new_realm_emoji = check_add_realm_emoji(
-                realm=hamlet.realm, name="hawaii2", author=hamlet, image_file=img_file
+                realm=hamlet.realm,
+                name="hawaii2",
+                author=hamlet,
+                image_file=img_file,
+                content_type="image/png",
             )
             assert new_realm_emoji is not None
         original_realm_emoji_count = RealmEmoji.objects.count()

@@ -17,7 +17,11 @@ class RealmEmojiTest(ZulipTestCase):
     def create_test_emoji(self, name: str, author: UserProfile) -> RealmEmoji:
         with get_test_image_file("img.png") as img_file:
             realm_emoji = check_add_realm_emoji(
-                realm=author.realm, name=name, author=author, image_file=img_file
+                realm=author.realm,
+                name=name,
+                author=author,
+                image_file=img_file,
+                content_type="image/png",
             )
             if realm_emoji is None:
                 raise Exception("Error creating test emoji.")  # nocoverage
@@ -395,7 +399,11 @@ class RealmEmojiTest(ZulipTestCase):
             # check in upload_emoji, we need to make this request via
             # that helper rather than via the API.
             check_add_realm_emoji(
-                realm=emoji_author.realm, name=emoji_name, author=emoji_author, image_file=img_file
+                realm=emoji_author.realm,
+                name=emoji_name,
+                author=emoji_author,
+                image_file=img_file,
+                content_type="image/png",
             )
             with self.assertRaises(JsonableError):
                 check_add_realm_emoji(
@@ -403,4 +411,5 @@ class RealmEmojiTest(ZulipTestCase):
                     name=emoji_name,
                     author=emoji_author,
                     image_file=img_file,
+                    content_type="image/png",
                 )
