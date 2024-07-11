@@ -7,6 +7,42 @@ const {run_test} = require("./lib/test");
 
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
+const people = zrequire("people");
+
+const user1 = {
+    user_id: 10,
+    email: "user1@example.com",
+    full_name: "User One",
+};
+people.add_active_user(user1);
+
+const user2 = {
+    user_id: 20,
+    email: "user2@example.com",
+    full_name: "User Two",
+};
+people.add_active_user(user2);
+
+const user3 = {
+    user_id: 30,
+    email: "user3@example.com",
+    full_name: "User Three",
+};
+people.add_active_user(user3);
+
+const user4 = {
+    user_id: 40,
+    email: "user4@example.com",
+    full_name: "User Four",
+};
+people.add_active_user(user4);
+
+const user5 = {
+    user_id: 50,
+    email: "user5@example.com",
+    full_name: "User Five",
+};
+people.add_active_user(user5);
 
 const admins = {
     name: "Admins",
@@ -83,6 +119,12 @@ run_test("get_user_ids", () => {
     items = [everyone_pill];
     user_ids = user_group_pill.get_user_ids(widget);
     assert.deepEqual(user_ids, [10, 20, 30, 40, 50]);
+
+    // Deactivated users should be excluded.
+    people.deactivate(user5);
+    user_ids = user_group_pill.get_user_ids(widget);
+    assert.deepEqual(user_ids, [10, 20, 30, 40]);
+    people.add_active_user(user5);
 });
 
 run_test("get_group_ids", () => {
