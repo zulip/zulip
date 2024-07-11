@@ -8,7 +8,9 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.upload import upload_emoji_image
+from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import Realm, RealmAuditLog, RealmEmoji, UserProfile
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.users import active_user_ids
@@ -31,7 +33,13 @@ def check_add_realm_emoji(
         # Match the string in upload_emoji.
         raise JsonableError(_("A custom emoji with this name already exists."))
 
-    emoji_file_name = get_emoji_file_name(image_file.name, realm_emoji.id)
+    # This mirrors the check in upload_emoji_image because we want to
+    # have some reasonable guarantees on the content-type before
+    # deriving the file extension from it.
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
+        raise BadImageError(_("Invalid image format"))
+
+    emoji_file_name = get_emoji_file_name(content_type, realm_emoji.id)
 
     emoji_uploaded_successfully = False
     is_animated = False

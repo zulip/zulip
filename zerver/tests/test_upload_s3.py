@@ -23,7 +23,9 @@ from zerver.lib.thumbnail import (
     DEFAULT_AVATAR_SIZE,
     DEFAULT_EMOJI_SIZE,
     MEDIUM_AVATAR_SIZE,
+    BadImageError,
     resize_avatar,
+    resize_emoji,
 )
 from zerver.lib.upload import (
     all_message_attachments,
@@ -491,6 +493,29 @@ class S3Test(ZulipTestCase):
         resized_image = pyvips.Image.new_from_buffer(resized_data, "")
         self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.height)
         self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.width)
+
+    @use_s3_backend
+    def test_upload_emoji_non_image(self) -> None:
+        create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        emoji_name = "emoji.png"
+        with get_test_image_file("text.txt") as image_file:
+            with patch("zerver.lib.upload.resize_emoji", side_effect=resize_emoji) as resize_mock:
+                with self.assertRaises(BadImageError):
+                    # We trust the content-type and fail when we try to load the image
+                    zerver.lib.upload.upload_emoji_image(
+                        image_file, emoji_name, user_profile, "image/png"
+                    )
+                resize_mock.assert_called_once()
+
+            with patch("zerver.lib.upload.resize_emoji", side_effect=resize_emoji) as resize_mock:
+                with self.assertRaises(BadImageError):
+                    # We trust the content-type and abort before trying to load
+                    zerver.lib.upload.upload_emoji_image(
+                        image_file, emoji_name, user_profile, "text/plain"
+                    )
+                resize_mock.assert_not_called()
 
     @use_s3_backend
     def test_tarball_upload_and_deletion(self) -> None:

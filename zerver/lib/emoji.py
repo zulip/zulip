@@ -7,6 +7,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mime_types import guess_extension
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
@@ -148,12 +149,9 @@ def get_emoji_url(emoji_file_name: str, realm_id: int, still: bool = False) -> s
     return upload_backend.get_emoji_url(emoji_file_name, realm_id, still)
 
 
-def get_emoji_file_name(emoji_file_name: str, emoji_id: int) -> str:
-    image_ext = os.path.splitext(emoji_file_name)[1]
-    if not re.match(r"\.\w+$", image_ext):
-        # Because the extension from the uploaded filename is
-        # user-provided, preserved in the output filename, and libvips
-        # uses `[...]` after the extension for options, we validate
-        # the simple file extension.
-        raise JsonableError(_("Bad file name!"))  # nocoverage
+def get_emoji_file_name(content_type: str, emoji_id: int) -> str:
+    image_ext = guess_extension(content_type, strict=False)
+    # The only callsite of this pre-limits the content_type to a
+    # reasonable set that we know have extensions.
+    assert image_ext is not None
     return "".join((str(emoji_id), image_ext))

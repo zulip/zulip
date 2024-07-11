@@ -1039,7 +1039,9 @@ class TestRealmAuditLog(ZulipTestCase):
         added_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=get_emoji_url(get_emoji_file_name("img.png", realm_emoji.id), user.realm_id),
+            source_url=get_emoji_url(
+                get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
+            ),
             deactivated=False,
             author_id=user.id,
             still_url=None,
@@ -1067,7 +1069,9 @@ class TestRealmAuditLog(ZulipTestCase):
         deactivated_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=get_emoji_url(get_emoji_file_name("img.png", realm_emoji.id), user.realm_id),
+            source_url=get_emoji_url(
+                get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
+            ),
             deactivated=True,
             author_id=user.id,
             still_url=None,
