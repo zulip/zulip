@@ -21,7 +21,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import (
     DEFAULT_AVATAR_SIZE,
-    DEFAULT_EMOJI_SIZE,
     MEDIUM_AVATAR_SIZE,
     BadImageError,
     resize_avatar,
@@ -478,21 +477,32 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        emoji_name = "emoji.png"
-        with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_emoji_image(image_file, emoji_name, user_profile, "image/png")
+        emoji_name = "animated_img.gif"
+        with get_test_image_file(emoji_name) as image_file:
+            zerver.lib.upload.upload_emoji_image(image_file, emoji_name, user_profile, "image/gif")
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_name,
         )
         original_key = bucket.Object(emoji_path + ".original")
-        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
+        self.assertEqual(read_test_image_file(emoji_name), original_key.get()["Body"].read())
 
-        resized_data = bucket.Object(emoji_path).get()["Body"].read()
-        resized_image = pyvips.Image.new_from_buffer(resized_data, "")
-        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.height)
-        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.width)
+        self.assertEqual(os.path.splitext(emoji_path)[1], ".gif")
+        bucket_data = bucket.Object(emoji_path).get()
+        self.assertEqual(bucket_data["ContentType"], "image/gif")
+        resized_image = pyvips.Image.new_from_buffer(bucket_data["Body"].read(), "")
+        self.assertEqual(resized_image.get("vips-loader"), "gifload_buffer")
+
+        still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_filename_without_extension=os.path.splitext(emoji_name)[0],
+        )
+        self.assertEqual(os.path.splitext(still_path)[1], ".png")
+        bucket_data = bucket.Object(still_path).get()
+        self.assertEqual(bucket_data["ContentType"], "image/png")
+        still_image = pyvips.Image.new_from_buffer(bucket_data["Body"].read(), "")
+        self.assertEqual(still_image.get("vips-loader"), "pngload_buffer")
 
     @use_s3_backend
     def test_upload_emoji_non_image(self) -> None:

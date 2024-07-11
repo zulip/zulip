@@ -371,7 +371,7 @@ def upload_emoji_image(
         realm_id=user_profile.realm_id,
         emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
     )
-    backend.upload_single_emoji_image(still_path, content_type, user_profile, still_image_data)
+    backend.upload_single_emoji_image(still_path, "image/png", user_profile, still_image_data)
     return True
 
 
