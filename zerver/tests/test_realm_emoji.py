@@ -319,6 +319,12 @@ class RealmEmojiTest(ZulipTestCase):
                 result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
+    def test_emoji_upload_file_format_error(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.tif") as fp:
+            result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
+        self.assert_json_error(result, "Invalid image format")
+
     def test_upload_already_existed_emoji(self) -> None:
         self.login("iago")
         with get_test_image_file("img.png") as fp1:

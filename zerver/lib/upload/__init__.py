@@ -23,7 +23,7 @@ from zerver.lib.thumbnail import (
     resize_avatar,
     resize_emoji,
 )
-from zerver.lib.upload.base import ZulipUploadBackend
+from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 from zerver.models.users import is_cross_realm_bot_email
 
@@ -339,6 +339,14 @@ def upload_emoji_image(
 ) -> bool:
     if backend is None:
         backend = upload_backend
+
+    # Emoji are served in the format that they are uploaded, so must
+    # be _both_ an image format that we're willing to thumbnail, _and_
+    # a format which is widespread enough that we're willing to inline
+    # it.  The latter contains non-image formats, but the former
+    # limits to only images.
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
+        raise BadImageError(_("Invalid image format"))
 
     emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
         realm_id=user_profile.realm_id,

@@ -1,5 +1,6 @@
 import sys
 from mimetypes import add_type
+from mimetypes import guess_extension as guess_extension
 from mimetypes import guess_type as guess_type
 
 add_type("audio/flac", ".flac")

@@ -137,8 +137,9 @@ def resize_emoji(
         raise BadImageError(_("Image size exceeds limit."))
 
     # Square brackets are used for providing options to libvips' save
-    # operation; these should have been filtered out earlier, so we
-    # assert none are found here, for safety.
+    # operation; the extension on the filename comes from reversing
+    # the content-type, which removes most of the attacker control of
+    # this string, but assert it has no bracketed pieces for safety.
     write_file_ext = os.path.splitext(emoji_file_name)[1]
     assert "[" not in write_file_ext
 

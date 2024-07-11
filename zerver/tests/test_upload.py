@@ -3,6 +3,7 @@ import re
 import time
 from io import StringIO
 from unittest import mock
+from unittest.mock import patch
 from urllib.parse import quote
 
 import orjson
@@ -1751,6 +1752,54 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 class RealmNightLogoTest(RealmLogoTest):
     # Run the same tests as for RealmLogoTest, just with dark theme enabled
     night = True
+
+
+class EmojiTest(UploadSerializeMixin, ZulipTestCase):
+    def test_upload_emoji(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.png") as f:
+            result = self.client_post("/json/realm/emoji/new", {"f1": f})
+            self.assert_json_success(result)
+
+    def test_non_image(self) -> None:
+        """Non-image is not resized"""
+        self.login("iago")
+        with get_test_image_file("text.txt") as f:
+            with patch("zerver.lib.upload.resize_emoji", return_value=(b"a", None)) as resize_mock:
+                result = self.client_post("/json/realm/emoji/new", {"f1": f})
+                self.assert_json_error(result, "Invalid image format")
+                resize_mock.assert_not_called()
+
+    def test_upsupported_format(self) -> None:
+        """Invalid format is not resized"""
+        self.login("iago")
+        with get_test_image_file("img.bmp") as f:
+            with patch("zerver.lib.upload.resize_emoji", return_value=(b"a", None)) as resize_mock:
+                result = self.client_post("/json/realm/emoji/new", {"f1": f})
+                self.assert_json_error(result, "Invalid image format")
+                resize_mock.assert_not_called()
+
+    def test_upload_big_after_animated_resize(self) -> None:
+        """A big animated image is fine as long as the still is small"""
+        self.login("iago")
+        with get_test_image_file("animated_img.gif") as f:
+            with patch(
+                "zerver.lib.upload.resize_emoji", return_value=(b"a" * (200 * 1024), b"aaa")
+            ) as resize_mock:
+                result = self.client_post("/json/realm/emoji/new", {"f1": f})
+                self.assert_json_success(result)
+                resize_mock.assert_called_once()
+
+    def test_upload_too_big_after_animated_resize_still(self) -> None:
+        """Still of animated image is too big after resizing"""
+        self.login("iago")
+        with get_test_image_file("animated_img.gif") as f:
+            with patch(
+                "zerver.lib.upload.resize_emoji", return_value=(b"aaa", b"a" * (200 * 1024))
+            ) as resize_mock:
+                result = self.client_post("/json/realm/emoji/new", {"f1": f})
+                self.assert_json_error(result, "Image size exceeds limit")
+                resize_mock.assert_called_once()
 
 
 class SanitizeNameTests(ZulipTestCase):
