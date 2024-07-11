@@ -740,6 +740,10 @@ div.overlay {
         background-color: hsl(0deg 0% 100%);
         word-break: normal;
 
+        &[data-sort] {
+            padding-right: 0.88em;
+        }
+
         &.active::after,
         &[data-sort]:hover::after {
             content: " \f0d8";
