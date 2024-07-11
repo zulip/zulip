@@ -176,7 +176,7 @@
                   setting_name=this
                   setting_value=(lookup ../settings_object this)
                   label=(lookup ../settings_label this)
-                  render_only=(lookup ../information_density_settings.render_only this)
+                  render_only=(lookup ../settings_render_only.render_only this)
                   prefix=../prefix}}
             {{/each}}
         </div>
@@ -187,7 +187,7 @@
               setting_name=this
               is_checked=(lookup ../settings_object this)
               label=(lookup ../settings_label this)
-              render_only=(lookup ../display_settings.render_only this)
+              render_only=(lookup ../settings_render_only.render_only this)
               prefix=../prefix}}
         {{/each}}
 

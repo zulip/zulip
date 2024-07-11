@@ -121,6 +121,7 @@ export function build_page() {
             settings_config.all_notifications(user_settings).show_push_notifications_tooltip,
         display_settings: settings_config.get_all_preferences(),
         information_density_settings: settings_config.get_information_density_preferences(),
+        settings_render_only: settings_config.get_settings_render_only(),
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_can_change_email: settings_data.user_can_change_email(),

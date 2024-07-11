@@ -145,12 +145,6 @@ export type DisplaySettings = {
         user_display_settings: string[];
     };
     render_group?: boolean;
-    render_only: {
-        dense_mode?: boolean;
-        high_contrast_mode?: boolean;
-        web_font_size_px?: boolean;
-        web_line_height_percent?: boolean;
-    };
 };
 
 /* istanbul ignore next */
@@ -164,22 +158,29 @@ export const get_all_preferences = (): DisplaySettings => ({
             "fluid_layout_width",
         ],
     },
-    render_only: {
-        dense_mode: page_params.development_environment,
-        high_contrast_mode: page_params.development_environment,
-    },
 });
 
 /* istanbul ignore next */
 export const get_information_density_preferences = (): DisplaySettings => ({
     render_group: page_params.development_environment,
-    render_only: {
-        web_font_size_px: page_params.development_environment,
-        web_line_height_percent: page_params.development_environment,
-    },
     settings: {
         user_display_settings: ["web_font_size_px", "web_line_height_percent"],
     },
+});
+
+type SettingsRenderOnly = {
+    dense_mode: boolean;
+    high_contrast_mode: boolean;
+    web_font_size_px: boolean;
+    web_line_height_percent: boolean;
+};
+
+/* istanbul ignore next */
+export const get_settings_render_only = (): SettingsRenderOnly => ({
+    dense_mode: page_params.development_environment,
+    high_contrast_mode: page_params.development_environment,
+    web_font_size_px: page_params.development_environment,
+    web_line_height_percent: page_params.development_environment,
 });
 
 export const email_address_visibility_values = {
