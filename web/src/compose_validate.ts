@@ -114,10 +114,7 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
 
 export function check_dm_permissions_and_get_error_string(user_ids_string: string): string {
     if (!people.user_can_direct_message(user_ids_string)) {
-        const {name} = user_groups.get_user_group_from_id(
-            realm.realm_direct_message_permission_group,
-        );
-        if (name === "role:nobody") {
+        if (user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
             return $t({
                 defaultMessage: "Direct messages are disabled in this organization.",
             });

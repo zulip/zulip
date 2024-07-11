@@ -259,8 +259,7 @@ function get_options_for_recipient_widget(): Option[] {
         name: $t({defaultMessage: "Direct message"}),
     };
 
-    const {name} = user_groups.get_user_group_from_id(realm.realm_direct_message_permission_group);
-    if (name !== "role:nobody") {
+    if (!user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
         options.unshift(direct_messages_option);
     } else {
         options.push(direct_messages_option);

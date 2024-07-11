@@ -176,6 +176,37 @@ export function is_user_group(
     return item.members !== undefined;
 }
 
+export function is_empty_group(user_group_id: number): boolean {
+    const user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error("Could not find user group", {user_group_id});
+        return false;
+    }
+    if (user_group.members.size > 0) {
+        return false;
+    }
+
+    // Check if all the recursive subgroups are empty.
+    // Correctness of this algorithm relying on the ES6 Set
+    // implementation having the property that a `for of` loop will
+    // visit all items that are added to the set during the loop.
+    const subgroup_ids = new Set(user_group.direct_subgroup_ids);
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        if (subgroup === undefined) {
+            blueslip.error("Could not find subgroup", {subgroup_id});
+            return false;
+        }
+        if (subgroup.members.size > 0) {
+            return false;
+        }
+        for (const direct_subgroup_id of subgroup.direct_subgroup_ids) {
+            subgroup_ids.add(direct_subgroup_id);
+        }
+    }
+    return true;
+}
+
 export function get_user_groups_of_user(user_id: number): UserGroup[] {
     const user_groups_realm = get_realm_user_groups();
     const groups_of_user = user_groups_realm.filter((group) =>
