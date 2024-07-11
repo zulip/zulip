@@ -119,7 +119,7 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
             upload_emoji_image(f, realm_emoji.file_name, realm_emoji.author, backend=s3backend)
             logging.info("Uploaded emoji file in path %s", emoji_path)
     except FileNotFoundError:  # nocoverage
-        pass
+        logging.error("Emoji %d could not be loaded from local disk", realm_emoji.id)
 
 
 def transfer_emoji_to_s3(processes: int) -> None:
