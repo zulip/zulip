@@ -119,6 +119,26 @@ topic or go back to your [home view]({configure_home_view_help_url}).
             search_by_message_status_help_url="/help/search-for-messages#search-by-message-status",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=6,
+        message="""
+**Web and desktop updates**
+- You can now configure whether channel links in the left sidebar go to the most
+recent topic (default option), or to the channel feed. With the default
+configuration, you can access the feed from the channel menu.
+[Learn more]({channel_feed_help_url}).
+- You can also [configure]({automatically_go_to_conversation_help_url}) whether Zulip
+automatically takes you to the conversation to which you sent a message, if you
+aren't already viewing it.
+- You can now [filter]({find_a_dm_conversation_help_url}) direct message
+conversations in the left sidebar to conversations that include a specific
+person.
+""".format(
+            channel_feed_help_url="/help/channel-feed",
+            automatically_go_to_conversation_help_url="/help/mastering-the-compose-box#automatically-go-to-conversation-where-you-sent-a-message",
+            find_a_dm_conversation_help_url="/help/direct-messages#find-a-direct-message-conversation",
+        ),
+    ),
 ]
 
 
