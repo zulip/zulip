@@ -35,6 +35,20 @@
           label=settings_label.dense_mode
           render_only=settings_render_only.dense_mode
           prefix=prefix}}
+
+        {{#if information_density_settings.render_group}}
+        <div class="information-density-settings">
+            <div class="title">{{t "Information density settings"}}</div>
+            {{#each information_density_settings.settings.user_display_settings}}
+                {{> settings_numeric_input
+                  setting_name=this
+                  setting_value=(lookup ../settings_object this)
+                  label=(lookup ../settings_label this)
+                  render_only=(lookup ../settings_render_only.render_only this)
+                  prefix=../prefix}}
+            {{/each}}
+        </div>
+        {{/if}}
     </div>
 
     <div class="emoji-preferences {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
@@ -174,20 +188,6 @@
                 {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}
             </select>
         </div>
-
-        {{#if information_density_settings.render_group}}
-        <div class="information-density-settings">
-            <div class="title">{{t "Information density settings"}}</div>
-            {{#each information_density_settings.settings.user_display_settings}}
-                {{> settings_numeric_input
-                  setting_name=this
-                  setting_value=(lookup ../settings_object this)
-                  label=(lookup ../settings_label this)
-                  render_only=(lookup ../settings_render_only.render_only this)
-                  prefix=../prefix}}
-            {{/each}}
-        </div>
-        {{/if}}
 
         {{#each display_settings.settings.user_display_settings}}
             {{> settings_checkbox
