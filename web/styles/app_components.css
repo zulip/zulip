@@ -738,6 +738,7 @@ div.overlay {
     & thead th {
         color: inherit;
         background-color: hsl(0deg 0% 100%);
+        word-break: normal;
 
         &.active::after,
         &[data-sort]:hover::after {
