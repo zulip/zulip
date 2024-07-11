@@ -74,6 +74,7 @@ def thumbnail_s3_avatars(users: QuerySet[Any]) -> None:
             original_bytes = old_data["Body"].read()
         except Exception:
             print(f"Failed to fetch {old_base}")
+            continue
 
         avatar_bucket.Object(new_base + ".original").copy_from(
             CopySource=f"{settings.S3_AVATAR_BUCKET}/{old_base}.original",
