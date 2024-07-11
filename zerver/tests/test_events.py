@@ -56,6 +56,7 @@ from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
+from zerver.actions.realm_background import do_change_background_source
 from zerver.actions.realm_domains import (
     do_add_realm_domain,
     do_change_realm_domain,
@@ -2815,6 +2816,13 @@ class NormalActionsTest(BaseAction):
     def test_change_realm_icon_source(self) -> None:
         with self.verify_action(state_change_expected=True) as events:
             do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED, acting_user=None)
+        check_realm_update_dict("events[0]", events[0])
+
+    def test_change_realm_background_source(self) -> None:
+        with self.verify_action(state_change_expected=True) as events:
+            do_change_background_source(
+                self.user_profile.realm, Realm.BACKGROUND_UPLOADED, acting_user=None
+            )
         check_realm_update_dict("events[0]", events[0])
 
     def test_change_realm_light_theme_logo_source(self) -> None:

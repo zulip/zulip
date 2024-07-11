@@ -25,6 +25,7 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import check_add_reaction, do_add_reaction
+from zerver.actions.realm_background import do_change_background_source
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
@@ -191,6 +192,10 @@ class ExportFile(ZulipTestCase):
             do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         with get_test_image_file("img.png") as img_file:
+            upload.upload_backend.upload_realm_background_image(img_file, user_profile)
+            do_change_background_source(realm, Realm.BACKGROUND_UPLOADED, acting_user=None)
+
+        with get_test_image_file("img.png") as img_file:
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=False)
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, False, acting_user=user_profile)
         with get_test_image_file("img.png") as img_file:
@@ -279,6 +284,8 @@ class ExportFile(ZulipTestCase):
                 "logo.original",
                 "logo.png",
                 "icon.png",
+                "background.png",
+                "background.original",
                 "night_logo.original",
                 "icon.original",
             },
@@ -1616,6 +1623,11 @@ class RealmImportExportTest(ExportFile):
         self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "icon.png")))
         self.assertEqual(imported_realm.icon_source, Realm.ICON_UPLOADED)
 
+        with open(os.path.join(full_upload_path, "background.original"), "rb") as f:
+            self.assertEqual(f.read(), test_image_data)
+        self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "background.png")))
+        self.assertEqual(imported_realm.background_source, Realm.BACKGROUND_UPLOADED)
+
         with open(os.path.join(full_upload_path, "logo.original"), "rb") as f:
             self.assertEqual(f.read(), test_image_data)
         self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "logo.png")))
@@ -1680,6 +1692,14 @@ class RealmImportExportTest(ExportFile):
         resized_icon_key = avatar_bucket.Object(resized_icon_path_id)
         self.assertEqual(resized_icon_key.key, resized_icon_path_id)
         self.assertEqual(imported_realm.icon_source, Realm.ICON_UPLOADED)
+
+        original_background_path_id = os.path.join(upload_path, "background.original")
+        original_background_key = avatar_bucket.Object(original_background_path_id)
+        self.assertEqual(original_background_key.get()["Body"].read(), test_image_data)
+        resized_background_path_id = os.path.join(upload_path, "background.png")
+        resized_background_key = avatar_bucket.Object(resized_background_path_id)
+        self.assertEqual(resized_background_key.key, resized_background_path_id)
+        self.assertEqual(imported_realm.background_source, Realm.BACKGROUND_UPLOADED)
 
         original_logo_path_id = os.path.join(upload_path, "logo.original")
         original_logo_key = avatar_bucket.Object(original_logo_path_id)

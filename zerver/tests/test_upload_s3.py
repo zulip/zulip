@@ -21,6 +21,8 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import (
     DEFAULT_AVATAR_SIZE,
+    DEFAULT_BACKGROUND_HEIGHT,
+    DEFAULT_BACKGROUND_SIZE,
     DEFAULT_EMOJI_SIZE,
     MEDIUM_AVATAR_SIZE,
     resize_avatar,
@@ -413,6 +415,25 @@ class S3Test(ZulipTestCase):
         resized_image = pyvips.Image.new_from_buffer(resized_data, "")
         self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.height)
         self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.width)
+
+    @use_s3_backend
+    def test_upload_realm_background_image(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            zerver.lib.upload.upload_backend.upload_realm_background_image(image_file, user_profile)
+
+        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "background.original")
+        original_key = bucket.Object(original_path_id)
+        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
+
+        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "background.png")
+        resized_data = bucket.Object(resized_path_id).get()["Body"].read()
+        # while trying to fit in a 800 x 100 box without losing part of the image
+        resized_image = pyvips.Image.new_from_buffer(resized_data, "")
+        self.assertEqual(DEFAULT_BACKGROUND_HEIGHT, resized_image.height)
+        self.assertEqual(DEFAULT_BACKGROUND_SIZE, resized_image.width)
 
     @use_s3_backend
     def _test_upload_logo_image(self, night: bool, file_name: str) -> None:

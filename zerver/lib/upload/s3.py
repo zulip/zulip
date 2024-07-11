@@ -13,7 +13,7 @@ from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import override
 
 from zerver.lib.mime_types import guess_type
-from zerver.lib.thumbnail import resize_avatar, resize_logo
+from zerver.lib.thumbnail import resize_avatar, resize_background, resize_logo
 from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
 
@@ -320,6 +320,38 @@ class S3UploadBackend(ZulipUploadBackend):
         )
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
+
+    @override
+    def get_realm_background_url(self, realm_id: int, version: int) -> str:
+        public_url = self.get_public_upload_url(f"{realm_id}/realm/background.png")
+        return public_url + f"?version={version}"
+
+    @override
+    def upload_realm_background_image(
+        self, background_file: IO[bytes], user_profile: UserProfile
+    ) -> None:
+        content_type = guess_type(background_file.name)[0]
+        s3_file_name = os.path.join(
+            self.realm_avatar_and_logo_path(user_profile.realm), "background"
+        )
+
+        image_data = background_file.read()
+        upload_image_to_s3(
+            self.avatar_bucket,
+            s3_file_name + ".original",
+            content_type,
+            user_profile,
+            image_data,
+        )
+
+        resized_data = resize_background(image_data)
+        upload_image_to_s3(
+            self.avatar_bucket,
+            s3_file_name + ".png",
+            "image/png",
+            user_profile,
+            resized_data,
+        )
 
     @override
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:

@@ -46,6 +46,7 @@ const reactions = mock_esm("../src/reactions", {
     generate_clean_reactions() {},
 });
 const realm_icon = mock_esm("../src/realm_icon");
+const realm_background = mock_esm("../src/realm_background");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
 const reload = mock_esm("../src/reload");
@@ -600,6 +601,17 @@ run_test("realm settings", ({override}) => {
 
     assert_same(realm.realm_icon_url, "icon.png");
     assert_same(realm.realm_icon_source, "U");
+
+    event = event_fixtures.realm__update_dict__background;
+    override(realm_background, "rerender", noop);
+
+    test_electron_dispatch(event, (key, val) => {
+        assert_same(key, "realm_background_url");
+        assert_same(val, "background.png");
+    });
+
+    assert_same(realm.realm_background_url, "background.png");
+    assert_same(realm.realm_background_source, "U");
 
     override(realm_logo, "render", noop);
 

@@ -157,6 +157,8 @@ export function build_page() {
         realm_icon_url: realm.realm_icon_url,
         realm_logo_source: realm.realm_logo_source,
         realm_logo_url: realm.realm_logo_url,
+        realm_background_source: realm.realm_background_source,
+        realm_background_url: realm.realm_background_url,
         realm_night_logo_source: realm.realm_night_logo_source,
         realm_night_logo_url: realm.realm_night_logo_url,
         realm_mandatory_topics: realm.realm_mandatory_topics,

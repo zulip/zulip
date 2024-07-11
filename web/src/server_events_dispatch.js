@@ -37,6 +37,7 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as reactions from "./reactions";
+import * as realm_background from "./realm_background";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
@@ -317,6 +318,20 @@ export function dispatch_normal_event(event) {
                                 settings_org.populate_auth_methods(
                                     settings_components.realm_authentication_methods_to_boolean_dict(),
                                 );
+                            }
+                            break;
+                        case "background":
+                            realm.realm_background_url = event.data.background_url;
+                            realm.realm_background_source = event.data.background_source;
+                            realm_background.rerender();
+                            {
+                                const electron_bridge = window.electron_bridge;
+                                if (electron_bridge !== undefined) {
+                                    electron_bridge.send_event(
+                                        "realm_background_url",
+                                        event.data.background_url,
+                                    );
+                                }
                             }
                             break;
                         case "icon":

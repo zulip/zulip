@@ -146,6 +146,7 @@ SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 # File uploads and avatars
 # TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
 DEFAULT_AVATAR_URI: Optional[str] = None
+DEFAULT_BACKGROUND_URI: Optional[str] = None
 DEFAULT_LOGO_URI: Optional[str] = None
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
@@ -432,6 +433,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
 MAX_AVATAR_FILE_SIZE_MIB = 5
 MAX_ICON_FILE_SIZE_MIB = 5
 MAX_LOGO_FILE_SIZE_MIB = 5
+MAX_BACKGROUND_FILE_SIZE_MIB = 7
 MAX_EMOJI_FILE_SIZE_MIB = 5
 
 # Limits to help prevent spam, in particular by sending invitations.

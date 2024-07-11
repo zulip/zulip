@@ -768,6 +768,17 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
     icon_version = models.PositiveSmallIntegerField(default=1)
 
+    # Background is the wide image shown in the login page.
+    BACKGROUND_DEFAULT = "D"
+    BACKGROUND_UPLOADED = "U"
+    BACKGROUND_SOURCES = ((BACKGROUND_UPLOADED, "Uploaded by administrator"),)
+    background_source = models.CharField(
+        default=BACKGROUND_DEFAULT,
+        choices=BACKGROUND_SOURCES,
+        max_length=1,
+    )
+    background_version = models.PositiveSmallIntegerField(default=1)
+
     # Logo is the horizontal logo we show in top-left of web app navbar UI.
     LOGO_DEFAULT = "D"
     LOGO_UPLOADED = "U"

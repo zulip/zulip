@@ -15,6 +15,9 @@ DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
 DEFAULT_EMOJI_SIZE = 64
 
+DEFAULT_BACKGROUND_SIZE = 1280
+DEFAULT_BACKGROUND_HEIGHT = 720
+
 # We refuse to deal with any image whose total pixelcount exceeds this.
 IMAGE_BOMB_TOTAL_PIXELS = 90000000
 
@@ -72,6 +75,18 @@ def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
             image_data,
             size,
             height=size,
+            crop=pyvips.Interesting.CENTRE,
+        ).write_to_buffer(".png")
+
+
+def resize_background(
+    image_data: bytes, size: int = DEFAULT_BACKGROUND_SIZE, height: int = DEFAULT_BACKGROUND_HEIGHT
+) -> bytes:
+    with libvips_check_image(image_data):
+        return pyvips.Image.thumbnail_buffer(
+            image_data,
+            size,
+            height=height,
             crop=pyvips.Interesting.CENTRE,
         ).write_to_buffer(".png")
 
