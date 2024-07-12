@@ -1242,7 +1242,8 @@ ul.popover-group-menu-member-list {
 }
 
 #user_card_popover {
-    --popover-menu-max-width: 250px;
+    /* 250px at 14px/1em */
+    --popover-menu-max-width: 17.8571em;
 
     .simplebar-content {
         min-width: var(--user-card-popover-min-width);
