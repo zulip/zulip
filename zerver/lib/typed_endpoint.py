@@ -1,5 +1,6 @@
 import inspect
 import json
+import types
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import wraps
@@ -169,7 +170,7 @@ def is_annotated(type_annotation: Type[object]) -> bool:
 def is_optional(type_annotation: Type[object]) -> bool:
     origin = get_origin(type_annotation)
     type_args = get_args(type_annotation)
-    return origin is Union and type(None) in type_args and len(type_args) == 2
+    return origin in (Union, types.UnionType) and type(None) in type_args and len(type_args) == 2
 
 
 API_PARAM_CONFIG_USAGE_HINT = f"""
