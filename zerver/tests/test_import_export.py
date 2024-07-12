@@ -4,7 +4,7 @@ import shutil
 import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable
 from unittest.mock import patch
 
 import orjson
@@ -321,8 +321,8 @@ class RealmImportExportTest(ExportFile):
     def export_realm(
         self,
         realm: Realm,
-        exportable_user_ids: Optional[set[int]] = None,
-        consent_message_id: Optional[int] = None,
+        exportable_user_ids: set[int] | None = None,
+        consent_message_id: int | None = None,
         public_only: bool = False,
     ) -> None:
         output_dir = make_export_output_dir()
@@ -351,8 +351,8 @@ class RealmImportExportTest(ExportFile):
     def export_realm_and_create_auditlog(
         self,
         original_realm: Realm,
-        exportable_user_ids: Optional[set[int]] = None,
-        consent_message_id: Optional[int] = None,
+        exportable_user_ids: set[int] | None = None,
+        consent_message_id: int | None = None,
         public_only: bool = False,
     ) -> None:
         RealmAuditLog.objects.create(
@@ -1560,7 +1560,7 @@ class RealmImportExportTest(ExportFile):
 
             def mock_send_to_push_bouncer_response(  # type: ignore[return]
                 method: str, *args: Any
-            ) -> Optional[dict[str, int]]:
+            ) -> dict[str, int] | None:
                 if method == "GET":
                     return get_response
 

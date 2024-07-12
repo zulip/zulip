@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Union
+from typing import Any
 
 from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
@@ -772,7 +772,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_change_user_settings(self) -> None:
         user = self.example_user("hamlet")
-        value: Union[bool, int, str]
+        value: bool | int | str
         test_values = dict(
             default_language="de",
             web_home_view="all_messages",

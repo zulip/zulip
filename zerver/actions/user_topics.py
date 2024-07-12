@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -20,7 +20,7 @@ def bulk_do_set_user_topic_visibility_policy(
     topic_name: str,
     *,
     visibility_policy: int,
-    last_updated: Optional[datetime] = None,
+    last_updated: datetime | None = None,
     skip_muted_topics_event: bool = False,
 ) -> None:
     if last_updated is None:
@@ -68,7 +68,7 @@ def do_set_user_topic_visibility_policy(
     topic_name: str,
     *,
     visibility_policy: int,
-    last_updated: Optional[datetime] = None,
+    last_updated: datetime | None = None,
     skip_muted_topics_event: bool = False,
 ) -> None:
     # For conciseness, this function should be used when a single

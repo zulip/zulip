@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Protocol, Union
+from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
@@ -176,7 +176,7 @@ def get_merge_request_open_or_updated_body(
     )
 
 
-def get_assignees(payload: WildValue) -> Union[list[WildValue], WildValue]:
+def get_assignees(payload: WildValue) -> list[WildValue] | WildValue:
     assignee_details = payload.get("assignees")
     if not assignee_details:
         single_assignee_details = payload.get("assignee")
@@ -189,7 +189,7 @@ def get_assignees(payload: WildValue) -> Union[list[WildValue], WildValue]:
 
 
 def replace_assignees_username_with_name(
-    assignees: Union[list[WildValue], WildValue],
+    assignees: list[WildValue] | WildValue,
 ) -> list[dict[str, str]]:
     """Replace the username of each assignee with their (full) name.
 
@@ -423,7 +423,7 @@ def api_gitlab_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
     use_merge_request_title: Json[bool] = True,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
@@ -508,7 +508,7 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
     return get_repo_name(payload)
 
 
-def get_event(request: HttpRequest, payload: WildValue, branches: Optional[str]) -> Optional[str]:
+def get_event(request: HttpRequest, payload: WildValue, branches: str | None) -> str | None:
     event = validate_extract_webhook_http_header(request, "X-GitLab-Event", "GitLab")
     if event == "System Hook":
         # Convert the event name to a GitLab event title

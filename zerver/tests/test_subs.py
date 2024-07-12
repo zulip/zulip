@@ -2,7 +2,7 @@ import hashlib
 import random
 from datetime import timedelta
 from io import StringIO
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Sequence
 from unittest import mock
 
 import orjson
@@ -2568,7 +2568,7 @@ class StreamAdminTest(ZulipTestCase):
         self,
         target_users: list[UserProfile],
         query_count: int,
-        cache_count: Optional[int] = None,
+        cache_count: int | None = None,
         is_realm_admin: bool = False,
         is_subbed: bool = True,
         invite_only: bool = False,
@@ -4688,7 +4688,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def assert_adding_subscriptions_for_principal(
         self,
-        invitee_data: Union[str, int],
+        invitee_data: str | int,
         invitee_realm: Realm,
         streams: list[str],
         policy_name: str,
@@ -6018,7 +6018,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
     def make_subscriber_request(
-        self, stream_id: int, user: Optional[UserProfile] = None
+        self, stream_id: int, user: UserProfile | None = None
     ) -> "TestHttpResponse":
         if user is None:
             user = self.user_profile

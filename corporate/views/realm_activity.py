@@ -2,7 +2,7 @@ import itertools
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Collection, Optional
+from typing import Any, Collection
 
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
@@ -27,8 +27,8 @@ class UserActivitySummary:
     user_id: int
     user_type: str
     messages_sent: int
-    last_heard_from: Optional[datetime]
-    last_message_sent: Optional[datetime]
+    last_heard_from: datetime | None
+    last_message_sent: datetime | None
 
 
 def get_user_activity_records_for_realm(realm: str) -> QuerySet[UserActivity]:
@@ -67,8 +67,8 @@ def get_user_activity_summary(records: Collection[UserActivity]) -> UserActivity
             user_type = UserProfile.BOT_TYPES[bot_type]
 
     messages = 0
-    heard_from: Optional[datetime] = None
-    last_sent: Optional[datetime] = None
+    heard_from: datetime | None = None
+    last_sent: datetime | None = None
 
     for record in records:
         query = str(record.query)

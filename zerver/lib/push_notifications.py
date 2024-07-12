@@ -102,7 +102,7 @@ class UserPushIdentityCompat:
     may be represented either by an id or uuid.
     """
 
-    def __init__(self, user_id: Optional[int] = None, user_uuid: Optional[str] = None) -> None:
+    def __init__(self, user_id: int | None = None, user_uuid: str | None = None) -> None:
         assert user_id is not None or user_uuid is not None
         self.user_id = user_id
         self.user_uuid = user_uuid
@@ -157,7 +157,7 @@ def has_apns_credentials() -> bool:
 
 
 @cache
-def get_apns_context() -> Optional[APNsContext]:
+def get_apns_context() -> APNsContext | None:
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
     import aioapns
@@ -286,7 +286,7 @@ def send_apple_push_notification(
         devices = [device for device in devices if device.ios_app_id is not None]
 
     async def send_all_notifications() -> (
-        Iterable[tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]]
+        Iterable[tuple[DeviceToken, aioapns.common.NotificationResult | BaseException]]
     ):
         requests = [
             aioapns.NotificationRequest(
@@ -643,7 +643,7 @@ def send_notifications_to_bouncer(
 
 
 def add_push_device_token(
-    user_profile: UserProfile, token_str: str, kind: int, ios_app_id: Optional[str] = None
+    user_profile: UserProfile, token_str: str, kind: int, ios_app_id: str | None = None
 ) -> None:
     logger.info(
         "Registering push device: %d %r %d %r", user_profile.id, token_str, kind, ios_app_id
@@ -961,8 +961,8 @@ def get_base_payload(user_profile: UserProfile) -> dict[str, Any]:
 def get_message_payload(
     user_profile: UserProfile,
     message: Message,
-    mentioned_user_group_id: Optional[int] = None,
-    mentioned_user_group_name: Optional[str] = None,
+    mentioned_user_group_id: int | None = None,
+    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> dict[str, Any]:
     """Common fields for `message` payloads, for all platforms."""
@@ -1020,7 +1020,7 @@ def get_apns_alert_subtitle(
     message: Message,
     trigger: str,
     user_profile: UserProfile,
-    mentioned_user_group_name: Optional[str] = None,
+    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> str:
     """
@@ -1056,7 +1056,7 @@ def get_apns_alert_subtitle(
 
 
 def get_apns_badge_count(
-    user_profile: UserProfile, read_messages_ids: Optional[Sequence[int]] = []
+    user_profile: UserProfile, read_messages_ids: Sequence[int] | None = []
 ) -> int:
     # NOTE: We have temporarily set get_apns_badge_count to always
     # return 0 until we can debug a likely mobile app side issue with
@@ -1065,7 +1065,7 @@ def get_apns_badge_count(
 
 
 def get_apns_badge_count_future(
-    user_profile: UserProfile, read_messages_ids: Optional[Sequence[int]] = []
+    user_profile: UserProfile, read_messages_ids: Sequence[int] | None = []
 ) -> int:
     # Future implementation of get_apns_badge_count; unused but
     # we expect to use this once we resolve client-side bugs.
@@ -1087,8 +1087,8 @@ def get_message_payload_apns(
     user_profile: UserProfile,
     message: Message,
     trigger: str,
-    mentioned_user_group_id: Optional[int] = None,
-    mentioned_user_group_name: Optional[str] = None,
+    mentioned_user_group_id: int | None = None,
+    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
@@ -1120,8 +1120,8 @@ def get_message_payload_apns(
 def get_message_payload_gcm(
     user_profile: UserProfile,
     message: Message,
-    mentioned_user_group_id: Optional[int] = None,
-    mentioned_user_group_name: Optional[str] = None,
+    mentioned_user_group_id: int | None = None,
+    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """A `message` payload + options, for Android via FCM."""

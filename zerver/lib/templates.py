@@ -1,5 +1,5 @@
 import time
-from typing import Any, Optional
+from typing import Any
 
 import markdown
 import markdown.extensions.admonition
@@ -66,8 +66,8 @@ def display_list(values: list[str], display_limit: int) -> str:
     return display_string
 
 
-md_extensions: Optional[list[markdown.Extension]] = None
-md_macro_extension: Optional[markdown.Extension] = None
+md_extensions: list[markdown.Extension] | None = None
+md_macro_extension: markdown.Extension | None = None
 # Prevent the automatic substitution of macros in these docs. If
 # they contain a macro, it is always used literally for documenting
 # the macro system.
@@ -85,7 +85,7 @@ docs_without_macros = [
 @register.filter(name="render_markdown_path", is_safe=True)
 def render_markdown_path(
     markdown_file_path: str,
-    context: Optional[dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     integration_doc: bool = False,
     help_center: bool = False,
 ) -> str:

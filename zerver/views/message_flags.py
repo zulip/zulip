@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
@@ -24,7 +22,7 @@ from zerver.lib.typed_endpoint import (
 from zerver.models import UserActivity, UserProfile
 
 
-def get_latest_update_message_flag_activity(user_profile: UserProfile) -> Optional[UserActivity]:
+def get_latest_update_message_flag_activity(user_profile: UserProfile) -> UserActivity | None:
     return (
         UserActivity.objects.filter(
             user_profile=user_profile,
@@ -77,7 +75,7 @@ def update_message_flags_for_narrow(
     include_anchor: Json[bool] = True,
     num_before: Json[NonNegativeInt],
     num_after: Json[NonNegativeInt],
-    narrow: Json[Optional[list[NarrowParameter]]],
+    narrow: Json[list[NarrowParameter] | None],
     operation: Annotated[str, ApiParamConfig("op")],
     flag: str,
 ) -> HttpResponse:

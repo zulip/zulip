@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
@@ -159,9 +159,9 @@ web_home_view_options = ["recent_topics", "inbox", "all_messages"]
 
 
 def check_settings_values(
-    notification_sound: Optional[str],
-    email_notifications_batching_period_seconds: Optional[int],
-    default_language: Optional[str] = None,
+    notification_sound: str | None,
+    email_notifications_batching_period_seconds: int | None,
+    default_language: str | None = None,
 ) -> None:
     # We can't use REQ for this widget because
     # get_available_language_codes requires provisioning to be
@@ -197,129 +197,113 @@ def check_settings_values(
 def json_change_settings(
     request: HttpRequest,
     user_profile: UserProfile,
-    full_name: Optional[str] = REQ(default=None),
-    email: Optional[str] = REQ(default=None),
-    old_password: Optional[str] = REQ(default=None),
-    new_password: Optional[str] = REQ(default=None),
-    twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    web_mark_read_on_scroll_policy: Optional[int] = REQ(
+    full_name: str | None = REQ(default=None),
+    email: str | None = REQ(default=None),
+    old_password: str | None = REQ(default=None),
+    new_password: str | None = REQ(default=None),
+    twenty_four_hour_time: bool | None = REQ(json_validator=check_bool, default=None),
+    dense_mode: bool | None = REQ(json_validator=check_bool, default=None),
+    web_mark_read_on_scroll_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
         default=None,
     ),
-    web_channel_default_view: Optional[int] = REQ(
+    web_channel_default_view: int | None = REQ(
         json_validator=check_int_in(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES),
         default=None,
     ),
-    starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    receives_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    color_scheme: Optional[int] = REQ(
+    starred_message_counts: bool | None = REQ(json_validator=check_bool, default=None),
+    receives_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    fluid_layout_width: bool | None = REQ(json_validator=check_bool, default=None),
+    high_contrast_mode: bool | None = REQ(json_validator=check_bool, default=None),
+    color_scheme: int | None = REQ(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
-    web_font_size_px: Optional[int] = REQ(json_validator=check_int, default=None),
-    web_line_height_percent: Optional[int] = REQ(json_validator=check_int, default=None),
-    translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    default_language: Optional[str] = REQ(default=None),
-    web_home_view: Optional[str] = REQ(
+    web_font_size_px: int | None = REQ(json_validator=check_int, default=None),
+    web_line_height_percent: int | None = REQ(json_validator=check_int, default=None),
+    translate_emoticons: bool | None = REQ(json_validator=check_bool, default=None),
+    display_emoji_reaction_users: bool | None = REQ(json_validator=check_bool, default=None),
+    default_language: str | None = REQ(default=None),
+    web_home_view: str | None = REQ(
         str_validator=check_string_in(web_home_view_options), default=None
     ),
-    web_escape_navigates_to_home_view: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
-    demote_inactive_streams: Optional[int] = REQ(
+    web_escape_navigates_to_home_view: bool | None = REQ(json_validator=check_bool, default=None),
+    left_side_userlist: bool | None = REQ(json_validator=check_bool, default=None),
+    emojiset: str | None = REQ(str_validator=check_string_in(emojiset_choices), default=None),
+    demote_inactive_streams: int | None = REQ(
         json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
     ),
-    web_stream_unreads_count_display_policy: Optional[int] = REQ(
+    web_stream_unreads_count_display_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
         default=None,
     ),
-    timezone: Optional[str] = REQ(str_validator=check_timezone, default=None),
-    email_notifications_batching_period_seconds: Optional[int] = REQ(
+    timezone: str | None = REQ(str_validator=check_timezone, default=None),
+    email_notifications_batching_period_seconds: int | None = REQ(
         json_validator=check_int, default=None
     ),
-    enable_drafts_synchronization: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_stream_desktop_notifications: Optional[bool] = REQ(
+    enable_drafts_synchronization: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_stream_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_stream_email_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_stream_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_stream_audible_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    wildcard_mentions_notify: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_followed_topic_desktop_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_stream_email_notifications: Optional[bool] = REQ(
+    enable_followed_topic_email_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_stream_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_stream_audible_notifications: Optional[bool] = REQ(
+    enable_followed_topic_push_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_followed_topic_desktop_notifications: Optional[bool] = REQ(
+    enable_followed_topic_audible_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_followed_topic_email_notifications: Optional[bool] = REQ(
+    enable_followed_topic_wildcard_mentions_notify: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_followed_topic_push_notifications: Optional[bool] = REQ(
+    notification_sound: str | None = REQ(default=None),
+    enable_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_sounds: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_offline_email_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_offline_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_online_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_digest_emails: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_login_emails: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_marketing_emails: bool | None = REQ(json_validator=check_bool, default=None),
+    message_content_in_email_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_followed_topic_audible_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_followed_topic_wildcard_mentions_notify: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    notification_sound: Optional[str] = REQ(default=None),
-    enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_offline_email_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_offline_push_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_online_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_digest_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_login_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_marketing_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    message_content_in_email_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    pm_content_in_desktop_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    desktop_icon_count_display: Optional[int] = REQ(
+    pm_content_in_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    desktop_icon_count_display: int | None = REQ(
         json_validator=check_int_in(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES), default=None
     ),
-    realm_name_in_email_notifications_policy: Optional[int] = REQ(
+    realm_name_in_email_notifications_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
         default=None,
     ),
-    automatically_follow_topics_policy: Optional[int] = REQ(
+    automatically_follow_topics_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         default=None,
     ),
-    automatically_unmute_topics_in_muted_streams_policy: Optional[int] = REQ(
+    automatically_unmute_topics_in_muted_streams_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         default=None,
     ),
-    automatically_follow_topics_where_mentioned: Optional[bool] = REQ(
+    automatically_follow_topics_where_mentioned: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    send_private_typing_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    user_list_style: Optional[int] = REQ(
+    presence_enabled: bool | None = REQ(json_validator=check_bool, default=None),
+    enter_sends: bool | None = REQ(json_validator=check_bool, default=None),
+    send_private_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    send_stream_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    send_read_receipts: bool | None = REQ(json_validator=check_bool, default=None),
+    user_list_style: int | None = REQ(
         json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
     ),
-    email_address_visibility: Optional[int] = REQ(
+    email_address_visibility: int | None = REQ(
         json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
-    web_navigate_to_sent_message: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    web_navigate_to_sent_message: bool | None = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if (
         default_language is not None

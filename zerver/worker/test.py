@@ -1,7 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
 import time
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Mapping, Sequence
 
 import orjson
 from django.conf import settings
@@ -35,7 +35,7 @@ class NoopWorker(QueueProcessingWorker):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
-        worker_num: Optional[int] = None,
+        worker_num: int | None = None,
         max_consume: int = 1000,
         slow_queries: Sequence[int] = [],
     ) -> None:

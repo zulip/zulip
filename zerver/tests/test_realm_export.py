@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 from unittest.mock import patch
 
 import botocore.exceptions
@@ -118,10 +117,10 @@ class RealmExportTest(ZulipTestCase):
             realm: Realm,
             output_dir: str,
             threads: int,
-            exportable_user_ids: Optional[set[int]] = None,
+            exportable_user_ids: set[int] | None = None,
             public_only: bool = False,
-            consent_message_id: Optional[int] = None,
-            export_as_active: Optional[bool] = None,
+            consent_message_id: int | None = None,
+            export_as_active: bool | None = None,
         ) -> str:
             self.assertEqual(realm, admin.realm)
             self.assertEqual(public_only, True)

@@ -19,10 +19,8 @@ from typing import (
     Literal,
     Mapping,
     MutableMapping,
-    Optional,
     Sequence,
     TypedDict,
-    Union,
     cast,
 )
 
@@ -76,7 +74,7 @@ class ClientDescriptor:
         user_profile_id: int,
         realm_id: int,
         event_queue: "EventQueue",
-        event_types: Optional[Sequence[str]],
+        event_types: Sequence[str] | None,
         client_type_name: str,
         apply_markdown: bool = True,
         client_gravatar: bool = True,
@@ -101,8 +99,8 @@ class ClientDescriptor:
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
         self.realm_id = realm_id
-        self.current_handler_id: Optional[int] = None
-        self.current_client_name: Optional[str] = None
+        self.current_handler_id: int | None = None
+        self.current_client_name: str | None = None
         self.event_queue = event_queue
         self.event_types = event_types
         self.last_connection_time = time.time()
@@ -317,7 +315,7 @@ class EventQueue:
         self.queue: deque[dict[str, Any]] = deque()
         self.next_event_id: int = 0
         # will only be None for migration from old versions
-        self.newest_pruned_id: Optional[int] = -1
+        self.newest_pruned_id: int | None = -1
         self.id: str = id
         self.virtual_events: dict[str, dict[str, Any]] = {}
 
@@ -663,7 +661,7 @@ def mark_clients_to_reload(queue_ids: Iterable[str]) -> None:
         web_reload_clients[qid] = True
 
 
-def send_web_reload_client_events(immediate: bool = False, count: Optional[int] = None) -> int:
+def send_web_reload_client_events(immediate: bool = False, count: int | None = None) -> int:
     event: dict[str, Any] = dict(
         type="web_reload_client",
         immediate=immediate,
@@ -699,11 +697,11 @@ async def setup_event_queue(
 
 
 def fetch_events(
-    queue_id: Optional[str],
+    queue_id: str | None,
     dont_block: bool,
-    last_event_id: Optional[int],
+    last_event_id: int | None,
     user_profile_id: int,
-    new_queue_data: Optional[MutableMapping[str, Any]],
+    new_queue_data: MutableMapping[str, Any] | None,
     client_type_name: str,
     handler_id: int,
 ) -> dict[str, Any]:
@@ -933,7 +931,7 @@ def maybe_enqueue_notifications(
     user_notifications_data: UserMessageNotificationsData,
     acting_user_id: int,
     message_id: int,
-    mentioned_user_group_id: Optional[int],
+    mentioned_user_group_id: int | None,
     idle: bool,
     already_notified: dict[str, bool],
 ) -> dict[str, bool]:
@@ -998,7 +996,7 @@ def get_client_info_for_message_event(
 
     send_to_clients: dict[str, ClientInfo] = {}
 
-    sender_queue_id: Optional[str] = event_template.get("sender_queue_id", None)
+    sender_queue_id: str | None = event_template.get("sender_queue_id", None)
 
     def is_sender_client(client: ClientDescriptor) -> bool:
         return (sender_queue_id is not None) and client.event_queue.id == sender_queue_id
@@ -1129,7 +1127,7 @@ def process_message_event(
     for user_data in users:
         user_profile_id: int = user_data["id"]
         flags: Collection[str] = user_data.get("flags", [])
-        mentioned_user_group_id: Optional[int] = user_data.get("mentioned_user_group_id")
+        mentioned_user_group_id: int | None = user_data.get("mentioned_user_group_id")
 
         # If the recipient was offline and the message was a (1:1 or group) direct message
         # to them or they were @-notified potentially notify more immediately
@@ -1188,7 +1186,7 @@ def process_message_event(
         client = client_data["client"]
         flags = client_data["flags"]
         is_sender: bool = client_data.get("is_sender", False)
-        extra_data: Optional[Mapping[str, bool]] = extra_user_data.get(client.user_profile_id, None)
+        extra_data: Mapping[str, bool] | None = extra_user_data.get(client.user_profile_id, None)
 
         if not client.accepts_messages():
             # The actual check is the accepts_event() check below;
@@ -1525,7 +1523,7 @@ def maybe_enqueue_notifications_for_message_update(
 
 
 def reformat_legacy_send_message_event(
-    event: Mapping[str, Any], users: Union[list[int], list[Mapping[str, Any]]]
+    event: Mapping[str, Any], users: list[int] | list[Mapping[str, Any]]
 ) -> tuple[MutableMapping[str, Any], Collection[MutableMapping[str, Any]]]:
     # do_send_messages used to send events with users in dict format, with the
     # dict containing the user_id and other data. We later trimmed down the user
@@ -1570,7 +1568,7 @@ def reformat_legacy_send_message_event(
 
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
-    users: Union[list[int], list[Mapping[str, Any]]] = notice["users"]
+    users: list[int] | list[Mapping[str, Any]] = notice["users"]
     start_time = time.perf_counter()
 
     if event["type"] == "message":

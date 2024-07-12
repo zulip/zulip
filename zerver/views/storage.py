@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
 
@@ -35,7 +33,7 @@ def get_storage(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    keys: Json[Optional[list[str]]] = None,
+    keys: Json[list[str] | None] = None,
 ) -> HttpResponse:
     if keys is None:
         keys = get_keys_in_bot_storage(user_profile)
@@ -51,7 +49,7 @@ def remove_storage(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    keys: Json[Optional[list[str]]] = None,
+    keys: Json[list[str] | None] = None,
 ) -> HttpResponse:
     if keys is None:
         keys = get_keys_in_bot_storage(user_profile)

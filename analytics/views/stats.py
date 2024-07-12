@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional, TypeVar, Union, cast
+from typing import Any, Optional, TypeVar, cast
 
 from django.conf import settings
 from django.db.models import QuerySet
@@ -52,9 +52,9 @@ def is_analytics_ready(realm: Realm) -> bool:
 def render_stats(
     request: HttpRequest,
     data_url_suffix: str,
-    realm: Optional[Realm],
+    realm: Realm | None,
     *,
-    title: Optional[str] = None,
+    title: str | None = None,
     analytics_ready: bool = True,
 ) -> HttpResponse:
     assert request.user.is_authenticated
@@ -246,25 +246,25 @@ def get_chart_data(
     request: HttpRequest,
     user_profile: UserProfile,
     chart_name: str = REQ(),
-    min_length: Optional[int] = REQ(converter=to_non_negative_int, default=None),
-    start: Optional[datetime] = REQ(converter=to_utc_datetime, default=None),
-    end: Optional[datetime] = REQ(converter=to_utc_datetime, default=None),
+    min_length: int | None = REQ(converter=to_non_negative_int, default=None),
+    start: datetime | None = REQ(converter=to_utc_datetime, default=None),
+    end: datetime | None = REQ(converter=to_utc_datetime, default=None),
     # These last several parameters are only used by functions
     # wrapping get_chart_data; the callers are responsible for
     # parsing/validation/authorization for them.
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
     for_installation: bool = False,
     remote: bool = False,
-    remote_realm_id: Optional[int] = None,
+    remote_realm_id: int | None = None,
     server: Optional["RemoteZulipServer"] = None,
-    stream: Optional[Stream] = None,
+    stream: Stream | None = None,
 ) -> HttpResponse:
-    TableType: TypeAlias = Union[
-        type["RemoteInstallationCount"],
-        type[InstallationCount],
-        type["RemoteRealmCount"],
-        type[RealmCount],
-    ]
+    TableType: TypeAlias = (
+        type["RemoteInstallationCount"]
+        | type[InstallationCount]
+        | type["RemoteRealmCount"]
+        | type[RealmCount]
+    )
     if for_installation:
         if remote:
             assert settings.ZILENCER_ENABLED
@@ -281,9 +281,9 @@ def get_chart_data(
         else:
             aggregate_table = RealmCount
 
-    tables: Union[
-        tuple[TableType], tuple[TableType, type[UserCount]], tuple[TableType, type[StreamCount]]
-    ]
+    tables: (
+        tuple[TableType] | tuple[TableType, type[UserCount]] | tuple[TableType, type[StreamCount]]
+    )
 
     if chart_name == "number_of_humans":
         stats = [
@@ -292,7 +292,7 @@ def get_chart_data(
             COUNT_STATS["active_users_audit:is_bot:day"],
         ]
         tables = (aggregate_table,)
-        subgroup_to_label: dict[CountStat, dict[Optional[str], str]] = {
+        subgroup_to_label: dict[CountStat, dict[str | None, str]] = {
             stats[0]: {None: "_1day"},
             stats[1]: {None: "_15day"},
             stats[2]: {"false": "all_time"},
@@ -372,7 +372,7 @@ def get_chart_data(
         assert server is not None
         assert aggregate_table is RemoteInstallationCount or aggregate_table is RemoteRealmCount
         aggregate_table_remote = cast(
-            Union[type[RemoteInstallationCount], type[RemoteRealmCount]], aggregate_table
+            type[RemoteInstallationCount] | type[RemoteRealmCount], aggregate_table
         )  # https://stackoverflow.com/questions/68540528/mypy-assertions-on-the-types-of-types
         if not aggregate_table_remote.objects.filter(server=server).exists():
             raise JsonableError(
@@ -552,7 +552,7 @@ def get_time_series_by_subgroup(
     table: type[BaseCount],
     key_id: int,
     end_times: list[datetime],
-    subgroup_to_label: dict[Optional[str], str],
+    subgroup_to_label: dict[str | None, str],
     include_empty_subgroups: bool,
 ) -> dict[str, list[int]]:
     queryset = (
@@ -560,7 +560,7 @@ def get_time_series_by_subgroup(
         .filter(property=stat.property)
         .values_list("subgroup", "end_time", "value")
     )
-    value_dicts: dict[Optional[str], dict[datetime, int]] = defaultdict(lambda: defaultdict(int))
+    value_dicts: dict[str | None, dict[datetime, int]] = defaultdict(lambda: defaultdict(int))
     for subgroup, end_time, value in queryset:
         value_dicts[subgroup][end_time] = value
     value_arrays = {}

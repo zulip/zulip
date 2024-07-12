@@ -10,7 +10,7 @@ import signal
 import sys
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
-from typing import Match, Optional, TextIO
+from typing import Match, TextIO
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
@@ -428,7 +428,7 @@ def passes_filters(
         return not args.no_other
 
 
-last_match_end: Optional[datetime] = None
+last_match_end: datetime | None = None
 
 
 def print_line(

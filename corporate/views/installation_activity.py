@@ -1,5 +1,4 @@
 from collections import defaultdict
-from typing import Optional
 
 from django.conf import settings
 from django.db import connection
@@ -65,7 +64,7 @@ def get_realm_day_counts() -> dict[str, dict[str, Markup]]:
     for row in rows:
         counts[row["string_id"]][row["age"]] = row["cnt"]
 
-    def format_count(cnt: int, style: Optional[str] = None) -> Markup:
+    def format_count(cnt: int, style: str | None = None) -> Markup:
         if style is not None:
             good_bad = style
         elif cnt == min_cnt:

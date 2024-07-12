@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import time
-from typing import Optional, Sequence
+from typing import Sequence
 
 from django.http import HttpRequest, HttpResponse
 
@@ -318,7 +318,7 @@ def amount_string(amount: int, currency: str) -> str:
 
 
 def linkified_id(object_id: str, lower: bool = False) -> str:
-    names_and_urls: dict[str, tuple[str, Optional[str]]] = {
+    names_and_urls: dict[str, tuple[str, str | None]] = {
         # Core resources
         "ch": ("Charge", "charges"),
         "cus": ("Customer", "customers"),

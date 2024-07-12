@@ -1,6 +1,5 @@
 import sys
 import unittest
-from typing import Optional
 
 try:
     from tools.lib.template_parser import (
@@ -18,9 +17,9 @@ class ParserTest(unittest.TestCase):
     def _assert_validate_error(
         self,
         error: str,
-        fn: Optional[str] = None,
-        text: Optional[str] = None,
-        template_format: Optional[str] = None,
+        fn: str | None = None,
+        text: str | None = None,
+        template_format: str | None = None,
     ) -> None:
         with self.assertRaisesRegex(TemplateParserError, error):
             validate(fn=fn, text=text, template_format=template_format)

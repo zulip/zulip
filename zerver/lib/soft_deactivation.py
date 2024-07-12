@@ -1,7 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from typing import Any, Iterable, Optional, Sequence, TypedDict, Union
+from typing import Any, Iterable, Sequence, TypedDict
 
 from django.conf import settings
 from django.db import transaction
@@ -267,7 +267,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
 
 
 def do_soft_deactivate_users(
-    users: Union[Sequence[UserProfile], QuerySet[UserProfile]],
+    users: Sequence[UserProfile] | QuerySet[UserProfile],
 ) -> list[UserProfile]:
     BATCH_SIZE = 100
     users_soft_deactivated = []
@@ -297,9 +297,7 @@ def do_soft_deactivate_users(
     return users_soft_deactivated
 
 
-def do_auto_soft_deactivate_users(
-    inactive_for_days: int, realm: Optional[Realm]
-) -> list[UserProfile]:
+def do_auto_soft_deactivate_users(inactive_for_days: int, realm: Realm | None) -> list[UserProfile]:
     filter_kwargs: dict[str, Realm] = {}
     if realm is not None:
         filter_kwargs = dict(user_profile__realm=realm)
@@ -317,7 +315,7 @@ def do_auto_soft_deactivate_users(
     return users_deactivated
 
 
-def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[UserProfile, None]:
+def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> UserProfile | None:
     if user_profile.long_term_idle:
         add_missing_messages(user_profile)
         user_profile.long_term_idle = False
@@ -402,7 +400,7 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
 def soft_reactivate_if_personal_notification(
     user_profile: UserProfile,
     unique_triggers: set[str],
-    mentioned_user_group_members_count: Optional[int],
+    mentioned_user_group_members_count: int | None,
 ) -> None:
     """When we're about to send an email/push notification to a
     long_term_idle user, it's very likely that the user will try to

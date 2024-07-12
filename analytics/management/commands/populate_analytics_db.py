@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Mapping, Union
+from typing import Any, Mapping
 
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now as timezone_now
@@ -147,7 +147,7 @@ class Command(ZulipBaseCommand):
         with open(IMAGE_FILE_PATH, "rb") as fp:
             upload_message_attachment_from_request(UploadedFile(fp), shylock)
 
-        FixtureData: TypeAlias = Mapping[Union[str, int, None], list[int]]
+        FixtureData: TypeAlias = Mapping[str | int | None, list[int]]
 
         def insert_fixture_data(
             stat: CountStat,
@@ -330,7 +330,7 @@ class Command(ZulipBaseCommand):
             "true": self.generate_fixture_data(stat, 20, 2, 3, 0.2, 3),
         }
         insert_fixture_data(stat, realm_data, RealmCount)
-        stream_data: Mapping[Union[int, str, None], list[int]] = {
+        stream_data: Mapping[int | str | None, list[int]] = {
             "false": self.generate_fixture_data(stat, 10, 7, 5, 0.6, 4),
             "true": self.generate_fixture_data(stat, 5, 3, 2, 0.4, 2),
         }

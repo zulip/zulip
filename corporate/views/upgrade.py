@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -47,12 +46,11 @@ def upgrade(
     ],
     signed_seat_count: str,
     salt: str,
-    license_management: Optional[
-        Annotated[
-            str, AfterValidator(lambda val: check_string_in(val, VALID_LICENSE_MANAGEMENT_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
+    license_management: Annotated[
+        str, AfterValidator(lambda val: check_string_in(val, VALID_LICENSE_MANAGEMENT_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
     tier: Json[int] = CustomerPlan.TIER_CLOUD_STANDARD,
 ) -> HttpResponse:
     try:
@@ -104,13 +102,12 @@ def remote_realm_upgrade(
     ],
     signed_seat_count: str,
     salt: str,
-    license_management: Optional[
-        Annotated[
-            str, AfterValidator(lambda val: check_string_in(val, VALID_LICENSE_MANAGEMENT_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
-    remote_server_plan_start_date: Optional[str] = None,
+    license_management: Annotated[
+        str, AfterValidator(lambda val: check_string_in(val, VALID_LICENSE_MANAGEMENT_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
+    remote_server_plan_start_date: str | None = None,
     tier: Json[int] = CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
 ) -> HttpResponse:
     try:
@@ -160,13 +157,12 @@ def remote_server_upgrade(
     ],
     signed_seat_count: str,
     salt: str,
-    license_management: Optional[
-        Annotated[
-            str, AfterValidator(lambda val: check_string_in(val, VALID_LICENSE_MANAGEMENT_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
-    remote_server_plan_start_date: Optional[str] = None,
+    license_management: Annotated[
+        str, AfterValidator(lambda val: check_string_in(val, VALID_LICENSE_MANAGEMENT_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
+    remote_server_plan_start_date: str | None = None,
     tier: Json[int] = CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
 ) -> HttpResponse:
     try:

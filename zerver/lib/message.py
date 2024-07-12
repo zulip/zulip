@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Callable, Collection, Mapping, Optional, Sequence, TypedDict, Union
+from typing import Any, Callable, Collection, Mapping, Sequence, TypedDict
 
 from django.conf import settings
 from django.db import connection
@@ -113,10 +113,10 @@ class UnreadMessagesResult(TypedDict):
 class SendMessageRequest:
     message: Message
     rendering_result: MessageRenderingResult
-    stream: Optional[Stream]
-    sender_muted_stream: Optional[bool]
-    local_id: Optional[str]
-    sender_queue_id: Optional[str]
+    stream: Stream | None
+    sender_muted_stream: bool | None
+    local_id: str | None
+    sender_queue_id: str | None
     realm: Realm
     mention_data: MentionData
     mentioned_user_groups_map: dict[int, int]
@@ -162,15 +162,15 @@ class SendMessageRequest:
     # A topic participant is anyone who either sent or reacted to messages in the topic.
     topic_participant_user_ids: set[int]
     links_for_embed: set[str]
-    widget_content: Optional[dict[str, Any]]
+    widget_content: dict[str, Any] | None
     submessages: list[dict[str, Any]] = field(default_factory=list)
-    deliver_at: Optional[datetime] = None
-    delivery_type: Optional[str] = None
-    limit_unread_user_ids: Optional[set[int]] = None
-    service_queue_events: Optional[dict[str, list[dict[str, Any]]]] = None
+    deliver_at: datetime | None = None
+    delivery_type: str | None = None
+    limit_unread_user_ids: set[int] | None = None
+    service_queue_events: dict[str, list[dict[str, Any]]] | None = None
     disable_external_notifications: bool = False
-    automatic_new_visibility_policy: Optional[int] = None
-    recipients_for_user_creation_events: Optional[dict[UserProfile, set[int]]] = None
+    automatic_new_visibility_policy: int | None = None
+    recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -206,7 +206,7 @@ def messages_for_ids(
     apply_markdown: bool,
     client_gravatar: bool,
     allow_edit_history: bool,
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     realm: Realm,
 ) -> list[dict[str, Any]]:
     id_fetcher = lambda row: row["id"]
@@ -294,7 +294,7 @@ def access_message_and_usermessage(
     user_profile: UserProfile,
     message_id: int,
     lock_message: bool = False,
-) -> tuple[Message, Optional[UserMessage]]:
+) -> tuple[Message, UserMessage | None]:
     """As access_message, but also returns the usermessage, if any."""
     try:
         base_query = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
@@ -361,8 +361,8 @@ def has_message_access(
     message: Message,
     *,
     has_user_message: Callable[[], bool],
-    stream: Optional[Stream] = None,
-    is_subscribed: Optional[bool] = None,
+    stream: Stream | None = None,
+    is_subscribed: bool | None = None,
 ) -> bool:
     """
     Returns whether a user has access to a given message.
@@ -411,7 +411,7 @@ def bulk_access_messages(
     user_profile: UserProfile,
     messages: Collection[Message] | QuerySet[Message],
     *,
-    stream: Optional[Stream] = None,
+    stream: Stream | None = None,
 ) -> list[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary
@@ -563,7 +563,7 @@ def get_starred_message_ids(user_profile: UserProfile) -> list[int]:
 
 
 def get_raw_unread_data(
-    user_profile: UserProfile, message_ids: Optional[list[int]] = None
+    user_profile: UserProfile, message_ids: list[int] | None = None
 ) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
@@ -605,7 +605,7 @@ def get_raw_unread_data(
 
 
 def extract_unread_data_from_um_rows(
-    rows: list[dict[str, Any]], user_profile: Optional[UserProfile]
+    rows: list[dict[str, Any]], user_profile: UserProfile | None
 ) -> RawUnreadMessagesResult:
     pm_dict: dict[int, RawUnreadDirectMessageDict] = {}
     stream_dict: dict[int, RawUnreadStreamDict] = {}
@@ -1232,11 +1232,11 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[i
 
 
 def parse_message_time_limit_setting(
-    value: Union[int, str],
-    special_values_map: Mapping[str, Optional[int]],
+    value: int | str,
+    special_values_map: Mapping[str, int | None],
     *,
     setting_name: str,
-) -> Optional[int]:
+) -> int | None:
     if isinstance(value, str) and value in special_values_map:
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:
@@ -1247,8 +1247,8 @@ def parse_message_time_limit_setting(
 
 def visibility_policy_for_participation(
     sender: UserProfile,
-    is_stream_muted: Optional[bool],
-) -> Optional[int]:
+    is_stream_muted: bool | None,
+) -> int | None:
     """
     This function determines the visibility policy to set when a user
     participates in a topic, depending on the 'automatically_follow_topics_policy'
@@ -1272,8 +1272,8 @@ def visibility_policy_for_participation(
 
 def visibility_policy_for_send(
     sender: UserProfile,
-    is_stream_muted: Optional[bool],
-) -> Optional[int]:
+    is_stream_muted: bool | None,
+) -> int | None:
     if (
         sender.automatically_follow_topics_policy
         == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND
@@ -1294,9 +1294,9 @@ def visibility_policy_for_send_message(
     sender: UserProfile,
     message: Message,
     stream: Stream,
-    is_stream_muted: Optional[bool],
+    is_stream_muted: bool | None,
     current_visibility_policy: int,
-) -> Optional[int]:
+) -> int | None:
     """
     This function determines the visibility policy to set when a message
     is sent to a topic, depending on the 'automatically_follow_topics_policy'
@@ -1348,7 +1348,7 @@ def visibility_policy_for_send_message(
         return visibility_policy
 
     # Now we need to check if the user initiated the topic.
-    old_accessible_messages_in_topic: Union[QuerySet[Message], QuerySet[UserMessage]]
+    old_accessible_messages_in_topic: QuerySet[Message] | QuerySet[UserMessage]
     if can_access_stream_history(sender, stream):
         old_accessible_messages_in_topic = messages_for_topic(
             realm_id=sender.realm_id,

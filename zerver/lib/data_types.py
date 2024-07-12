@@ -11,7 +11,7 @@ easily with the native Python type system.
 
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Sequence
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
@@ -111,7 +111,7 @@ class NumberType:
     """A Union[float, int]; needed to align with the `number` type in
     OpenAPI, because isinstance(4, float) == False"""
 
-    def check_data(self, var_name: str, val: Optional[Any]) -> None:
+    def check_data(self, var_name: str, val: Any | None) -> None:
         if isinstance(val, (int, float)):
             return
         raise AssertionError(f"{var_name} is not a number")
@@ -123,7 +123,7 @@ class NumberType:
 class ListType:
     """List with every object having the declared sub_type."""
 
-    def __init__(self, sub_type: Any, length: Optional[int] = None) -> None:
+    def __init__(self, sub_type: Any, length: int | None = None) -> None:
         self.sub_type = sub_type
         self.length = length
 
@@ -165,7 +165,7 @@ class StringDictType:
 class OptionalType:
     sub_type: Any
 
-    def check_data(self, var_name: str, val: Optional[Any]) -> None:
+    def check_data(self, var_name: str, val: Any | None) -> None:
         if val is None:
             return
         check_data(self.sub_type, var_name, val)

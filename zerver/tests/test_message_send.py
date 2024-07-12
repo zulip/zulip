@@ -1,6 +1,6 @@
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Optional
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -76,7 +76,7 @@ from zerver.views.message_send import InvalidMirrorInputError
 
 class MessagePOSTTest(ZulipTestCase):
     def _send_and_verify_message(
-        self, user: UserProfile, stream_name: str, error_msg: Optional[str] = None
+        self, user: UserProfile, stream_name: str, error_msg: str | None = None
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(user, stream_name)

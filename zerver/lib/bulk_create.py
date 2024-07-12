@@ -1,4 +1,4 @@
-from typing import Any, Collection, Iterable, Optional, Union
+from typing import Any, Collection, Iterable
 
 from django.db.models import Model, QuerySet
 from django.utils.timezone import now as timezone_now
@@ -23,9 +23,9 @@ from zerver.models.groups import SystemGroups
 def bulk_create_users(
     realm: Realm,
     users_raw: set[tuple[str, str, bool]],
-    bot_type: Optional[int] = None,
-    bot_owner: Optional[UserProfile] = None,
-    tos_version: Optional[str] = None,
+    bot_type: int | None = None,
+    bot_owner: UserProfile | None = None,
+    tos_version: str | None = None,
     timezone: str = "",
 ) -> None:
     """
@@ -163,10 +163,11 @@ def bulk_create_users(
 
 def bulk_set_users_or_streams_recipient_fields(
     model: type[Model],
-    objects: Union[
-        Collection[UserProfile], QuerySet[UserProfile], Collection[Stream], QuerySet[Stream]
-    ],
-    recipients: Optional[Iterable[Recipient]] = None,
+    objects: Collection[UserProfile]
+    | QuerySet[UserProfile]
+    | Collection[Stream]
+    | QuerySet[Stream],
+    recipients: Iterable[Recipient] | None = None,
 ) -> None:
     assert model in [UserProfile, Stream]
     for obj in objects:
@@ -247,7 +248,7 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
 
 
 def create_users(
-    realm: Realm, name_list: Iterable[tuple[str, str]], bot_type: Optional[int] = None
+    realm: Realm, name_list: Iterable[tuple[str, str]], bot_type: int | None = None
 ) -> None:
     user_set = set()
     for full_name, email in name_list:

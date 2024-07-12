@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.conf import settings
 from django.utils.translation import gettext as _
 
@@ -11,7 +9,7 @@ from zerver.models import Realm, UserProfile
 from zerver.models.users import get_system_bot
 
 
-def generate_licenses_low_warning_message_if_required(realm: Realm) -> Optional[str]:
+def generate_licenses_low_warning_message_if_required(realm: Realm) -> str | None:
     plan = get_current_plan_by_realm(realm)
     if plan is None or plan.automanage_licenses:
         return None

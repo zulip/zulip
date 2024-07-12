@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from django.apps import AppConfig
 from django.conf import settings
@@ -8,7 +8,7 @@ from django.db.models.signals import post_migrate
 from typing_extensions import override
 
 
-def flush_cache(sender: Optional[AppConfig], **kwargs: Any) -> None:
+def flush_cache(sender: AppConfig | None, **kwargs: Any) -> None:
     logging.info("Clearing memcached cache after migrations")
     cache.clear()
 

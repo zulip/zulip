@@ -9,7 +9,7 @@ import time
 from contextlib import contextmanager
 from datetime import timedelta
 from io import StringIO
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator
 from unittest import mock
 
 import orjson
@@ -276,7 +276,7 @@ class BaseAction(ZulipTestCase):
     def verify_action(
         self,
         *,
-        event_types: Optional[list[str]] = None,
+        event_types: list[str] | None = None,
         include_subscribers: bool = True,
         state_change_expected: bool = True,
         notification_settings_null: bool = False,

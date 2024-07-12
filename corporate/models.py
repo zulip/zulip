@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -69,7 +69,7 @@ class Customer(models.Model):
         else:
             return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
 
-    def get_discounted_price_for_plan(self, plan_tier: int, schedule: int) -> Optional[int]:
+    def get_discounted_price_for_plan(self, plan_tier: int, schedule: int) -> int | None:
         if plan_tier != self.required_plan_tier:
             return None
 
@@ -80,15 +80,15 @@ class Customer(models.Model):
         return self.monthly_discounted_price
 
 
-def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
+def get_customer_by_realm(realm: Realm) -> Customer | None:
     return Customer.objects.filter(realm=realm).first()
 
 
-def get_customer_by_remote_server(remote_server: RemoteZulipServer) -> Optional[Customer]:
+def get_customer_by_remote_server(remote_server: RemoteZulipServer) -> Customer | None:
     return Customer.objects.filter(remote_server=remote_server).first()
 
 
-def get_customer_by_remote_realm(remote_realm: RemoteRealm) -> Optional[Customer]:  # nocoverage
+def get_customer_by_remote_realm(remote_realm: RemoteRealm) -> Customer | None:  # nocoverage
     return Customer.objects.filter(remote_realm=remote_realm).first()
 
 
@@ -124,7 +124,7 @@ class Event(models.Model):
 
 def get_last_associated_event_by_type(
     content_object: Union["Invoice", "PaymentIntent", "Session"], event_type: str
-) -> Optional[Event]:
+) -> Event | None:
     content_type = ContentType.objects.get_for_model(type(content_object))
     return Event.objects.filter(
         content_type=content_type, object_id=content_object.id, type=event_type
@@ -172,7 +172,7 @@ class Session(models.Model):
             session_dict["event_handler"] = event.get_event_handler_details_as_dict()
         return session_dict
 
-    def get_last_associated_event(self) -> Optional[Event]:
+    def get_last_associated_event(self) -> Event | None:
         if self.status == Session.CREATED:
             return None
         return get_last_associated_event_by_type(self, "checkout.session.completed")
@@ -208,7 +208,7 @@ class PaymentIntent(models.Model):  # nocoverage
             PaymentIntent.SUCCEEDED: "succeeded",
         }[self.status]
 
-    def get_last_associated_event(self) -> Optional[Event]:
+    def get_last_associated_event(self) -> Event | None:
         if self.status == PaymentIntent.SUCCEEDED:
             event_type = "payment_intent.succeeded"
         # TODO: Add test for this case. Not sure how to trigger naturally.
@@ -243,7 +243,7 @@ class Invoice(models.Model):
             Invoice.VOID: "void",
         }[self.status]
 
-    def get_last_associated_event(self) -> Optional[Event]:
+    def get_last_associated_event(self) -> Event | None:
         if self.status == Invoice.PAID:
             event_type = "invoice.paid"
         # TODO: Add test for this case. Not sure how to trigger naturally.
@@ -475,7 +475,7 @@ class CustomerPlan(AbstractCustomerPlan):
         assert ledger_entry is not None
         return ledger_entry.licenses
 
-    def licenses_at_next_renewal(self) -> Optional[int]:
+    def licenses_at_next_renewal(self) -> int | None:
         if self.status in (
             CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
             CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
@@ -492,13 +492,13 @@ class CustomerPlan(AbstractCustomerPlan):
         return self.tier in self.PAID_PLAN_TIERS
 
 
-def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
+def get_current_plan_by_customer(customer: Customer) -> CustomerPlan | None:
     return CustomerPlan.objects.filter(
         customer=customer, status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD
     ).first()
 
 
-def get_current_plan_by_realm(realm: Realm) -> Optional[CustomerPlan]:
+def get_current_plan_by_realm(realm: Realm) -> CustomerPlan | None:
     customer = get_customer_by_realm(realm)
     if customer is None:
         return None

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urljoin
 
 from django.http import HttpRequest, HttpResponse
@@ -90,7 +90,7 @@ def is_sample_event(event: dict[str, Any]) -> bool:
     return False
 
 
-def convert_lines_to_traceback_string(lines: Optional[list[str]]) -> str:
+def convert_lines_to_traceback_string(lines: list[str] | None) -> str:
     traceback = ""
     if lines is not None:
         for line in lines:
@@ -243,7 +243,7 @@ def handle_deprecated_payload(payload: dict[str, Any]) -> tuple[str, str]:
     return (topic_name, body)
 
 
-def transform_webhook_payload(payload: dict[str, Any]) -> Optional[dict[str, Any]]:
+def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
     """Attempt to use webhook payload for the notification.
 
     When the integration is configured as a webhook, instead of being added as

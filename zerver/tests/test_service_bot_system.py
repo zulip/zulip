@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 from unittest import mock
 
 import orjson
@@ -492,7 +492,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         def check_values_passed(
             queue_name: Any,
             trigger_event: dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
@@ -535,7 +535,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         def check_values_passed(
             queue_name: Any,
             trigger_event: dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
@@ -579,7 +579,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         def check_values_passed(
             queue_name: Any,
             trigger_event: dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])

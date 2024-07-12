@@ -1,6 +1,6 @@
 import itertools
 from operator import itemgetter
-from typing import Any, Callable, Collection, Iterable, Mapping, Optional
+from typing import Any, Callable, Collection, Iterable, Mapping
 
 from django.core.exceptions import ValidationError
 from django.db import connection
@@ -140,7 +140,7 @@ def build_stream_dict_for_sub(
     user: UserProfile,
     sub_dict: RawSubscriptionDict,
     raw_stream_dict: RawStreamDict,
-    recent_traffic: Optional[dict[int, int]],
+    recent_traffic: dict[int, int] | None,
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
@@ -215,7 +215,7 @@ def build_stream_dict_for_sub(
 
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
-    recent_traffic: Optional[dict[int, int]],
+    recent_traffic: dict[int, int] | None,
 ) -> NeverSubscribedStreamDict:
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     creator_id = raw_stream_dict["creator_id"]
@@ -261,9 +261,7 @@ def build_stream_dict_for_never_sub(
     )
 
 
-def validate_user_access_to_subscribers(
-    user_profile: Optional[UserProfile], stream: Stream
-) -> None:
+def validate_user_access_to_subscribers(user_profile: UserProfile | None, stream: Stream) -> None:
     """Validates whether the user can view the subscribers of a stream.  Raises a JsonableError if:
     * The user and the stream are in different realms
     * The realm is MIT and the stream is not invite only.
@@ -284,7 +282,7 @@ def validate_user_access_to_subscribers(
 
 
 def validate_user_access_to_subscribers_helper(
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     stream_dict: Mapping[str, Any],
     check_user_subscribed: Callable[[UserProfile], bool],
 ) -> None:
@@ -412,7 +410,7 @@ def bulk_get_subscriber_user_ids(
 
 
 def get_subscribers_query(
-    stream: Stream, requesting_user: Optional[UserProfile]
+    stream: Stream, requesting_user: UserProfile | None
 ) -> QuerySet[Subscription]:
     """Build a query to get the subscribers list for a stream, raising a JsonableError if:
 

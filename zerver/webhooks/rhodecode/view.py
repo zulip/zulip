@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -45,7 +45,7 @@ def get_push_branch_name(payload: WildValue) -> str:
         return payload["event"]["push"]["commits"][0]["raw_id"].tame(check_string).split("=>")[1]
 
 
-def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]:
+def get_event_name(payload: WildValue, branches: str | None) -> str | None:
     event_name = payload["event"]["name"].tame(check_string)
     if event_name == "repo-push" and branches is not None:
         branch = get_push_branch_name(payload)
@@ -82,7 +82,7 @@ def api_rhodecode_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
 ) -> HttpResponse:
     event = get_event_name(payload, branches)
     if event is None:

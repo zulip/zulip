@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Literal, Optional, Union, cast
+from typing import Any, Literal, cast
 from urllib.parse import urlsplit, urlunsplit
 
 from django.conf import settings
@@ -146,7 +146,7 @@ def get_identity_dict_from_signed_access_token(
 
 
 def is_tos_consent_needed_for_user(
-    remote_user: Union[RemoteRealmBillingUser, RemoteServerBillingUser],
+    remote_user: RemoteRealmBillingUser | RemoteServerBillingUser,
 ) -> bool:
     assert settings.TERMS_OF_SERVICE_VERSION is not None
     return int(settings.TERMS_OF_SERVICE_VERSION.split(".")[0]) > int(
@@ -160,7 +160,7 @@ def remote_realm_billing_finalize_login(
     request: HttpRequest,
     *,
     signed_billing_access_token: PathOnly[str],
-    full_name: Optional[str] = None,
+    full_name: str | None = None,
     tos_consent: Literal[None, "true"] = None,
     enable_major_release_emails: Literal[None, "true", "false"] = None,
     enable_maintenance_release_emails: Literal[None, "true", "false"] = None,
@@ -496,7 +496,7 @@ def remote_realm_billing_from_login_confirmation_link(
 
 
 def create_remote_billing_confirmation_link(
-    obj: Union[PreregistrationRemoteRealmBillingUser, PreregistrationRemoteServerBillingUser],
+    obj: PreregistrationRemoteRealmBillingUser | PreregistrationRemoteServerBillingUser,
     confirmation_type: int,
     validity_in_minutes: int,
 ) -> str:
@@ -522,8 +522,8 @@ def create_remote_billing_confirmation_link(
 def remote_billing_legacy_server_login(
     request: HttpRequest,
     *,
-    zulip_org_id: Optional[str] = None,
-    zulip_org_key: Optional[str] = None,
+    zulip_org_id: str | None = None,
+    zulip_org_key: str | None = None,
     next_page: VALID_NEXT_PAGES_TYPE = None,
 ) -> HttpResponse:
     context: dict[str, Any] = {"next_page": next_page}
@@ -674,7 +674,7 @@ def remote_billing_legacy_server_from_login_confirmation_link(
     request: HttpRequest,
     *,
     confirmation_key: PathOnly[str],
-    full_name: Optional[str] = None,
+    full_name: str | None = None,
     tos_consent: Literal[None, "true"] = None,
     enable_major_release_emails: Literal[None, "true", "false"] = None,
     enable_maintenance_release_emails: Literal[None, "true", "false"] = None,
@@ -821,7 +821,7 @@ def generate_confirmation_link_for_server_deactivation(
 
 def check_rate_limits(
     request: HttpRequest, remote_server: RemoteZulipServer
-) -> Optional[HttpResponse]:
+) -> HttpResponse | None:
     try:
         rate_limit_request_by_ip(request, domain="sends_email_by_ip")
     except RateLimitedError as e:

@@ -3,7 +3,7 @@ import os
 import sys
 import time
 from copy import deepcopy
-from typing import Any, Final, Literal, Union
+from typing import Any, Final, Literal
 from urllib.parse import urljoin
 
 from scripts.lib.zulip_tools import get_tornado_ports
@@ -576,7 +576,7 @@ else:
 ########################################################################
 
 # List of callables that know how to import templates from various sources.
-LOADERS: list[Union[str, tuple[object, ...]]] = [
+LOADERS: list[str | tuple[object, ...]] = [
     "django.template.loaders.filesystem.Loader",
     "django.template.loaders.app_directories.Loader",
 ]

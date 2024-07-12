@@ -6,7 +6,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import deque
 from types import FrameType
-from typing import Any, Callable, MutableSequence, Optional, TypeVar
+from typing import Any, Callable, MutableSequence, TypeVar
 
 import orjson
 import sentry_sdk
@@ -87,7 +87,7 @@ def check_and_send_restart_signal() -> None:
 
 class QueueProcessingWorker(ABC):
     queue_name: str
-    MAX_CONSUME_SECONDS: Optional[int] = 30
+    MAX_CONSUME_SECONDS: int | None = 30
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
     MAX_SECONDS_BEFORE_UPDATE_STATS = 30
 
@@ -101,9 +101,9 @@ class QueueProcessingWorker(ABC):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
-        worker_num: Optional[int] = None,
+        worker_num: int | None = None,
     ) -> None:
-        self.q: Optional[SimpleQueueClient] = None
+        self.q: SimpleQueueClient | None = None
         self.threaded = threaded
         self.disable_timeout = disable_timeout
         self.worker_num = worker_num
@@ -166,7 +166,7 @@ class QueueProcessingWorker(ABC):
     def do_consume(
         self, consume_func: Callable[[list[dict[str, Any]]], None], events: list[dict[str, Any]]
     ) -> None:
-        consume_time_seconds: Optional[float] = None
+        consume_time_seconds: float | None = None
         with sentry_sdk.start_transaction(
             op="task",
             name=f"consume {self.queue_name}",
@@ -241,7 +241,7 @@ class QueueProcessingWorker(ABC):
         self.do_consume(consume_func, [event])
 
     def timer_expired(
-        self, limit: int, events: list[dict[str, Any]], signal: int, frame: Optional[FrameType]
+        self, limit: int, events: list[dict[str, Any]], signal: int, frame: FrameType | None
     ) -> None:
         raise WorkerTimeoutError(self.queue_name, limit, len(events))
 

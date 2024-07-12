@@ -1,7 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import importlib
 import pkgutil
-from typing import Optional
 
 import zerver.worker
 from zerver.worker.base import QueueProcessingWorker, test_queues, worker_classes
@@ -12,7 +11,7 @@ def get_worker(
     *,
     threaded: bool = False,
     disable_timeout: bool = False,
-    worker_num: Optional[int] = None,
+    worker_num: int | None = None,
 ) -> QueueProcessingWorker:
     if queue_name in {"test", "noop", "noop_batch"}:
         import_module = "zerver.worker.test"

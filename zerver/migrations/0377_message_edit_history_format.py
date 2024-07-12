@@ -1,5 +1,5 @@
 import time
-from typing import Any, Optional, TypedDict
+from typing import Any, TypedDict
 
 import orjson
 from django.db import migrations, transaction
@@ -21,20 +21,20 @@ class LegacyEditHistoryEvent(TypedDict, total=False):
     prev_subject: str
     prev_topic: str
     prev_content: str
-    prev_rendered_content: Optional[str]
-    prev_rendered_content_version: Optional[int]
+    prev_rendered_content: str | None
+    prev_rendered_content_version: int | None
 
 
 class EditHistoryEvent(TypedDict, total=False):
-    user_id: Optional[int]
+    user_id: int | None
     timestamp: int
     prev_stream: int
     stream: int
     prev_topic: str
     topic: str
     prev_content: str
-    prev_rendered_content: Optional[str]
-    prev_rendered_content_version: Optional[int]
+    prev_rendered_content: str | None
+    prev_rendered_content_version: int | None
 
 
 @transaction.atomic

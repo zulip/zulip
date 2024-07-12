@@ -9,7 +9,7 @@ import zipfile
 from collections import defaultdict
 from datetime import datetime, timezone
 from email.headerregistry import Address
-from typing import Any, Iterator, Optional, TypeVar
+from typing import Any, Iterator, TypeVar
 from urllib.parse import urlsplit
 
 import orjson
@@ -1242,7 +1242,7 @@ def build_uploads(
     uploads_list.append(upload)
 
 
-def get_message_sending_user(message: ZerverFieldsT) -> Optional[str]:
+def get_message_sending_user(message: ZerverFieldsT) -> str | None:
     if "user" in message:
         return message["user"]
     if message.get("file"):

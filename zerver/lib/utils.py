@@ -1,6 +1,6 @@
 import re
 import secrets
-from typing import Callable, Optional, TypeVar
+from typing import Callable, TypeVar
 
 T = TypeVar("T")
 
@@ -17,7 +17,7 @@ def has_api_key_format(key: str) -> bool:
     return bool(re.fullmatch(r"([A-Za-z0-9]){32}", key))
 
 
-def assert_is_not_none(value: Optional[T]) -> T:
+def assert_is_not_none(value: T | None) -> T:
     assert value is not None
     return value
 
@@ -35,7 +35,7 @@ def process_list_in_batches(
         offset += chunk_size
 
 
-def optional_bytes_to_mib(value: Optional[int]) -> Optional[int]:
+def optional_bytes_to_mib(value: int | None) -> int | None:
     if value is None:
         return None
     else:

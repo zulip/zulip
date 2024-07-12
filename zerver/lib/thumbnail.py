@@ -1,7 +1,7 @@
 import logging
 import os
 from contextlib import contextmanager
-from typing import Iterator, Optional
+from typing import Iterator
 from urllib.parse import urljoin
 
 import pyvips
@@ -132,7 +132,7 @@ def resize_logo(image_data: bytes) -> bytes:
 
 def resize_emoji(
     image_data: bytes, emoji_file_name: str, size: int = DEFAULT_EMOJI_SIZE
-) -> tuple[bytes, Optional[bytes]]:
+) -> tuple[bytes, bytes | None]:
     # Square brackets are used for providing options to libvips' save
     # operation; the extension on the filename comes from reversing
     # the content-type, which removes most of the attacker control of

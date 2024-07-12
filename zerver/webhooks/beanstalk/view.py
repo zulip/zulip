@@ -1,6 +1,5 @@
 # Webhooks for external integrations.
 import re
-from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
@@ -23,8 +22,8 @@ def build_message_from_gitlog(
     after: str,
     url: str,
     pusher: str,
-    forced: Optional[str] = None,
-    created: Optional[str] = None,
+    forced: str | None = None,
+    created: str | None = None,
     deleted: bool = False,
 ) -> tuple[str, str]:
     short_ref = re.sub(r"^refs/heads/", "", ref)
@@ -60,7 +59,7 @@ def api_beanstalk_webhook(
     user_profile: UserProfile,
     *,
     payload: Json[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
 ) -> HttpResponse:
     # Beanstalk supports both SVN and Git repositories
     # We distinguish between the two by checking for a

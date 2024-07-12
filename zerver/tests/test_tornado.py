@@ -1,7 +1,7 @@
 import asyncio
 import socket
 from functools import wraps
-from typing import Any, Awaitable, Callable, Optional, TypeVar
+from typing import Any, Awaitable, Callable, TypeVar
 from unittest import TestResult, mock
 from urllib.parse import urlencode
 
@@ -51,7 +51,7 @@ class TornadoWebTestCase(ZulipTestCase):
         self.http_client = AsyncHTTPClient()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
-        self.session_cookie: Optional[dict[str, str]] = None
+        self.session_cookie: dict[str, str] | None = None
 
     @async_to_sync_decorator
     @override
@@ -61,7 +61,7 @@ class TornadoWebTestCase(ZulipTestCase):
         super().tearDown()
 
     @override
-    def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:
+    def run(self, result: TestResult | None = None) -> TestResult | None:
         return async_to_sync(
             sync_to_async(super().run, thread_sensitive=False), force_new_loop=True
         )(result)

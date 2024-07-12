@@ -2,7 +2,7 @@ import logging
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Sequence, Union
 
 from django.conf import settings
 from django.db import connection, models
@@ -55,7 +55,7 @@ class CountStat:
         property: str,
         data_collector: "DataCollector",
         frequency: str,
-        interval: Optional[timedelta] = None,
+        interval: timedelta | None = None,
     ) -> None:
         self.property = property
         self.data_collector = data_collector
@@ -72,7 +72,7 @@ class CountStat:
     def __repr__(self) -> str:
         return f"<CountStat: {self.property}>"
 
-    def last_successful_fill(self) -> Optional[datetime]:
+    def last_successful_fill(self) -> datetime | None:
         fillstate = FillState.objects.filter(property=self.property).first()
         if fillstate is None:
             return None
@@ -92,7 +92,7 @@ class DependentCountStat(CountStat):
         property: str,
         data_collector: "DataCollector",
         frequency: str,
-        interval: Optional[timedelta] = None,
+        interval: timedelta | None = None,
         dependencies: Sequence[str] = [],
     ) -> None:
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
@@ -103,7 +103,7 @@ class DataCollector:
     def __init__(
         self,
         output_table: type[BaseCount],
-        pull_function: Optional[Callable[[str, datetime, datetime, Optional[Realm]], int]],
+        pull_function: Callable[[str, datetime, datetime, Realm | None], int] | None,
     ) -> None:
         self.output_table = output_table
         self.pull_function = pull_function
@@ -115,9 +115,7 @@ class DataCollector:
 ## CountStat-level operations ##
 
 
-def process_count_stat(
-    stat: CountStat, fill_to_time: datetime, realm: Optional[Realm] = None
-) -> None:
+def process_count_stat(stat: CountStat, fill_to_time: datetime, realm: Realm | None = None) -> None:
     # TODO: The realm argument is not yet supported, in that we don't
     # have a solution for how to update FillState if it is passed.  It
     # exists solely as partial plumbing for when we do fully implement
@@ -180,7 +178,7 @@ def do_update_fill_state(fill_state: FillState, end_time: datetime, state: int) 
 # We assume end_time is valid (e.g. is on a day or hour boundary as appropriate)
 # and is time-zone-aware. It is the caller's responsibility to enforce this!
 def do_fill_count_stat_at_hour(
-    stat: CountStat, end_time: datetime, realm: Optional[Realm] = None
+    stat: CountStat, end_time: datetime, realm: Realm | None = None
 ) -> None:
     start_time = end_time - stat.interval
     if not isinstance(stat, LoggingCountStat):
@@ -209,7 +207,7 @@ def do_delete_counts_at_hour(stat: CountStat, end_time: datetime) -> None:
 
 
 def do_aggregate_to_summary_table(
-    stat: CountStat, end_time: datetime, realm: Optional[Realm] = None
+    stat: CountStat, end_time: datetime, realm: Realm | None = None
 ) -> None:
     cursor = connection.cursor()
 
@@ -303,7 +301,7 @@ def do_aggregate_to_summary_table(
 def do_increment_logging_stat(
     model_object_for_bucket: Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"],
     stat: CountStat,
-    subgroup: Optional[Union[str, int, bool]],
+    subgroup: str | int | bool | None,
     event_time: datetime,
     increment: int = 1,
 ) -> None:
@@ -311,7 +309,7 @@ def do_increment_logging_stat(
         return
 
     table = stat.data_collector.output_table
-    id_args: dict[str, Union[int, None]] = {}
+    id_args: dict[str, int | None] = {}
     conflict_args: list[str] = []
     if table == RealmCount:
         assert isinstance(model_object_for_bucket, Realm)
@@ -433,7 +431,7 @@ def do_pull_by_sql_query(
     start_time: datetime,
     end_time: datetime,
     query: QueryFn,
-    group_by: Optional[tuple[type[models.Model], str]],
+    group_by: tuple[type[models.Model], str] | None,
 ) -> int:
     if group_by is None:
         subgroup: Composable = SQL("NULL")
@@ -469,10 +467,10 @@ def do_pull_by_sql_query(
 def sql_data_collector(
     output_table: type[BaseCount],
     query: QueryFn,
-    group_by: Optional[tuple[type[models.Model], str]],
+    group_by: tuple[type[models.Model], str] | None,
 ) -> DataCollector:
     def pull_function(
-        property: str, start_time: datetime, end_time: datetime, realm: Optional[Realm] = None
+        property: str, start_time: datetime, end_time: datetime, realm: Realm | None = None
     ) -> int:
         # The pull function type needs to accept a Realm argument
         # because the 'minutes_active::day' CountStat uses
@@ -485,7 +483,7 @@ def sql_data_collector(
     return DataCollector(output_table, pull_function)
 
 
-def count_upload_space_used_by_realm_query(realm: Optional[Realm]) -> QueryFn:
+def count_upload_space_used_by_realm_query(realm: Realm | None) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
@@ -520,7 +518,7 @@ def count_upload_space_used_by_realm_query(realm: Optional[Realm]) -> QueryFn:
 
 
 def do_pull_minutes_active(
-    property: str, start_time: datetime, end_time: datetime, realm: Optional[Realm] = None
+    property: str, start_time: datetime, end_time: datetime, realm: Realm | None = None
 ) -> int:
     user_activity_intervals = (
         UserActivityInterval.objects.filter(
@@ -555,7 +553,7 @@ def do_pull_minutes_active(
     return len(rows)
 
 
-def count_message_by_user_query(realm: Optional[Realm]) -> QueryFn:
+def count_message_by_user_query(realm: Realm | None) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
@@ -588,7 +586,7 @@ def count_message_by_user_query(realm: Optional[Realm]) -> QueryFn:
 
 
 # Note: ignores the group_by / group_by_clause.
-def count_message_type_by_user_query(realm: Optional[Realm]) -> QueryFn:
+def count_message_type_by_user_query(realm: Realm | None) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
@@ -643,7 +641,7 @@ def count_message_type_by_user_query(realm: Optional[Realm]) -> QueryFn:
 # use this also subgroup on UserProfile.is_bot. If in the future there is a
 # stat that counts messages by stream and doesn't need the UserProfile
 # table, consider writing a new query for efficiency.
-def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
+def count_message_by_stream_query(realm: Realm | None) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
@@ -683,7 +681,7 @@ def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
 # same event_time and event_type in [RealmAuditLog.USER_CREATED,
 # USER_DEACTIVATED, etc].  In particular, it's important to ensure
 # that migrations don't cause that to happen.
-def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
+def check_realmauditlog_by_user_query(realm: Realm | None) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
@@ -722,7 +720,7 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
     )
 
 
-def check_useractivityinterval_by_user_query(realm: Optional[Realm]) -> QueryFn:
+def check_useractivityinterval_by_user_query(realm: Realm | None) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
@@ -746,7 +744,7 @@ def check_useractivityinterval_by_user_query(realm: Optional[Realm]) -> QueryFn:
     ).format(**kwargs, realm_clause=realm_clause)
 
 
-def count_realm_active_humans_query(realm: Optional[Realm]) -> QueryFn:
+def count_realm_active_humans_query(realm: Realm | None) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
@@ -817,7 +815,7 @@ count_stream_by_realm_query = lambda kwargs: SQL(
 ).format(**kwargs)
 
 
-def get_count_stats(realm: Optional[Realm] = None) -> dict[str, CountStat]:
+def get_count_stats(realm: Realm | None = None) -> dict[str, CountStat]:
     ## CountStat declarations ##
 
     count_stats_ = [

@@ -409,7 +409,7 @@ def write_records_json_file(output_dir: str, records: list[dict[str, Any]]) -> N
     logging.info("Finished writing %s", output_file)
 
 
-def make_raw(query: Any, exclude: Optional[list[Field]] = None) -> list[Record]:
+def make_raw(query: Any, exclude: list[Field] | None = None) -> list[Record]:
     """
     Takes a Django query and returns a JSONable list
     of dictionaries corresponding to the database rows.
@@ -463,20 +463,20 @@ class Config:
 
     def __init__(
         self,
-        table: Optional[str] = None,
-        model: Optional[Any] = None,
+        table: str | None = None,
+        model: Any | None = None,
         normal_parent: Optional["Config"] = None,
         virtual_parent: Optional["Config"] = None,
-        filter_args: Optional[FilterArgs] = None,
-        custom_fetch: Optional[CustomFetch] = None,
-        custom_tables: Optional[list[TableName]] = None,
-        concat_and_destroy: Optional[list[TableName]] = None,
-        id_source: Optional[IdSource] = None,
-        source_filter: Optional[SourceFilter] = None,
-        include_rows: Optional[Field] = None,
+        filter_args: FilterArgs | None = None,
+        custom_fetch: CustomFetch | None = None,
+        custom_tables: list[TableName] | None = None,
+        concat_and_destroy: list[TableName] | None = None,
+        id_source: IdSource | None = None,
+        source_filter: SourceFilter | None = None,
+        include_rows: Field | None = None,
         use_all: bool = False,
         is_seeded: bool = False,
-        exclude: Optional[list[Field]] = None,
+        exclude: list[Field] | None = None,
     ) -> None:
         assert table or custom_tables
         self.table = table
@@ -510,7 +510,7 @@ class Config:
                 )
 
         if normal_parent is not None:
-            self.parent: Optional[Config] = normal_parent
+            self.parent: Config | None = normal_parent
         else:
             self.parent = None
 
@@ -557,8 +557,8 @@ class Config:
 def export_from_config(
     response: TableData,
     config: Config,
-    seed_object: Optional[Any] = None,
-    context: Optional[Context] = None,
+    seed_object: Any | None = None,
+    context: Context | None = None,
 ) -> None:
     table = config.table
     parent = config.parent
@@ -1202,7 +1202,7 @@ def fetch_usermessages(
     message_ids: set[int],
     user_profile_ids: set[int],
     message_filename: Path,
-    consent_message_id: Optional[int] = None,
+    consent_message_id: int | None = None,
 ) -> list[Record]:
     # UserMessage export security rule: You can export UserMessages
     # for the messages you exported for the users in your realm.
@@ -1225,7 +1225,7 @@ def fetch_usermessages(
 
 
 def export_usermessages_batch(
-    input_path: Path, output_path: Path, consent_message_id: Optional[int] = None
+    input_path: Path, output_path: Path, consent_message_id: int | None = None
 ) -> None:
     """As part of the system for doing parallel exports, this runs on one
     batch of Message objects and adds the corresponding UserMessage
@@ -1258,9 +1258,9 @@ def export_partial_message_files(
     realm: Realm,
     response: TableData,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
-    output_dir: Optional[Path] = None,
+    output_dir: Path | None = None,
     public_only: bool = False,
-    consent_message_id: Optional[int] = None,
+    consent_message_id: int | None = None,
 ) -> set[int]:
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
@@ -1462,8 +1462,8 @@ def write_message_partials(
 def export_uploads_and_avatars(
     realm: Realm,
     *,
-    attachments: Optional[list[Attachment]] = None,
-    user: Optional[UserProfile],
+    attachments: list[Attachment] | None = None,
+    user: UserProfile | None,
     output_dir: Path,
 ) -> None:
     uploads_output_dir = os.path.join(output_dir, "uploads")
@@ -1667,7 +1667,7 @@ def export_files_from_s3(
     object_prefix: str,
     output_dir: Path,
     user_ids: set[int],
-    valid_hashes: Optional[set[str]],
+    valid_hashes: set[str] | None,
 ) -> None:
     processing_uploads = flavor == "upload"
     processing_emoji = flavor == "emoji"
@@ -1677,7 +1677,7 @@ def export_files_from_s3(
 
     logging.info("Downloading %s files from %s", flavor, bucket_name)
 
-    email_gateway_bot: Optional[UserProfile] = None
+    email_gateway_bot: UserProfile | None = None
 
     if handle_system_bots and settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
@@ -1914,7 +1914,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
 
 
 def get_exportable_scheduled_message_ids(
-    realm: Realm, public_only: bool = False, consent_message_id: Optional[int] = None
+    realm: Realm, public_only: bool = False, consent_message_id: int | None = None
 ) -> set[int]:
     """
     Scheduled messages are private to the sender, so which ones we export depends on the
@@ -1939,10 +1939,10 @@ def do_export_realm(
     realm: Realm,
     output_dir: Path,
     threads: int,
-    exportable_user_ids: Optional[set[int]] = None,
+    exportable_user_ids: set[int] | None = None,
     public_only: bool = False,
-    consent_message_id: Optional[int] = None,
-    export_as_active: Optional[bool] = None,
+    consent_message_id: int | None = None,
+    export_as_active: bool | None = None,
 ) -> str:
     response: TableData = {}
 
@@ -2076,7 +2076,7 @@ def create_soft_link(source: Path, in_progress: bool = True) -> None:
 
 
 def launch_user_message_subprocesses(
-    threads: int, output_dir: Path, consent_message_id: Optional[int] = None
+    threads: int, output_dir: Path, consent_message_id: int | None = None
 ) -> None:
     logging.info("Launching %d PARALLEL subprocesses to export UserMessage rows", threads)
     pids = {}
@@ -2402,10 +2402,10 @@ def export_realm_wrapper(
     threads: int,
     upload: bool,
     public_only: bool,
-    percent_callback: Optional[Callable[[Any], None]] = None,
-    consent_message_id: Optional[int] = None,
-    export_as_active: Optional[bool] = None,
-) -> Optional[str]:
+    percent_callback: Callable[[Any], None] | None = None,
+    consent_message_id: int | None = None,
+    export_as_active: bool | None = None,
+) -> str | None:
     tarball_path = do_export_realm(
         realm=realm,
         output_dir=output_dir,

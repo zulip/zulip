@@ -116,7 +116,7 @@ class RateLimitedUser(RateLimitedObject):
         self.rate_limits = user.rate_limits
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
-            backend: Optional[type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
+            backend: type[RateLimiterBackend] | None = TornadoInMemoryRateLimiterBackend
         else:
             backend = None
         super().__init__(backend=backend)
@@ -142,7 +142,7 @@ class RateLimitedIPAddr(RateLimitedObject):
         self.ip_addr = ip_addr
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
-            backend: Optional[type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
+            backend: type[RateLimiterBackend] | None = TornadoInMemoryRateLimiterBackend
         else:
             backend = None
         super().__init__(backend=backend)
@@ -363,7 +363,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             results = pipe.execute()
 
         count: int = results[0]
-        newest_call: Optional[bytes] = results[1]
+        newest_call: bytes | None = results[1]
 
         calls_left = max_calls - count
         if newest_call is not None:
@@ -390,7 +390,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             pipe.get(blocking_key)
             pipe.ttl(blocking_key)
 
-            rule_timestamps: list[Optional[bytes]] = pipe.execute()
+            rule_timestamps: list[bytes | None] = pipe.execute()
 
         # Check if there is a manual block on this API key
         blocking_ttl_b = rule_timestamps.pop()
@@ -437,7 +437,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
                     # Get the last elem that we'll trim (so we can remove it from our sorted set)
                     last_val = cast(  # mypy doesn’t know the pipe is in immediate mode
-                        Optional[bytes], pipe.lindex(list_key, max_api_calls - 1)
+                        bytes | None, pipe.lindex(list_key, max_api_calls - 1)
                     )
 
                     # Restart buffered execution

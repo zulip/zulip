@@ -1,4 +1,4 @@
-from typing import Iterable, Optional
+from typing import Iterable
 
 from django.conf import settings
 from django.db import transaction
@@ -79,9 +79,9 @@ def create_internal_realm() -> None:
 def create_users(
     realm: Realm,
     name_list: Iterable[tuple[str, str]],
-    tos_version: Optional[str] = None,
-    bot_type: Optional[int] = None,
-    bot_owner: Optional[UserProfile] = None,
+    tos_version: str | None = None,
+    bot_type: int | None = None,
+    bot_owner: UserProfile | None = None,
 ) -> None:
     user_set = set()
     for full_name, email in name_list:

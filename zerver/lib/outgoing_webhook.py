@@ -3,7 +3,7 @@ import json
 import logging
 from contextlib import suppress
 from time import perf_counter
-from typing import Any, AnyStr, Optional
+from typing import Any, AnyStr
 
 import requests
 from django.conf import settings
@@ -37,21 +37,17 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         )
 
     @abc.abstractmethod
-    def make_request(
-        self, base_url: str, event: dict[str, Any], realm: Realm
-    ) -> Optional[Response]:
+    def make_request(self, base_url: str, event: dict[str, Any], realm: Realm) -> Response | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def process_success(self, response_json: dict[str, Any]) -> Optional[dict[str, Any]]:
+    def process_success(self, response_json: dict[str, Any]) -> dict[str, Any] | None:
         raise NotImplementedError
 
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
     @override
-    def make_request(
-        self, base_url: str, event: dict[str, Any], realm: Realm
-    ) -> Optional[Response]:
+    def make_request(self, base_url: str, event: dict[str, Any], realm: Realm) -> Response | None:
         """
         We send a simple version of the message to outgoing
         webhooks, since most of them really only need
@@ -80,7 +76,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return self.session.post(base_url, json=request_data)
 
     @override
-    def process_success(self, response_json: dict[str, Any]) -> Optional[dict[str, Any]]:
+    def process_success(self, response_json: dict[str, Any]) -> dict[str, Any] | None:
         if response_json.get("response_not_required", False):
             return None
 
@@ -102,9 +98,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
     @override
-    def make_request(
-        self, base_url: str, event: dict[str, Any], realm: Realm
-    ) -> Optional[Response]:
+    def make_request(self, base_url: str, event: dict[str, Any], realm: Realm) -> Response | None:
         if event["message"]["type"] == "private":
             failure_message = "Slack outgoing webhooks don't support direct messages."
             fail_with_message(event, failure_message)
@@ -142,7 +136,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return self.session.post(base_url, data=request_data)
 
     @override
-    def process_success(self, response_json: dict[str, Any]) -> Optional[dict[str, Any]]:
+    def process_success(self, response_json: dict[str, Any]) -> dict[str, Any] | None:
         if "text" in response_json:
             content = response_json["text"]
             success_data = dict(content=content)
@@ -194,7 +188,7 @@ def send_response_message(
     recipient_type_name = message_info["type"]
     display_recipient = message_info["display_recipient"]
     try:
-        topic_name: Optional[str] = get_topic_from_message_info(message_info)
+        topic_name: str | None = get_topic_from_message_info(message_info)
     except KeyError:
         topic_name = None
 
@@ -251,10 +245,10 @@ def get_message_url(event: dict[str, Any]) -> str:
 
 def notify_bot_owner(
     event: dict[str, Any],
-    status_code: Optional[int] = None,
-    response_content: Optional[AnyStr] = None,
-    failure_message: Optional[str] = None,
-    exception: Optional[Exception] = None,
+    status_code: int | None = None,
+    response_content: AnyStr | None = None,
+    failure_message: str | None = None,
+    exception: Exception | None = None,
 ) -> None:
     message_url = get_message_url(event)
     bot_id = event["user_profile_id"]
@@ -290,7 +284,7 @@ def notify_bot_owner(
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 
-def request_retry(event: dict[str, Any], failure_message: Optional[str] = None) -> None:
+def request_retry(event: dict[str, Any], failure_message: str | None = None) -> None:
     def failure_processor(event: dict[str, Any]) -> None:
         """
         The name of the argument is 'event' on purpose. This argument will hide
@@ -347,7 +341,7 @@ def do_rest_call(
     base_url: str,
     event: dict[str, Any],
     service_handler: OutgoingWebhookServiceInterface,
-) -> Optional[Response]:
+) -> Response | None:
     """Returns response of call if no exception occurs."""
     try:
         start_time = perf_counter()

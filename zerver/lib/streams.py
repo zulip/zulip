@@ -1,4 +1,4 @@
-from typing import Collection, Optional, TypedDict, Union
+from typing import Collection, TypedDict
 
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q, QuerySet
@@ -65,16 +65,16 @@ class StreamDict(TypedDict, total=False):
     invite_only: bool
     is_web_public: bool
     stream_post_policy: int
-    history_public_to_subscribers: Optional[bool]
-    message_retention_days: Optional[int]
-    can_remove_subscribers_group: Optional[UserGroup]
+    history_public_to_subscribers: bool | None
+    message_retention_days: int | None
+    can_remove_subscribers_group: UserGroup | None
 
 
 def get_stream_permission_policy_name(
     *,
-    invite_only: Optional[bool] = None,
-    history_public_to_subscribers: Optional[bool] = None,
-    is_web_public: Optional[bool] = None,
+    invite_only: bool | None = None,
+    history_public_to_subscribers: bool | None = None,
+    is_web_public: bool | None = None,
 ) -> str:
     policy_name = None
     for permission_dict in Stream.PERMISSION_POLICIES.values():
@@ -93,7 +93,7 @@ def get_stream_permission_policy_name(
 def get_default_value_for_history_public_to_subscribers(
     realm: Realm,
     invite_only: bool,
-    history_public_to_subscribers: Optional[bool],
+    history_public_to_subscribers: bool | None,
 ) -> bool:
     if invite_only:
         if history_public_to_subscribers is None:
@@ -120,7 +120,7 @@ def send_stream_creation_event(
     realm: Realm,
     stream: Stream,
     user_ids: list[int],
-    recent_traffic: Optional[dict[int, int]] = None,
+    recent_traffic: dict[int, int] | None = None,
 ) -> None:
     event = dict(type="stream", op="create", streams=[stream_to_dict(stream, recent_traffic)])
     send_event_on_commit(realm, event, user_ids)
@@ -134,11 +134,11 @@ def create_stream_if_needed(
     invite_only: bool = False,
     is_web_public: bool = False,
     stream_post_policy: int = Stream.STREAM_POST_POLICY_EVERYONE,
-    history_public_to_subscribers: Optional[bool] = None,
+    history_public_to_subscribers: bool | None = None,
     stream_description: str = "",
-    message_retention_days: Optional[int] = None,
-    can_remove_subscribers_group: Optional[UserGroup] = None,
-    acting_user: Optional[UserProfile] = None,
+    message_retention_days: int | None = None,
+    can_remove_subscribers_group: UserGroup | None = None,
+    acting_user: UserProfile | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -199,7 +199,7 @@ def create_stream_if_needed(
 
 
 def create_streams_if_needed(
-    realm: Realm, stream_dicts: list[StreamDict], acting_user: Optional[UserProfile] = None
+    realm: Realm, stream_dicts: list[StreamDict], acting_user: UserProfile | None = None
 ) -> tuple[list[Stream], list[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
@@ -261,7 +261,7 @@ def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream:
 
 
 def access_stream_for_send_message(
-    sender: UserProfile, stream: Stream, forwarder_user_profile: Optional[UserProfile]
+    sender: UserProfile, stream: Stream, forwarder_user_profile: UserProfile | None
 ) -> None:
     # Our caller is responsible for making sure that `stream` actually
     # matches the realm of the sender.
@@ -321,7 +321,7 @@ def access_stream_for_send_message(
     )
 
 
-def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[str]) -> None:
+def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) -> None:
     if stream_id is None and stream is None:
         # Uses the same translated string as RequestVariableMissingError
         # with the stream_id parameter, which is the more common use case.
@@ -333,7 +333,7 @@ def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[
 
 
 def check_stream_access_for_delete_or_update(
-    user_profile: UserProfile, stream: Stream, sub: Optional[Subscription] = None
+    user_profile: UserProfile, stream: Stream, sub: Subscription | None = None
 ) -> None:
     error = _("Invalid channel ID")
     if stream.realm_id != user_profile.realm_id:
@@ -350,7 +350,7 @@ def check_stream_access_for_delete_or_update(
 
 def access_stream_for_delete_or_update(
     user_profile: UserProfile, stream_id: int
-) -> tuple[Stream, Optional[Subscription]]:
+) -> tuple[Stream, Subscription | None]:
     try:
         stream = Stream.objects.get(id=stream_id)
     except Stream.DoesNotExist:
@@ -370,7 +370,7 @@ def access_stream_for_delete_or_update(
 def check_basic_stream_access(
     user_profile: UserProfile,
     stream: Stream,
-    sub: Optional[Subscription],
+    sub: Subscription | None,
     allow_realm_admin: bool = False,
 ) -> bool:
     # Any realm user, even guests, can access web_public streams.
@@ -403,7 +403,7 @@ def access_stream_common(
     error: str,
     require_active: bool = True,
     allow_realm_admin: bool = False,
-) -> Optional[Subscription]:
+) -> Subscription | None:
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
     way.  If that user does not have permission to access that stream,
@@ -436,7 +436,7 @@ def access_stream_by_id(
     stream_id: int,
     require_active: bool = True,
     allow_realm_admin: bool = False,
-) -> tuple[Stream, Optional[Subscription]]:
+) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel ID")
     try:
         stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
@@ -486,7 +486,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 
 def access_stream_by_name(
     user_profile: UserProfile, stream_name: str, allow_realm_admin: bool = False
-) -> tuple[Stream, Optional[Subscription]]:
+) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel name '{channel_name}'").format(channel_name=stream_name)
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
@@ -633,7 +633,7 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
 
 
 def can_remove_subscribers_from_stream(
-    stream: Stream, user_profile: UserProfile, sub: Optional[Subscription]
+    stream: Stream, user_profile: UserProfile, sub: Subscription | None
 ) -> bool:
     if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
         return False
@@ -801,7 +801,7 @@ def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStr
         )
 
 
-def get_stream_by_narrow_operand_access_unchecked(operand: Union[str, int], realm: Realm) -> Stream:
+def get_stream_by_narrow_operand_access_unchecked(operand: str | int, realm: Realm) -> Stream:
     """This is required over access_stream_* in certain cases where
     we need the stream data only to prepare a response that user can access
     and not send it out to unauthorized recipients.
@@ -822,7 +822,7 @@ def ensure_stream(
     invite_only: bool = False,
     stream_description: str = "",
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> Stream:
     return create_stream_if_needed(
         realm,
@@ -851,9 +851,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
     return occupied_streams
 
 
-def stream_to_dict(
-    stream: Stream, recent_traffic: Optional[dict[int, int]] = None
-) -> APIStreamDict:
+def stream_to_dict(stream: Stream, recent_traffic: dict[int, int] | None = None) -> APIStreamDict:
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             stream.id, stream.date_created, recent_traffic
@@ -914,7 +912,7 @@ def get_streams_for_user(
     else:
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
-        query_filter: Optional[Q] = None
+        query_filter: Q | None = None
 
         def add_filter_option(option: Q) -> None:
             nonlocal query_filter

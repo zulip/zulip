@@ -1,7 +1,7 @@
 import random
 import re
 from email.headerregistry import Address
-from typing import Optional, Sequence, Union
+from typing import Sequence
 from unittest import mock
 from unittest.mock import patch
 
@@ -89,7 +89,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             )
         m.assert_not_called()
 
-    def normalize_string(self, s: Union[str, StrPromise]) -> str:
+    def normalize_string(self, s: str | StrPromise) -> str:
         s = s.strip()
         return re.sub(r"\s+", " ", s)
 
@@ -105,7 +105,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         show_message_content: bool = True,
         verify_body_does_not_include: Sequence[str] = [],
         trigger: str = "",
-        mentioned_user_group_id: Optional[int] = None,
+        mentioned_user_group_id: int | None = None,
     ) -> None:
         hamlet = self.example_user("hamlet")
         tokens = self._get_tokens()

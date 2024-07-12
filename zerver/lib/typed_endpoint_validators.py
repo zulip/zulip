@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.utils.translation import gettext as _
@@ -9,7 +7,7 @@ from pydantic_core import PydanticCustomError
 # of the specified length. So, we need to create a custom validator for that.
 
 
-def check_string_fixed_length(string: str, length: int) -> Optional[str]:
+def check_string_fixed_length(string: str, length: int) -> str | None:
     if len(string) != length:
         raise PydanticCustomError(
             "string_fixed_length",

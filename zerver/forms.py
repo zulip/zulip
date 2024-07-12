@@ -1,7 +1,7 @@
 import logging
 import re
 from email.headerregistry import Address
-from typing import Any, Optional
+from typing import Any
 
 import DNS
 from django import forms
@@ -368,15 +368,15 @@ class ZulipPasswordResetForm(PasswordResetForm):
     @override
     def save(
         self,
-        domain_override: Optional[str] = None,
+        domain_override: str | None = None,
         subject_template_name: str = "registration/password_reset_subject.txt",
         email_template_name: str = "registration/password_reset_email.html",
         use_https: bool = False,
         token_generator: PasswordResetTokenGenerator = default_token_generator,
-        from_email: Optional[str] = None,
-        request: Optional[HttpRequest] = None,
-        html_email_template_name: Optional[str] = None,
-        extra_email_context: Optional[dict[str, Any]] = None,
+        from_email: str | None = None,
+        request: HttpRequest | None = None,
+        html_email_template_name: str | None = None,
+        extra_email_context: dict[str, Any] | None = None,
     ) -> None:
         """
         If the email address has an account in the target realm,
@@ -592,7 +592,7 @@ class AuthenticationTokenForm(TwoFactorAuthenticationTokenForm):
 
 class MultiEmailField(forms.Field):
     @override
-    def to_python(self, emails: Optional[str]) -> list[str]:
+    def to_python(self, emails: str | None) -> list[str]:
         """Normalize data to a list of strings."""
         if not emails:
             return []

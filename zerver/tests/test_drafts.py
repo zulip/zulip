@@ -1,6 +1,6 @@
 import time
 from copy import deepcopy
-from typing import Any, Optional
+from typing import Any
 
 import orjson
 
@@ -12,7 +12,7 @@ class DraftCreationTests(ZulipTestCase):
     def create_and_check_drafts_for_success(
         self,
         draft_dicts: list[dict[str, Any]],
-        expected_draft_dicts: Optional[list[dict[str, Any]]] = None,
+        expected_draft_dicts: list[dict[str, Any]] | None = None,
     ) -> None:
         hamlet = self.example_user("hamlet")
 

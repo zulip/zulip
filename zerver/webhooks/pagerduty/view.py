@@ -1,5 +1,4 @@
 from email.headerregistry import Address
-from typing import Union
 
 from django.http import HttpRequest, HttpResponse
 from typing_extensions import TypeAlias
@@ -12,7 +11,7 @@ from zerver.lib.validator import WildValue, check_int, check_none_or, check_stri
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-FormatDictType: TypeAlias = dict[str, Union[str, int]]
+FormatDictType: TypeAlias = dict[str, str | int]
 
 PAGER_DUTY_EVENT_NAMES = {
     "incident.trigger": "triggered",

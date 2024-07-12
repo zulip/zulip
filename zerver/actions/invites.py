@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Collection, Optional, Sequence
+from typing import Any, Collection, Sequence
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -176,7 +176,7 @@ def do_invite_users(
     streams: Collection[Stream],
     notify_referrer_on_join: bool = True,
     *,
-    invite_expires_in_minutes: Optional[int],
+    invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> list[tuple[str, str, bool]]:
@@ -285,7 +285,7 @@ def do_invite_users(
     return skipped
 
 
-def get_invitation_expiry_date(confirmation_obj: Confirmation) -> Optional[int]:
+def get_invitation_expiry_date(confirmation_obj: Confirmation) -> int | None:
     expiry_date = confirmation_obj.expiry_date
     if expiry_date is None:
         return expiry_date
@@ -362,7 +362,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
 def do_create_multiuse_invite_link(
     referred_by: UserProfile,
     invited_as: int,
-    invite_expires_in_minutes: Optional[int],
+    invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
     streams: Sequence[Stream] = [],
 ) -> str:
@@ -414,9 +414,9 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
 def do_send_user_invite_email(
     prereg_user: PreregistrationUser,
     *,
-    confirmation: Optional[Confirmation] = None,
-    event_time: Optional[datetime] = None,
-    invite_expires_in_minutes: Optional[float] = None,
+    confirmation: Confirmation | None = None,
+    event_time: datetime | None = None,
+    invite_expires_in_minutes: float | None = None,
 ) -> None:
     # Take a lock on the realm, so we can check for invitation limits without races
     realm_id = assert_is_not_none(prereg_user.realm_id)

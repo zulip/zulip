@@ -3,7 +3,6 @@ import configparser
 import os
 import sys
 from collections import defaultdict
-from typing import Optional
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
@@ -110,7 +109,7 @@ class FilteredManagementUtility(ManagementUtility):
         return "\n".join(usage)
 
 
-def execute_from_command_line(argv: Optional[list[str]] = None) -> None:
+def execute_from_command_line(argv: list[str] | None = None) -> None:
     """Run a FilteredManagementUtility."""
     utility = FilteredManagementUtility(argv)
     utility.execute()

@@ -3,7 +3,7 @@ import json
 import re
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
 
 import markdown
 from markdown.extensions import Extension
@@ -52,7 +52,7 @@ class EventData:
     description: str
     properties: dict[str, Any]
     example: str
-    op_type: Optional[str] = None
+    op_type: str | None = None
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
@@ -105,7 +105,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         return lines
 
     def render_desc(
-        self, description: str, spacing: int, data_type: str, return_value: Optional[str] = None
+        self, description: str, spacing: int, data_type: str, return_value: str | None = None
     ) -> str:
         description = description.replace("\n", "\n" + ((spacing + 4) * " "))
         if return_value is None:
@@ -304,8 +304,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         for event in events_dict["oneOf"]:
             # The op property doesn't have a description, so it must be removed
             # before any calls to self.render_table, which expects a description.
-            op: Optional[dict[str, Any]] = event["properties"].pop("op", None)
-            op_type: Optional[str] = None
+            op: dict[str, Any] | None = event["properties"].pop("op", None)
+            op_type: str | None = None
             if op is not None:
                 op_type = op["enum"][0]
             event_data = EventData(

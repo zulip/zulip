@@ -5,7 +5,7 @@ import subprocess
 from email import message_from_string
 from email.headerregistry import Address
 from email.message import EmailMessage, MIMEPart
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Callable, Mapping
 from unittest import mock
 
 import orjson
@@ -1527,7 +1527,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         def check_queue_json_publish(
             queue_name: str,
             event: Mapping[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             self.assertEqual(queue_name, "email_mirror")
             self.assertEqual(event, {"rcpt_to": to_address, "msg_base64": msg_base64})

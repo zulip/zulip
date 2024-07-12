@@ -4,7 +4,7 @@ import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 
 import bmemcached
 import orjson
@@ -734,7 +734,7 @@ def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
     logging.info("Successfully imported %s from %s[%s].", model, table, dump_file_id)
 
 
-def bulk_import_model(data: TableData, model: Any, dump_file_id: Optional[str] = None) -> None:
+def bulk_import_model(data: TableData, model: Any, dump_file_id: str | None = None) -> None:
     table = get_db_table(model)
     # TODO, deprecate dump_file_id
     model.objects.bulk_create(model(**item) for item in data[table])
@@ -824,7 +824,7 @@ def import_uploads(
     realm: Realm,
     import_dir: Path,
     processes: int,
-    default_user_profile_id: Optional[int] = None,
+    default_user_profile_id: int | None = None,
     processing_avatars: bool = False,
     processing_emojis: bool = False,
     processing_realm_icons: bool = False,
@@ -1126,7 +1126,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         # We expect Zulip server exports to contain these system groups,
         # this logic here is needed to handle the imports from other services.
-        role_system_groups_dict: Optional[dict[int, NamedUserGroup]] = None
+        role_system_groups_dict: dict[int, NamedUserGroup] | None = None
         if "zerver_usergroup" not in data:
             role_system_groups_dict = create_system_user_groups_for_realm(realm)
 

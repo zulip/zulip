@@ -881,7 +881,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return "{}@{}".format(self.id, self.realm.string_id or "root")
 
     @override
-    def set_password(self, password: Optional[str]) -> None:
+    def set_password(self, password: str | None) -> None:
         if password is None:
             self.set_unusable_password()
             return
@@ -934,7 +934,7 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
-def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
+def maybe_get_user_profile_by_api_key(api_key: str) -> UserProfile | None:
     try:
         return UserProfile.objects.select_related(
             "realm",
@@ -1132,7 +1132,7 @@ def bot_owner_user_ids(user_profile: UserProfile) -> set[int]:
         return users
 
 
-def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
+def get_source_profile(email: str, realm_id: int) -> UserProfile | None:
     from zerver.models import Realm
     from zerver.models.realms import get_realm_by_id
 

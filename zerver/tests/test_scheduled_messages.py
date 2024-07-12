@@ -2,7 +2,7 @@ import re
 import time
 from datetime import timedelta
 from io import StringIO
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -33,7 +33,7 @@ class ScheduledMessageTest(ZulipTestCase):
     def do_schedule_message(
         self,
         msg_type: str,
-        to: Union[int, list[str], list[int]],
+        to: int | list[str] | list[int],
         msg: str,
         scheduled_delivery_timestamp: int,
     ) -> "TestHttpResponse":

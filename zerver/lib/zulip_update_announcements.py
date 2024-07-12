@@ -1,7 +1,6 @@
 import logging
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Optional
 
 from django.conf import settings
 from django.db import transaction
@@ -165,7 +164,7 @@ def get_realms_behind_zulip_update_announcements_level(level: int) -> QuerySet[R
 
 def internal_prep_group_direct_message_for_old_realm(
     realm: Realm, sender: UserProfile
-) -> Optional[SendMessageRequest]:
+) -> SendMessageRequest | None:
     administrators = list(realm.get_human_admin_users())
     with override_language(realm.default_language):
         topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
@@ -199,7 +198,7 @@ configuration change), or [turn this feature off]({organization_settings_url}) a
     )
 
 
-def get_level_none_to_initial_auditlog(realm: Realm) -> Optional[RealmAuditLog]:
+def get_level_none_to_initial_auditlog(realm: Realm) -> RealmAuditLog | None:
     return RealmAuditLog.objects.filter(
         realm=realm,
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
@@ -223,7 +222,7 @@ def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) 
 
 def internal_prep_zulip_update_announcements_stream_messages(
     current_level: int, latest_level: int, sender: UserProfile, realm: Realm
-) -> list[Optional[SendMessageRequest]]:
+) -> list[SendMessageRequest | None]:
     message_requests = []
     stream = realm.zulip_update_announcements_stream
     assert stream is not None
@@ -247,7 +246,7 @@ def internal_prep_zulip_update_announcements_stream_messages(
 def send_messages_and_update_level(
     realm: Realm,
     new_zulip_update_announcements_level: int,
-    send_message_requests: list[Optional[SendMessageRequest]],
+    send_message_requests: list[SendMessageRequest | None],
 ) -> None:
     sent_message_ids = []
     if send_message_requests:

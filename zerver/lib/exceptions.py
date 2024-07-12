@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Any, Optional, Union
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -101,7 +101,7 @@ class JsonableError(Exception):
     # like 403 or 404.
     http_status_code: int = 400
 
-    def __init__(self, msg: Union[str, StrPromise]) -> None:
+    def __init__(self, msg: str | StrPromise) -> None:
         # `_msg` is an implementation detail of `JsonableError` itself.
         self._msg = msg
 
@@ -147,7 +147,7 @@ class UnauthorizedError(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED
     http_status_code: int = 401
 
-    def __init__(self, msg: Optional[str] = None, www_authenticate: Optional[str] = None) -> None:
+    def __init__(self, msg: str | None = None, www_authenticate: str | None = None) -> None:
         if msg is None:
             msg = _("Not logged in: API authentication or user session required")
         super().__init__(msg)
@@ -235,7 +235,7 @@ class RateLimitedError(JsonableError):
     code = ErrorCode.RATE_LIMIT_HIT
     http_status_code = 429
 
-    def __init__(self, secs_to_freedom: Optional[float] = None) -> None:
+    def __init__(self, secs_to_freedom: float | None = None) -> None:
         self.secs_to_freedom = secs_to_freedom
 
     @staticmethod
@@ -420,7 +420,7 @@ class UnsupportedWebhookEventTypeError(WebhookError):
     http_status_code = 200
     data_fields = ["webhook_name", "event_type"]
 
-    def __init__(self, event_type: Optional[str]) -> None:
+    def __init__(self, event_type: str | None) -> None:
         super().__init__()
         self.event_type = event_type
 

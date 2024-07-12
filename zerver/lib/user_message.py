@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import connection
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Composable, Literal
@@ -30,8 +28,8 @@ def create_historical_user_messages(
     *,
     user_id: int,
     message_ids: list[int],
-    flagattr: Optional[int] = None,
-    flag_target: Optional[int] = None,
+    flagattr: int | None = None,
+    flag_target: int | None = None,
 ) -> None:
     # Users can see and interact with messages sent to streams with
     # public history for which they do not have a UserMessage because
@@ -76,7 +74,7 @@ def bulk_insert_ums(ums: list[UserMessageLite]) -> None:
 
 
 def bulk_insert_all_ums(
-    user_ids: list[int], message_ids: list[int], flags: int, conflict: Optional[Composable] = None
+    user_ids: list[int], message_ids: list[int], flags: int, conflict: Composable | None = None
 ) -> None:
     if not user_ids or not message_ids:
         return

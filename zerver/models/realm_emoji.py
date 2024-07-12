@@ -1,4 +1,4 @@
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from django.core.validators import MinLengthValidator, RegexValidator
 from django.db import models
@@ -16,8 +16,8 @@ class EmojiInfo(TypedDict):
     name: str
     source_url: str
     deactivated: bool
-    author_id: Optional[int]
-    still_url: Optional[str]
+    author_id: int | None
+    still_url: str | None
 
 
 def get_all_custom_emoji_for_realm_cache_key(realm_id: int) -> str:

@@ -3,7 +3,7 @@ import os
 import re
 from html import escape
 from textwrap import dedent
-from typing import Any, Optional
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -75,7 +75,7 @@ class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
     # Simulate code formatting.
 
     @override
-    def format_code(self, lang: Optional[str], code: str) -> str:
+    def format_code(self, lang: str | None, code: str) -> str:
         return (lang or "") + ":" + code
 
     @override

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json
@@ -20,8 +18,8 @@ def send_notification_backend(
     *,
     req_type: Annotated[Literal["direct", "stream", "channel"], ApiParamConfig("type")] = "direct",
     operator: Annotated[Literal["start", "stop"], ApiParamConfig("op")],
-    notification_to: Annotated[Json[Optional[list[int]]], ApiParamConfig("to")] = None,
-    stream_id: Json[Optional[int]] = None,
+    notification_to: Annotated[Json[list[int] | None], ApiParamConfig("to")] = None,
+    stream_id: Json[int | None] = None,
     topic: OptionalTopic = None,
 ) -> HttpResponse:
     recipient_type_name = req_type

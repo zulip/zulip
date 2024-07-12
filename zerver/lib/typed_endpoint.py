@@ -4,7 +4,7 @@ import types
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import wraps
-from typing import Callable, Generic, Optional, Sequence, TypeVar, Union
+from typing import Callable, Generic, Sequence, TypeVar, Union
 
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
@@ -89,7 +89,7 @@ class ApiParamConfig:
     "whence".
     """
 
-    whence: Optional[str] = None
+    whence: str | None = None
     path_only: bool = False
     argument_type_is_body: bool = False
     documentation_status: DocumentationStatus = DOCUMENTED
@@ -105,7 +105,7 @@ JsonBodyPayload: TypeAlias = Annotated[Json[T], ApiParamConfig(argument_type_is_
 # request by the @typed_endpoint decorator.
 PathOnly: TypeAlias = Annotated[T, ApiParamConfig(path_only=True)]
 OptionalTopic: TypeAlias = Annotated[
-    Optional[str],
+    str | None,
     StringConstraints(strip_whitespace=True),
     ApiParamConfig(whence="topic", aliases=("subject",)),
 ]
@@ -133,7 +133,7 @@ NotSpecified = _NotSpecified()
 @dataclass(frozen=True)
 class FuncParam(Generic[T]):
     # Default value of the parameter.
-    default: Union[T, _NotSpecified]
+    default: T | _NotSpecified
     # Name of the function parameter as defined in the original function.
     param_name: str
     # Inspected the underlying type of the parameter by unwrapping the Annotated
@@ -232,7 +232,7 @@ def parse_single_parameter(
             ), API_PARAM_CONFIG_USAGE_HINT.format(param_name=param_name, param_type=param_type)
             param_type = inner_type
 
-    param_config: Optional[ApiParamConfig] = None
+    param_config: ApiParamConfig | None = None
     if is_annotated(param_type):
         # The first type is the underlying type of the parameter, the rest are
         # metadata attached to Annotated. Note that we do not transform

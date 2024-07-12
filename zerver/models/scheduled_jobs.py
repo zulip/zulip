@@ -1,7 +1,7 @@
 # https://github.com/typeddjango/django-stubs/issues/1698
 # mypy: disable-error-code="explicit-override"
 
-from typing import TypedDict, Union
+from typing import TypedDict
 
 from django.conf import settings
 from django.db import models
@@ -213,7 +213,7 @@ class ScheduledMessage(models.Model):
     def is_stream_message(self) -> bool:
         return self.recipient.type == Recipient.STREAM
 
-    def to_dict(self) -> Union[APIScheduledStreamMessageDict, APIScheduledDirectMessageDict]:
+    def to_dict(self) -> APIScheduledStreamMessageDict | APIScheduledDirectMessageDict:
         recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
 
         if recipient_type_str == "private":

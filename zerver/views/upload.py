@@ -2,7 +2,6 @@ import base64
 import binascii
 import os
 from datetime import timedelta
-from typing import Optional, Union
 from urllib.parse import quote, urlsplit
 
 from django.conf import settings
@@ -49,7 +48,7 @@ def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bo
         response.headers["Content-Disposition"] = content_disposition
 
 
-def internal_nginx_redirect(internal_path: str, content_type: Optional[str] = None) -> HttpResponse:
+def internal_nginx_redirect(internal_path: str, content_type: str | None = None) -> HttpResponse:
     # The following headers from this initial response are
     # _preserved_, if present, and sent unmodified to the client;
     # all other headers are overridden by the redirected URL:
@@ -142,7 +141,7 @@ def serve_local(
 
 def serve_file_download_backend(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     realm_id_str: str,
     filename: str,
 ) -> HttpResponseBase:
@@ -153,7 +152,7 @@ def serve_file_download_backend(
 
 def serve_file_backend(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     realm_id_str: str,
     filename: str,
 ) -> HttpResponseBase:
@@ -171,7 +170,7 @@ def serve_file_url_backend(
     return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
 
 
-def preferred_accept(request: HttpRequest, served_types: list[str]) -> Optional[str]:
+def preferred_accept(request: HttpRequest, served_types: list[str]) -> str | None:
     # Returns the first of the served_types which the browser will
     # accept, based on the browser's stated quality preferences.
     # Returns None if none of the served_types are accepted by the
@@ -190,7 +189,7 @@ def preferred_accept(request: HttpRequest, served_types: list[str]) -> Optional[
 
 def serve_file(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     realm_id_str: str,
     filename: str,
     url_only: bool = False,
@@ -245,7 +244,7 @@ def generate_unauthed_file_access_url(path_id: str) -> str:
     return reverse("file_unauthed_from_token", args=[token, filename])
 
 
-def get_file_path_id_from_token(token: str) -> Optional[str]:
+def get_file_path_id_from_token(token: str) -> str | None:
     signer = TimestampSigner(salt=USER_UPLOADS_ACCESS_TOKEN_SALT)
     try:
         signed_data = base64.b16decode(token).decode()

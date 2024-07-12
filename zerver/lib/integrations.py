@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Sequence
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import URLResolver, path
@@ -32,7 +32,7 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-OptionValidator: TypeAlias = Callable[[str, str], Optional[str]]
+OptionValidator: TypeAlias = Callable[[str, str], str | None]
 
 META_CATEGORY: dict[str, StrPromise] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
@@ -67,11 +67,11 @@ class Integration:
         name: str,
         client_name: str,
         categories: list[str],
-        logo: Optional[str] = None,
-        secondary_line_text: Optional[str] = None,
-        display_name: Optional[str] = None,
-        doc: Optional[str] = None,
-        stream_name: Optional[str] = None,
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        display_name: str | None = None,
+        doc: str | None = None,
+        stream_name: str | None = None,
         legacy: bool = False,
         config_options: Sequence[tuple[str, str, OptionValidator]] = [],
     ) -> None:
@@ -112,7 +112,7 @@ class Integration:
     def is_enabled(self) -> bool:
         return True
 
-    def get_logo_path(self) -> Optional[str]:
+    def get_logo_path(self) -> str | None:
         logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
         logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
         if os.path.isfile(static_path(logo_file_path_svg)):
@@ -122,14 +122,14 @@ class Integration:
 
         return None
 
-    def get_bot_avatar_path(self) -> Optional[str]:
+    def get_bot_avatar_path(self) -> str | None:
         if self.logo_path is not None:
             name = os.path.splitext(os.path.basename(self.logo_path))[0]
             return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
 
         return None
 
-    def get_logo_url(self) -> Optional[str]:
+    def get_logo_url(self) -> str | None:
         if self.logo_path is not None:
             return staticfiles_storage.url(self.logo_path)
 
@@ -146,10 +146,10 @@ class BotIntegration(Integration):
         self,
         name: str,
         categories: list[str],
-        logo: Optional[str] = None,
-        secondary_line_text: Optional[str] = None,
-        display_name: Optional[str] = None,
-        doc: Optional[str] = None,
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        display_name: str | None = None,
+        doc: str | None = None,
     ) -> None:
         super().__init__(
             name,
@@ -187,17 +187,17 @@ class WebhookIntegration(Integration):
         self,
         name: str,
         categories: list[str],
-        client_name: Optional[str] = None,
-        logo: Optional[str] = None,
-        secondary_line_text: Optional[str] = None,
-        function: Optional[str] = None,
-        url: Optional[str] = None,
-        display_name: Optional[str] = None,
-        doc: Optional[str] = None,
-        stream_name: Optional[str] = None,
+        client_name: str | None = None,
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        function: str | None = None,
+        url: str | None = None,
+        display_name: str | None = None,
+        doc: str | None = None,
+        stream_name: str | None = None,
         legacy: bool = False,
         config_options: Sequence[tuple[str, str, OptionValidator]] = [],
-        dir_name: Optional[str] = None,
+        dir_name: str | None = None,
     ) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
@@ -253,8 +253,8 @@ def split_fixture_path(path: str) -> tuple[str, str]:
 class BaseScreenshotConfig:
     fixture_name: str
     image_name: str = "001.png"
-    image_dir: Optional[str] = None
-    bot_name: Optional[str] = None
+    image_dir: str | None = None
+    bot_name: str | None = None
 
 
 @dataclass
@@ -287,10 +287,10 @@ class HubotIntegration(Integration):
         self,
         name: str,
         categories: list[str],
-        display_name: Optional[str] = None,
-        logo: Optional[str] = None,
-        logo_alt: Optional[str] = None,
-        git_url: Optional[str] = None,
+        display_name: str | None = None,
+        logo: str | None = None,
+        logo_alt: str | None = None,
+        git_url: str | None = None,
         legacy: bool = False,
     ) -> None:
         if logo_alt is None:
@@ -847,7 +847,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
 }
 
 
-def get_all_event_types_for_integration(integration: Integration) -> Optional[list[str]]:
+def get_all_event_types_for_integration(integration: Integration) -> list[str] | None:
     integration = INTEGRATIONS[integration.name]
     if isinstance(integration, WebhookIntegration):
         if integration.name == "githubsponsors":

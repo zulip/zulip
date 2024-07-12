@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from zerver.lib.cache import cache_with_key, get_muting_users_cache_key
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -29,7 +28,7 @@ def add_user_mute(user_profile: UserProfile, muted_user: UserProfile, date_muted
     )
 
 
-def get_mute_object(user_profile: UserProfile, muted_user: UserProfile) -> Optional[MutedUser]:
+def get_mute_object(user_profile: UserProfile, muted_user: UserProfile) -> MutedUser | None:
     try:
         return MutedUser.objects.get(user_profile=user_profile, muted_user=muted_user)
     except MutedUser.DoesNotExist:

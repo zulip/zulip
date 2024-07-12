@@ -10,7 +10,7 @@ import json
 import re
 import shlex
 from textwrap import dedent
-from typing import Any, Mapping, Match, Optional, Pattern
+from typing import Any, Mapping, Match, Pattern
 
 import markdown
 from django.conf import settings
@@ -268,8 +268,8 @@ def generate_curl_example(
     api_url: str,
     auth_email: str = DEFAULT_AUTH_EMAIL,
     auth_api_key: str = DEFAULT_AUTH_API_KEY,
-    exclude: Optional[list[str]] = None,
-    include: Optional[list[str]] = None,
+    exclude: list[str] | None = None,
+    include: list[str] | None = None,
 ) -> list[str]:
     lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
@@ -398,7 +398,7 @@ SUPPORTED_LANGUAGES: dict[str, Any] = {
 
 
 class APIMarkdownExtension(Extension):
-    def __init__(self, api_url: Optional[str]) -> None:
+    def __init__(self, api_url: str | None) -> None:
         self.config = {
             "api_url": [
                 api_url,

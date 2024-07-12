@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Callable, Sequence
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -46,8 +46,8 @@ def make_table(
     cols: Sequence[str],
     rows: Sequence[Any],
     *,
-    totals: Optional[Any] = None,
-    stats_link: Optional[Markup] = None,
+    totals: Any | None = None,
+    stats_link: Markup | None = None,
     has_row_class: bool = False,
 ) -> str:
     if not has_row_class:
@@ -70,7 +70,7 @@ def make_table(
 def fix_rows(
     rows: list[list[Any]],
     i: int,
-    fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str], Callable[[int], int]],
+    fixup_func: Callable[[str], Markup] | Callable[[datetime], str] | Callable[[int], int],
 ) -> None:
     for row in rows:
         row[i] = fixup_func(row[i])
@@ -91,7 +91,7 @@ def dictfetchall(cursor: CursorWrapper) -> list[dict[str, Any]]:
     return [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
 
 
-def format_optional_datetime(date: Optional[datetime], display_none: bool = False) -> str:
+def format_optional_datetime(date: datetime | None, display_none: bool = False) -> str:
     if date:
         return date.strftime("%Y-%m-%d %H:%M")
     elif display_none:
@@ -104,7 +104,7 @@ def format_datetime_as_date(date: datetime) -> str:
     return date.strftime("%Y-%m-%d")
 
 
-def format_none_as_zero(value: Optional[int]) -> int:
+def format_none_as_zero(value: int | None) -> int:
     if value:
         return value
     else:
@@ -159,7 +159,7 @@ def remote_installation_support_link(hostname: str) -> Markup:
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
-def get_plan_rate_percentage(discount: Optional[str]) -> str:
+def get_plan_rate_percentage(discount: str | None) -> str:
     # CustomerPlan.discount is a string field that stores the discount.
     if discount is None or discount == "0":
         return "100%"
@@ -176,8 +176,8 @@ def get_remote_activity_plan_data(
     plan: CustomerPlan,
     license_ledger: LicenseLedger,
     *,
-    remote_realm: Optional[RemoteRealm] = None,
-    remote_server: Optional[RemoteZulipServer] = None,
+    remote_realm: RemoteRealm | None = None,
+    remote_server: RemoteZulipServer | None = None,
 ) -> RemoteActivityPlanData:
     if plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY or plan.status in (
         CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,

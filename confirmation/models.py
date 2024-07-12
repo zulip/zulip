@@ -62,21 +62,21 @@ def generate_key() -> str:
     return b32encode(secrets.token_bytes(15)).decode().lower()
 
 
-NoZilencerConfirmationObjT: TypeAlias = Union[
-    MultiuseInvite,
-    PreregistrationRealm,
-    PreregistrationUser,
-    EmailChangeStatus,
-    UserProfile,
-    RealmReactivationStatus,
-]
+NoZilencerConfirmationObjT: TypeAlias = (
+    MultiuseInvite
+    | PreregistrationRealm
+    | PreregistrationUser
+    | EmailChangeStatus
+    | UserProfile
+    | RealmReactivationStatus
+)
 ZilencerConfirmationObjT: TypeAlias = Union[
     NoZilencerConfirmationObjT,
     "PreregistrationRemoteServerBillingUser",
     "PreregistrationRemoteRealmBillingUser",
 ]
 
-ConfirmationObjT: TypeAlias = Union[NoZilencerConfirmationObjT, ZilencerConfirmationObjT]
+ConfirmationObjT: TypeAlias = NoZilencerConfirmationObjT | ZilencerConfirmationObjT
 
 
 def get_object_from_key(
@@ -128,7 +128,7 @@ def create_confirmation_object(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
-    validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
+    validity_in_minutes: int | None | UnspecifiedValue = UnspecifiedValue(),
     no_associated_realm_object: bool = False,
 ) -> "Confirmation":
     # validity_in_minutes is an override for the default values which are
@@ -171,7 +171,7 @@ def create_confirmation_link(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
-    validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
+    validity_in_minutes: int | None | UnspecifiedValue = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
     no_associated_realm_object: bool = False,
 ) -> str:
@@ -194,7 +194,7 @@ def confirmation_url_for(confirmation_obj: "Confirmation", url_args: Mapping[str
 
 def confirmation_url(
     confirmation_key: str,
-    realm: Optional[Realm],
+    realm: Realm | None,
     confirmation_type: int,
     url_args: Mapping[str, str] = {},
 ) -> str:
@@ -290,7 +290,7 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
 # add another Confirmation.type for this; it's this way for historical reasons.
 
 
-def validate_key(creation_key: Optional[str]) -> Optional["RealmCreationKey"]:
+def validate_key(creation_key: str | None) -> Optional["RealmCreationKey"]:
     """Get the record for this key, raising InvalidCreationKey if non-None but invalid."""
     if creation_key is None:
         return None

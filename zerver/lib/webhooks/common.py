@@ -1,7 +1,7 @@
 import fnmatch
 import importlib
 from datetime import datetime
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable
 from urllib.parse import unquote
 
 from django.http import HttpRequest
@@ -45,10 +45,10 @@ that this integration expects!
 SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
 SETUP_MESSAGE_USER_PART = " by {user_name}"
 
-OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[Optional[str], ApiParamConfig("topic")]
+OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig("topic")]
 
 
-def get_setup_webhook_message(integration: str, user_name: Optional[str] = None) -> str:
+def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
     if user_name:
         content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
@@ -85,12 +85,12 @@ def check_send_webhook_message(
     user_profile: UserProfile,
     topic: str,
     body: str,
-    complete_event_type: Optional[str] = None,
+    complete_event_type: str | None = None,
     *,
-    stream: Optional[str] = None,
+    stream: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
-    only_events: Optional[Json[list[str]]] = None,
-    exclude_events: Optional[Json[list[str]]] = None,
+    only_events: Json[list[str]] | None = None,
+    exclude_events: Json[list[str]] | None = None,
     unquote_url_parameters: bool = False,
 ) -> None:
     if complete_event_type is not None and (
@@ -146,7 +146,7 @@ def check_send_webhook_message(
             pass
 
 
-def standardize_headers(input_headers: Union[None, dict[str, Any]]) -> dict[str, str]:
+def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
     """This method can be used to standardize a dictionary of headers with
     the standard format that Django expects. For reference, refer to:
     https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest.headers

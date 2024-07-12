@@ -4,7 +4,7 @@ import logging
 import uuid
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterator, Mapping, Optional, Union
+from typing import Any, Iterator, Mapping
 from unittest import mock, skipUnless
 
 import aioapns
@@ -2231,7 +2231,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             def transform_realmauditlog_extra_data(
                 method: str,
                 endpoint: str,
-                post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
+                post_data: bytes | Mapping[str, str | int | None | bytes],
                 extra_headers: Mapping[str, str] = {},
             ) -> dict[str, Any]:
                 if endpoint == "server/analytics":
@@ -2507,7 +2507,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         dummy_remote_server_customer_plan = mock.MagicMock()
         dummy_remote_server_customer_plan.status = CustomerPlan.ACTIVE
 
-        def get_current_plan_by_customer(customer: mock.MagicMock) -> Optional[mock.MagicMock]:
+        def get_current_plan_by_customer(customer: mock.MagicMock) -> mock.MagicMock | None:
             assert customer in [dummy_remote_realm_customer, dummy_remote_server_customer]
             if customer == dummy_remote_server_customer:
                 return dummy_remote_server_customer_plan
@@ -3793,7 +3793,7 @@ class TestAPNs(PushNotificationTest):
 
     def send(
         self,
-        devices: Optional[list[Union[PushDeviceToken, RemotePushDeviceToken]]] = None,
+        devices: list[PushDeviceToken | RemotePushDeviceToken] | None = None,
         payload_data: Mapping[str, Any] = {},
     ) -> None:
         send_apple_push_notification(
@@ -4321,8 +4321,8 @@ class TestGetGCMPayload(PushNotificationTest):
     def _test_get_message_payload_gcm_stream_message(
         self,
         truncate_content: bool = False,
-        mentioned_user_group_id: Optional[int] = None,
-        mentioned_user_group_name: Optional[str] = None,
+        mentioned_user_group_id: int | None = None,
+        mentioned_user_group_name: str | None = None,
     ) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)

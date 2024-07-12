@@ -2,7 +2,6 @@ import os
 import re
 from datetime import datetime, timedelta
 from io import StringIO
-from typing import Optional
 
 import time_machine
 from django.conf import settings
@@ -19,7 +18,7 @@ from zerver.models.clients import get_client
 
 class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
     def make_attachment(
-        self, filename: str, when: Optional[datetime] = None, uploader: Optional[UserProfile] = None
+        self, filename: str, when: datetime | None = None, uploader: UserProfile | None = None
     ) -> Attachment:
         if when is None:
             when = timezone_now() - timedelta(weeks=2)

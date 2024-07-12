@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -88,7 +87,7 @@ class TestGetChartData(ZulipTestCase):
         return [0, 0, i, 0]
 
     def insert_data(
-        self, stat: CountStat, realm_subgroups: list[Optional[str]], user_subgroups: list[str]
+        self, stat: CountStat, realm_subgroups: list[str | None], user_subgroups: list[str]
     ) -> None:
         if stat.frequency == CountStat.HOUR:
             insert_time = self.end_times_hour[2]

@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -67,9 +67,7 @@ from zerver.models.realms import (
 from zerver.views.user_settings import check_settings_values
 
 
-def parse_jitsi_server_url(
-    value: str, special_values_map: Mapping[str, Optional[str]]
-) -> Optional[str]:
+def parse_jitsi_server_url(value: str, special_values_map: Mapping[str, str | None]) -> str | None:
     if value in special_values_map:
         return special_values_map[value]
 
@@ -99,91 +97,87 @@ def update_realm(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    name: Annotated[
-        Optional[str], StringConstraints(max_length=Realm.MAX_REALM_NAME_LENGTH)
-    ] = None,
+    name: Annotated[str | None, StringConstraints(max_length=Realm.MAX_REALM_NAME_LENGTH)] = None,
     description: Annotated[
-        Optional[str], StringConstraints(max_length=Realm.MAX_REALM_DESCRIPTION_LENGTH)
+        str | None, StringConstraints(max_length=Realm.MAX_REALM_DESCRIPTION_LENGTH)
     ] = None,
-    emails_restricted_to_domains: Optional[Json[bool]] = None,
-    disallow_disposable_email_addresses: Optional[Json[bool]] = None,
-    invite_required: Optional[Json[bool]] = None,
-    invite_to_realm_policy: Optional[Json[InviteToRealmPolicyEnum]] = None,
+    emails_restricted_to_domains: Json[bool] | None = None,
+    disallow_disposable_email_addresses: Json[bool] | None = None,
+    invite_required: Json[bool] | None = None,
+    invite_to_realm_policy: Json[InviteToRealmPolicyEnum] | None = None,
     create_multiuse_invite_group_id: Annotated[
-        Optional[Json[int]], ApiParamConfig(whence="create_multiuse_invite_group")
+        Json[int] | None, ApiParamConfig(whence="create_multiuse_invite_group")
     ] = None,
-    require_unique_names: Optional[Json[bool]] = None,
-    name_changes_disabled: Optional[Json[bool]] = None,
-    email_changes_disabled: Optional[Json[bool]] = None,
-    avatar_changes_disabled: Optional[Json[bool]] = None,
-    inline_image_preview: Optional[Json[bool]] = None,
-    inline_url_embed_preview: Optional[Json[bool]] = None,
-    add_custom_emoji_policy: Optional[Json[CommonPolicyEnum]] = None,
-    delete_own_message_policy: Optional[Json[CommonMessagePolicyEnum]] = None,
+    require_unique_names: Json[bool] | None = None,
+    name_changes_disabled: Json[bool] | None = None,
+    email_changes_disabled: Json[bool] | None = None,
+    avatar_changes_disabled: Json[bool] | None = None,
+    inline_image_preview: Json[bool] | None = None,
+    inline_url_embed_preview: Json[bool] | None = None,
+    add_custom_emoji_policy: Json[CommonPolicyEnum] | None = None,
+    delete_own_message_policy: Json[CommonMessagePolicyEnum] | None = None,
     message_content_delete_limit_seconds_raw: Annotated[
-        Optional[Json[Union[int, str]]],
+        Json[int | str] | None,
         ApiParamConfig("message_content_delete_limit_seconds"),
     ] = None,
-    allow_message_editing: Optional[Json[bool]] = None,
-    edit_topic_policy: Optional[Json[EditTopicPolicyEnum]] = None,
-    mandatory_topics: Optional[Json[bool]] = None,
+    allow_message_editing: Json[bool] | None = None,
+    edit_topic_policy: Json[EditTopicPolicyEnum] | None = None,
+    mandatory_topics: Json[bool] | None = None,
     message_content_edit_limit_seconds_raw: Annotated[
-        Optional[Json[Union[int, str]]], ApiParamConfig("message_content_edit_limit_seconds")
+        Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
-    allow_edit_history: Optional[Json[bool]] = None,
-    default_language: Optional[str] = None,
-    waiting_period_threshold: Optional[Json[NonNegativeInt]] = None,
-    authentication_methods: Optional[Json[dict[str, Any]]] = None,
+    allow_edit_history: Json[bool] | None = None,
+    default_language: str | None = None,
+    waiting_period_threshold: Json[NonNegativeInt] | None = None,
+    authentication_methods: Json[dict[str, Any]] | None = None,
     # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
     # are not offered here as it is maintained by the server, not via the API.
-    new_stream_announcements_stream_id: Optional[Json[int]] = None,
-    signup_announcements_stream_id: Optional[Json[int]] = None,
-    zulip_update_announcements_stream_id: Optional[Json[int]] = None,
+    new_stream_announcements_stream_id: Json[int] | None = None,
+    signup_announcements_stream_id: Json[int] | None = None,
+    zulip_update_announcements_stream_id: Json[int] | None = None,
     message_retention_days_raw: Annotated[
-        Optional[Json[Union[int, str]]], ApiParamConfig("message_retention_days")
+        Json[int | str] | None, ApiParamConfig("message_retention_days")
     ] = None,
-    send_welcome_emails: Optional[Json[bool]] = None,
-    digest_emails_enabled: Optional[Json[bool]] = None,
-    message_content_allowed_in_email_notifications: Optional[Json[bool]] = None,
-    bot_creation_policy: Optional[Json[BotCreationPolicyEnum]] = None,
-    can_create_public_channel_group: Optional[Json[GroupSettingChangeRequest]] = None,
-    can_create_private_channel_group: Optional[Json[GroupSettingChangeRequest]] = None,
-    direct_message_initiator_group: Optional[Json[GroupSettingChangeRequest]] = None,
-    direct_message_permission_group: Optional[Json[GroupSettingChangeRequest]] = None,
-    create_web_public_stream_policy: Optional[Json[CreateWebPublicStreamPolicyEnum]] = None,
-    invite_to_stream_policy: Optional[Json[CommonPolicyEnum]] = None,
-    move_messages_between_streams_policy: Optional[
-        Json[MoveMessagesBetweenStreamsPolicyEnum]
-    ] = None,
-    user_group_edit_policy: Optional[Json[CommonPolicyEnum]] = None,
-    wildcard_mention_policy: Optional[Json[WildcardMentionPolicyEnum]] = None,
-    video_chat_provider: Optional[Json[int]] = None,
+    send_welcome_emails: Json[bool] | None = None,
+    digest_emails_enabled: Json[bool] | None = None,
+    message_content_allowed_in_email_notifications: Json[bool] | None = None,
+    bot_creation_policy: Json[BotCreationPolicyEnum] | None = None,
+    can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
+    direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
+    create_web_public_stream_policy: Json[CreateWebPublicStreamPolicyEnum] | None = None,
+    invite_to_stream_policy: Json[CommonPolicyEnum] | None = None,
+    move_messages_between_streams_policy: Json[MoveMessagesBetweenStreamsPolicyEnum] | None = None,
+    user_group_edit_policy: Json[CommonPolicyEnum] | None = None,
+    wildcard_mention_policy: Json[WildcardMentionPolicyEnum] | None = None,
+    video_chat_provider: Json[int] | None = None,
     jitsi_server_url_raw: Annotated[
-        Optional[Json[str]],
+        Json[str] | None,
         AfterValidator(lambda val: check_jitsi_url(val)),
         ApiParamConfig("jitsi_server_url"),
     ] = None,
-    giphy_rating: Optional[Json[int]] = None,
-    default_code_block_language: Optional[str] = None,
-    digest_weekday: Optional[Json[DigestWeekdayEnum]] = None,
+    giphy_rating: Json[int] | None = None,
+    default_code_block_language: str | None = None,
+    digest_weekday: Json[DigestWeekdayEnum] | None = None,
     string_id: Annotated[
-        Optional[str], StringConstraints(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+        str | None, StringConstraints(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
     ] = None,
-    org_type: Optional[Json[OrgTypeEnum]] = None,
-    enable_spectator_access: Optional[Json[bool]] = None,
-    want_advertise_in_communities_directory: Optional[Json[bool]] = None,
-    enable_read_receipts: Optional[Json[bool]] = None,
+    org_type: Json[OrgTypeEnum] | None = None,
+    enable_spectator_access: Json[bool] | None = None,
+    want_advertise_in_communities_directory: Json[bool] | None = None,
+    enable_read_receipts: Json[bool] | None = None,
     move_messages_within_stream_limit_seconds_raw: Annotated[
-        Optional[Json[Union[int, str]]],
+        Json[int | str] | None,
         ApiParamConfig("move_messages_within_stream_limit_seconds"),
     ] = None,
     move_messages_between_streams_limit_seconds_raw: Annotated[
-        Optional[Json[Union[int, str]]],
+        Json[int | str] | None,
         ApiParamConfig("move_messages_between_streams_limit_seconds"),
     ] = None,
-    enable_guest_user_indicator: Optional[Json[bool]] = None,
+    enable_guest_user_indicator: Json[bool] | None = None,
     can_access_all_users_group_id: Annotated[
-        Optional[Json[int]], ApiParamConfig("can_access_all_users_group")
+        Json[int] | None, ApiParamConfig("can_access_all_users_group")
     ] = None,
 ) -> HttpResponse:
     realm = user_profile.realm
@@ -216,7 +210,7 @@ def update_realm(
             _("Invalid giphy_rating {giphy_rating}").format(giphy_rating=giphy_rating)
         )
 
-    message_retention_days: Optional[int] = None
+    message_retention_days: int | None = None
     if message_retention_days_raw is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
@@ -248,7 +242,7 @@ def update_realm(
 
     data: dict[str, Any] = {}
 
-    message_content_delete_limit_seconds: Optional[int] = None
+    message_content_delete_limit_seconds: int | None = None
     if message_content_delete_limit_seconds_raw is not None:
         (
             message_content_delete_limit_seconds,
@@ -263,7 +257,7 @@ def update_realm(
         if setting_value_changed:
             data["message_content_delete_limit_seconds"] = message_content_delete_limit_seconds
 
-    message_content_edit_limit_seconds: Optional[int] = None
+    message_content_edit_limit_seconds: int | None = None
     if message_content_edit_limit_seconds_raw is not None:
         (
             message_content_edit_limit_seconds,
@@ -278,7 +272,7 @@ def update_realm(
         if setting_value_changed:
             data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
 
-    move_messages_within_stream_limit_seconds: Optional[int] = None
+    move_messages_within_stream_limit_seconds: int | None = None
     if move_messages_within_stream_limit_seconds_raw is not None:
         (
             move_messages_within_stream_limit_seconds,
@@ -295,7 +289,7 @@ def update_realm(
                 move_messages_within_stream_limit_seconds
             )
 
-    move_messages_between_streams_limit_seconds: Optional[int] = None
+    move_messages_between_streams_limit_seconds: int | None = None
     if move_messages_between_streams_limit_seconds_raw is not None:
         (
             move_messages_between_streams_limit_seconds,
@@ -312,7 +306,7 @@ def update_realm(
                 move_messages_between_streams_limit_seconds
             )
 
-    jitsi_server_url: Optional[str] = None
+    jitsi_server_url: str | None = None
     if jitsi_server_url_raw is not None:
         jitsi_server_url = parse_jitsi_server_url(
             jitsi_server_url_raw,
@@ -535,78 +529,66 @@ web_home_view_options = ["recent_topics", "inbox", "all_messages"]
 def update_realm_user_settings_defaults(
     request: HttpRequest,
     user_profile: UserProfile,
-    dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    web_mark_read_on_scroll_policy: Optional[int] = REQ(
+    dense_mode: bool | None = REQ(json_validator=check_bool, default=None),
+    web_mark_read_on_scroll_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
         default=None,
     ),
-    web_channel_default_view: Optional[int] = REQ(
+    web_channel_default_view: int | None = REQ(
         json_validator=check_int_in(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES),
         default=None,
     ),
-    starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    receives_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    web_stream_unreads_count_display_policy: Optional[int] = REQ(
+    starred_message_counts: bool | None = REQ(json_validator=check_bool, default=None),
+    receives_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    web_stream_unreads_count_display_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
         default=None,
     ),
-    fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    color_scheme: Optional[int] = REQ(
+    fluid_layout_width: bool | None = REQ(json_validator=check_bool, default=None),
+    high_contrast_mode: bool | None = REQ(json_validator=check_bool, default=None),
+    color_scheme: int | None = REQ(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
-    web_font_size_px: Optional[int] = REQ(json_validator=check_int, default=None),
-    web_line_height_percent: Optional[int] = REQ(json_validator=check_int, default=None),
-    translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    web_home_view: Optional[str] = REQ(
+    web_font_size_px: int | None = REQ(json_validator=check_int, default=None),
+    web_line_height_percent: int | None = REQ(json_validator=check_int, default=None),
+    translate_emoticons: bool | None = REQ(json_validator=check_bool, default=None),
+    display_emoji_reaction_users: bool | None = REQ(json_validator=check_bool, default=None),
+    web_home_view: str | None = REQ(
         str_validator=check_string_in(web_home_view_options), default=None
     ),
-    web_escape_navigates_to_home_view: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
-    demote_inactive_streams: Optional[int] = REQ(
+    web_escape_navigates_to_home_view: bool | None = REQ(json_validator=check_bool, default=None),
+    left_side_userlist: bool | None = REQ(json_validator=check_bool, default=None),
+    emojiset: str | None = REQ(str_validator=check_string_in(emojiset_choices), default=None),
+    demote_inactive_streams: int | None = REQ(
         json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
     ),
-    enable_stream_desktop_notifications: Optional[bool] = REQ(
+    enable_stream_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_stream_email_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_stream_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_stream_audible_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    wildcard_mentions_notify: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_followed_topic_desktop_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_stream_email_notifications: Optional[bool] = REQ(
+    enable_followed_topic_email_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_stream_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_stream_audible_notifications: Optional[bool] = REQ(
+    enable_followed_topic_push_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_followed_topic_desktop_notifications: Optional[bool] = REQ(
+    enable_followed_topic_audible_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_followed_topic_email_notifications: Optional[bool] = REQ(
+    enable_followed_topic_wildcard_mentions_notify: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    enable_followed_topic_push_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_followed_topic_audible_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_followed_topic_wildcard_mentions_notify: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    notification_sound: Optional[str] = REQ(default=None),
-    enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_offline_email_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_offline_push_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_online_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_digest_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    notification_sound: str | None = REQ(default=None),
+    enable_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_sounds: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_offline_email_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_offline_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_online_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_digest_emails: bool | None = REQ(json_validator=check_bool, default=None),
     # enable_login_emails is not included here, because we don't want
     # security-related settings to be controlled by organization administrators.
     # enable_marketing_emails is not included here, since we don't at
@@ -615,49 +597,45 @@ def update_realm_user_settings_defaults(
     #
     # We may want to change this model in the future, since some SSO signups
     # do not offer an opportunity to prompt the user at all during signup.
-    message_content_in_email_notifications: Optional[bool] = REQ(
+    message_content_in_email_notifications: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    pm_content_in_desktop_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    desktop_icon_count_display: Optional[int] = REQ(
+    pm_content_in_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    desktop_icon_count_display: int | None = REQ(
         json_validator=check_int_in(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES), default=None
     ),
-    realm_name_in_email_notifications_policy: Optional[int] = REQ(
+    realm_name_in_email_notifications_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
         default=None,
     ),
-    automatically_follow_topics_policy: Optional[int] = REQ(
+    automatically_follow_topics_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         default=None,
     ),
-    automatically_unmute_topics_in_muted_streams_policy: Optional[int] = REQ(
+    automatically_unmute_topics_in_muted_streams_policy: int | None = REQ(
         json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         default=None,
     ),
-    automatically_follow_topics_where_mentioned: Optional[bool] = REQ(
+    automatically_follow_topics_where_mentioned: bool | None = REQ(
         json_validator=check_bool, default=None
     ),
-    presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_drafts_synchronization: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    email_notifications_batching_period_seconds: Optional[int] = REQ(
+    presence_enabled: bool | None = REQ(json_validator=check_bool, default=None),
+    enter_sends: bool | None = REQ(json_validator=check_bool, default=None),
+    enable_drafts_synchronization: bool | None = REQ(json_validator=check_bool, default=None),
+    email_notifications_batching_period_seconds: int | None = REQ(
         json_validator=check_int, default=None
     ),
-    twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    send_private_typing_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    user_list_style: Optional[int] = REQ(
+    twenty_four_hour_time: bool | None = REQ(json_validator=check_bool, default=None),
+    send_stream_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    send_private_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
+    send_read_receipts: bool | None = REQ(json_validator=check_bool, default=None),
+    user_list_style: int | None = REQ(
         json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
     ),
-    email_address_visibility: Optional[int] = REQ(
+    email_address_visibility: int | None = REQ(
         json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
-    web_navigate_to_sent_message: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    web_navigate_to_sent_message: bool | None = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 from argparse import ArgumentParser
-from typing import Iterable, Optional
+from typing import Iterable
 
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
 from version import PROVISION_VERSION
@@ -49,7 +49,7 @@ Do this: `./tools/provision`
 """
 
 
-def get_provisioning_status() -> tuple[bool, Optional[str]]:
+def get_provisioning_status() -> tuple[bool, str | None]:
     version_file = get_version_file()
     if not os.path.exists(version_file):
         # If the developer doesn't have a version_file written by

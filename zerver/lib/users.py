@@ -4,7 +4,7 @@ import unicodedata
 from collections import defaultdict
 from email.headerregistry import Address
 from operator import itemgetter
-from typing import Any, Iterable, Mapping, Optional, Sequence, TypedDict
+from typing import Any, Iterable, Mapping, Sequence, TypedDict
 
 import dateutil.parser as date_parser
 from django.conf import settings
@@ -51,7 +51,7 @@ from zerver.models.users import (
 
 
 def check_full_name(
-    full_name_raw: str, *, user_profile: Optional[UserProfile], realm: Optional[Realm]
+    full_name_raw: str, *, user_profile: UserProfile | None, realm: Realm | None
 ) -> str:
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
@@ -202,7 +202,7 @@ def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
         raise JsonableError(_("Invalid bot type"))
 
 
-def check_valid_interface_type(interface_type: Optional[int]) -> None:
+def check_valid_interface_type(interface_type: int | None) -> None:
     if interface_type not in Service.ALLOWED_INTERFACE_TYPES:
         raise JsonableError(_("Invalid interface type"))
 
@@ -351,7 +351,7 @@ class Account(TypedDict):
     realm_name: str
     realm_id: int
     full_name: str
-    avatar: Optional[str]
+    avatar: str | None
 
 
 def get_accounts_for_email(email: str) -> list[Account]:
@@ -462,22 +462,22 @@ class APIUserDict(TypedDict):
     timezone: NotRequired[str]
     is_active: bool
     date_joined: str
-    avatar_url: NotRequired[Optional[str]]
-    delivery_email: Optional[str]
-    bot_type: NotRequired[Optional[int]]
-    bot_owner_id: NotRequired[Optional[int]]
-    profile_data: NotRequired[Optional[dict[str, Any]]]
+    avatar_url: NotRequired[str | None]
+    delivery_email: str | None
+    bot_type: NotRequired[int | None]
+    bot_owner_id: NotRequired[int | None]
+    profile_data: NotRequired[dict[str, Any] | None]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
 
 
 def format_user_row(
     realm_id: int,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
     row: RawUserDict,
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
-    custom_profile_field_data: Optional[dict[str, Any]] = None,
+    custom_profile_field_data: dict[str, Any] | None = None,
 ) -> APIUserDict:
     """Formats a user row returned by a database fetch using
     .values(*realm_user_dict_fields) into a dictionary representation
@@ -575,7 +575,7 @@ def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
     return True
 
 
-def check_user_can_access_all_users(acting_user: Optional[UserProfile]) -> bool:
+def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
     if acting_user is None:
         # We allow spectators to access all users since they
         # have very limited access to the user already.
@@ -592,7 +592,7 @@ def check_user_can_access_all_users(acting_user: Optional[UserProfile]) -> bool:
 
 
 def check_can_access_user(
-    target_user: UserProfile, user_profile: Optional[UserProfile] = None
+    target_user: UserProfile, user_profile: UserProfile | None = None
 ) -> bool:
     if not user_access_restricted_in_realm(target_user):
         return True
@@ -637,7 +637,7 @@ def check_can_access_user(
 
 
 def get_inaccessible_user_ids(
-    target_user_ids: list[int], acting_user: Optional[UserProfile]
+    target_user_ids: list[int], acting_user: UserProfile | None
 ) -> set[int]:
     if check_user_can_access_all_users(acting_user):
         return set()
@@ -934,7 +934,7 @@ def get_accessible_user_ids(
 
 
 def get_user_dicts_in_realm(
-    realm: Realm, user_profile: Optional[UserProfile]
+    realm: Realm, user_profile: UserProfile | None
 ) -> tuple[list[RawUserDict], list[APIUserDict]]:
     group_allowed_to_access_all_users = realm.can_access_all_users_group
     assert group_allowed_to_access_all_users is not None
@@ -979,9 +979,9 @@ def get_custom_profile_field_values(
 
 def get_users_for_api(
     realm: Realm,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
     *,
-    target_user: Optional[UserProfile] = None,
+    target_user: UserProfile | None = None,
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
@@ -1082,7 +1082,7 @@ def get_users_with_access_to_real_email(user_profile: UserProfile) -> list[int]:
     ]
 
 
-def max_message_id_for_user(user_profile: Optional[UserProfile]) -> int:
+def max_message_id_for_user(user_profile: UserProfile | None) -> int:
     if user_profile is None:
         return -1
     max_message = (

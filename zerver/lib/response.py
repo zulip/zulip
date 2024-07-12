@@ -1,4 +1,4 @@
-from typing import Any, Iterator, Mapping, Optional
+from typing import Any, Iterator, Mapping
 
 import orjson
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
@@ -76,7 +76,7 @@ class MutableJsonResponse(HttpResponse):
 
 
 def json_unauthorized(
-    message: Optional[str] = None, www_authenticate: Optional[str] = None
+    message: str | None = None, www_authenticate: str | None = None
 ) -> HttpResponse:
     return json_response_from_error(
         UnauthorizedError(msg=message, www_authenticate=www_authenticate)

@@ -1,5 +1,5 @@
 import re
-from typing import Any, Optional
+from typing import Any
 
 from typing_extensions import TypeAlias
 
@@ -118,7 +118,7 @@ def convert_to_zulip_markdown(
 
 def get_user_mentions(
     token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
-) -> tuple[str, Optional[int]]:
+) -> tuple[str, int | None]:
     slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
     assert slack_usermention_match is not None
     short_name = slack_usermention_match.group(4)

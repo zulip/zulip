@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
 from xml.etree.ElementTree import Element, SubElement
 
 import markdown
@@ -32,15 +32,15 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
             codehilite_block = self.get_codehilite_block(text)
             self.replace_element(block.family.grandparent, codehilite_block, block.family.parent)
 
-    def get_code_tags(self, e: Element) -> Optional[tuple[str, Optional[str]]]:
+    def get_code_tags(self, e: Element) -> tuple[str, str | None] | None:
         if e.tag == "code":
             return (e.tag, e.text)
         return None
 
     def get_nested_code_blocks(
         self,
-        code_tags: list[ResultWithFamily[tuple[str, Optional[str]]]],
-    ) -> list[ResultWithFamily[tuple[str, Optional[str]]]]:
+        code_tags: list[ResultWithFamily[tuple[str, str | None]]],
+    ) -> list[ResultWithFamily[tuple[str, str | None]]]:
         nested_code_blocks = []
         for code_tag in code_tags:
             parent: Any = code_tag.family.parent
@@ -60,7 +60,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
 
         return nested_code_blocks
 
-    def get_codehilite_block(self, code_block_text: Optional[str]) -> Element:
+    def get_codehilite_block(self, code_block_text: str | None) -> Element:
         div = Element("div")
         div.set("class", "codehilite")
         pre = SubElement(div, "pre")
@@ -69,7 +69,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
 
     def replace_element(
         self,
-        parent: Optional[Element],
+        parent: Element | None,
         replacement: Element,
         element_to_replace: Element,
     ) -> None:

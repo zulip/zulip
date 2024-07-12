@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, Mapping, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, Mapping, Sequence
 from unittest import mock
 from urllib.parse import parse_qs, urlencode, urlsplit
 
@@ -172,7 +172,7 @@ class AuthBackendTest(ZulipTestCase):
         backend: Any,
         *,
         good_kwargs: dict[str, Any],
-        bad_kwargs: Optional[dict[str, Any]] = None,
+        bad_kwargs: dict[str, Any] | None = None,
     ) -> None:
         clear_supported_auth_backends_cache()
         user_profile = self.example_user("hamlet")
@@ -508,7 +508,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
     @override_settings(RATE_LIMITING_AUTHENTICATE=True)
     def do_test_auth_rate_limiting(
         self,
-        attempt_authentication_func: Callable[[HttpRequest, str, str], Optional[UserProfile]],
+        attempt_authentication_func: Callable[[HttpRequest, str, str], UserProfile | None],
         username: str,
         correct_password: str,
         wrong_password: str,
@@ -522,7 +522,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
         def _mock_key(self: RateLimitedAuthenticationByUsername) -> str:
             return f"{salt}:{original_key_method(self)}"
 
-        def attempt_authentication(username: str, password: str) -> Optional[UserProfile]:
+        def attempt_authentication(username: str, password: str) -> UserProfile | None:
             request = HttpRequest()
             request.session = mock.MagicMock()
             return attempt_authentication_func(request, username, password)
@@ -574,7 +574,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
 
         def attempt_authentication(
             request: HttpRequest, username: str, password: str
-        ) -> Optional[UserProfile]:
+        ) -> UserProfile | None:
             return EmailAuthBackend().authenticate(
                 request=request,
                 username=username,
@@ -601,7 +601,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
 
         def attempt_authentication(
             request: HttpRequest, username: str, password: str
-        ) -> Optional[UserProfile]:
+        ) -> UserProfile | None:
             return ZulipLDAPAuthBackend().authenticate(
                 request=request,
                 username=username,
@@ -636,7 +636,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
 
         def attempt_authentication(
             request: HttpRequest, username: str, password: str
-        ) -> Optional[UserProfile]:
+        ) -> UserProfile | None:
             user = authenticate(
                 request=request,
                 username=username,
@@ -781,15 +781,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     def prepare_login_url_and_headers(
         self,
         subdomain: str,
-        mobile_flow_otp: Optional[str] = None,
-        desktop_flow_otp: Optional[str] = None,
+        mobile_flow_otp: str | None = None,
+        desktop_flow_otp: str | None = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
-        alternative_start_url: Optional[str] = None,
+        alternative_start_url: str | None = None,
         *,
-        user_agent: Optional[str] = None,
-        extra_headers: Optional[dict[str, Any]] = None,
+        user_agent: str | None = None,
+        extra_headers: dict[str, Any] | None = None,
     ) -> tuple[str, dict[str, Any]]:
         url = self.LOGIN_URL
         if alternative_start_url is not None:
@@ -848,15 +848,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         account_data_dict: dict[str, str],
         *,
         subdomain: str,
-        mobile_flow_otp: Optional[str] = None,
-        desktop_flow_otp: Optional[str] = None,
+        mobile_flow_otp: str | None = None,
+        desktop_flow_otp: str | None = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
         expect_choose_email_screen: bool = False,
-        alternative_start_url: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        extra_headers: Optional[dict[str, Any]] = None,
+        alternative_start_url: str | None = None,
+        user_agent: str | None = None,
+        extra_headers: dict[str, Any] | None = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         """Main entry point for all social authentication tests.
@@ -1054,7 +1054,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
         def custom_auth_wrapper(
             auth_func: AuthFuncT, *args: Any, **kwargs: Any
-        ) -> Optional[UserProfile]:
+        ) -> UserProfile | None:
             nonlocal backends_with_restriction
 
             backend = args[0]
@@ -1104,7 +1104,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
         def custom_auth_wrapper_none(
             auth_func: AuthFuncT, *args: Any, **kwargs: Any
-        ) -> Optional[UserProfile]:
+        ) -> UserProfile | None:
             return None
 
         with self.settings(CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION=custom_auth_wrapper_none):
@@ -1313,7 +1313,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     def test_social_auth_session_fields_cleared_correctly(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
 
-        def initiate_auth(mobile_flow_otp: Optional[str] = None) -> None:
+        def initiate_auth(mobile_flow_otp: str | None = None) -> None:
             url, headers = self.prepare_login_url_and_headers(
                 subdomain="zulip", mobile_flow_otp=mobile_flow_otp
             )
@@ -1378,8 +1378,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         name: str,
         expected_final_name: str,
         skip_registration_form: bool,
-        mobile_flow_otp: Optional[str] = None,
-        desktop_flow_otp: Optional[str] = None,
+        mobile_flow_otp: str | None = None,
+        desktop_flow_otp: str | None = None,
         expect_confirm_registration_page: bool = False,
         expect_full_name_prepopulated: bool = True,
     ) -> None:
@@ -1924,14 +1924,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
         account_data_dict: dict[str, str],
         *,
         subdomain: str,
-        mobile_flow_otp: Optional[str] = None,
-        desktop_flow_otp: Optional[str] = None,
+        mobile_flow_otp: str | None = None,
+        desktop_flow_otp: str | None = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
-        user_agent: Optional[str] = None,
+        user_agent: str | None = None,
         extra_attributes: Mapping[str, list[str]] = {},
-        extra_headers: Optional[dict[str, Any]] = None,
+        extra_headers: dict[str, Any] | None = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         url, headers = self.prepare_login_url_and_headers(
@@ -3268,7 +3268,7 @@ class AppleAuthMixin:
     AUTH_FINISH_URL = "/complete/apple/"
 
     def generate_id_token(
-        self, account_data_dict: dict[str, str], audience: Optional[str] = None
+        self, account_data_dict: dict[str, str], audience: str | None = None
     ) -> str:
         payload = dict(email=account_data_dict["email"])
 
@@ -3436,17 +3436,17 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
     def prepare_login_url_and_headers(
         self,
         subdomain: str,
-        mobile_flow_otp: Optional[str] = None,
-        desktop_flow_otp: Optional[str] = None,
+        mobile_flow_otp: str | None = None,
+        desktop_flow_otp: str | None = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
-        alternative_start_url: Optional[str] = None,
-        id_token: Optional[str] = None,
+        alternative_start_url: str | None = None,
+        id_token: str | None = None,
         account_data_dict: Mapping[str, str] = {},
         *,
-        user_agent: Optional[str] = None,
-        extra_headers: Optional[dict[str, Any]] = None,
+        user_agent: str | None = None,
+        extra_headers: dict[str, Any] | None = None,
     ) -> tuple[str, dict[str, Any]]:
         url, headers = super().prepare_login_url_and_headers(
             subdomain,
@@ -3482,15 +3482,15 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         account_data_dict: dict[str, str],
         *,
         subdomain: str,
-        mobile_flow_otp: Optional[str] = None,
-        desktop_flow_otp: Optional[str] = None,
+        mobile_flow_otp: str | None = None,
+        desktop_flow_otp: str | None = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
-        alternative_start_url: Optional[str] = None,
+        alternative_start_url: str | None = None,
         skip_id_token: bool = False,
-        user_agent: Optional[str] = None,
-        extra_headers: Optional[dict[str, Any]] = None,
+        user_agent: str | None = None,
+        extra_headers: dict[str, Any] | None = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         """In Apple's native authentication flow, the client app authenticates
@@ -3506,7 +3506,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         """
 
         if not skip_id_token:
-            id_token: Optional[str] = self.generate_id_token(
+            id_token: str | None = self.generate_id_token(
                 account_data_dict, settings.SOCIAL_AUTH_APPLE_APP_ID
             )
         else:
@@ -3561,7 +3561,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
 
-        def initiate_auth(mobile_flow_otp: Optional[str] = None) -> None:
+        def initiate_auth(mobile_flow_otp: str | None = None) -> None:
             url, headers = self.prepare_login_url_and_headers(
                 subdomain="zulip",
                 id_token="invalid",
@@ -3737,7 +3737,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         )
 
     @override
-    def get_account_data_dict(self, email: str, name: Optional[str]) -> dict[str, Any]:
+    def get_account_data_dict(self, email: str, name: str | None) -> dict[str, Any]:
         if name is not None:
             name_parts = name.split(" ")
             given_name = name_parts[0]
@@ -4525,7 +4525,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         data: ExternalAuthDataDict,
         *,
         subdomain: str = "zulip",
-        force_token: Optional[str] = None,
+        force_token: str | None = None,
     ) -> "TestHttpResponse":
         if force_token is None:
             token = ExternalAuthResult(data_dict=data).store_data()
@@ -7642,7 +7642,7 @@ class TestCustomAuthDecorator(ZulipTestCase):
 
         def custom_auth_wrapper(
             auth_func: AuthFuncT, *args: Any, **kwargs: Any
-        ) -> Optional[UserProfile]:
+        ) -> UserProfile | None:
             nonlocal call_count
             nonlocal backends_with_restriction
             call_count += 1

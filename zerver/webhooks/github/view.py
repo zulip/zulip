@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timezone
-from typing import Callable, Optional
+from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 
@@ -908,7 +908,7 @@ def api_github_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     """
@@ -943,8 +943,8 @@ def api_github_webhook(
 def get_zulip_event_name(
     header_event: str,
     payload: WildValue,
-    branches: Optional[str],
-) -> Optional[str]:
+    branches: str | None,
+) -> str | None:
     """
     Usually, we return an event name that is a key in EVENT_FUNCTION_MAPPER.
 

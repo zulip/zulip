@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -53,7 +53,7 @@ def common_context(user: UserProfile) -> dict[str, Any]:
     }
 
 
-def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
+def get_realm_from_request(request: HttpRequest) -> Realm | None:
     request_notes = RequestNotes.get_notes(request)
     if request.user.is_authenticated:
         return request.user.realm

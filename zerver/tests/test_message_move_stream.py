@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Optional, Union
 
 import orjson
 
@@ -42,7 +41,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         old_stream: str,
         new_stream: str,
         topic_name: str,
-        language: Optional[str] = None,
+        language: str | None = None,
     ) -> tuple[UserProfile, Stream, Stream, int, int]:
         user_profile = self.example_user(user_email)
         if language is not None:
@@ -136,10 +135,10 @@ class MessageMoveStreamTest(ZulipTestCase):
         old_stream = denmark
 
         def test_moving_all_topic_messages(
-            new_topic_name: Optional[str] = None, new_stream: Optional[Stream] = None
+            new_topic_name: str | None = None, new_stream: Stream | None = None
         ) -> None:
             self.login("hamlet")
-            params_dict: dict[str, Union[str, int]] = {
+            params_dict: dict[str, str | int] = {
                 "propagate_mode": "change_all",
                 "send_notification_to_new_thread": "false",
             }
@@ -913,7 +912,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             old_stream: Stream,
             new_stream: Stream,
             *,
-            expect_error_message: Optional[str] = None,
+            expect_error_message: str | None = None,
         ) -> None:
             self.login_user(user)
             result = self.client_patch(
@@ -976,7 +975,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             acting_user=None,
         )
 
-        def check_move_message_to_stream(role: int, error_msg: Optional[str] = None) -> None:
+        def check_move_message_to_stream(role: int, error_msg: str | None = None) -> None:
             do_change_user_role(user_profile, role, acting_user=None)
 
             result = self.client_patch(
@@ -1193,8 +1192,8 @@ class MessageMoveStreamTest(ZulipTestCase):
             *,
             has_user_message: bool,
             has_access: bool,
-            stream: Optional[Stream] = None,
-            is_subscribed: Optional[bool] = None,
+            stream: Stream | None = None,
+            is_subscribed: bool | None = None,
         ) -> None:
             self.assertEqual(
                 UserMessage.objects.filter(

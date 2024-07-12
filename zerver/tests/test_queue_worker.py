@@ -5,7 +5,7 @@ import time
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Iterator, Mapping, Optional
+from typing import Any, Callable, Iterator, Mapping
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -52,7 +52,7 @@ class FakeClient:
         queue_name: str,
         callback: Callable[[list[dict[str, Any]]], None],
         batch_size: int = 1,
-        timeout: Optional[int] = None,
+        timeout: int | None = None,
     ) -> None:
         chunk: list[dict[str, Any]] = []
         queue = self.queues[queue_name]
@@ -279,16 +279,16 @@ class WorkerTest(ZulipTestCase):
         def check_row(
             row: ScheduledMessageNotificationEmail,
             scheduled_timestamp: datetime,
-            mentioned_user_group_id: Optional[int],
+            mentioned_user_group_id: int | None,
         ) -> None:
             self.assertEqual(row.trigger, NotificationTriggers.DIRECT_MESSAGE)
             self.assertEqual(row.scheduled_timestamp, scheduled_timestamp)
             self.assertEqual(row.mentioned_user_group_id, mentioned_user_group_id)
 
-        def advance() -> Optional[float]:
+        def advance() -> float | None:
             mmw.stopping = False
 
-            def inner(check: Callable[[], bool], timeout: Optional[float]) -> bool:
+            def inner(check: Callable[[], bool], timeout: float | None) -> bool:
                 # The check should never pass, since we've just (with
                 # the lock) ascertained above the cv.wait that its
                 # conditions are not met.
@@ -660,7 +660,7 @@ class WorkerTest(ZulipTestCase):
         fake_client.enqueue("email_senders", data)
 
         def fake_publish(
-            queue_name: str, event: dict[str, Any], processor: Optional[Callable[[Any], None]]
+            queue_name: str, event: dict[str, Any], processor: Callable[[Any], None] | None
         ) -> None:
             fake_client.enqueue(queue_name, event)
 

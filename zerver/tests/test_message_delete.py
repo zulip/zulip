@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import orjson
@@ -29,7 +29,7 @@ class DeleteMessageTest(ZulipTestCase):
 
     def test_delete_message_by_user(self) -> None:
         def set_message_deleting_params(
-            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
+            delete_own_message_policy: int, message_content_delete_limit_seconds: int | str
         ) -> None:
             self.login("iago")
             result = self.client_patch(
@@ -136,7 +136,7 @@ class DeleteMessageTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         def set_message_deleting_params(
-            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
+            delete_own_message_policy: int, message_content_delete_limit_seconds: int | str
         ) -> None:
             result = self.api_patch(
                 iago,
@@ -223,9 +223,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_delete_message_according_to_delete_own_message_policy(self) -> None:
-        def check_delete_message_by_sender(
-            sender_name: str, error_msg: Optional[str] = None
-        ) -> None:
+        def check_delete_message_by_sender(sender_name: str, error_msg: str | None = None) -> None:
             sender = self.example_user(sender_name)
             msg_id = self.send_stream_message(sender, "Verona")
             self.login_user(sender)

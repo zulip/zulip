@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -263,7 +262,7 @@ class ActivityTest(ZulipTestCase):
             )
 
         def add_audit_log_data(
-            server: RemoteZulipServer, remote_realm: Optional[RemoteRealm], realm_id: Optional[int]
+            server: RemoteZulipServer, remote_realm: RemoteRealm | None, realm_id: int | None
         ) -> None:
             extra_data = {
                 RemoteRealmAuditLog.ROLE_COUNT: {

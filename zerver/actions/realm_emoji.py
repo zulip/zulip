@@ -1,4 +1,4 @@
-from typing import IO, Optional
+from typing import IO
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -66,7 +66,7 @@ def check_add_realm_emoji(
 
 
 @transaction.atomic(durable=True)
-def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: Optional[UserProfile]) -> None:
+def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: UserProfile | None) -> None:
     emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
     emoji.deactivated = True
     emoji.save(update_fields=["deactivated"])

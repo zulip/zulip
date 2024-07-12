@@ -2,7 +2,7 @@ import copy
 import zlib
 from datetime import datetime
 from email.headerregistry import Address
-from typing import Any, Iterable, Optional, TypedDict
+from typing import Any, Iterable, TypedDict
 
 import orjson
 
@@ -73,12 +73,12 @@ def stringify_message_dict(message_dict: dict[str, Any]) -> bytes:
 
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24)
-def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -> bytes:
+def message_to_encoded_cache(message: Message, realm_id: int | None = None) -> bytes:
     return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
 
 
 def update_message_cache(
-    changed_messages: Iterable[Message], realm_id: Optional[int] = None
+    changed_messages: Iterable[Message], realm_id: int | None = None
 ) -> list[int]:
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
@@ -151,7 +151,7 @@ class MessageDict:
     """
 
     @staticmethod
-    def wide_dict(message: Message, realm_id: Optional[int] = None) -> dict[str, Any]:
+    def wide_dict(message: Message, realm_id: int | None = None) -> dict[str, Any]:
         """
         The next two lines get the cacheable field related
         to our message object, with the side effect of
@@ -273,7 +273,7 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache(
-        messages: Iterable[Message], realm_id: Optional[int] = None
+        messages: Iterable[Message], realm_id: int | None = None
     ) -> dict[int, bytes]:
         messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
@@ -281,7 +281,7 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache_helper(
-        messages: Iterable[Message], realm_id: Optional[int] = None
+        messages: Iterable[Message], realm_id: int | None = None
     ) -> list[dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects
@@ -374,13 +374,13 @@ class MessageDict:
     @staticmethod
     def build_message_dict(
         message_id: int,
-        last_edit_time: Optional[datetime],
-        edit_history_json: Optional[str],
+        last_edit_time: datetime | None,
+        edit_history_json: str | None,
         content: str,
         topic_name: str,
         date_sent: datetime,
-        rendered_content: Optional[str],
-        rendered_content_version: Optional[int],
+        rendered_content: str | None,
+        rendered_content_version: int | None,
         sender_id: int,
         sender_realm_id: int,
         sending_client_name: str,

@@ -29,7 +29,7 @@
 import logging
 import time
 from datetime import timedelta
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -95,7 +95,7 @@ def move_rows(
     base_model: type[Model],
     raw_query: SQL,
     *,
-    src_db_table: Optional[str] = None,
+    src_db_table: str | None = None,
     returning_id: bool = False,
     **kwargs: Composable,
 ) -> list[int]:
@@ -122,7 +122,7 @@ def move_rows(
 def run_archiving_in_chunks(
     query: SQL,
     type: int,
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
     chunk_size: int = MESSAGE_BATCH_SIZE,
     **kwargs: Composable,
 ) -> int:
@@ -455,7 +455,7 @@ def get_realms_and_streams_for_archiving() -> list[tuple[Realm, list[Stream]]]:
 
 
 def move_messages_to_archive(
-    message_ids: list[int], realm: Optional[Realm] = None, chunk_size: int = MESSAGE_BATCH_SIZE
+    message_ids: list[int], realm: Realm | None = None, chunk_size: int = MESSAGE_BATCH_SIZE
 ) -> None:
     # Uses index: zerver_message_pkey
     query = SQL(
@@ -674,9 +674,9 @@ def clean_archived_data() -> None:
 
 
 def parse_message_retention_days(
-    value: Union[int, str],
-    special_values_map: Mapping[str, Optional[int]],
-) -> Optional[int]:
+    value: int | str,
+    special_values_map: Mapping[str, int | None],
+) -> int | None:
     if isinstance(value, str) and value in special_values_map:
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:

@@ -3,7 +3,7 @@ import copy
 import logging
 import socket
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from django.core.mail.backends.base import BaseEmailBackend
 from typing_extensions import override
@@ -50,10 +50,10 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
-        worker_num: Optional[int] = None,
+        worker_num: int | None = None,
     ) -> None:
         super().__init__(threaded, disable_timeout, worker_num)
-        self.connection: Optional[BaseEmailBackend] = None
+        self.connection: BaseEmailBackend | None = None
 
     @retry_send_email_failures
     def send_email(self, event: dict[str, Any]) -> None:

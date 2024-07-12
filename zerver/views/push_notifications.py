@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -92,7 +90,7 @@ def remove_android_reg_id(
 @human_users_only
 @typed_endpoint
 def send_test_push_notification_api(
-    request: HttpRequest, user_profile: UserProfile, *, token: Optional[str] = None
+    request: HttpRequest, user_profile: UserProfile, *, token: str | None = None
 ) -> HttpResponse:
     # If a token is specified in the request, the test notification is supposed to be sent
     # to that device. If no token is provided, the test notification should be sent to
@@ -111,7 +109,7 @@ def send_test_push_notification_api(
 
 
 def self_hosting_auth_view_common(
-    request: HttpRequest, user_profile: UserProfile, next_page: Optional[str] = None
+    request: HttpRequest, user_profile: UserProfile, next_page: str | None = None
 ) -> str:
     if not user_profile.has_billing_access:
         # We may want to replace this with an html error page at some point,
@@ -167,7 +165,7 @@ def self_hosting_auth_view_common(
 def self_hosting_auth_redirect_endpoint(
     request: HttpRequest,
     *,
-    next_page: Optional[str] = None,
+    next_page: str | None = None,
 ) -> HttpResponse:
     """
     This endpoint is used by the web app running in the browser. We serve HTML
@@ -198,7 +196,7 @@ def self_hosting_auth_json_endpoint(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    next_page: Optional[str] = None,
+    next_page: str | None = None,
 ) -> HttpResponse:
     """
     This endpoint is used by the desktop application. It makes an API request here,

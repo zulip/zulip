@@ -1,4 +1,3 @@
-from typing import Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -17,7 +16,7 @@ from zerver.models import UserProfile
 
 def avatar_url(
     user_profile: UserProfile, medium: bool = False, client_gravatar: bool = False
-) -> Optional[str]:
+) -> str | None:
     return get_avatar_field(
         user_id=user_profile.id,
         realm_id=user_profile.realm_id,
@@ -37,7 +36,7 @@ def get_avatar_field(
     avatar_version: int,
     medium: bool,
     client_gravatar: bool,
-) -> Optional[str]:
+) -> str | None:
     """
     Most of the parameters to this function map to fields
     by the same name in UserProfile (avatar_source, realm_id,

@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 
@@ -133,7 +133,7 @@ def api_linear_webhook(
     return json_success(request)
 
 
-def get_topic(user_specified_topic: Optional[str], event: str, payload: WildValue) -> str:
+def get_topic(user_specified_topic: str | None, event: str, payload: WildValue) -> str:
     if user_specified_topic is not None:
         return user_specified_topic
     elif event == "comment":
@@ -149,7 +149,7 @@ def get_topic(user_specified_topic: Optional[str], event: str, payload: WildValu
     raise UnsupportedWebhookEventTypeError(event)
 
 
-def get_event_type(payload: WildValue) -> Optional[str]:
+def get_event_type(payload: WildValue) -> str | None:
     event_type = payload["type"].tame(check_string)
 
     if event_type == "Issue":

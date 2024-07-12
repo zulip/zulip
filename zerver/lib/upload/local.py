@@ -4,7 +4,7 @@ import random
 import secrets
 import shutil
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, Literal, Optional
+from typing import IO, Any, BinaryIO, Callable, Iterator, Literal
 
 from django.conf import settings
 from typing_extensions import override
@@ -122,7 +122,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         *,
         user_profile: UserProfile,
         image_data: bytes,
-        content_type: Optional[str],
+        content_type: str | None,
         future: bool = True,
     ) -> None:
         write_local_file("avatars", file_path, image_data)
@@ -193,7 +193,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def upload_single_emoji_image(
-        self, path: str, content_type: Optional[str], user_profile: UserProfile, image_data: bytes
+        self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
         write_local_file("avatars", path, image_data)
 
@@ -207,7 +207,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         self,
         realm: Realm,
         tarball_path: str,
-        percent_callback: Optional[Callable[[Any], None]] = None,
+        percent_callback: Callable[[Any], None] | None = None,
     ) -> str:
         path = os.path.join(
             "exports",
@@ -222,7 +222,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return public_url
 
     @override
-    def delete_export_tarball(self, export_path: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> str | None:
         # Get the last element of a list in the form ['user_avatars', '<file_path>']
         assert export_path.startswith("/")
         file_path = export_path[1:].split("/", 1)[-1]

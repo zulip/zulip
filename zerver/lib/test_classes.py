@@ -13,7 +13,6 @@ from typing import (
     Collection,
     Iterator,
     Mapping,
-    Optional,
     Sequence,
     Union,
     cast,
@@ -192,11 +191,11 @@ class ZulipTestClient(TestClient):
 
 class ZulipTestCaseMixin(SimpleTestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff: Optional[int] = None
+    maxDiff: int | None = None
     # This bypasses BAN_CONSOLE_OUTPUT for the test case when set.
     # Override this to verify if the given extra console output matches the
     # expectation.
-    expected_console_output: Optional[str] = None
+    expected_console_output: str | None = None
     client_class = ZulipTestClient
 
     @override
@@ -232,7 +231,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
         return get_user(email, realm)
 
     @override
-    def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
+    def run(self, result: TestResult | None = None) -> TestResult | None:  # nocoverage
         if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
         extra_output_finder = ExtraConsoleOutputFinder()
@@ -321,7 +320,7 @@ Output:
         follow: bool = False,
         secure: bool = False,
         intentionally_undocumented: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -349,7 +348,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -405,7 +404,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         encoded = urlencode(info)
@@ -423,7 +422,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
@@ -447,7 +446,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -476,7 +475,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
@@ -493,7 +492,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
@@ -504,13 +503,13 @@ Output:
     def client_post(
         self,
         url: str,
-        info: Union[str, bytes, Mapping[str, Any]] = {},
+        info: str | bytes | Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
-        content_type: Optional[str] = None,
+        content_type: str | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
@@ -560,7 +559,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -694,7 +693,7 @@ Output:
         page_params = orjson.loads(page_params_json)
         return page_params
 
-    def _get_sentry_params(self, response: "TestHttpResponse") -> Optional[dict[str, Any]]:
+    def _get_sentry_params(self, response: "TestHttpResponse") -> dict[str, Any] | None:
         doc = lxml.html.document_fromstring(response.content)
         try:
             script = cast(lxml.html.HtmlMixin, doc).get_element_by_id("sentry-params")
@@ -714,7 +713,7 @@ Output:
         self.assertEqual(page_params["is_spectator"], False)
 
     def login_with_return(
-        self, email: str, password: Optional[str] = None, **extra: str
+        self, email: str, password: str | None = None, **extra: str
     ) -> "TestHttpResponse":
         if password is None:
             password = initial_password(email)
@@ -810,20 +809,20 @@ Output:
     def submit_reg_form_for_user(
         self,
         email: str,
-        password: Optional[str],
+        password: str | None,
         realm_name: str = "Zulip Test",
         realm_subdomain: str = "zuliptest",
         from_confirmation: str = "",
-        full_name: Optional[str] = None,
+        full_name: str | None = None,
         timezone: str = "",
-        realm_in_root_domain: Optional[str] = None,
+        realm_in_root_domain: str | None = None,
         default_stream_groups: Sequence[str] = [],
         source_realm_id: str = "",
-        key: Optional[str] = None,
+        key: str | None = None,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
-        enable_marketing_emails: Optional[bool] = None,
-        email_address_visibility: Optional[int] = None,
+        enable_marketing_emails: bool | None = None,
+        email_address_visibility: int | None = None,
         is_demo_organization: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -880,7 +879,7 @@ Output:
         realm_name: str,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
-        realm_in_root_domain: Optional[str] = None,
+        realm_in_root_domain: str | None = None,
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
@@ -900,9 +899,9 @@ Output:
         self,
         email_address: str,
         *,
-        url_pattern: Optional[str] = None,
-        email_subject_contains: Optional[str] = None,
-        email_body_contains: Optional[str] = None,
+        url_pattern: str | None = None,
+        email_subject_contains: str | None = None,
+        email_body_contains: str | None = None,
     ) -> str:
         from django.core.mail import outbox
 
@@ -977,7 +976,7 @@ Output:
         self,
         identifier: str,
         url: str,
-        info: Union[str, bytes, Mapping[str, Any]] = {},
+        info: str | bytes | Mapping[str, Any] = {},
         **extra: str,
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
@@ -1011,7 +1010,7 @@ Output:
         self,
         user: UserProfile,
         url: str,
-        info: Union[str, bytes, Mapping[str, Any]] = {},
+        info: str | bytes | Mapping[str, Any] = {},
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -1120,7 +1119,7 @@ Output:
         stream_name: str,
         content: str = "test content",
         topic_name: str = "test",
-        recipient_realm: Optional[Realm] = None,
+        recipient_realm: Realm | None = None,
         *,
         allow_unsubscribed_sender: bool = False,
         read_by_sender: bool = True,
@@ -1160,7 +1159,7 @@ Output:
 
     def get_messages_response(
         self,
-        anchor: Union[int, str] = 1,
+        anchor: int | str = 1,
         num_before: int = 100,
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
@@ -1179,7 +1178,7 @@ Output:
 
     def get_messages(
         self,
-        anchor: Union[str, int] = 1,
+        anchor: str | int = 1,
         num_before: int = 100,
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
@@ -1209,7 +1208,7 @@ Output:
         self,
         result: Union["TestHttpResponse", HttpResponse],
         *,
-        ignored_parameters: Optional[list[str]] = None,
+        ignored_parameters: list[str] | None = None,
     ) -> dict[str, Any]:
         """
         Successful POSTs return a 200 and JSON of the form {"result": "success",
@@ -1322,7 +1321,7 @@ Output:
         for substring in substrings:
             self.assertNotIn(substring, decoded)
 
-    def assert_logged_in_user_id(self, user_id: Optional[int]) -> None:
+    def assert_logged_in_user_id(self, user_id: int | None) -> None:
         """
         Verifies the user currently logged in for the test client has the provided user_id.
         Pass None to verify no user is logged in.
@@ -1358,10 +1357,10 @@ Output:
     def make_stream(
         self,
         stream_name: str,
-        realm: Optional[Realm] = None,
+        realm: Realm | None = None,
         invite_only: bool = False,
         is_web_public: bool = False,
-        history_public_to_subscribers: Optional[bool] = None,
+        history_public_to_subscribers: bool | None = None,
     ) -> Stream:
         if realm is None:
             realm = get_realm("zulip")
@@ -1398,7 +1397,7 @@ Output:
 
     INVALID_STREAM_ID = 999999
 
-    def get_stream_id(self, name: str, realm: Optional[Realm] = None) -> int:
+    def get_stream_id(self, name: str, realm: Realm | None = None) -> int:
         if not realm:
             realm = get_realm("zulip")
         try:
@@ -1508,7 +1507,7 @@ Output:
         self,
         user_profile: UserProfile,
         url: str,
-        payload: Union[str, dict[str, Any]],
+        payload: str | dict[str, Any],
         **extra: str,
     ) -> Message:
         """
@@ -1647,7 +1646,7 @@ Output:
         self.mock_initialize.return_value = self.mock_ldap
 
     def change_ldap_user_attr(
-        self, username: str, attr_name: str, attr_value: Union[str, bytes], binary: bool = False
+        self, username: str, attr_name: str, attr_value: str | bytes, binary: bool = False
     ) -> None:
         """
         Method for changing the value of an attribute of a user entry in the mock
@@ -1660,7 +1659,7 @@ Output:
         if binary:
             with open(attr_value, "rb") as f:
                 # attr_value should be a path to the file with the binary data
-                data: Union[str, bytes] = f.read()
+                data: str | bytes = f.read()
         else:
             data = attr_value
 
@@ -1997,7 +1996,7 @@ Output:
         self,
         direct_members: list[UserProfile],
         direct_subgroups: list[NamedUserGroup],
-        existing_setting_group: Optional[UserGroup] = None,
+        existing_setting_group: UserGroup | None = None,
     ) -> UserGroup:
         realm = get_realm("zulip")
         if existing_setting_group is not None:
@@ -2121,7 +2120,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         stream_name: str,
         content: str = "test content",
         topic_name: str = "test",
-        recipient_realm: Optional[Realm] = None,
+        recipient_realm: Realm | None = None,
         *,
         allow_unsubscribed_sender: bool = False,
         read_by_sender: bool = True,
@@ -2242,13 +2241,13 @@ class WebhookTestCase(ZulipTestCase):
       important for ensuring we document all fully supported event types.
     """
 
-    CHANNEL_NAME: Optional[str] = None
+    CHANNEL_NAME: str | None = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
-    WEBHOOK_DIR_NAME: Optional[str] = None
+    WEBHOOK_DIR_NAME: str | None = None
     # This last parameter is a workaround to handle webhooks that do not
     # name the main function api_{WEBHOOK_DIR_NAME}_webhook.
-    VIEW_FUNCTION_NAME: Optional[str] = None
+    VIEW_FUNCTION_NAME: str | None = None
 
     @property
     def test_user(self) -> UserProfile:
@@ -2314,9 +2313,9 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         self,
         user: UserProfile,
         fixture_name: str,
-        expected_topic: Optional[str] = None,
-        expected_message: Optional[str] = None,
-        content_type: Optional[str] = "application/json",
+        expected_topic: str | None = None,
+        expected_message: str | None = None,
+        content_type: str | None = "application/json",
         expect_noop: bool = False,
         **extra: str,
     ) -> None:
@@ -2333,9 +2332,9 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
     def check_webhook(
         self,
         fixture_name: str,
-        expected_topic_name: Optional[str] = None,
-        expected_message: Optional[str] = None,
-        content_type: Optional[str] = "application/json",
+        expected_topic_name: str | None = None,
+        expected_message: str | None = None,
+        content_type: str | None = "application/json",
         expect_noop: bool = False,
         **extra: str,
     ) -> None:
@@ -2418,7 +2417,7 @@ one or more new messages.
         expected_message: str,
         content_type: str = "application/json",
         *,
-        sender: Optional[UserProfile] = None,
+        sender: UserProfile | None = None,
         **extra: str,
     ) -> Message:
         """
@@ -2471,7 +2470,7 @@ one or more new messages.
 
         return url[:-1] if has_arguments else url
 
-    def get_payload(self, fixture_name: str) -> Union[str, dict[str, str]]:
+    def get_payload(self, fixture_name: str) -> str | dict[str, str]:
         """
         Generally webhooks that override this should return dicts."""
         return self.get_body(fixture_name)
@@ -2497,8 +2496,8 @@ class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
         assert app_config is not None
         return app_config.name
 
-    migrate_from: Optional[str] = None
-    migrate_to: Optional[str] = None
+    migrate_from: str | None = None
+    migrate_to: str | None = None
 
     @override
     def setUp(self) -> None:

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import responses
@@ -50,7 +50,7 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
     def execute_remote_billing_authentication_flow(
         self,
         user: UserProfile,
-        next_page: Optional[str] = None,
+        next_page: str | None = None,
         expect_tos: bool = True,
         confirm_tos: bool = True,
         first_time_login: bool = True,
@@ -1195,7 +1195,7 @@ class RemoteServerTestCase(BouncerTestCase):
         self,
         email: str,
         full_name: str,
-        next_page: Optional[str] = None,
+        next_page: str | None = None,
         expect_tos: bool = True,
         confirm_tos: bool = True,
         return_without_clicking_confirmation_link: bool = False,

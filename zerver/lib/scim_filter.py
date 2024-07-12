@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.http import HttpRequest
 from django_scim.filters import UserFilterQuery
 
@@ -45,7 +43,7 @@ class ZulipUserFilterQuery(UserFilterQuery):
     joins = ("INNER JOIN zerver_realm ON zerver_realm.id = realm_id",)
 
     @classmethod
-    def get_extras(cls, q: str, request: Optional[HttpRequest] = None) -> tuple[str, list[object]]:
+    def get_extras(cls, q: str, request: HttpRequest | None = None) -> tuple[str, list[object]]:
         """
         Return extra SQL and params to be attached to end of current Query's
         SQL and params. The return format matches the format that should be used

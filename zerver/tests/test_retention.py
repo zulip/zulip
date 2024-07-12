@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 from unittest import mock
 
 import time_machine
@@ -122,7 +122,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         realm.save()
 
     def _set_stream_message_retention_value(
-        self, stream: Stream, retention_period: Optional[int]
+        self, stream: Stream, retention_period: int | None
     ) -> None:
         stream.message_retention_days = retention_period
         stream.save()

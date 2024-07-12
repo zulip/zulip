@@ -5,7 +5,7 @@ import threading
 import time
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from typing import Any, Callable, Generic, Mapping, Optional, TypeVar, Union
+from typing import Any, Callable, Generic, Mapping, TypeVar
 
 import orjson
 import pika
@@ -35,12 +35,12 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
     def __init__(
         self,
         # Disable RabbitMQ heartbeats by default because BlockingConnection can't process them
-        rabbitmq_heartbeat: Optional[int] = 0,
+        rabbitmq_heartbeat: int | None = 0,
         prefetch: int = 0,
     ) -> None:
         self.log = logging.getLogger("zulip.queue")
         self.queues: set[str] = set()
-        self.channel: Optional[ChannelT] = None
+        self.channel: ChannelT | None = None
         self.prefetch = prefetch
         self.consumers: dict[str, set[Consumer[ChannelT]]] = defaultdict(set)
         self.rabbitmq_heartbeat = rabbitmq_heartbeat
@@ -80,7 +80,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         if self.rabbitmq_heartbeat == 0:
             tcp_options = dict(TCP_KEEPIDLE=60 * 5)
 
-        ssl_options: Union[type[pika.ConnectionParameters._DEFAULT], pika.SSLOptions] = (
+        ssl_options: type[pika.ConnectionParameters._DEFAULT] | pika.SSLOptions = (
             pika.ConnectionParameters._DEFAULT
         )
         if settings.RABBITMQ_USE_TLS:
@@ -146,7 +146,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
 
 
 class SimpleQueueClient(QueueClient[BlockingChannel]):
-    connection: Optional[pika.BlockingConnection]
+    connection: pika.BlockingConnection | None
 
     @override
     def _connect(self) -> None:
@@ -188,7 +188,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         queue_name: str,
         callback: Callable[[list[dict[str, Any]]], None],
         batch_size: int = 1,
-        timeout: Optional[int] = None,
+        timeout: int | None = None,
     ) -> None:
         if batch_size == 1:
             timeout = None
@@ -196,7 +196,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         def do_consume(channel: BlockingChannel) -> None:
             events: list[dict[str, Any]] = []
             last_process = time.time()
-            max_processed: Optional[int] = None
+            max_processed: int | None = None
             self.is_consuming = True
 
             # This iterator technique will iteratively collect up to
@@ -261,7 +261,7 @@ calling _adapter_disconnect, ignoring",
 
 
 class TornadoQueueClient(QueueClient[Channel]):
-    connection: Optional[ExceptionFreeTornadoConnection]
+    connection: ExceptionFreeTornadoConnection | None
 
     # Based on:
     # https://pika.readthedocs.io/en/0.9.8/examples/asynchronous_consumer_example.html
@@ -309,7 +309,7 @@ class TornadoQueueClient(QueueClient[Channel]):
     CONNECTION_FAILURES_BEFORE_NOTIFY = 10
 
     def _on_connection_open_error(
-        self, connection: pika.connection.Connection, reason: Union[str, Exception]
+        self, connection: pika.connection.Connection, reason: str | Exception
     ) -> None:
         self._connection_failure_count += 1
         retry_secs = self.CONNECTION_RETRY_SECS
@@ -388,7 +388,7 @@ class TornadoQueueClient(QueueClient[Channel]):
         queue_name: str,
         callback: Callable[[list[dict[str, Any]]], None],
         batch_size: int = 1,
-        timeout: Optional[int] = None,
+        timeout: int | None = None,
     ) -> None:
         def wrapped_consumer(
             ch: Channel,
@@ -420,7 +420,7 @@ class TornadoQueueClient(QueueClient[Channel]):
 thread_data = threading.local()
 
 
-def get_queue_client() -> Union[SimpleQueueClient, TornadoQueueClient]:
+def get_queue_client() -> SimpleQueueClient | TornadoQueueClient:
     if not hasattr(thread_data, "queue_client"):
         if not settings.USING_RABBITMQ:
             raise RuntimeError("Cannot get a queue client without USING_RABBITMQ")
@@ -429,14 +429,14 @@ def get_queue_client() -> Union[SimpleQueueClient, TornadoQueueClient]:
     return thread_data.queue_client
 
 
-def set_queue_client(queue_client: Union[SimpleQueueClient, TornadoQueueClient]) -> None:
+def set_queue_client(queue_client: SimpleQueueClient | TornadoQueueClient) -> None:
     thread_data.queue_client = queue_client
 
 
 def queue_json_publish(
     queue_name: str,
     event: dict[str, Any],
-    processor: Optional[Callable[[Any], None]] = None,
+    processor: Callable[[Any], None] | None = None,
 ) -> None:
     if settings.USING_RABBITMQ:
         get_queue_client().json_publish(queue_name, event)

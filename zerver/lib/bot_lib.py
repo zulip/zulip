@@ -1,6 +1,6 @@
 import importlib
 import json
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -115,7 +115,7 @@ class EmbeddedBotHandler:
         return {"id": message_id}
 
     def send_reply(
-        self, message: dict[str, Any], response: str, widget_content: Optional[str] = None
+        self, message: dict[str, Any], response: str, widget_content: str | None = None
     ) -> dict[str, Any]:
         if message["type"] == "private":
             result = self.send_message(

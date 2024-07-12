@@ -1,7 +1,6 @@
 import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
-from typing import Optional
 
 from django.conf import settings
 from django.db import transaction
@@ -34,9 +33,7 @@ class ReadMessagesEvent:
     flag: str = field(default="read", init=False)
 
 
-def do_mark_all_as_read(
-    user_profile: UserProfile, *, timeout: Optional[float] = None
-) -> Optional[int]:
+def do_mark_all_as_read(user_profile: UserProfile, *, timeout: float | None = None) -> int | None:
     start_time = time.monotonic()
 
     # First, we clear mobile push notifications.  This is safer in the
@@ -105,7 +102,7 @@ def do_mark_all_as_read(
 
 
 def do_mark_stream_messages_as_read(
-    user_profile: UserProfile, stream_recipient_id: int, topic_name: Optional[str] = None
+    user_profile: UserProfile, stream_recipient_id: int, topic_name: str | None = None
 ) -> int:
     with transaction.atomic(savepoint=False):
         query = (

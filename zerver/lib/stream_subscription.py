@@ -2,7 +2,7 @@ import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import AbstractSet, Any, Collection, Optional
+from typing import AbstractSet, Any, Collection
 
 from django.db.models import Q, QuerySet
 from django_stubs_ext import ValuesQuerySet
@@ -230,7 +230,7 @@ def bulk_get_subscriber_peer_info(
 
 
 def handle_stream_notifications_compatibility(
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     stream_dict: dict[str, Any],
     notification_settings_null: bool,
 ) -> None:

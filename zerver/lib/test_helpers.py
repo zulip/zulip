@@ -14,7 +14,6 @@ from typing import (
     Iterable,
     Iterator,
     Mapping,
-    Optional,
     TypeVar,
     Union,
     cast,
@@ -88,17 +87,17 @@ def stub_event_queue_user_events(
 
 
 @contextmanager
-def cache_tries_captured() -> Iterator[list[tuple[str, Union[str, list[str]], Optional[str]]]]:
-    cache_queries: list[tuple[str, Union[str, list[str]], Optional[str]]] = []
+def cache_tries_captured() -> Iterator[list[tuple[str, str | list[str], str | None]]]:
+    cache_queries: list[tuple[str, str | list[str], str | None]] = []
 
     orig_get = cache.cache_get
     orig_get_many = cache.cache_get_many
 
-    def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[dict[str, Any]]:
+    def my_cache_get(key: str, cache_name: str | None = None) -> dict[str, Any] | None:
         cache_queries.append(("get", key, cache_name))
         return orig_get(key, cache_name)
 
-    def my_cache_get_many(keys: list[str], cache_name: Optional[str] = None) -> dict[str, Any]:
+    def my_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
         cache_queries.append(("getmany", keys, cache_name))
         return orig_get_many(keys, cache_name)
 
@@ -107,15 +106,15 @@ def cache_tries_captured() -> Iterator[list[tuple[str, Union[str, list[str]], Op
 
 
 @contextmanager
-def simulated_empty_cache() -> Iterator[list[tuple[str, Union[str, list[str]], Optional[str]]]]:
-    cache_queries: list[tuple[str, Union[str, list[str]], Optional[str]]] = []
+def simulated_empty_cache() -> Iterator[list[tuple[str, str | list[str], str | None]]]:
+    cache_queries: list[tuple[str, str | list[str], str | None]] = []
 
-    def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[dict[str, Any]]:
+    def my_cache_get(key: str, cache_name: str | None = None) -> dict[str, Any] | None:
         cache_queries.append(("get", key, cache_name))
         return None
 
     def my_cache_get_many(
-        keys: list[str], cache_name: Optional[str] = None
+        keys: list[str], cache_name: str | None = None
     ) -> dict[str, Any]:  # nocoverage -- simulated code doesn't use this
         cache_queries.append(("getmany", keys, cache_name))
         return {}
@@ -141,7 +140,7 @@ def queries_captured(
 
     queries: list[CapturedQuery] = []
 
-    def cursor_execute(self: TimeTrackingCursor, sql: Query, vars: Optional[Params] = None) -> None:
+    def cursor_execute(self: TimeTrackingCursor, sql: Query, vars: Params | None = None) -> None:
         start = time.time()
         try:
             return super(TimeTrackingCursor, self).execute(sql, vars)
@@ -255,7 +254,7 @@ def make_client(name: str) -> Client:
     return client
 
 
-def find_key_by_email(address: str) -> Optional[str]:
+def find_key_by_email(address: str) -> str | None:
     from django.core.mail import outbox
 
     key_regex = re.compile(r"accounts/do_confirm/([a-z0-9]{24})>")
@@ -327,12 +326,12 @@ class HostRequestMock(HttpRequest):
     def __init__(
         self,
         post_data: Mapping[str, Any] = {},
-        user_profile: Union[UserProfile, None] = None,
-        remote_server: Optional[RemoteZulipServer] = None,
+        user_profile: UserProfile | None = None,
+        remote_server: RemoteZulipServer | None = None,
         host: str = settings.EXTERNAL_HOST,
-        client_name: Optional[str] = None,
-        meta_data: Optional[dict[str, Any]] = None,
-        tornado_handler: Optional[AsyncDjangoHandler] = None,
+        client_name: str | None = None,
+        meta_data: dict[str, Any] | None = None,
+        tornado_handler: AsyncDjangoHandler | None = None,
         path: str = "",
     ) -> None:
         self.host = host
@@ -390,7 +389,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     else:
 
         def wrapper(
-            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Union[bool, str]
+            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: bool | str
         ) -> HttpResponseBase:
             start = time.time()
             result = f(self, url, info, **kwargs)
@@ -723,7 +722,7 @@ def mock_queue_publish(
     def verify_serialize(
         queue_name: str,
         event: dict[str, object],
-        processor: Optional[Callable[[object], None]] = None,
+        processor: Callable[[object], None] | None = None,
     ) -> None:
         marshalled_event = orjson.loads(orjson.dumps(event))
         assert marshalled_event == event

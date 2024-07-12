@@ -1,6 +1,6 @@
 import hashlib
 from collections import defaultdict
-from typing import Any, Collection, Iterable, Mapping, Optional
+from typing import Any, Collection, Iterable, Mapping
 
 from django.conf import settings
 from django.db import transaction
@@ -111,7 +111,7 @@ def send_user_remove_events_on_stream_deactivation(
 
 
 @transaction.atomic(savepoint=False)
-def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) -> None:
+def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> None:
     # If the stream is already deactivated, this is a no-op
     if stream.deactivated is True:
         raise JsonableError(_("Channel is already deactivated"))
@@ -233,9 +233,7 @@ def deactivated_streams_by_old_name(realm: Realm, stream_name: str) -> QuerySet[
 
 
 @transaction.atomic(savepoint=False)
-def do_unarchive_stream(
-    stream: Stream, new_name: str, *, acting_user: Optional[UserProfile]
-) -> None:
+def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfile | None) -> None:
     realm = stream.realm
     if not stream.deactivated:
         raise JsonableError(_("Channel is not currently deactivated"))
@@ -394,7 +392,7 @@ def merge_streams(
 
 
 def get_subscriber_ids(
-    stream: Stream, requesting_user: Optional[UserProfile] = None
+    stream: Stream, requesting_user: UserProfile | None = None
 ) -> ValuesQuerySet[Subscription, int]:
     subscriptions_query = get_subscribers_query(stream, requesting_user)
     return subscriptions_query.values_list("user_profile_id", flat=True)
@@ -480,7 +478,7 @@ def send_subscription_add_events(
 @transaction.atomic(savepoint=False)
 def bulk_add_subs_to_db_with_logging(
     realm: Realm,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
     subs_to_add: list[SubInfo],
     subs_to_activate: list[SubInfo],
 ) -> None:
@@ -711,7 +709,7 @@ def bulk_add_subscriptions(
     color_map: Mapping[str, str] = {},
     from_user_creation: bool = False,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> SubT:
     users = list(users)
     user_ids = [user.id for user in users]
@@ -731,7 +729,7 @@ def bulk_add_subscriptions(
     for stream in streams:
         assert stream.recipient_id is not None
         recipient_ids_set.add(stream.recipient_id)
-        color: Optional[str] = color_map.get(stream.name, None)
+        color: str | None = color_map.get(stream.name, None)
         if color is not None:
             recipient_color_map[stream.recipient_id] = color
 
@@ -1006,7 +1004,7 @@ def bulk_remove_subscriptions(
     users: Iterable[UserProfile],
     streams: Iterable[Stream],
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> SubAndRemovedT:
     users = list(users)
     streams = list(streams)
@@ -1110,7 +1108,7 @@ def do_change_subscription_property(
     property_name: str,
     value: Any,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     database_property_name = property_name
     database_value = value
@@ -1548,7 +1546,7 @@ def do_change_stream_description(
 
 
 def send_change_stream_message_retention_days_notification(
-    user_profile: UserProfile, stream: Stream, old_value: Optional[int], new_value: Optional[int]
+    user_profile: UserProfile, stream: Stream, old_value: int | None, new_value: int | None
 ) -> None:
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = silent_mention_syntax_for_user(user_profile)
@@ -1596,7 +1594,7 @@ def send_change_stream_message_retention_days_notification(
 
 
 def do_change_stream_message_retention_days(
-    stream: Stream, acting_user: UserProfile, message_retention_days: Optional[int] = None
+    stream: Stream, acting_user: UserProfile, message_retention_days: int | None = None
 ) -> None:
     old_message_retention_days_value = stream.message_retention_days
 
@@ -1637,7 +1635,7 @@ def do_change_stream_group_based_setting(
     setting_name: str,
     user_group: UserGroup,
     *,
-    acting_user: Optional[UserProfile] = None,
+    acting_user: UserProfile | None = None,
 ) -> None:
     old_user_group = getattr(stream, setting_name)
     old_user_group_id = None

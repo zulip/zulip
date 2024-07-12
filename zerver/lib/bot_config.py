@@ -2,7 +2,6 @@ import configparser
 import importlib
 import os
 from collections import defaultdict
-from typing import Optional
 
 from django.conf import settings
 from django.db.models import F, Sum
@@ -32,7 +31,7 @@ def get_bot_configs(bot_profile_ids: list[int]) -> dict[int, dict[str, str]]:
     return entries_by_uid
 
 
-def get_bot_config_size(bot_profile: UserProfile, key: Optional[str] = None) -> int:
+def get_bot_config_size(bot_profile: UserProfile, key: str | None = None) -> int:
     if key is None:
         return (
             BotConfigData.objects.filter(bot_profile=bot_profile)

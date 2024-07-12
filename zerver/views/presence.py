@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -80,16 +80,16 @@ def update_user_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    away: Optional[Json[bool]] = None,
+    away: Json[bool] | None = None,
     status_text: Annotated[
-        Optional[str], StringConstraints(strip_whitespace=True, max_length=60)
+        str | None, StringConstraints(strip_whitespace=True, max_length=60)
     ] = None,
-    emoji_name: Optional[str] = None,
-    emoji_code: Optional[str] = None,
+    emoji_name: str | None = None,
+    emoji_code: str | None = None,
     # TODO: emoji_type is the more appropriate name for this parameter, but changing
     # that requires nontrivial work on the API documentation, since it's not clear
     # that the reactions endpoint would prefer such a change.
-    emoji_type: Annotated[Optional[str], ApiParamConfig("reaction_type")] = None,
+    emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
 ) -> HttpResponse:
     if status_text is not None:
         status_text = status_text.strip()
@@ -154,7 +154,7 @@ def update_active_status_backend(
     ping_only: Json[bool] = False,
     new_user_input: Json[bool] = False,
     slim_presence: Json[bool] = False,
-    last_update_id: Optional[Json[int]] = None,
+    last_update_id: Json[int] | None = None,
 ) -> HttpResponse:
     if last_update_id is not None:
         # This param being submitted by the client, means they want to use

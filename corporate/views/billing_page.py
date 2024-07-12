@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
@@ -239,14 +239,13 @@ def update_plan(
     request: HttpRequest,
     user: UserProfile,
     *,
-    status: Optional[
-        Annotated[
-            Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
-    licenses_at_next_renewal: Optional[Json[int]] = None,
-    schedule: Optional[Json[int]] = None,
+    status: Annotated[
+        Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
+    licenses_at_next_renewal: Json[int] | None = None,
+    schedule: Json[int] | None = None,
 ) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,
@@ -266,14 +265,13 @@ def update_plan_for_remote_realm(
     request: HttpRequest,
     billing_session: RemoteRealmBillingSession,
     *,
-    status: Optional[
-        Annotated[
-            Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
-    licenses_at_next_renewal: Optional[Json[int]] = None,
-    schedule: Optional[Json[int]] = None,
+    status: Annotated[
+        Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
+    licenses_at_next_renewal: Json[int] | None = None,
+    schedule: Json[int] | None = None,
 ) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,
@@ -292,14 +290,13 @@ def update_plan_for_remote_server(
     request: HttpRequest,
     billing_session: RemoteServerBillingSession,
     *,
-    status: Optional[
-        Annotated[
-            Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
-    licenses_at_next_renewal: Optional[Json[int]] = None,
-    schedule: Optional[Json[int]] = None,
+    status: Annotated[
+        Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
+    licenses_at_next_renewal: Json[int] | None = None,
+    schedule: Json[int] | None = None,
 ) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,

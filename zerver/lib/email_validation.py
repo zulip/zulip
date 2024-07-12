@@ -1,6 +1,6 @@
 from email.errors import HeaderParseError
 from email.headerregistry import Address
-from typing import Callable, Optional
+from typing import Callable
 
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -97,7 +97,7 @@ def email_allowed_for_realm(email: str, realm: Realm) -> None:
 def validate_email_is_valid(
     email: str,
     validate_email_allowed_in_realm: Callable[[str], None],
-) -> Optional[str]:
+) -> str | None:
     try:
         validators.validate_email(email)
     except ValidationError:
