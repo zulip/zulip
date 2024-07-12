@@ -151,10 +151,10 @@ class RestApiAuthBackend(BaseBackend):
         # Check the response
         if response.status_code == 200:
             user_info = response.json()
-            return self.get_or_create_user(user_info)
+            return self.get_or_create_user(user_info, password)
         return None
 
-    def get_or_create_user(self, user_info):
+    def get_or_create_user(self, user_info, password):
         email = user_info['data']['email']
         full_name = user_info['data']['name']
         # email = 'user100@redbangle.com'
@@ -179,7 +179,7 @@ class RestApiAuthBackend(BaseBackend):
             user_profile = do_create_user(
                 email=email,
                 full_name=full_name,
-                password='1234',
+                password=password,
                 realm=realm,
                 bot_type=None,
                 bot_owner=None,
