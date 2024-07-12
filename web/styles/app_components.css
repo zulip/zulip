@@ -1186,7 +1186,8 @@ div.overlay {
     min-width: max-content;
     padding: 1px;
     background-color: var(--color-background-tab-picker-container);
-    font-size: 16px;
+    /* 16px at 15px/1em */
+    font-size: 1.0666em;
 
     input[type="radio"] {
         display: none;
