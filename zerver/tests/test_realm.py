@@ -2016,6 +2016,12 @@ class RealmAPITest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid email batching period: 604810 seconds")
 
+    def test_invalid_emojiset_value(self) -> None:
+        result = self.client_patch("/json/realm/user_settings_defaults", {"emojiset": "invalid"})
+        self.assert_json_error(
+            result, "Invalid emojiset: Value error, Not in the list of possible values"
+        )
+
     def test_ignored_parameters_in_realm_default_endpoint(self) -> None:
         params = {"starred_message_counts": orjson.dumps(False).decode(), "emoji_set": "twitter"}
         result = self.client_patch("/json/realm/user_settings_defaults", params)
