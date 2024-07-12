@@ -461,13 +461,13 @@ ul.popover-group-menu-member-list {
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button {
         text-decoration: none;
-        /* 15px at 14px/1em */
-        font-size: 1.0714em;
+        /* 15px at 22px/1em */
+        font-size: 0.6818em;
     }
 
     .user-profile-manage-own-copy-link-button {
-        /* 19px at 14px/1em */
-        font-size: 1.3571em;
+        /* 19px at 22px/1em */
+        font-size: 0.8638em;
         text-decoration: none;
     }
 
@@ -935,8 +935,8 @@ ul.popover-group-menu-member-list {
 
 .recipient-bar-topic-visibility-switcher {
     .tab-option-content {
-        /* 15px at 14px/1em */
-        font-size: 1.0714em;
+        /* 15px at 16px/1em */
+        font-size: 0.9375em;
         color: var(--color-text-popover-menu);
         gap: 10px;
         justify-content: flex-start;
@@ -1089,8 +1089,8 @@ ul.popover-group-menu-member-list {
     }
 
     .full-name {
-        /* 18px at 14px/1em */
-        font-size: 1.2857;
+        /* 18px at 15px/1em */
+        font-size: 1.2em;
         font-weight: 600;
         /* 20px at 18px/1em */
         line-height: 1.1111em;
@@ -1100,6 +1100,8 @@ ul.popover-group-menu-member-list {
     }
 
     .user-type {
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
         font-weight: 400;
         /* 16px at 14px/1em */
         line-height: 1.1429em;
@@ -1322,8 +1324,6 @@ ul.popover-group-menu-member-list {
         .org-info {
             display: flex;
             justify-content: flex-start;
-            /* 15px at 14px/1em */
-            font-size: 1.0714em;
             font-style: normal;
             font-weight: 400;
             /* 16px at 15px/1em */
@@ -1379,6 +1379,8 @@ ul.popover-group-menu-member-list {
         .org-upgrade {
             /* 14px at 15px/1em */
             font-size: 0.9333em;
+            /* 16px at 14px/1em */
+            line-height: 1.1428em;
         }
 
         .org-upgrade,
