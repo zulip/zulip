@@ -254,7 +254,7 @@ cURL example."""
 
         # Booleans are effectively JSON-encoded, in that we pass
         # true/false, not the Python str(True) = "True"
-        if parameter.json_encoded or isinstance(example_value, (bool, float, int)):
+        if parameter.json_encoded or isinstance(example_value, bool | float | int):
             example_value = json.dumps(example_value)
         else:
             assert isinstance(example_value, str)

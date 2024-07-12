@@ -175,7 +175,7 @@ def check_prereg_key(
     prereg_object = get_object_from_key(
         confirmation_key, confirmation_types, mark_object_used=False
     )
-    assert isinstance(prereg_object, (PreregistrationRealm, PreregistrationUser))
+    assert isinstance(prereg_object, PreregistrationRealm | PreregistrationUser)
 
     confirmation_obj = prereg_object.confirmation.get()
     realm_creation = confirmation_obj.type == Confirmation.REALM_CREATION

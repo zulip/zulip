@@ -624,7 +624,7 @@ def check_string_or_int_list(var_name: str, val: object) -> str | list[int]:
 
 
 def check_string_or_int(var_name: str, val: object) -> str | int:
-    if isinstance(val, (str, int)):
+    if isinstance(val, str | int):
         return val
 
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
@@ -654,7 +654,7 @@ class WildValue:
         return self.value == other
 
     def __len__(self) -> int:
-        if not isinstance(self.value, (dict, list, str)):
+        if not isinstance(self.value, dict | list | str):
             raise ValidationError(
                 _("{var_name} does not have a length").format(var_name=self.var_name)
             )
