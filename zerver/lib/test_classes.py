@@ -1471,7 +1471,7 @@ Output:
 
         self.assert_length(subscribed_streams, len(streams))
 
-        for x, y in zip(subscribed_streams, streams):
+        for x, y in zip(subscribed_streams, streams, strict=False):
             self.assertEqual(x["name"], y.name)
 
     def resolve_topic_containing_message(

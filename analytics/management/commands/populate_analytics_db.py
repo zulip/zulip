@@ -176,7 +176,7 @@ class Command(ZulipBaseCommand):
                         value=value,
                         **id_args,
                     )
-                    for end_time, value in zip(end_times, values)
+                    for end_time, value in zip(end_times, values, strict=False)
                     if value != 0
                 )
 

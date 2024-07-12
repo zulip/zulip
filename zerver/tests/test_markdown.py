@@ -1274,7 +1274,9 @@ class MarkdownTest(ZulipTestCase):
         self, linkifiers: list[RealmFilter], expected_linkifier_reprs: list[str]
     ) -> None:
         self.assert_length(linkifiers, len(expected_linkifier_reprs))
-        for linkifier, expected_linkifier_repr in zip(linkifiers, expected_linkifier_reprs):
+        for linkifier, expected_linkifier_repr in zip(
+            linkifiers, expected_linkifier_reprs, strict=False
+        ):
             linkifier.clean()
             linkifier.save()
             self.assertEqual(repr(linkifier), expected_linkifier_repr)

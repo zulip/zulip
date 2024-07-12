@@ -273,7 +273,7 @@ class Command(makemessages.Command):
         return new_strings
 
     def write_translation_strings(self, translation_strings: list[str]) -> None:
-        for locale, output_path in zip(self.get_locales(), self.get_output_paths()):
+        for locale, output_path in zip(self.get_locales(), self.get_output_paths(), strict=False):
             self.stdout.write(f"[frontend] processing locale {locale}")
             try:
                 with open(output_path) as reader:

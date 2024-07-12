@@ -302,7 +302,7 @@ def send_apple_push_notification(
             *(apns_context.apns.send_notification(request) for request in requests),
             return_exceptions=True,
         )
-        return zip(devices, results)
+        return zip(devices, results, strict=False)
 
     results = apns_context.loop.run_until_complete(send_all_notifications())
 

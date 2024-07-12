@@ -135,7 +135,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         conditions = self.parse_conditions()
         violations = self.parse_violations()
         content = ""
-        for condition, violation in zip(conditions, violations):
+        for condition, violation in zip(conditions, violations, strict=False):
             content += self.generate_violated_metric_condition(violation, condition)
         return content
 

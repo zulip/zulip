@@ -69,7 +69,7 @@ def generate_time_series_data(
 
     values = [
         0 if holiday else int(v + sqrt(v) * noise_scalar * spikiness)
-        for v, noise_scalar, holiday in zip(values_no_noise, noise_scalars, holidays)
+        for v, noise_scalar, holiday in zip(values_no_noise, noise_scalars, holidays, strict=False)
     ]
     if partial_sum:
         for i in range(1, length):

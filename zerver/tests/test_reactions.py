@@ -92,7 +92,7 @@ class ReactionEmojiTest(ZulipTestCase):
         emojis = ["smile", "tada"]
         expected_emoji_codes = ["1f642", "1f389"]
 
-        for sender, emoji in zip(senders, emojis):
+        for sender, emoji in zip(senders, emojis, strict=False):
             reaction_info = {
                 "emoji_name": emoji,
             }
@@ -119,7 +119,9 @@ class ReactionEmojiTest(ZulipTestCase):
             # It's important that we preserve the loop order in this
             # test, since this is our test to verify that we're
             # returning reactions in chronological order.
-            for sender, emoji, emoji_code in zip(senders, emojis, expected_emoji_codes)
+            for sender, emoji, emoji_code in zip(
+                senders, emojis, expected_emoji_codes, strict=False
+            )
         ]
         self.assertEqual(expected_reaction_data, message["reactions"])
 
