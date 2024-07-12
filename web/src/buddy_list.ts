@@ -21,6 +21,7 @@ import * as padded_widget from "./padded_widget";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import {INTERACTIVE_HOVER_DELAY} from "./tippyjs";
@@ -43,24 +44,17 @@ function total_subscriber_count(
     if (current_sub) {
         return peer_data.get_subscriber_count(current_sub.stream_id, false);
     } else if (pm_ids_set.size) {
-        const pm_ids_list = [...pm_ids_set];
-        let bot_count = 0;
-        // Plus one for the "me" user, who isn't in the recipients list (except
-        // for when it's a private message conversation with only "me" in it).
-        if (
-            pm_ids_list.length === 1 &&
-            pm_ids_list[0] !== undefined &&
-            people.is_my_user_id(pm_ids_list[0])
-        ) {
-            return 1;
-        }
+        // The current user is only in the provided recipients list
+        // for direct message conversations with oneself.
+        const all_recipient_user_ids_set = pm_ids_set.union(new Set([current_user.user_id]));
 
-        for (const pm_id of pm_ids_list) {
-            if (people.is_valid_bot_user(pm_id)) {
-                bot_count += 1;
+        let human_user_count = 0;
+        for (const pm_id of all_recipient_user_ids_set) {
+            if (!people.is_valid_bot_user(pm_id)) {
+                human_user_count += 1;
             }
         }
-        return pm_ids_list.length - bot_count + 1;
+        return human_user_count;
     }
     return 0;
 }
