@@ -1,5 +1,6 @@
 import inspect
 import os
+import types
 from collections import abc
 from typing import (
     Any,
@@ -350,7 +351,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
             # Then it's most likely one of the fundamental data types
             # I.E. Not one of the data types from the "typing" module.
             return t
-        elif origin == Union:
+        elif origin in (Union, types.UnionType):
             subtypes = [self.get_standardized_argument_type(st) for st in get_args(t)]
             return self.get_type_by_priority(subtypes)
         elif origin in [list, abc.Sequence]:
