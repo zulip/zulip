@@ -771,9 +771,19 @@ input[type="checkbox"] {
     float: right;
 
     #show-add-default-streams-modal {
-        padding: 5px 0;
-        min-width: 100px;
-        margin-top: 11px;
+        /* We want this button to have the same height as the filter
+           button on its right. We're overriding the default vertical
+           padding of `.new-style` and setting it to 0. Having the
+           height fixed will mean that the vertical whitespace will
+           adjust itself for different font-sizes without changing the
+           height.
+           */
+        padding-top: 0;
+        padding-bottom: 0;
+        height: 30px;
+
+        min-width: 0;
+        margin-top: 12px;
         margin-right: 6px;
     }
 }
