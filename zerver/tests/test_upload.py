@@ -1779,6 +1779,17 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
                 self.assert_json_error(result, "Invalid image format")
                 resize_mock.assert_not_called()
 
+    def test_upload_too_big_after_resize(self) -> None:
+        """Non-animated image is too big after resizing"""
+        self.login("iago")
+        with get_test_image_file("img.png") as f:
+            with patch(
+                "zerver.lib.upload.resize_emoji", return_value=(b"a" * (200 * 1024), None)
+            ) as resize_mock:
+                result = self.client_post("/json/realm/emoji/new", {"f1": f})
+                self.assert_json_error(result, "Image size exceeds limit")
+                resize_mock.assert_called_once()
+
     def test_upload_big_after_animated_resize(self) -> None:
         """A big animated image is fine as long as the still is small"""
         self.login("iago")
