@@ -75,8 +75,8 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     return get_search_bar_text();
 }
 
-// When a pill is added or removed, or when text input is changed,
-// we set `search_input_has_changed` to `false`. We also remove the
+// When a pill is added, or when text input is changed, we set
+// `search_input_has_changed` to `false`. We also remove the
 // `freshly-opened` styling on the search pills (which is added in
 // `initiate_search` but not every time we open the search bar) after
 // the first input change.
@@ -106,7 +106,8 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
 
     search_pill_widget = search_pill.create_pills($pill_container);
     search_pill_widget.onPillRemove(() => {
-        on_search_contents_changed();
+        $(".search-input-and-pills").removeClass("freshly-opened");
+        search_input_has_changed = true;
     });
 
     $search_query_box.on("change", () => {
