@@ -1166,7 +1166,7 @@ ul.popover-group-menu-member-list {
         flex-flow: row nowrap;
         align-items: flex-start;
         gap: 5px;
-        padding: 3px 10px;
+        padding: 0.2em 0.6666em;
         /* 15px at 15px/1em */
         font-size: 1em;
         /* 16px at 15px/1em */
