@@ -89,7 +89,7 @@ class PopoverMenu {
             return;
         }
 
-        const $items = $("li:not(.divider):visible a", $popover);
+        const $items = $("li:not(.divider):visible a:visible", $popover);
 
         popover_items_handle_keyboard_with_overrides(key, $items);
     }
