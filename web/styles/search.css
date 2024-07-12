@@ -332,7 +332,7 @@
     }
 
     .typeahead-menu .simplebar-content > li > a {
-        padding: 3px 30px;
+        padding: 3px 40px;
         /* Override white-space: nowrap from zulip.css */
         white-space: normal;
 
