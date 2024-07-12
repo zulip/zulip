@@ -1248,7 +1248,8 @@ ul.popover-group-menu-member-list {
 }
 
 #message-actions-menu-dropdown {
-    --popover-menu-max-width: 350px;
+    /* 350px at 15px/1em */
+    --popover-menu-max-width: 23.3333em;
 
     .simplebar-content {
         min-width: var(--message-actions-popover-min-width);
