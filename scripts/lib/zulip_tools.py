@@ -15,8 +15,9 @@ import subprocess
 import sys
 import time
 import uuid
+from collections.abc import Sequence
 from datetime import datetime, timedelta
-from typing import IO, Any, Literal, Sequence, overload
+from typing import IO, Any, Literal, overload
 from urllib.parse import SplitResult
 
 import zoneinfo

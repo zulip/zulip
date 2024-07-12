@@ -7,8 +7,9 @@ value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
 
+from typing import TypeAlias
+
 from django.http import HttpRequest, HttpResponse
-from typing_extensions import TypeAlias
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success

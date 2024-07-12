@@ -1,26 +1,16 @@
 from collections import defaultdict
+from collections.abc import Callable, MutableMapping, Sequence
 from dataclasses import dataclass, field
 from functools import wraps
 from types import FunctionType
-from typing import (
-    Any,
-    Callable,
-    Generic,
-    Literal,
-    MutableMapping,
-    Optional,
-    Sequence,
-    TypeVar,
-    cast,
-    overload,
-)
+from typing import Any, Concatenate, Generic, Literal, Optional, TypeVar, cast, overload
 
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from typing_extensions import Concatenate, ParamSpec, override
+from typing_extensions import ParamSpec, override
 
 from zerver.lib import rate_limiter
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError

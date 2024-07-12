@@ -2,8 +2,9 @@ import itertools
 import os
 import random
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timedelta
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 import bmemcached
 import orjson

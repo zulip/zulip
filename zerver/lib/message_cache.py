@@ -1,8 +1,9 @@
 import copy
 import zlib
+from collections.abc import Iterable
 from datetime import datetime
 from email.headerregistry import Address
-from typing import Any, Iterable, TypedDict
+from typing import Any, TypedDict
 
 import orjson
 

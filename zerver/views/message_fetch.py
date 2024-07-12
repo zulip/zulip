@@ -1,4 +1,5 @@
-from typing import Iterable
+from collections.abc import Iterable
+from typing import Annotated
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -9,7 +10,6 @@ from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
 from sqlalchemy.sql import and_, column, join, literal, literal_column, select, table
 from sqlalchemy.types import Integer, Text
-from typing_extensions import Annotated
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError

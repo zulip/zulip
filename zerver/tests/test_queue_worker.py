@@ -3,9 +3,10 @@ import os
 import signal
 import time
 from collections import defaultdict
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager, suppress
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Iterator, Mapping
+from typing import Any, TypeAlias
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -13,7 +14,7 @@ import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import override_settings
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address

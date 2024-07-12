@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Collection
 from contextlib import suppress
-from typing import Any, Collection, Optional
+from typing import Any, Optional
 from urllib.parse import unquote
 
 import tornado.web

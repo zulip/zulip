@@ -5,8 +5,9 @@ import signal
 import time
 from abc import ABC, abstractmethod
 from collections import deque
+from collections.abc import Callable, MutableSequence
 from types import FrameType
-from typing import Any, Callable, MutableSequence, TypeVar
+from typing import Any, TypeVar
 
 import orjson
 import sentry_sdk

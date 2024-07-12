@@ -8,7 +8,8 @@ import shlex
 import subprocess
 import sys
 import tempfile
-from typing import TYPE_CHECKING, Iterator, cast
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, cast
 from unittest import mock
 
 if TYPE_CHECKING:

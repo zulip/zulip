@@ -2,8 +2,8 @@ import os
 import subprocess
 import sys
 import time
+from collections.abc import Iterator
 from contextlib import ExitStack, contextmanager
-from typing import Iterator
 
 # Verify the Zulip venv is available.
 from tools.lib import sanity_check

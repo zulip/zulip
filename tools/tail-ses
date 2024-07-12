@@ -12,8 +12,9 @@ setup_path()
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 import argparse
 import secrets
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator, TypedDict
+from typing import TypedDict
 
 import boto3.session
 import orjson

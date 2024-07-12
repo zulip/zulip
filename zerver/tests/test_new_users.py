@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
-from typing import Sequence
 
 import time_machine
 import zoneinfo

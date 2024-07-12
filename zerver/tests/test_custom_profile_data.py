@@ -1,4 +1,5 @@
-from typing import Any, Iterable, cast
+from collections.abc import Iterable
+from typing import Any, cast
 from unittest import mock
 
 import orjson

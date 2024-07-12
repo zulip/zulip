@@ -1,7 +1,8 @@
+from typing import Annotated, Literal
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json
-from typing_extensions import Annotated, Literal
 
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.lib.exceptions import JsonableError

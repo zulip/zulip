@@ -1,4 +1,5 @@
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Annotated, Any
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -8,7 +9,6 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
 from pydantic import Json, NonNegativeInt, StringConstraints
 from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated
 
 from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.actions.create_realm import do_change_realm_subdomain

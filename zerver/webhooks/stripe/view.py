@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import time
-from typing import Sequence
+from collections.abc import Sequence
 
 from django.http import HttpRequest, HttpResponse
 

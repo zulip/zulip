@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Match
+from re import Match
 from xml.etree.ElementTree import Element
 
 from markdown import Extension, Markdown

@@ -1,7 +1,8 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from typing import Any, Iterable, Sequence, TypedDict
+from collections.abc import Iterable, Sequence
+from typing import Any, TypedDict
 
 from django.conf import settings
 from django.db import transaction

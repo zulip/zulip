@@ -1,7 +1,8 @@
 import asyncio
 import socket
+from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import Any, Awaitable, Callable, TypeVar
+from typing import Any, TypeVar
 from unittest import TestResult, mock
 from urllib.parse import urlencode
 

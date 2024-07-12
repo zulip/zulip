@@ -1,6 +1,7 @@
 from collections import defaultdict
+from collections.abc import Iterable, Sequence
 from datetime import timedelta
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction

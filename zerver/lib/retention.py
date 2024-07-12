@@ -28,8 +28,9 @@
 # deletions.
 import logging
 import time
+from collections.abc import Iterable, Mapping
 from datetime import timedelta
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from django.conf import settings
 from django.db import connection, transaction

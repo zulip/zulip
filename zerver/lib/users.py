@@ -2,9 +2,10 @@ import itertools
 import re
 import unicodedata
 from collections import defaultdict
+from collections.abc import Iterable, Mapping, Sequence
 from email.headerregistry import Address
 from operator import itemgetter
-from typing import Any, Iterable, Mapping, Sequence, TypedDict
+from typing import Any, TypedDict
 
 import dateutil.parser as date_parser
 from django.conf import settings

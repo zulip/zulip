@@ -1,8 +1,9 @@
 import logging
 import os
 import secrets
+from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, Literal
+from typing import IO, Any, BinaryIO, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import boto3

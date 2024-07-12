@@ -1,12 +1,13 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable
+from typing import Concatenate
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import ParamSpec
 
 from zerver.decorator import (
     authenticated_json_view,

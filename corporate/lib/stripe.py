@@ -3,12 +3,13 @@ import math
 import os
 import secrets
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Generator
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Generator, Literal, TypedDict, TypeVar
+from typing import Any, Literal, TypedDict, TypeVar
 from urllib.parse import urlencode, urljoin
 
 import stripe

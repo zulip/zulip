@@ -12,10 +12,11 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable, Iterable, Mapping
 from contextlib import suppress
 from datetime import datetime
 from functools import cache
-from typing import Any, Callable, Iterable, Mapping, Optional, TypedDict
+from typing import Any, Optional, TypeAlias, TypedDict
 
 import orjson
 from django.apps import apps
@@ -24,7 +25,6 @@ from django.db.models import Exists, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from mypy_boto3_s3.service_resource import Object
-from typing_extensions import TypeAlias
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount

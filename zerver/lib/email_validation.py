@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from email.errors import HeaderParseError
 from email.headerregistry import Address
-from typing import Callable
 
 from django.core import validators
 from django.core.exceptions import ValidationError

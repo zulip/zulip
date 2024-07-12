@@ -39,7 +39,7 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from tools.lib.test_script import (
     add_provision_check_override_param,

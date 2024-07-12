@@ -3,7 +3,8 @@ import os
 import re
 import uuid
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 
 import orjson

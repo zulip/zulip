@@ -1,13 +1,14 @@
 import fnmatch
 import importlib
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable
+from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from pydantic import Json
-from typing_extensions import Annotated, TypeAlias, override
+from typing_extensions import override
 
 from zerver.actions.message_send import (
     check_send_private_message,

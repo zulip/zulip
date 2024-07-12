@@ -1,13 +1,13 @@
 import os
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Sequence
+from typing import Any, TypeAlias
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import URLResolver, path
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 from django_stubs_ext import StrPromise
-from typing_extensions import TypeAlias
 
 from zerver.lib.storage import static_path
 

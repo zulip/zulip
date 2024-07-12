@@ -1,10 +1,10 @@
-from typing import Sequence
+from collections.abc import Sequence
+from typing import TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from typing_extensions import TypeAlias
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported

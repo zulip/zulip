@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Sequence
 from datetime import datetime, timedelta
-from typing import Sequence
 
 from django.conf import settings
 from django.db import transaction

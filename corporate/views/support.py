@@ -1,9 +1,10 @@
 import uuid
+from collections.abc import Iterable
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from operator import attrgetter
-from typing import Any, Iterable
+from typing import Annotated, Any, Literal
 from urllib.parse import urlencode, urlsplit
 
 from django import forms
@@ -18,7 +19,6 @@ from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator, Json, NonNegativeInt
-from typing_extensions import Annotated, Literal
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED

@@ -1,4 +1,5 @@
-from typing import Any, Callable, Literal, TypeVar, cast
+from collections.abc import Callable
+from typing import Annotated, Any, Literal, TypeAlias, TypeVar, cast
 
 import orjson
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -6,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints, ValidationInfo, WrapValidator
 from pydantic.dataclasses import dataclass
 from pydantic.functional_validators import ModelWrapValidatorHandler
-from typing_extensions import Annotated, TypeAlias, override
+from typing_extensions import override
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
 from zerver.lib.request import RequestConfusingParamsError, RequestVariableMissingError

@@ -1,4 +1,5 @@
-from typing import Collection, TypedDict
+from collections.abc import Collection
+from typing import TypedDict
 
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q, QuerySet

@@ -11,7 +11,7 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from zulint import lister
 

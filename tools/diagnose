@@ -4,7 +4,7 @@ import platform
 import shlex
 import subprocess
 import sys
-from typing import Callable
+from collections.abc import Callable
 
 TOOLS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.dirname(TOOLS_DIR)

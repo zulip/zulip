@@ -1,5 +1,6 @@
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from django.conf import settings
 from django.utils.text import slugify

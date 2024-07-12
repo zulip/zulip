@@ -1,12 +1,13 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable
+from typing import Concatenate
 from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import ParamSpec
 
 from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityExpiredError,

@@ -2,7 +2,8 @@ import contextlib
 import hashlib
 import logging
 import os
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 import boto3
 import botocore

@@ -3,7 +3,7 @@ import argparse
 import os
 import subprocess
 import sys
-from typing import Sequence
+from collections.abc import Sequence
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ZULIP_PATH)

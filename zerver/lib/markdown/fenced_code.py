@@ -77,7 +77,8 @@ Dependencies:
 """
 
 import re
-from typing import Any, Callable, Iterable, Mapping, MutableSequence, Sequence
+from collections.abc import Callable, Iterable, Mapping, MutableSequence, Sequence
+from typing import Any
 
 import lxml.html
 from django.utils.html import escape

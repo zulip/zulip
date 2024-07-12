@@ -3,7 +3,8 @@ import os
 import random
 import shutil
 import unittest
-from typing import Any, Callable, Iterable
+from collections.abc import Callable, Iterable
+from typing import Any, TypeAlias
 from unittest import TestSuite, runner
 from unittest.result import TestResult
 
@@ -13,7 +14,7 @@ from django.db import ProgrammingError, connections
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from scripts.lib.zulip_tools import (
     TEMPLATE_DATABASE_DIR,

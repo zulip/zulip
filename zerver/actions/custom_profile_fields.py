@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 import orjson
 from django.db import transaction

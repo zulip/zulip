@@ -1,6 +1,7 @@
 from collections import defaultdict
+from collections.abc import Iterable, Mapping, Sequence
 from functools import lru_cache
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 from urllib.parse import urlsplit
 
 import orjson

@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from typing import Callable, Iterator
+from collections.abc import Callable, Iterator
 from urllib.parse import urlsplit
 
 import scrapy

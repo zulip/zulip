@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from html.parser import HTMLParser
-from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 from typing_extensions import override

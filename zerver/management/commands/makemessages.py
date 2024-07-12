@@ -38,7 +38,8 @@ import json
 import os
 import re
 import subprocess
-from typing import Any, Collection, Iterator, Mapping
+from collections.abc import Collection, Iterator, Mapping
+from typing import Any
 
 from django.core.management.base import CommandParser
 from django.core.management.commands import makemessages

@@ -1,4 +1,5 @@
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse

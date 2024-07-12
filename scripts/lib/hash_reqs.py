@@ -4,7 +4,7 @@ import hashlib
 import os
 import subprocess
 import sys
-from typing import Iterable
+from collections.abc import Iterable
 
 
 def expand_reqs_helper(fpath: str) -> list[str]:

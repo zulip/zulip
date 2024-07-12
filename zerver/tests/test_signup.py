@@ -1,7 +1,8 @@
 import re
 import time
+from collections.abc import Sequence
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Sequence, Union
+from typing import TYPE_CHECKING, Any, Union
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote, quote_plus, urlencode, urlsplit
 

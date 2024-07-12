@@ -1,7 +1,8 @@
 import time
 import uuid
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
-from typing import IO, TYPE_CHECKING, Any, Callable, Iterator, Sequence
+from typing import IO, TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 
 import DNS

@@ -1,9 +1,10 @@
+from collections.abc import Mapping
 from datetime import timedelta
-from typing import Any, Mapping
+from typing import Any, TypeAlias
 
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now as timezone_now
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data

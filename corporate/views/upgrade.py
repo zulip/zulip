@@ -1,10 +1,10 @@
 import logging
+from typing import Annotated
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from pydantic import AfterValidator, Json
-from typing_extensions import Annotated
 
 from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,

@@ -2,15 +2,15 @@ import functools
 import heapq
 import logging
 from collections import defaultdict
+from collections.abc import Collection, Iterator
 from datetime import datetime, timedelta, timezone
-from typing import Any, Collection, Iterator
+from typing import Any, TypeAlias
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Exists, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from typing_extensions import TypeAlias
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context

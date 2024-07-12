@@ -1,7 +1,8 @@
 import re
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Callable, Collection, Mapping, Sequence, TypedDict
+from typing import Any, TypedDict
 
 from django.conf import settings
 from django.db import connection

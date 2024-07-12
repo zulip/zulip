@@ -1,8 +1,9 @@
 import hashlib
 import random
+from collections.abc import Sequence
 from datetime import timedelta
 from io import StringIO
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson

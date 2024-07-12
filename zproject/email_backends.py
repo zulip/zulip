@@ -1,8 +1,8 @@
 # https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
+from collections.abc import MutableSequence, Sequence
 from email.message import Message
-from typing import MutableSequence, Sequence
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives

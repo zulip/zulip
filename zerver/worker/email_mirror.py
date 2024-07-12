@@ -3,8 +3,9 @@ import base64
 import email
 import email.policy
 import logging
+from collections.abc import Mapping
 from email.message import EmailMessage
-from typing import Any, Mapping
+from typing import Any
 
 from typing_extensions import override
 

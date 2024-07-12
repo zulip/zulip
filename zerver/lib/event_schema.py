@@ -27,7 +27,7 @@
 # See check_delete_message and check_presence for examples of this
 # paradigm.
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from zerver.lib.data_types import (
     DictType,

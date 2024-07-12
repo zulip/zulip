@@ -1,7 +1,7 @@
 import random
 import re
+from collections.abc import Sequence
 from email.headerregistry import Address
-from typing import Sequence
 from unittest import mock
 from unittest.mock import patch
 

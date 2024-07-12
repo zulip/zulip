@@ -1,4 +1,5 @@
-from typing import Iterable, Sequence, cast
+from collections.abc import Iterable, Sequence
+from typing import cast
 
 from django.utils.translation import gettext as _
 

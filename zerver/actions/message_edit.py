@@ -1,7 +1,9 @@
 import itertools
 from collections import defaultdict
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 from datetime import timedelta
-from typing import AbstractSet, Any, Iterable
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction

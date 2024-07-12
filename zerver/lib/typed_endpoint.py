@@ -1,23 +1,26 @@
 import inspect
 import json
 import types
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import wraps
-from typing import Callable, Generic, Sequence, TypeVar, Union
-
-from django.http import HttpRequest
-from django.utils.translation import gettext as _
-from pydantic import Json, StringConstraints, TypeAdapter, ValidationError
-from typing_extensions import (
+from typing import (
     Annotated,
     Concatenate,
-    ParamSpec,
+    Generic,
     TypeAlias,
+    TypeVar,
+    Union,
     get_args,
     get_origin,
     get_type_hints,
 )
+
+from django.http import HttpRequest
+from django.utils.translation import gettext as _
+from pydantic import Json, StringConstraints, TypeAdapter, ValidationError
+from typing_extensions import ParamSpec
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
 from zerver.lib.request import (

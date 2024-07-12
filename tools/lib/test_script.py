@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 from argparse import ArgumentParser
-from typing import Iterable
+from collections.abc import Iterable
 
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
 from version import PROVISION_VERSION

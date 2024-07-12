@@ -1,6 +1,7 @@
 import json
 import re
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 import markdown
 from django.utils.html import escape as escape_html

@@ -1,12 +1,13 @@
 import time
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Literal
+from typing import Annotated, Any, Concatenate, Literal
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import BaseModel, ConfigDict
-from typing_extensions import Annotated, Concatenate, ParamSpec
+from typing_extensions import ParamSpec
 
 from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError

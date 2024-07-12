@@ -3,8 +3,9 @@ import os
 import random
 import secrets
 import shutil
+from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, Literal
+from typing import IO, Any, BinaryIO, Literal
 
 from django.conf import settings
 from typing_extensions import override

@@ -9,9 +9,10 @@ the level of detail we desire or do comparison with OpenAPI types
 easily with the native Python type system.
 """
 
+from collections.abc import Callable, Sequence
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Callable, Sequence
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator

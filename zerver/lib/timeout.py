@@ -3,8 +3,9 @@ import logging
 import sys
 import threading
 import time
+from collections.abc import Callable
 from types import TracebackType
-from typing import Callable, TypeVar
+from typing import TypeVar
 
 from typing_extensions import override
 

@@ -1,8 +1,9 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
 import time
+from collections.abc import Mapping
 from types import FrameType
-from typing import Any, Mapping
+from typing import Any
 
 from django.db import transaction
 from typing_extensions import override

@@ -4,19 +4,10 @@ import re
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from datetime import timedelta
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Collection,
-    Iterator,
-    Mapping,
-    Sequence,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
 

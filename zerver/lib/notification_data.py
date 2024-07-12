@@ -1,6 +1,7 @@
 import math
+from collections.abc import Collection
 from dataclasses import dataclass
-from typing import Any, Collection
+from typing import Any
 
 from zerver.lib.mention import MentionData
 from zerver.lib.user_groups import get_user_group_member_ids

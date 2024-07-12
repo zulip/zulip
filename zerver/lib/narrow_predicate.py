@@ -1,4 +1,5 @@
-from typing import Any, Collection, Protocol
+from collections.abc import Collection
+from typing import Any, Protocol
 
 from django.utils.translation import gettext as _
 

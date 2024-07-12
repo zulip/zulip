@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Collection, Sequence
 from datetime import datetime, timedelta
-from typing import Any, Collection, Sequence
+from typing import Any
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType

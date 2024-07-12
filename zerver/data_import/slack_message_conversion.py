@@ -1,7 +1,5 @@
 import re
-from typing import Any
-
-from typing_extensions import TypeAlias
+from typing import Any, TypeAlias
 
 # stubs
 ZerverFieldsT: TypeAlias = dict[str, Any]

@@ -2,7 +2,8 @@ import cProfile
 import logging
 import tempfile
 import time
-from typing import Any, Callable, MutableMapping
+from collections.abc import Callable, MutableMapping
+from typing import Annotated, Any, Concatenate
 from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
@@ -22,7 +23,7 @@ from django.utils.translation import gettext as _
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
 from sentry_sdk import set_tag
-from typing_extensions import Annotated, Concatenate, ParamSpec, override
+from typing_extensions import ParamSpec, override
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db_connections import reset_queries

@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Iterable
 from contextlib import suppress
-from typing import Any, Iterable
+from typing import Any
 from urllib.parse import urlencode, urljoin
 
 import orjson

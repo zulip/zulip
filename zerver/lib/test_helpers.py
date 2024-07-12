@@ -4,20 +4,10 @@ import os
 import re
 import sys
 import time
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Iterable,
-    Iterator,
-    Mapping,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import IO, TYPE_CHECKING, Any, TypeVar, Union, cast
 from unittest import mock
 from unittest.mock import patch
 

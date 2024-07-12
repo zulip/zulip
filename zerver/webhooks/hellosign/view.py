@@ -1,6 +1,7 @@
+from typing import Annotated
+
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
-from typing_extensions import Annotated
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
