@@ -36,11 +36,12 @@ function get_formatted_sub_count(sub_count: number): string {
     );
 }
 
-function total_subscriber_count(
+function get_total_human_subscriber_count(
     current_sub: StreamSubscription | undefined,
     pm_ids_set: Set<number>,
 ): number {
-    // Includes inactive users who might not show up in the buddy list.
+    // Excludes human users, but may include long-inactive users who
+    // might not show up in the buddy list.
     if (current_sub) {
         return peer_data.get_subscriber_count(current_sub.stream_id, false);
     } else if (pm_ids_set.size) {
@@ -82,7 +83,7 @@ function get_render_data(): BuddyListRenderData {
     const current_sub = narrow_state.stream_sub();
     const pm_ids_set = narrow_state.pm_ids_set();
 
-    const total_human_subscribers_count = total_subscriber_count(current_sub, pm_ids_set);
+    const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
     const total_human_users = people.get_active_human_count();
     const other_users_count = total_human_users - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
@@ -192,7 +193,7 @@ export class BuddyList extends BuddyListConf {
                         let tooltip_text;
                         const current_sub = narrow_state.stream_sub();
                         const pm_ids_set = narrow_state.pm_ids_set();
-                        const total_human_subscribers_count = total_subscriber_count(
+                        const total_human_subscribers_count = get_total_human_subscriber_count(
                             current_sub,
                             pm_ids_set,
                         );
