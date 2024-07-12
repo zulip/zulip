@@ -42,10 +42,7 @@ class TestEndpoint(ZulipTestCase):
         """This test is only needed because we don't
         have coverage of is_optional in Python 3.11.
         """
-        type = cast(Type[Optional[str]], Optional[str])
-        self.assertTrue(is_optional(type))
-
-        type = str
+        self.assertTrue(is_optional(cast(Type[Optional[str]], Optional[str])))
         self.assertFalse(is_optional(str))
 
     def test_coerce(self) -> None:
